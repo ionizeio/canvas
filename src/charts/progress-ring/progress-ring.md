@@ -5,11 +5,13 @@ A full-circle completion ring, the Gauge's sibling: a muted track ring, a tone-c
 ## Usage
 
 ```tsx
-<Card padded style={{ maxWidth: 200 }}>
-  <Column alignCenter>
-    <ProgressRing value={72} label="Complete" />
-  </Column>
-</Card>
+<Container xxxs>
+  <Card padded>
+    <Column alignCenter>
+      <ProgressRing value={72} label="Complete" />
+    </Column>
+  </Card>
+</Container>
 ```
 
 ## Variants
@@ -17,21 +19,25 @@ A full-circle completion ring, the Gauge's sibling: a muted track ring, a tone-c
 ### Success tone
 
 ```tsx
-<Card padded style={{ maxWidth: 200 }}>
-  <Column alignCenter>
-    <ProgressRing value={92} success label="Tests passing" />
-  </Column>
-</Card>
+<Container xxxs>
+  <Card padded>
+    <Column alignCenter>
+      <ProgressRing value={92} success label="Tests passing" />
+    </Column>
+  </Card>
+</Container>
 ```
 
 ### Warning tone, compact
 
 ```tsx
-<Card padded style={{ maxWidth: 200 }}>
-  <Column alignCenter>
-    <ProgressRing value={81} warning compact label="Budget used" />
-  </Column>
-</Card>
+<Container xxxs>
+  <Card padded>
+    <Column alignCenter>
+      <ProgressRing value={81} warning compact label="Budget used" />
+    </Column>
+  </Card>
+</Container>
 ```
 
 ## Do & Don't
@@ -41,11 +47,13 @@ A full-circle completion ring, the Gauge's sibling: a muted track ring, a tone-c
 **Do** - Put a muted track behind the value arc, the percent readout in the ring's center, and the label below the graphic.
 
 ```tsx
-<Card padded style={{ maxWidth: 200 }}>
-  <Column alignCenter>
-    <ProgressRing value={72} label="Complete" />
-  </Column>
-</Card>
+<Container xxxs>
+  <Card padded>
+    <Column alignCenter>
+      <ProgressRing value={72} label="Complete" />
+    </Column>
+  </Card>
+</Container>
 ```
 
 **Don't** - A bordered circle with no track and no readout gives no baseline to read the fill against and no exact value.

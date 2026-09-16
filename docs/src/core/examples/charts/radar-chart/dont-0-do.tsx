@@ -3,17 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { RadarChart } = scope;
+  const { Container, RadarChart } = scope;
   return (
-<RadarChart
+<Container lg>
+  <RadarChart
   title="Candidate comparison"
   axes={["Coding", "Design", "Comms", "Ops", "Product"]}
-  style={{ maxWidth: 480 }}
   series={[
     { label: "Casey", values: [8, 6, 9, 5, 7] },
     { label: "Jordan", values: [6, 9, 7, 8, 5] },
   ]}
   max={10}
 />
+</Container>
   );
 }

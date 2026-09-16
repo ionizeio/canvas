@@ -53,7 +53,7 @@ export const item: Record<Surface, ViewStyle> = {
 // The trend strip an item renders when it carries `spark` data: it sits below the
 // value/delta and spans the full metric width (so the bars fill the stack rather
 // than a fixed 120px). A layout contract shared by every skin, like `row`/`item`.
-export const sparkStrip: ViewStyle = { marginTop: 12, width: "100%" };
+export const sparkStrip: ViewStyle = { marginTop: 12 };
 
 // The composition strip an item renders when it carries `share`: the same slot,
 // the same full width, and the SAME RESERVED HEIGHT as the trend strip, with the

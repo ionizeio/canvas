@@ -3,11 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { DescriptionList } = scope;
+  const { DescriptionList, Container } = scope;
   return (
-<DescriptionList twoColumn divided style={{ maxWidth: 420 }} items={[
+<Container md>
+  <DescriptionList twoColumn divided items={[
     { term: "Client identifier", value: "clnt_01H2X8K9P3Q7VN4W6R5T0JYMZF", mono: true },
     { term: "Status", value: "Active", status: true }
   ]} />
+</Container>
   );
 }

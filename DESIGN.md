@@ -187,6 +187,8 @@ breakpoints:
   xl: "1280px"
   "2xl": "1536px"
 widths:
+  xxxs: "192px"
+  xxs: "256px"
   xs: "320px"
   sm: "384px"
   md: "448px"

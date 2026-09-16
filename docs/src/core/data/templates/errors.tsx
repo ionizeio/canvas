@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Row, Column, Card, Typography, Button, Badge, Alert, Emblem, EmptyState, Icon, useToast } from "@nannier-com/canvas";
+import { Row, Column, Card, Typography, Button, Badge, Alert, Emblem, EmptyState, Icon, useToast, Container } from "@nannier-com/canvas";
 import type { TemplateDoc } from "../types";
 
 // Error and empty states built from real Canvas components: the honest 404 and
@@ -81,23 +81,25 @@ function FirstRunLive() {
   const [created, setCreated] = useState(false);
   if (created) {
     return (
-      <Card style={{ maxWidth: 480 }}>
-        <Row between alignCenter wrap>
-          <Row snug alignCenter>
-            <Emblem primary>
-              <Icon folderPlus />
-            </Emblem>
-            <Column tight>
-              <Typography small medium>Production</Typography>
-              <Typography tiny>Created just now · 0 identities</Typography>
-            </Column>
+      <Container lg start>
+        <Card>
+          <Row between alignCenter wrap>
+            <Row snug alignCenter>
+              <Emblem primary>
+                <Icon folderPlus />
+              </Emblem>
+              <Column tight>
+                <Typography small medium>Production</Typography>
+                <Typography tiny>Created just now · 0 identities</Typography>
+              </Column>
+            </Row>
+            <Row snug alignCenter>
+              <Badge status success>Active</Badge>
+              <Button link small onPress={() => setCreated(false)}>Start over</Button>
+            </Row>
           </Row>
-          <Row snug alignCenter>
-            <Badge status success>Active</Badge>
-            <Button link small onPress={() => setCreated(false)}>Start over</Button>
-          </Row>
-        </Row>
-      </Card>
+        </Card>
+      </Container>
     );
   }
   return (

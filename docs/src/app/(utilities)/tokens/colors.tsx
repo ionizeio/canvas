@@ -154,11 +154,11 @@ function notations(hex: string): { value: string; detail: string } {
   return { value: hex, detail: colorFormats(hex)[2] };
 }
 
-/** One flexing sample. `flexBasis` is the wrap threshold, not a style override. */
-function Sample({ color, name, basis = 150 }: { color: string; name: string; basis?: number }) {
+/** One sample tile; the enclosing Grid fits as many as the row allows. */
+function Sample({ color, name }: { color: string; name: string }) {
   const { value, detail } = notations(color);
   return (
-    <Swatch block color={color} value={value} detail={detail} style={{ flexGrow: 1, flexBasis: basis }}>
+    <Swatch block color={color} value={value} detail={detail}>
       {name}
     </Swatch>
   );
@@ -212,14 +212,14 @@ export default function ColorsScreen() {
           description="The brand has separate colors for filled controls, labels on those fills, and text on neutral surfaces. primary-text colors links, text actions, and focused Android field labels."
           anatomy="ring is the one brand token that does NOT flip with the scheme: the same indigo-500 in light and dark, so the focus outline reads against a light page, a dark page, and the primary fill it may sit on."
         >
-          <Row wrap cozy alignStart>
+          <Grid minTileWidth={150} cozy>
             {BRAND_KEYS.map((t) => (
               <Sample key={t.key} color={colorValue(tokens, t.key)} name={t.name} />
             ))}
             {/* The one place the sheet shows the other scheme outright, because the
                 light/dark difference IS the point for the accent. */}
             <Sample color={colorsByScheme.dark.primary} name="primary (dark)" />
-          </Row>
+          </Grid>
           <Typography primary small>Brand text uses primary-text.</Typography>
         </TokenSection>
 
@@ -228,11 +228,11 @@ export default function ColorsScreen() {
           description="The zinc-based surfaces, hairlines, and text greys everything else sits on."
           anatomy="background and card are the same white in light mode, and foreground is near-black on both: the hairline border is what keeps those samples visible at all."
         >
-          <Row wrap cozy alignStart>
+          <Grid minTileWidth={150} cozy>
             {NEUTRAL_KEYS.map((t) => (
               <Sample key={t.key} color={colorValue(tokens, t.key)} name={t.name} />
             ))}
-          </Row>
+          </Grid>
         </TokenSection>
 
         <TokenSection
@@ -240,11 +240,11 @@ export default function ColorsScreen() {
           description="The meaning-bearing tones. Fill tokens have paired foregrounds for their labels; destructive-text supplies readable error and destructive text on neutral surfaces."
           anatomy="Use destructive-foreground on a destructive fill, and destructive-text for error text and semantic destructive actions. The default text role also accounts for the kit's tonal capsules and enabled pressed states."
         >
-          <Row wrap cozy alignStart>
+          <Grid minTileWidth={150} cozy>
             {SEMANTIC_KEYS.map((t) => (
               <Sample key={t.key} color={colorValue(tokens, t.key)} name={t.name} />
             ))}
-          </Row>
+          </Grid>
           <Typography destructive small>Destructive text uses destructive-text.</Typography>
         </TokenSection>
 
@@ -275,11 +275,11 @@ export default function ColorsScreen() {
           description="Eight colors for charts, assigned in a fixed order and never re-ranked. Distinct enough at 1-2px marks, with no two adjacent hues vibrating."
           anatomy="The series is identical in light and dark on purpose: the set was validated against both card surfaces, so a chart keeps its colour identity when the scheme flips."
         >
-          <Row wrap cozy alignStart>
+          <Grid minTileWidth={200} cozy>
             {CHART_KEYS.map((key) => (
-              <Sample key={key} color={colorValue(tokens, key)} name={key} basis={200} />
+              <Sample key={key} color={colorValue(tokens, key)} name={key} />
             ))}
-          </Row>
+          </Grid>
         </TokenSection>
 
         <TokenSection
@@ -346,11 +346,11 @@ export default function ColorsScreen() {
           description="The default accent is Indigo. These palette steps are starting points for a custom brand. Check your filled controls and text against their actual backgrounds in both schemes."
           anatomy="ThemeProvider preserves an existing primary-only override by using it for primary-text too. Supply primary-text separately when links or text actions need a different shade. primary-foreground remains the label on the primary fill; it is not recalculated."
         >
-          <Row wrap cozy alignStart>
+          <Grid minTileWidth={150} cozy>
             {ACCENTS.map((a) => (
               <Sample key={a.step} color={palette[a.step]} name={a.name} />
             ))}
-          </Row>
+          </Grid>
           <Typography small muted>
             CSS hand-off rebrands set both --primary and --primary-text. Setting --primary-text: var(--primary) at the override scope retains the previous single-color behavior. CSS does not apply the ThemeProvider override cascade.
           </Typography>
@@ -367,11 +367,11 @@ export default function ColorsScreen() {
               by the section rather than dressed up as a fourth sample: hand-building a
               block with a label column beside it is the exact anatomy Swatch's own
               Don't fence forbids. */}
-          <Row wrap cozy alignStart>
+          <Grid minTileWidth={150} cozy>
             {(Object.keys(brandColors) as (keyof typeof brandColors)[]).map((key) => (
               <Sample key={key} color={brandColors[key]} name={key} />
             ))}
-          </Row>
+          </Grid>
         </TokenSection>
 
         <TokenSection
@@ -392,14 +392,14 @@ export default function ColorsScreen() {
           description="You change a component's look with semantic boolean props. Each one resolves through the active scheme's tokens, so the same markup renders correctly in every theme and accent, with no re-skinning and no per-call overrides."
         >
           <Column relaxed>
-            <Row wrap relaxed alignStart>
-              <Card title="1 · Tokens (tokens.ts)" style={{ flexGrow: 1, flexBasis: 320 }}>
+            <Grid minTileWidth={320} relaxed>
+              <Card title="1 · Tokens (tokens.ts)">
                 <CodeBlock code={TOKENS_SRC} />
               </Card>
-              <Card title="2 · The theme runtime (useTheme)" style={{ flexGrow: 1, flexBasis: 320 }}>
+              <Card title="2 · The theme runtime (useTheme)">
                 <CodeBlock code={THEME_RUNTIME} />
               </Card>
-            </Row>
+            </Grid>
             <Card title="3 · One prop, resolved live">
               <Column cozy>
                 <CodeBlock code={DYNAMIC} />

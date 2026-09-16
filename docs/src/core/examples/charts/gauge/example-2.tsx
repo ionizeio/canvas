@@ -3,12 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Column, Gauge } = scope;
+  const { Card, Column, Container, Gauge } = scope;
   return (
-<Card padded style={{ maxWidth: 200 }}>
-  <Column alignCenter>
-    <Gauge value={81} warning label="Budget used" />
-  </Column>
-</Card>
+<Container xxxs>
+  <Card padded>
+    <Column alignCenter>
+      <Gauge value={81} warning label="Budget used" />
+    </Column>
+  </Card>
+</Container>
   );
 }

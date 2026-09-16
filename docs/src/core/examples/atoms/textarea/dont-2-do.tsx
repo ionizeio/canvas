@@ -3,16 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Card, Divider, Textarea, Row } = scope;
+  const { Button, Card, Divider, Textarea, Row, Container } = scope;
   return (
-<Card flat flush style={{ width: 400, maxWidth: "100%", overflow: "hidden" }}>
-  <Row alignCenter tight padTight>
-    <Button ghost small>B</Button>
-    <Button ghost small>I</Button>
-    <Button ghost small>{"</>"}</Button>
-  </Row>
-  <Divider />
-  <Textarea rows={4} flush placeholder="Leave a comment" />
-</Card>
+<Container sm>
+  <Card flat flush style={{ overflow: "hidden" }}>
+    <Row alignCenter tight padTight>
+      <Button ghost small>B</Button>
+      <Button ghost small>I</Button>
+      <Button ghost small>{"</>"}</Button>
+    </Row>
+    <Divider />
+    <Textarea rows={4} flush placeholder="Leave a comment" />
+  </Card>
+</Container>
   );
 }

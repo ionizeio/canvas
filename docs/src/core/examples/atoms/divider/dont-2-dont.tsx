@@ -3,12 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Button, Divider } = scope;
+  const { Button, Divider, Container } = scope;
   return (
-<View style={{ width: 320, maxWidth: "100%" }}>
+<Container xs>
   <Divider>
     <Button ghost small>Show more</Button>
   </Divider>
-</View>
+</Container>
   );
 }

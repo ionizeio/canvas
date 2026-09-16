@@ -3,13 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { RangeAreaChart } = scope;
+  const { Container, RangeAreaChart } = scope;
   return (
-<RangeAreaChart
+<Container xl>
+  <RangeAreaChart
   title="Forecast"
   label="Confidence band"
   labels={["W1", "W2", "W3", "W4"]}
-  style={{ maxWidth: 560 }}
   data={[
     { low: 90, high: 110, mid: 100 },
     { low: 95, high: 125, mid: 108 },
@@ -17,5 +17,6 @@ export default function Example(scope: ExampleScope) {
     { low: 104, high: 158, mid: 129 },
   ]}
 />
+</Container>
   );
 }

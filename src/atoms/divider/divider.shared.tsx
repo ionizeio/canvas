@@ -7,6 +7,7 @@ import {
   type StyleProp,
   type ViewStyle,
   type TextStyle,
+  type LayoutStyle,
 } from "../../style/index.js";
 
 // Shared Divider shell. The structure (a plain hairline rule, a vertical rule, or a
@@ -48,8 +49,8 @@ export interface DividerProps {
   strong?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 // First match wins when more than one orientation flag is passed.

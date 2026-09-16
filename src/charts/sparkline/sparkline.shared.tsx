@@ -1,7 +1,6 @@
 import { useId, useState } from "react";
-import { StyleSheet } from "react-native";
 import Svg, { Circle, Defs, LinearGradient, Path, Stop } from "react-native-svg";
-import { View, useTheme, alpha, palette, devWarn, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, useTheme, alpha, palette, devWarn, FILL, type ColorTokens, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { type SparklineSkin } from "./sparkline.styles.js";
 
 // Shared Sparkline shell. A compact trend strip that plots a series of values,
@@ -49,7 +48,7 @@ export interface SparklineProps {
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** For sizing/composition only (e.g. maxWidth); not a styling escape hatch. */
-  style?: StyleProp<ViewStyle>;
+  style?: LayoutStyle;
 }
 
 function toneOf(p: SparklineProps): Tone {
@@ -116,13 +115,10 @@ export function createSparkline(skin: SparklineSkin) {
     const finite = values.filter((v) => Number.isFinite(v));
     const max = Math.max(1, ...finite);
 
-    // The bars grow with `flexGrow`, so the strip needs a defined width or they
-    // collapse to 0 and render blank. Give it the skin's intrinsic width unless
-    // the caller already sizes it via `width` or `flex`/`flexBasis`/`flexGrow`.
-    const flat = (StyleSheet.flatten(style) ?? {}) as ViewStyle;
-    const sized = flat.width != null || flat.flex != null || flat.flexBasis != null || flat.flexGrow != null;
-    const root: ViewStyle = { flexDirection: "row", alignItems: "flex-end", gap: skin.gap, height: plot };
-    if (!sized) root.width = skin.defaultWidth;
+    // The bars grow with `flexGrow`, so the strip needs a definite width or they
+    // collapse to 0 and render blank: the strip is FILL (src/style/sizing.ts) and
+    // takes the bounds its parent provides (a Stats item, a Container step).
+    const root: ViewStyle = { flexDirection: "row", alignItems: "flex-end", gap: skin.gap, height: plot, ...FILL };
     // The frame sits on the root, so it holds the band in both variants and the
     // marks draw over it. Same radius as a bar's data end, so the band and what
     // it holds read as one shape.

@@ -45,9 +45,7 @@ async function overflow(page: import("@playwright/test").Page): Promise<Overflow
  * not overflow at all, and a page listed here must not get worse.
  */
 const KNOWN_OVERFLOW: Record<string, { past: number; why: string }> = {
-  "/components/grid": { past: 47, why: "the Grid example does not renumber its columns below the card width" },
   "/components/navbars": { past: 75, why: "the topbar link row does not collapse, so the links run past the card" },
-  "/templates/kanban": { past: 173, why: "the board's filter row is wider than the page column and does not wrap" },
 };
 
 test.describe("tablet width", () => {

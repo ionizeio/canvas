@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Badge, DataTable, Tabs, Icon, Accordion, useToast } from "@nannier-com/canvas";
+import { Row, Column, Card, Typography, Button, Badge, DataTable, Tabs, Icon, Accordion, useToast, Grid } from "@nannier-com/canvas";
 import type { ToastOptions } from "@nannier-com/canvas";
 import type { TemplateDoc } from "../types";
 
@@ -60,9 +60,9 @@ function PlansLive() {
       <Row center>
         <Tabs pills tabs={[{ label: "Monthly" }, { label: "Yearly", badge: "-20%" }]} active={cycle} onSelect={setCycle} />
       </Row>
-      <Row relaxed wrap>
+      <Grid minTileWidth={240} relaxed>
         {TIERS.map((t) => (
-          <Card key={t.name} grow selected={t.featured} style={{ flexBasis: 240, minWidth: 240 }}>
+          <Card key={t.name} grow selected={t.featured}>
             <Column cozy>
               <Row between alignCenter>
                 <Typography h4>{t.name}</Typography>
@@ -87,7 +87,7 @@ function PlansLive() {
             </Column>
           </Card>
         ))}
-      </Row>
+      </Grid>
     </Column>
   );
 }

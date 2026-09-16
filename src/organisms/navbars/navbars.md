@@ -132,12 +132,12 @@ nor the menu button that stands in for it.
 **Do** — Use a button that opens the command palette and advertise the ⌘K shortcut.
 
 ```tsx
-<Card flat flush style={{ width: "100%", overflow: "hidden" }}>
+<Card flat flush style={{ overflow: "hidden" }}>
   <Row alignCenter snug pad style={{ height: 56 }}>
     <Typography small semibold>Canvas</Typography>
-    <Column grow style={{ maxWidth: 400 }}>
+    <Container sm start>
       <Button outline block iconLeft={<Icon search muted size={13} />} iconRight={<Kbd>⌘K</Kbd>}>Search…</Button>
-    </Column>
+    </Container>
   </Row>
 </Card>
 ```
@@ -160,14 +160,16 @@ nor the menu button that stands in for it.
 **Do** — Collapse the links into a hamburger and keep only the logo and avatar in the bar.
 
 ```tsx
-<Card flat flush style={{ width: "100%", maxWidth: 360, overflow: "hidden" }}>
-  <Row alignCenter snug pad style={{ height: 56 }}>
-    <Button ghost iconLeft={<Icon menu muted size={18} />} accessibilityLabel="Open menu" />
-    <Typography small semibold>Canvas</Typography>
-    <Column grow />
-    <Avatar small src="/rachel-chen.jpg" name="RC" />
-  </Row>
-</Card>
+<Container sm>
+  <Card flat flush style={{ overflow: "hidden" }}>
+    <Row alignCenter snug pad style={{ height: 56 }}>
+      <Button ghost iconLeft={<Icon menu muted size={18} />} accessibilityLabel="Open menu" />
+      <Typography small semibold>Canvas</Typography>
+      <Column grow />
+      <Avatar small src="/rachel-chen.jpg" name="RC" />
+    </Row>
+  </Card>
+</Container>
 ```
 
 **Don't** — A full horizontal nav at phone width wraps onto a second row and crowds out the logo.

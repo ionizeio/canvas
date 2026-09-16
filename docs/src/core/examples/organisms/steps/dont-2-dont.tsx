@@ -3,12 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View } = scope;
+  const { tokens, View, Container } = scope;
   return (
-<View style={{ maxWidth: 320 }}>
+<Container xs>
   <View style={{ height: 6, overflow: "hidden", borderRadius: 9999, backgroundColor: tokens.muted }}>
     <View style={{ height: "100%", borderRadius: 9999, backgroundColor: tokens.primary, width: "68%" }} />
   </View>
-</View>
+</Container>
   );
 }

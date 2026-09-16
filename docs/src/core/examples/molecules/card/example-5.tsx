@@ -3,22 +3,24 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Card, CardContent, CardMedia, Typography, Row, Column } = scope;
+  const { Button, Card, CardContent, CardMedia, Typography, Row, Column, Container } = scope;
   return (
-<Card flush style={{ width: 320, maxWidth: "100%" }}>
-  <CardMedia src="/kira-tanaka.jpg" height={180} alt="Portrait of Kira Tanaka" />
-  <CardContent>
-    <Column cozy>
-      <Column tight>
-        <Typography h5 semibold>Kira Tanaka</Typography>
-        <Typography small muted>Design engineer. Ships the pixels and the pipeline that delivers them.</Typography>
+<Container xs>
+  <Card flush>
+    <CardMedia src="/kira-tanaka.jpg" height={180} alt="Portrait of Kira Tanaka" />
+    <CardContent>
+      <Column cozy>
+        <Column tight>
+          <Typography h5 semibold>Kira Tanaka</Typography>
+          <Typography small muted>Design engineer. Ships the pixels and the pipeline that delivers them.</Typography>
+        </Column>
+        <Row snug>
+          <Button primary small>Follow</Button>
+          <Button outline small>Message</Button>
+        </Row>
       </Column>
-      <Row snug>
-        <Button primary small>Follow</Button>
-        <Button outline small>Message</Button>
-      </Row>
-    </Column>
-  </CardContent>
-</Card>
+    </CardContent>
+  </Card>
+</Container>
   );
 }

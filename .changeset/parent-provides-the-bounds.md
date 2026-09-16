@@ -29,3 +29,14 @@ Migration:
 - A field inside a bare Column inside a Row collapses to its content (it always did; the
   fixed width hid it). Give that Column `span={n}` or `fill`; `useFillStyle` warns in
   development when it sees the case.
+
+Also in this release: every non-layout component's `style` prop is `LayoutStyle` (the
+sizing keys are a type error; Row, Column, Grid, Container, the shells, and the floating
+overlays keep `StyleProp<ViewStyle>` because they are the bounds providers); Card, Feed,
+StackedList, ActionPanel, Skeleton, Sparkline, every SVG chart root, and the Calendar
+containers are FILL with no cap of their own (Alert loses `narrow`/`wide`/`block`,
+Sparkline its intrinsic 120px, the Calendar timelines their desktop widths); Skeleton
+text lines take `long` / `short` instead of a width; the width scale gains the `xxxs`
+(192) and `xxs` (256) tile steps; and the docs generator rejects `width` / `maxWidth` /
+`minWidth` in a `style` on any non-layout tag, so the showcase composes bounds with
+`Container`, Row `span`, and `Grid`.

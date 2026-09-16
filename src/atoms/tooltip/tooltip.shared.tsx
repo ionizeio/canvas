@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { View, Pressable, Text, useHugStyle, useTheme, controlRipple, pressDim, type StyleProp, type ViewProps, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useHugStyle, useTheme, controlRipple, pressDim, type StyleProp, type ViewProps, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { Button } from "../button/button.js";
 import { Icon } from "../icon/icon.js";
 import {
@@ -82,8 +82,8 @@ export interface TooltipProps {
   right?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 // Placement precedence when more than one is passed: first match wins.

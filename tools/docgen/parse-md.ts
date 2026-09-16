@@ -144,7 +144,7 @@ export function scopeNamesFromLiveScope(src: string): string[] {
 // way on purpose), so this is only run over the example and "Do" fences.
 // EXCEPTION to the width allowance: max/minWidth placed directly on an
 // input-like control is the shim the standard field width axis replaced; see
-// fieldWidthShimViolations below.
+// widthShimViolations below.
 export const BANNED_STYLE_PROPS: string[] = [
   // layout / spacing / positioning — belongs to Row/Column or the component
   "flexDirection", "flexWrap", "flex", "flexGrow", "flexShrink", "flexBasis",
@@ -264,25 +264,28 @@ export function bareWidthViolations(code: string): string[] {
   return [...found];
 }
 
-// The input-like controls are FILL (src/style/sizing.ts): the parent layout
-// container provides their bounds, so a `maxWidth`/`minWidth` in a `style`
-// placed DIRECTLY on one of these tags is the shim the layout tier replaced
-// (a Container step or a Row span is the fix) and is banned in example/"Do"
-// fences; the `LayoutStyle` type rejects it at compile time as well. Explicit
-// `width` stays allowed here (deliberate side-by-side comparisons), as do width
-// bounds on wrapper Views/Cards (page-layout composition). The
-// `// docgen-allow-style` line opt-out applies here too.
-const FIELD_WIDTH_TAGS = ["Input", "Textarea", "Select", "Autocomplete", "Listbox", "Field"] as const;
-const FIELD_WIDTH_BANNED = ["maxWidth", "minWidth"] as const;
+// Width belongs to the layout containers (src/style/sizing.ts): a component is FILL
+// or HUG and the parent provides its bounds, so a `width` / `maxWidth` / `minWidth`
+// in a `style` placed DIRECTLY on a non-layout tag (a component, or a raw `View`
+// standing in for a Container) is the shim the layout tier replaced. A Container
+// step, a Row `span`, or a Grid is the fix. Banned in example/"Do" fences; the
+// `LayoutStyle` type rejects it on components at compile time as well. The layout
+// containers and shells below are the exception (they ARE the bounds providers).
+// The `// docgen-allow-style` line opt-out applies here too.
+const WIDTH_SHIM_EXEMPT_TAGS = new Set([
+  "Row", "Column", "Grid", "GridItem", "Container", "ScrollView",
+  "Sidebar", "Drawer", "FilterPanel", "Navbar", "TabBar", "Board", "DashboardGrid", "DropZone",
+]);
+const WIDTH_SHIM_BANNED = ["width", "maxWidth", "minWidth"] as const;
 
 /**
- * Violations of the field width axis: each entry is "<key> on <Tag>" for a
- * max/minWidth style key found inside a style={…} attribute of an input-like
- * control's opening tag.
+ * Violations of the width contract: each entry is "<key> on <Tag>" for a
+ * width/maxWidth/minWidth style key found inside a style={…} attribute of a
+ * non-layout tag's opening tag.
  */
-export function fieldWidthShimViolations(code: string): string[] {
+export function widthShimViolations(code: string): string[] {
   const found = new Set<string>();
-  const tagRe = new RegExp(`<(${FIELD_WIDTH_TAGS.join("|")})\\b`, "g");
+  const tagRe = /<([A-Z][A-Za-z0-9]*)\b/g;
   let m: RegExpExecArray | null;
   while ((m = tagRe.exec(code)) !== null) {
     // Walk the opening tag to its closing ">", tracking brace depth so a ">"
@@ -297,6 +300,7 @@ export function fieldWidthShimViolations(code: string): string[] {
       else if (ch === ">" && depth === 0) { tagEnd = i; break; }
     }
     const tagSrc = code.slice(m.index, tagEnd);
+    if (WIDTH_SHIM_EXEMPT_TAGS.has(m[1])) continue;
     const styleAt = tagSrc.indexOf("style={");
     if (styleAt === -1) continue;
 
@@ -308,7 +312,7 @@ export function fieldWidthShimViolations(code: string): string[] {
     if (lineEnd === -1) lineEnd = code.length;
     if (code.slice(lineStart, lineEnd).includes("docgen-allow-style")) continue;
 
-    for (const key of FIELD_WIDTH_BANNED) {
+    for (const key of WIDTH_SHIM_BANNED) {
       if (new RegExp(`(?:^|[{,\\s])${key}\\s*:`).test(tagSrc.slice(styleAt))) {
         found.add(`${key} on <${m[1]}>`);
       }

@@ -3,15 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { BarList } = scope;
+  const { Container, BarList } = scope;
   return (
-<BarList
+<Container md>
+  <BarList
   title="Top pages"
-  style={{ maxWidth: 420 }}
   items={[
     { label: "/pricing", value: 18400, delta: "+12%" },
     { label: "/docs", value: 12100, delta: "-4%", down: true },
   ]}
 />
+</Container>
   );
 }

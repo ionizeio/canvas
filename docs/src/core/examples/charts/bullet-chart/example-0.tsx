@@ -3,16 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { BulletChart } = scope;
+  const { Container, BulletChart } = scope;
   return (
-<BulletChart
+<Container lg>
+  <BulletChart
   title="Q3 targets"
-  style={{ maxWidth: 480 }}
   data={[
     { label: "Revenue", value: 275, target: 300, ranges: [200, 350, 500] },
     { label: "Profit", value: 42, target: 35, ranges: [30, 50, 70] },
     { label: "NPS", value: 61, target: 70, ranges: [40, 60, 80] },
   ]}
 />
+</Container>
   );
 }

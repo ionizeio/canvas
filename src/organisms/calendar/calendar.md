@@ -219,11 +219,13 @@ Each event carries the `day` it falls on, plus an optional `title` and `start`/`
 ```tsx
 <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "flex-start", gap: 24 }}>
   <Calendar month="May 2026" today={23} defaultSelected={24} daysInMonth={31} startWeekday={4} />
-  <Card flush style={{ minWidth: 240, flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>
-    <View style={{ paddingHorizontal: 16, paddingVertical: 12 }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Pick a date to see events.</Text>
-    </View>
-  </Card>
+  <Column fill style={{ minWidth: 240 }}>
+    <Card flush>
+      <View style={{ paddingHorizontal: 16, paddingVertical: 12 }}>
+        <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Pick a date to see events.</Text>
+      </View>
+    </Card>
+  </Column>
 </View>
 ```
 

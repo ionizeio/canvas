@@ -7,7 +7,7 @@ import {
   type GestureResponderEvent,
   type AccessibilityActionEvent,
 } from "react-native";
-import { View, Text, GlassSurface, useTheme, useControllableState, useFillStyle, useReducedMotion, isRTL, FOCUS_RESET, type ColorTokens, type ViewProps, type ViewStyle, type TextStyle, type StyleProp } from "../../style/index.js";
+import { View, Text, GlassSurface, useTheme, useControllableState, useFillStyle, useReducedMotion, isRTL, FOCUS_RESET, type ColorTokens, type ViewProps, type ViewStyle, type TextStyle, type StyleProp, type LayoutStyle } from "../../style/index.js";
 import { clamp } from "../../style/math.js";
 
 // Shared Slider shell. Uses React Native's primitives DIRECTLY (no engine className
@@ -61,7 +61,7 @@ export interface SliderProps {
   /** Accessible name for the slider (e.g. "Volume"). */
   accessibilityLabel?: string;
   /** Extra style on the slider container, applied last. */
-  style?: StyleProp<ViewStyle>;
+  style?: LayoutStyle;
 }
 
 export type Size = "small" | "base" | "large";

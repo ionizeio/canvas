@@ -3,9 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { CandlestickChart } = scope;
+  const { Container, CandlestickChart } = scope;
   return (
-<CandlestickChart
+<Container xl>
+  <CandlestickChart
   title="OLY · 12 sessions"
   labels={["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "D12"]}
   candles={[
@@ -24,7 +25,7 @@ export default function Example(scope: ExampleScope) {
   ]}
   volume={[31, 27, 35, 29, 18, 33, 26, 41, 38, 24, 47, 30]}
   defaultSelected={8}
-  style={{ maxWidth: 560 }}
 />
+</Container>
   );
 }

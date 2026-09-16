@@ -1,5 +1,5 @@
 import Svg, { Circle, Ellipse, Line, Path, Polygon, Polyline, Rect } from "react-native-svg";
-import { View, useTheme, palette, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, useTheme, palette, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { ICONS, NAMES, type Shape, type IconGlyphProps } from "./icon.glyphs.js";
 import { ICON_STROKE_WIDTH } from "./icon.stroke.js";
 
@@ -78,8 +78,8 @@ export interface IconProps extends IconGlyphProps, IconInternalProps {
   decorative?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 // IconName (the union of glyph names) is generated alongside the glyph data as
@@ -144,7 +144,7 @@ function Glyph({
   size: number;
   stroke: string;
   testID?: string;
-  style?: StyleProp<ViewStyle>;
+  style?: LayoutStyle;
 }) {
   return (
     <Svg

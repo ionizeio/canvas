@@ -155,8 +155,9 @@ describe("the scales the hand-off transcribes", () => {
     const values = Object.values(widths);
     for (let i = 1; i < values.length; i++) expect(values[i]).toBeGreaterThan(values[i - 1]);
     // max-w-xs .. max-w-2xl step by 64px (20rem .. 42rem); the strides then widen.
+    expect([widths.xxxs, widths.xxs]).toEqual([192, 256]); // max-w-48 / max-w-64, the tile steps
     expect([widths.xs, widths.sm, widths.md, widths.lg, widths.xl, widths.xxl]).toEqual([320, 384, 448, 512, 576, 672]);
     expect([widths.xxxl, widths.wide, widths.wider, widths.widest, widths.page]).toEqual([768, 896, 1024, 1152, 1280]);
-    expect(Object.keys(widths)).toHaveLength(11);
+    expect(Object.keys(widths)).toHaveLength(13);
   });
 });

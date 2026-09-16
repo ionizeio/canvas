@@ -3,11 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Form, Input } = scope;
+  const { Form, Input, Container } = scope;
   return (
-<Form submitLabel="Sign in" style={{ width: 360, maxWidth: "100%" }}>
-  <Input label="Email" placeholder="you@example.com" />
-  <Input label="Password" />
-</Form>
+<Container sm>
+  <Form submitLabel="Sign in">
+    <Input label="Email" placeholder="you@example.com" />
+    <Input label="Password" />
+  </Form>
+</Container>
   );
 }

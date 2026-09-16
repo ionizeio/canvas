@@ -1,4 +1,4 @@
-import { View, Text, useTheme, devWarn, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, useTheme, devWarn, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { CHART_ROOT } from "../shared/chart-frame.js";
 import { StatusStrip, statusSummary, type UptimePeriod } from "../shared/status-strip.js";
 
@@ -29,8 +29,8 @@ export interface UptimeBarProps {
   compact?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 const PILL_HEIGHT = { default: 24, compact: 14 } as const;

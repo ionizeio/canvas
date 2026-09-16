@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { type StyleProp, type ViewStyle } from "react-native";
-import { View, Text, useTheme, LabelContent } from "../../style/index.js";
+import { View, Text, useTheme, LabelContent, type LayoutStyle } from "../../style/index.js";
 import { type FieldSkin } from "./field.styles.js";
 
 // Shared Field shell. A form row: a label, the control, and one message line under it.
@@ -46,8 +46,8 @@ export interface FieldProps {
   children?: ReactNode;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 /** The props Field delegates into a label-owning control. */

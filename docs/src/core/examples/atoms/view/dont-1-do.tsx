@@ -3,10 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Typography } = scope;
+  const { Card, Typography, Container } = scope;
   return (
-<Card style={{ width: 240 }}>
-  <Typography>A real surface</Typography>
-</Card>
+<Container xxs>
+  <Card>
+    <Typography>A real surface</Typography>
+  </Card>
+</Container>
   );
 }

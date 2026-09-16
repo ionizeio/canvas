@@ -5,7 +5,8 @@ Categorical-x series lines with nice y ticks, gridlines, and a legend for multip
 ## Usage
 
 ```tsx
-<LineChart
+<Container xl>
+  <LineChart
   title="Active users"
   labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb"]}
   series={[
@@ -15,8 +16,8 @@ Categorical-x series lines with nice y ticks, gridlines, and a legend for multip
   ]}
   curved
   dots
-  style={{ maxWidth: 560 }}
 />
+</Container>
 ```
 
 ## Variants
@@ -24,21 +25,23 @@ Categorical-x series lines with nice y ticks, gridlines, and a legend for multip
 ### Price vs previous close
 
 ```tsx
-<LineChart
+<Container xl>
+  <LineChart
   title="OLY · today"
   labels={["9:30a", "9:40a", "9:50a", "10:00a", "10:10a", "10:20a", "10:30a", "10:40a", "10:50a", "11:00a", "11:10a", "11:20a", "11:30a", "11:40a", "11:50a", "12:00p", "12:10p", "12:20p", "12:30p", "12:40p", "12:50p", "1:00p", "1:10p", "1:20p", "1:30p", "1:40p", "1:50p", "2:00p", "2:10p", "2:20p", "2:30p", "2:40p", "2:50p", "3:00p", "3:10p", "3:20p", "3:30p", "3:40p", "3:50p"]}
   series={[{ label: "Price", values: [186.1, 186.6, 186.4, 187.1, 187.5, 187.5, 187.6, 187.3, 186.8, 187.5, 187.0, 186.6, 186.7, 187.1, 186.7, 187.4, 187.5, 187.4, 188.1, 187.6, 188.5, 188.4, 188.9, 189.2, 189.5, 189.6, 190.5, 190.6, 190.7, 190.4, 190.2, 190.8, 190.5, 190.5, 191.4, 191.1, 191.8, 191.6, 191.7] }]}
   baseline={188}
   fade
   curved
-  style={{ maxWidth: 560 }}
 />
+</Container>
 ```
 
 ### Gradient fade, multi-series
 
 ```tsx
-<LineChart
+<Container xl>
+  <LineChart
   title="Sessions by platform"
   labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
   series={[
@@ -48,14 +51,15 @@ Categorical-x series lines with nice y ticks, gridlines, and a legend for multip
   ]}
   fade
   curved
-  style={{ maxWidth: 560 }}
 />
+</Container>
 ```
 
 ### Success vs failure
 
 ```tsx
-<LineChart
+<Container xl>
+  <LineChart
   title="Sign-ins"
   labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
   series={[
@@ -63,41 +67,44 @@ Categorical-x series lines with nice y ticks, gridlines, and a legend for multip
     { label: "Denied", values: [41, 38, 56, 47, 62, 29, 24], destructive: true }
   ]}
   curved
-  style={{ maxWidth: 560 }}
 />
+</Container>
 ```
 
 ### Compact
 
 ```tsx
-<LineChart
+<Container md>
+  <LineChart
   compact
   title="Signups"
   labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
   series={[{ label: "Signups", values: [24, 31, 28, 42, 39, 47, 51] }]}
   curved
-  style={{ maxWidth: 420 }}
 />
+</Container>
 ```
 
 ### Formatted values
 
 ```tsx
-<LineChart
+<Container xl>
+  <LineChart
   title="Monthly recurring revenue"
   labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
   series={[{ label: "MRR", values: [112, 118, 127, 125, 138, 151] }]}
   formatValue={(v) => `$${v}k`}
   curved
   defaultSelected={4}
-  style={{ maxWidth: 560 }}
 />
+</Container>
 ```
 
 ### Press to inspect
 
 ```tsx
-<LineChart
+<Container xl>
+  <LineChart
   title="Active users"
   labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]}
   series={[
@@ -106,8 +113,8 @@ Categorical-x series lines with nice y ticks, gridlines, and a legend for multip
   ]}
   curved
   defaultSelected={8}
-  style={{ maxWidth: 560 }}
 />
+</Container>
 ```
 
 ## Do & Don't
@@ -117,7 +124,8 @@ Categorical-x series lines with nice y ticks, gridlines, and a legend for multip
 **Do** — Compare series that share one scale, and let the legend plus the fixed series colors carry identity.
 
 ```tsx
-<LineChart
+<Container xl>
+  <LineChart
   title="Signups"
   labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
   series={[
@@ -125,22 +133,23 @@ Categorical-x series lines with nice y ticks, gridlines, and a legend for multip
     { label: "Mobile", values: [60, 90, 140, 160, 220, 260] }
   ]}
   curved
-  style={{ maxWidth: 560 }}
 />
+</Container>
 
 ```
 
 **Don't** — Mix measures of different scales on one axis: the smaller series flatlines against the baseline and reads as noise. Normalize, or use two charts.
 
 ```tsx
-<LineChart
+<Container xl>
+  <LineChart
   title="Revenue vs conversion"
   labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
   series={[
     { label: "Revenue", values: [12000, 18000, 15000, 24000, 30000, 28000] },
     { label: "Conversion rate", values: [2.1, 2.4, 2.2, 2.8, 3.1, 3] }
   ]}
-  style={{ maxWidth: 560 }}
 />
+</Container>
 
 ```

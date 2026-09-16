@@ -3,8 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Icon, MediaObject } = scope;
+  const { Icon, MediaObject, Container } = scope;
   return (
-<MediaObject bordered start style={{ maxWidth: 480 }} title="Security first" description="End-to-end encryption with automatic key rotation." icon={<Icon shield primary size={18} />} />
+<Container lg>
+  <MediaObject bordered start title="Security first" description="End-to-end encryption with automatic key rotation." icon={<Icon shield primary size={18} />} />
+</Container>
   );
 }

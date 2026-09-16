@@ -155,14 +155,20 @@ collapse by hand.
 
 ```tsx
 <Row wrap snug>
-  <Card padded style={{ width: "31%" }}>
-    <Typography medium>Overview</Typography>
-  </Card>
-  <Card padded style={{ width: "31%" }}>
-    <Typography medium>Deploys</Typography>
-  </Card>
-  <Card padded style={{ width: "31%" }}>
-    <Typography medium>Alerts</Typography>
-  </Card>
+  <View style={{ width: "31%" }}>
+    <Card padded>
+      <Typography medium>Overview</Typography>
+    </Card>
+  </View>
+  <View style={{ width: "31%" }}>
+    <Card padded>
+      <Typography medium>Deploys</Typography>
+    </Card>
+  </View>
+  <View style={{ width: "31%" }}>
+    <Card padded>
+      <Typography medium>Alerts</Typography>
+    </Card>
+  </View>
 </Row>
 ```

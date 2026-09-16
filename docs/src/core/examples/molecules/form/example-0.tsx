@@ -3,15 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, Form, Input, Typography, Column } = scope;
+  const { Stateful, Form, Input, Typography, Column, Container } = scope;
   return (
 <Stateful initial={0}>
   {(saves, setSaves) => (
     <Column snug>
-      <Form submitLabel="Sign in" onSubmit={() => setSaves(saves + 1)} style={{ width: 360, maxWidth: "100%" }}>
-        <Input label="Email" placeholder="you@example.com" />
-        <Input label="Password" />
-      </Form>
+      <Container sm>
+        <Form submitLabel="Sign in" onSubmit={() => setSaves(saves + 1)}>
+          <Input label="Email" placeholder="you@example.com" />
+          <Input label="Password" />
+        </Form>
+      </Container>
       <Typography muted>{saves === 0 ? "Not submitted yet" : `Submitted ${saves} ${saves === 1 ? "time" : "times"}`}</Typography>
     </Column>
   )}

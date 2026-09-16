@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { WaterfallChart } = scope;
+  const { Container, WaterfallChart } = scope;
   return (
-<WaterfallChart
+<Container xl>
+  <WaterfallChart
   title="Q3 revenue bridge"
-  style={{ maxWidth: 560 }}
   steps={[
     { label: "Q2", value: 4200, total: true },
     { label: "New", value: 980 },
@@ -17,5 +17,6 @@ export default function Example(scope: ExampleScope) {
     { label: "Q3", total: true },
   ]}
 />
+</Container>
   );
 }

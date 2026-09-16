@@ -5,16 +5,18 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 ## Usage
 
 ```tsx
-<Card padded style={{ width: 280, maxWidth: "100%" }}>
-  <Row between alignStart>
-    <Column tight>
-      <Typography caption medium>Active identities</Typography>
-      <Typography h3 bold>12,348</Typography>
-      <Typography tiny muted>+142 today</Typography>
-    </Column>
-    <Emblem primary label="U" />
-  </Row>
-</Card>
+<Container xxs>
+  <Card padded>
+    <Row between alignStart>
+      <Column tight>
+        <Typography caption medium>Active identities</Typography>
+        <Typography h3 bold>12,348</Typography>
+        <Typography tiny muted>+142 today</Typography>
+      </Column>
+      <Emblem primary label="U" />
+    </Row>
+  </Card>
+</Container>
 ```
 
 ## Variants
@@ -45,76 +47,86 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 ### Generic
 
 ```tsx
-<Card style={{ maxWidth: 360 }}>
-  <Column tight>
-    <Typography lead semibold>Anything goes here</Typography>
-    <Typography small muted>The card surface gives you the border, radius, and shadow. You bring the content.</Typography>
-  </Column>
-</Card>
+<Container sm>
+  <Card>
+    <Column tight>
+      <Typography lead semibold>Anything goes here</Typography>
+      <Typography small muted>The card surface gives you the border, radius, and shadow. You bring the content.</Typography>
+    </Column>
+  </Card>
+</Container>
 ```
 
 ### Flat children
 
 ```tsx
-<Card style={{ maxWidth: 360 }}>
-  <Typography lead semibold>The surface owns the rhythm</Typography>
-  <Typography small muted>A padded card spaces its flat children by itself: each line lands a steady step below the last.</Typography>
-  <Typography small muted>Three flat Typography children, no layout wrapper between them.</Typography>
-</Card>
+<Container sm>
+  <Card>
+    <Typography lead semibold>The surface owns the rhythm</Typography>
+    <Typography small muted>A padded card spaces its flat children by itself: each line lands a steady step below the last.</Typography>
+    <Typography small muted>Three flat Typography children, no layout wrapper between them.</Typography>
+  </Card>
+</Container>
 ```
 
 ### Media
 
 ```tsx
-<Card flush style={{ width: 320, maxWidth: "100%" }}>
-  <CardMedia src="/kira-tanaka.jpg" height={180} alt="Portrait of Kira Tanaka" />
-  <CardContent>
-    <Column cozy>
-      <Column tight>
-        <Typography h5 semibold>Kira Tanaka</Typography>
-        <Typography small muted>Design engineer. Ships the pixels and the pipeline that delivers them.</Typography>
+<Container xs>
+  <Card flush>
+    <CardMedia src="/kira-tanaka.jpg" height={180} alt="Portrait of Kira Tanaka" />
+    <CardContent>
+      <Column cozy>
+        <Column tight>
+          <Typography h5 semibold>Kira Tanaka</Typography>
+          <Typography small muted>Design engineer. Ships the pixels and the pipeline that delivers them.</Typography>
+        </Column>
+        <Row snug>
+          <Button primary small>Follow</Button>
+          <Button outline small>Message</Button>
+        </Row>
       </Column>
-      <Row snug>
-        <Button primary small>Follow</Button>
-        <Button outline small>Message</Button>
-      </Row>
-    </Column>
-  </CardContent>
-</Card>
+    </CardContent>
+  </Card>
+</Container>
 ```
 
 ### Horizontal
 
 ```tsx
-<Card style={{ width: 400, maxWidth: "100%" }}>
-  <MediaObject
-    src="/rachel-chen.jpg"
-    title="Rachel Chen"
-    description="Platform engineering, San Francisco"
-    action={<Button outline small>View</Button>}
-    center
-  />
-</Card>
+<Container sm>
+  <Card>
+    <MediaObject
+      src="/rachel-chen.jpg"
+      title="Rachel Chen"
+      description="Platform engineering, San Francisco"
+      action={<Button outline small>View</Button>}
+      center
+    />
+  </Card>
+</Container>
 ```
 
 ### Actions
 
 ```tsx
-<Card flush style={{ width: 360, maxWidth: "100%" }}>
-  <CardHeader>
-    <CardTitle>Workspace settings</CardTitle>
-    <CardDescription>Rename the workspace. The URL updates everywhere.</CardDescription>
-  </CardHeader>
-  <CardSeparator />
-  <CardContent>
-    <Input label="Workspace name" placeholder="Acme Inc." />
-  </CardContent>
-  <CardSeparator />
-  <CardFooter>
-    <Button ghost small>Cancel</Button>
-    <Button primary small>Save changes</Button>
-  </CardFooter>
-</Card>
+<Container sm>
+  <Card flush>
+    <CardHeader>
+      <CardTitle>Workspace settings</CardTitle>
+      <CardDescription>Rename the workspace. The URL updates everywhere.</CardDescription>
+    </CardHeader>
+    <CardSeparator />
+    <CardContent>
+      <Input label="Workspace name" placeholder="Acme Inc." />
+    </CardContent>
+    <CardSeparator />
+    <CardFooter>
+      <Button ghost small>Cancel</Button>
+      <Button primary small>Save changes</Button>
+    </CardFooter>
+  </Card>
+</Container>
 ```
 
 ### Selectable
@@ -122,24 +134,26 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 ```tsx
 <Stateful initial="pro">
   {(plan, setPlan) => (
-    <Row cozy style={{ width: 400, maxWidth: "100%" }}>
-      <Column fill>
-        <Card grow selected={plan === "starter"} onPress={() => setPlan("starter")}>
-          <Column tight>
-            <Typography lead semibold>Starter</Typography>
-            <Typography small muted>3 projects, 1 seat</Typography>
-          </Column>
-        </Card>
-      </Column>
-      <Column fill>
-        <Card grow selected={plan === "pro"} onPress={() => setPlan("pro")}>
-          <Column tight>
-            <Typography lead semibold>Pro</Typography>
-            <Typography small muted>Unlimited, 10 seats</Typography>
-          </Column>
-        </Card>
-      </Column>
-    </Row>
+    <Container sm>
+      <Row cozy>
+        <Column fill>
+          <Card grow selected={plan === "starter"} onPress={() => setPlan("starter")}>
+            <Column tight>
+              <Typography lead semibold>Starter</Typography>
+              <Typography small muted>3 projects, 1 seat</Typography>
+            </Column>
+          </Card>
+        </Column>
+        <Column fill>
+          <Card grow selected={plan === "pro"} onPress={() => setPlan("pro")}>
+            <Column tight>
+              <Typography lead semibold>Pro</Typography>
+              <Typography small muted>Unlimited, 10 seats</Typography>
+            </Column>
+          </Card>
+        </Column>
+      </Row>
+    </Container>
   )}
 </Stateful>
 ```
@@ -147,55 +161,62 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 ### Flat
 
 ```tsx
-<Card flat style={{ maxWidth: 360 }}>
-  <Column tight>
-    <Typography lead semibold>Outlined and quiet</Typography>
-    <Typography small muted>Flat drops the shadow so the card sits flush with the page. On Android this is the Material outlined card.</Typography>
-  </Column>
-</Card>
+<Container sm>
+  <Card flat>
+    <Column tight>
+      <Typography lead semibold>Outlined and quiet</Typography>
+      <Typography small muted>Flat drops the shadow so the card sits flush with the page. On Android this is the Material outlined card.</Typography>
+    </Column>
+  </Card>
+</Container>
 ```
 
 ### Raised
 
 ```tsx
-<Card raised style={{ maxWidth: 360 }}>
-  <Column tight>
-    <Typography lead semibold>Lifted above the page</Typography>
-    <Typography small muted>Raised deepens the shadow for the moments a card needs emphasis: a drag preview, a featured module.</Typography>
-  </Column>
-</Card>
+<Container sm>
+  <Card raised>
+    <Column tight>
+      <Typography lead semibold>Lifted above the page</Typography>
+      <Typography small muted>Raised deepens the shadow for the moments a card needs emphasis: a drag preview, a featured module.</Typography>
+    </Column>
+  </Card>
+</Container>
 ```
 
 ### Icon and footer
 
 ```tsx
-<Card
+<Container sm>
+  <Card
   title="Identity"
   icon={<Icon user muted size={16} />}
   description="Core attributes"
   body="Name, primary email, and sign-in methods for this account."
   footer="Updated 2 minutes ago"
-  style={{ maxWidth: 360 }}
 />
+</Container>
 ```
 
 ### Density
 
 ```tsx
-<Row cozy style={{ width: 480, maxWidth: "100%" }}>
-  <Column fill>
-    <Card compact grow>
-      <Typography lead semibold>Compact</Typography>
-      <Typography small muted>Tight padding and rhythm for dense dashboards.</Typography>
-    </Card>
-  </Column>
-  <Column fill>
-    <Card comfortable grow>
-      <Typography lead semibold>Comfortable</Typography>
-      <Typography small muted>Roomy padding and rhythm for relaxed reading.</Typography>
-    </Card>
-  </Column>
-</Row>
+<Container lg>
+  <Row cozy>
+    <Column fill>
+      <Card compact grow>
+        <Typography lead semibold>Compact</Typography>
+        <Typography small muted>Tight padding and rhythm for dense dashboards.</Typography>
+      </Card>
+    </Column>
+    <Column fill>
+      <Card comfortable grow>
+        <Typography lead semibold>Comfortable</Typography>
+        <Typography small muted>Roomy padding and rhythm for relaxed reading.</Typography>
+      </Card>
+    </Column>
+  </Row>
+</Container>
 ```
 
 ## Do & Don't
@@ -205,25 +226,29 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 **Do** — One big number, a short label, a small delta. The metric is scannable in a glance.
 
 ```tsx
-<Card padded style={{ maxWidth: 280 }}>
-  <Row between alignStart>
-    <Column tight>
-      <Typography caption medium>Active identities</Typography>
-      <Typography h3 bold>12,348</Typography>
-      <Typography tiny muted>+142 today</Typography>
-    </Column>
-    <Emblem primary label="U" />
-  </Row>
-</Card>
+<Container xxs>
+  <Card padded>
+    <Row between alignStart>
+      <Column tight>
+        <Typography caption medium>Active identities</Typography>
+        <Typography h3 bold>12,348</Typography>
+        <Typography tiny muted>+142 today</Typography>
+      </Column>
+      <Emblem primary label="U" />
+    </Row>
+  </Card>
+</Container>
 ```
 
 **Don't** — Prose where the number should be: the eye has nothing big to land on, so the card stops being a stat.
 
 ```tsx
-<Card padded style={{ maxWidth: 280 }}>
-  <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", textTransform: "uppercase", letterSpacing: 0.4, color: tokens["muted-foreground"] }}>This month</Text>
-  <Text style={{ marginTop: 4, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens["card-foreground"] }}>We onboarded 12,348 active identities, up 142 today, with churn holding steady.</Text>
-</Card>
+<Container xxs>
+  <Card padded>
+    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", textTransform: "uppercase", letterSpacing: 0.4, color: tokens["muted-foreground"] }}>This month</Text>
+    <Text style={{ marginTop: 4, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens["card-foreground"] }}>We onboarded 12,348 active identities, up 142 today, with churn holding steady.</Text>
+  </Card>
+</Container>
 ```
 
 ### section
@@ -231,28 +256,32 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 **Do** — Keep the divider between header and body; it anchors the title.
 
 ```tsx
-<Card flush style={{ maxWidth: 360 }}>
-  <CardHeader>
-    <CardTitle>Recent activity</CardTitle>
-  </CardHeader>
-  <CardSeparator />
-  <CardContent>
-    <Typography small>Two events today.</Typography>
-  </CardContent>
-</Card>
+<Container sm>
+  <Card flush>
+    <CardHeader>
+      <CardTitle>Recent activity</CardTitle>
+    </CardHeader>
+    <CardSeparator />
+    <CardContent>
+      <Typography small>Two events today.</Typography>
+    </CardContent>
+  </Card>
+</Container>
 ```
 
 **Don't** — Without the divider the header floats and stops reading as a header.
 
 ```tsx
-<Card flush style={{ maxWidth: 360 }}>
-  <CardHeader>
-    <CardTitle>Recent activity</CardTitle>
-  </CardHeader>
-  <CardContent>
-    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["card-foreground"] }}>Two events today.</Text>
-  </CardContent>
-</Card>
+<Container sm>
+  <Card flush>
+    <CardHeader>
+      <CardTitle>Recent activity</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["card-foreground"] }}>Two events today.</Text>
+    </CardContent>
+  </Card>
+</Container>
 ```
 
 ### generic
@@ -260,21 +289,25 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 **Do** — Use the surface once and layout the content with plain spacing inside it.
 
 ```tsx
-<Card padded style={{ maxWidth: 360 }}>
-  <Column tight>
-    <Typography lead semibold>Anything goes here</Typography>
-    <Typography small muted>The card surface gives you the border, radius, and shadow. You bring the content.</Typography>
-  </Column>
-</Card>
+<Container sm>
+  <Card padded>
+    <Column tight>
+      <Typography lead semibold>Anything goes here</Typography>
+      <Typography small muted>The card surface gives you the border, radius, and shadow. You bring the content.</Typography>
+    </Column>
+  </Card>
+</Container>
 ```
 
 **Don't** — Nesting one card surface inside another stacks border on border and shadow on shadow; the inner block looks dropped in.
 
 ```tsx
-<Card padded style={{ maxWidth: 360 }}>
+<Container sm>
   <Card padded>
-    <Text style={{ marginBottom: 4, fontSize: 15, fontWeight: "600", color: tokens["card-foreground"] }}>Nested surface</Text>
-    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>A card inside a card doubles the border and shadow.</Text>
+    <Card padded>
+      <Text style={{ marginBottom: 4, fontSize: 15, fontWeight: "600", color: tokens["card-foreground"] }}>Nested surface</Text>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>A card inside a card doubles the border and shadow.</Text>
+    </Card>
   </Card>
-</Card>
+</Container>
 ```

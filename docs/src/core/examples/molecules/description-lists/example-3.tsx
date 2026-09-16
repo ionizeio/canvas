@@ -3,9 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { DescriptionList } = scope;
+  const { DescriptionList, Container } = scope;
   return (
-<DescriptionList
+<Container sm>
+  <DescriptionList
   card
   inline
   divided
@@ -15,7 +16,7 @@ export default function Example(scope: ExampleScope) {
     { term: "Seats", value: "12 of 20" },
     { term: "Renews", value: "Mar 1, 2026" }
   ]}
-  style={{ maxWidth: 360 }}
 />
+</Container>
   );
 }

@@ -3,15 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Reveal, Typography, Column } = scope;
+  const { Card, Reveal, Typography, Column, Container } = scope;
   return (
 <Reveal>
-  <Card padded style={{ width: 300, maxWidth: "100%" }}>
-    <Column tight>
-      <Typography h4 semibold>One entrance</Typography>
-      <Typography small muted>The card and its lines arrive as a single object.</Typography>
-    </Column>
-  </Card>
+  <Container xs>
+    <Card padded>
+      <Column tight>
+        <Typography h4 semibold>One entrance</Typography>
+        <Typography small muted>The card and its lines arrive as a single object.</Typography>
+      </Column>
+    </Card>
+  </Container>
 </Reveal>
   );
 }

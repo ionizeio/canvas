@@ -3,12 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Column, Sparkline } = scope;
+  const { Column, Container, Sparkline } = scope;
   return (
-<Column relaxed style={{ maxWidth: 220 }}>
-  <Sparkline compact values={[28, 33, 39, 45, 45, 42, 48, 45, 47, 53, 55, 60, 61, 63, 63, 62, 64, 65, 62, 69, 72, 78, 78, 82, 85, 92, 94, 92, 91, 96]} />
-  <Sparkline values={[28, 33, 39, 45, 45, 42, 48, 45, 47, 53, 55, 60, 61, 63, 63, 62, 64, 65, 62, 69, 72, 78, 78, 82, 85, 92, 94, 92, 91, 96]} />
-  <Sparkline tall values={[28, 33, 39, 45, 45, 42, 48, 45, 47, 53, 55, 60, 61, 63, 63, 62, 64, 65, 62, 69, 72, 78, 78, 82, 85, 92, 94, 92, 91, 96]} />
-</Column>
+<Container xxxs>
+  <Column relaxed>
+    <Sparkline compact values={[28, 33, 39, 45, 45, 42, 48, 45, 47, 53, 55, 60, 61, 63, 63, 62, 64, 65, 62, 69, 72, 78, 78, 82, 85, 92, 94, 92, 91, 96]} />
+    <Sparkline values={[28, 33, 39, 45, 45, 42, 48, 45, 47, 53, 55, 60, 61, 63, 63, 62, 64, 65, 62, 69, 72, 78, 78, 82, 85, 92, 94, 92, 91, 96]} />
+    <Sparkline tall values={[28, 33, 39, 45, 45, 42, 48, 45, 47, 53, 55, 60, 61, 63, 63, 62, 64, 65, 62, 69, 72, 78, 78, 82, 85, 92, 94, 92, 91, 96]} />
+  </Column>
+</Container>
   );
 }

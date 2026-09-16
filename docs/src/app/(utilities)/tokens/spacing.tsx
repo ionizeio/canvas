@@ -1,4 +1,4 @@
-import { View } from "@nannier-com/canvas";
+import { View, Container } from "@nannier-com/canvas";
 import { Page } from "../../../ui/page";
 import { PageNav } from "../../../ui/page-nav";
 import { Playground } from "../../../ui/playground";
@@ -109,61 +109,73 @@ const zIndexExamples: DocExample[] = [
 const densityExamples: DocExample[] = [
   {
     label: "compact",
-    code: `<Card compact style={{ width: 260 }}>
-  <Column tight>
-    <Typography lead semibold>Storage</Typography>
-    <Typography small muted>84% of 512 GB used.</Typography>
-  </Column>
-</Card>`,
+    code: `<Container xxs start>
+  <Card compact>
+    <Column tight>
+      <Typography lead semibold>Storage</Typography>
+      <Typography small muted>84% of 512 GB used.</Typography>
+    </Column>
+  </Card>
+</Container>`,
     render: (scope) => {
-      const { Card, Column, Typography } = scope;
+      const { Card, Column, Container, Typography } = scope;
       return (
-        <Card compact style={{ width: 260 }}>
-          <Column tight>
-            <Typography lead semibold>Storage</Typography>
-            <Typography small muted>84% of 512 GB used.</Typography>
-          </Column>
-        </Card>
+        <Container xxs start>
+          <Card compact>
+            <Column tight>
+              <Typography lead semibold>Storage</Typography>
+              <Typography small muted>84% of 512 GB used.</Typography>
+            </Column>
+          </Card>
+        </Container>
       );
     },
   },
   {
     label: "default",
-    code: `<Card style={{ width: 260 }}>
-  <Column tight>
-    <Typography lead semibold>Storage</Typography>
-    <Typography small muted>84% of 512 GB used.</Typography>
-  </Column>
-</Card>`,
+    code: `<Container xxs start>
+  <Card>
+    <Column tight>
+      <Typography lead semibold>Storage</Typography>
+      <Typography small muted>84% of 512 GB used.</Typography>
+    </Column>
+  </Card>
+</Container>`,
     render: (scope) => {
-      const { Card, Column, Typography } = scope;
+      const { Card, Column, Container, Typography } = scope;
       return (
-        <Card style={{ width: 260 }}>
-          <Column tight>
-            <Typography lead semibold>Storage</Typography>
-            <Typography small muted>84% of 512 GB used.</Typography>
-          </Column>
-        </Card>
+        <Container xxs start>
+          <Card>
+            <Column tight>
+              <Typography lead semibold>Storage</Typography>
+              <Typography small muted>84% of 512 GB used.</Typography>
+            </Column>
+          </Card>
+        </Container>
       );
     },
   },
   {
     label: "comfortable",
-    code: `<Card comfortable style={{ width: 260 }}>
-  <Column tight>
-    <Typography lead semibold>Storage</Typography>
-    <Typography small muted>84% of 512 GB used.</Typography>
-  </Column>
-</Card>`,
+    code: `<Container xxs start>
+  <Card comfortable>
+    <Column tight>
+      <Typography lead semibold>Storage</Typography>
+      <Typography small muted>84% of 512 GB used.</Typography>
+    </Column>
+  </Card>
+</Container>`,
     render: (scope) => {
-      const { Card, Column, Typography } = scope;
+      const { Card, Column, Container, Typography } = scope;
       return (
-        <Card comfortable style={{ width: 260 }}>
-          <Column tight>
-            <Typography lead semibold>Storage</Typography>
-            <Typography small muted>84% of 512 GB used.</Typography>
-          </Column>
-        </Card>
+        <Container xxs start>
+          <Card comfortable>
+            <Column tight>
+              <Typography lead semibold>Storage</Typography>
+              <Typography small muted>84% of 512 GB used.</Typography>
+            </Column>
+          </Card>
+        </Container>
       );
     },
   },

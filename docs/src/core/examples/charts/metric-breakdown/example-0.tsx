@@ -3,9 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { MetricBreakdown } = scope;
+  const { Container, MetricBreakdown } = scope;
   return (
-<MetricBreakdown
+<Container md>
+  <MetricBreakdown
   value="3,771"
   label="Tokens issued"
   rate="1.39%"
@@ -13,7 +14,6 @@ export default function Example(scope: ExampleScope) {
   rateDestructive
   spark={[96, 104, 101, 110, 108, 112, 116, 114, 118, 116]}
   sparkUnit="req/s"
-  style={{ maxWidth: 420 }}
   breakdown={[
     { label: "authorization_code", value: 1842, delta: "+12%" },
     { label: "refresh_token", value: 1264, delta: "+4%" },
@@ -27,5 +27,6 @@ export default function Example(scope: ExampleScope) {
     { label: "unauthorized_client", count: 4, destructive: true },
   ]}
 />
+</Container>
   );
 }

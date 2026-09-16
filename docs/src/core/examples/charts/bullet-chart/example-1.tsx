@@ -3,17 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { BulletChart } = scope;
+  const { Container, BulletChart } = scope;
   return (
-<BulletChart
+<Container lg>
+  <BulletChart
   title="Deploys per week"
   success
-  style={{ maxWidth: 480 }}
   data={[
     { label: "Web", value: 34, target: 30 },
     { label: "iOS", value: 18, target: 24 },
     { label: "Android", value: 21, target: 24 },
   ]}
 />
+</Container>
   );
 }

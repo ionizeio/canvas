@@ -6,9 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { View, Skeleton } = scope;
   return (
 <View style={{ width: 320, maxWidth: "100%", flexDirection: "column", gap: 6 }}>
-  <Skeleton text animate style={{ width: "100%" }} />
-  <Skeleton text animate style={{ width: "100%" }} />
-  <Skeleton text animate style={{ width: "100%" }} />
+  <Skeleton text animate />
+  <Skeleton text animate />
+  <Skeleton text animate />
 </View>
   );
 }

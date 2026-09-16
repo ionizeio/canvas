@@ -3,9 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Chart } = scope;
+  const { Chart, Container } = scope;
   return (
-<Chart
+<Container xl>
+  <Chart
   title="Revenue, costs, profit"
   labels={["Q1 '23", "Q2 '23", "Q3 '23", "Q4 '23", "Q1 '24", "Q2 '24", "Q3 '24", "Q4 '24"]}
   series={[
@@ -13,7 +14,7 @@ export default function Example(scope: ExampleScope) {
     { label: "Costs", values: [32, 32, 33, 38, 41, 48, 55, 59] },
     { label: "Profit", values: [17, 19, 28, 23, 21, 22, 29, 30] }
   ]}
-  style={{ maxWidth: 560 }}
 />
+</Container>
   );
 }

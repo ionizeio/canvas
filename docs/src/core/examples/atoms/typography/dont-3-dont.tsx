@@ -3,8 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Typography } = scope;
+  const { Typography, Container } = scope;
   return (
-<Typography h3 style={{ maxWidth: 340 }}>Canvas is a universal React Native UI kit for building consistent product interfaces.</Typography>
+<Container xs>
+  <Typography h3>Canvas is a universal React Native UI kit for building consistent product interfaces.</Typography>
+</Container>
   );
 }

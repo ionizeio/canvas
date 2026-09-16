@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { tokens, View, Text, Button, Card, Input } = scope;
   return (
-<Card padded style={{ maxWidth: 420, gap: 16 }}>
+<Card padded style={{ gap: 16 }}>
   <View style={{ gap: 4 }}>
     <Text style={{ fontSize: 15, fontWeight: "600", color: tokens["card-foreground"] }}>Subscribe to updates</Text>
     <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>We'll send you a weekly digest of what changed.</Text>

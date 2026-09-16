@@ -3,16 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, RadialBarChart } = scope;
+  const { Card, Container, RadialBarChart } = scope;
   return (
-<Card padded style={{ maxWidth: 280 }}>
-  <RadialBarChart
-    label="Traffic split"
-    data={[
-      { label: "Direct", value: 60 },
-      { label: "Search", value: 40 },
-    ]}
-  />
-</Card>
+<Container xxs>
+  <Card padded>
+    <RadialBarChart
+      label="Traffic split"
+      data={[
+        { label: "Direct", value: 60 },
+        { label: "Search", value: 40 },
+      ]}
+    />
+  </Card>
+</Container>
   );
 }

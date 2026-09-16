@@ -123,27 +123,27 @@ column stacks too.
 **Do** — Pair each vertical step with a one-line description so the extra width earns its place.
 
 ```tsx
-<View style={{ maxWidth: 320 }}>
+<Container xs>
   <Steps vertical defaultCurrent={1} steps={[
     { label: "Account created", description: "Email verified and password set." },
     { label: "Profile setup", description: "Add your name and avatar." },
     { label: "Team invite", description: "Invite collaborators to your workspace." },
     { label: "Done", description: "You're all set." }
   ]} />
-</View>
+</Container>
 ```
 
 **Don't** — A vertical step with only a title wastes the space the layout is built to use.
 
 ```tsx
-<View style={{ maxWidth: 320 }}>
+<Container xs>
   <Steps vertical defaultCurrent={1} steps={[
     { label: "Account created" },
     { label: "Profile setup" },
     { label: "Team invite" },
     { label: "Done" }
   ]} />
-</View>
+</Container>
 ```
 
 ### Progress bar
@@ -151,17 +151,17 @@ column stacks too.
 **Do** — Label the bar and show the exact percentage so progress is legible at a glance.
 
 ```tsx
-<View style={{ maxWidth: 320 }}>
+<Container xs>
   <Steps progress current={0} steps={[]} label="Setup progress" value={68} />
-</View>
+</Container>
 ```
 
 **Don't** — A bare progress bar with no percentage leaves users guessing how far along they are.
 
 ```tsx
-<View style={{ maxWidth: 320 }}>
+<Container xs>
   <View style={{ height: 6, overflow: "hidden", borderRadius: 9999, backgroundColor: tokens.muted }}>
     <View style={{ height: "100%", borderRadius: 9999, backgroundColor: tokens.primary, width: "68%" }} />
   </View>
-</View>
+</Container>
 ```

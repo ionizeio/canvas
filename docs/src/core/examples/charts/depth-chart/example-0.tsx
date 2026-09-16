@@ -3,9 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { DepthChart } = scope;
+  const { Container, DepthChart } = scope;
   return (
-<DepthChart
+<Container xl>
+  <DepthChart
   title="OLY order book"
   bids={[
     { price: 191.3, size: 80 },
@@ -39,7 +40,7 @@ export default function Example(scope: ExampleScope) {
     { price: 193.4, size: 570 },
     { price: 193.55, size: 624 }
   ]}
-  style={{ maxWidth: 560 }}
 />
+</Container>
   );
 }

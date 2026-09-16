@@ -1,6 +1,6 @@
 import { Children, useEffect, useId, useRef, type ComponentType, type ElementRef, type ReactNode } from "react";
 import { type Role } from "react-native";
-import { View, Text, useTheme, useContainerWidth, widths, type ColorTokens, type StyleProp, type TextStyle, type ViewStyle } from "../../style/index.js";
+import { View, Text, useTheme, useContainerWidth, widths, type ColorTokens, type StyleProp, type TextStyle, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
 import * as s from "./form.styles.js";
@@ -59,8 +59,8 @@ export interface FormSectionProps {
   children?: ReactNode;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 export interface FormProps {
@@ -91,8 +91,8 @@ export interface FormProps {
   disabled?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 /**

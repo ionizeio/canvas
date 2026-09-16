@@ -3,13 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { shadow, Card, Typography, Column } = scope;
+  const { shadow, Card, Typography, Column, Container } = scope;
   return (
-<Card raised style={{ maxWidth: 360 }}>
-  <Column tight>
-    <Typography lead semibold>Lifted above the page</Typography>
-    <Typography small muted>Raised deepens the shadow for the moments a card needs emphasis: a drag preview, a featured module.</Typography>
-  </Column>
-</Card>
+<Container sm>
+  <Card raised>
+    <Column tight>
+      <Typography lead semibold>Lifted above the page</Typography>
+      <Typography small muted>Raised deepens the shadow for the moments a card needs emphasis: a drag preview, a featured module.</Typography>
+    </Column>
+  </Card>
+</Container>
   );
 }

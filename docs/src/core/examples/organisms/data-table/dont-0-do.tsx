@@ -3,21 +3,23 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Card, DataTable, Divider, Input, Row } = scope;
+  const { Button, Card, DataTable, Divider, Input, Row, Container } = scope;
   return (
-<Card flat flush style={{ overflow: "hidden", maxWidth: 520 }}>
-  <Row snug alignCenter between pad>
-    <Input small placeholder="Search users..." />
-    <Button outline small>Export</Button>
-  </Row>
-  <Divider />
-  <DataTable paginated pageSize={3} columns={["Name", "Email"]} rows={[
-    ["Alice Johnson", "alice@example.com"],
-    ["Bob Smith", "bob@example.com"],
-    ["Rachel Chen", "rachel@example.com"],
-    ["Dan Wright", "dan@example.com"],
-    ["Eve Park", "eve@example.com"]
-  ]} />
-</Card>
+<Container lg>
+  <Card flat flush style={{ overflow: "hidden" }}>
+    <Row snug alignCenter between pad>
+      <Input small placeholder="Search users..." />
+      <Button outline small>Export</Button>
+    </Row>
+    <Divider />
+    <DataTable paginated pageSize={3} columns={["Name", "Email"]} rows={[
+      ["Alice Johnson", "alice@example.com"],
+      ["Bob Smith", "bob@example.com"],
+      ["Rachel Chen", "rachel@example.com"],
+      ["Dan Wright", "dan@example.com"],
+      ["Eve Park", "eve@example.com"]
+    ]} />
+  </Card>
+</Container>
   );
 }

@@ -2,7 +2,7 @@ import { Fragment, type ComponentType, type ReactNode, useEffect, useMemo, useRe
 import { consumeEscapeKey } from "../../style/escape-layer.js";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 import { FlatList, StyleSheet, ScrollView, type ViewProps, type ViewStyle as RNViewStyle } from "react-native";
-import { View, Pressable, Text, TextInput, useTheme, useControllableState, controlRipple, devWarn, breakpoints, useMeasuredWidth, tabularNums, type StyleProp, type TextStyle, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useTheme, useControllableState, controlRipple, devWarn, breakpoints, useMeasuredWidth, tabularNums, type StyleProp, type TextStyle, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { type CheckboxProps } from "../../atoms/checkbox/checkbox.shared.js";
 import { type PaginationProps } from "../../atoms/pagination/pagination.shared.js";
 import { type SkeletonProps } from "../../atoms/skeleton/skeleton.shared.js";
@@ -233,8 +233,8 @@ export interface DataTableProps {
   rowKey?: (row: ReactNode[], index: number) => string | number;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 // Density precedence when more than one is passed: first match wins.
@@ -329,7 +329,8 @@ interface CellEdit {
 }
 
 // Skeleton line widths cycle so placeholder rows read organic, not gridded.
-const SKELETON_WIDTHS = ["70%", "50%", "80%", "60%"] as const;
+// The placeholder lines cycle through the Skeleton line lengths so the rows read as text.
+const SKELETON_LENGTHS = [{ long: true }, { short: true }, { long: true }, { short: true }] as const;
 
 // Numeric-aware, locale-aware cell comparison ("9" sorts before "10").
 function compareCells(a: string | number, b: string | number): number {
@@ -600,7 +601,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
           {selectable ? <View style={[skin.selectCell, skin.cellPad[density]]} role="cell" /> : null}
           {visibleColumns.map((col, c) => (
             <View key={`skc-${c}`} style={[skin.dataCell, skin.cellPad[density], widthStyle(col)]} role="cell">
-              <Skeleton text small animate style={{ width: SKELETON_WIDTHS[(r + c) % SKELETON_WIDTHS.length] }} />
+              <Skeleton text small animate {...SKELETON_LENGTHS[(r + c) % SKELETON_LENGTHS.length]} />
             </View>
           ))}
           {hasActions ? <View style={[ACTIONS_CELL, { width: skin.actionsColWidth }]} role="cell" /> : null}

@@ -3,17 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { UptimeBar } = scope;
+  const { Container, UptimeBar } = scope;
   return (
-<UptimeBar
+<Container lg>
+  <UptimeBar
   label="API uptime"
   caption="99.98% uptime"
   startLabel="90 days ago"
   endLabel="Today"
-  style={{ maxWidth: 480 }}
   periods={Array.from({ length: 90 }, (_, i) =>
     i === 61 ? { down: true } : i === 62 || i === 78 ? { degraded: true } : {},
   )}
 />
+</Container>
   );
 }

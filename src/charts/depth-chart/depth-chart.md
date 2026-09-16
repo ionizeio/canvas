@@ -5,7 +5,8 @@ The order-book view: cumulative bid and ask step areas mirrored around the sprea
 ## Usage
 
 ```tsx
-<DepthChart
+<Container xl>
+  <DepthChart
   title="OLY order book"
   bids={[
     { price: 191.3, size: 80 },
@@ -39,8 +40,8 @@ The order-book view: cumulative bid and ask step areas mirrored around the sprea
     { price: 193.4, size: 570 },
     { price: 193.55, size: 624 }
   ]}
-  style={{ maxWidth: 560 }}
 />
+</Container>
 ```
 
 ## Variants
@@ -48,7 +49,8 @@ The order-book view: cumulative bid and ask step areas mirrored around the sprea
 ### Thin book
 
 ```tsx
-<DepthChart
+<Container md>
+  <DepthChart
   title="OLY · thin book"
   compact
   hideAxes
@@ -66,6 +68,6 @@ The order-book view: cumulative bid and ask step areas mirrored around the sprea
     { price: 192.05, size: 350 },
     { price: 192.2, size: 470 }
   ]}
-  style={{ maxWidth: 420 }}
 />
+</Container>
 ```

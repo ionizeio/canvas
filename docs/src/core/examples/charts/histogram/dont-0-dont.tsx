@@ -3,15 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Chart } = scope;
+  const { Chart, Container } = scope;
   return (
-<Chart
-  style={{ maxWidth: 560 }}
+<Container xl>
+  <Chart
   data={[
     { label: "small", value: 9 },
     { label: "medium", value: 5 },
     { label: "large", value: 2 },
   ]}
 />
+</Container>
   );
 }

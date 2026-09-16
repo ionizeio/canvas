@@ -3,14 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Histogram } = scope;
+  const { Container, Histogram } = scope;
   return (
-<Histogram
+<Container xl>
+  <Histogram
   label="Build minutes"
   compact
   hideGrid
-  style={{ maxWidth: 560 }}
   values={[4.2, 4.8, 5.1, 4.4, 6.2, 5.5, 4.9, 5.0, 4.6, 7.8, 5.2, 4.7, 5.4, 4.3, 5.8]}
 />
+</Container>
   );
 }

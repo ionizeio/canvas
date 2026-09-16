@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { View, Typography } = scope;
   return (
-<View style={{ gap: 4 }}>
+<View style={{ gap: 4, flexShrink: 1 }}>
   <Typography h4>Notifications</Typography>
   <Typography h4>A long descriptive sentence that explains everything in detail.</Typography>
 </View>

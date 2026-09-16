@@ -142,7 +142,7 @@ function MonthViewLive() {
   );
 
   const panel = (
-    <Card grow flush style={{ minWidth: 240 }}>
+    <Card grow flush>
       <CardHeader>
         <Row between alignCenter>
           <Typography small semibold>{`${month.short} ${selected}`}</Typography>
@@ -187,7 +187,7 @@ function MonthViewLive() {
       {header}
       <Row loose wrap alignStart>
         {grid}
-        {panel}
+        <Column fill style={{ minWidth: 240 }}>{panel}</Column>
       </Row>
     </Column>
   );

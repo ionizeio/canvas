@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Text, useTheme, useControllableState, devWarn, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, useTheme, useControllableState, devWarn, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import * as s from "./charts.styles.js";
 import { type Tone } from "./charts.styles.js";
 import { type ChartSeries, type ChartSkin } from "./types.js";
@@ -46,8 +46,8 @@ export interface CartesianSeriesProps {
   onSelect?: (index: number | null) => void;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 // Tone precedence matches Chart: success > destructive > primary.

@@ -5,7 +5,8 @@ The trading instrument view: OHLC candles colored by direction from the success/
 ## Usage
 
 ```tsx
-<CandlestickChart
+<Container xl>
+  <CandlestickChart
   title="OLY · 30 sessions"
   labels={["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "D12", "D13", "D14", "D15", "D16", "D17", "D18", "D19", "D20", "D21", "D22", "D23", "D24", "D25", "D26", "D27", "D28", "D29", "D30"]}
   candles={[
@@ -42,8 +43,8 @@ The trading instrument view: OHLC candles colored by direction from the success/
   ]}
   volume={[20, 55, 56, 48, 45, 55, 40, 36, 57, 55, 52, 24, 55, 32, 31, 54, 54, 40, 20, 34, 23, 29, 31, 43, 31, 28, 27, 29, 29, 51]}
   overlays={[{ label: "5-day average", values: [181.6, 181.6, 181.4, 181.2, 181.0, 180.9, 180.6, 180.7, 180.5, 180.4, 180.4, 180.6, 180.9, 181.4, 181.8, 182.3, 182.7, 182.7, 182.8, 182.9, 182.8, 182.9, 183.1, 183.2, 183.5, 183.8, 184.2, 184.3, 184.7, 185.0] }]}
-  style={{ maxWidth: 560 }}
 />
+</Container>
 ```
 
 ## Variants
@@ -51,7 +52,8 @@ The trading instrument view: OHLC candles colored by direction from the success/
 ### Compact sessions
 
 ```tsx
-<CandlestickChart
+<Container md>
+  <CandlestickChart
   title="OLY · last 12 sessions"
   compact
   labels={["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "D12"]}
@@ -69,14 +71,15 @@ The trading instrument view: OHLC candles colored by direction from the success/
     { open: 64.6, high: 66.6, low: 64.3, close: 65.3 },
     { open: 65.3, high: 66.0, low: 64.7, close: 65.1 }
   ]}
-  style={{ maxWidth: 420 }}
 />
+</Container>
 ```
 
 ### Dual moving averages
 
 ```tsx
-<CandlestickChart
+<Container xl>
+  <CandlestickChart
   title="OLY · 24 sessions"
   labels={["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "D12", "D13", "D14", "D15", "D16", "D17", "D18", "D19", "D20", "D21", "D22", "D23", "D24"]}
   candles={[
@@ -109,14 +112,15 @@ The trading instrument view: OHLC candles colored by direction from the success/
     { label: "7-day average", values: [95.7, 95.6, 95.5, 95.7, 95.9, 96.0, 96.1, 96.2, 96.5, 96.9, 97.1, 97.3, 97.6, 97.9, 98.2, 98.3, 98.3, 98.5, 98.5, 98.4, 98.2, 98.2, 98.4, 98.5] },
     { label: "21-day average", values: [95.7, 95.6, 95.5, 95.7, 95.9, 96.0, 96.1, 96.2, 96.3, 96.5, 96.6, 96.7, 96.8, 97.0, 97.1, 97.2, 97.2, 97.3, 97.4, 97.4, 97.4, 97.5, 97.7, 97.9] }
   ]}
-  style={{ maxWidth: 560 }}
 />
+</Container>
 ```
 
 ### Press to inspect
 
 ```tsx
-<CandlestickChart
+<Container xl>
+  <CandlestickChart
   title="OLY · 12 sessions"
   labels={["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "D12"]}
   candles={[
@@ -135,6 +139,6 @@ The trading instrument view: OHLC candles colored by direction from the success/
   ]}
   volume={[31, 27, 35, 29, 18, 33, 26, 41, 38, 24, 47, 30]}
   defaultSelected={8}
-  style={{ maxWidth: 560 }}
 />
+</Container>
 ```

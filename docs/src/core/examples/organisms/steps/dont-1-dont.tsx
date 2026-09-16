@@ -3,15 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Steps } = scope;
+  const { Steps, Container } = scope;
   return (
-<View style={{ maxWidth: 320 }}>
+<Container xs>
   <Steps vertical defaultCurrent={1} steps={[
     { label: "Account created" },
     { label: "Profile setup" },
     { label: "Team invite" },
     { label: "Done" }
   ]} />
-</View>
+</Container>
   );
 }

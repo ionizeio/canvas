@@ -3,9 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Chart } = scope;
+  const { Chart, Container } = scope;
   return (
-<Chart
+<Container xl>
+  <Chart
   title="Coverage"
   horizontal
   data={[
@@ -15,7 +16,7 @@ export default function Example(scope: ExampleScope) {
     { label: "Charts", value: 85 }
   ]}
   max={100}
-  style={{ maxWidth: 560 }}
 />
+</Container>
   );
 }

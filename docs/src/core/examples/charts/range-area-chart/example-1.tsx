@@ -3,14 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { RangeAreaChart } = scope;
+  const { Container, RangeAreaChart } = scope;
   return (
-<RangeAreaChart
+<Container xl>
+  <RangeAreaChart
   title="Daily temperature"
   label="Range"
   labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
   curved
-  style={{ maxWidth: 560 }}
   data={[
     { low: -4, high: 6 },
     { low: -2, high: 9 },
@@ -20,5 +20,6 @@ export default function Example(scope: ExampleScope) {
     { low: 15, high: 28 },
   ]}
 />
+</Container>
   );
 }

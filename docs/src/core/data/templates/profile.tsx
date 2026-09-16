@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Badge, Breadcrumb, Avatar, Divider, Stats, Tabs, DescriptionList, Switch, DataTable, Icon, useToast } from "@nannier-com/canvas";
+import { Row, Column, Card, Typography, Button, Badge, Breadcrumb, Avatar, Divider, Stats, Tabs, DescriptionList, Switch, DataTable, Icon, useToast, Grid } from "@nannier-com/canvas";
 import type { TemplateDoc } from "../types";
 
 // Single-record detail page built from real Canvas components: the canonical
@@ -211,7 +211,7 @@ function FacetsLive() {
 
 function Principle({ title, children }: { title: string; children: string }) {
   return (
-    <Card grow style={{ flexBasis: 240, minWidth: 240 }}>
+    <Card grow>
       <Column tight>
         <Typography small medium>{title}</Typography>
         <Typography tiny>{children}</Typography>
@@ -241,12 +241,12 @@ export const PROFILE_TEMPLATE: TemplateDoc = {
       title: "Layout principles",
       anatomy: "Four principle Cards on a wrapping row, each pairing a rule of the detail-page shape with its rationale.",
       render: () => (
-        <Row relaxed wrap>
+        <Grid minTileWidth={240} relaxed>
           <Principle title="Breadcrumb + back action">Detail pages have two ways back. The breadcrumb is the discoverable one; the back button is the fast one. Both land in the same place.</Principle>
           <Principle title="Hero strip is canonical">Avatar, identity, status pills, and stat strip. The same shape on every detail page in the product. Users learn it once.</Principle>
           <Principle title="Tabs over sub-pages">For a single record, tabs scroll faster than navigating between pages. Use real pages only when sub-data needs its own URL.</Principle>
           <Principle title="2/3 + 1/3 is the default">Two columns: the wider one holds primary content (traits, credentials), the narrower one holds metadata and secondary panes.</Principle>
-        </Row>
+        </Grid>
       ),
     },
   ],

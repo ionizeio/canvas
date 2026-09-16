@@ -1,5 +1,5 @@
 import Svg, { Path } from "react-native-svg";
-import { View, Text, useTheme, palette, statusHues, devWarn, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, useTheme, palette, statusHues, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 
 // Gauge is a "Shared" platform treatment (data visualization is
 // platform-neutral): one implementation serves iOS, Android, and the web.
@@ -24,7 +24,7 @@ export interface GaugeProps {
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** For sizing/composition only. */
-  style?: StyleProp<ViewStyle>;
+  style?: LayoutStyle;
 }
 
 // Tone precedence within the axis: success > warning > destructive (first match

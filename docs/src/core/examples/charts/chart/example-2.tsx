@@ -3,9 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Chart } = scope;
+  const { Chart, Container } = scope;
   return (
-<Chart
+<Container xl>
+  <Chart
   title="Token issuance by client"
   stacked
   labels={["acme", "globex", "initech", "umbrella", "soylent"]}
@@ -15,7 +16,7 @@ export default function Example(scope: ExampleScope) {
     { label: "Refresh token", values: [610, 380, 720, 290, 180] },
     { label: "Device code", values: [140, 90, 260, 70, 55] }
   ]}
-  style={{ maxWidth: 560 }}
 />
+</Container>
   );
 }

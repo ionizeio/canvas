@@ -3,16 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { LineChart } = scope;
+  const { Container, LineChart } = scope;
   return (
-<LineChart
+<Container xl>
+  <LineChart
   title="Revenue vs conversion"
   labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
   series={[
     { label: "Revenue", values: [12000, 18000, 15000, 24000, 30000, 28000] },
     { label: "Conversion rate", values: [2.1, 2.4, 2.2, 2.8, 3.1, 3] }
   ]}
-  style={{ maxWidth: 560 }}
 />
+</Container>
   );
 }

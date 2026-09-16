@@ -3,9 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { CandlestickChart } = scope;
+  const { Container, CandlestickChart } = scope;
   return (
-<CandlestickChart
+<Container xl>
+  <CandlestickChart
   title="OLY · 24 sessions"
   labels={["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "D12", "D13", "D14", "D15", "D16", "D17", "D18", "D19", "D20", "D21", "D22", "D23", "D24"]}
   candles={[
@@ -38,7 +39,7 @@ export default function Example(scope: ExampleScope) {
     { label: "7-day average", values: [95.7, 95.6, 95.5, 95.7, 95.9, 96.0, 96.1, 96.2, 96.5, 96.9, 97.1, 97.3, 97.6, 97.9, 98.2, 98.3, 98.3, 98.5, 98.5, 98.4, 98.2, 98.2, 98.4, 98.5] },
     { label: "21-day average", values: [95.7, 95.6, 95.5, 95.7, 95.9, 96.0, 96.1, 96.2, 96.3, 96.5, 96.6, 96.7, 96.8, 97.0, 97.1, 97.2, 97.2, 97.3, 97.4, 97.4, 97.4, 97.5, 97.7, 97.9] }
   ]}
-  style={{ maxWidth: 560 }}
 />
+</Container>
   );
 }

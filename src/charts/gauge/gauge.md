@@ -5,11 +5,13 @@ A semicircular dial: a 180 degree top arc (muted track plus a tone-colored value
 ## Usage
 
 ```tsx
-<Card padded style={{ maxWidth: 200 }}>
-  <Column alignCenter>
-    <Gauge value={72} label="Uptime" />
-  </Column>
-</Card>
+<Container xxxs>
+  <Card padded>
+    <Column alignCenter>
+      <Gauge value={72} label="Uptime" />
+    </Column>
+  </Card>
+</Container>
 ```
 
 ## Variants
@@ -17,21 +19,25 @@ A semicircular dial: a 180 degree top arc (muted track plus a tone-colored value
 ### Success tone
 
 ```tsx
-<Card padded style={{ maxWidth: 200 }}>
-  <Column alignCenter>
-    <Gauge value={92} success label="Checks passing" />
-  </Column>
-</Card>
+<Container xxxs>
+  <Card padded>
+    <Column alignCenter>
+      <Gauge value={92} success label="Checks passing" />
+    </Column>
+  </Card>
+</Container>
 ```
 
 ### Warning tone
 
 ```tsx
-<Card padded style={{ maxWidth: 200 }}>
-  <Column alignCenter>
-    <Gauge value={81} warning label="Budget used" />
-  </Column>
-</Card>
+<Container xxxs>
+  <Card padded>
+    <Column alignCenter>
+      <Gauge value={81} warning label="Budget used" />
+    </Column>
+  </Card>
+</Container>
 ```
 
 ## Do & Don't
@@ -41,11 +47,13 @@ A semicircular dial: a 180 degree top arc (muted track plus a tone-colored value
 **Do** — Put a muted track behind the value arc, the percent readout in the semicircle's open center, and the label below the graphic.
 
 ```tsx
-<Card padded style={{ maxWidth: 200 }}>
-  <Column alignCenter>
-    <Gauge value={72} label="Uptime" />
-  </Column>
-</Card>
+<Container xxxs>
+  <Card padded>
+    <Column alignCenter>
+      <Gauge value={72} label="Uptime" />
+    </Column>
+  </Card>
+</Container>
 
 ```
 

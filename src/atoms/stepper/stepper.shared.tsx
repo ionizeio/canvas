@@ -21,6 +21,7 @@ import {
   type StyleProp,
   type ViewStyle,
   type TextStyle,
+  type LayoutStyle,
 } from "../../style/index.js";
 import { clamp } from "../../style/math.js";
 import { Icon } from "../icon/icon.js";
@@ -85,8 +86,8 @@ export interface StepperProps {
   large?: boolean;
   // State.
   disabled?: boolean;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 // The only thing a platform skin owns: the group shape, the ± button geometry and

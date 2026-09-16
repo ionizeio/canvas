@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Treemap } = scope;
+  const { Container, Treemap } = scope;
   return (
-<Treemap
+<Container xl>
+  <Treemap
   title="Storage by service"
-  style={{ maxWidth: 560 }}
   data={[
     { label: "Media", value: 620 },
     { label: "Backups", value: 340 },
@@ -18,5 +18,6 @@ export default function Example(scope: ExampleScope) {
     { label: "Other", value: 25 },
   ]}
 />
+</Container>
   );
 }

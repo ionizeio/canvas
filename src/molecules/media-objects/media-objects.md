@@ -27,11 +27,13 @@ your app that state is your own.)
 ```tsx
 <Stateful initial="">
   {(opened, setOpened) => (
-    <Column snug style={{ maxWidth: 480 }}>
-      <MediaObject onPress={() => setOpened("Rachel Chen")} bordered center avatar="RC" title="Rachel Chen" description="Engineering Lead" meta="admin" truncate />
-      <MediaObject onPress={() => setOpened("Ada Lovelace")} bordered center avatar="AL" title="Ada Lovelace" description="Staff Engineer" meta="2h ago" truncate />
-      <Typography muted>{opened === "" ? "No profile opened yet" : `Opened ${opened}'s profile`}</Typography>
-    </Column>
+    <Container lg>
+      <Column snug>
+        <MediaObject onPress={() => setOpened("Rachel Chen")} bordered center avatar="RC" title="Rachel Chen" description="Engineering Lead" meta="admin" truncate />
+        <MediaObject onPress={() => setOpened("Ada Lovelace")} bordered center avatar="AL" title="Ada Lovelace" description="Staff Engineer" meta="2h ago" truncate />
+        <Typography muted>{opened === "" ? "No profile opened yet" : `Opened ${opened}'s profile`}</Typography>
+      </Column>
+    </Container>
   )}
 </Stateful>
 ```
@@ -39,10 +41,12 @@ your app that state is your own.)
 ### Icon
 
 ```tsx
-<Column cozy style={{ maxWidth: 560 }}>
-  <MediaObject bordered start title="Security first" description="End-to-end encryption with automatic key rotation." icon={<Icon shield primary size={18} />} />
-  <MediaObject bordered start title="Real-time analytics" description="Live dashboards with sub-second refresh latency." icon={<Icon activity primary size={18} />} />
-</Column>
+<Container xl>
+  <Column cozy>
+    <MediaObject bordered start title="Security first" description="End-to-end encryption with automatic key rotation." icon={<Icon shield primary size={18} />} />
+    <MediaObject bordered start title="Real-time analytics" description="Live dashboards with sub-second refresh latency." icon={<Icon activity primary size={18} />} />
+  </Column>
+</Container>
 ```
 
 ### Action
@@ -53,10 +57,12 @@ wire, and the line underneath reports each press.
 ```tsx
 <Stateful initial={0}>
   {(invites, setInvites) => (
-    <Column snug style={{ maxWidth: 480 }}>
-      <MediaObject bordered center truncate src="/ada-lovelace.jpg" title="Ada Lovelace" description="ada@example.com" action={<Button outline small onPress={() => setInvites(invites + 1)}>Invite</Button>} />
-      <Typography muted>{invites === 0 ? "No invite sent yet" : `Invite sent ${invites} ${invites === 1 ? "time" : "times"}`}</Typography>
-    </Column>
+    <Container lg>
+      <Column snug>
+        <MediaObject bordered center truncate src="/ada-lovelace.jpg" title="Ada Lovelace" description="ada@example.com" action={<Button outline small onPress={() => setInvites(invites + 1)}>Invite</Button>} />
+        <Typography muted>{invites === 0 ? "No invite sent yet" : `Invite sent ${invites} ${invites === 1 ? "time" : "times"}`}</Typography>
+      </Column>
+    </Container>
   )}
 </Stateful>
 ```
@@ -64,19 +70,23 @@ wire, and the line underneath reports each press.
 ### Compact
 
 ```tsx
-<Column cozy style={{ maxWidth: 320 }}>
-  <MediaObject avatar="RC" title="Rachel Chen" description="rachel.chen@example.com" />
-  <MediaObject compact avatar="RC" title="Rachel Chen" description="rachel.chen@example.com" />
-</Column>
+<Container xs>
+  <Column cozy>
+    <MediaObject avatar="RC" title="Rachel Chen" description="rachel.chen@example.com" />
+    <MediaObject compact avatar="RC" title="Rachel Chen" description="rachel.chen@example.com" />
+  </Column>
+</Container>
 ```
 
 ### Bare row with meta
 
 ```tsx
-<Column snug style={{ maxWidth: 480 }}>
-  <MediaObject center truncate avatar="RC" title="Rachel Chen" description="Commented on the deploy pipeline." meta="1h" />
-  <MediaObject center truncate avatar="AL" title="Ada Lovelace" description="Pushed 3 commits to main." meta="2h" />
-</Column>
+<Container lg>
+  <Column snug>
+    <MediaObject center truncate avatar="RC" title="Rachel Chen" description="Commented on the deploy pipeline." meta="1h" />
+    <MediaObject center truncate avatar="AL" title="Ada Lovelace" description="Pushed 3 commits to main." meta="2h" />
+  </Column>
+</Container>
 ```
 
 ## Do & Don't
@@ -86,13 +96,17 @@ wire, and the line underneath reports each press.
 **Do** — Top-align with `start` so the avatar anchors to the first line of the title.
 
 ```tsx
-<MediaObject bordered start style={{ maxWidth: 480 }} src="/rachel-chen.jpg" title="Rachel Chen" description="Engineering Lead" body="Reviewed the latest pull request and left comments on the auth middleware changes. Need to discuss the token rotation approach before merging." />
+<Container lg>
+  <MediaObject bordered start src="/rachel-chen.jpg" title="Rachel Chen" description="Engineering Lead" body="Reviewed the latest pull request and left comments on the auth middleware changes. Need to discuss the token rotation approach before merging." />
+</Container>
 ```
 
 **Don't** — Centering the avatar against a multi-line body leaves it floating beside the middle of the text.
 
 ```tsx
-<MediaObject bordered center style={{ maxWidth: 480 }} src="/rachel-chen.jpg" title="Rachel Chen" description="Engineering Lead" body="Reviewed the latest pull request and left comments on the auth middleware changes. Need to discuss the token rotation approach before merging." />
+<Container lg>
+  <MediaObject bordered center src="/rachel-chen.jpg" title="Rachel Chen" description="Engineering Lead" body="Reviewed the latest pull request and left comments on the auth middleware changes. Need to discuss the token rotation approach before merging." />
+</Container>
 ```
 
 ### Icon
@@ -100,7 +114,9 @@ wire, and the line underneath reports each press.
 **Do** — Keep the lead icon box compact with an 18px glyph so it reads as a tidy lead affordance.
 
 ```tsx
-<MediaObject bordered start style={{ maxWidth: 480 }} title="Security first" description="End-to-end encryption with automatic key rotation." icon={<Icon shield primary size={18} />} />
+<Container lg>
+  <MediaObject bordered start title="Security first" description="End-to-end encryption with automatic key rotation." icon={<Icon shield primary size={18} />} />
+</Container>
 ```
 
 **Don't** — An oversized icon box throws off the optical balance with the two-line text.
@@ -122,11 +138,15 @@ wire, and the line underneath reports each press.
 **Do** — Pass `truncate` so long text clips in place and the trailing action stays pinned right.
 
 ```tsx
-<MediaObject bordered center truncate style={{ maxWidth: 480 }} src="/ada-lovelace.jpg" title="Ada Lovelace" description="ada.lovelace@analytical-engine.example.com" action={<Button outline small>Invite</Button>} />
+<Container lg>
+  <MediaObject bordered center truncate src="/ada-lovelace.jpg" title="Ada Lovelace" description="ada.lovelace@analytical-engine.example.com" action={<Button outline small>Invite</Button>} />
+</Container>
 ```
 
 **Don't** — Without truncation a long email wraps and pushes the trailing button out of alignment.
 
 ```tsx
-<MediaObject bordered center style={{ maxWidth: 320 }} src="/ada-lovelace.jpg" title="Ada Lovelace" description="ada.lovelace@analytical-engine.example.com" action={<Button outline small>Invite</Button>} />
+<Container xs>
+  <MediaObject bordered center src="/ada-lovelace.jpg" title="Ada Lovelace" description="ada.lovelace@analytical-engine.example.com" action={<Button outline small>Invite</Button>} />
+</Container>
 ```

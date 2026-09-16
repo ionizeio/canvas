@@ -1,6 +1,6 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { Animated, Easing } from "react-native";
-import { useReducedMotion, supportsNativeDriver, type View, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { useReducedMotion, supportsNativeDriver, type View, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { useInView } from "../../style/in-view.js";
 import { useRevealOrdinal } from "./reveal-context.js";
 
@@ -106,7 +106,7 @@ export interface RevealProps {
    * a wrapper that cannot be told how to sit in its parent forces callers to add a
    * second wrapper around it, which is worse.
    */
-  style?: StyleProp<ViewStyle>;
+  style?: LayoutStyle;
   /** E2E hook forwarded to the wrapper. */
   testID?: string;
 }

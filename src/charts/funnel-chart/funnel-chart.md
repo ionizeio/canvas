@@ -5,9 +5,9 @@ Stage-by-stage conversion: a column of centered trapezoids, each stage's top wid
 ## Usage
 
 ```tsx
-<FunnelChart
+<Container lg>
+  <FunnelChart
   title="Signup funnel"
-  style={{ maxWidth: 480 }}
   stages={[
     { label: "Visits", value: 12400 },
     { label: "Signups", value: 4200 },
@@ -15,6 +15,7 @@ Stage-by-stage conversion: a column of centered trapezoids, each stage's top wid
     { label: "Paid", value: 480 },
   ]}
 />
+</Container>
 ```
 
 ## Variants
@@ -22,10 +23,10 @@ Stage-by-stage conversion: a column of centered trapezoids, each stage's top wid
 ### Share of the first stage
 
 ```tsx
-<FunnelChart
+<Container lg>
+  <FunnelChart
   title="Checkout"
   share
-  style={{ maxWidth: 480 }}
   stages={[
     { label: "Cart", value: 8600 },
     { label: "Address", value: 5200 },
@@ -33,21 +34,23 @@ Stage-by-stage conversion: a column of centered trapezoids, each stage's top wid
     { label: "Placed", value: 3400 },
   ]}
 />
+</Container>
 ```
 
 ### Compact, inspected
 
 ```tsx
-<FunnelChart
+<Container lg>
+  <FunnelChart
   compact
   defaultSelected={1}
-  style={{ maxWidth: 480 }}
   stages={[
     { label: "Leads", value: 900 },
     { label: "Qualified", value: 340 },
     { label: "Closed", value: 120 },
   ]}
 />
+</Container>
 ```
 
 ## Do & Don't
@@ -57,25 +60,27 @@ Stage-by-stage conversion: a column of centered trapezoids, each stage's top wid
 **Do** - Order the stages widest first and let the taper carry the drop-off.
 
 ```tsx
-<FunnelChart
+<Container lg>
+  <FunnelChart
   title="Signup funnel"
-  style={{ maxWidth: 480 }}
   stages={[
     { label: "Visits", value: 12400 },
     { label: "Signups", value: 4200 },
     { label: "Paid", value: 480 },
   ]}
 />
+</Container>
 ```
 
 **Don't** - A funnel that widens mid-way is not a funnel; a stage exceeding its predecessor warns and reads as an error.
 
 ```tsx
-<FunnelChart
-  style={{ maxWidth: 480 }}
+<Container lg>
+  <FunnelChart
   stages={[
     { label: "Visits", value: 4200 },
     { label: "Signups", value: 12400 },
   ]}
 />
+</Container>
 ```

@@ -5,7 +5,8 @@ The decomposed-metric dashboard card: a preformatted headline `value` with its c
 ## Usage
 
 ```tsx
-<MetricBreakdown
+<Container md>
+  <MetricBreakdown
   value="3,771"
   label="Tokens issued"
   rate="1.39%"
@@ -13,7 +14,6 @@ The decomposed-metric dashboard card: a preformatted headline `value` with its c
   rateDestructive
   spark={[96, 104, 101, 110, 108, 112, 116, 114, 118, 116]}
   sparkUnit="req/s"
-  style={{ maxWidth: 420 }}
   breakdown={[
     { label: "authorization_code", value: 1842, delta: "+12%" },
     { label: "refresh_token", value: 1264, delta: "+4%" },
@@ -27,6 +27,7 @@ The decomposed-metric dashboard card: a preformatted headline `value` with its c
     { label: "unauthorized_client", count: 4, destructive: true },
   ]}
 />
+</Container>
 ```
 
 ## Variants
@@ -34,10 +35,10 @@ The decomposed-metric dashboard card: a preformatted headline `value` with its c
 ### Minimal
 
 ```tsx
-<MetricBreakdown
+<Container md>
+  <MetricBreakdown
   value="960"
   label="New sign-ups today"
-  style={{ maxWidth: 420 }}
   breakdown={[
     { label: "google", value: 412, delta: "+18%" },
     { label: "email", value: 318, delta: "+3%" },
@@ -45,12 +46,14 @@ The decomposed-metric dashboard card: a preformatted headline `value` with its c
     { label: "passkey", value: 88, delta: "+41%" },
   ]}
 />
+</Container>
 ```
 
 ### Rate and trend
 
 ```tsx
-<MetricBreakdown
+<Container md>
+  <MetricBreakdown
   value="25,874"
   label="Requests"
   rate="0.74%"
@@ -58,32 +61,34 @@ The decomposed-metric dashboard card: a preformatted headline `value` with its c
   rateSuccess
   spark={[180, 196, 188, 204, 210, 202, 214, 220, 208, 216]}
   sparkUnit="req/s"
-  style={{ maxWidth: 420 }}
 />
+</Container>
 ```
 
 ### Plain, inside a card
 
 ```tsx
-<Card padded style={{ maxWidth: 420 }}>
-  <MetricBreakdown
-    plain
-    compact
-    value="25,874"
-    label="Requests"
-    breakdown={[
-      { label: "GET", value: 18248, delta: "+8%" },
-      { label: "POST", value: 6104, delta: "+21%" },
-      { label: "PATCH", value: 1212, delta: "-2%", down: true },
-    ]}
-    chipsLabel="Top codes"
-    chips={[
-      { label: "404", count: 142, warning: true },
-      { label: "429", count: 38, warning: true },
-      { label: "500", count: 7, destructive: true },
-    ]}
-  />
-</Card>
+<Container md>
+  <Card padded>
+    <MetricBreakdown
+      plain
+      compact
+      value="25,874"
+      label="Requests"
+      breakdown={[
+        { label: "GET", value: 18248, delta: "+8%" },
+        { label: "POST", value: 6104, delta: "+21%" },
+        { label: "PATCH", value: 1212, delta: "-2%", down: true },
+      ]}
+      chipsLabel="Top codes"
+      chips={[
+        { label: "404", count: 142, warning: true },
+        { label: "429", count: 38, warning: true },
+        { label: "500", count: 7, destructive: true },
+      ]}
+    />
+  </Card>
+</Container>
 ```
 
 ## Do & Don't
@@ -93,18 +98,19 @@ The decomposed-metric dashboard card: a preformatted headline `value` with its c
 **Do** - Pass preformatted strings and semantic tone booleans; the card owns the header, trend, rows, and chip anatomy.
 
 ```tsx
-<MetricBreakdown
+<Container md>
+  <MetricBreakdown
   value="12.4k"
   label="Requests"
   rate="0.74%"
   rateLabel="Error rate"
   rateSuccess
-  style={{ maxWidth: 420 }}
   breakdown={[
     { label: "GET", value: 8, delta: "+8%" },
     { label: "POST", value: 4, delta: "+21%" },
   ]}
 />
+</Container>
 ```
 
 **Don't** - Rebuilding the header and trend from Text and Sparkline at the call site splits the anatomy the card owns and loses the rows' accessible shares.
@@ -113,6 +119,6 @@ The decomposed-metric dashboard card: a preformatted headline `value` with its c
 <View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 420, gap: 8 }}>
   <Text style={{ fontSize: 22, fontWeight: "600" }}>12.4k</Text>
   <Text style={{ fontSize: 11, color: tokens["muted-foreground"] }}>REQUESTS</Text>
-  <Sparkline line values={[96, 104, 110, 108, 116]} style={{ width: "100%" }} />
+  <Sparkline line values={[96, 104, 110, 108, 116]} />
 </View>
 ```

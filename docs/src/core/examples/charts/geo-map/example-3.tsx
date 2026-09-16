@@ -3,12 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { GeoMap } = scope;
+  const { Container, GeoMap } = scope;
   return (
-<GeoMap
+<Container xl>
+  <GeoMap
   title="Support tickets"
   defaultSelected={1}
-  style={{ maxWidth: 560 }}
   points={[
     { label: "Toronto", lat: 43.6532, lng: -79.3832, count: 310 },
     { label: "Dublin", lat: 53.3498, lng: -6.2603, count: 940 },
@@ -16,5 +16,6 @@ export default function Example(scope: ExampleScope) {
     { label: "Seoul", lat: 37.5665, lng: 126.978, count: 470 },
   ]}
 />
+</Container>
   );
 }

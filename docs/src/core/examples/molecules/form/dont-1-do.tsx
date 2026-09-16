@@ -3,18 +3,20 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Form, Input, Row, Column } = scope;
+  const { Form, Input, Row, Column, Container } = scope;
   return (
-<Form submitLabel="Save" style={{ width: 560, maxWidth: "100%" }}>
-  <Input label="Street address" placeholder="123 Market St" />
-  <Row cozy>
-    <Column fill>
-      <Input label="City" placeholder="San Francisco" />
-    </Column>
-    <Column fill>
-      <Input label="ZIP" placeholder="94103" />
-    </Column>
-  </Row>
-</Form>
+<Container xl>
+  <Form submitLabel="Save">
+    <Input label="Street address" placeholder="123 Market St" />
+    <Row cozy>
+      <Column fill>
+        <Input label="City" placeholder="San Francisco" />
+      </Column>
+      <Column fill>
+        <Input label="ZIP" placeholder="94103" />
+      </Column>
+    </Row>
+  </Form>
+</Container>
   );
 }

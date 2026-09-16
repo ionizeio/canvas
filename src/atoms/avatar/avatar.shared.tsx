@@ -1,12 +1,12 @@
 import { Children, cloneElement, isValidElement, useState, type ComponentType, type ReactElement, type ReactNode } from "react";
-import { View, Pressable, Text, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type ImageStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type ImageStyle, type LayoutStyle } from "../../style/index.js";
 import { Image } from "../image/image.js";
 
 // A platform-supplied surface for the initials fallback. iOS passes a GlassSurface
 // wrapper (real Liquid Glass) via createAvatar; web and Android pass nothing, so the
 // fallback stays the original plain, solid box. The glass path never enters the web or
 // Android bundle because only avatar.ios imports GlassSurface.
-export type AvatarSurface = ComponentType<{ style?: StyleProp<ViewStyle>; testID?: string; children?: ReactNode }>;
+export type AvatarSurface = ComponentType<{ style?: LayoutStyle; testID?: string; children?: ReactNode }>;
 
 // Shared Avatar shell. The structure (a photo when the account has one, falling
 // back to one or two initials in white on a deterministic per-name colour), the
@@ -93,7 +93,7 @@ export interface AvatarProps {
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** For layout composition only; overlap/stacking is owned by AvatarGroup, not this prop. */
-  style?: StyleProp<ViewStyle>;
+  style?: LayoutStyle;
 }
 
 // Diameter per size: tiny is the disc that sits inside a capsule (the AvatarMenu

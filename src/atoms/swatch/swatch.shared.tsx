@@ -8,6 +8,7 @@ import {
   MONO_FONT,
   type StyleProp,
   type ViewStyle,
+  type LayoutStyle,
 } from "../../style/index.js";
 import { type SwatchSkin } from "./swatch.styles.js";
 
@@ -55,7 +56,7 @@ export interface SwatchProps {
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** For layout composition only (not styling): the fill, radius, and size come from props. */
-  style?: StyleProp<ViewStyle>;
+  style?: LayoutStyle;
 }
 
 // Size precedence when more than one is passed: first match wins.

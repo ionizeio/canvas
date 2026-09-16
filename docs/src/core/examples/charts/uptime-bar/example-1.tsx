@@ -3,13 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { UptimeBar } = scope;
+  const { Container, UptimeBar } = scope;
   return (
-<UptimeBar
+<Container lg>
+  <UptimeBar
   label="CDN uptime"
   compact
-  style={{ maxWidth: 480 }}
   periods={Array.from({ length: 60 }, (_, i) => (i === 40 ? { degraded: true } : {}))}
 />
+</Container>
   );
 }

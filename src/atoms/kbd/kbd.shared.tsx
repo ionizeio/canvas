@@ -1,5 +1,5 @@
 import { Fragment, type ReactNode } from "react";
-import { View, Text, useHugStyle, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Text, useHugStyle, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
 
 // Shared Kbd shell. Kbd is a keyboard shortcut indicator: a small bordered, slightly
 // raised key cap with monospace-ish small text. A single key comes from `children`
@@ -43,8 +43,8 @@ export interface KbdProps {
   sequence?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 // The cap surface: the muted fill and the hairline border color (platform-neutral,

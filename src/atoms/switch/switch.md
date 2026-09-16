@@ -45,12 +45,14 @@ On the web, Space activates the focused control on key release, and Enter also a
 ### Settings list
 
 ```tsx
-<Column relaxed style={{ width: 320, maxWidth: "100%" }}>
-  <Switch defaultChecked description="Show your availability to teammates.">Available to chat</Switch>
-  <Switch defaultChecked>Sound effects</Switch>
-  <Switch>Weekly digest</Switch>
-  <Switch defaultChecked>Push notifications</Switch>
-</Column>
+<Container xs>
+  <Column relaxed>
+    <Switch defaultChecked description="Show your availability to teammates.">Available to chat</Switch>
+    <Switch defaultChecked>Sound effects</Switch>
+    <Switch>Weekly digest</Switch>
+    <Switch defaultChecked>Push notifications</Switch>
+  </Column>
+</Container>
 ```
 
 ## Do & Don't
@@ -60,7 +62,9 @@ On the web, Space activates the focused control on key release, and Enter also a
 **Do** — Keep the standard input-colored off track so off stays clearly interactive and distinct from a disabled control.
 
 ```tsx
-<Switch style={{ maxWidth: 280 }}>Two-factor auth</Switch>
+<Container xxs>
+  <Switch>Two-factor auth</Switch>
+</Container>
 ```
 
 **Don't** — A washed-out off track reads as disabled, so users can't tell the switch is simply off versus locked.
@@ -79,10 +83,12 @@ On the web, Space activates the focused control on key release, and Enter also a
 **Do** — Reserve the on switch for instantly reversible settings; route irreversible actions through a button plus confirmation.
 
 ```tsx
-<Column cozy alignStart style={{ maxWidth: 280 }}>
-  <Switch defaultChecked>Auto-save drafts</Switch>
-  <Button destructive small>Delete account…</Button>
-</Column>
+<Container xxs>
+  <Column cozy alignStart>
+    <Switch defaultChecked>Auto-save drafts</Switch>
+    <Button destructive small>Delete account…</Button>
+  </Column>
+</Container>
 ```
 
 **Don't** — A switch applies instantly; wiring an on toggle to an irreversible action invites accidental, unconfirmed data loss.
@@ -99,7 +105,9 @@ On the web, Space activates the focused control on key release, and Enter also a
 **Do** — Label the setting, not the state; the switch communicates on or off.
 
 ```tsx
-<Switch defaultChecked style={{ maxWidth: 280 }}>Notifications</Switch>
+<Container xxs>
+  <Switch defaultChecked>Notifications</Switch>
+</Container>
 ```
 
 **Don't** — An On/Off label duplicates what the switch position already shows.

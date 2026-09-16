@@ -3,8 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stats } = scope;
+  const { Stats, Container } = scope;
   return (
-<Stats style={{ maxWidth: 220 }} items={[{ label: "Requests", value: "24.5k", delta: "+8.2%", spark: [4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24] }]} />
+<Container xxxs>
+  <Stats items={[{ label: "Requests", value: "24.5k", delta: "+8.2%", spark: [4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24] }]} />
+</Container>
   );
 }

@@ -3,15 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Icon } = scope;
+  const { Card, Icon, Container } = scope;
   return (
-<Card
+<Container sm>
+  <Card
   title="Identity"
   icon={<Icon user muted size={16} />}
   description="Core attributes"
   body="Name, primary email, and sign-in methods for this account."
   footer="Updated 2 minutes ago"
-  style={{ maxWidth: 360 }}
 />
+</Container>
   );
 }

@@ -2,7 +2,7 @@ import { forwardRef, type ReactNode } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, useTheme, useControllableState, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, useTheme, useControllableState, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
 import { CheckboxContent, CHECKBOX_ROW } from "./indicator/shared.js";
 
 // Shared Checkbox shell. Uses React Native's primitives DIRECTLY and reads the
@@ -50,8 +50,8 @@ export interface CheckboxProps {
   large?: boolean;
   // State.
   disabled?: boolean;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 export type Size = "small" | "base" | "large";

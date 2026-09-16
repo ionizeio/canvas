@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Badge, DataTable, Progress, DescriptionList, Divider, Emblem, Icon, AlertDialog, useToast } from "@nannier-com/canvas";
+import { Row, Column, Card, Typography, Button, Badge, DataTable, Progress, DescriptionList, Divider, Emblem, Icon, AlertDialog, useToast, Grid } from "@nannier-com/canvas";
 import type { TemplateDoc } from "../types";
 
 // Billing settings built from real Canvas components: current plan + usage
@@ -30,8 +30,8 @@ function PlanUsageLive() {
   const { toast } = useToast();
   const [cancelOpen, setCancelOpen] = useState(false);
   return (
-    <Row relaxed wrap>
-      <Card grow style={{ flexBasis: 300, minWidth: 280 }}>
+    <Grid minTileWidth={280} relaxed>
+      <Card grow>
         <Column cozy>
           <Row between alignCenter>
             <Column tight fill>
@@ -80,7 +80,7 @@ function PlanUsageLive() {
           ) : null}
         </Column>
       </Card>
-      <Card grow style={{ flexBasis: 300, minWidth: 280 }}>
+      <Card grow>
         <Column cozy>
           <Typography h4>Usage this cycle</Typography>
           {USAGE.map((u) => (
@@ -95,7 +95,7 @@ function PlanUsageLive() {
           <Typography tiny>Usage resets at the start of each billing cycle.</Typography>
         </Column>
       </Card>
-    </Row>
+    </Grid>
   );
 }
 

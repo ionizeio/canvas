@@ -3,16 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { ComposedChart } = scope;
+  const { Container, ComposedChart } = scope;
   return (
-<ComposedChart
+<Container xl>
+  <ComposedChart
   title="Revenue and margin"
   labels={["Q1", "Q2", "Q3", "Q4"]}
-  style={{ maxWidth: 560 }}
   series={[
     { label: "Revenue", values: [420, 510, 480, 620] },
     { label: "Margin", values: [110, 170, 150, 240], line: true },
   ]}
 />
+</Container>
   );
 }

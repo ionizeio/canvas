@@ -14,6 +14,7 @@ import {
   devWarn,
   type StyleProp,
   type ViewStyle,
+  type LayoutStyle,
 } from "../../style/index.js";
 import { GESTURE_SURFACE, useWheel } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
@@ -124,8 +125,8 @@ export interface GeoMapProps {
   onSelectPlaces?: (indices: number[]) => void;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 

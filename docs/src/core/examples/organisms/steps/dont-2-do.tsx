@@ -3,10 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Steps } = scope;
+  const { Steps, Container } = scope;
   return (
-<View style={{ maxWidth: 320 }}>
+<Container xs>
   <Steps progress current={0} steps={[]} label="Setup progress" value={68} />
-</View>
+</Container>
   );
 }

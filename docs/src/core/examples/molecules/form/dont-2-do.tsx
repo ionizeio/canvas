@@ -3,15 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Form, FormSection, Input } = scope;
+  const { Card, Form, FormSection, Input, Container } = scope;
   return (
-<Form submitLabel="Save" style={{ width: 560, maxWidth: "100%" }}>
-  <FormSection title="Personal info" description="Displayed on your public profile.">
-    <Input label="Full name" defaultValue="Rachel Chen" />
-  </FormSection>
-  <FormSection title="Billing" description="Used for invoices and receipts.">
-    <Input label="Card number" defaultValue="•••• 4242" />
-  </FormSection>
-</Form>
+<Container xl>
+  <Form submitLabel="Save">
+    <FormSection title="Personal info" description="Displayed on your public profile.">
+      <Input label="Full name" defaultValue="Rachel Chen" />
+    </FormSection>
+    <FormSection title="Billing" description="Used for invoices and receipts.">
+      <Input label="Card number" defaultValue="•••• 4242" />
+    </FormSection>
+  </Form>
+</Container>
   );
 }

@@ -158,3 +158,41 @@ describe("animation length", () => {
     expect(offenders).toEqual([]);
   });
 });
+
+describe("widths come from the parent", () => {
+  // A component never renders AT a width of its own (src/style/sizing.ts): it is
+  // FILL or HUG and the parent layout container provides the bounds. The pattern
+  // this keeps out is the pre-layout-tier idiom `{ width: <px>, maxWidth: "100%" }`
+  // on a component root (a fixed desktop width that shrinks in narrower parents),
+  // which is how every field, dialog, and chart once defended itself against a
+  // content-sized parent. The exceptions are the bounds providers themselves: the
+  // shells that own a rail width (Sidebar, FilterPanel), whose width IS the layout.
+  const SHELLS = new Set([
+    "src/organisms/sidebar/sidebar.styles.ts",
+    "src/organisms/filter-panel/filter-panel.styles.ts",
+  ]);
+
+  it("no component renders at a fixed width capped at 100%", () => {
+    const offenders: string[] = [];
+    for (const { file, text } of sources) {
+      if (SHELLS.has(file)) continue;
+      text.split("\n").forEach((line, i) => {
+        if (/\bwidth:(?!\s*"100%")[^,}]+,\s*maxWidth:\s*"100%"/.test(line)) offenders.push(`${file}:${i + 1}`);
+      });
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it("every numeric maxWidth in the kit is a step of the width scale", () => {
+    const steps = new Set([192, 256, 320, 384, 448, 512, 576, 672, 768, 896, 1024, 1152, 1280]);
+    const offenders: string[] = [];
+    for (const { file, text } of sources) {
+      text.split("\n").forEach((line, i) => {
+        for (const m of line.matchAll(/maxWidth:\s*(\d+)/g)) {
+          if (!steps.has(Number(m[1]))) offenders.push(`${file}:${i + 1} maxWidth ${m[1]}`);
+        }
+      });
+    }
+    expect(offenders).toEqual([]);
+  });
+});

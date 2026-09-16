@@ -3,9 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { MetricBreakdown } = scope;
+  const { Container, MetricBreakdown } = scope;
   return (
-<MetricBreakdown
+<Container md>
+  <MetricBreakdown
   value="25,874"
   label="Requests"
   rate="0.74%"
@@ -13,7 +14,7 @@ export default function Example(scope: ExampleScope) {
   rateSuccess
   spark={[180, 196, 188, 204, 210, 202, 214, 220, 208, 216]}
   sparkUnit="req/s"
-  style={{ maxWidth: 420 }}
 />
+</Container>
   );
 }

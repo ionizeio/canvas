@@ -3,9 +3,9 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Tabs } = scope;
+  const { Tabs, Container } = scope;
   return (
-<View style={{ width: 320, maxWidth: "100%" }}>
+<Container xs>
   <Tabs
     tabs={[
       "General",
@@ -17,6 +17,6 @@ export default function Example(scope: ExampleScope) {
     ]}
     defaultActive={0}
   />
-</View>
+</Container>
   );
 }

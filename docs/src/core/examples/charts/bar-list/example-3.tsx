@@ -3,21 +3,23 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Typography, Column, BarList } = scope;
+  const { Card, Typography, Column, Container, BarList } = scope;
   return (
-<Card padded style={{ maxWidth: 420 }}>
-  <Column>
-    <Typography h4>This week</Typography>
-    <BarList
-      plain
-      compact
-      items={[
-        { label: "Deploys", value: 42 },
-        { label: "Rollbacks", value: 3, chart4: true },
-        { label: "Incidents", value: 1, chart8: true },
-      ]}
-    />
-  </Column>
-</Card>
+<Container md>
+  <Card padded>
+    <Column>
+      <Typography h4>This week</Typography>
+      <BarList
+        plain
+        compact
+        items={[
+          { label: "Deploys", value: 42 },
+          { label: "Rollbacks", value: 3, chart4: true },
+          { label: "Incidents", value: 1, chart8: true },
+        ]}
+      />
+    </Column>
+  </Card>
+</Container>
   );
 }

@@ -41,18 +41,14 @@ export interface CellMetrics {
   label: TextStyle;
 }
 
-// Per-density sizes for the week/day timeline views. The week and day containers
-// carry a fixed desktop-first width plus maxWidth:100%; the day columns flex, so
-// the same layout scales down to a phone without a separate breakpoint.
+// Per-density sizes for the week/day timeline views. The containers are FILL and
+// the day columns flex, so the same layout scales to any parent without a
+// separate breakpoint.
 export interface TimelineMetrics {
   /** One hour row, in px; event-block geometry multiplies against this. */
   hourHeight: number;
   /** The left hour-axis rail width. */
   axisWidth: number;
-  /** The week-view container width (capped at 100% of the parent). */
-  weekWidth: number;
-  /** The day-view container width (capped at 100% of the parent). */
-  dayWidth: number;
   /** The day-peek overlay card width. */
   peekWidth: number;
 }
@@ -244,8 +240,8 @@ export const webSkin: CalendarSkin = {
     st.selected || st.today ? { backgroundColor: t["primary-foreground"] } : { backgroundColor: t.primary },
 
   timeline: {
-    compact: { hourHeight: 40, axisWidth: 40, weekWidth: 448, dayWidth: 320, peekWidth: 272 },
-    default: { hourHeight: 48, axisWidth: 44, weekWidth: 544, dayWidth: 360, peekWidth: 300 },
+    compact: { hourHeight: 40, axisWidth: 40, peekWidth: 272 },
+    default: { hourHeight: 48, axisWidth: 44, peekWidth: 300 },
   },
   hourLabel: (t) => ({ fontSize: 10, lineHeight: 14, color: t["muted-foreground"] }),
   slotLine: (t) => ({ borderTopWidth: 1, borderTopColor: t.border }),
@@ -364,8 +360,8 @@ export const iosSkin: CalendarSkin = {
 
   // Slightly taller hour rows in the iOS calendar's airier spirit.
   timeline: {
-    compact: { hourHeight: 44, axisWidth: 44, weekWidth: 460, dayWidth: 330, peekWidth: 288 },
-    default: { hourHeight: 50, axisWidth: 48, weekWidth: 560, dayWidth: 368, peekWidth: 320 },
+    compact: { hourHeight: 44, axisWidth: 44, peekWidth: 288 },
+    default: { hourHeight: 50, axisWidth: 48, peekWidth: 320 },
   },
   hourLabel: (t) => ({ fontSize: 11, lineHeight: 13, fontWeight: "500", color: t["muted-foreground"] }),
   slotLine: (t) => ({ borderTopWidth: 1, borderTopColor: t.border }),
@@ -483,8 +479,8 @@ export const androidSkin: CalendarSkin = {
 
   // M3 schedule rows lean taller for the 48dp-ish touch rhythm.
   timeline: {
-    compact: { hourHeight: 44, axisWidth: 44, weekWidth: 460, dayWidth: 320, peekWidth: 272 },
-    default: { hourHeight: 52, axisWidth: 48, weekWidth: 560, dayWidth: 360, peekWidth: 304 },
+    compact: { hourHeight: 44, axisWidth: 44, peekWidth: 272 },
+    default: { hourHeight: 52, axisWidth: 48, peekWidth: 304 },
   },
   hourLabel: (t) => ({ fontSize: 11, lineHeight: 16, fontWeight: "500", color: t["muted-foreground"] }),
   slotLine: (t) => ({ borderTopWidth: 1, borderTopColor: t.border }),

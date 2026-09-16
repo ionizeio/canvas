@@ -3,11 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { MediaObject, Column } = scope;
+  const { MediaObject, Column, Container } = scope;
   return (
-<Column cozy style={{ maxWidth: 320 }}>
-  <MediaObject avatar="RC" title="Rachel Chen" description="rachel.chen@example.com" />
-  <MediaObject compact avatar="RC" title="Rachel Chen" description="rachel.chen@example.com" />
-</Column>
+<Container xs>
+  <Column cozy>
+    <MediaObject avatar="RC" title="Rachel Chen" description="rachel.chen@example.com" />
+    <MediaObject compact avatar="RC" title="Rachel Chen" description="rachel.chen@example.com" />
+  </Column>
+</Container>
   );
 }

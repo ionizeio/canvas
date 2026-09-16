@@ -3,12 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { BarList } = scope;
+  const { Container, BarList } = scope;
   return (
-<BarList
+<Container md>
+  <BarList
   title="Sign-up sources"
   share
-  style={{ maxWidth: 420 }}
   items={[
     { label: "google", value: 412 },
     { label: "email", value: 318 },
@@ -16,5 +16,6 @@ export default function Example(scope: ExampleScope) {
     { label: "passkey", value: 88 },
   ]}
 />
+</Container>
   );
 }

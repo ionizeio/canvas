@@ -3,17 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { ComposedChart } = scope;
+  const { Container, ComposedChart } = scope;
   return (
-<ComposedChart
+<Container xl>
+  <ComposedChart
   title="Traffic and conversions"
   labels={["Mon", "Tue", "Wed", "Thu", "Fri"]}
   curved
-  style={{ maxWidth: 560 }}
   series={[
     { label: "Sessions", values: [1200, 1420, 1310, 1680, 1540], area: true },
     { label: "Sign-ups", values: [240, 310, 280, 420, 380] },
   ]}
 />
+</Container>
   );
 }

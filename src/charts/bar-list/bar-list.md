@@ -5,9 +5,9 @@ Ranked label and value rows, each with a color swatch, a truncating label, a rig
 ## Usage
 
 ```tsx
-<BarList
+<Container md>
+  <BarList
   title="Top pages"
-  style={{ maxWidth: 420 }}
   items={[
     { label: "/pricing", value: 18400, delta: "+12%" },
     { label: "/docs", value: 12100, delta: "+4%" },
@@ -15,6 +15,7 @@ Ranked label and value rows, each with a color swatch, a truncating label, a rig
     { label: "/changelog", value: 5300, delta: "+1%" },
   ]}
 />
+</Container>
 ```
 
 ## Variants
@@ -22,10 +23,10 @@ Ranked label and value rows, each with a color swatch, a truncating label, a rig
 ### Share of total
 
 ```tsx
-<BarList
+<Container md>
+  <BarList
   title="Sign-up sources"
   share
-  style={{ maxWidth: 420 }}
   items={[
     { label: "google", value: 412 },
     { label: "email", value: 318 },
@@ -33,40 +34,44 @@ Ranked label and value rows, each with a color swatch, a truncating label, a rig
     { label: "passkey", value: 88 },
   ]}
 />
+</Container>
 ```
 
 ### Drill-in rows
 
 ```tsx
-<BarList
+<Container md>
+  <BarList
   title="Top referrers"
   onPressItem={() => {}}
-  style={{ maxWidth: 420 }}
   items={[
     { label: "news.ycombinator.com", value: 4210, delta: "+18%" },
     { label: "reddit.com", value: 2380, delta: "-6%", down: true },
     { label: "linkedin.com", value: 1240, delta: "+2%" },
   ]}
 />
+</Container>
 ```
 
 ### Plain, inside a card
 
 ```tsx
-<Card padded style={{ maxWidth: 420 }}>
-  <Column>
-    <Typography h4>This week</Typography>
-    <BarList
-      plain
-      compact
-      items={[
-        { label: "Deploys", value: 42 },
-        { label: "Rollbacks", value: 3, chart4: true },
-        { label: "Incidents", value: 1, chart8: true },
-      ]}
-    />
-  </Column>
-</Card>
+<Container md>
+  <Card padded>
+    <Column>
+      <Typography h4>This week</Typography>
+      <BarList
+        plain
+        compact
+        items={[
+          { label: "Deploys", value: 42 },
+          { label: "Rollbacks", value: 3, chart4: true },
+          { label: "Incidents", value: 1, chart8: true },
+        ]}
+      />
+    </Column>
+  </Card>
+</Container>
 ```
 
 ## Do & Don't
@@ -76,14 +81,15 @@ Ranked label and value rows, each with a color swatch, a truncating label, a rig
 **Do** - Let the component own the whole row anatomy: swatch, label, value, delta, and the proportional bar.
 
 ```tsx
-<BarList
+<Container md>
+  <BarList
   title="Top pages"
-  style={{ maxWidth: 420 }}
   items={[
     { label: "/pricing", value: 18400, delta: "+12%" },
     { label: "/docs", value: 12100, delta: "-4%", down: true },
   ]}
 />
+</Container>
 ```
 
 **Don't** - A hand-rolled row of Text and colored Views splits the anatomy, drifts from the type scale, and hides its share from assistive tech.

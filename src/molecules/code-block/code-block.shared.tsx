@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { type GestureResponderEvent, StyleSheet } from "react-native";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
-import { View, Pressable, Text, ScrollView, useTheme, useControllableState, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, devWarn, useMinTargetSlop, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type TouchTargetSkin } from "../../style/index.js";
+import { View, Pressable, Text, ScrollView, useTheme, useControllableState, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, devWarn, useMinTargetSlop, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type TouchTargetSkin, type LayoutStyle } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { MONO, type Variant } from "./code-block.styles.js";
 import { tokenize, syntaxColor, type CodeToken } from "./tokenize.js";
@@ -226,8 +226,8 @@ export interface CodeBlockProps {
   /** E2E hook forwarded to the root element. */
   testID?: string;
 
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 // Variant precedence when more than one is passed: first match wins.

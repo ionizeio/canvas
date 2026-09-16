@@ -3,9 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { DepthChart } = scope;
+  const { Container, DepthChart } = scope;
   return (
-<DepthChart
+<Container md>
+  <DepthChart
   title="OLY · thin book"
   compact
   hideAxes
@@ -23,7 +24,7 @@ export default function Example(scope: ExampleScope) {
     { price: 192.05, size: 350 },
     { price: 192.2, size: 470 }
   ]}
-  style={{ maxWidth: 420 }}
 />
+</Container>
   );
 }

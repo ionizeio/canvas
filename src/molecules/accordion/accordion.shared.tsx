@@ -12,6 +12,7 @@ import {
   type StyleProp,
   type ViewStyle,
   type TextStyle,
+  type LayoutStyle,
 } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 
@@ -139,8 +140,8 @@ export interface AccordionProps {
   disabled?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 // Enable LayoutAnimation on old-arch Android (off by default there); a no-op on iOS, web, and the

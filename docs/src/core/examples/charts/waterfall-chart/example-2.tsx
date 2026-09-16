@@ -3,12 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { WaterfallChart } = scope;
+  const { Container, WaterfallChart } = scope;
   return (
-<WaterfallChart
+<Container xl>
+  <WaterfallChart
   compact
   defaultSelected={2}
-  style={{ maxWidth: 560 }}
   steps={[
     { label: "Start", value: 100, total: true },
     { label: "Wins", value: 30 },
@@ -16,5 +16,6 @@ export default function Example(scope: ExampleScope) {
     { label: "End", total: true },
   ]}
 />
+</Container>
   );
 }

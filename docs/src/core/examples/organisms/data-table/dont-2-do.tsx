@@ -3,16 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Select, Typography, Row, Column } = scope;
+  const { Card, Select, Typography, Row, Column, Container } = scope;
   return (
-<Card flat padded style={{ maxWidth: 520 }}>
-  <Row snug alignCenter between>
-    <Row snug alignCenter>
-      <Typography tiny muted>Status:</Typography>
-      <Column><Select value="All" options={["All", "Active", "Inactive"]} small /></Column>
-    </Row>
-    <Typography tiny muted>142 results</Typography>
-  </Row>
-</Card>
+<Container lg>
+    <Card flat padded>
+      <Row snug alignCenter between>
+        <Row snug alignCenter>
+          <Typography tiny muted>Status:</Typography>
+          <Column><Select value="All" options={["All", "Active", "Inactive"]} small /></Column>
+        </Row>
+        <Typography tiny muted>142 results</Typography>
+      </Row>
+    </Card>
+</Container>
   );
 }

@@ -3,12 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Column, ProgressRing } = scope;
+  const { Card, Column, Container, ProgressRing } = scope;
   return (
-<Card padded style={{ maxWidth: 200 }}>
-  <Column alignCenter>
-    <ProgressRing value={81} warning compact label="Budget used" />
-  </Column>
-</Card>
+<Container xxxs>
+  <Card padded>
+    <Column alignCenter>
+      <ProgressRing value={81} warning compact label="Budget used" />
+    </Column>
+  </Card>
+</Container>
   );
 }

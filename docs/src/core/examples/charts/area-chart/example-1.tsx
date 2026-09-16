@@ -3,16 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { AreaChart } = scope;
+  const { Container, AreaChart } = scope;
   return (
-<AreaChart
+<Container xl>
+  <AreaChart
   title="Signups"
   labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]}
   series={[
     { label: "Total", values: [120, 138, 151, 149, 168, 184, 197, 212, 208, 231, 252, 266] },
     { label: "Paid", values: [42, 51, 58, 63, 71, 84, 92, 104, 101, 118, 131, 142] }
   ]}
-  style={{ maxWidth: 560 }}
 />
+</Container>
   );
 }

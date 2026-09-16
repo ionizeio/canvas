@@ -148,14 +148,16 @@ Pass `ref` to access the interactive trigger, preserving overlay measurement. Us
 **Do** — Match the default select to sibling inputs at the same height so the form row lines up.
 
 ```tsx
-<Row alignEnd cozy style={{ maxWidth: 420 }}>
-  <Column fill>
-    <Input label="City" defaultValue="Austin" />
-  </Column>
-  <Column fill>
-    <Select label="State" defaultValue="Texas" options={["Texas", "Oregon"]} />
-  </Column>
-</Row>
+<Container md>
+  <Row alignEnd cozy>
+    <Column fill>
+      <Input label="City" defaultValue="Austin" />
+    </Column>
+    <Column fill>
+      <Select label="State" defaultValue="Texas" options={["Texas", "Oregon"]} />
+    </Column>
+  </Row>
+</Container>
 ```
 
 **Don't** — A default select next to a taller lg input leaves the row baselines misaligned.
@@ -184,11 +186,11 @@ Pass `ref` to access the interactive trigger, preserving overlay measurement. Us
 **Don't** — Tiny option text inside a tall control wastes the height and looks like an accidental mismatch.
 
 ```tsx
-<View style={{ maxWidth: 320 }}>
+<Container xs>
   <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Plan</Text>
   <Pressable style={{ height: 40, flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12 }} accessibilityRole="button">
     <Text style={{ fontSize: 12, lineHeight: 16, color: tokens.foreground }}>Starter</Text>
     <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>▾</Text>
   </Pressable>
-</View>
+</Container>
 ```

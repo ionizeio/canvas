@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Animated, AccessibilityInfo } from "react-native";
-import { View, Text, Row, Column, useTheme, alpha } from "@nannier-com/canvas";
+import { View, Text, Row, Column, useTheme, alpha, Container } from "@nannier-com/canvas";
 import Svg, { Defs, RadialGradient, Stop, Rect } from "react-native-svg";
 import { geist, geistMono } from "../ui/fonts";
 import { MiniBtn, type CatTile } from "./tile";
@@ -96,55 +96,57 @@ function AccessibilityPreview() {
 function DensityPreview() {
   const { tokens } = useTheme();
   return (
-    <Row tight style={{ width: 200, maxWidth: "100%" }}>
-      <Column
-        flush
-        center
-        alignCenter
-        fill
-        style={{
-          backgroundColor: tokens.card,
-          borderWidth: 1,
-          borderColor: tokens.border,
-          borderRadius: 4,
-          // The 4 / 8 / 12 padding ramp is the subject of this tile, so all three stay
-          // literal here rather than one of them becoming the `padTight` boolean.
-          padding: 4,
-        }}
-      >
-        <Text style={{ fontFamily: geist("400"), fontSize: 8, color: tokens.foreground }}>Compact</Text>
-      </Column>
-      <Column
-        flush
-        center
-        alignCenter
-        fill
-        style={{
-          backgroundColor: tokens.primary,
-          borderWidth: 1,
-          borderColor: tokens.primary,
-          borderRadius: 4,
-          padding: 8,
-        }}
-      >
-        <Text style={{ fontFamily: geist("400"), fontSize: 8, color: tokens["primary-foreground"] }}>Regular</Text>
-      </Column>
-      <Column
-        flush
-        center
-        alignCenter
-        fill
-        style={{
-          backgroundColor: tokens.card,
-          borderWidth: 1,
-          borderColor: tokens.border,
-          borderRadius: 4,
-          padding: 12,
-        }}
-      >
-        <Text style={{ fontFamily: geist("400"), fontSize: 8, color: tokens.foreground }}>Comfy</Text>
-      </Column>
-    </Row>
+    <Container xxxs start>
+      <Row tight>
+        <Column
+          flush
+          center
+          alignCenter
+          fill
+          style={{
+            backgroundColor: tokens.card,
+            borderWidth: 1,
+            borderColor: tokens.border,
+            borderRadius: 4,
+            // The 4 / 8 / 12 padding ramp is the subject of this tile, so all three stay
+            // literal here rather than one of them becoming the `padTight` boolean.
+            padding: 4,
+          }}
+        >
+          <Text style={{ fontFamily: geist("400"), fontSize: 8, color: tokens.foreground }}>Compact</Text>
+        </Column>
+        <Column
+          flush
+          center
+          alignCenter
+          fill
+          style={{
+            backgroundColor: tokens.primary,
+            borderWidth: 1,
+            borderColor: tokens.primary,
+            borderRadius: 4,
+            padding: 8,
+          }}
+        >
+          <Text style={{ fontFamily: geist("400"), fontSize: 8, color: tokens["primary-foreground"] }}>Regular</Text>
+        </Column>
+        <Column
+          flush
+          center
+          alignCenter
+          fill
+          style={{
+            backgroundColor: tokens.card,
+            borderWidth: 1,
+            borderColor: tokens.border,
+            borderRadius: 4,
+            padding: 12,
+          }}
+        >
+          <Text style={{ fontFamily: geist("400"), fontSize: 8, color: tokens.foreground }}>Comfy</Text>
+        </Column>
+      </Row>
+    </Container>
   );
 }
 
@@ -232,13 +234,15 @@ function LoadingPreview() {
   const opacity = usePulse();
   const fill = alpha(tokens.muted, 0.6);
   return (
-    <Row snug alignCenter style={{ width: 200, maxWidth: "100%" }}>
-      <Animated.View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: fill, opacity }} />
-      <View style={{ flex: 1, gap: 6 }}>
-        <Animated.View style={{ height: 8, borderRadius: 4, backgroundColor: fill, opacity }} />
-        <Animated.View style={{ height: 8, width: "75%", borderRadius: 4, backgroundColor: fill, opacity }} />
-      </View>
-    </Row>
+    <Container xxxs start>
+      <Row snug alignCenter>
+        <Animated.View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: fill, opacity }} />
+        <View style={{ flex: 1, gap: 6 }}>
+          <Animated.View style={{ height: 8, borderRadius: 4, backgroundColor: fill, opacity }} />
+          <Animated.View style={{ height: 8, width: "75%", borderRadius: 4, backgroundColor: fill, opacity }} />
+        </View>
+      </Row>
+    </Container>
   );
 }
 

@@ -12,10 +12,12 @@ Form is a composition surface: you stitch the field atoms as children and keep t
 <Stateful initial={0}>
   {(saves, setSaves) => (
     <Column snug>
-      <Form submitLabel="Sign in" onSubmit={() => setSaves(saves + 1)} style={{ width: 360, maxWidth: "100%" }}>
-        <Input label="Email" placeholder="you@example.com" />
-        <Input label="Password" />
-      </Form>
+      <Container sm>
+        <Form submitLabel="Sign in" onSubmit={() => setSaves(saves + 1)}>
+          <Input label="Email" placeholder="you@example.com" />
+          <Input label="Password" />
+        </Form>
+      </Container>
       <Typography muted>{saves === 0 ? "Not submitted yet" : `Submitted ${saves} ${saves === 1 ? "time" : "times"}`}</Typography>
     </Column>
   )}
@@ -27,45 +29,53 @@ Form is a composition surface: you stitch the field atoms as children and keep t
 ### Two-column
 
 ```tsx
-<Form twoColumn submitLabel="Create" cancelLabel="Cancel" style={{ width: 560, maxWidth: "100%" }}>
-  <Input label="First name" placeholder="Ada" />
-  <Input label="Last name" placeholder="King" />
-  <Input label="Email" placeholder="ada@example.com" />
-</Form>
+<Container xl>
+  <Form twoColumn submitLabel="Create" cancelLabel="Cancel">
+    <Input label="First name" placeholder="Ada" />
+    <Input label="Last name" placeholder="King" />
+    <Input label="Email" placeholder="ada@example.com" />
+  </Form>
+</Container>
 ```
 
 ### Sections
 
 ```tsx
-<Form submitLabel="Save" style={{ width: 560, maxWidth: "100%" }}>
-  <FormSection title="Personal info" description="This information will be displayed on your public profile.">
-    <Input label="Full name" defaultValue="Rachel Chen" />
-    <Input label="Email" defaultValue="rachel@example.com" />
-  </FormSection>
-  <FormSection title="Notifications" description="Choose how you'd like to be notified.">
-    <Checkbox defaultChecked>Email notifications</Checkbox>
-    <Checkbox>SMS alerts</Checkbox>
-  </FormSection>
-</Form>
+<Container xl>
+  <Form submitLabel="Save">
+    <FormSection title="Personal info" description="This information will be displayed on your public profile.">
+      <Input label="Full name" defaultValue="Rachel Chen" />
+      <Input label="Email" defaultValue="rachel@example.com" />
+    </FormSection>
+    <FormSection title="Notifications" description="Choose how you'd like to be notified.">
+      <Checkbox defaultChecked>Email notifications</Checkbox>
+      <Checkbox>SMS alerts</Checkbox>
+    </FormSection>
+  </Form>
+</Container>
 ```
 
 ### Required fields
 
 ```tsx
-<Form submitLabel="Create account" style={{ width: 360, maxWidth: "100%" }}>
-  <Input label="Email" required placeholder="you@example.com" />
-  <Input label="Password" required />
-  <Input label="Referral code" placeholder="Optional" />
-</Form>
+<Container sm>
+  <Form submitLabel="Create account">
+    <Input label="Email" required placeholder="you@example.com" />
+    <Input label="Password" required />
+    <Input label="Referral code" placeholder="Optional" />
+  </Form>
+</Container>
 ```
 
 ### Select and switch controls
 
 ```tsx
-<Form twoColumn submitLabel="Save" cancelLabel="Cancel" style={{ width: 560, maxWidth: "100%" }}>
-  <Select label="Role" options={["Admin", "Editor", "Viewer"]} defaultValue="Editor" />
-  <Switch defaultChecked description="Email me when someone mentions me.">Notifications</Switch>
-</Form>
+<Container xl>
+  <Form twoColumn submitLabel="Save" cancelLabel="Cancel">
+    <Select label="Role" options={["Admin", "Editor", "Viewer"]} defaultValue="Editor" />
+    <Switch defaultChecked description="Email me when someone mentions me.">Notifications</Switch>
+  </Form>
+</Container>
 ```
 
 ## Do & Don't
@@ -75,19 +85,23 @@ Form is a composition surface: you stitch the field atoms as children and keep t
 **Do** — Keep short forms one field per row so each label sits directly above its input and the eye flows straight down.
 
 ```tsx
-<Form submitLabel="Sign in" style={{ width: 360, maxWidth: "100%" }}>
-  <Input label="Email" placeholder="you@example.com" />
-  <Input label="Password" />
-</Form>
+<Container sm>
+  <Form submitLabel="Sign in">
+    <Input label="Email" placeholder="you@example.com" />
+    <Input label="Password" />
+  </Form>
+</Container>
 ```
 
 **Don't** — Pairing an email and password side by side cramps a sign-in form and breaks the natural top-to-bottom reading order.
 
 ```tsx
-<Form twoColumn submitLabel="Sign in" style={{ width: 360, maxWidth: "100%" }}>
-  <Input label="Email" placeholder="you@example.com" />
-  <Input label="Password" />
-</Form>
+<Container sm>
+  <Form twoColumn submitLabel="Sign in">
+    <Input label="Email" placeholder="you@example.com" />
+    <Input label="Password" />
+  </Form>
+</Container>
 ```
 
 ### Two-column
@@ -95,26 +109,30 @@ Form is a composition surface: you stitch the field atoms as children and keep t
 **Do** — Compose mixed rows inside the stacked form: give a full-width field like the street its own line and pair the similar-width city and ZIP in a Row.
 
 ```tsx
-<Form submitLabel="Save" style={{ width: 560, maxWidth: "100%" }}>
-  <Input label="Street address" placeholder="123 Market St" />
-  <Row cozy>
-    <Column fill>
-      <Input label="City" placeholder="San Francisco" />
-    </Column>
-    <Column fill>
-      <Input label="ZIP" placeholder="94103" />
-    </Column>
-  </Row>
-</Form>
+<Container xl>
+  <Form submitLabel="Save">
+    <Input label="Street address" placeholder="123 Market St" />
+    <Row cozy>
+      <Column fill>
+        <Input label="City" placeholder="San Francisco" />
+      </Column>
+      <Column fill>
+        <Input label="ZIP" placeholder="94103" />
+      </Column>
+    </Row>
+  </Form>
+</Container>
 ```
 
 **Don't** — Putting a wide field next to a tiny one in the same two-column row leaves the short input awkwardly oversized.
 
 ```tsx
-<Form twoColumn submitLabel="Save" style={{ width: 560, maxWidth: "100%" }}>
-  <Input label="Street address" placeholder="123 Market St" />
-  <Input label="ZIP" placeholder="94103" />
-</Form>
+<Container xl>
+  <Form twoColumn submitLabel="Save">
+    <Input label="Street address" placeholder="123 Market St" />
+    <Input label="ZIP" placeholder="94103" />
+  </Form>
+</Container>
 ```
 
 ### Sections
@@ -122,14 +140,16 @@ Form is a composition surface: you stitch the field atoms as children and keep t
 **Do** — Group related fields in a `FormSection` so each cluster carries its heading, its supporting line, and group semantics a screen reader announces.
 
 ```tsx
-<Form submitLabel="Save" style={{ width: 560, maxWidth: "100%" }}>
-  <FormSection title="Personal info" description="Displayed on your public profile.">
-    <Input label="Full name" defaultValue="Rachel Chen" />
-  </FormSection>
-  <FormSection title="Billing" description="Used for invoices and receipts.">
-    <Input label="Card number" defaultValue="•••• 4242" />
-  </FormSection>
-</Form>
+<Container xl>
+  <Form submitLabel="Save">
+    <FormSection title="Personal info" description="Displayed on your public profile.">
+      <Input label="Full name" defaultValue="Rachel Chen" />
+    </FormSection>
+    <FormSection title="Billing" description="Used for invoices and receipts.">
+      <Input label="Card number" defaultValue="•••• 4242" />
+    </FormSection>
+  </Form>
+</Container>
 ```
 
 **Don't** — Hand-rolled headings spliced between fields carry no grouping semantics, so assistive tech never hears which section a field belongs to.
@@ -148,26 +168,28 @@ Form is a composition surface: you stitch the field atoms as children and keep t
 **Do** — Keep the input and its submit button on one row so the input + action reads as one step.
 
 ```tsx
-<Card padded style={{ maxWidth: 420 }}>
-  <Column relaxed>
-    <Column tight>
-      <Typography lead semibold>Subscribe to updates</Typography>
-      <Typography small muted>We'll send you a weekly digest of what changed.</Typography>
-    </Column>
-    <Row alignCenter snug>
-      <Column fill>
-        <Input placeholder="you@example.com" />
+<Container md>
+  <Card padded>
+    <Column relaxed>
+      <Column tight>
+        <Typography lead semibold>Subscribe to updates</Typography>
+        <Typography small muted>We'll send you a weekly digest of what changed.</Typography>
       </Column>
-      <Button primary>Subscribe</Button>
-    </Row>
-  </Column>
-</Card>
+      <Row alignCenter snug>
+        <Column fill>
+          <Input placeholder="you@example.com" />
+        </Column>
+        <Button primary>Subscribe</Button>
+      </Row>
+    </Column>
+  </Card>
+</Container>
 ```
 
 **Don't** — Stacking the field above its button breaks the single-decision rhythm and adds a row of dead space.
 
 ```tsx
-<Card padded style={{ maxWidth: 420, gap: 16 }}>
+<Card padded style={{ gap: 16 }}>
   <View style={{ gap: 4 }}>
     <Text style={{ fontSize: 15, fontWeight: "600", color: tokens["card-foreground"] }}>Subscribe to updates</Text>
     <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>We'll send you a weekly digest of what changed.</Text>

@@ -6,7 +6,7 @@ import {
   parseDonts,
   scopeNamesFromLiveScope,
   bannedStyleViolations,
-  fieldWidthShimViolations,
+  widthShimViolations,
   bareWidthViolations,
   prosePhantomApiViolations,
 } from "./parse-md.ts";
@@ -382,42 +382,42 @@ describe("bannedStyleViolations", () => {
   });
 });
 
-describe("fieldWidthShimViolations", () => {
-  it("flags max/minWidth in a style placed directly on an input-like control", () => {
-    expect(fieldWidthShimViolations(`<Input style={{ maxWidth: 320 }} />`)).toEqual(["maxWidth on <Input>"]);
-    expect(fieldWidthShimViolations(`<Select style={{ minWidth: 200 }} options={[]} />`)).toEqual(["minWidth on <Select>"]);
-    expect(fieldWidthShimViolations(`<Autocomplete\n  options={[]}\n  style={{ maxWidth: 300 }}\n/>`)).toEqual([
+describe("widthShimViolations", () => {
+  it("flags width/max/minWidth in a style placed directly on a component", () => {
+    expect(widthShimViolations(`<Input style={{ maxWidth: 320 }} />`)).toEqual(["maxWidth on <Input>"]);
+    expect(widthShimViolations(`<Select style={{ minWidth: 200 }} options={[]} />`)).toEqual(["minWidth on <Select>"]);
+    expect(widthShimViolations(`<Autocomplete\n  options={[]}\n  style={{ maxWidth: 300 }}\n/>`)).toEqual([
       "maxWidth on <Autocomplete>",
     ]);
+    expect(widthShimViolations(`<Card style={{ maxWidth: 420 }} />`)).toEqual(["maxWidth on <Card>"]);
   });
 
-  it("allows explicit width on the control (deliberate side-by-side comparison)", () => {
-    expect(fieldWidthShimViolations(`<Select style={{ width: 192 }} options={[]} />`)).toEqual([]);
+  it("flags an explicit width too: a width belongs to a layout container", () => {
+    expect(widthShimViolations(`<Select style={{ width: 192 }} options={[]} />`)).toEqual(["width on <Select>"]);
   });
 
-  it("allows width bounds on wrapper Views/Cards (page-layout composition)", () => {
-    const code = `<View style={{ maxWidth: 420 }}>\n  <Input placeholder="x" />\n</View>`;
-    expect(fieldWidthShimViolations(code)).toEqual([]);
+  it("flags a raw View standing in for a Container, and allows the layout containers themselves", () => {
+    expect(widthShimViolations(`<View style={{ maxWidth: 420 }}>\n  <Input placeholder="x" />\n</View>`)).toEqual(["maxWidth on <View>"]);
+    expect(widthShimViolations(`<Container sm start><Input placeholder="x" /></Container>`)).toEqual([]);
+    expect(widthShimViolations(`<Column style={{ maxWidth: 420 }} />`)).toEqual([]);
+    expect(widthShimViolations(`<Grid style={{ maxWidth: 900 }} />`)).toEqual([]);
+    expect(widthShimViolations(`<Sidebar style={{ width: 280 }} />`)).toEqual([]);
   });
 
   it("does not leak past the opening tag into a sibling's style", () => {
-    // The Input's tag closes before the View opens; the View's maxWidth is fine.
-    const code = `<Input placeholder="x" />\n<View style={{ maxWidth: 360 }} />`;
-    expect(fieldWidthShimViolations(code)).toEqual([]);
+    // The Input's tag closes before the Container opens.
+    const code = `<Input placeholder="x" />\n<Container sm />`;
+    expect(widthShimViolations(code)).toEqual([]);
   });
 
   it("is not fooled by a '>' inside an expression attribute before the style", () => {
     const code = `<Input onChangeText={(t) => setV(t)} style={{ maxWidth: 320 }} />`;
-    expect(fieldWidthShimViolations(code)).toEqual(["maxWidth on <Input>"]);
+    expect(widthShimViolations(code)).toEqual(["maxWidth on <Input>"]);
   });
 
-  it("does not false-match longer tag names (InputOTP is not Input)", () => {
-    expect(fieldWidthShimViolations(`<InputOTP style={{ maxWidth: 320 }} />`)).toEqual([]);
-  });
-
-  it("respects the // docgen-allow-style opt-out on the style's line", () => {
-    const code = `<Input style={{ maxWidth: 320 }} /> {/* docgen-allow-style */}`;
-    expect(fieldWidthShimViolations(code)).toEqual([]);
+  it("honors the docgen-allow-style line opt-out", () => {
+    const code = `<Card style={{ maxWidth: 420 }} /* docgen-allow-style */ />`;
+    expect(widthShimViolations(code)).toEqual([]);
   });
 });
 

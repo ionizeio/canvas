@@ -3,11 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Typography } = scope;
+  const { View, Typography, Container } = scope;
   return (
-<Typography body style={{ maxWidth: 340 }}>
-  Payment due May 31. 
-  <Typography body primary underline>View invoices</Typography>
-</Typography>
+<Container xs>
+  <Typography body>
+    Payment due May 31. 
+    <Typography body primary underline>View invoices</Typography>
+  </Typography>
+</Container>
   );
 }

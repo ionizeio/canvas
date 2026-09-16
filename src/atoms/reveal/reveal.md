@@ -6,12 +6,14 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal>
-  <Card padded style={{ width: 300, maxWidth: "100%" }}>
-    <Column tight>
-      <Typography h4 semibold>Built for scroll</Typography>
-      <Typography small muted>This card rose into place when it reached the viewport.</Typography>
-    </Column>
-  </Card>
+  <Container xs>
+    <Card padded>
+      <Column tight>
+        <Typography h4 semibold>Built for scroll</Typography>
+        <Typography small muted>This card rose into place when it reached the viewport.</Typography>
+      </Column>
+    </Card>
+  </Container>
 </Reveal>
 ```
 
@@ -23,12 +25,14 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 <Ticker values={[1, 2]} interval={2800}>
   {(pass) => (
     <Reveal key={pass}>
-      <Card padded style={{ width: 300, maxWidth: "100%" }}>
-        <Column tight>
-          <Typography h4 semibold>Arriving</Typography>
-          <Typography small muted>The same entrance, played again every few seconds.</Typography>
-        </Column>
-      </Card>
+      <Container xs>
+        <Card padded>
+          <Column tight>
+            <Typography h4 semibold>Arriving</Typography>
+            <Typography small muted>The same entrance, played again every few seconds.</Typography>
+          </Column>
+        </Card>
+      </Container>
     </Reveal>
   )}
 </Ticker>
@@ -42,19 +46,25 @@ An entrance for page content: what it wraps starts slightly offset and transpare
     <Row cozy wrap key={pass}>
       <RevealGroup>
         <Reveal>
-          <Card padded style={{ width: 150 }}>
-            <Typography small semibold>Measure</Typography>
-          </Card>
+          <Container xxxs>
+            <Card padded>
+              <Typography small semibold>Measure</Typography>
+            </Card>
+          </Container>
         </Reveal>
         <Reveal>
-          <Card padded style={{ width: 150 }}>
-            <Typography small semibold>Reveal</Typography>
-          </Card>
+          <Container xxxs>
+            <Card padded>
+              <Typography small semibold>Reveal</Typography>
+            </Card>
+          </Container>
         </Reveal>
         <Reveal>
-          <Card padded style={{ width: 150 }}>
-            <Typography small semibold>Settle</Typography>
-          </Card>
+          <Container xxxs>
+            <Card padded>
+              <Typography small semibold>Settle</Typography>
+            </Card>
+          </Container>
         </Reveal>
       </RevealGroup>
     </Row>
@@ -66,9 +76,11 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal fromAbove>
-  <Card padded style={{ width: 300, maxWidth: "100%" }}>
-    <Typography small semibold>Descends into place</Typography>
-  </Card>
+  <Container xs>
+    <Card padded>
+      <Typography small semibold>Descends into place</Typography>
+    </Card>
+  </Container>
 </Reveal>
 ```
 
@@ -76,9 +88,11 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal fromLeft>
-  <Card padded style={{ width: 300, maxWidth: "100%" }}>
-    <Typography small semibold>Slides in from the left</Typography>
-  </Card>
+  <Container xs>
+    <Card padded>
+      <Typography small semibold>Slides in from the left</Typography>
+    </Card>
+  </Container>
 </Reveal>
 ```
 
@@ -86,9 +100,11 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal fromRight>
-  <Card padded style={{ width: 300, maxWidth: "100%" }}>
-    <Typography small semibold>Slides in from the right</Typography>
-  </Card>
+  <Container xs>
+    <Card padded>
+      <Typography small semibold>Slides in from the right</Typography>
+    </Card>
+  </Container>
 </Reveal>
 ```
 
@@ -96,9 +112,11 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal pronounced>
-  <Card padded style={{ width: 300, maxWidth: "100%" }}>
-    <Typography small semibold>Travels further before settling</Typography>
-  </Card>
+  <Container xs>
+    <Card padded>
+      <Typography small semibold>Travels further before settling</Typography>
+    </Card>
+  </Container>
 </Reveal>
 ```
 
@@ -106,9 +124,11 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal brisk>
-  <Card padded style={{ width: 300, maxWidth: "100%" }}>
-    <Typography small semibold>Arrives faster</Typography>
-  </Card>
+  <Container xs>
+    <Card padded>
+      <Typography small semibold>Arrives faster</Typography>
+    </Card>
+  </Container>
 </Reveal>
 ```
 
@@ -116,9 +136,11 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal deepInView>
-  <Card padded style={{ width: 300, maxWidth: "100%" }}>
-    <Typography small semibold>Waits until it is properly in view</Typography>
-  </Card>
+  <Container xs>
+    <Card padded>
+      <Typography small semibold>Waits until it is properly in view</Typography>
+    </Card>
+  </Container>
 </Reveal>
 ```
 
@@ -132,19 +154,25 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 <Row cozy wrap>
   <RevealGroup>
     <Reveal>
-      <Card padded style={{ width: 140 }}>
-        <Typography small semibold>First</Typography>
-      </Card>
+      <Container xxxs>
+        <Card padded>
+          <Typography small semibold>First</Typography>
+        </Card>
+      </Container>
     </Reveal>
     <Reveal>
-      <Card padded style={{ width: 140 }}>
-        <Typography small semibold>Second</Typography>
-      </Card>
+      <Container xxxs>
+        <Card padded>
+          <Typography small semibold>Second</Typography>
+        </Card>
+      </Container>
     </Reveal>
     <Reveal>
-      <Card padded style={{ width: 140 }}>
-        <Typography small semibold>Third</Typography>
-      </Card>
+      <Container xxxs>
+        <Card padded>
+          <Typography small semibold>Third</Typography>
+        </Card>
+      </Container>
     </Reveal>
   </RevealGroup>
 </Row>
@@ -155,19 +183,25 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 ```tsx
 <Row cozy wrap>
   <Reveal>
-    <Card padded style={{ width: 140 }}>
-      <Typography small semibold>First</Typography>
-    </Card>
+    <Container xxxs>
+      <Card padded>
+        <Typography small semibold>First</Typography>
+      </Card>
+    </Container>
   </Reveal>
   <Reveal>
-    <Card padded style={{ width: 140 }}>
-      <Typography small semibold>Second</Typography>
-    </Card>
+    <Container xxxs>
+      <Card padded>
+        <Typography small semibold>Second</Typography>
+      </Card>
+    </Container>
   </Reveal>
   <Reveal>
-    <Card padded style={{ width: 140 }}>
-      <Typography small semibold>Third</Typography>
-    </Card>
+    <Container xxxs>
+      <Card padded>
+        <Typography small semibold>Third</Typography>
+      </Card>
+    </Container>
   </Reveal>
 </Row>
 ```
@@ -180,14 +214,18 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 <Row cozy wrap>
   <RevealGroup>
     <Reveal fromBelow>
-      <Card padded style={{ width: 140 }}>
-        <Typography small semibold>Rises</Typography>
-      </Card>
+      <Container xxxs>
+        <Card padded>
+          <Typography small semibold>Rises</Typography>
+        </Card>
+      </Container>
     </Reveal>
     <Reveal fromBelow>
-      <Card padded style={{ width: 140 }}>
-        <Typography small semibold>Rises</Typography>
-      </Card>
+      <Container xxxs>
+        <Card padded>
+          <Typography small semibold>Rises</Typography>
+        </Card>
+      </Container>
     </Reveal>
   </RevealGroup>
 </Row>
@@ -199,14 +237,18 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 <Row cozy wrap>
   <RevealGroup>
     <Reveal fromLeft>
-      <Card padded style={{ width: 140 }}>
-        <Typography small semibold>Left</Typography>
-      </Card>
+      <Container xxxs>
+        <Card padded>
+          <Typography small semibold>Left</Typography>
+        </Card>
+      </Container>
     </Reveal>
     <Reveal fromRight>
-      <Card padded style={{ width: 140 }}>
-        <Typography small semibold>Right</Typography>
-      </Card>
+      <Container xxxs>
+        <Card padded>
+          <Typography small semibold>Right</Typography>
+        </Card>
+      </Container>
     </Reveal>
   </RevealGroup>
 </Row>
@@ -218,28 +260,32 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal>
-  <Card padded style={{ width: 300, maxWidth: "100%" }}>
-    <Column tight>
-      <Typography h4 semibold>One entrance</Typography>
-      <Typography small muted>The card and its lines arrive as a single object.</Typography>
-    </Column>
-  </Card>
+  <Container xs>
+    <Card padded>
+      <Column tight>
+        <Typography h4 semibold>One entrance</Typography>
+        <Typography small muted>The card and its lines arrive as a single object.</Typography>
+      </Column>
+    </Card>
+  </Container>
 </Reveal>
 ```
 
 **Don't** - Reveal each leaf inside one card; the card assembles itself in pieces in front of the reader.
 
 ```tsx
-<Card padded style={{ width: 300, maxWidth: "100%" }}>
-  <Column tight>
-    <Reveal>
-      <Typography h4 semibold>Three entrances</Typography>
-    </Reveal>
-    <Reveal>
-      <Typography small muted>Every line arrives on its own schedule.</Typography>
-    </Reveal>
-  </Column>
-</Card>
+<Container xs>
+  <Card padded>
+    <Column tight>
+      <Reveal>
+        <Typography h4 semibold>Three entrances</Typography>
+      </Reveal>
+      <Reveal>
+        <Typography small muted>Every line arrives on its own schedule.</Typography>
+      </Reveal>
+    </Column>
+  </Card>
+</Container>
 ```
 
 ### the real thing
@@ -248,9 +294,11 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal pronounced>
-  <Card padded style={{ width: 300, maxWidth: "100%" }}>
-    <Typography small semibold>Reveals itself</Typography>
-  </Card>
+  <Container xs>
+    <Card padded>
+      <Typography small semibold>Reveals itself</Typography>
+    </Card>
+  </Container>
 </Reveal>
 ```
 

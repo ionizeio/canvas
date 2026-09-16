@@ -3,11 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Skeleton, Column } = scope;
+  const { Skeleton, Column, Container } = scope;
   return (
-<Column snug style={{ width: 320, maxWidth: "100%" }}>
-  <Skeleton text animate />
-  <Skeleton text animate style={{ width: "60%" }} />
-</Column>
+<Container xs>
+  <Column snug>
+    <Skeleton text animate />
+    <Skeleton text animate short />
+  </Column>
+</Container>
   );
 }

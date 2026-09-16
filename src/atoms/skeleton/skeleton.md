@@ -5,10 +5,12 @@ Placeholders for loading content.
 ## Usage
 
 ```tsx
-<Column snug style={{ width: 320, maxWidth: "100%" }}>
-  <Skeleton text animate />
-  <Skeleton text animate style={{ width: "60%" }} />
-</Column>
+<Container xs>
+  <Column snug>
+    <Skeleton text animate />
+    <Skeleton text animate short />
+  </Column>
+</Container>
 ```
 
 ## Variants
@@ -50,20 +52,22 @@ Placeholders for loading content.
 **Do** — Vary the line widths and shorten the last line so it reads like real wrapped text.
 
 ```tsx
-<Column snug style={{ width: 320, maxWidth: "100%" }}>
-  <Skeleton text animate style={{ width: "100%" }} />
-  <Skeleton text animate style={{ width: "95%" }} />
-  <Skeleton text animate style={{ width: "60%" }} />
-</Column>
+<Container xs>
+  <Column snug>
+    <Skeleton text animate />
+    <Skeleton text animate long />
+    <Skeleton text animate short />
+  </Column>
+</Container>
 ```
 
 **Don't** — Three full-width lines read as a solid block, not as a paragraph of prose.
 
 ```tsx
 <View style={{ width: 320, maxWidth: "100%", flexDirection: "column", gap: 6 }}>
-  <Skeleton text animate style={{ width: "100%" }} />
-  <Skeleton text animate style={{ width: "100%" }} />
-  <Skeleton text animate style={{ width: "100%" }} />
+  <Skeleton text animate />
+  <Skeleton text animate />
+  <Skeleton text animate />
 </View>
 ```
 

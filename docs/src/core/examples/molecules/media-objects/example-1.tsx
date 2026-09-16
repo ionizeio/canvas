@@ -3,15 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, MediaObject, Typography, Column } = scope;
+  const { Stateful, MediaObject, Typography, Column, Container } = scope;
   return (
 <Stateful initial="">
   {(opened, setOpened) => (
-    <Column snug style={{ maxWidth: 480 }}>
-      <MediaObject onPress={() => setOpened("Rachel Chen")} bordered center avatar="RC" title="Rachel Chen" description="Engineering Lead" meta="admin" truncate />
-      <MediaObject onPress={() => setOpened("Ada Lovelace")} bordered center avatar="AL" title="Ada Lovelace" description="Staff Engineer" meta="2h ago" truncate />
-      <Typography muted>{opened === "" ? "No profile opened yet" : `Opened ${opened}'s profile`}</Typography>
-    </Column>
+    <Container lg>
+      <Column snug>
+        <MediaObject onPress={() => setOpened("Rachel Chen")} bordered center avatar="RC" title="Rachel Chen" description="Engineering Lead" meta="admin" truncate />
+        <MediaObject onPress={() => setOpened("Ada Lovelace")} bordered center avatar="AL" title="Ada Lovelace" description="Staff Engineer" meta="2h ago" truncate />
+        <Typography muted>{opened === "" ? "No profile opened yet" : `Opened ${opened}'s profile`}</Typography>
+      </Column>
+    </Container>
   )}
 </Stateful>
   );

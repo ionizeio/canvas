@@ -1,5 +1,5 @@
 import type RNQRCodeType from "react-native-qrcode-svg";
-import { View, useHugStyle, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, useHugStyle, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 
 // react-native-qrcode-svg is an OPTIONAL peer (it drags a large text-encoding
 // polyfill), so it is loaded with a guarded literal require: consumers who never
@@ -78,8 +78,8 @@ export interface QRCodeProps {
   accessibilityLabel?: string;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 // First-match size precedence; defaults to the medium code.

@@ -1,4 +1,4 @@
-import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, type StyleProp, type ViewStyle, type ColorTokens } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, type StyleProp, type ViewStyle, type ColorTokens, type LayoutStyle } from "../../style/index.js";
 import * as s from "./pagination.styles.js";
 import { type Size, type PaginationSkin } from "./pagination.styles.js";
 
@@ -79,8 +79,8 @@ export interface PaginationProps {
   disabled?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 // Size precedence when more than one is passed: first match wins.

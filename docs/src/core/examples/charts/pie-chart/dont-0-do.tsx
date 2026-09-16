@@ -3,18 +3,20 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, PieChart } = scope;
+  const { Card, Container, PieChart } = scope;
   return (
-<Card padded style={{ maxWidth: 280 }}>
-  <PieChart
-    label="Traffic"
-    slices={[
-      { label: "Direct", value: 42 },
-      { label: "Organic search", value: 28 },
-      { label: "Social", value: 18 },
-      { label: "Other", value: 12 }
-    ]}
-  />
-</Card>
+<Container xxs>
+  <Card padded>
+    <PieChart
+      label="Traffic"
+      slices={[
+        { label: "Direct", value: 42 },
+        { label: "Organic search", value: 28 },
+        { label: "Social", value: 18 },
+        { label: "Other", value: 12 }
+      ]}
+    />
+  </Card>
+</Container>
   );
 }

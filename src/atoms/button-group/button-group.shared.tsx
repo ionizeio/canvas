@@ -1,7 +1,7 @@
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useRef, useState } from "react";
 import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, RippleClip, cornerRadii, useHugStyle, useSizing, useTheme, useControllableState, AnchoredOverlay, useOverlayHost, useMeasuredWidth, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useHugStyle, useSizing, useTheme, useControllableState, AnchoredOverlay, useOverlayHost, useMeasuredWidth, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
 import { Icon, type IconName } from "../icon/icon.js";
 import { primaryText } from "../../style/primary-text.js";
 import * as s from "./button-group.styles.js";
@@ -161,8 +161,8 @@ export interface ButtonGroupProps {
   disabled?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 // Kind precedence when more than one is passed: first match wins.
@@ -307,7 +307,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     disabled?: boolean;
     onSelect?: (index: number, item: string, event: GestureResponderEvent) => void;
     testID?: string;
-    style?: StyleProp<ViewStyle>;
+    style?: LayoutStyle;
   }) {
     const { tokens } = useTheme();
     const hug = useHugStyle();
@@ -422,7 +422,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     disabled?: boolean;
     onSelect?: (index: number, item: string, event: GestureResponderEvent) => void;
     testID?: string;
-    style?: StyleProp<ViewStyle>;
+    style?: LayoutStyle;
   }) {
     const { tokens } = useTheme();
     const hug = useHugStyle();

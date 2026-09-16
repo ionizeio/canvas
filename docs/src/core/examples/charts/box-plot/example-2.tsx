@@ -3,17 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { BoxPlot } = scope;
+  const { Container, BoxPlot } = scope;
   return (
-<BoxPlot
+<Container xl>
+  <BoxPlot
   title="Review turnaround"
   defaultSelected={1}
-  style={{ maxWidth: 560 }}
   data={[
     { label: "Mon", values: [2, 4, 3, 5, 4, 3, 6, 4, 3, 5] },
     { label: "Wed", values: [3, 6, 5, 8, 6, 5, 9, 7, 5, 6] },
     { label: "Fri", values: [5, 9, 7, 12, 9, 8, 14, 10, 8, 22] },
   ]}
 />
+</Container>
   );
 }

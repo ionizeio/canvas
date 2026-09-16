@@ -10,6 +10,7 @@ import {
   type StyleProp,
   type ViewStyle,
   type TextStyle,
+  type LayoutStyle,
 } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
 
@@ -103,8 +104,8 @@ export interface BreadcrumbProps {
   onItemPress?: (item: string, index: number) => void;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 type Separator = "chevron" | "slash" | "dot";

@@ -3,12 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { CodeBlock, Typography, Column } = scope;
+  const { CodeBlock, Typography, Column, Container } = scope;
   return (
-<Column snug style={{ maxWidth: 360 }}>
-  <Typography body>Run the setup command:</Typography>
-  <CodeBlock code={`npm install @nannier-com/canvas
-npm run build`} />
-</Column>
+<Container sm>
+  <Column snug>
+    <Typography body>Run the setup command:</Typography>
+    <CodeBlock code={`npm install @nannier-com/canvas
+  npm run build`} />
+  </Column>
+</Container>
   );
 }

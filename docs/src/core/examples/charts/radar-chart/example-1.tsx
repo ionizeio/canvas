@@ -3,15 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { RadarChart } = scope;
+  const { Container, RadarChart } = scope;
   return (
-<RadarChart
+<Container lg>
+  <RadarChart
   title="Service posture"
   success
   axes={["Latency", "Uptime", "Errors", "Cost", "Coverage"]}
-  style={{ maxWidth: 480 }}
   series={[{ label: "API", values: [7, 9, 8, 6, 7] }]}
   max={10}
 />
+</Container>
   );
 }

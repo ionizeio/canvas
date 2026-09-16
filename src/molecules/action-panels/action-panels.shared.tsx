@@ -1,5 +1,5 @@
 import { type ComponentType, type ReactNode } from "react";
-import { View, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, useTheme, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { Card as WebCard } from "../card/card.js";
 import { type CardProps } from "../card/card.shared.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
@@ -82,8 +82,8 @@ export interface ActionPanelProps {
   children?: ReactNode;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 // The atoms the molecule composes are typed by their public props, so each

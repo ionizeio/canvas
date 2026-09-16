@@ -1,6 +1,6 @@
 import { Fragment, type ComponentType } from "react";
 import { FlatList, StyleSheet, type DimensionValue } from "react-native";
-import { View, Pressable, Text, useTheme, useContainerBreakpoint, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useContainerBreakpoint, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
 import { Card as WebCard } from "../card/card.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
@@ -141,8 +141,8 @@ export interface GridListProps {
   virtualized?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 // Column precedence when more than one is passed: first match wins.
@@ -211,8 +211,10 @@ export function createGridList(
   function PeopleTile({ item, width, compact, onPress }: { item: GridListItem; width: DimensionValue; compact: boolean; onPress?: () => void }) {
     const { tokens } = useTheme();
     const pad = compact ? skin.tilePad.compact : skin.tilePad.default;
+    // The tile cell owns the measured width (a layout cell); the Card fills it.
     return (
-      <Card onPress={onPress} style={[{ flexGrow: 1, alignItems: "center", padding: pad }, { width }]}>
+      <View style={{ width, flexGrow: 1 }}>
+        <Card onPress={onPress} style={{ alignItems: "center", padding: pad }}>
         <View style={s.cardInner}>
           <Avatar large src={isPhoto(item.avatar) ? item.avatar : undefined} name={item.title}>
             {item.avatar && !isPhoto(item.avatar) ? item.avatar : undefined}
@@ -234,7 +236,8 @@ export function createGridList(
             </View>
           ) : null}
         </View>
-      </Card>
+        </Card>
+      </View>
     );
   }
 

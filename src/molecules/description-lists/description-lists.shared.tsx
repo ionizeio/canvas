@@ -1,6 +1,6 @@
 import { type ComponentType, useState } from "react";
 import { consumeEscapeKey } from "../../style/escape-layer.js";
-import { View, Text, TextInput, useTheme, useResponsive, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Text, TextInput, useTheme, useResponsive, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
 import { Avatar as WebAvatar, AvatarGroup as WebAvatarGroup } from "../../atoms/avatar/avatar.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
@@ -119,8 +119,8 @@ export interface DescriptionListProps {
   onCopy?: (value: string) => void;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 // The composed-atom component types, so each platform can pass its own resolved

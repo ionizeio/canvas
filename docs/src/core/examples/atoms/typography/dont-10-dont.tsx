@@ -3,8 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Typography } = scope;
+  const { Typography, Container } = scope;
   return (
-<Typography caption style={{ maxWidth: 320 }}>Your subscription renews automatically each month unless you cancel from the billing page.</Typography>
+<Container xs>
+  <Typography caption>Your subscription renews automatically each month unless you cancel from the billing page.</Typography>
+</Container>
   );
 }

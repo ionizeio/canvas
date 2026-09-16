@@ -3,18 +3,24 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Typography, Row } = scope;
+  const { View, Card, Typography, Row } = scope;
   return (
 <Row wrap snug>
-  <Card padded style={{ width: "31%" }}>
-    <Typography medium>Overview</Typography>
-  </Card>
-  <Card padded style={{ width: "31%" }}>
-    <Typography medium>Deploys</Typography>
-  </Card>
-  <Card padded style={{ width: "31%" }}>
-    <Typography medium>Alerts</Typography>
-  </Card>
+  <View style={{ width: "31%" }}>
+    <Card padded>
+      <Typography medium>Overview</Typography>
+    </Card>
+  </View>
+  <View style={{ width: "31%" }}>
+    <Card padded>
+      <Typography medium>Deploys</Typography>
+    </Card>
+  </View>
+  <View style={{ width: "31%" }}>
+    <Card padded>
+      <Typography medium>Alerts</Typography>
+    </Card>
+  </View>
 </Row>
   );
 }

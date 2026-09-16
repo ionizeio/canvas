@@ -14,8 +14,9 @@ import { type Pad } from "../layout/layout.shared.js";
 //
 // Axes (each a boolean; first match wins, narrowest first, so a stray wider
 // step never silently widens a deliberate narrow one):
-//   - measure   xs 320 / sm 384 / md 448 / lg 512 / xl 576 / xxl 672 / xxxl 768 /
-//               wide 896 / wider 1024 / widest 1152 / page 1280 (default) / fluid (no cap)
+//   - measure   xxxs 192 / xxs 256 / xs 320 / sm 384 / md 448 / lg 512 / xl 576 /
+//               xxl 672 / xxxl 768 / wide 896 / wider 1024 / widest 1152 /
+//               page 1280 (default) / fluid (no cap)
 //   - alignment centered (default) / start
 //   - gutters   padTight 8 / pad 16 / padLoose 24 of HORIZONTAL padding (Row and
 //               Column's pad scale); vertical rhythm belongs to the Column inside.
@@ -30,6 +31,8 @@ export interface ContainerProps {
   children?: ReactNode;
 
   // Measure (pick one; default `page`). The step of the width scale the container caps at.
+  xxxs?: boolean; // 192, a small KPI tile
+  xxs?: boolean; // 256, a chart tile
   xs?: boolean; // 320
   sm?: boolean; // 384
   md?: boolean; // 448
@@ -64,6 +67,8 @@ export interface ContainerProps {
 // Measure precedence: fluid, then narrowest first; default `page`.
 export function measureOf(p: ContainerProps): Measure {
   if (p.fluid) return "fluid";
+  if (p.xxxs) return "xxxs";
+  if (p.xxs) return "xxs";
   if (p.xs) return "xs";
   if (p.sm) return "sm";
   if (p.md) return "md";

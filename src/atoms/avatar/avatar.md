@@ -79,32 +79,34 @@ The whole account control in one component. `AvatarMenu` renders a single capsul
 The menu hangs from the pill's trailing edge by default, the edge a topbar parks the account control against and the only one a right-parked trigger can open from without running off the surface. `alignStart` swings it to the leading edge for a pill that sits at the start of a bar, and `alignEnd` spells the default out. Both are logical, so a right-to-left locale mirrors them. Press each pill to see which edge its menu meets.
 
 ```tsx
-<Row between style={{ width: 360, maxWidth: "100%" }}>
-  <AvatarMenu
-    compact
-    alignStart
-    name="Liang Bao"
-    email="liang.bao@example.com"
-    src="/liang-bao.jpg"
-    items={[
-      { label: "Profile", icon: "user" },
-      { label: "Settings", icon: "settings", shortcut: "⌘," },
-      { label: "Sign out", icon: "logOut", destructive: true, separatorBefore: true }
-    ]}
-  />
-  <AvatarMenu
-    compact
-    alignEnd
-    name="Kira Tanaka"
-    email="kira.tanaka@example.com"
-    src="/kira-tanaka.jpg"
-    items={[
-      { label: "Profile", icon: "user" },
-      { label: "Settings", icon: "settings", shortcut: "⌘," },
-      { label: "Sign out", icon: "logOut", destructive: true, separatorBefore: true }
-    ]}
-  />
-</Row>
+<Container sm>
+  <Row between>
+    <AvatarMenu
+      compact
+      alignStart
+      name="Liang Bao"
+      email="liang.bao@example.com"
+      src="/liang-bao.jpg"
+      items={[
+        { label: "Profile", icon: "user" },
+        { label: "Settings", icon: "settings", shortcut: "⌘," },
+        { label: "Sign out", icon: "logOut", destructive: true, separatorBefore: true }
+      ]}
+    />
+    <AvatarMenu
+      compact
+      alignEnd
+      name="Kira Tanaka"
+      email="kira.tanaka@example.com"
+      src="/kira-tanaka.jpg"
+      items={[
+        { label: "Profile", icon: "user" },
+        { label: "Settings", icon: "settings", shortcut: "⌘," },
+        { label: "Sign out", icon: "logOut", destructive: true, separatorBefore: true }
+      ]}
+    />
+  </Row>
+</Container>
 ```
 
 ### Disabled menu

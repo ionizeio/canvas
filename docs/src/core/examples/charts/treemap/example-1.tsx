@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Treemap } = scope;
+  const { Container, Treemap } = scope;
   return (
-<Treemap
+<Container xl>
+  <Treemap
   compact
-  style={{ maxWidth: 560 }}
   data={[
     { label: "Chrome", value: 61 },
     { label: "Safari", value: 24 },
@@ -16,5 +16,6 @@ export default function Example(scope: ExampleScope) {
     { label: "Other", value: 2 },
   ]}
 />
+</Container>
   );
 }

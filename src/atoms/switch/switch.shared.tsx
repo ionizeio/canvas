@@ -2,7 +2,7 @@ import { forwardRef, type ReactNode } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { type GestureResponderEvent } from "react-native";
-import { Pressable, View, Text, useTheme, useControllableState, useMinTargetSlop, type ColorTokens, type StyleProp, type ViewStyle, type TouchTargetSkin } from "../../style/index.js";
+import { Pressable, View, Text, useTheme, useControllableState, useMinTargetSlop, type ColorTokens, type StyleProp, type ViewStyle, type TouchTargetSkin, type LayoutStyle } from "../../style/index.js";
 
 // Shared Switch shell. Uses React Native's primitives DIRECTLY (no engine className
 // layer) and reads the active brand tokens via useTheme, so colors follow light/dark.
@@ -37,8 +37,8 @@ export interface SwitchProps {
    * Without it, a label-less switch announces only "switch, on/off".
    */
   accessibilityLabel?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 export type Size = "small" | "base" | "large";

@@ -3,13 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Column, Sparkline } = scope;
+  const { Column, Container, Sparkline } = scope;
   return (
-<Column relaxed style={{ maxWidth: 220 }}>
-  <Sparkline primary values={[29, 31, 36, 40, 40, 45, 48, 48, 45, 49, 47, 51, 53, 57, 60, 66, 64, 64, 63, 63, 65, 64, 64, 65, 65, 67, 72, 77, 82, 89]} />
-  <Sparkline success values={[29, 31, 36, 40, 40, 45, 48, 48, 45, 49, 47, 51, 53, 57, 60, 66, 64, 64, 63, 63, 65, 64, 64, 65, 65, 67, 72, 77, 82, 89]} />
-  <Sparkline destructive values={[89, 82, 77, 72, 67, 65, 65, 64, 64, 65, 63, 63, 64, 64, 66, 60, 57, 53, 51, 47, 49, 45, 48, 48, 45, 40, 40, 36, 31, 29]} />
-  <Sparkline muted values={[18, 19, 20, 23, 19, 21, 17, 16, 16, 19, 20, 20, 21, 22, 26, 25, 24, 23, 24, 22, 20, 23, 20, 20, 20, 17, 16, 17, 19, 20]} />
-</Column>
+<Container xxxs>
+  <Column relaxed>
+    <Sparkline primary values={[29, 31, 36, 40, 40, 45, 48, 48, 45, 49, 47, 51, 53, 57, 60, 66, 64, 64, 63, 63, 65, 64, 64, 65, 65, 67, 72, 77, 82, 89]} />
+    <Sparkline success values={[29, 31, 36, 40, 40, 45, 48, 48, 45, 49, 47, 51, 53, 57, 60, 66, 64, 64, 63, 63, 65, 64, 64, 65, 65, 67, 72, 77, 82, 89]} />
+    <Sparkline destructive values={[89, 82, 77, 72, 67, 65, 65, 64, 64, 65, 63, 63, 64, 64, 66, 60, 57, 53, 51, 47, 49, 45, 48, 48, 45, 40, 40, 36, 31, 29]} />
+    <Sparkline muted values={[18, 19, 20, 23, 19, 21, 17, 16, 16, 19, 20, 20, 21, 22, 26, 25, 24, 23, 24, 22, 20, 23, 20, 20, 20, 17, 16, 17, 19, 20]} />
+  </Column>
+</Container>
   );
 }

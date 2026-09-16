@@ -5,9 +5,9 @@ The running-total bridge: each step floats from the running total by its signed 
 ## Usage
 
 ```tsx
-<WaterfallChart
+<Container xl>
+  <WaterfallChart
   title="Q3 revenue bridge"
-  style={{ maxWidth: 560 }}
   steps={[
     { label: "Q2", value: 4200, total: true },
     { label: "New", value: 980 },
@@ -17,6 +17,7 @@ The running-total bridge: each step floats from the running total by its signed 
     { label: "Q3", total: true },
   ]}
 />
+</Container>
 ```
 
 ## Variants
@@ -24,9 +25,9 @@ The running-total bridge: each step floats from the running total by its signed 
 ### Signed steps only
 
 ```tsx
-<WaterfallChart
+<Container xl>
+  <WaterfallChart
   title="Headcount"
-  style={{ maxWidth: 560 }}
   steps={[
     { label: "Hired", value: 24 },
     { label: "Backfill", value: 8 },
@@ -35,15 +36,16 @@ The running-total bridge: each step floats from the running total by its signed 
     { label: "Net", total: true },
   ]}
 />
+</Container>
 ```
 
 ### Compact, inspected
 
 ```tsx
-<WaterfallChart
+<Container xl>
+  <WaterfallChart
   compact
   defaultSelected={2}
-  style={{ maxWidth: 560 }}
   steps={[
     { label: "Start", value: 100, total: true },
     { label: "Wins", value: 30 },
@@ -51,6 +53,7 @@ The running-total bridge: each step floats from the running total by its signed 
     { label: "End", total: true },
   ]}
 />
+</Container>
 ```
 
 ## Do & Don't
@@ -60,9 +63,9 @@ The running-total bridge: each step floats from the running total by its signed 
 **Do** - Bridge from one total to the next with signed steps; let the fixed coloring carry rise and fall.
 
 ```tsx
-<WaterfallChart
+<Container xl>
+  <WaterfallChart
   title="Q3 revenue bridge"
-  style={{ maxWidth: 560 }}
   steps={[
     { label: "Q2", value: 4200, total: true },
     { label: "New", value: 980 },
@@ -70,16 +73,18 @@ The running-total bridge: each step floats from the running total by its signed 
     { label: "Q3", total: true },
   ]}
 />
+</Container>
 ```
 
 **Don't** - Plain bars of period totals hide the walk: what rose, what fell, and by how much.
 
 ```tsx
-<Chart
-  style={{ maxWidth: 560 }}
+<Container xl>
+  <Chart
   data={[
     { label: "Q2", value: 4200 },
     { label: "Q3", value: 4640 },
   ]}
 />
+</Container>
 ```

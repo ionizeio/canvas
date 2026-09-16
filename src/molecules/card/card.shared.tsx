@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Pressable, Text, StyleSheet, useTheme, useLayoutAxis, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, devWarn, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, StyleSheet, useFillStyle, useTheme, useLayoutAxis, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, devWarn, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
 import { Image } from "../../atoms/image/image.shared.js";
 import * as s from "./card.styles.js";
 import { type CardSkin, type Elevation, type Density } from "./card.styles.js";
@@ -103,8 +103,8 @@ export interface CardProps {
   comfortable?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 // Elevation precedence when more than one is passed: first match wins.
@@ -133,6 +133,10 @@ export function createCard(skin: CardSkin) {
     // else the card is as tall as its sections unless asked to grow.
     const cell = useLayoutAxis();
     const grow = !!props.grow || cell?.bounded === true;
+    // A Card is FILL (src/style/sizing.ts): it spans the parent it is given, shares a
+    // Row with hugging siblings, and takes its measure from a Container step or a
+    // Row span rather than a width of its own.
+    const widthFill = useFillStyle("Card");
 
     // Empty strings count as "no content", so a cleared field never renders an empty
     // header, footer, or a stray separator: guard on truthiness rather than null for
@@ -200,8 +204,9 @@ export function createCard(skin: CardSkin) {
     // as tall as its sections, which is every card that was not asked to grow.
     const fill: ViewStyle | null = grow ? { flexGrow: 1 } : null;
     // Outer layout composition, carried on the outermost node (the plain View, or the
-    // RippleClip wrapper on a pressable card).
-    const outer: StyleProp<ViewStyle> = [fill, style];
+    // RippleClip wrapper on a pressable card): the FILL width, the height growth, then
+    // the caller's composition.
+    const outer: StyleProp<ViewStyle> = [widthFill, fill, style];
     const bodyFill: StyleProp<ViewStyle> = fill;
 
     // The header and footer are the same nodes on both paths, so they are built once
@@ -294,8 +299,8 @@ export function createCard(skin: CardSkin) {
 
 export interface CardSectionProps {
   children?: ReactNode;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 export interface CardTextProps {

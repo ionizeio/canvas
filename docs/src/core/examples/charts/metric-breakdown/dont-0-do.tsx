@@ -3,19 +3,20 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { MetricBreakdown } = scope;
+  const { Container, MetricBreakdown } = scope;
   return (
-<MetricBreakdown
+<Container md>
+  <MetricBreakdown
   value="12.4k"
   label="Requests"
   rate="0.74%"
   rateLabel="Error rate"
   rateSuccess
-  style={{ maxWidth: 420 }}
   breakdown={[
     { label: "GET", value: 8, delta: "+8%" },
     { label: "POST", value: 4, delta: "+21%" },
   ]}
 />
+</Container>
   );
 }

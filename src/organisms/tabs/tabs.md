@@ -94,7 +94,7 @@ of its neighbor left showing. `block` shares the row equally and never
 overflows; a vertical rail stacks instead.
 
 ```tsx
-<View style={{ width: 320, maxWidth: "100%" }}>
+<Container xs>
   <Tabs
     tabs={[
       "General",
@@ -106,7 +106,7 @@ overflows; a vertical rail stacks instead.
     ]}
     defaultActive={0}
   />
-</View>
+</Container>
 ```
 
 ## Do & Don't

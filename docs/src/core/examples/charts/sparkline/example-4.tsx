@@ -3,8 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Sparkline } = scope;
+  const { Container, Sparkline } = scope;
   return (
-<Sparkline track values={[0, 0, 0, 0, 0, 0, 0, 0]} style={{ width: 160 }} />
+<Container xxxs>
+  <Sparkline track values={[0, 0, 0, 0, 0, 0, 0, 0]} />
+</Container>
   );
 }

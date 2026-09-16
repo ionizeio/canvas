@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import { View, Text, useTheme, useControllableState, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Text, useTheme, useControllableState, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
 import type { DropdownItem, DropdownProps } from "../dropdown/dropdown.shared.js";
 import { Icon } from "../icon/icon.js";
 import { createAvatar, type AvatarSkin } from "./avatar.shared.js";
@@ -86,7 +86,7 @@ export interface AvatarMenuProps {
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Outer layout composition only (placement within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  style?: LayoutStyle;
 }
 
 // The capsule is always a pill: a 9999 radius reads as a capsule at every skin

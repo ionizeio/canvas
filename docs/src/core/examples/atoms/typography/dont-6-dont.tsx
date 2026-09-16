@@ -3,11 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Typography } = scope;
+  const { Typography, Container } = scope;
   return (
-<Typography body style={{ maxWidth: 340 }}>
-  <Typography code>npm install</Typography>
-   THEN restart the dev server BEFORE you continue.
-</Typography>
+<Container xs>
+  <Typography body>
+    <Typography code>npm install</Typography>
+     THEN restart the dev server BEFORE you continue.
+  </Typography>
+</Container>
   );
 }

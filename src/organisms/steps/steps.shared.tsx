@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { type DimensionValue } from "react-native";
-import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, useContainerBreakpoint, containerProbe, useMinTargetSlop, type BreakpointKey, type Responsive, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, useContainerBreakpoint, containerProbe, useMinTargetSlop, type BreakpointKey, type Responsive, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import * as s from "./steps.styles.js";
 import { type State, type StepsSkin } from "./steps.styles.js";
 
@@ -50,8 +50,8 @@ export interface StepsProps {
   onStepPress?: (index: number) => void;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 type Layout = "horizontal" | "vertical" | "progress";

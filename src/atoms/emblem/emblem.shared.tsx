@@ -1,6 +1,6 @@
 import { primaryText } from "../../style/primary-text.js";
 import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
-import { View, Text, useTheme, alpha, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, useTheme, alpha, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { type EmblemSkin } from "./emblem.styles.js";
 
 // Shared Emblem shell. The tinted rounded square (or circle) that holds a single
@@ -36,7 +36,7 @@ export interface EmblemProps {
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** For layout composition only (not styling): the tint, radius, and size come from props. */
-  style?: StyleProp<ViewStyle>;
+  style?: LayoutStyle;
 }
 
 // Tone precedence when more than one is passed: first match wins.

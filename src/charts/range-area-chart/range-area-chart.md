@@ -5,12 +5,12 @@ A min/max envelope: a translucent band between each label's `low` and `high`, an
 ## Usage
 
 ```tsx
-<RangeAreaChart
+<Container xl>
+  <RangeAreaChart
   title="Latency envelope"
   label="p50 to p99"
   labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
   curved
-  style={{ maxWidth: 560 }}
   data={[
     { low: 42, high: 118, mid: 61 },
     { low: 38, high: 102, mid: 55 },
@@ -21,6 +21,7 @@ A min/max envelope: a translucent band between each label's `low` and `high`, an
     { low: 34, high: 81, mid: 46 },
   ]}
 />
+</Container>
 ```
 
 ## Variants
@@ -28,12 +29,12 @@ A min/max envelope: a translucent band between each label's `low` and `high`, an
 ### Band only
 
 ```tsx
-<RangeAreaChart
+<Container xl>
+  <RangeAreaChart
   title="Daily temperature"
   label="Range"
   labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
   curved
-  style={{ maxWidth: 560 }}
   data={[
     { low: -4, high: 6 },
     { low: -2, high: 9 },
@@ -43,18 +44,19 @@ A min/max envelope: a translucent band between each label's `low` and `high`, an
     { low: 15, high: 28 },
   ]}
 />
+</Container>
 ```
 
 ### Success tone, inspected
 
 ```tsx
-<RangeAreaChart
+<Container xl>
+  <RangeAreaChart
   title="Forecast"
   label="Confidence band"
   success
   defaultSelected={2}
   labels={["W1", "W2", "W3", "W4"]}
-  style={{ maxWidth: 560 }}
   data={[
     { low: 90, high: 110, mid: 100 },
     { low: 95, high: 125, mid: 108 },
@@ -62,6 +64,7 @@ A min/max envelope: a translucent band between each label's `low` and `high`, an
     { low: 104, high: 158, mid: 129 },
   ]}
 />
+</Container>
 ```
 
 ## Do & Don't
@@ -71,11 +74,11 @@ A min/max envelope: a translucent band between each label's `low` and `high`, an
 **Do** - Encode uncertainty as the band and the estimate as the mid line, in one mark.
 
 ```tsx
-<RangeAreaChart
+<Container xl>
+  <RangeAreaChart
   title="Forecast"
   label="Confidence band"
   labels={["W1", "W2", "W3", "W4"]}
-  style={{ maxWidth: 560 }}
   data={[
     { low: 90, high: 110, mid: 100 },
     { low: 95, high: 125, mid: 108 },
@@ -83,17 +86,19 @@ A min/max envelope: a translucent band between each label's `low` and `high`, an
     { low: 104, high: 158, mid: 129 },
   ]}
 />
+</Container>
 ```
 
 **Don't** - Two separate lines for low and high leave the envelope unreadable as a region and double the legend.
 
 ```tsx
-<LineChart
+<Container xl>
+  <LineChart
   labels={["W1", "W2", "W3", "W4"]}
-  style={{ maxWidth: 560 }}
   series={[
     { label: "Low", values: [90, 95, 100, 104] },
     { label: "High", values: [110, 125, 140, 158] },
   ]}
 />
+</Container>
 ```

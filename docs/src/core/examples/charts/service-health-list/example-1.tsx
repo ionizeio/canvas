@@ -3,17 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { ServiceHealthList } = scope;
+  const { Container, ServiceHealthList } = scope;
   return (
-<ServiceHealthList
+<Container lg>
+  <ServiceHealthList
   title="System status"
   compact
-  style={{ maxWidth: 480 }}
   items={[
     { label: "API", detail: "99.98%" },
     { label: "Dashboard", detail: "99.92%", degraded: true },
     { label: "Webhooks", detail: "97.10%", down: true },
   ]}
 />
+</Container>
   );
 }

@@ -3,17 +3,19 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Ticker, Card, Reveal, Typography, Column } = scope;
+  const { Ticker, Card, Reveal, Typography, Column, Container } = scope;
   return (
 <Ticker values={[1, 2]} interval={2800}>
   {(pass) => (
     <Reveal key={pass}>
-      <Card padded style={{ width: 300, maxWidth: "100%" }}>
-        <Column tight>
-          <Typography h4 semibold>Arriving</Typography>
-          <Typography small muted>The same entrance, played again every few seconds.</Typography>
-        </Column>
-      </Card>
+      <Container xs>
+        <Card padded>
+          <Column tight>
+            <Typography h4 semibold>Arriving</Typography>
+            <Typography small muted>The same entrance, played again every few seconds.</Typography>
+          </Column>
+        </Card>
+      </Container>
     </Reveal>
   )}
 </Ticker>

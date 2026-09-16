@@ -1,6 +1,6 @@
 import { Fragment, type ComponentType, type ReactNode } from "react";
 import { FlatList, StyleSheet, type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, devWarn, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, devWarn, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
@@ -152,8 +152,8 @@ export interface StackedListProps {
   onReorder?: (move: StackedListMove) => void;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 type Variant = "two-line" | "clickable" | "card";

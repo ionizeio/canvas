@@ -3,8 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Switch } = scope;
+  const { Switch, Container } = scope;
   return (
-<Switch style={{ maxWidth: 280 }}>Two-factor auth</Switch>
+<Container xxs>
+  <Switch>Two-factor auth</Switch>
+</Container>
   );
 }

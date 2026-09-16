@@ -1,7 +1,7 @@
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { type GestureResponderEvent, type View as RNView, type ScrollView as RNScrollView } from "react-native";
-import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useControllableState, AnchoredOverlay, useMeasuredWidth, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useControllableState, AnchoredOverlay, useMeasuredWidth, FILL, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { ButtonGroup } from "../../atoms/button-group/button-group.js";
 import { type CalendarSkin, type DayState, type Density } from "./calendar.styles.js";
 import { calendarDayAccessibility } from "./calendar.accessibility.js";
@@ -39,12 +39,11 @@ import { calendarDayAccessibility } from "./calendar.accessibility.js";
 // cells. Seven cells per row times the cell width gives the grid a fixed width,
 // set explicitly so wrapping lands exactly seven-per-row (width supplied by the
 // skin's per-density metrics). The timelines instead flex their day columns inside
-// a fixed desktop-first container width capped at 100%, so week/day scale down to
-// a phone without a breakpoint.
+// the container, so week/day scale to any parent without a breakpoint.
 
-// The month container never exceeds its parent (day/week already carry the same
-// cap on their fixed timeline widths); the fluid cell math below does the shrinking.
-const MONTH_CAP: ViewStyle = { maxWidth: "100%" };
+// Every calendar container is FILL (src/style/sizing.ts): it spans the parent it is
+// given and the fluid cell math below does the shrinking.
+const ROOT: ViewStyle = FILL;
 
 // The container's horizontal chrome (padding + border on both sides) between its
 // measured outer width and the width the seven-cell grid can actually use.
@@ -143,8 +142,8 @@ export interface CalendarProps {
 
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 // Density precedence: `compact` wins, otherwise the default cell.
@@ -666,7 +665,7 @@ export function createCalendar(skin: CalendarSkin) {
     if (view === "day") {
       const label = `${WEEKDAYS_FULL[weekdayOf(anchor)]}, ${monthName} ${anchor}`;
       return (
-        <View testID={testID} style={[skin.containerBase, skin.containerSurface(tokens), { width: tm.dayWidth, maxWidth: "100%" }, style]}>
+        <View testID={testID} style={[skin.containerBase, skin.containerSurface(tokens), ROOT, style]}>
           {header(label)}
           {formatToggle}
           {timeScroller(
@@ -686,7 +685,7 @@ export function createCalendar(skin: CalendarSkin) {
     if (view === "week") {
       const weekDays = Array.from({ length: 7 }, (_, i) => weekStart + i);
       return (
-        <View testID={testID} style={[skin.containerBase, skin.containerSurface(tokens), { width: tm.weekWidth, maxWidth: "100%" }, style]}>
+        <View testID={testID} style={[skin.containerBase, skin.containerSurface(tokens), ROOT, style]}>
           {header(month)}
           {formatToggle}
           {/* Week strip: weekday label over the selectable day cell, aligned to the timeline columns below. */}
@@ -726,7 +725,7 @@ export function createCalendar(skin: CalendarSkin) {
 
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
     return (
-      <View testID={testID} onLayout={onMonthLayout} style={[skin.containerBase, skin.containerSurface(tokens), MONTH_CAP, style]}>
+      <View testID={testID} onLayout={onMonthLayout} style={[skin.containerBase, skin.containerSurface(tokens), ROOT, style]}>
         {header(month)}
 
         {/* Weekday label row. */}

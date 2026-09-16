@@ -3,17 +3,19 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Typography, Row, Column, Emblem } = scope;
+  const { Card, Typography, Row, Column, Container, Emblem } = scope;
   return (
-<Card padded style={{ width: 280, maxWidth: "100%" }}>
-  <Row between alignStart>
-    <Column tight>
-      <Typography caption medium>Active identities</Typography>
-      <Typography h3 bold>12,348</Typography>
-      <Typography tiny muted>+142 today</Typography>
-    </Column>
-    <Emblem primary label="U" />
-  </Row>
-</Card>
+<Container xxs>
+  <Card padded>
+    <Row between alignStart>
+      <Column tight>
+        <Typography caption medium>Active identities</Typography>
+        <Typography h3 bold>12,348</Typography>
+        <Typography tiny muted>+142 today</Typography>
+      </Column>
+      <Emblem primary label="U" />
+    </Row>
+  </Card>
+</Container>
   );
 }

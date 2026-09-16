@@ -3,9 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Chart } = scope;
+  const { Chart, Container } = scope;
   return (
-<Chart title="Signups" max={100} style={{ maxWidth: 560 }} data={[
+<Container xl>
+  <Chart title="Signups" max={100} data={[
     { label: "Mon", value: 45 },
     { label: "Tue", value: 60 },
     { label: "Wed", value: 35 },
@@ -14,5 +15,6 @@ export default function Example(scope: ExampleScope) {
     { label: "Sat", value: 80 },
     { label: "Sun", value: 95 }
   ]} />
+</Container>
   );
 }

@@ -3,9 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { LineChart } = scope;
+  const { Container, LineChart } = scope;
   return (
-<LineChart
+<Container xl>
+  <LineChart
   title="Sessions by platform"
   labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
   series={[
@@ -15,7 +16,7 @@ export default function Example(scope: ExampleScope) {
   ]}
   fade
   curved
-  style={{ maxWidth: 560 }}
 />
+</Container>
   );
 }

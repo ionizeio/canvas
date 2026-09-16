@@ -1,4 +1,4 @@
-import { View, useTheme, devWarn, alpha, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, useTheme, devWarn, alpha, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { seriesFill } from "../shared/charts.styles.js";
 import { ChartLegend } from "../shared/chart-legend.js";
 import { type StackedSegment } from "../shared/types.js";
@@ -45,7 +45,7 @@ export interface StackedBarProps {
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** For sizing/composition only. */
-  style?: StyleProp<ViewStyle>;
+  style?: LayoutStyle;
 }
 
 export function StackedBar({ segments, label, hideLegend, track, tall, subtle, testID, style }: StackedBarProps) {

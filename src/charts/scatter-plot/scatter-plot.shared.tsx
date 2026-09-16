@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 import { Circle } from "react-native-svg";
-import { View, Text, Pressable, useTheme, useControllableState, devWarn, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, useControllableState, devWarn, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type Tone } from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
@@ -59,8 +59,8 @@ export interface ScatterPlotProps {
   onSelect?: (selection: ScatterSelection | null) => void;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 function toneOf(p: ScatterPlotProps): Tone {

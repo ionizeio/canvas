@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Badge, Stats, Feed, Tabs, LineChart, Progress, useFormFactor, useToast } from "@nannier-com/canvas";
+import { Row, Column, Card, Typography, Button, Badge, Stats, Feed, Tabs, LineChart, Progress, useFormFactor, useToast, Grid } from "@nannier-com/canvas";
 import type { TemplateDoc } from "../types";
 
 // Admin dashboard built from real Canvas components: a Stats hero row with
@@ -85,7 +85,6 @@ function ActivityAndChartLive() {
         series={[{ label: "Sign-ins", values: r.values }]}
         curved
         fade
-        style={{ width: "100%" }}
       />
     </Column>
   );
@@ -109,8 +108,8 @@ function ActivityAndChartLive() {
 function SecondaryWidgetsLive() {
   const { toast } = useToast();
   return (
-    <Row relaxed wrap>
-      <Card grow style={{ flexBasis: 300, minWidth: 280 }}>
+    <Grid minTileWidth={280} relaxed>
+      <Card grow>
         <Column cozy>
           <Typography h4>Sign-in methods</Typography>
           {SIGN_IN_METHODS.map((m) => (
@@ -124,7 +123,7 @@ function SecondaryWidgetsLive() {
           ))}
         </Column>
       </Card>
-      <Card grow style={{ flexBasis: 300, minWidth: 280 }}>
+      <Card grow>
         <Column cozy>
           <Row between alignCenter>
             <Typography h4>Service health</Typography>
@@ -153,7 +152,7 @@ function SecondaryWidgetsLive() {
           </Column>
         </Column>
       </Card>
-      <Card grow style={{ flexBasis: 300, minWidth: 280 }}>
+      <Card grow>
         <Column cozy>
           <Typography h4>Storage</Typography>
           <Column tight>
@@ -175,7 +174,7 @@ function SecondaryWidgetsLive() {
           </Row>
         </Column>
       </Card>
-    </Row>
+    </Grid>
   );
 }
 

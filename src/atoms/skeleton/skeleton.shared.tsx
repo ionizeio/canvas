@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Animated } from "react-native";
-import { View, useTheme, useReducedMotion, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, useTheme, useReducedMotion, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 
 // Shared Skeleton shell. The structure (a single muted shape — text line, avatar,
 // button — or a composite card / list / table scaffold built from one muted fill,
@@ -39,6 +39,12 @@ export interface SkeletonProps {
   // Size (pick one). Scales the line height and the avatar/button footprint.
   small?: boolean;
   large?: boolean;
+  // Line length (text shape only; pick one; default spans the parent). A paragraph
+  // of placeholder lines varies them so the block reads like wrapped prose.
+  /** A line that runs most of the way across (80%), a mid-paragraph line. */
+  long?: boolean;
+  /** A short trailing line (60%), the last line of a paragraph. */
+  short?: boolean;
   /** Subtle opacity pulse while content loads. */
   animate?: boolean;
   /**
@@ -49,8 +55,8 @@ export interface SkeletonProps {
   accessibilityLabel?: string;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 // The accessibility props every Skeleton shape carries on its outermost element so
@@ -281,8 +287,9 @@ export function createSkeleton(skin: SkeletonSkin) {
       );
     }
 
-    // Default: a single text line, full width by default; style carries the width
-    // override (e.g. width: "60%") and any other layout.
-    return <Pulse animate={animate} {...a11y} testID={testID} style={[fill(tokens), lineHeight(props), { width: "100%", borderRadius: skin.lineRadius }, style]} />;
+    // Default: a single text line spanning the parent; `long` / `short` shorten it
+    // so a stack of lines reads like a wrapped paragraph.
+    const length = props.short ? "60%" : props.long ? "80%" : "100%";
+    return <Pulse animate={animate} {...a11y} testID={testID} style={[fill(tokens), lineHeight(props), { width: length, borderRadius: skin.lineRadius }, style]} />;
   };
 }

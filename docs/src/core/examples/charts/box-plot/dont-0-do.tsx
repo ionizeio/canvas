@@ -3,15 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { BoxPlot } = scope;
+  const { Container, BoxPlot } = scope;
   return (
-<BoxPlot
+<Container xl>
+  <BoxPlot
   title="Latency by region"
-  style={{ maxWidth: 560 }}
   data={[
     { label: "us-east", values: [42, 38, 51, 44, 47, 39, 58, 44, 41, 49, 96] },
     { label: "eu-west", values: [55, 61, 58, 64, 57, 63, 59, 66, 60, 62] },
   ]}
 />
+</Container>
   );
 }

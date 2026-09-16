@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 import Svg, { Path } from "react-native-svg";
-import { View, Text, Pressable, useTheme, useControllableState, devWarn, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, useControllableState, devWarn, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { seriesFill } from "../shared/charts.styles.js";
 import { ChartLegend } from "../shared/chart-legend.js";
 import { announceSelection, pressPoint, DIM_OPACITY } from "../shared/chart-inspect.js";
@@ -35,7 +35,7 @@ export interface PieChartProps {
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** For sizing/composition only. */
-  style?: StyleProp<ViewStyle>;
+  style?: LayoutStyle;
 }
 
 export function PieChart(props: PieChartProps) {

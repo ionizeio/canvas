@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { StyleSheet, ScrollView } from "react-native";
-import { View, Text, Pressable, useTheme, alpha, shadow, devWarn, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, alpha, shadow, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { announceSelection } from "../shared/chart-inspect.js";
 import { estimateTextWidth } from "../shared/chart-math.js";
 
@@ -47,7 +47,7 @@ export interface HeatmapProps {
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** For sizing/composition only. */
-  style?: StyleProp<ViewStyle>;
+  style?: LayoutStyle;
 }
 
 const HEATMAP_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];

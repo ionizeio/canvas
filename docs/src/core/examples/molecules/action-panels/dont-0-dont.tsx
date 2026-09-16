@@ -3,8 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { ActionPanel } = scope;
+  const { ActionPanel, Container } = scope;
   return (
-<ActionPanel title="Delete this project" actionLabel="Delete project" destructive style={{ maxWidth: 420 }} />
+<Container md>
+  <ActionPanel title="Delete this project" actionLabel="Delete project" destructive />
+</Container>
   );
 }

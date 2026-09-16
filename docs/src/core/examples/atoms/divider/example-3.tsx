@@ -3,20 +3,22 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Card, Divider, Typography, Column } = scope;
+  const { Button, Card, Divider, Typography, Column, Container } = scope;
   return (
-<Column cozy style={{ width: 320, maxWidth: "100%" }}>
-  <Column snug>
-    <Card padded>
-      <Typography small>Ada commented on the draft</Typography>
-    </Card>
-    <Card padded>
-      <Typography small>Grace approved the request</Typography>
-    </Card>
+<Container xs>
+  <Column cozy>
+    <Column snug>
+      <Card padded>
+        <Typography small>Ada commented on the draft</Typography>
+      </Card>
+      <Card padded>
+        <Typography small>Grace approved the request</Typography>
+      </Card>
+    </Column>
+    <Divider>
+      <Button ghost small>Show more</Button>
+    </Divider>
   </Column>
-  <Divider>
-    <Button ghost small>Show more</Button>
-  </Divider>
-</Column>
+</Container>
   );
 }

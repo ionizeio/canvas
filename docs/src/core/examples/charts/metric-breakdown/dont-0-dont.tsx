@@ -8,7 +8,7 @@ export default function Example(scope: ExampleScope) {
 <View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 420, gap: 8 }}>
   <Text style={{ fontSize: 22, fontWeight: "600" }}>12.4k</Text>
   <Text style={{ fontSize: 11, color: tokens["muted-foreground"] }}>REQUESTS</Text>
-  <Sparkline line values={[96, 104, 110, 108, 116]} style={{ width: "100%" }} />
+  <Sparkline line values={[96, 104, 110, 108, 116]} />
 </View>
   );
 }

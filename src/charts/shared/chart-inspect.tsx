@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { AccessibilityInfo, StyleSheet } from "react-native";
-import { View, Text, useTheme, shadow, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, useTheme, shadow, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { estimateTextWidth } from "./chart-math.js";
 
 // Press-to-inspect support shared by the Chart family: the in-plot value flag
@@ -145,7 +145,7 @@ export interface ScrubSurfaceProps {
   selected: number | null;
   /** SET the selection (null clears). */
   onScrub: (index: number | null) => void;
-  style?: StyleProp<ViewStyle>;
+  style?: LayoutStyle;
 }
 
 export interface ScrubGesture {

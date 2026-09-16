@@ -3,9 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { AreaChart } = scope;
+  const { Container, AreaChart } = scope;
   return (
-<AreaChart
+<Container xl>
+  <AreaChart
   title="Traffic by channel"
   labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr"]}
   series={[
@@ -15,7 +16,7 @@ export default function Example(scope: ExampleScope) {
   ]}
   stacked
   curved
-  style={{ maxWidth: 560 }}
 />
+</Container>
   );
 }

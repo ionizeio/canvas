@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 import Svg, { Path } from "react-native-svg";
-import { View, Pressable, useTheme, useControllableState, devWarn, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, useTheme, useControllableState, devWarn, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { seriesFill } from "../shared/charts.styles.js";
 import { type StackedSegment } from "../shared/types.js";
 import { ChartLegend } from "../shared/chart-legend.js";
@@ -38,7 +38,7 @@ export interface RadialBarChartProps {
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** For sizing/composition only. */
-  style?: StyleProp<ViewStyle>;
+  style?: LayoutStyle;
 }
 
 const MAX_RINGS = 6;

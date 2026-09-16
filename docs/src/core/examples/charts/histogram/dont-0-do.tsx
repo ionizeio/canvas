@@ -3,13 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Histogram } = scope;
+  const { Container, Histogram } = scope;
   return (
-<Histogram
+<Container xl>
+  <Histogram
   title="Response times"
   label="Latency ms"
-  style={{ maxWidth: 560 }}
   values={[42, 38, 51, 44, 47, 39, 58, 62, 44, 41, 49, 53, 46, 43, 71, 48]}
 />
+</Container>
   );
 }

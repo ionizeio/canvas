@@ -2,7 +2,7 @@ import { forwardRef, type ReactNode } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, useTheme, surfaceRipple, RippleClip, cornerRadii, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, surfaceRipple, RippleClip, cornerRadii, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
 import { useRadioGroup } from "./radio-context.js";
 
 // Shared Radio shell. Uses React Native's primitives DIRECTLY and reads the active
@@ -57,8 +57,8 @@ export interface RadioProps {
   large?: boolean;
   /** Dim the control and block presses. */
   disabled?: boolean;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 export type Size = "small" | "default" | "large";

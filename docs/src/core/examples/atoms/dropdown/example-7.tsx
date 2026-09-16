@@ -3,20 +3,22 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Dropdown, Row } = scope;
+  const { Dropdown, Row, Container } = scope;
   return (
-<Row end style={{ width: 360, maxWidth: "100%" }}>
-  <Dropdown
-    trigger="Account"
-    alignEnd
-    title="Rachel Chen"
-    description="rachel@nannier.com"
-    items={[
-      { label: "Profile", icon: "user" },
-      { label: "Settings", icon: "settings" },
-      { label: "Log out", icon: "logOut", separatorBefore: true }
-    ]}
-  />
-</Row>
+<Container sm>
+  <Row end>
+    <Dropdown
+      trigger="Account"
+      alignEnd
+      title="Rachel Chen"
+      description="rachel@nannier.com"
+      items={[
+        { label: "Profile", icon: "user" },
+        { label: "Settings", icon: "settings" },
+        { label: "Log out", icon: "logOut", separatorBefore: true }
+      ]}
+    />
+  </Row>
+</Container>
   );
 }

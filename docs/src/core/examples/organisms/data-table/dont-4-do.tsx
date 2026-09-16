@@ -3,8 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { DataTable } = scope;
+  const { DataTable, Container } = scope;
   return (
-<DataTable bordered loading columns={["Name", "Email", "Status"]} rows={[]} style={{ width: 520, maxWidth: "100%" }} />
+<Container lg>
+    <DataTable bordered loading columns={["Name", "Email", "Status"]} rows={[]} />
+</Container>
   );
 }

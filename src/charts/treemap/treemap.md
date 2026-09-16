@@ -5,9 +5,9 @@ Squarified value tiles: each datum becomes a ramp-colored rectangle whose area i
 ## Usage
 
 ```tsx
-<Treemap
+<Container xl>
+  <Treemap
   title="Storage by service"
-  style={{ maxWidth: 560 }}
   data={[
     { label: "Media", value: 620 },
     { label: "Backups", value: 340 },
@@ -18,6 +18,7 @@ Squarified value tiles: each datum becomes a ramp-colored rectangle whose area i
     { label: "Other", value: 25 },
   ]}
 />
+</Container>
 ```
 
 ## Variants
@@ -25,9 +26,9 @@ Squarified value tiles: each datum becomes a ramp-colored rectangle whose area i
 ### Compact
 
 ```tsx
-<Treemap
+<Container xl>
+  <Treemap
   compact
-  style={{ maxWidth: 560 }}
   data={[
     { label: "Chrome", value: 61 },
     { label: "Safari", value: 24 },
@@ -36,15 +37,16 @@ Squarified value tiles: each datum becomes a ramp-colored rectangle whose area i
     { label: "Other", value: 2 },
   ]}
 />
+</Container>
 ```
 
 ### Inspected
 
 ```tsx
-<Treemap
+<Container xl>
+  <Treemap
   title="Revenue by product"
   defaultSelected={0}
-  style={{ maxWidth: 560 }}
   data={[
     { label: "Platform", value: 4200 },
     { label: "Add-ons", value: 1400 },
@@ -52,6 +54,7 @@ Squarified value tiles: each datum becomes a ramp-colored rectangle whose area i
     { label: "Training", value: 300 },
   ]}
 />
+</Container>
 ```
 
 ## Do & Don't
@@ -61,22 +64,23 @@ Squarified value tiles: each datum becomes a ramp-colored rectangle whose area i
 **Do** - Reserve the treemap for part-of-whole data with real size contrast, where area comparison earns the space.
 
 ```tsx
-<Treemap
+<Container xl>
+  <Treemap
   title="Storage by service"
-  style={{ maxWidth: 560 }}
   data={[
     { label: "Media", value: 620 },
     { label: "Backups", value: 340 },
     { label: "Logs", value: 180 },
   ]}
 />
+</Container>
 ```
 
 **Don't** - A handful of near-equal shares reads better as a PieChart or a BarList; near-equal tiles defeat the area encoding.
 
 ```tsx
-<Treemap
-  style={{ maxWidth: 560 }}
+<Container xl>
+  <Treemap
   data={[
     { label: "A", value: 26 },
     { label: "B", value: 25 },
@@ -84,4 +88,5 @@ Squarified value tiles: each datum becomes a ramp-colored rectangle whose area i
     { label: "D", value: 24 },
   ]}
 />
+</Container>
 ```

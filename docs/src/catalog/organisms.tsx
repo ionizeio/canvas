@@ -1,4 +1,4 @@
-import { View, Text, Row, Column, useTheme, alpha } from "@nannier-com/canvas";
+import { View, Text, Row, Column, useTheme, alpha, Container } from "@nannier-com/canvas";
 import Svg, { Path, Circle, Line, Polyline } from "react-native-svg";
 import { geist } from "../ui/fonts";
 import { CanvasMark } from "../brand/canvas-mark";
@@ -244,40 +244,42 @@ function StepsPreview() {
   const { tokens } = useTheme();
   const steps = [true, true, false, false];
   return (
-    <Row flush alignCenter style={{ width: 220, maxWidth: "100%" }}>
-      {steps.map((done, i) => {
-        const current = i === 2;
-        const last = i === steps.length - 1;
-        return (
-          <Row key={i} flush alignCenter fill={!last}>
-            <Column
-              flush
-              center
-              alignCenter
-              style={{
-                width: 20,
-                height: 20,
-                borderRadius: 10,
-                backgroundColor: done ? tokens.primary : current ? "transparent" : tokens.muted,
-                borderWidth: current ? 2 : 0,
-                borderColor: current ? tokens.primary : "transparent",
-              }}
-            >
-              {done ? (
-                <Svg width={8} height={8} viewBox="0 0 24 24" fill="none" stroke={tokens["primary-foreground"]} strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
-                  <Polyline points="20 6 9 17 4 12" />
-                </Svg>
-              ) : (
-                <Text style={{ fontFamily: geist("600"), fontSize: 9, color: current ? tokens.primary : tokens["muted-foreground"] }}>{i + 1}</Text>
-              )}
-            </Column>
-            {!last ? (
-              <View style={{ flex: 1, height: 2, marginHorizontal: 4, backgroundColor: done ? tokens.primary : tokens.muted }} />
-            ) : null}
-          </Row>
-        );
-      })}
-    </Row>
+    <Container xxxs start>
+      <Row flush alignCenter>
+        {steps.map((done, i) => {
+          const current = i === 2;
+          const last = i === steps.length - 1;
+          return (
+            <Row key={i} flush alignCenter fill={!last}>
+              <Column
+                flush
+                center
+                alignCenter
+                style={{
+                  width: 20,
+                  height: 20,
+                  borderRadius: 10,
+                  backgroundColor: done ? tokens.primary : current ? "transparent" : tokens.muted,
+                  borderWidth: current ? 2 : 0,
+                  borderColor: current ? tokens.primary : "transparent",
+                }}
+              >
+                {done ? (
+                  <Svg width={8} height={8} viewBox="0 0 24 24" fill="none" stroke={tokens["primary-foreground"]} strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
+                    <Polyline points="20 6 9 17 4 12" />
+                  </Svg>
+                ) : (
+                  <Text style={{ fontFamily: geist("600"), fontSize: 9, color: current ? tokens.primary : tokens["muted-foreground"] }}>{i + 1}</Text>
+                )}
+              </Column>
+              {!last ? (
+                <View style={{ flex: 1, height: 2, marginHorizontal: 4, backgroundColor: done ? tokens.primary : tokens.muted }} />
+              ) : null}
+            </Row>
+          );
+        })}
+      </Row>
+    </Container>
   );
 }
 

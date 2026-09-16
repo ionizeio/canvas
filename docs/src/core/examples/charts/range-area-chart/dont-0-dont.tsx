@@ -3,15 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { LineChart } = scope;
+  const { Container, LineChart } = scope;
   return (
-<LineChart
+<Container xl>
+  <LineChart
   labels={["W1", "W2", "W3", "W4"]}
-  style={{ maxWidth: 560 }}
   series={[
     { label: "Low", values: [90, 95, 100, 104] },
     { label: "High", values: [110, 125, 140, 158] },
   ]}
 />
+</Container>
   );
 }

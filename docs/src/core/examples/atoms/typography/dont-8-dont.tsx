@@ -3,8 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Typography } = scope;
+  const { Typography, Container } = scope;
   return (
-<Typography tiny style={{ maxWidth: 300 }}>These terms govern your use of the service and your data; please read them carefully before you continue past this screen.</Typography>
+<Container xs>
+  <Typography tiny>These terms govern your use of the service and your data; please read them carefully before you continue past this screen.</Typography>
+</Container>
   );
 }

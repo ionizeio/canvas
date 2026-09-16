@@ -3,19 +3,23 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Reveal, RevealGroup, Typography, Row } = scope;
+  const { Card, Reveal, RevealGroup, Typography, Row, Container } = scope;
   return (
 <Row cozy wrap>
   <RevealGroup>
     <Reveal fromBelow>
-      <Card padded style={{ width: 140 }}>
-        <Typography small semibold>Rises</Typography>
-      </Card>
+      <Container xxxs>
+        <Card padded>
+          <Typography small semibold>Rises</Typography>
+        </Card>
+      </Container>
     </Reveal>
     <Reveal fromBelow>
-      <Card padded style={{ width: 140 }}>
-        <Typography small semibold>Rises</Typography>
-      </Card>
+      <Container xxxs>
+        <Card padded>
+          <Typography small semibold>Rises</Typography>
+        </Card>
+      </Container>
     </Reveal>
   </RevealGroup>
 </Row>

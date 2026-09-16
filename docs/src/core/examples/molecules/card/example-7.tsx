@@ -3,22 +3,24 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardSeparator, CardTitle, Input } = scope;
+  const { Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardSeparator, CardTitle, Input, Container } = scope;
   return (
-<Card flush style={{ width: 360, maxWidth: "100%" }}>
-  <CardHeader>
-    <CardTitle>Workspace settings</CardTitle>
-    <CardDescription>Rename the workspace. The URL updates everywhere.</CardDescription>
-  </CardHeader>
-  <CardSeparator />
-  <CardContent>
-    <Input label="Workspace name" placeholder="Acme Inc." />
-  </CardContent>
-  <CardSeparator />
-  <CardFooter>
-    <Button ghost small>Cancel</Button>
-    <Button primary small>Save changes</Button>
-  </CardFooter>
-</Card>
+<Container sm>
+  <Card flush>
+    <CardHeader>
+      <CardTitle>Workspace settings</CardTitle>
+      <CardDescription>Rename the workspace. The URL updates everywhere.</CardDescription>
+    </CardHeader>
+    <CardSeparator />
+    <CardContent>
+      <Input label="Workspace name" placeholder="Acme Inc." />
+    </CardContent>
+    <CardSeparator />
+    <CardFooter>
+      <Button ghost small>Cancel</Button>
+      <Button primary small>Save changes</Button>
+    </CardFooter>
+  </Card>
+</Container>
   );
 }

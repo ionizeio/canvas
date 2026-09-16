@@ -1,4 +1,4 @@
-import { View, Text, useTheme, palette, statusHues, devWarn, tabularNums, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, useTheme, palette, statusHues, devWarn, tabularNums, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
 import { CHART_ROOT } from "../shared/chart-frame.js";
@@ -78,8 +78,8 @@ export interface MetricBreakdownProps {
   plain?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 // The rate readout's color: the gaugeFill recipe for the toned states, the
@@ -171,7 +171,7 @@ export function createMetricBreakdown(skin: ChartSkin) {
             solid content layer, so the knockout holds in glass mode too). */}
         {spark != null ? (
           <View style={{ position: "relative" }}>
-            <Sparkline line values={spark} compact={compact} accessibilityLabel={`${label} trend`} style={{ width: "100%" }} />
+            <Sparkline line values={spark} compact={compact} accessibilityLabel={`${label} trend`} />
             <View
               aria-hidden
               accessibilityElementsHidden

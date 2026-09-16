@@ -43,9 +43,13 @@ function Bubble({ from, text }: { from: string; text: string }) {
   const user = from === "user";
   return (
     <Row end={user} start={!user}>
-      <Card compact selected={user} flat={!user} style={{ maxWidth: "85%" }}>
-        <Typography small>{text}</Typography>
-      </Card>
+      <Column span={10}>
+        <Row end={user} start={!user}>
+          <Card compact selected={user} flat={!user}>
+            <Typography small>{text}</Typography>
+          </Card>
+        </Row>
+      </Column>
     </Row>
   );
 }

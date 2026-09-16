@@ -668,19 +668,22 @@ export const breakpoints: Record<BreakpointKey, number> = {
 };
 
 /** The width-scale steps, narrowest first. */
-export type WidthKey = "xs" | "sm" | "md" | "lg" | "xl" | "xxl" | "xxxl" | "wide" | "wider" | "widest" | "page";
+export type WidthKey = "xxxs" | "xxs" | "xs" | "sm" | "md" | "lg" | "xl" | "xxl" | "xxxl" | "wide" | "wider" | "widest" | "page";
 
 /**
  * The one width scale every bounds-providing container draws from: Container's
  * measure axis, the Dialog and AlertDialog panels, the floating overlays, and any
  * call site that used to pin a `maxWidth` by hand. The values are Tailwind's
  * `max-w-xs` .. `max-w-7xl` steps copied verbatim (no dependency on Tailwind;
- * the numbers only), 64px apart from xs to xxl and then doubling strides, so the
- * kit and the design mirror name widths instead of inventing them. A component
- * never carries one of these on its own root: it is FILL or HUG (see
- * `sizing.ts`), and the parent layout container picks the step.
+ * the numbers only), 64px apart from xs to xxl and then doubling strides, plus
+ * two tile steps below xs (`max-w-48` and `max-w-64`, the small KPI card and the
+ * chart tile), so the kit and the design mirror name widths instead of inventing
+ * them. A component never carries one of these on its own root: it is FILL or
+ * HUG (see `sizing.ts`), and the parent layout container picks the step.
  */
 export const widths: Record<WidthKey, number> = {
+  xxxs: 192,
+  xxs: 256,
   xs: 320,
   sm: 384,
   md: 448,
