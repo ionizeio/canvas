@@ -5,7 +5,7 @@ Page-of-N navigation for tables and lists.
 ## Usage
 
 ```tsx
-<Pagination defaultPage={2} total={12} compact defaultPageSize={10} pageSizes={[10, 25, 50]} />
+<Pagination defaultPage={2} total={12} />
 ```
 
 ## Variants
@@ -14,12 +14,6 @@ Page-of-N navigation for tables and lists.
 
 ```tsx
 <Pagination compact defaultPage={2} total={12} itemCount={118} />
-```
-
-### Numbered
-
-```tsx
-<Pagination defaultPage={2} total={12} defaultPageSize={10} pageSizes={[10, 25, 50]} />
 ```
 
 ### With size

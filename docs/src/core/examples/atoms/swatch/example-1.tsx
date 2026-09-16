@@ -5,10 +5,10 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { tokens, Swatch, Row } = scope;
   return (
-<Row snug alignStart>
-  <Swatch small color={tokens.primary} value="--primary">primary</Swatch>
-  <Swatch color={tokens.success} value="--success">success</Swatch>
-  <Swatch large color={tokens.destructive} value="--destructive">destructive</Swatch>
+<Row>
+  <Swatch small color={tokens.primary}>primary</Swatch>
+  <Swatch color={tokens.success}>success</Swatch>
+  <Swatch large color={tokens.destructive}>destructive</Swatch>
 </Row>
   );
 }

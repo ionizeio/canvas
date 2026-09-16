@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Textarea, Column, Container } = scope;
   return (
-<Column snug>
+<Column>
   <Container xs start><Textarea rows={2} placeholder="In an xs Container (320)" /></Container>
   <Container lg start><Textarea rows={2} placeholder="In an lg Container (512)" /></Container>
   <Textarea rows={2} placeholder="Bare: fills the parent" />

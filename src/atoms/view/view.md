@@ -5,10 +5,7 @@ The layout primitive: a flex container that runs identically on iOS, Android, an
 ## Usage
 
 ```tsx
-<Row cozy alignCenter>
-  <View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: tokens.primary }} />
-  <Typography semibold>Two Views in a row</Typography>
-</Row>
+<View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: tokens.primary }} />
 ```
 
 ## Variants
@@ -16,28 +13,32 @@ The layout primitive: a flex container that runs identically on iOS, Android, an
 ### Column
 
 ```tsx
-<Column snug style={{ width: 220 }}>
-  <View style={{ height: 28, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ height: 28, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ height: 28, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-</Column>
+<Container xs>
+  <Column snug>
+    <View style={{ height: 28, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
+    <View style={{ height: 28, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
+    <View style={{ height: 28, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
+  </Column>
+</Container>
 ```
 
 ### Flex sizing
 
 ```tsx
-<Row snug style={{ width: 260 }}>
-  <View style={{ flex: 1, height: 32, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ flex: 2, height: 32, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.3) }} />
-</Row>
+<Container xs>
+  <Row snug>
+    <View style={{ flex: 1, height: 32, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
+    <View style={{ flex: 2, height: 32, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.3) }} />
+  </Row>
+</Container>
 ```
 
 ### Padding
 
 ```tsx
-<Column pad style={{ width: 240, borderRadius: 10, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card }}>
-  <Typography>A padded, bordered box</Typography>
-</Column>
+<View style={{ padding: 16, borderRadius: 10, backgroundColor: alpha(tokens.primary, 0.15) }}>
+  <Typography>A padded View</Typography>
+</View>
 ```
 
 ## Do & Don't

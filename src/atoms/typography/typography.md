@@ -5,7 +5,7 @@ Type scale classes for headings, body text, and helper styles.
 ## Usage
 
 ```tsx
-<Typography h1>The quick brown fox</Typography>
+<Typography>The quick brown fox</Typography>
 ```
 
 ## Variants
@@ -14,6 +14,12 @@ Type scale classes for headings, body text, and helper styles.
 
 ```tsx
 <Typography display>The quick brown fox</Typography>
+```
+
+### H1
+
+```tsx
+<Typography h1>The quick brown fox</Typography>
 ```
 
 ### H2
@@ -38,6 +44,12 @@ Type scale classes for headings, body text, and helper styles.
 
 ```tsx
 <Typography h5>The quick brown fox</Typography>
+```
+
+### Lead
+
+```tsx
+<Typography lead>The quick brown fox</Typography>
 ```
 
 ### Body
@@ -82,49 +94,43 @@ Type scale classes for headings, body text, and helper styles.
 <Typography mono>The quick brown fox</Typography>
 ```
 
-### Lead
-
-```tsx
-<Typography lead>The quick brown fox</Typography>
-```
-
 ### Semibold
 
 ```tsx
-<Typography lead semibold>Rachel Chen</Typography>
+<Typography semibold>The quick brown fox</Typography>
+```
+
+### Primary
+
+```tsx
+<Typography primary>View invoices</Typography>
+```
+
+### Success
+
+```tsx
+<Typography success>+12.4% this week</Typography>
+```
+
+### Destructive
+
+```tsx
+<Typography destructive>Payment failed</Typography>
+```
+
+### Underline
+
+```tsx
+<Typography underline>View invoices</Typography>
 ```
 
 ### Tight leading
 
 ```tsx
 <Column flush>
-  <Typography lead semibold tightLeading>Canvas</Typography>
+  <Typography lead tightLeading>Canvas</Typography>
   <Typography tiny tightLeading>design system</Typography>
 </Column>
-```
-
-### Primary
-
-```tsx
-<Typography body primary>View invoices</Typography>
-```
-
-### Success
-
-```tsx
-<Typography small success>+12.4% this week</Typography>
-```
-
-### Destructive
-
-```tsx
-<Typography small destructive>Payment failed</Typography>
-```
-
-### Underline
-
-```tsx
-<Typography body primary underline>View invoices</Typography>
 ```
 
 ## Do & Don't

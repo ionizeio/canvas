@@ -23,22 +23,20 @@ On the web, Space activates the focused control on key release, and Enter also a
 ### With description
 
 ```tsx
-<Switch defaultChecked description="Show your availability to teammates.">Available to chat</Switch>
+<Switch description="Show your availability to teammates.">Available to chat</Switch>
 ```
 
 ### Disabled
 
 ```tsx
-<Switch defaultChecked disabled>Available to chat</Switch>
+<Switch disabled>Available to chat</Switch>
 ```
 
 ### Controlled
 
 ```tsx
 <Stateful initial={true}>
-  {(on, setOn) => (
-    <Switch checked={on} onChange={setOn} description={on ? "Alerts are on." : "Alerts are paused."}>Notifications</Switch>
-  )}
+  {(on, setOn) => <Switch checked={on} onChange={setOn}>Notifications</Switch>}
 </Stateful>
 ```
 
@@ -46,8 +44,7 @@ On the web, Space activates the focused control on key release, and Enter also a
 
 ```tsx
 <Column relaxed>
-  <Switch defaultChecked description="Show your availability to teammates.">Available to chat</Switch>
-  <Switch defaultChecked>Sound effects</Switch>
+  <Switch defaultChecked>Available to chat</Switch>
   <Switch>Weekly digest</Switch>
   <Switch defaultChecked>Push notifications</Switch>
 </Column>

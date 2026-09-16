@@ -3,20 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, alpha, Stateful, Text, Pressable, Row } = scope;
+  const { tokens, Text, Pressable } = scope;
   return (
-<Stateful initial={0}>
-  {(count, setCount) => (
-    <Row snug alignCenter>
-      <Pressable onPress={() => setCount(count + 1)} style={({ pressed }) => ({ paddingVertical: 8, paddingHorizontal: 14, borderRadius: 8, backgroundColor: pressed ? alpha(tokens.primary, 0.8) : tokens.primary })}>
-        <Text style={{ color: tokens["primary-foreground"], fontWeight: "600" }}>Enabled</Text>
-      </Pressable>
-      <Pressable disabled onPress={() => setCount(count + 1)} style={{ paddingVertical: 8, paddingHorizontal: 14, borderRadius: 8, backgroundColor: tokens.muted, opacity: 0.5 }}>
-        <Text style={{ color: tokens.foreground }}>Disabled</Text>
-      </Pressable>
-      <Text style={{ color: tokens["muted-foreground"] }}>{count} {count === 1 ? "press" : "presses"}</Text>
-    </Row>
-  )}
-</Stateful>
+<Pressable disabled style={{ padding: 12, borderRadius: 8, backgroundColor: tokens.muted, opacity: 0.5 }}>
+  <Text style={{ color: tokens.foreground }}>Disabled</Text>
+</Pressable>
   );
 }

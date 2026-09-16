@@ -6,9 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { Radio, RadioGroup } = scope;
   return (
 <RadioGroup row defaultValue="pro">
-  <Radio card value="hobby" description="For personal projects and experiments.">Hobby</Radio>
-  <Radio card value="pro" description="For growing teams that need more control.">Pro</Radio>
-  <Radio card value="enterprise" description="Advanced security, compliance, and support.">Enterprise</Radio>
+  <Radio card value="hobby" description="For personal projects.">Hobby</Radio>
+  <Radio card value="pro" description="For growing teams.">Pro</Radio>
+  <Radio card value="enterprise" description="Advanced security and support.">Enterprise</Radio>
 </RadioGroup>
   );
 }

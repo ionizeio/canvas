@@ -10,9 +10,9 @@ On the web, Space activates the focused control on key release, and Enter also a
 
 ```tsx
 <RadioGroup defaultValue="pro">
-  <Radio value="hobby" description="For personal projects and experiments.">Hobby</Radio>
-  <Radio value="pro" description="For growing teams that need more control.">Pro</Radio>
-  <Radio value="enterprise" description="Advanced security, compliance, and support.">Enterprise</Radio>
+  <Radio value="hobby">Hobby</Radio>
+  <Radio value="pro">Pro</Radio>
+  <Radio value="enterprise">Enterprise</Radio>
 </RadioGroup>
 ```
 
@@ -21,16 +21,30 @@ On the web, Space activates the focused control on key release, and Enter also a
 ### Inline
 
 ```tsx
-<Radio checked small>Pro, for growing teams that need more control.</Radio>
+<RadioGroup row defaultValue="hobby">
+  <Radio value="hobby">Hobby</Radio>
+  <Radio value="pro">Pro</Radio>
+  <Radio value="enterprise">Enterprise</Radio>
+</RadioGroup>
 ```
 
 ### Card
 
 ```tsx
 <RadioGroup row defaultValue="pro">
-  <Radio card value="hobby" description="For personal projects and experiments.">Hobby</Radio>
-  <Radio card value="pro" description="For growing teams that need more control.">Pro</Radio>
-  <Radio card value="enterprise" description="Advanced security, compliance, and support.">Enterprise</Radio>
+  <Radio card value="hobby" description="For personal projects.">Hobby</Radio>
+  <Radio card value="pro" description="For growing teams.">Pro</Radio>
+  <Radio card value="enterprise" description="Advanced security and support.">Enterprise</Radio>
+</RadioGroup>
+```
+
+### With description
+
+```tsx
+<RadioGroup defaultValue="pro">
+  <Radio value="hobby" description="For personal projects and experiments.">Hobby</Radio>
+  <Radio value="pro" description="For growing teams that need more control.">Pro</Radio>
+  <Radio value="enterprise" description="Advanced security, compliance, and support.">Enterprise</Radio>
 </RadioGroup>
 ```
 

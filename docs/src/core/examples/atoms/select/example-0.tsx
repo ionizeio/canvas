@@ -5,11 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Select } = scope;
   return (
-<Select
-  label="Country"
-  defaultValue="United States"
-  options={["United States", "Canada", "Mexico", "United Kingdom"]}
-  placeholder="Select a country"
-/>
+<Select label="Country" defaultValue="United States" options={["United States", "Canada", "Mexico"]} />
   );
 }

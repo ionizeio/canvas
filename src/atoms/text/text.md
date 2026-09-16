@@ -5,9 +5,7 @@ Renders text. In React Native every string must live inside a Text element, so y
 ## Usage
 
 ```tsx
-<Text numberOfLines={1} style={{ color: tokens.foreground }}>
-  The quick brown fox jumps over the lazy dog.
-</Text>
+<Text style={{ color: tokens.foreground }}>The quick brown fox jumps over the lazy dog.</Text>
 ```
 
 ## Variants
@@ -15,11 +13,11 @@ Renders text. In React Native every string must live inside a Text element, so y
 ### Truncation
 
 ```tsx
-<View style={{ width: 220 }}>
+<Container xxs>
   <Text numberOfLines={1} style={{ color: tokens.foreground }}>
     This single line is clipped with an ellipsis when it overflows its container.
   </Text>
-</View>
+</Container>
 ```
 
 ### Nested runs

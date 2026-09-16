@@ -3,36 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Ticker, Card, Reveal, RevealGroup, Typography, Row, Container } = scope;
+  const { Card, Reveal, Typography } = scope;
   return (
-<Ticker values={[1, 2]} interval={2800}>
-  {(pass) => (
-    <Row cozy wrap key={pass}>
-      <RevealGroup>
-        <Reveal>
-          <Container xxxs>
-            <Card padded>
-              <Typography small semibold>Measure</Typography>
-            </Card>
-          </Container>
-        </Reveal>
-        <Reveal>
-          <Container xxxs>
-            <Card padded>
-              <Typography small semibold>Reveal</Typography>
-            </Card>
-          </Container>
-        </Reveal>
-        <Reveal>
-          <Container xxxs>
-            <Card padded>
-              <Typography small semibold>Settle</Typography>
-            </Card>
-          </Container>
-        </Reveal>
-      </RevealGroup>
-    </Row>
-  )}
-</Ticker>
+<Reveal fromLeft>
+  <Card>
+    <Typography>Slides in from the left</Typography>
+  </Card>
+</Reveal>
   );
 }

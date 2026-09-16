@@ -6,74 +6,20 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal>
-  <Card padded>
-    <Column tight>
-      <Typography h4 semibold>Built for scroll</Typography>
-      <Typography small muted>This card rose into place when it reached the viewport.</Typography>
-    </Column>
+  <Card>
+    <Typography>Rises into place</Typography>
   </Card>
 </Reveal>
 ```
 
 ## Variants
 
-### Replay
-
-```tsx
-<Ticker values={[1, 2]} interval={2800}>
-  {(pass) => (
-    <Reveal key={pass}>
-      <Card padded>
-        <Column tight>
-          <Typography h4 semibold>Arriving</Typography>
-          <Typography small muted>The same entrance, played again every few seconds.</Typography>
-        </Column>
-      </Card>
-    </Reveal>
-  )}
-</Ticker>
-```
-
-### Staggered group
-
-```tsx
-<Ticker values={[1, 2]} interval={2800}>
-  {(pass) => (
-    <Row cozy wrap key={pass}>
-      <RevealGroup>
-        <Reveal>
-          <Container xxxs>
-            <Card padded>
-              <Typography small semibold>Measure</Typography>
-            </Card>
-          </Container>
-        </Reveal>
-        <Reveal>
-          <Container xxxs>
-            <Card padded>
-              <Typography small semibold>Reveal</Typography>
-            </Card>
-          </Container>
-        </Reveal>
-        <Reveal>
-          <Container xxxs>
-            <Card padded>
-              <Typography small semibold>Settle</Typography>
-            </Card>
-          </Container>
-        </Reveal>
-      </RevealGroup>
-    </Row>
-  )}
-</Ticker>
-```
-
 ### From above
 
 ```tsx
 <Reveal fromAbove>
-  <Card padded>
-    <Typography small semibold>Descends into place</Typography>
+  <Card>
+    <Typography>Descends into place</Typography>
   </Card>
 </Reveal>
 ```
@@ -82,8 +28,8 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal fromLeft>
-  <Card padded>
-    <Typography small semibold>Slides in from the left</Typography>
+  <Card>
+    <Typography>Slides in from the left</Typography>
   </Card>
 </Reveal>
 ```
@@ -92,8 +38,8 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal fromRight>
-  <Card padded>
-    <Typography small semibold>Slides in from the right</Typography>
+  <Card>
+    <Typography>Slides in from the right</Typography>
   </Card>
 </Reveal>
 ```
@@ -102,8 +48,8 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal pronounced>
-  <Card padded>
-    <Typography small semibold>Travels further before settling</Typography>
+  <Card>
+    <Typography>Travels further before settling</Typography>
   </Card>
 </Reveal>
 ```
@@ -112,8 +58,8 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal brisk>
-  <Card padded>
-    <Typography small semibold>Arrives faster</Typography>
+  <Card>
+    <Typography>Arrives faster</Typography>
   </Card>
 </Reveal>
 ```
@@ -122,10 +68,54 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal deepInView>
-  <Card padded>
-    <Typography small semibold>Waits until it is properly in view</Typography>
+  <Card>
+    <Typography>Waits until it is properly in view</Typography>
   </Card>
 </Reveal>
+```
+
+### Staggered group
+
+```tsx
+<Row wrap>
+  <RevealGroup>
+    <Reveal>
+      <Container xxxs>
+        <Card>
+          <Typography>Measure</Typography>
+        </Card>
+      </Container>
+    </Reveal>
+    <Reveal>
+      <Container xxxs>
+        <Card>
+          <Typography>Reveal</Typography>
+        </Card>
+      </Container>
+    </Reveal>
+    <Reveal>
+      <Container xxxs>
+        <Card>
+          <Typography>Settle</Typography>
+        </Card>
+      </Container>
+    </Reveal>
+  </RevealGroup>
+</Row>
+```
+
+### Replay
+
+```tsx
+<Ticker values={[1, 2]} interval={2800}>
+  {(pass) => (
+    <Reveal key={pass}>
+      <Card>
+        <Typography>Arriving again</Typography>
+      </Card>
+    </Reveal>
+  )}
+</Ticker>
 ```
 
 ## Do & Don't

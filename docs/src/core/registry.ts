@@ -297,7 +297,6 @@ import e_atoms_pagination_example_1 from "./examples/atoms/pagination/example-1"
 import e_atoms_pagination_example_2 from "./examples/atoms/pagination/example-2";
 import e_atoms_pagination_example_3 from "./examples/atoms/pagination/example-3";
 import e_atoms_pagination_example_4 from "./examples/atoms/pagination/example-4";
-import e_atoms_pagination_example_5 from "./examples/atoms/pagination/example-5";
 import e_atoms_pagination_dont_0_do from "./examples/atoms/pagination/dont-0-do";
 import e_atoms_pagination_dont_0_dont from "./examples/atoms/pagination/dont-0-dont";
 import e_atoms_pagination_dont_1_do from "./examples/atoms/pagination/dont-1-do";
@@ -337,6 +336,7 @@ import e_atoms_qrcode_dont_0_dont from "./examples/atoms/qrcode/dont-0-dont";
 import e_atoms_radio_example_0 from "./examples/atoms/radio/example-0";
 import e_atoms_radio_example_1 from "./examples/atoms/radio/example-1";
 import e_atoms_radio_example_2 from "./examples/atoms/radio/example-2";
+import e_atoms_radio_example_3 from "./examples/atoms/radio/example-3";
 import e_atoms_radio_dont_0_do from "./examples/atoms/radio/dont-0-do";
 import e_atoms_radio_dont_0_dont from "./examples/atoms/radio/dont-0-dont";
 import e_atoms_radio_dont_1_do from "./examples/atoms/radio/dont-1-do";
@@ -524,6 +524,7 @@ import e_atoms_typography_example_16 from "./examples/atoms/typography/example-1
 import e_atoms_typography_example_17 from "./examples/atoms/typography/example-17";
 import e_atoms_typography_example_18 from "./examples/atoms/typography/example-18";
 import e_atoms_typography_example_19 from "./examples/atoms/typography/example-19";
+import e_atoms_typography_example_20 from "./examples/atoms/typography/example-20";
 import e_atoms_typography_dont_0_do from "./examples/atoms/typography/dont-0-do";
 import e_atoms_typography_dont_0_dont from "./examples/atoms/typography/dont-0-dont";
 import e_atoms_typography_dont_1_do from "./examples/atoms/typography/dont-1-do";
@@ -1494,12 +1495,11 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "pagination",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Pagination defaultPage={2} total={12} compact defaultPageSize={10} pageSizes={[10, 25, 50]} />", render: e_atoms_pagination_example_0 },
+      { label: "Default", code: "<Pagination defaultPage={2} total={12} />", render: e_atoms_pagination_example_0 },
       { label: "With item range", code: "<Pagination compact defaultPage={2} total={12} itemCount={118} />", render: e_atoms_pagination_example_1 },
-      { label: "Numbered", code: "<Pagination defaultPage={2} total={12} defaultPageSize={10} pageSizes={[10, 25, 50]} />", render: e_atoms_pagination_example_2 },
-      { label: "With size", code: "<Pagination defaultPage={2} total={12} withSize defaultPageSize={10} pageSizes={[10, 25, 50]} />", render: e_atoms_pagination_example_3 },
-      { label: "Sizes", code: "<Column relaxed>\n  <Pagination small defaultPage={2} total={12} />\n  <Pagination defaultPage={2} total={12} />\n  <Pagination large defaultPage={2} total={12} />\n</Column>", render: e_atoms_pagination_example_4 },
-      { label: "First and last page", code: "<Column relaxed>\n  <Pagination defaultPage={1} total={3} />\n  <Pagination defaultPage={3} total={3} />\n</Column>", render: e_atoms_pagination_example_5 },
+      { label: "With size", code: "<Pagination defaultPage={2} total={12} withSize defaultPageSize={10} pageSizes={[10, 25, 50]} />", render: e_atoms_pagination_example_2 },
+      { label: "Sizes", code: "<Column relaxed>\n  <Pagination small defaultPage={2} total={12} />\n  <Pagination defaultPage={2} total={12} />\n  <Pagination large defaultPage={2} total={12} />\n</Column>", render: e_atoms_pagination_example_3 },
+      { label: "First and last page", code: "<Column relaxed>\n  <Pagination defaultPage={1} total={3} />\n  <Pagination defaultPage={3} total={3} />\n</Column>", render: e_atoms_pagination_example_4 },
     ],
     donts: [
       { title: "compact", do: { caption: "Pass `itemCount` so the buttons carry a \"Showing X-Y of N\" range and position and total are always visible.", code: "<Pagination compact defaultPage={2} total={12} itemCount={118} />", render: e_atoms_pagination_dont_0_do }, dont: { caption: "Bare Previous/Next with no range label leaves the user unable to tell where they are or how much is left.", code: "<View style={{ flexDirection: \"row\", alignItems: \"center\", justifyContent: \"flex-end\", gap: 4 }}>\n  <Pressable style={{ flexDirection: \"row\", alignItems: \"center\", justifyContent: \"center\", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background }} accessibilityRole=\"button\" accessibilityLabel=\"Previous page\">\n    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens.foreground }}>‹</Text>\n  </Pressable>\n  <Pressable style={{ flexDirection: \"row\", alignItems: \"center\", justifyContent: \"center\", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background }} accessibilityRole=\"button\" accessibilityLabel=\"Next page\">\n    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens.foreground }}>›</Text>\n  </Pressable>\n</View>", render: e_atoms_pagination_dont_0_dont } },
@@ -1523,9 +1523,9 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "pressable",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Stateful initial={0}>\n  {(count, setCount) => (\n    <Pressable\n      onPress={() => setCount(count + 1)}\n      style={({ pressed }) => ({\n        paddingVertical: 10,\n        paddingHorizontal: 16,\n        borderRadius: 8,\n        alignSelf: \"flex-start\",\n        backgroundColor: pressed ? alpha(tokens.primary, 0.8) : tokens.primary,\n      })}\n    >\n      <Text style={{ color: tokens[\"primary-foreground\"], fontWeight: \"600\" }}>\n        Pressed {count} {count === 1 ? \"time\" : \"times\"}\n      </Text>\n    </Pressable>\n  )}\n</Stateful>", render: e_atoms_pressable_example_0 },
-      { label: "Opacity", code: "<Stateful initial={false}>\n  {(on, setOn) => (\n    <Pressable onPress={() => setOn(!on)} style={({ pressed }) => ({ alignSelf: \"flex-start\", opacity: pressed ? 0.5 : 1 })}>\n      <View style={{ padding: 12, borderRadius: 8, borderWidth: 1, borderColor: tokens.border }}>\n        <Text style={{ color: tokens.foreground }}>{on ? \"On - tap to turn off\" : \"Off - tap to turn on\"}</Text>\n      </View>\n    </Pressable>\n  )}\n</Stateful>", render: e_atoms_pressable_example_1 },
-      { label: "Disabled", code: "<Stateful initial={0}>\n  {(count, setCount) => (\n    <Row snug alignCenter>\n      <Pressable onPress={() => setCount(count + 1)} style={({ pressed }) => ({ paddingVertical: 8, paddingHorizontal: 14, borderRadius: 8, backgroundColor: pressed ? alpha(tokens.primary, 0.8) : tokens.primary })}>\n        <Text style={{ color: tokens[\"primary-foreground\"], fontWeight: \"600\" }}>Enabled</Text>\n      </Pressable>\n      <Pressable disabled onPress={() => setCount(count + 1)} style={{ paddingVertical: 8, paddingHorizontal: 14, borderRadius: 8, backgroundColor: tokens.muted, opacity: 0.5 }}>\n        <Text style={{ color: tokens.foreground }}>Disabled</Text>\n      </Pressable>\n      <Text style={{ color: tokens[\"muted-foreground\"] }}>{count} {count === 1 ? \"press\" : \"presses\"}</Text>\n    </Row>\n  )}\n</Stateful>", render: e_atoms_pressable_example_2 },
+      { label: "Default", code: "<Pressable style={({ pressed }) => ({ padding: 12, borderRadius: 8, backgroundColor: pressed ? alpha(tokens.primary, 0.8) : tokens.primary })}>\n  <Text style={{ color: tokens[\"primary-foreground\"] }}>Press and hold</Text>\n</Pressable>", render: e_atoms_pressable_example_0 },
+      { label: "Opacity", code: "<Pressable style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}>\n  <Text style={{ color: tokens.foreground }}>Press and hold</Text>\n</Pressable>", render: e_atoms_pressable_example_1 },
+      { label: "Disabled", code: "<Pressable disabled style={{ padding: 12, borderRadius: 8, backgroundColor: tokens.muted, opacity: 0.5 }}>\n  <Text style={{ color: tokens.foreground }}>Disabled</Text>\n</Pressable>", render: e_atoms_pressable_example_2 },
     ],
     donts: [
 
@@ -1536,14 +1536,14 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     category: "atoms",
     examples: [
       { label: "Default", code: "<Progress accessibilityLabel=\"Uploading files\" value={0.6} />", render: e_atoms_progress_example_0 },
-      { label: "Live", code: "<Ticker values={[0, 0.15, 0.4, 0.65, 0.85, 1]}>\n  {(value) => (\n    <Progress showValue value={value}>Uploading…</Progress>\n  )}\n</Ticker>", render: e_atoms_progress_example_1 },
-      { label: "Determinate", code: "<Progress accessibilityLabel=\"Uploading files\" value={0.4} />", render: e_atoms_progress_example_2 },
-      { label: "Indeterminate", code: "<Progress accessibilityLabel=\"Connecting\" indeterminate />", render: e_atoms_progress_example_3 },
-      { label: "Small", code: "<Progress small accessibilityLabel=\"Uploading files\" value={0.6} />", render: e_atoms_progress_example_4 },
-      { label: "Large", code: "<Progress large accessibilityLabel=\"Uploading files\" value={0.6} />", render: e_atoms_progress_example_5 },
-      { label: "Warning", code: "<Progress warning showValue value={0.85}>Storage used</Progress>", render: e_atoms_progress_example_6 },
-      { label: "Danger", code: "<Progress danger showValue value={1}>Over the WIP limit</Progress>", render: e_atoms_progress_example_7 },
-      { label: "Widths come from the parent", code: "<Column snug>\n  <Container xs start><Progress value={0.6}>In an xs Container (320)</Progress></Container>\n  <Container lg start><Progress value={0.6}>In an lg Container (512)</Progress></Container>\n  <Progress value={0.6}>Bare: fills the parent</Progress>\n</Column>", render: e_atoms_progress_example_8 },
+      { label: "Labeled", code: "<Progress showValue description=\"3 of 5 files\" value={0.6}>Uploading files</Progress>", render: e_atoms_progress_example_1 },
+      { label: "Indeterminate", code: "<Progress accessibilityLabel=\"Connecting\" indeterminate />", render: e_atoms_progress_example_2 },
+      { label: "Small", code: "<Progress small accessibilityLabel=\"Uploading files\" value={0.6} />", render: e_atoms_progress_example_3 },
+      { label: "Large", code: "<Progress large accessibilityLabel=\"Uploading files\" value={0.6} />", render: e_atoms_progress_example_4 },
+      { label: "Warning", code: "<Progress warning value={0.85}>Storage used</Progress>", render: e_atoms_progress_example_5 },
+      { label: "Danger", code: "<Progress danger value={1}>Over the WIP limit</Progress>", render: e_atoms_progress_example_6 },
+      { label: "Live", code: "<Ticker values={[0, 0.15, 0.4, 0.65, 0.85, 1]}>\n  {(value) => (\n    <Progress showValue value={value}>Uploading…</Progress>\n  )}\n</Ticker>", render: e_atoms_progress_example_7 },
+      { label: "Widths come from the parent", code: "<Column snug>\n  <Container xs start><Progress value={0.6}>In an xs Container (320)</Progress></Container>\n  <Progress value={0.6}>Bare: fills the parent</Progress>\n</Column>", render: e_atoms_progress_example_8 },
     ],
     donts: [
       { title: "Determinate", do: { caption: "Use a determinate bar when you know the share of work done, and pass `showValue` so the control renders the percent on the label line; the number and the bar always agree.", code: "<Progress showValue value={0.72}>Uploading…</Progress>", render: e_atoms_progress_dont_0_do }, dont: { caption: "Don't park a determinate bar at a hard-coded value as a decorative divider; a frozen fill reads as a stalled task.", code: "<View style={{ gap: 8 }}>\n  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>Section</Text>\n  <Progress accessibilityLabel=\"Section progress\" value={0.5} />\n</View>", render: e_atoms_progress_dont_0_dont } },
@@ -1567,9 +1567,10 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "radio",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<RadioGroup defaultValue=\"pro\">\n  <Radio value=\"hobby\" description=\"For personal projects and experiments.\">Hobby</Radio>\n  <Radio value=\"pro\" description=\"For growing teams that need more control.\">Pro</Radio>\n  <Radio value=\"enterprise\" description=\"Advanced security, compliance, and support.\">Enterprise</Radio>\n</RadioGroup>", render: e_atoms_radio_example_0 },
-      { label: "Inline", code: "<Radio checked small>Pro, for growing teams that need more control.</Radio>", render: e_atoms_radio_example_1 },
-      { label: "Card", code: "<RadioGroup row defaultValue=\"pro\">\n  <Radio card value=\"hobby\" description=\"For personal projects and experiments.\">Hobby</Radio>\n  <Radio card value=\"pro\" description=\"For growing teams that need more control.\">Pro</Radio>\n  <Radio card value=\"enterprise\" description=\"Advanced security, compliance, and support.\">Enterprise</Radio>\n</RadioGroup>", render: e_atoms_radio_example_2 },
+      { label: "Default", code: "<RadioGroup defaultValue=\"pro\">\n  <Radio value=\"hobby\">Hobby</Radio>\n  <Radio value=\"pro\">Pro</Radio>\n  <Radio value=\"enterprise\">Enterprise</Radio>\n</RadioGroup>", render: e_atoms_radio_example_0 },
+      { label: "Inline", code: "<RadioGroup row defaultValue=\"hobby\">\n  <Radio value=\"hobby\">Hobby</Radio>\n  <Radio value=\"pro\">Pro</Radio>\n  <Radio value=\"enterprise\">Enterprise</Radio>\n</RadioGroup>", render: e_atoms_radio_example_1 },
+      { label: "Card", code: "<RadioGroup row defaultValue=\"pro\">\n  <Radio card value=\"hobby\" description=\"For personal projects.\">Hobby</Radio>\n  <Radio card value=\"pro\" description=\"For growing teams.\">Pro</Radio>\n  <Radio card value=\"enterprise\" description=\"Advanced security and support.\">Enterprise</Radio>\n</RadioGroup>", render: e_atoms_radio_example_2 },
+      { label: "With description", code: "<RadioGroup defaultValue=\"pro\">\n  <Radio value=\"hobby\" description=\"For personal projects and experiments.\">Hobby</Radio>\n  <Radio value=\"pro\" description=\"For growing teams that need more control.\">Pro</Radio>\n  <Radio value=\"enterprise\" description=\"Advanced security, compliance, and support.\">Enterprise</Radio>\n</RadioGroup>", render: e_atoms_radio_example_3 },
     ],
     donts: [
       { do: { caption: "Pre-select a sensible default so the common path needs no clicks, and name the set with the group's own `label`.", code: "<RadioGroup label=\"Plan\" defaultValue=\"pro\">\n  <Radio value=\"hobby\">Hobby</Radio>\n  <Radio value=\"pro\">Pro</Radio>\n  <Radio value=\"enterprise\">Enterprise</Radio>\n</RadioGroup>", render: e_atoms_radio_dont_0_do }, dont: { caption: "Leaving a radio group with nothing selected forces an extra decision and can submit empty.", code: "<View style={{ flexDirection: \"column\", gap: 8 }}>\n  <Text style={{ marginBottom: 4, fontSize: 14, lineHeight: 20, fontWeight: \"600\", color: tokens.foreground }}>Plan</Text>\n  <Radio>Hobby</Radio>\n  <Radio>Pro</Radio>\n  <Radio>Enterprise</Radio>\n</View>", render: e_atoms_radio_dont_0_dont } },
@@ -1582,15 +1583,15 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "reveal",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Reveal>\n  <Card padded>\n    <Column tight>\n      <Typography h4 semibold>Built for scroll</Typography>\n      <Typography small muted>This card rose into place when it reached the viewport.</Typography>\n    </Column>\n  </Card>\n</Reveal>", render: e_atoms_reveal_example_0 },
-      { label: "Replay", code: "<Ticker values={[1, 2]} interval={2800}>\n  {(pass) => (\n    <Reveal key={pass}>\n      <Card padded>\n        <Column tight>\n          <Typography h4 semibold>Arriving</Typography>\n          <Typography small muted>The same entrance, played again every few seconds.</Typography>\n        </Column>\n      </Card>\n    </Reveal>\n  )}\n</Ticker>", render: e_atoms_reveal_example_1 },
-      { label: "Staggered group", code: "<Ticker values={[1, 2]} interval={2800}>\n  {(pass) => (\n    <Row cozy wrap key={pass}>\n      <RevealGroup>\n        <Reveal>\n          <Container xxxs>\n            <Card padded>\n              <Typography small semibold>Measure</Typography>\n            </Card>\n          </Container>\n        </Reveal>\n        <Reveal>\n          <Container xxxs>\n            <Card padded>\n              <Typography small semibold>Reveal</Typography>\n            </Card>\n          </Container>\n        </Reveal>\n        <Reveal>\n          <Container xxxs>\n            <Card padded>\n              <Typography small semibold>Settle</Typography>\n            </Card>\n          </Container>\n        </Reveal>\n      </RevealGroup>\n    </Row>\n  )}\n</Ticker>", render: e_atoms_reveal_example_2 },
-      { label: "From above", code: "<Reveal fromAbove>\n  <Card padded>\n    <Typography small semibold>Descends into place</Typography>\n  </Card>\n</Reveal>", render: e_atoms_reveal_example_3 },
-      { label: "From the left", code: "<Reveal fromLeft>\n  <Card padded>\n    <Typography small semibold>Slides in from the left</Typography>\n  </Card>\n</Reveal>", render: e_atoms_reveal_example_4 },
-      { label: "From the right", code: "<Reveal fromRight>\n  <Card padded>\n    <Typography small semibold>Slides in from the right</Typography>\n  </Card>\n</Reveal>", render: e_atoms_reveal_example_5 },
-      { label: "Pronounced", code: "<Reveal pronounced>\n  <Card padded>\n    <Typography small semibold>Travels further before settling</Typography>\n  </Card>\n</Reveal>", render: e_atoms_reveal_example_6 },
-      { label: "Brisk", code: "<Reveal brisk>\n  <Card padded>\n    <Typography small semibold>Arrives faster</Typography>\n  </Card>\n</Reveal>", render: e_atoms_reveal_example_7 },
-      { label: "Deep in view", code: "<Reveal deepInView>\n  <Card padded>\n    <Typography small semibold>Waits until it is properly in view</Typography>\n  </Card>\n</Reveal>", render: e_atoms_reveal_example_8 },
+      { label: "Default", code: "<Reveal>\n  <Card>\n    <Typography>Rises into place</Typography>\n  </Card>\n</Reveal>", render: e_atoms_reveal_example_0 },
+      { label: "From above", code: "<Reveal fromAbove>\n  <Card>\n    <Typography>Descends into place</Typography>\n  </Card>\n</Reveal>", render: e_atoms_reveal_example_1 },
+      { label: "From the left", code: "<Reveal fromLeft>\n  <Card>\n    <Typography>Slides in from the left</Typography>\n  </Card>\n</Reveal>", render: e_atoms_reveal_example_2 },
+      { label: "From the right", code: "<Reveal fromRight>\n  <Card>\n    <Typography>Slides in from the right</Typography>\n  </Card>\n</Reveal>", render: e_atoms_reveal_example_3 },
+      { label: "Pronounced", code: "<Reveal pronounced>\n  <Card>\n    <Typography>Travels further before settling</Typography>\n  </Card>\n</Reveal>", render: e_atoms_reveal_example_4 },
+      { label: "Brisk", code: "<Reveal brisk>\n  <Card>\n    <Typography>Arrives faster</Typography>\n  </Card>\n</Reveal>", render: e_atoms_reveal_example_5 },
+      { label: "Deep in view", code: "<Reveal deepInView>\n  <Card>\n    <Typography>Waits until it is properly in view</Typography>\n  </Card>\n</Reveal>", render: e_atoms_reveal_example_6 },
+      { label: "Staggered group", code: "<Row wrap>\n  <RevealGroup>\n    <Reveal>\n      <Container xxxs>\n        <Card>\n          <Typography>Measure</Typography>\n        </Card>\n      </Container>\n    </Reveal>\n    <Reveal>\n      <Container xxxs>\n        <Card>\n          <Typography>Reveal</Typography>\n        </Card>\n      </Container>\n    </Reveal>\n    <Reveal>\n      <Container xxxs>\n        <Card>\n          <Typography>Settle</Typography>\n        </Card>\n      </Container>\n    </Reveal>\n  </RevealGroup>\n</Row>", render: e_atoms_reveal_example_7 },
+      { label: "Replay", code: "<Ticker values={[1, 2]} interval={2800}>\n  {(pass) => (\n    <Reveal key={pass}>\n      <Card>\n        <Typography>Arriving again</Typography>\n      </Card>\n    </Reveal>\n  )}\n</Ticker>", render: e_atoms_reveal_example_8 },
     ],
     donts: [
       { title: "stagger", do: { caption: "Wrap the set in a `RevealGroup` and let each item's position set its own rhythm.", code: "<Row cozy wrap>\n  <RevealGroup>\n    <Reveal>\n      <Container xxxs>\n        <Card padded>\n          <Typography small semibold>First</Typography>\n        </Card>\n      </Container>\n    </Reveal>\n    <Reveal>\n      <Container xxxs>\n        <Card padded>\n          <Typography small semibold>Second</Typography>\n        </Card>\n      </Container>\n    </Reveal>\n    <Reveal>\n      <Container xxxs>\n        <Card padded>\n          <Typography small semibold>Third</Typography>\n        </Card>\n      </Container>\n    </Reveal>\n  </RevealGroup>\n</Row>", render: e_atoms_reveal_dont_0_do }, dont: { caption: "Leave a set ungrouped: every card fires at the same instant, so the row lands as one slab instead of a cascade.", code: "<Row cozy wrap>\n  <Reveal>\n    <Container xxxs>\n      <Card padded>\n        <Typography small semibold>First</Typography>\n      </Card>\n    </Container>\n  </Reveal>\n  <Reveal>\n    <Container xxxs>\n      <Card padded>\n        <Typography small semibold>Second</Typography>\n      </Card>\n    </Container>\n  </Reveal>\n  <Reveal>\n    <Container xxxs>\n      <Card padded>\n        <Typography small semibold>Third</Typography>\n      </Card>\n    </Container>\n  </Reveal>\n</Row>", render: e_atoms_reveal_dont_0_dont } },
@@ -1604,7 +1605,7 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     category: "atoms",
     examples: [
       { label: "Default", code: "<ScrollView style={{ height: 176, width: \"100%\", borderRadius: 10, borderWidth: 1, borderColor: tokens.border }} contentContainerStyle={{ padding: 12, gap: 12 }}>\n  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n</ScrollView>", render: e_atoms_scroll_view_example_0 },
-      { label: "Horizontal", code: "<ScrollView horizontal style={{ width: \"100%\", borderRadius: 10, borderWidth: 1, borderColor: tokens.border }} contentContainerStyle={{ padding: 12, gap: 12 }}>\n  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n</ScrollView>", render: e_atoms_scroll_view_example_1 },
+      { label: "Horizontal", code: "<ScrollView horizontal style={{ width: \"100%\", borderRadius: 10, borderWidth: 1, borderColor: tokens.border }} contentContainerStyle={{ padding: 12, gap: 12 }}>\n  <View style={{ width: 200, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ width: 200, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ width: 200, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ width: 200, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ width: 200, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ width: 200, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n</ScrollView>", render: e_atoms_scroll_view_example_1 },
     ],
     donts: [
 
@@ -1614,14 +1615,14 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "select",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Select\n  label=\"Country\"\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_0 },
+      { label: "Default", code: "<Select label=\"Country\" defaultValue=\"United States\" options={[\"United States\", \"Canada\", \"Mexico\"]} />", render: e_atoms_select_example_0 },
       { label: "Inline label", code: "<Select inline label=\"Rows\" defaultValue=\"10\" options={[\"10\", \"25\", \"50\"]} />", render: e_atoms_select_example_1 },
-      { label: "Required field", code: "<Select\n  label=\"Country\"\n  required\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_2 },
-      { label: "Small", code: "<Select\n  small\n  label=\"Country\"\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_3 },
-      { label: "Large", code: "<Select\n  large\n  label=\"Country\"\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_4 },
-      { label: "With leading icon", code: "<Select\n  label=\"Country\"\n  icon\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_5 },
-      { label: "Disabled", code: "<Select\n  disabled\n  label=\"Country\"\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_6 },
-      { label: "Widths come from the parent", code: "<Column snug>\n  <Container xs start><Select options={[\"Small\", \"Medium\", \"Large\"]} placeholder=\"In an xs Container (320)\" /></Container>\n  <Container lg start><Select options={[\"Small\", \"Medium\", \"Large\"]} placeholder=\"In an lg Container (512)\" /></Container>\n  <Select options={[\"Small\", \"Medium\", \"Large\"]} placeholder=\"Bare: fills the parent\" />\n</Column>", render: e_atoms_select_example_7 },
+      { label: "Required field", code: "<Select label=\"Country\" required defaultValue=\"United States\" options={[\"United States\", \"Canada\", \"Mexico\"]} />", render: e_atoms_select_example_2 },
+      { label: "Small", code: "<Select small label=\"Country\" defaultValue=\"United States\" options={[\"United States\", \"Canada\", \"Mexico\"]} />", render: e_atoms_select_example_3 },
+      { label: "Large", code: "<Select large label=\"Country\" defaultValue=\"United States\" options={[\"United States\", \"Canada\", \"Mexico\"]} />", render: e_atoms_select_example_4 },
+      { label: "With leading icon", code: "<Select icon label=\"Country\" defaultValue=\"United States\" options={[\"United States\", \"Canada\", \"Mexico\"]} />", render: e_atoms_select_example_5 },
+      { label: "Disabled", code: "<Select disabled label=\"Country\" defaultValue=\"United States\" options={[\"United States\", \"Canada\", \"Mexico\"]} />", render: e_atoms_select_example_6 },
+      { label: "Widths come from the parent", code: "<Column snug>\n  <Container xs start><Select options={[\"Small\", \"Medium\", \"Large\"]} placeholder=\"In an xs Container (320)\" /></Container>\n  <Select options={[\"Small\", \"Medium\", \"Large\"]} placeholder=\"Bare: fills the parent\" />\n</Column>", render: e_atoms_select_example_7 },
     ],
     donts: [
       { do: { caption: "Use the placeholder prop for the prompt so it can never be submitted as a value.", code: "<Column style={{ minHeight: 220 }}>\n  <Select open label=\"Country\" placeholder=\"Choose a country…\" options={[\"United States\", \"Canada\", \"Mexico\"]} />\n</Column>", render: e_atoms_select_dont_0_do }, dont: { caption: "A placeholder as a normal option can be submitted as a real value.", code: "<View style={{ minHeight: 260 }}>\n  <Select open label=\"Country\" defaultValue=\"Choose a country…\" options={[\"Choose a country…\", \"United States\", \"Canada\", \"Mexico\"]} />\n</View>", render: e_atoms_select_dont_0_dont } },
@@ -1635,12 +1636,12 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "skeleton",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Column snug>\n  <Skeleton text animate />\n  <Skeleton text animate short />\n</Column>", render: e_atoms_skeleton_example_0 },
-      { label: "Avatar", code: "<Skeleton avatar animate />", render: e_atoms_skeleton_example_1 },
-      { label: "Button", code: "<Skeleton button animate />", render: e_atoms_skeleton_example_2 },
-      { label: "Card", code: "<Skeleton card animate />", render: e_atoms_skeleton_example_3 },
-      { label: "List", code: "<Skeleton list animate />", render: e_atoms_skeleton_example_4 },
-      { label: "Table", code: "<Skeleton table animate />", render: e_atoms_skeleton_example_5 },
+      { label: "Default", code: "<Skeleton animate />", render: e_atoms_skeleton_example_0 },
+      { label: "Avatar", code: "<Skeleton avatar />", render: e_atoms_skeleton_example_1 },
+      { label: "Button", code: "<Skeleton button />", render: e_atoms_skeleton_example_2 },
+      { label: "Card", code: "<Skeleton card />", render: e_atoms_skeleton_example_3 },
+      { label: "List", code: "<Skeleton list />", render: e_atoms_skeleton_example_4 },
+      { label: "Table", code: "<Skeleton table />", render: e_atoms_skeleton_example_5 },
     ],
     donts: [
       { title: "text", do: { caption: "Vary the line widths and shorten the last line so it reads like real wrapped text.", code: "<Column snug>\n  <Skeleton text animate />\n  <Skeleton text animate long />\n  <Skeleton text animate short />\n</Column>", render: e_atoms_skeleton_dont_0_do }, dont: { caption: "Three full-width lines read as a solid block, not as a paragraph of prose.", code: "<View style={{ width: 320, maxWidth: \"100%\", flexDirection: \"column\", gap: 6 }}>\n  <Skeleton text animate />\n  <Skeleton text animate />\n  <Skeleton text animate />\n</View>", render: e_atoms_skeleton_dont_0_dont } },
@@ -1655,14 +1656,14 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "slider",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Slider accessibilityLabel=\"Volume\" defaultValue={60} min={0} max={100} />", render: e_atoms_slider_example_0 },
-      { label: "With label", code: "<Slider showValue defaultValue={65} min={0} max={100}>Volume</Slider>", render: e_atoms_slider_example_1 },
-      { label: "With description", code: "<Slider defaultValue={40} min={0} max={100} description=\"Applies to alert sounds.\">Volume</Slider>", render: e_atoms_slider_example_2 },
+      { label: "Default", code: "<Slider accessibilityLabel=\"Volume\" defaultValue={60} />", render: e_atoms_slider_example_0 },
+      { label: "With label", code: "<Slider defaultValue={65}>Volume</Slider>", render: e_atoms_slider_example_1 },
+      { label: "With description", code: "<Slider defaultValue={40} description=\"Applies to alert sounds.\">Volume</Slider>", render: e_atoms_slider_example_2 },
       { label: "Small", code: "<Slider small accessibilityLabel=\"Volume\" defaultValue={40} />", render: e_atoms_slider_example_3 },
       { label: "Large", code: "<Slider large accessibilityLabel=\"Volume\" defaultValue={75} />", render: e_atoms_slider_example_4 },
-      { label: "Stepped", code: "<Slider accessibilityLabel=\"Playback speed\" defaultValue={6} min={0} max={10} step={2} />", render: e_atoms_slider_example_5 },
+      { label: "Stepped", code: "<Slider accessibilityLabel=\"Playback speed\" defaultValue={6} max={10} step={2} />", render: e_atoms_slider_example_5 },
       { label: "Disabled", code: "<Slider disabled accessibilityLabel=\"Volume\" defaultValue={30} />", render: e_atoms_slider_example_6 },
-      { label: "Widths come from the parent", code: "<Column snug>\n  <Container xs start><Slider defaultValue={40}>In an xs Container (320)</Slider></Container>\n  <Container lg start><Slider defaultValue={40}>In an lg Container (512)</Slider></Container>\n  <Slider defaultValue={40}>Bare: fills the parent</Slider>\n</Column>", render: e_atoms_slider_example_7 },
+      { label: "Widths come from the parent", code: "<Column>\n  <Container xs start><Slider defaultValue={40}>In an xs Container (320)</Slider></Container>\n  <Slider defaultValue={40}>Bare: fills the parent</Slider>\n</Column>", render: e_atoms_slider_example_7 },
     ],
     donts: [
       { title: "Range", do: { caption: "Give the track room to breathe so the thumb has a clear travel path and the value reads at a glance. Pass the label as `children`; the slider owns the title above the rail.", code: "<Slider defaultValue={65} min={0} max={100}>Volume</Slider>", render: e_atoms_slider_dont_0_do }, dont: { caption: "Cramming the slider into a tiny width leaves no travel, so the thumb can barely move and the value is hard to set.", code: "<View style={{ width: 64 }}>\n  <Slider accessibilityLabel=\"Volume\" defaultValue={65} min={0} max={100} />\n</View>", render: e_atoms_slider_dont_0_dont } },
@@ -1680,7 +1681,7 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Stacked", code: "<Spinner stacked>Working…</Spinner>", render: e_atoms_spinner_example_3 },
       { label: "Small", code: "<Spinner small />", render: e_atoms_spinner_example_4 },
       { label: "Large", code: "<Spinner large />", render: e_atoms_spinner_example_5 },
-      { label: "Primary", code: "<Spinner primary>Loading…</Spinner>", render: e_atoms_spinner_example_6 },
+      { label: "Primary", code: "<Spinner primary />", render: e_atoms_spinner_example_6 },
     ],
     donts: [
       { do: { caption: "Pair longer waits with a short label so the spinner has context.", code: "<Spinner small>Loading…</Spinner>", render: e_atoms_spinner_dont_0_do }, dont: { caption: "A bare spinner with no label leaves users guessing what is happening and for how long.", code: "<Spinner />", render: e_atoms_spinner_dont_0_dont } },
@@ -1693,13 +1694,13 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "stepper",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Stepper defaultValue={3} min={0} max={10} onChange={() => {}} />", render: e_atoms_stepper_example_0 },
+      { label: "Default", code: "<Stepper defaultValue={3} max={10} />", render: e_atoms_stepper_example_0 },
       { label: "With label", code: "<Stepper label=\"Quantity\" defaultValue={1} min={1} max={9} />", render: e_atoms_stepper_example_1 },
       { label: "With description", code: "<Stepper label=\"Quantity\" description=\"Up to 10 per order.\" defaultValue={1} min={1} max={10} />", render: e_atoms_stepper_example_2 },
-      { label: "Sizes", code: "<Row alignCenter relaxed>\n  <Stepper small defaultValue={2} min={0} max={10} onChange={() => {}} />\n  <Stepper defaultValue={2} min={0} max={10} onChange={() => {}} />\n  <Stepper large defaultValue={2} min={0} max={10} onChange={() => {}} />\n</Row>", render: e_atoms_stepper_example_3 },
-      { label: "With min / max", code: "<Row alignCenter relaxed>\n  <Stepper defaultValue={0} min={0} max={5} onChange={() => {}} />\n  <Stepper defaultValue={5} min={0} max={5} onChange={() => {}} />\n</Row>", render: e_atoms_stepper_example_4 },
-      { label: "Stepped", code: "<Stepper defaultValue={20} min={0} max={100} step={10} onChange={() => {}} />", render: e_atoms_stepper_example_5 },
-      { label: "Disabled", code: "<Stepper disabled defaultValue={4} min={0} max={10} onChange={() => {}} />", render: e_atoms_stepper_example_6 },
+      { label: "Sizes", code: "<Row alignCenter relaxed>\n  <Stepper small defaultValue={2} max={10} />\n  <Stepper defaultValue={2} max={10} />\n  <Stepper large defaultValue={2} max={10} />\n</Row>", render: e_atoms_stepper_example_3 },
+      { label: "With min / max", code: "<Row alignCenter relaxed>\n  <Stepper defaultValue={0} min={0} max={5} />\n  <Stepper defaultValue={5} min={0} max={5} />\n</Row>", render: e_atoms_stepper_example_4 },
+      { label: "Stepped", code: "<Stepper defaultValue={20} max={100} step={10} />", render: e_atoms_stepper_example_5 },
+      { label: "Disabled", code: "<Stepper disabled defaultValue={4} max={10} />", render: e_atoms_stepper_example_6 },
     ],
     donts: [
       { title: "Bounds", do: { caption: "Set `min` and `max` so the buttons disable at the edges and the value can never leave the valid range.", code: "<Stepper label=\"Quantity\" defaultValue={1} min={1} max={9} onChange={() => {}} />", render: e_atoms_stepper_dont_0_do }, dont: { caption: "Leaving the range unbounded lets the user push the count below zero or past what the form can accept.", code: "<Stepper defaultValue={1} onChange={() => {}} />", render: e_atoms_stepper_dont_0_dont } },
@@ -1711,11 +1712,11 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     category: "atoms",
     examples: [
       { label: "Default", code: "<Swatch color={tokens.primary} value=\"--primary\">\n  primary\n</Swatch>", render: e_atoms_swatch_example_0 },
-      { label: "Sizes", code: "<Row snug alignStart>\n  <Swatch small color={tokens.primary} value=\"--primary\">primary</Swatch>\n  <Swatch color={tokens.success} value=\"--success\">success</Swatch>\n  <Swatch large color={tokens.destructive} value=\"--destructive\">destructive</Swatch>\n</Row>", render: e_atoms_swatch_example_1 },
-      { label: "Circle", code: "<Row snug alignCenter>\n  <Swatch circle color={tokens.primary} value=\"--primary\">primary</Swatch>\n  <Swatch circle color={tokens.accent} value=\"--accent\">accent</Swatch>\n</Row>", render: e_atoms_swatch_example_2 },
-      { label: "Inline", code: "<Column snug>\n  <Swatch inline small color={tokens.background} value=\"--background\">background</Swatch>\n  <Swatch inline small color={tokens.foreground} value=\"--foreground\">foreground</Swatch>\n  <Swatch inline small color={tokens.border} value=\"--border\">border</Swatch>\n</Column>", render: e_atoms_swatch_example_3 },
-      { label: "Block", code: "<Column snug>\n  <Swatch block small color={tokens.primary} value=\"--primary\">primary</Swatch>\n  <Swatch block small color={tokens.secondary} value=\"--secondary\">secondary</Swatch>\n</Column>", render: e_atoms_swatch_example_4 },
-      { label: "Detail line", code: "<Swatch large color={tokens.primary} value=\"--primary\" detail=\"oklch(0.511 0.262 276.966)\">\n  primary\n</Swatch>", render: e_atoms_swatch_example_5 },
+      { label: "Sizes", code: "<Row>\n  <Swatch small color={tokens.primary}>primary</Swatch>\n  <Swatch color={tokens.success}>success</Swatch>\n  <Swatch large color={tokens.destructive}>destructive</Swatch>\n</Row>", render: e_atoms_swatch_example_1 },
+      { label: "Circle", code: "<Swatch circle color={tokens.primary}>primary</Swatch>", render: e_atoms_swatch_example_2 },
+      { label: "Inline", code: "<Swatch inline color={tokens.primary}>primary</Swatch>", render: e_atoms_swatch_example_3 },
+      { label: "Block", code: "<Swatch block color={tokens.primary}>primary</Swatch>", render: e_atoms_swatch_example_4 },
+      { label: "Detail line", code: "<Swatch color={tokens.primary} value=\"--primary\" detail=\"oklch(0.511 0.262 276.966)\">\n  primary\n</Swatch>", render: e_atoms_swatch_example_5 },
     ],
     donts: [
       { title: "Anatomy", do: { caption: "Let Swatch carry the name and the value, so every row of a sheet keeps one lockup and one accessible name.", code: "<Swatch color={tokens.primary} value=\"--primary\">\n  primary\n</Swatch>", render: e_atoms_swatch_dont_0_do }, dont: { caption: "Set a bare block beside a hand-composed text column: the spacing and the type scale drift row to row, and the sample ships as an unnamed block.", code: "<Row snug alignCenter>\n  <View style={{ height: 56, width: 56, borderRadius: 8, backgroundColor: \"#4f46e5\" }} />\n  <Column tight>\n    <Typography small medium>primary</Typography>\n    <Typography tiny subtle>--primary</Typography>\n  </Column>\n</Row>", render: e_atoms_swatch_dont_0_dont } },
@@ -1728,10 +1729,10 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     examples: [
       { label: "Default", code: "<Switch defaultChecked>Available to chat</Switch>", render: e_atoms_switch_example_0 },
       { label: "Off", code: "<Switch>Available to chat</Switch>", render: e_atoms_switch_example_1 },
-      { label: "With description", code: "<Switch defaultChecked description=\"Show your availability to teammates.\">Available to chat</Switch>", render: e_atoms_switch_example_2 },
-      { label: "Disabled", code: "<Switch defaultChecked disabled>Available to chat</Switch>", render: e_atoms_switch_example_3 },
-      { label: "Controlled", code: "<Stateful initial={true}>\n  {(on, setOn) => (\n    <Switch checked={on} onChange={setOn} description={on ? \"Alerts are on.\" : \"Alerts are paused.\"}>Notifications</Switch>\n  )}\n</Stateful>", render: e_atoms_switch_example_4 },
-      { label: "Settings list", code: "<Column relaxed>\n  <Switch defaultChecked description=\"Show your availability to teammates.\">Available to chat</Switch>\n  <Switch defaultChecked>Sound effects</Switch>\n  <Switch>Weekly digest</Switch>\n  <Switch defaultChecked>Push notifications</Switch>\n</Column>", render: e_atoms_switch_example_5 },
+      { label: "With description", code: "<Switch description=\"Show your availability to teammates.\">Available to chat</Switch>", render: e_atoms_switch_example_2 },
+      { label: "Disabled", code: "<Switch disabled>Available to chat</Switch>", render: e_atoms_switch_example_3 },
+      { label: "Controlled", code: "<Stateful initial={true}>\n  {(on, setOn) => <Switch checked={on} onChange={setOn}>Notifications</Switch>}\n</Stateful>", render: e_atoms_switch_example_4 },
+      { label: "Settings list", code: "<Column relaxed>\n  <Switch defaultChecked>Available to chat</Switch>\n  <Switch>Weekly digest</Switch>\n  <Switch defaultChecked>Push notifications</Switch>\n</Column>", render: e_atoms_switch_example_5 },
     ],
     donts: [
       { title: "Off", do: { caption: "Keep the standard input-colored off track so off stays clearly interactive and distinct from a disabled control.", code: "<Switch>Two-factor auth</Switch>", render: e_atoms_switch_dont_0_do }, dont: { caption: "A washed-out off track reads as disabled, so users can't tell the switch is simply off versus locked.", code: "<Pressable style={{ maxWidth: 280, flexDirection: \"row\", alignItems: \"center\", justifyContent: \"space-between\", gap: 16 }}>\n  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens.foreground }}>Two-factor auth</Text>\n  <View style={{ position: \"relative\", flexShrink: 0, borderRadius: 9999, width: 36, height: 20, backgroundColor: alpha(tokens.muted, 0.3) }}>\n    <View style={{ position: \"absolute\", top: 2, left: 2, borderRadius: 9999, width: 16, height: 16, backgroundColor: tokens.muted }} />\n  </View>\n</Pressable>", render: e_atoms_switch_dont_0_dont } },
@@ -1743,8 +1744,8 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "text",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Text numberOfLines={1} style={{ color: tokens.foreground }}>\n  The quick brown fox jumps over the lazy dog.\n</Text>", render: e_atoms_text_example_0 },
-      { label: "Truncation", code: "<View style={{ width: 220 }}>\n  <Text numberOfLines={1} style={{ color: tokens.foreground }}>\n    This single line is clipped with an ellipsis when it overflows its container.\n  </Text>\n</View>", render: e_atoms_text_example_1 },
+      { label: "Default", code: "<Text style={{ color: tokens.foreground }}>The quick brown fox jumps over the lazy dog.</Text>", render: e_atoms_text_example_0 },
+      { label: "Truncation", code: "<Container xxs>\n  <Text numberOfLines={1} style={{ color: tokens.foreground }}>\n    This single line is clipped with an ellipsis when it overflows its container.\n  </Text>\n</Container>", render: e_atoms_text_example_1 },
       { label: "Nested runs", code: "<Text style={{ color: tokens.foreground }}>\n  A run of text can carry an <Text style={{ fontWeight: \"700\" }}>inline emphasis</Text> that inherits everything else from its parent Text.\n</Text>", render: e_atoms_text_example_2 },
     ],
     donts: [
@@ -1755,9 +1756,9 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "text-input",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<TextInput\n  defaultValue=\"Ada Lovelace\"\n  placeholder=\"Your name\"\n  style={{ width: 240, height: 40, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: tokens.input, color: tokens.foreground, backgroundColor: tokens.background }}\n/>", render: e_atoms_text_input_example_0 },
-      { label: "Placeholder", code: "<TextInput\n  placeholder=\"Search components...\"\n  placeholderTextColor={alpha(tokens.foreground, 0.5)}\n  style={{ width: 240, height: 40, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: tokens.input, color: tokens.foreground, backgroundColor: tokens.background }}\n/>", render: e_atoms_text_input_example_1 },
-      { label: "Multiline", code: "<TextInput\n  defaultValue={\"Multi-line text\\nwraps and grows as you type.\"}\n  multiline\n  style={{ width: 240, height: 84, padding: 12, borderRadius: 8, borderWidth: 1, borderColor: tokens.input, color: tokens.foreground, backgroundColor: tokens.background, textAlignVertical: \"top\" }}\n/>", render: e_atoms_text_input_example_2 },
+      { label: "Default", code: "<TextInput defaultValue=\"Ada Lovelace\" />", render: e_atoms_text_input_example_0 },
+      { label: "Placeholder", code: "<TextInput placeholder=\"Search components...\" />", render: e_atoms_text_input_example_1 },
+      { label: "Multiline", code: "<TextInput multiline defaultValue={\"Multi-line text\\nwraps and grows as you type.\"} />", render: e_atoms_text_input_example_2 },
     ],
     donts: [
 
@@ -1767,14 +1768,14 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "textarea",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Textarea rows={4} placeholder=\"A few words about this project\" />", render: e_atoms_textarea_example_0 },
-      { label: "With label", code: "<Textarea label=\"Description\" rows={4} placeholder=\"A few words about this project…\" />", render: e_atoms_textarea_example_1 },
-      { label: "Pre-filled", code: "<Textarea label=\"Description\" rows={4} defaultValue=\"Canvas renders the same components natively on iOS and Android and on the web.\" />", render: e_atoms_textarea_example_2 },
-      { label: "Required", code: "<Textarea label=\"Bio\" required rows={4} placeholder=\"Tell us about yourself…\" />", render: e_atoms_textarea_example_3 },
-      { label: "Character counter", code: "<Textarea label=\"Description\" showCount maxLength={280} rows={4} placeholder=\"A few words about this project…\" />", render: e_atoms_textarea_example_4 },
-      { label: "Formatting toolbar", code: "<Card flat flush style={{ overflow: \"hidden\" }}>\n  <Row alignCenter tight padTight>\n    <Button ghost small>B</Button>\n    <Button ghost small>I</Button>\n    <Button ghost small>{\"</>\"}</Button>\n    <Divider vertical style={{ height: 16 }} />\n    <Button ghost small>Comment</Button>\n  </Row>\n  <Divider />\n  <Textarea rows={4} flush placeholder=\"Leave a comment…\" />\n</Card>", render: e_atoms_textarea_example_5 },
-      { label: "Disabled", code: "<Textarea rows={4} disabled placeholder=\"A few words about this project\" />", render: e_atoms_textarea_example_6 },
-      { label: "Widths come from the parent", code: "<Column snug>\n  <Container xs start><Textarea rows={2} placeholder=\"In an xs Container (320)\" /></Container>\n  <Container lg start><Textarea rows={2} placeholder=\"In an lg Container (512)\" /></Container>\n  <Textarea rows={2} placeholder=\"Bare: fills the parent\" />\n</Column>", render: e_atoms_textarea_example_7 },
+      { label: "Default", code: "<Textarea placeholder=\"A few words about this project\" />", render: e_atoms_textarea_example_0 },
+      { label: "With label", code: "<Textarea label=\"Description\" placeholder=\"A few words about this project…\" />", render: e_atoms_textarea_example_1 },
+      { label: "Pre-filled", code: "<Textarea defaultValue=\"Renders natively on iOS and Android and on the web.\" />", render: e_atoms_textarea_example_2 },
+      { label: "Required", code: "<Textarea label=\"Bio\" required />", render: e_atoms_textarea_example_3 },
+      { label: "Character counter", code: "<Textarea showCount maxLength={280} />", render: e_atoms_textarea_example_4 },
+      { label: "Formatting toolbar", code: "<Card flat flush style={{ overflow: \"hidden\" }}>\n  <Row tight padTight>\n    <Button ghost small>B</Button>\n    <Button ghost small>I</Button>\n  </Row>\n  <Divider />\n  <Textarea flush placeholder=\"Leave a comment…\" />\n</Card>", render: e_atoms_textarea_example_5 },
+      { label: "Disabled", code: "<Textarea disabled placeholder=\"A few words about this project\" />", render: e_atoms_textarea_example_6 },
+      { label: "Widths come from the parent", code: "<Column>\n  <Container xs start><Textarea rows={2} placeholder=\"In an xs Container (320)\" /></Container>\n  <Container lg start><Textarea rows={2} placeholder=\"In an lg Container (512)\" /></Container>\n  <Textarea rows={2} placeholder=\"Bare: fills the parent\" />\n</Column>", render: e_atoms_textarea_example_7 },
     ],
     donts: [
       { title: "With label", do: { caption: "Set `rows` for a sensible starting height so users can see their text; the field grows with the content from there.", code: "<Textarea label=\"Description\" rows={3} value=\"This is a longer description that runs past one line and stays readable.\" />", render: e_atoms_textarea_dont_0_do }, dont: { caption: "A locked, single-line textarea hides long content with no way to expand.", code: "<View style={{ maxWidth: 400, flexDirection: \"column\", gap: 6 }}>\n  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens.foreground }}>Description</Text>\n  <TextInput numberOfLines={1} value=\"This is a longer description that runs past one line and gets clipped.\" style={{ height: 32, width: \"100%\", borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12, paddingVertical: 4, fontSize: 14, lineHeight: 20, color: tokens.foreground }} />\n</View>", render: e_atoms_textarea_dont_0_dont } },
@@ -1787,14 +1788,14 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "tooltip",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Tooltip label=\"Open settings\" iconTrigger trigger=\"Hover me\" open top />", render: e_atoms_tooltip_example_0 },
-      { label: "Right", code: "<Tooltip label=\"Open settings\" iconTrigger trigger=\"Hover me\" open right />", render: e_atoms_tooltip_example_1 },
-      { label: "Bottom", code: "<Tooltip label=\"Open settings\" iconTrigger trigger=\"Hover me\" open bottom />", render: e_atoms_tooltip_example_2 },
-      { label: "Left", code: "<Tooltip label=\"Open settings\" iconTrigger trigger=\"Hover me\" open left />", render: e_atoms_tooltip_example_3 },
-      { label: "Button", code: "<Tooltip label=\"Open settings\" trigger=\"Hover me\" open top />", render: e_atoms_tooltip_example_4 },
-      { label: "Text", code: "<Tooltip textTrigger label=\"Open settings\" trigger=\"hover this text\" open top />", render: e_atoms_tooltip_example_5 },
-      { label: "Element trigger", code: "<Tooltip label=\"Glass on\" open top>\n  <Button ghost icon accessibilityLabel=\"Glass on\" iconLeft={<Icon settings size={16} />} onPress={() => {}} />\n</Tooltip>", render: e_atoms_tooltip_example_6 },
-      { label: "On hover", code: "<Tooltip label=\"Open settings\" iconTrigger trigger=\"Hover me\" top />", render: e_atoms_tooltip_example_7 },
+      { label: "Default", code: "<Tooltip label=\"Open settings\" trigger=\"Settings\" open />", render: e_atoms_tooltip_example_0 },
+      { label: "Right", code: "<Tooltip label=\"Open settings\" trigger=\"Settings\" open right />", render: e_atoms_tooltip_example_1 },
+      { label: "Bottom", code: "<Tooltip label=\"Open settings\" trigger=\"Settings\" open bottom />", render: e_atoms_tooltip_example_2 },
+      { label: "Left", code: "<Tooltip label=\"Open settings\" trigger=\"Settings\" open left />", render: e_atoms_tooltip_example_3 },
+      { label: "Icon", code: "<Tooltip label=\"Open settings\" iconTrigger open />", render: e_atoms_tooltip_example_4 },
+      { label: "Text", code: "<Tooltip textTrigger label=\"Open settings\" trigger=\"hover this text\" open />", render: e_atoms_tooltip_example_5 },
+      { label: "Element trigger", code: "<Tooltip label=\"Open settings\" open>\n  <Button ghost icon accessibilityLabel=\"Open settings\" iconLeft={<Icon settings size={16} />} />\n</Tooltip>", render: e_atoms_tooltip_example_6 },
+      { label: "On hover", code: "<Tooltip label=\"Open settings\" trigger=\"Hover me\" />", render: e_atoms_tooltip_example_7 },
     ],
     donts: [
       { do: { caption: "Keep tooltips short and supplementary; put essential steps in visible copy.", code: "<Tooltip iconTrigger bottom open label=\"Rotate key\" />", render: e_atoms_tooltip_dont_0_do }, dont: { caption: "Long, essential instructions hidden in a tooltip are missed on touch and by screen readers.", code: "<Tooltip iconTrigger bottom open label=\"To rotate this key you must first revoke the old one in Settings, then confirm via email within 24 hours.\" />", render: e_atoms_tooltip_dont_0_dont } },
@@ -1808,26 +1809,27 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "typography",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Typography h1>The quick brown fox</Typography>", render: e_atoms_typography_example_0 },
+      { label: "Default", code: "<Typography>The quick brown fox</Typography>", render: e_atoms_typography_example_0 },
       { label: "Display", code: "<Typography display>The quick brown fox</Typography>", render: e_atoms_typography_example_1 },
-      { label: "H2", code: "<Typography h2>The quick brown fox</Typography>", render: e_atoms_typography_example_2 },
-      { label: "H3", code: "<Typography h3>The quick brown fox</Typography>", render: e_atoms_typography_example_3 },
-      { label: "H4", code: "<Typography h4>The quick brown fox</Typography>", render: e_atoms_typography_example_4 },
-      { label: "H5", code: "<Typography h5>The quick brown fox</Typography>", render: e_atoms_typography_example_5 },
-      { label: "Body", code: "<Typography body>The quick brown fox</Typography>", render: e_atoms_typography_example_6 },
-      { label: "Small", code: "<Typography small>The quick brown fox</Typography>", render: e_atoms_typography_example_7 },
-      { label: "Tiny", code: "<Typography tiny>The quick brown fox</Typography>", render: e_atoms_typography_example_8 },
-      { label: "Muted", code: "<Typography muted>The quick brown fox</Typography>", render: e_atoms_typography_example_9 },
-      { label: "Caption", code: "<Typography caption>The quick brown fox</Typography>", render: e_atoms_typography_example_10 },
-      { label: "Code", code: "<Typography code>The quick brown fox</Typography>", render: e_atoms_typography_example_11 },
-      { label: "Mono", code: "<Typography mono>The quick brown fox</Typography>", render: e_atoms_typography_example_12 },
-      { label: "Lead", code: "<Typography lead>The quick brown fox</Typography>", render: e_atoms_typography_example_13 },
-      { label: "Semibold", code: "<Typography lead semibold>Rachel Chen</Typography>", render: e_atoms_typography_example_14 },
-      { label: "Tight leading", code: "<Column flush>\n  <Typography lead semibold tightLeading>Canvas</Typography>\n  <Typography tiny tightLeading>design system</Typography>\n</Column>", render: e_atoms_typography_example_15 },
-      { label: "Primary", code: "<Typography body primary>View invoices</Typography>", render: e_atoms_typography_example_16 },
-      { label: "Success", code: "<Typography small success>+12.4% this week</Typography>", render: e_atoms_typography_example_17 },
-      { label: "Destructive", code: "<Typography small destructive>Payment failed</Typography>", render: e_atoms_typography_example_18 },
-      { label: "Underline", code: "<Typography body primary underline>View invoices</Typography>", render: e_atoms_typography_example_19 },
+      { label: "H1", code: "<Typography h1>The quick brown fox</Typography>", render: e_atoms_typography_example_2 },
+      { label: "H2", code: "<Typography h2>The quick brown fox</Typography>", render: e_atoms_typography_example_3 },
+      { label: "H3", code: "<Typography h3>The quick brown fox</Typography>", render: e_atoms_typography_example_4 },
+      { label: "H4", code: "<Typography h4>The quick brown fox</Typography>", render: e_atoms_typography_example_5 },
+      { label: "H5", code: "<Typography h5>The quick brown fox</Typography>", render: e_atoms_typography_example_6 },
+      { label: "Lead", code: "<Typography lead>The quick brown fox</Typography>", render: e_atoms_typography_example_7 },
+      { label: "Body", code: "<Typography body>The quick brown fox</Typography>", render: e_atoms_typography_example_8 },
+      { label: "Small", code: "<Typography small>The quick brown fox</Typography>", render: e_atoms_typography_example_9 },
+      { label: "Tiny", code: "<Typography tiny>The quick brown fox</Typography>", render: e_atoms_typography_example_10 },
+      { label: "Muted", code: "<Typography muted>The quick brown fox</Typography>", render: e_atoms_typography_example_11 },
+      { label: "Caption", code: "<Typography caption>The quick brown fox</Typography>", render: e_atoms_typography_example_12 },
+      { label: "Code", code: "<Typography code>The quick brown fox</Typography>", render: e_atoms_typography_example_13 },
+      { label: "Mono", code: "<Typography mono>The quick brown fox</Typography>", render: e_atoms_typography_example_14 },
+      { label: "Semibold", code: "<Typography semibold>The quick brown fox</Typography>", render: e_atoms_typography_example_15 },
+      { label: "Primary", code: "<Typography primary>View invoices</Typography>", render: e_atoms_typography_example_16 },
+      { label: "Success", code: "<Typography success>+12.4% this week</Typography>", render: e_atoms_typography_example_17 },
+      { label: "Destructive", code: "<Typography destructive>Payment failed</Typography>", render: e_atoms_typography_example_18 },
+      { label: "Underline", code: "<Typography underline>View invoices</Typography>", render: e_atoms_typography_example_19 },
+      { label: "Tight leading", code: "<Column flush>\n  <Typography lead tightLeading>Canvas</Typography>\n  <Typography tiny tightLeading>design system</Typography>\n</Column>", render: e_atoms_typography_example_20 },
     ],
     donts: [
       { title: "display", do: { caption: "Use display once per hero, then drop to a muted line for the supporting copy.", code: "<Column snug>\n  <Typography display>Welcome</Typography>\n  <Typography muted>Sign in to pick up where you left off.</Typography>\n</Column>", render: e_atoms_typography_dont_0_do }, dont: { caption: "Two display-size lines in one view fight for attention and leave no clear focal point.", code: "<View style={{ gap: 8 }}>\n  <Typography display>Welcome</Typography>\n  <Typography display>Get started</Typography>\n</View>", render: e_atoms_typography_dont_0_dont } },
@@ -1849,10 +1851,10 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "view",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Row cozy alignCenter>\n  <View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: tokens.primary }} />\n  <Typography semibold>Two Views in a row</Typography>\n</Row>", render: e_atoms_view_example_0 },
-      { label: "Column", code: "<Column snug style={{ width: 220 }}>\n  <View style={{ height: 28, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ height: 28, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ height: 28, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n</Column>", render: e_atoms_view_example_1 },
-      { label: "Flex sizing", code: "<Row snug style={{ width: 260 }}>\n  <View style={{ flex: 1, height: 32, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ flex: 2, height: 32, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.3) }} />\n</Row>", render: e_atoms_view_example_2 },
-      { label: "Padding", code: "<Column pad style={{ width: 240, borderRadius: 10, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card }}>\n  <Typography>A padded, bordered box</Typography>\n</Column>", render: e_atoms_view_example_3 },
+      { label: "Default", code: "<View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: tokens.primary }} />", render: e_atoms_view_example_0 },
+      { label: "Column", code: "<Container xs>\n  <Column snug>\n    <View style={{ height: 28, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n    <View style={{ height: 28, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n    <View style={{ height: 28, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  </Column>\n</Container>", render: e_atoms_view_example_1 },
+      { label: "Flex sizing", code: "<Container xs>\n  <Row snug>\n    <View style={{ flex: 1, height: 32, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n    <View style={{ flex: 2, height: 32, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.3) }} />\n  </Row>\n</Container>", render: e_atoms_view_example_2 },
+      { label: "Padding", code: "<View style={{ padding: 16, borderRadius: 10, backgroundColor: alpha(tokens.primary, 0.15) }}>\n  <Typography>A padded View</Typography>\n</View>", render: e_atoms_view_example_3 },
     ],
     donts: [
       { title: "Arrangement", do: { caption: "Row and Column carry direction, gap, alignment and padding as boolean props, so the arrangement reads as language and lands on the kit's spacing scale.", code: "<Row cozy alignCenter>\n  <Emblem primary><Icon shield /></Emblem>\n  <Typography semibold>Semantic arrangement</Typography>\n</Row>", render: e_atoms_view_dont_0_do }, dont: { caption: "A hand-written flex style object restates what the primitives already name, drifts off the spacing scale, and has to be re-read to know what it does.", code: "<View style={{ flexDirection: \"row\", alignItems: \"center\", gap: 12 }}>\n  <View style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: alpha(tokens.primary, 0.12) }} />\n  <Text style={{ color: tokens.foreground, fontWeight: \"600\" }}>Hand-rolled arrangement</Text>\n</View>", render: e_atoms_view_dont_0_dont } },

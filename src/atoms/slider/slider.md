@@ -9,7 +9,7 @@ Name the setting with string `children`, or pass `accessibilityLabel` when the v
 ## Usage
 
 ```tsx
-<Slider accessibilityLabel="Volume" defaultValue={60} min={0} max={100} />
+<Slider accessibilityLabel="Volume" defaultValue={60} />
 ```
 
 On iOS 26 the handle is a real Apple Liquid Glass control: a bright knob that springs up as you drag, with the material's edge-lensing and specular showing on a physical device (the OS "transforms controls into liquid glass during interaction"). This is automatic from the glass surface, the platform default there, so there is no prop to set; under a solid surface, Reduce Transparency, or Increase Contrast the handle falls back to a solid knob. The Android and web handles keep their own native look.
@@ -19,13 +19,13 @@ On iOS 26 the handle is a real Apple Liquid Glass control: a bright knob that sp
 ### With label
 
 ```tsx
-<Slider showValue defaultValue={65} min={0} max={100}>Volume</Slider>
+<Slider defaultValue={65}>Volume</Slider>
 ```
 
 ### With description
 
 ```tsx
-<Slider defaultValue={40} min={0} max={100} description="Applies to alert sounds.">Volume</Slider>
+<Slider defaultValue={40} description="Applies to alert sounds.">Volume</Slider>
 ```
 
 ### Small
@@ -43,7 +43,7 @@ On iOS 26 the handle is a real Apple Liquid Glass control: a bright knob that sp
 ### Stepped
 
 ```tsx
-<Slider accessibilityLabel="Playback speed" defaultValue={6} min={0} max={10} step={2} />
+<Slider accessibilityLabel="Playback speed" defaultValue={6} max={10} step={2} />
 ```
 
 ### Disabled
@@ -55,9 +55,8 @@ On iOS 26 the handle is a real Apple Liquid Glass control: a bright knob that sp
 ### Widths come from the parent
 
 ```tsx
-<Column snug>
+<Column>
   <Container xs start><Slider defaultValue={40}>In an xs Container (320)</Slider></Container>
-  <Container lg start><Slider defaultValue={40}>In an lg Container (512)</Slider></Container>
   <Slider defaultValue={40}>Bare: fills the parent</Slider>
 </Column>
 ```

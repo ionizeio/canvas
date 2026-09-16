@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { tokens, Swatch } = scope;
   return (
-<Swatch large color={tokens.primary} value="--primary" detail="oklch(0.511 0.262 276.966)">
+<Swatch color={tokens.primary} value="--primary" detail="oklch(0.511 0.262 276.966)">
   primary
 </Swatch>
   );

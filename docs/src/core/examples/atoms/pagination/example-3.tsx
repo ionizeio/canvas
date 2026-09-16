@@ -3,8 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Pagination } = scope;
+  const { Pagination, Column } = scope;
   return (
-<Pagination defaultPage={2} total={12} withSize defaultPageSize={10} pageSizes={[10, 25, 50]} />
+<Column relaxed>
+  <Pagination small defaultPage={2} total={12} />
+  <Pagination defaultPage={2} total={12} />
+  <Pagination large defaultPage={2} total={12} />
+</Column>
   );
 }

@@ -20,21 +20,11 @@ A scrollable container for content larger than its bounds. Unlike a plain View (
 
 ```tsx
 <ScrollView horizontal style={{ width: "100%", borderRadius: 10, borderWidth: 1, borderColor: tokens.border }} contentContainerStyle={{ padding: 12, gap: 12 }}>
-  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ width: 80, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
+  <View style={{ width: 200, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
+  <View style={{ width: 200, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
+  <View style={{ width: 200, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
+  <View style={{ width: 200, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
+  <View style={{ width: 200, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
+  <View style={{ width: 200, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
 </ScrollView>
 ```

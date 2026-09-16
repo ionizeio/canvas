@@ -3,12 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, Swatch, Column } = scope;
+  const { tokens, Swatch } = scope;
   return (
-<Column snug>
-  <Swatch inline small color={tokens.background} value="--background">background</Swatch>
-  <Swatch inline small color={tokens.foreground} value="--foreground">foreground</Swatch>
-  <Swatch inline small color={tokens.border} value="--border">border</Swatch>
-</Column>
+<Swatch inline color={tokens.primary}>primary</Swatch>
   );
 }

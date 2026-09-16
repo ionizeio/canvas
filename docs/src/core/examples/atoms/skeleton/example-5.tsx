@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Skeleton } = scope;
   return (
-<Skeleton table animate />
+<Skeleton table />
   );
 }

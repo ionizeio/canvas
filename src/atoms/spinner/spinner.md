@@ -43,7 +43,7 @@ Animated loading spinner in three sizes.
 ### Primary
 
 ```tsx
-<Spinner primary>Loading…</Spinner>
+<Spinner primary />
 ```
 
 ## Do & Don't

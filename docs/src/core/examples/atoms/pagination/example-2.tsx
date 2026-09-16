@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Pagination } = scope;
   return (
-<Pagination defaultPage={2} total={12} defaultPageSize={10} pageSizes={[10, 25, 50]} />
+<Pagination defaultPage={2} total={12} withSize defaultPageSize={10} pageSizes={[10, 25, 50]} />
   );
 }

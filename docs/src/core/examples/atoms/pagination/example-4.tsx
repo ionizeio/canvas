@@ -6,9 +6,8 @@ export default function Example(scope: ExampleScope) {
   const { Pagination, Column } = scope;
   return (
 <Column relaxed>
-  <Pagination small defaultPage={2} total={12} />
-  <Pagination defaultPage={2} total={12} />
-  <Pagination large defaultPage={2} total={12} />
+  <Pagination defaultPage={1} total={3} />
+  <Pagination defaultPage={3} total={3} />
 </Column>
   );
 }

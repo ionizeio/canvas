@@ -6,9 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { Stateful, Switch } = scope;
   return (
 <Stateful initial={true}>
-  {(on, setOn) => (
-    <Switch checked={on} onChange={setOn} description={on ? "Alerts are on." : "Alerts are paused."}>Notifications</Switch>
-  )}
+  {(on, setOn) => <Switch checked={on} onChange={setOn}>Notifications</Switch>}
 </Stateful>
   );
 }

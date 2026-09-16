@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Switch } = scope;
   return (
-<Switch defaultChecked disabled>Available to chat</Switch>
+<Switch disabled>Available to chat</Switch>
   );
 }

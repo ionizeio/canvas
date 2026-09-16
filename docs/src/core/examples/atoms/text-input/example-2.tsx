@@ -3,12 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, TextInput } = scope;
+  const { TextInput } = scope;
   return (
-<TextInput
-  defaultValue={"Multi-line text\nwraps and grows as you type."}
-  multiline
-  style={{ width: 240, height: 84, padding: 12, borderRadius: 8, borderWidth: 1, borderColor: tokens.input, color: tokens.foreground, backgroundColor: tokens.background, textAlignVertical: "top" }}
-/>
+<TextInput multiline defaultValue={"Multi-line text\nwraps and grows as you type."} />
   );
 }

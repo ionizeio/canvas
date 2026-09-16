@@ -3,8 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Typography } = scope;
+  const { Typography, Column } = scope;
   return (
-<Typography destructive>Payment failed</Typography>
+<Column flush>
+  <Typography lead tightLeading>Canvas</Typography>
+  <Typography tiny tightLeading>design system</Typography>
+</Column>
   );
 }

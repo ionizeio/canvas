@@ -20,45 +20,35 @@ behind it.
 ### Sizes
 
 ```tsx
-<Row snug alignStart>
-  <Swatch small color={tokens.primary} value="--primary">primary</Swatch>
-  <Swatch color={tokens.success} value="--success">success</Swatch>
-  <Swatch large color={tokens.destructive} value="--destructive">destructive</Swatch>
+<Row>
+  <Swatch small color={tokens.primary}>primary</Swatch>
+  <Swatch color={tokens.success}>success</Swatch>
+  <Swatch large color={tokens.destructive}>destructive</Swatch>
 </Row>
 ```
 
 ### Circle
 
 ```tsx
-<Row snug alignCenter>
-  <Swatch circle color={tokens.primary} value="--primary">primary</Swatch>
-  <Swatch circle color={tokens.accent} value="--accent">accent</Swatch>
-</Row>
+<Swatch circle color={tokens.primary}>primary</Swatch>
 ```
 
 ### Inline
 
 ```tsx
-<Column snug>
-  <Swatch inline small color={tokens.background} value="--background">background</Swatch>
-  <Swatch inline small color={tokens.foreground} value="--foreground">foreground</Swatch>
-  <Swatch inline small color={tokens.border} value="--border">border</Swatch>
-</Column>
+<Swatch inline color={tokens.primary}>primary</Swatch>
 ```
 
 ### Block
 
 ```tsx
-<Column snug>
-  <Swatch block small color={tokens.primary} value="--primary">primary</Swatch>
-  <Swatch block small color={tokens.secondary} value="--secondary">secondary</Swatch>
-</Column>
+<Swatch block color={tokens.primary}>primary</Swatch>
 ```
 
 ### Detail line
 
 ```tsx
-<Swatch large color={tokens.primary} value="--primary" detail="oklch(0.511 0.262 276.966)">
+<Swatch color={tokens.primary} value="--primary" detail="oklch(0.511 0.262 276.966)">
   primary
 </Swatch>
 ```

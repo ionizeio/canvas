@@ -25,7 +25,7 @@ does not, because that press belongs to the child.
 ## Usage
 
 ```tsx
-<Tooltip label="Open settings" iconTrigger trigger="Hover me" open top />
+<Tooltip label="Open settings" trigger="Settings" open />
 ```
 
 ## Variants
@@ -33,45 +33,45 @@ does not, because that press belongs to the child.
 ### Right
 
 ```tsx
-<Tooltip label="Open settings" iconTrigger trigger="Hover me" open right />
+<Tooltip label="Open settings" trigger="Settings" open right />
 ```
 
 ### Bottom
 
 ```tsx
-<Tooltip label="Open settings" iconTrigger trigger="Hover me" open bottom />
+<Tooltip label="Open settings" trigger="Settings" open bottom />
 ```
 
 ### Left
 
 ```tsx
-<Tooltip label="Open settings" iconTrigger trigger="Hover me" open left />
+<Tooltip label="Open settings" trigger="Settings" open left />
 ```
 
-### Button
+### Icon
 
 ```tsx
-<Tooltip label="Open settings" trigger="Hover me" open top />
+<Tooltip label="Open settings" iconTrigger open />
 ```
 
 ### Text
 
 ```tsx
-<Tooltip textTrigger label="Open settings" trigger="hover this text" open top />
+<Tooltip textTrigger label="Open settings" trigger="hover this text" open />
 ```
 
 ### Element trigger
 
 ```tsx
-<Tooltip label="Glass on" open top>
-  <Button ghost icon accessibilityLabel="Glass on" iconLeft={<Icon settings size={16} />} onPress={() => {}} />
+<Tooltip label="Open settings" open>
+  <Button ghost icon accessibilityLabel="Open settings" iconLeft={<Icon settings size={16} />} />
 </Tooltip>
 ```
 
 ### On hover
 
 ```tsx
-<Tooltip label="Open settings" iconTrigger trigger="Hover me" top />
+<Tooltip label="Open settings" trigger="Hover me" />
 ```
 
 ## Do & Don't

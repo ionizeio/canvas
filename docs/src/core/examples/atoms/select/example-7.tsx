@@ -7,7 +7,6 @@ export default function Example(scope: ExampleScope) {
   return (
 <Column snug>
   <Container xs start><Select options={["Small", "Medium", "Large"]} placeholder="In an xs Container (320)" /></Container>
-  <Container lg start><Select options={["Small", "Medium", "Large"]} placeholder="In an lg Container (512)" /></Container>
   <Select options={["Small", "Medium", "Large"]} placeholder="Bare: fills the parent" />
 </Column>
   );

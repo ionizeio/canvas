@@ -13,7 +13,7 @@ Cancelling an IME candidate keeps the overlay open.
 ## Usage
 
 ```tsx
-<Textarea rows={4} placeholder="A few words about this project" />
+<Textarea placeholder="A few words about this project" />
 ```
 
 ## Variants
@@ -21,53 +21,50 @@ Cancelling an IME candidate keeps the overlay open.
 ### With label
 
 ```tsx
-<Textarea label="Description" rows={4} placeholder="A few words about this project…" />
+<Textarea label="Description" placeholder="A few words about this project…" />
 ```
 
 ### Pre-filled
 
 ```tsx
-<Textarea label="Description" rows={4} defaultValue="Canvas renders the same components natively on iOS and Android and on the web." />
+<Textarea defaultValue="Renders natively on iOS and Android and on the web." />
 ```
 
 ### Required
 
 ```tsx
-<Textarea label="Bio" required rows={4} placeholder="Tell us about yourself…" />
+<Textarea label="Bio" required />
 ```
 
 ### Character counter
 
 ```tsx
-<Textarea label="Description" showCount maxLength={280} rows={4} placeholder="A few words about this project…" />
+<Textarea showCount maxLength={280} />
 ```
 
 ### Formatting toolbar
 
 ```tsx
 <Card flat flush style={{ overflow: "hidden" }}>
-  <Row alignCenter tight padTight>
+  <Row tight padTight>
     <Button ghost small>B</Button>
     <Button ghost small>I</Button>
-    <Button ghost small>{"</>"}</Button>
-    <Divider vertical style={{ height: 16 }} />
-    <Button ghost small>Comment</Button>
   </Row>
   <Divider />
-  <Textarea rows={4} flush placeholder="Leave a comment…" />
+  <Textarea flush placeholder="Leave a comment…" />
 </Card>
 ```
 
 ### Disabled
 
 ```tsx
-<Textarea rows={4} disabled placeholder="A few words about this project" />
+<Textarea disabled placeholder="A few words about this project" />
 ```
 
 ### Widths come from the parent
 
 ```tsx
-<Column snug>
+<Column>
   <Container xs start><Textarea rows={2} placeholder="In an xs Container (320)" /></Container>
   <Container lg start><Textarea rows={2} placeholder="In an lg Container (512)" /></Container>
   <Textarea rows={2} placeholder="Bare: fills the parent" />

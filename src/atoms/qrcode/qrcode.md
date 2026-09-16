@@ -16,12 +16,6 @@ Encodes a string as a scannable QR code. Built on react-native-svg, so it render
 <QRCode value="https://canvas.nannier.com" small />
 ```
 
-### Medium
-
-```tsx
-<QRCode value="https://canvas.nannier.com" />
-```
-
 ### Large
 
 ```tsx

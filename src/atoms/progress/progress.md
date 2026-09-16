@@ -12,23 +12,10 @@ Name the task with string `children`, or pass `accessibilityLabel` when the visi
 
 ## Variants
 
-### Live
-
-The determinate fill eases to each new `value` instead of jumping, so a bar wired to real
-progress fills smoothly. (Reduce Motion snaps instead.)
+### Labeled
 
 ```tsx
-<Ticker values={[0, 0.15, 0.4, 0.65, 0.85, 1]}>
-  {(value) => (
-    <Progress showValue value={value}>Uploading…</Progress>
-  )}
-</Ticker>
-```
-
-### Determinate
-
-```tsx
-<Progress accessibilityLabel="Uploading files" value={0.4} />
+<Progress showValue description="3 of 5 files" value={0.6}>Uploading files</Progress>
 ```
 
 ### Indeterminate
@@ -55,7 +42,7 @@ The tone axis recolors the fill when a metric crosses a soft threshold. Pass `wa
 amber bar; the track stays neutral.
 
 ```tsx
-<Progress warning showValue value={0.85}>Storage used</Progress>
+<Progress warning value={0.85}>Storage used</Progress>
 ```
 
 ### Danger
@@ -64,7 +51,20 @@ Pass `danger` for a red bar when a hard limit is exceeded, e.g. a work-in-progre
 the state with copy, since the tone carries no new accessible value on its own.
 
 ```tsx
-<Progress danger showValue value={1}>Over the WIP limit</Progress>
+<Progress danger value={1}>Over the WIP limit</Progress>
+```
+
+### Live
+
+The determinate fill eases to each new `value` instead of jumping, so a bar wired to real
+progress fills smoothly. (Reduce Motion snaps instead.)
+
+```tsx
+<Ticker values={[0, 0.15, 0.4, 0.65, 0.85, 1]}>
+  {(value) => (
+    <Progress showValue value={value}>Uploading…</Progress>
+  )}
+</Ticker>
 ```
 
 ### Widths come from the parent
@@ -72,7 +72,6 @@ the state with copy, since the tone carries no new accessible value on its own.
 ```tsx
 <Column snug>
   <Container xs start><Progress value={0.6}>In an xs Container (320)</Progress></Container>
-  <Container lg start><Progress value={0.6}>In an lg Container (512)</Progress></Container>
   <Progress value={0.6}>Bare: fills the parent</Progress>
 </Column>
 ```

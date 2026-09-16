@@ -6,15 +6,12 @@ export default function Example(scope: ExampleScope) {
   const { Button, Card, Divider, Textarea, Row } = scope;
   return (
 <Card flat flush style={{ overflow: "hidden" }}>
-  <Row alignCenter tight padTight>
+  <Row tight padTight>
     <Button ghost small>B</Button>
     <Button ghost small>I</Button>
-    <Button ghost small>{"</>"}</Button>
-    <Divider vertical style={{ height: 16 }} />
-    <Button ghost small>Comment</Button>
   </Row>
   <Divider />
-  <Textarea rows={4} flush placeholder="Leave a comment…" />
+  <Textarea flush placeholder="Leave a comment…" />
 </Card>
   );
 }

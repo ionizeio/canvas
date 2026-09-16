@@ -5,10 +5,7 @@ Placeholders for loading content.
 ## Usage
 
 ```tsx
-<Column snug>
-  <Skeleton text animate />
-  <Skeleton text animate short />
-</Column>
+<Skeleton animate />
 ```
 
 ## Variants
@@ -16,31 +13,31 @@ Placeholders for loading content.
 ### Avatar
 
 ```tsx
-<Skeleton avatar animate />
+<Skeleton avatar />
 ```
 
 ### Button
 
 ```tsx
-<Skeleton button animate />
+<Skeleton button />
 ```
 
 ### Card
 
 ```tsx
-<Skeleton card animate />
+<Skeleton card />
 ```
 
 ### List
 
 ```tsx
-<Skeleton list animate />
+<Skeleton list />
 ```
 
 ### Table
 
 ```tsx
-<Skeleton table animate />
+<Skeleton table />
 ```
 
 ## Do & Don't

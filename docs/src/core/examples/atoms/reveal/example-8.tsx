@@ -3,12 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Reveal, Typography } = scope;
+  const { Ticker, Card, Reveal, Typography } = scope;
   return (
-<Reveal deepInView>
-  <Card padded>
-    <Typography small semibold>Waits until it is properly in view</Typography>
-  </Card>
-</Reveal>
+<Ticker values={[1, 2]} interval={2800}>
+  {(pass) => (
+    <Reveal key={pass}>
+      <Card>
+        <Typography>Arriving again</Typography>
+      </Card>
+    </Reveal>
+  )}
+</Ticker>
   );
 }

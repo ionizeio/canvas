@@ -3,12 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, alpha, TextInput } = scope;
+  const { TextInput } = scope;
   return (
-<TextInput
-  placeholder="Search components..."
-  placeholderTextColor={alpha(tokens.foreground, 0.5)}
-  style={{ width: 240, height: 40, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: tokens.input, color: tokens.foreground, backgroundColor: tokens.background }}
-/>
+<TextInput placeholder="Search components..." />
   );
 }

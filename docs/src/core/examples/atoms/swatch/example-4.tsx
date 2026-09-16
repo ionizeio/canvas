@@ -3,11 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, Swatch, Column } = scope;
+  const { tokens, Swatch } = scope;
   return (
-<Column snug>
-  <Swatch block small color={tokens.primary} value="--primary">primary</Swatch>
-  <Swatch block small color={tokens.secondary} value="--secondary">secondary</Swatch>
-</Column>
+<Swatch block color={tokens.primary}>primary</Swatch>
   );
 }

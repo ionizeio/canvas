@@ -5,8 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { tokens, Text } = scope;
   return (
-<Text numberOfLines={1} style={{ color: tokens.foreground }}>
-  The quick brown fox jumps over the lazy dog.
-</Text>
+<Text style={{ color: tokens.foreground }}>The quick brown fox jumps over the lazy dog.</Text>
   );
 }

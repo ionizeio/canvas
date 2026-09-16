@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Stepper } = scope;
   return (
-<Stepper defaultValue={20} min={0} max={100} step={10} onChange={() => {}} />
+<Stepper defaultValue={20} max={100} step={10} />
   );
 }

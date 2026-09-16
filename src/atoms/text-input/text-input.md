@@ -5,11 +5,7 @@ Single-line (or multiline) text entry. Control it with `value` + `onChangeText`,
 ## Usage
 
 ```tsx
-<TextInput
-  defaultValue="Ada Lovelace"
-  placeholder="Your name"
-  style={{ width: 240, height: 40, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: tokens.input, color: tokens.foreground, backgroundColor: tokens.background }}
-/>
+<TextInput defaultValue="Ada Lovelace" />
 ```
 
 ## Variants
@@ -17,19 +13,11 @@ Single-line (or multiline) text entry. Control it with `value` + `onChangeText`,
 ### Placeholder
 
 ```tsx
-<TextInput
-  placeholder="Search components..."
-  placeholderTextColor={alpha(tokens.foreground, 0.5)}
-  style={{ width: 240, height: 40, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: tokens.input, color: tokens.foreground, backgroundColor: tokens.background }}
-/>
+<TextInput placeholder="Search components..." />
 ```
 
 ### Multiline
 
 ```tsx
-<TextInput
-  defaultValue={"Multi-line text\nwraps and grows as you type."}
-  multiline
-  style={{ width: 240, height: 84, padding: 12, borderRadius: 8, borderWidth: 1, borderColor: tokens.input, color: tokens.foreground, backgroundColor: tokens.background, textAlignVertical: "top" }}
-/>
+<TextInput multiline defaultValue={"Multi-line text\nwraps and grows as you type."} />
 ```

@@ -5,9 +5,9 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Card, Reveal, Typography } = scope;
   return (
-<Reveal fromRight>
-  <Card padded>
-    <Typography small semibold>Slides in from the right</Typography>
+<Reveal brisk>
+  <Card>
+    <Typography>Arrives faster</Typography>
   </Card>
 </Reveal>
   );

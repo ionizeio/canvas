@@ -5,7 +5,7 @@ Increment, decrement, or type a number in a bounded range. A − button, an edit
 ## Usage
 
 ```tsx
-<Stepper defaultValue={3} min={0} max={10} onChange={() => {}} />
+<Stepper defaultValue={3} max={10} />
 ```
 
 ## Variants
@@ -26,9 +26,9 @@ Increment, decrement, or type a number in a bounded range. A − button, an edit
 
 ```tsx
 <Row alignCenter relaxed>
-  <Stepper small defaultValue={2} min={0} max={10} onChange={() => {}} />
-  <Stepper defaultValue={2} min={0} max={10} onChange={() => {}} />
-  <Stepper large defaultValue={2} min={0} max={10} onChange={() => {}} />
+  <Stepper small defaultValue={2} max={10} />
+  <Stepper defaultValue={2} max={10} />
+  <Stepper large defaultValue={2} max={10} />
 </Row>
 ```
 
@@ -36,21 +36,21 @@ Increment, decrement, or type a number in a bounded range. A − button, an edit
 
 ```tsx
 <Row alignCenter relaxed>
-  <Stepper defaultValue={0} min={0} max={5} onChange={() => {}} />
-  <Stepper defaultValue={5} min={0} max={5} onChange={() => {}} />
+  <Stepper defaultValue={0} min={0} max={5} />
+  <Stepper defaultValue={5} min={0} max={5} />
 </Row>
 ```
 
 ### Stepped
 
 ```tsx
-<Stepper defaultValue={20} min={0} max={100} step={10} onChange={() => {}} />
+<Stepper defaultValue={20} max={100} step={10} />
 ```
 
 ### Disabled
 
 ```tsx
-<Stepper disabled defaultValue={4} min={0} max={10} onChange={() => {}} />
+<Stepper disabled defaultValue={4} max={10} />
 ```
 
 ## Do & Don't

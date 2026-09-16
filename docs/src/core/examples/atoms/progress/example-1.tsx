@@ -3,12 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Ticker, Progress } = scope;
+  const { Progress } = scope;
   return (
-<Ticker values={[0, 0.15, 0.4, 0.65, 0.85, 1]}>
-  {(value) => (
-    <Progress showValue value={value}>Uploading…</Progress>
-  )}
-</Ticker>
+<Progress showValue description="3 of 5 files" value={0.6}>Uploading files</Progress>
   );
 }

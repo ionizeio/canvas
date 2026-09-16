@@ -7,7 +7,6 @@ export default function Example(scope: ExampleScope) {
   return (
 <Column snug>
   <Container xs start><Progress value={0.6}>In an xs Container (320)</Progress></Container>
-  <Container lg start><Progress value={0.6}>In an lg Container (512)</Progress></Container>
   <Progress value={0.6}>Bare: fills the parent</Progress>
 </Column>
   );

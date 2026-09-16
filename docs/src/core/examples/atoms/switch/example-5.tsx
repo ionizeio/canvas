@@ -6,8 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { Switch, Column } = scope;
   return (
 <Column relaxed>
-  <Switch defaultChecked description="Show your availability to teammates.">Available to chat</Switch>
-  <Switch defaultChecked>Sound effects</Switch>
+  <Switch defaultChecked>Available to chat</Switch>
   <Switch>Weekly digest</Switch>
   <Switch defaultChecked>Push notifications</Switch>
 </Column>

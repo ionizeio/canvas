@@ -9,12 +9,7 @@ Pass `ref` to access the interactive trigger, preserving overlay measurement. Us
 ## Usage
 
 ```tsx
-<Select
-  label="Country"
-  defaultValue="United States"
-  options={["United States", "Canada", "Mexico", "United Kingdom"]}
-  placeholder="Select a country"
-/>
+<Select label="Country" defaultValue="United States" options={["United States", "Canada", "Mexico"]} />
 ```
 
 ## Variants
@@ -28,61 +23,31 @@ Pass `ref` to access the interactive trigger, preserving overlay measurement. Us
 ### Required field
 
 ```tsx
-<Select
-  label="Country"
-  required
-  defaultValue="United States"
-  options={["United States", "Canada", "Mexico", "United Kingdom"]}
-  placeholder="Select a country"
-/>
+<Select label="Country" required defaultValue="United States" options={["United States", "Canada", "Mexico"]} />
 ```
 
 ### Small
 
 ```tsx
-<Select
-  small
-  label="Country"
-  defaultValue="United States"
-  options={["United States", "Canada", "Mexico", "United Kingdom"]}
-  placeholder="Select a country"
-/>
+<Select small label="Country" defaultValue="United States" options={["United States", "Canada", "Mexico"]} />
 ```
 
 ### Large
 
 ```tsx
-<Select
-  large
-  label="Country"
-  defaultValue="United States"
-  options={["United States", "Canada", "Mexico", "United Kingdom"]}
-  placeholder="Select a country"
-/>
+<Select large label="Country" defaultValue="United States" options={["United States", "Canada", "Mexico"]} />
 ```
 
 ### With leading icon
 
 ```tsx
-<Select
-  label="Country"
-  icon
-  defaultValue="United States"
-  options={["United States", "Canada", "Mexico", "United Kingdom"]}
-  placeholder="Select a country"
-/>
+<Select icon label="Country" defaultValue="United States" options={["United States", "Canada", "Mexico"]} />
 ```
 
 ### Disabled
 
 ```tsx
-<Select
-  disabled
-  label="Country"
-  defaultValue="United States"
-  options={["United States", "Canada", "Mexico", "United Kingdom"]}
-  placeholder="Select a country"
-/>
+<Select disabled label="Country" defaultValue="United States" options={["United States", "Canada", "Mexico"]} />
 ```
 
 ### Widths come from the parent
@@ -90,7 +55,6 @@ Pass `ref` to access the interactive trigger, preserving overlay measurement. Us
 ```tsx
 <Column snug>
   <Container xs start><Select options={["Small", "Medium", "Large"]} placeholder="In an xs Container (320)" /></Container>
-  <Container lg start><Select options={["Small", "Medium", "Large"]} placeholder="In an lg Container (512)" /></Container>
   <Select options={["Small", "Medium", "Large"]} placeholder="Bare: fills the parent" />
 </Column>
 ```

@@ -3,11 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Typography, Column } = scope;
+  const { Typography } = scope;
   return (
-<Column flush>
-  <Typography lead semibold tightLeading>Canvas</Typography>
-  <Typography tiny tightLeading>design system</Typography>
-</Column>
+<Typography semibold>The quick brown fox</Typography>
   );
 }

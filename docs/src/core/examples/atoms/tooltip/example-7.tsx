@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Tooltip } = scope;
   return (
-<Tooltip label="Open settings" iconTrigger trigger="Hover me" top />
+<Tooltip label="Open settings" trigger="Hover me" />
   );
 }
