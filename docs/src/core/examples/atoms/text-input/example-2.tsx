@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { TextInput } = scope;
   return (
-<TextInput multiline defaultValue={"Multi-line text\nwraps and grows as you type."} />
+<TextInput accessibilityLabel="Notes" multiline defaultValue={"Multi-line text\nwraps and grows as you type."} />
   );
 }

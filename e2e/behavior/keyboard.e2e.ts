@@ -62,10 +62,10 @@ test("the example rail selects with the arrow keys and addresses the example", a
   await page.keyboard.press("ArrowDown");
   await expect(tabs.nth(1)).toHaveAttribute("aria-selected", "true");
   // Selecting an example is addressable: the URL names it.
-  await expect(page).toHaveURL(/\/components\/badge\/status(\?|$)/);
+  await expect(page).toHaveURL(/\/components\/badge\/solid(\?|$)/);
 
   // KNOWN GAP, docs side: selecting drops keyboard focus to the document body, so a
-  // second arrow press does nothing. /components/badge and /components/badge/status
+  // second arrow press does nothing. /components/badge and /components/badge/solid
   // are different route files, so the replace swaps the whole screen out from under
   // the focused tab. The kit's own Tabs keeps focus across arrows (the test above),
   // so this is the docs' deep-link routing, not the component.

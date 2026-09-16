@@ -1757,9 +1757,9 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "text-input",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<TextInput defaultValue=\"Ada Lovelace\" />", render: e_atoms_text_input_example_0 },
+      { label: "Default", code: "<TextInput accessibilityLabel=\"Your name\" defaultValue=\"Ada Lovelace\" />", render: e_atoms_text_input_example_0 },
       { label: "Placeholder", code: "<TextInput placeholder=\"Search components...\" />", render: e_atoms_text_input_example_1 },
-      { label: "Multiline", code: "<TextInput multiline defaultValue={\"Multi-line text\\nwraps and grows as you type.\"} />", render: e_atoms_text_input_example_2 },
+      { label: "Multiline", code: "<TextInput accessibilityLabel=\"Notes\" multiline defaultValue={\"Multi-line text\\nwraps and grows as you type.\"} />", render: e_atoms_text_input_example_2 },
     ],
     donts: [
 

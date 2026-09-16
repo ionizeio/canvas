@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { TextInput } = scope;
   return (
-<TextInput defaultValue="Ada Lovelace" />
+<TextInput accessibilityLabel="Your name" defaultValue="Ada Lovelace" />
   );
 }

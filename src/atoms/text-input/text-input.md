@@ -5,7 +5,7 @@ Single-line (or multiline) text entry. Control it with `value` + `onChangeText`,
 ## Usage
 
 ```tsx
-<TextInput defaultValue="Ada Lovelace" />
+<TextInput accessibilityLabel="Your name" defaultValue="Ada Lovelace" />
 ```
 
 ## Variants
@@ -19,5 +19,5 @@ Single-line (or multiline) text entry. Control it with `value` + `onChangeText`,
 ### Multiline
 
 ```tsx
-<TextInput multiline defaultValue={"Multi-line text\nwraps and grows as you type."} />
+<TextInput accessibilityLabel="Notes" multiline defaultValue={"Multi-line text\nwraps and grows as you type."} />
 ```
