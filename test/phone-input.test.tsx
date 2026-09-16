@@ -81,6 +81,18 @@ describe("PhoneInput journeys", () => {
     });
   }
 
+  // The literal-titled journey the interaction registry (tools/interactions) cites.
+  it("picking a country from the segment's list swaps the dial code and reports the code", () => {
+    const picked: string[] = [];
+    ui(<PhoneInputWeb label="Phone number" defaultCountry="US" onCountryChange={(c) => picked.push(c)} />);
+    fireEvent.click(screen.getByRole("button", { name: "Country, United States +1" }));
+    layoutEntrance(screen.getByRole("listbox", { hidden: true }), { width: 320, height: 200 });
+    fireEvent.click(screen.getByRole("option", { name: "Japan +81" }));
+    expect(picked).toEqual(["JP"]);
+    expect(screen.getByText("+81")).toBeTruthy();
+    expect(screen.queryByRole("listbox")).toBeNull();
+  });
+
   it("a controlled country stays put until the parent changes it", () => {
     ui(<PhoneInputWeb label="Phone number" country="FR" />);
     fireEvent.click(screen.getByRole("button", { name: "Country, France +33" }));

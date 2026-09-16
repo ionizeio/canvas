@@ -38,6 +38,17 @@ describe("Input passwordToggle", () => {
     });
   }
 
+  // The literal-titled journey the interaction registry (tools/interactions) cites.
+  it("the eye reveals a masked password and re-masks it", () => {
+    ui(<InputWeb label="Password" secureTextEntry passwordToggle defaultValue="hunter2" />);
+    const field = screen.getByLabelText("Password") as HTMLInputElement;
+    expect(field.type).toBe("password");
+    fireEvent.click(screen.getByRole("button", { name: "Show password" }));
+    expect(field.type).toBe("text");
+    fireEvent.click(screen.getByRole("button", { name: "Hide password" }));
+    expect(field.type).toBe("password");
+  });
+
   it("renders no eye without secureTextEntry (nothing to reveal)", () => {
     ui(<InputWeb label="Name" passwordToggle defaultValue="Ada" />);
     expect(screen.queryByRole("button", { name: /password/ })).toBeNull();
@@ -60,6 +71,15 @@ describe("Input clearable", () => {
       expect(screen.getByRole("button", { name: "Clear text" })).toBeTruthy();
     });
   }
+
+  // The literal-titled journey the interaction registry (tools/interactions) cites.
+  it("the clear button empties the field and reports an empty value", () => {
+    const seen: string[] = [];
+    ui(<InputWeb label="Search" clearable defaultValue="canvas" onChangeText={(v) => seen.push(v)} />);
+    fireEvent.click(screen.getByRole("button", { name: "Clear text" }));
+    expect(seen).toEqual([""]);
+    expect((screen.getByLabelText("Search") as HTMLInputElement).value).toBe("");
+  });
 
   it("stays hidden on an empty field and on a read-only one", () => {
     ui(
