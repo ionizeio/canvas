@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, alpha } from "../../style/index.js";
+import { type ColorTokens, alpha, shape } from "../../style/index.js";
 
 // Co-located EmptyState skins, one per platform. EmptyState is a "Light"
 // treatment: identical structure and semantic colors (those live below as the
@@ -85,10 +85,11 @@ const ACTION_SPACING: ViewStyle = { marginTop: 16 };
 // ---- Web (the established Canvas look, lifted verbatim) ----------------------
 export const webSkin: EmptyStateSkin = {
   container: CONTAINER,
-  borderedBase: { borderRadius: 8, borderWidth: 1 },
+  // The Riskora drop zone: the 20px card corner and a dashed hairline.
+  borderedBase: { borderRadius: shape.web.card, borderWidth: 1, borderStyle: "dashed" },
   borderedPad: {
     compact: { paddingHorizontal: 16, paddingVertical: 24 },
-    default: { paddingHorizontal: 24, paddingVertical: 32 },
+    default: { paddingHorizontal: 24, paddingVertical: 40 },
   },
   discBase: DISC,
   glyph: GLYPH,
@@ -96,7 +97,7 @@ export const webSkin: EmptyStateSkin = {
     textAlign: "center",
     fontSize: 16,
     lineHeight: 24,
-    fontWeight: "600",
+    fontWeight: "500",
     color: tokens.foreground,
   }),
   description: (tokens) => ({

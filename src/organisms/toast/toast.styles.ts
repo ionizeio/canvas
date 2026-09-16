@@ -1,6 +1,6 @@
 import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, alpha, darkColors, lightColors, shadow } from "../../style/index.js";
+import { type ColorTokens, alpha, darkColors, lightColors, shadow, shape } from "../../style/index.js";
 import { type ToastSkin } from "./toast.shared.js";
 
 // Co-located Toast skins, one per platform, all driven by the brand tokens (passed
@@ -57,9 +57,9 @@ function capsule(t: ColorTokens, radius: number): ViewStyle {
 }
 
 const actionButton = (): ViewStyle => ({
-  paddingHorizontal: 10,
+  paddingHorizontal: 12,
   paddingVertical: 6,
-  borderRadius: 6,
+  borderRadius: 10,
   // clip the Material ripple to the rounded outline (Android clipToOutline)
   overflow: "hidden",
   alignItems: "center",
@@ -97,9 +97,9 @@ function inversePrimary(t: ColorTokens): string {
   return primaryText(isDarkFill(t.foreground) ? darkColors : lightColors);
 }
 
-// ---------- Web: the established Canvas look (sonner-style card) ----------
+// ---------- Web: the Riskora notification card (the 16px dialog corner) ----------
 export const webSkin: ToastSkin = {
-  container: (t) => capsule(t, 12),
+  container: (t) => capsule(t, shape.web.dialog),
   intentIcon: true,
   iconSize: ICON_SIZE,
   message: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t["popover-foreground"] }),

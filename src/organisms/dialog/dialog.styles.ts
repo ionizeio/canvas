@@ -1,7 +1,7 @@
 import { destructiveText } from "../../style/destructive-text.js";
 import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow, alpha, widths } from "../../style/index.js";
+import { type ColorTokens, shadow, alpha, widths, shape } from "../../style/index.js";
 
 // Co-located Dialog skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so they follow light/dark and read as glass when the
@@ -166,16 +166,18 @@ export function cardWidth(size: Size): ViewStyle {
 // bg-black/50 backdrop; a 16/24 600 title, a 14/20 muted-foreground body, and a
 // right-aligned action row (gap-2, mt-6) of an outline Cancel + a primary/
 // destructive Confirm Button.
+// The Riskora dialog: a 16px-cornered card under a 60% scrim, the ambient xl shade,
+// an 18px medium title over muted body copy.
 export const webSkin: DialogSkin = {
-  backdrop: () => ({ borderRadius: 8, backgroundColor: alpha("#000000", 0.5) }),
+  backdrop: () => ({ borderRadius: shape.web.dialog, backgroundColor: alpha("#000000", 0.6) }),
   card: (t) => ({
-    borderRadius: 8,
+    borderRadius: shape.web.dialog,
     borderWidth: 1,
     borderColor: t.border,
     backgroundColor: t.popover,
     ...shadow("xl"),
   }),
-  title: (t) => ({ fontSize: 16, lineHeight: 24, fontWeight: "600", color: t["popover-foreground"] }),
+  title: (t) => ({ fontSize: 18, lineHeight: 28, fontWeight: "500", color: t["popover-foreground"] }),
   body: (t) => ({ fontSize: 14, lineHeight: 20, color: t["muted-foreground"], marginTop: 8 }),
   footerKind: "buttons",
   footer: () => ({ flexDirection: "row", justifyContent: "flex-end", gap: 8, marginTop: 24 }),

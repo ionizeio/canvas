@@ -1,4 +1,4 @@
-import { FOCUS_RESET, surfaceRipple, type ColorTokens } from "../../style/index.js";
+import { FOCUS_RESET, surfaceRipple, shape, type ColorTokens } from "../../style/index.js";
 import { type ViewStyle } from "react-native";
 import { type AccordionSkin } from "./accordion.shared.js";
 
@@ -53,11 +53,11 @@ export const webSkin: AccordionSkin = {
   container() {
     return {};
   },
-  // The `card` variant: an outlined card surface (the web Card's 8px radius and
+  // The `card` variant: an outlined card surface (the web Card's 20px corner and
   // hairline border on the `card` fill) wrapping the whole group; overflow hidden
   // clips the header ink and the full-bleed dividers to the rounded corner.
   cardContainer(t) {
-    return { borderRadius: 8, borderWidth: 1, borderColor: t.border, backgroundColor: t.card, overflow: "hidden" };
+    return { borderRadius: shape.web.card, borderWidth: 1, borderColor: t.border, backgroundColor: t.card, overflow: "hidden" };
   },
   // Card mode insets the flush web headers/content to the card's edge (the web
   // Card section inset, 20px).

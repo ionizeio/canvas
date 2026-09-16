@@ -1,6 +1,6 @@
 import { destructiveText } from "../../style/destructive-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, palette, shadow, alpha } from "../../style/index.js";
+import { type ColorTokens, palette, shadow, alpha, shape } from "../../style/index.js";
 
 // Co-located Dropdown skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so they follow light/dark). The menu card paints the
@@ -99,36 +99,38 @@ export const customTrigger: ViewStyle = { alignSelf: "flex-start" };
 // flex-row items-center gap-2 rounded-sm px-2 py-1.5 layout, hairline
 // my-1 h-px bg-border separators, an active:bg-accent pressed fill, and
 // text-red-700 dark:text-red-400 destructive rows.
+// The Riskora menu: a 16px-cornered card with an 8px inset, 40px rows with a 10px
+// corner and a 12px gutter (the Workflow node menu).
 export const webSkin: DropdownSkin = {
   menuCard: (t) => ({
-    borderRadius: 6,
+    borderRadius: shape.web.menu,
     borderWidth: 1,
     borderColor: t.border,
     backgroundColor: t.popover,
-    padding: 4,
+    padding: 8,
     ...shadow("lg"),
   }),
   menuLabel: (t) => ({
-    paddingHorizontal: 8,
-    paddingVertical: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: "500",
     color: t["muted-foreground"],
   }),
-  // Header gutter = the web menu-label gutter (8 x 6), so the identity block
+  // Header gutter = the web menu-label gutter (12 x 8), so the identity block
   // starts on the same column as the label and the row text.
-  menuHeader: { paddingHorizontal: 8, paddingVertical: 6, gap: 2 },
+  menuHeader: { paddingHorizontal: 12, paddingVertical: 8, gap: 2 },
   menuHeaderTitle: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t["popover-foreground"] }),
   menuHeaderDescription: (t) => ({ fontSize: 12, lineHeight: 16, color: t["muted-foreground"] }),
-  separator: (t) => ({ marginTop: 4, marginBottom: 4, height: 1, backgroundColor: t.border }),
+  separator: (t) => ({ marginTop: 6, marginBottom: 6, height: 1, backgroundColor: t.border }),
   itemRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    borderRadius: 2,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
+    gap: 10,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
   itemPressed: (t) => ({ backgroundColor: t.accent }),
   itemTextType: { fontSize: 14, lineHeight: 20 },

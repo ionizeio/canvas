@@ -37,10 +37,10 @@ const box: Record<SwatchSize, number> = { small: 40, default: 56, large: 72 };
 const gap = 8;
 const lineGap = 2;
 
-// Web: the Catalyst rounded square, with a 500-weight name over its mono lines.
+// Web: the Riskora rounded square (12 at the default size), with a 500-weight name over its mono lines.
 export const webSkin: SwatchSkin = {
   box,
-  radius: { small: 6, default: 8, large: 10 },
+  radius: { small: 8, default: 12, large: 16 },
   shape: {},
   gap,
   lineGap,

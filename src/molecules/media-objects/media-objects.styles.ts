@@ -1,5 +1,5 @@
 import { type ViewStyle } from "react-native";
-import { shadow } from "../../style/index.js";
+import { shadow, shape } from "../../style/index.js";
 import { type MediaObjectSkin } from "./media-objects.shared.js";
 
 // Per-OS MediaObject skins. MediaObject is a "Light" treatment: identical structure
@@ -44,9 +44,9 @@ export const webSkin: MediaObjectSkin = {
   // flex-row(-reverse) + gap-3 + items-* (the flexDirection/alignItems are composed on top).
   containerBase: { gap: 12 },
   // bordered: rounded-lg border bg-card p-4.
-  borderedSurface: { borderRadius: 8, borderWidth: 1, padding: 16 },
+  borderedSurface: { borderRadius: shape.web.card, borderWidth: 1, padding: 20 },
   // Leading icon box: shrink-0 items-center justify-center w-9 h-9 rounded-md bg-primary/15.
-  iconBox: { flexShrink: 0, alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: 6 },
+  iconBox: { flexShrink: 0, alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: shape.web.control },
   // Glyph: text-base font-semibold text-primary.
   iconGlyph: { fontSize: 16, lineHeight: 24, fontWeight: "600" },
   // Content column: min-w-0 flex-1 gap-0.5.

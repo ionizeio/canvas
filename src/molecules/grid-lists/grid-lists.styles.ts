@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle, type DimensionValue } from "react-native";
-import { type ColorTokens, palette, alpha, surfaceRipple } from "../../style/index.js";
+import { type ColorTokens, palette, alpha, surfaceRipple, shape } from "../../style/index.js";
 import { type GridListSkin } from "./grid-lists.shared.js";
 import { primaryText } from "../../style/primary-text.js";
 import { destructiveText } from "../../style/destructive-text.js";
@@ -91,7 +91,7 @@ function resolveColor(tokens: ColorTokens, color: string): string {
 // gallery block radius 6; gap 14 (compact 8); tile padding 20 (compact 16);
 // title 14/600 card-foreground, subtitle 12 muted; press = opacity dim (0.9).
 export const webSkin: GridListSkin = {
-  galleryRadius: 6,
+  galleryRadius: shape.web.control,
   gap: { default: 14, compact: 8 },
   tilePad: { default: 20, compact: 16 },
   galleryTitle: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: t["card-foreground"] }),

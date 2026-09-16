@@ -1,4 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
+import { shape } from "../../style/index.js";
 import { type AlertSkin } from "./alert.shared.js";
 
 // Per-OS Alert skins. Alert is a "Light" treatment: identical structure and semantic
@@ -45,11 +46,11 @@ const DISMISS: ViewStyle = {
 const ACTIONS: ViewStyle = { flexDirection: "row", gap: 8, marginTop: 12 };
 
 export const webSkin: AlertSkin = {
-  container: { ...CONTAINER, borderRadius: 8 },
+  container: { ...CONTAINER, borderRadius: shape.web.control },
   iconType: { fontSize: 16, lineHeight: 20 },
-  titleType: { fontSize: 14, lineHeight: 20, fontWeight: "600" },
+  titleType: { fontSize: 14, lineHeight: 20, fontWeight: "500" },
   bodyType: { fontSize: 14, lineHeight: 20 },
-  dismissButton: { ...DISMISS, borderRadius: 6 },
+  dismissButton: { ...DISMISS, borderRadius: 8 },
   dismissType: { fontSize: 16, lineHeight: 16 },
   dismissPressedOpacity: 0.7,
   dismissHitSlop: null, // pointer targets stay visual on web

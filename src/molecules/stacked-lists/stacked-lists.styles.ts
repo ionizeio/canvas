@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow, surfaceRipple } from "../../style/index.js";
+import { type ColorTokens, shadow, surfaceRipple, shape } from "../../style/index.js";
 
 // Co-located StackedList skins, one per platform. StackedList is a "Light"
 // treatment: identical structure and semantic colors (those live in
@@ -120,12 +120,12 @@ const MENU: ViewStyle = {
 // overflow menu rounded-md (6). Press = the accent surface.
 export const webSkin: StackedListSkin = {
   cardSurface: (t) => ({
-    borderRadius: 8,
+    borderRadius: shape.web.card,
     borderWidth: 1,
     borderColor: t.border,
     backgroundColor: t.card,
     overflow: "hidden",
-    ...shadow("sm"),
+    ...shadow("DEFAULT"),
   }),
   rowBase: { ...ROW, gap: 12, paddingHorizontal: 20, paddingVertical: 12 },
   rowDivider: (t) => ({ position: "absolute", left: 0, right: 0, bottom: 0, height: 1, backgroundColor: t.border }),
@@ -142,10 +142,10 @@ export const webSkin: StackedListSkin = {
     paddingHorizontal: 20,
     paddingVertical: 12,
   }),
-  headerTitle: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "600", color: t.foreground }),
+  headerTitle: (t) => ({ fontSize: 16, lineHeight: 24, fontWeight: "500", color: t.foreground }),
   chevronGlyph: (t) => ({ fontSize: 12, lineHeight: 16, color: t["muted-foreground"] }),
   chevronIcon: null,
-  menuButton: { ...MENU, borderRadius: 6 },
+  menuButton: { ...MENU, borderRadius: 10 },
   menuHitSlop: 0,
   pressedOpacity: null,
   ripple: null,

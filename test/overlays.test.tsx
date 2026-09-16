@@ -845,7 +845,7 @@ describe("Dropdown", () => {
     const { webSkin, iosSkin, androidSkin } = await import("../src/atoms/dropdown/dropdown.styles.ts");
     // The gutter is the per-OS value: it matches each skin's own section-label
     // gutter, so the header, the label, and the row labels share one column.
-    expect(webSkin.menuHeader).toEqual({ paddingHorizontal: 8, paddingVertical: 6, gap: 2 });
+    expect(webSkin.menuHeader).toEqual({ paddingHorizontal: 12, paddingVertical: 8, gap: 2 });
     expect(iosSkin.menuHeader).toEqual({ paddingHorizontal: 16, paddingVertical: 6, gap: 2 });
     expect(androidSkin.menuHeader).toEqual({ paddingHorizontal: 16, paddingVertical: 8, gap: 2 });
     // The type scale is deliberately shared (the hand-off hard-codes 14/20

@@ -54,7 +54,7 @@ describe("Accordion", () => {
     );
     const el = getByTestId("a");
     expect(el.style.borderWidth).toBe("1px");
-    expect(el.style.borderRadius).toBe("8px");
+    expect(el.style.borderRadius).toBe("20px");
     // The disclosure semantics survive the card surface.
     expect(container.querySelector("[aria-expanded]")?.getAttribute("aria-expanded")).toBe("false");
     fireEvent.click(screen.getByText("Section A"));
@@ -88,7 +88,7 @@ describe("Collapsible", () => {
     );
     const el = getByTestId("c");
     expect(el.style.borderWidth).toBe("1px");
-    expect(el.style.borderRadius).toBe("8px");
+    expect(el.style.borderRadius).toBe("20px");
     expect(container.querySelector("[aria-expanded]")?.getAttribute("aria-expanded")).toBe("false");
     fireEvent.click(screen.getByText("Shipping"));
     expect(container.querySelector("[aria-expanded]")?.getAttribute("aria-expanded")).toBe("true");

@@ -96,10 +96,10 @@ export const textTriggerLabel = (t: ColorTokens): TextStyle => ({
 // `background` so it reads as light text on the dark bubble.
 export const webSkin: TooltipSkin = {
   bubble: (t) => ({
-    borderRadius: 6,
+    borderRadius: 8,
     backgroundColor: t.foreground,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     ...shadow("md"),
   }),
   label: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: t.background }),

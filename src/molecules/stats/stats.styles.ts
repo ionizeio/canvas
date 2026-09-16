@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { palette, shadow, alpha, surfaceRipple, tabularNums, type ColorTokens } from "../../style/index.js";
+import { palette, shadow, alpha, surfaceRipple, tabularNums, shape, type ColorTokens } from "../../style/index.js";
 import { SPARK_STRIP_HEIGHT } from "../../charts/sparkline/sparkline.styles.js";
 import { type StatsSkin } from "./stats.shared.js";
 
@@ -93,48 +93,47 @@ export function deltaTone(dark: boolean, down: boolean): TextStyle {
 
 // ---------- Web: the established Canvas look (lifted verbatim) ----------
 export const webSkin: StatsSkin = {
-  // rounded-lg border border-border bg-card shadow-sm p-5
+  // The Riskora stat card: the 20px card corner, a soft hairline, the ambient shade,
+  // a 24px inset (the "Total Coverage Value" tile).
   cardSurface: (tokens: ColorTokens): ViewStyle => ({
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: tokens.border,
-    backgroundColor: tokens.card,
-    padding: 20,
-    ...shadow("sm"),
-  }),
-  // rounded-lg border border-border bg-card shadow-sm p-6
-  plainContainer: (tokens: ColorTokens): ViewStyle => ({
-    borderRadius: 8,
+    borderRadius: shape.web.card,
     borderWidth: 1,
     borderColor: tokens.border,
     backgroundColor: tokens.card,
     padding: 24,
-    ...shadow("sm"),
+    ...shadow("DEFAULT"),
   }),
-  // gap-3.5 (cards) / gap-6 (plain)
-  rowGap: { card: { gap: 14 }, plain: { gap: 24 } },
-  // card: text-sm mb-3 / plain: text-base mb-4
+  plainContainer: (tokens: ColorTokens): ViewStyle => ({
+    borderRadius: shape.web.card,
+    borderWidth: 1,
+    borderColor: tokens.border,
+    backgroundColor: tokens.card,
+    padding: 24,
+    ...shadow("DEFAULT"),
+  }),
+  // gap-4 (cards) / gap-6 (plain)
+  rowGap: { card: { gap: 16 }, plain: { gap: 24 } },
+  // Section titles are Title/H6: 20 regular (card) / Label/Medium 16 medium (plain)
   title: (tokens: ColorTokens, surface: Surface): TextStyle =>
     surface === "card"
-      ? { fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground, marginBottom: 12 }
-      : { fontSize: 16, lineHeight: 24, fontWeight: "600", color: tokens.foreground, marginBottom: 16 },
-  // text-sm text-muted-foreground
-  labelText: (tokens: ColorTokens): TextStyle => ({ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }),
-  // mt-1 text-2xl font-semibold tracking-tight text-foreground
+      ? { fontSize: 20, lineHeight: 30, fontWeight: "400", color: tokens.foreground, marginBottom: 12 }
+      : { fontSize: 16, lineHeight: 24, fontWeight: "500", color: tokens.foreground, marginBottom: 16 },
+  // The stat label is Paragraph/Medium in the muted ink
+  labelText: (tokens: ColorTokens): TextStyle => ({ fontSize: 16, lineHeight: 24, color: tokens["muted-foreground"] }),
+  // The headline number is Title/H4: 36 at the regular weight, no tracking
   valueText: (tokens: ColorTokens): TextStyle => ({
-    marginTop: 4,
-    fontSize: 24,
-    lineHeight: 32,
-    fontWeight: "600",
-    letterSpacing: -0.4,
+    marginTop: 8,
+    fontSize: 36,
+    lineHeight: 44,
+    fontWeight: "400",
     // Tabular figures: a headline number that updates in place must not
     // change width as its digits change, and a column of Stats cards should
     // line its values up.
     ...tabularNums(),
     color: tokens.foreground,
   }),
-  // mt-1 text-xs font-medium (tone color layered on top by the shell)
-  deltaBase: { marginTop: 4, fontSize: 12, lineHeight: 16, fontWeight: "500", ...tabularNums() },
+  // mt-2 text-xs font-medium (tone color layered on top by the shell)
+  deltaBase: { marginTop: 8, fontSize: 12, lineHeight: 16, fontWeight: "500", ...tabularNums() },
   pressedOpacity: 0.9,
   ripple: (tokens) => ({ color: alpha(tokens.foreground, 0.1), borderless: false }),
 };

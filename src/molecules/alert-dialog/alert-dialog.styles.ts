@@ -2,7 +2,7 @@ import { destructiveText } from "../../style/destructive-text.js";
 import { primaryText } from "../../style/primary-text.js";
 import { type ComponentType } from "react";
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow, alpha, widths } from "../../style/index.js";
+import { type ColorTokens, shadow, alpha, widths, shape } from "../../style/index.js";
 import { type InputProps } from "../../atoms/input/input.shared.js";
 
 // The confirmation field is rendered through the platform-correct Input atom,
@@ -157,19 +157,19 @@ export const webSkin: AlertDialogSkin = {
   backdrop: {
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 8,
-    backgroundColor: alpha("#000000", 0.5),
+    borderRadius: shape.web.dialog,
+    backgroundColor: alpha("#000000", 0.6),
     padding: 32,
   },
   card: (t) => ({
-    borderRadius: 8,
+    borderRadius: shape.web.dialog,
     borderWidth: 1,
     borderColor: t.border,
     backgroundColor: t.popover,
     padding: 24,
     ...shadow("xl"),
   }),
-  title: (t) => ({ fontSize: 16, lineHeight: 24, fontWeight: "600", color: t["popover-foreground"] }),
+  title: (t) => ({ fontSize: 18, lineHeight: 28, fontWeight: "500", color: t["popover-foreground"] }),
   description: (t) => ({ marginTop: 8, fontSize: 14, lineHeight: 20, color: t["muted-foreground"] }),
   inputBlock: { marginTop: 16 },
   inputLabel: (t) => ({ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: t.foreground }),

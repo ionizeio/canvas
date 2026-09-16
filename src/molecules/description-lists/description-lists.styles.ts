@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow, MONO_FONT, FOCUS_RESET } from "../../style/index.js";
+import { type ColorTokens, shadow, MONO_FONT, FOCUS_RESET, shape } from "../../style/index.js";
 import { type DescriptionListSkin } from "./description-lists.shared.js";
 
 // Co-located DescriptionList skins and shared style fragments. Layout-only
@@ -185,7 +185,7 @@ export function headerSubtitle(tokens: ColorTokens): TextStyle {
 
 // Web: the current Canvas look, preserved verbatim.
 export const webSkin: DescriptionListSkin = {
-  cardRadius: 8,
+  cardRadius: shape.web.card,
   cardCurve: "circular",
   cardShadow: shadow("sm"),
   rowGap: 12,

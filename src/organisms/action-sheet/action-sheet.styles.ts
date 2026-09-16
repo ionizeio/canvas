@@ -1,6 +1,6 @@
 import { destructiveText } from "../../style/destructive-text.js";
 import { StyleSheet, type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, alpha, shadow, surfaceRipple } from "../../style/index.js";
+import { type ColorTokens, alpha, shadow, surfaceRipple, shape } from "../../style/index.js";
 
 // Co-located ActionSheet skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so they follow light/dark and read as glass when the
@@ -121,7 +121,7 @@ export const scrimContent: ViewStyle = { zIndex: 1 };
 // two separated rounded-14 cards anchored to the bottom, a centered gray header,
 // hairline-divided ~17pt foreground action rows, a red destructive label, and a
 // separate bold Cancel card. Press = opacity dim.
-const WEB_RADIUS = 14;
+const WEB_RADIUS = shape.web.dialog;
 // Cap the bottom stack so it never spans a wide desktop window edge-to-edge (an
 // uncapped action sheet reads as broken at ~2000px). 640 mirrors the M3 bottom-sheet
 // max-width; alignSelf centers it in the scrim.

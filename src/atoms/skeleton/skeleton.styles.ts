@@ -7,15 +7,15 @@ import { type SkeletonSkin } from "./skeleton.shared.js";
 // carries only the placeholder corner radii; the iOS and Android skins reference
 // the web skin verbatim, so the three columns stay byte-identical.
 //
-// Radii match the current Canvas web look (shadcn skeleton): a `rounded` (4)
-// line/button placeholder reads as plain content, a `rounded-full` avatar mirrors
-// the avatar circle, and a `rounded-lg` (8) card surface matches the real card.
+// Radii match the Riskora web look: a 6px line placeholder reads as plain content, a
+// 12px button placeholder matches the control corner, a `rounded-full` avatar mirrors
+// the avatar circle, and a 20px card surface matches the real card.
 
 export const webSkin: SkeletonSkin = {
-  lineRadius: 4,
-  buttonRadius: 6,
+  lineRadius: 6,
+  buttonRadius: 12,
   avatarRadius: 9999,
-  cardRadius: 8,
+  cardRadius: 20,
 };
 
 // Shared treatment: identical to web on every platform (no native skeleton to match).

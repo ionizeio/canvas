@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow, surfaceRipple } from "../../style/index.js";
+import { type ColorTokens, shadow, surfaceRipple, shape } from "../../style/index.js";
 
 // Co-located Command skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so they follow light/dark and the glass surface, since
@@ -208,23 +208,23 @@ export const webSkin: CommandSkin = {
     gap: 8,
     borderBottomWidth: 1,
     borderColor: t.border,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   }),
-  // shadcn/cmdk renders a 16px (h-4 w-4) search icon at 50% opacity; the kit uses
-  // a real monochrome Icon tinted muted-foreground (never a color emoji).
+  // A 16px search icon; the kit uses a real monochrome Icon tinted muted-foreground
+  // (never a color emoji).
   searchGlyphSize: 16,
   searchPlaceholder: (t) => ({ fontSize: 14, lineHeight: 20, color: t["muted-foreground"] }),
-  // Web keeps the shadcn rounded-lg (8px) card corner.
-  cardShape: { borderRadius: 8 },
-  // Web keeps the shadcn trigger height (px-3 py-1.5 = 32px); native rows raise it.
-  triggerMinHeight: 32,
+  // The Riskora palette card: the 16px menu corner.
+  cardShape: { borderRadius: shape.web.menu },
+  // 40px rows, the Riskora menu row.
+  triggerMinHeight: 40,
   rowBase: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
   },
   rowAccent: (t) => ({ backgroundColor: t.accent }),
   iconSize: 16,

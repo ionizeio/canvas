@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { palette, shadow, alpha, TOUCH_TARGET, type ColorTokens, type TouchTargetSkin } from "../../style/index.js";
+import { palette, shadow, alpha, TOUCH_TARGET, type ColorTokens, type TouchTargetSkin, shape } from "../../style/index.js";
 import { type IconName } from "../../atoms/icon/icon.js";
 
 // Co-located RowMenu skins, one per platform, all driven by the brand tokens
@@ -97,27 +97,29 @@ export const anchorLifted: ViewStyle = { zIndex: 50 };
 export const webSkin: RowMenuSkin = {
   minTarget: null,
   anchor: { position: "relative", alignSelf: "flex-start" },
+  // The Riskora row kebab: a 36px square with the 12px control corner; its menu is
+  // the 16px-cornered card with an 8px inset and 40px rows with a 10px corner.
   trigger: {
-    width: 32,
-    height: 32,
+    width: 36,
+    height: 36,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 6,
+    borderRadius: shape.web.control,
   },
   triggerIconSize: 16,
   triggerPressed: (t) => ({ backgroundColor: t.accent }),
   menuCard: (t) => ({
-    borderRadius: 6,
+    borderRadius: shape.web.menu,
     borderWidth: 1,
     borderColor: t.border,
     backgroundColor: t.popover,
-    padding: 4,
+    padding: 8,
     ...shadow("lg"),
   }),
-  menuMinWidth: 180,
+  menuMinWidth: 200,
   menuLabel: (t) => ({
-    paddingHorizontal: 8,
-    paddingVertical: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: "500",
@@ -126,13 +128,13 @@ export const webSkin: RowMenuSkin = {
   itemRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    borderRadius: 2,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
+    gap: 10,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
   itemPressed: (t) => ({ backgroundColor: t.accent }),
-  separator: (t) => ({ marginVertical: 4, height: 1, backgroundColor: t.border }),
+  separator: (t) => ({ marginVertical: 6, height: 1, backgroundColor: t.border }),
   rowTextSize: { fontSize: 14, lineHeight: 20 },
   iconSize: 16,
   rowTextColor: (item, links, t, dark) => {

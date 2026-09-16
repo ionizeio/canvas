@@ -1,4 +1,4 @@
-import { FOCUS_RESET, surfaceRipple, type ColorTokens } from "../../style/index.js";
+import { FOCUS_RESET, surfaceRipple, shape, type ColorTokens } from "../../style/index.js";
 import { type ViewStyle } from "react-native";
 import { type CollapsibleSkin } from "./collapsible.shared.js";
 
@@ -60,7 +60,7 @@ export const webSkin: CollapsibleSkin = {
   // hairline border on the `card` fill) wrapping the whole disclosure; overflow
   // hidden clips the header ink to the rounded corner.
   cardContainer(t) {
-    return { borderRadius: 8, borderWidth: 1, borderColor: t.border, backgroundColor: t.card, overflow: "hidden" };
+    return { borderRadius: shape.web.card, borderWidth: 1, borderColor: t.border, backgroundColor: t.card, overflow: "hidden" };
   },
   // Card mode insets the flush web header/content to the card's edge (the web
   // Card section inset, 20px).

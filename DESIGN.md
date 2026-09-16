@@ -214,18 +214,18 @@ fontWeights:
   black: "900"
 components:
   stats:
-    stat-radius: "8px"
-    stat-pad: "20px"
-    stat-gap: "14px"
-    stat-shadow: "0px 1px 2px rgba(13,18,27,0.04)"
-    stat-value-lh: "32px"
-    stat-value-tracking: "-0.4px"
+    stat-radius: "20px"
+    stat-pad: "24px"
+    stat-gap: "16px"
+    stat-shadow: "0px 0px 20px rgba(13,18,27,0.06)"
+    stat-value-lh: "44px"
+    stat-value-tracking: "0px"
     stat-label-tracking: "0px"
   emptystate:
-    empty-radius: "8px"
+    empty-radius: "20px"
   card:
-    card-radius: "8px"
-    card-shadow: "0px 1px 2px rgba(13,18,27,0.04)"
+    card-radius: "20px"
+    card-shadow: "0px 0px 20px rgba(13,18,27,0.06)"
     card-shadow-raised: "0px 0px 24px rgba(13,18,27,0.1)"
 platformSkins:
   ios:
@@ -249,6 +249,7 @@ platformSkins:
       stat-pad: "16px"
       stat-gap: "12px"
       stat-shadow: none
+      stat-value-lh: "32px"
       stat-value-tracking: "0px"
       stat-label-tracking: "0.25px"
     emptystate:
@@ -419,7 +420,7 @@ the web follows the Riskora kit: 12 on every control and field, 16 on floating s
 <!-- @generated:shapes -->
 | Platform | Button | Card | Field | Minimum touch target |
 | --- | --- | --- | --- | --- |
-| web | 12px | 8px | 12px | 0px |
+| web | 12px | 20px | 12px | 0px |
 | ios | 9999px | 12px | 10px | 44px |
 | android | 9999px | 12px | 4px | 48px |
 <!-- @/generated -->

@@ -1,5 +1,5 @@
 import { type ViewStyle } from "react-native";
-import { type ColorScheme, type ColorTokens, alpha, customShadow, shadow } from "../../style/index.js";
+import { type ColorScheme, type ColorTokens, alpha, customShadow, shadow, shape } from "../../style/index.js";
 
 // Co-located Drawer skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so they follow light/dark). Drawer is a "Light"
@@ -96,11 +96,11 @@ function panelBase(t: ColorTokens): ViewStyle {
   return { backgroundColor: t.card, overflow: "hidden" };
 }
 
-// ---------- Web: the established Canvas look (lifted verbatim) ----------
-// The current drawer panel: an opaque `card` surface with a 1px `border` hairline
-// on its inner edge (the side drawer borders its content-facing vertical edge;
-// the bottom sheet borders its top edge and rounds the top corners 16). No
-// shadow. The scrim is a 0.5 black dim.
+// ---------- Web: the Riskora sheet ----------
+// An opaque `card` surface with the 30px shell corner on the edge that faces the
+// content (the bottom sheet rounds its top corners, the side drawer its inner
+// corners), a 1px `border` hairline on that edge, the ambient xl shade, under a
+// 0.5 black scrim.
 export const webSkin: DrawerSkin = {
   scrimOpacity: () => 0.5,
   sheetMaxWidth: null,
@@ -108,6 +108,7 @@ export const webSkin: DrawerSkin = {
   triggerMinHeight: null,
   panelShape: (edge, width, t) => {
     const base = panelBase(t);
+    const r = shape.web.sheet;
     if (edge === "bottom") {
       return {
         ...base,
@@ -115,8 +116,9 @@ export const webSkin: DrawerSkin = {
         maxHeight: "85%",
         borderTopWidth: 1,
         borderColor: t.border,
-        borderTopStartRadius: 16,
-        borderTopEndRadius: 16,
+        borderTopStartRadius: r,
+        borderTopEndRadius: r,
+        ...shadow("xl"),
       };
     }
     if (edge === "top") {
@@ -126,8 +128,9 @@ export const webSkin: DrawerSkin = {
         maxHeight: "85%",
         borderBottomWidth: 1,
         borderColor: t.border,
-        borderBottomStartRadius: 16,
-        borderBottomEndRadius: 16,
+        borderBottomStartRadius: r,
+        borderBottomEndRadius: r,
+        ...shadow("xl"),
       };
     }
     return {
@@ -135,7 +138,10 @@ export const webSkin: DrawerSkin = {
       width,
       height: "100%",
       borderColor: t.border,
-      ...(edge === "right" ? { borderStartWidth: 1 } : { borderEndWidth: 1 }),
+      ...(edge === "right"
+        ? { borderStartWidth: 1, borderTopStartRadius: r, borderBottomStartRadius: r }
+        : { borderEndWidth: 1, borderTopEndRadius: r, borderBottomEndRadius: r }),
+      ...shadow("xl"),
     };
   },
 };

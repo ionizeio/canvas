@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { palette, shadow, alpha, MONO_FONT, platformMinTarget, type ColorTokens } from "../../style/index.js";
+import { palette, shadow, alpha, MONO_FONT, platformMinTarget, shape, type ColorTokens } from "../../style/index.js";
 import { type CodeBlockSkin } from "./code-block.shared.js";
 
 // Co-located CodeBlock skins. Layout-only fragments are static objects; anything
@@ -47,7 +47,7 @@ function surface(tokens: ColorTokens): ViewStyle {
     width: "100%",
     alignSelf: "flex-start",
     overflow: "hidden",
-    borderRadius: 8,
+    borderRadius: shape.web.control,
     borderWidth: 1,
     borderColor: tokens.border,
     backgroundColor: tokens.muted,

@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow, customShadow } from "../../style/index.js";
+import { type ColorTokens, shadow, customShadow, shape } from "../../style/index.js";
 
 // Per-OS Card skins. Card is a "Light" platform treatment: one structure and one
 // set of (semantic) colors live in card.shared.tsx; only the small native touches
@@ -13,8 +13,8 @@ import { type ColorTokens, shadow, customShadow } from "../../style/index.js";
 // CardSeparator) are STATIC shared members, so their insets and type are shared
 // (one value across platforms); only the main surface is skin-parameterized.
 //
-// - Web keeps the established look: 8px radius, 1px border, shadow-sm resting,
-//   the established Catalyst/shadcn card insets and density values; the default
+// - Web is the Riskora card: the 20px card corner, a soft 1px hairline, the
+//   ambient standard shade at rest (raised lifts to md), a 24px inset; the default
 //   density also carries the card's own flat-child gap (padding implies rhythm).
 // - iOS follows HIG conventions: iOS has no card control, so the structure is kept
 //   and only iOS touches are applied: a larger 12pt radius with Apple's continuous
@@ -55,7 +55,7 @@ export interface CardSkin {
 // `flat`): the hairline tokens.border outline on the tokens.card fill.
 const lightSurface = (tokens: ColorTokens): ViewStyle => ({ borderColor: tokens.border, backgroundColor: tokens.card });
 
-// --- web (the current, established look; preserved verbatim) -----------------
+// --- web (the Riskora card) --------------------------------------------------
 
 const WEB_DENSITY: Record<Density, ViewStyle> = {
   compact: { padding: 16, gap: 12 },
@@ -67,9 +67,9 @@ const WEB_DENSITY: Record<Density, ViewStyle> = {
 };
 
 export const webSkin: CardSkin = {
-  radius: 8,
+  radius: shape.web.card,
   surface: lightSurface,
-  elevation: (e) => (e === "raised" ? shadow("md") : e === "flat" ? shadow("none") : shadow("sm")),
+  elevation: (e) => (e === "raised" ? shadow("md") : e === "flat" ? shadow("none") : shadow("DEFAULT")),
   density: WEB_DENSITY,
   padded: { padding: 24 },
 };
@@ -140,7 +140,8 @@ export const cardBase: ViewStyle = { borderWidth: 1 };
 
 export const header: ViewStyle = { gap: 6, paddingHorizontal: 20, paddingBottom: 16, paddingTop: 20 };
 
-export const title = (tokens: ColorTokens): TextStyle => ({ fontSize: 20, lineHeight: 28, fontWeight: "600", letterSpacing: -0.4, color: tokens["card-foreground"] });
+// Riskora's card title is Title/H6: 20 at the regular weight, no tracking.
+export const title = (tokens: ColorTokens): TextStyle => ({ fontSize: 20, lineHeight: 30, fontWeight: "400", color: tokens["card-foreground"] });
 
 export const description = (tokens: ColorTokens): TextStyle => ({ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] });
 

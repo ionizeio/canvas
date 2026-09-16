@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, surfaceRipple } from "../../style/index.js";
+import { type ColorTokens, surfaceRipple, shape } from "../../style/index.js";
 import { type FeedSkin } from "./feeds.shared.js";
 
 // Co-located Feed skins, one per platform. Feed is a "Light" platform treatment:
@@ -58,7 +58,7 @@ export function nodeDot(tokens: ColorTokens): ViewStyle {
 export const webSkin: FeedSkin = {
   cardSurface: (t) => ({
     width: "100%",
-    borderRadius: 8,
+    borderRadius: shape.web.card,
     borderWidth: 1,
     borderColor: t.border,
     backgroundColor: t.card,

@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import { type ViewStyle, type TextStyle } from "react-native";
 import Svg, { Path } from "react-native-svg";
-import { type ColorTokens, shadow } from "../../style/index.js";
+import { type ColorTokens, shadow, shape } from "../../style/index.js";
 
 // Co-located Popover skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so they follow light/dark and read as glass when the
@@ -98,7 +98,7 @@ export const webSkin: PopoverSkin = {
   card: (t) => ({
     width: 260,
     maxWidth: "100%",
-    borderRadius: 8,
+    borderRadius: shape.web.menu,
     borderWidth: 1,
     borderColor: t.border,
     backgroundColor: t.popover,

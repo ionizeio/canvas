@@ -102,9 +102,9 @@ describe("CardMedia", () => {
     // Full bleed: the image fills the card's width and the given band height.
     expect(media.style.width).toBe("100%");
     expect(media.style.height).toBe("180px");
-    // The top corners nest inside the web card's 8px corner + 1px border...
-    expect(media.style.borderTopLeftRadius).toBe("7px");
-    expect(media.style.borderTopRightRadius).toBe("7px");
+    // The top corners nest inside the web card's 20px corner + 1px border...
+    expect(media.style.borderTopLeftRadius).toBe("19px");
+    expect(media.style.borderTopRightRadius).toBe("19px");
     // ...and the bottom edge stays flat where the content continues.
     expect(media.style.borderBottomLeftRadius).toBe("");
     expect(media.style.borderBottomRightRadius).toBe("");

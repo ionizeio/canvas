@@ -24,11 +24,11 @@ export interface EmblemSkin {
 const box: Record<EmblemSize, number> = { small: 32, default: 40, large: 48 };
 const iconSize: Record<EmblemSize, number> = { small: 16, default: 20, large: 24 };
 
-// Web: the Catalyst rounded square.
+// Web: the Riskora identity tile (a 12px rounded square at the default size).
 export const webSkin: EmblemSkin = {
   box,
   iconSize,
-  radius: { small: 6, default: 8, large: 10 },
+  radius: { small: 8, default: 12, large: 16 },
   shape: {},
   monogram: { fontWeight: "600" },
 };
