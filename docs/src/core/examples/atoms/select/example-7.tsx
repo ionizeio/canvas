@@ -3,12 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Select, Column, Container } = scope;
+  const { Select } = scope;
   return (
-<Column snug>
-  <Select xs start options={["Small", "Medium", "Large"]} placeholder="xs step, pinned to the start (320)" />
-  <Select lg start options={["Small", "Medium", "Large"]} placeholder="lg step, pinned to the start (512)" />
-  <Container lg start><Select options={["Small", "Medium", "Large"]} placeholder="Bare, in an lg Container: fills it (512)" /></Container>
-</Column>
+<Select disabled label="Country" defaultValue="United States" options={["United States", "Canada", "Mexico"]} />
   );
 }

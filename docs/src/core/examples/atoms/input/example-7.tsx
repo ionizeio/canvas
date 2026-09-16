@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Input } = scope;
   return (
-<Input disabled placeholder="rachel.chen@example.com" />
+<Input label="Password" leadingIcon icon="lock" secureTextEntry passwordToggle placeholder="••••••••" autoComplete="password" />
   );
 }

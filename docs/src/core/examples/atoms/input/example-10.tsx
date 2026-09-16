@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Input } = scope;
   return (
-<Input label="Username" leadingIcon icon="user" placeholder="yourname" defaultValue="danello87" autoCapitalize="none" autoComplete="username" />
+<Input label="Amount" prefix="$" placeholder="0.00" keyboardType="decimal-pad" />
   );
 }

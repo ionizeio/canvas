@@ -5,8 +5,8 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Field, Input } = scope;
   return (
-<Field label="Email address" error="Invalid email format.">
-  <Input leadingIcon icon="mail" defaultValue="exampledomain.com" keyboardType="email-address" autoCapitalize="none" />
+<Field label="Amount" error="Invalid amount format.">
+  <Input prefix="$" defaultValue="128a" keyboardType="decimal-pad" />
 </Field>
   );
 }

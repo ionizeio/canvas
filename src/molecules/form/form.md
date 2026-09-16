@@ -51,6 +51,106 @@ Form is a composition surface: you stitch the field atoms as children and keep t
 </Form>
 ```
 
+### Account details
+
+```tsx
+<Form submitLabel="Create account">
+  <Input label="Email address" leadingIcon icon="mail" placeholder="example@domain.com" keyboardType="email-address" autoCapitalize="none" autoComplete="email" />
+  <Input label="Password" leadingIcon icon="lock" secureTextEntry passwordToggle placeholder="••••••••" autoComplete="new-password" />
+  <Input label="Username" leadingIcon icon="user" placeholder="yourname" autoCapitalize="none" autoComplete="username" />
+  <PhoneInput label="Phone number" placeholder="Add your phone number" />
+  <Input label="Date of birth" leadingIcon icon="calendar" placeholder="MM/DD/YYYY" keyboardType="numbers-and-punctuation" autoComplete="birthdate-full" />
+</Form>
+```
+
+### Credit card
+
+```tsx
+<Form submitLabel="Pay">
+  <Input label="Card Number" trailingIcon icon="creditCard" placeholder="•••• •••• •••• ••••" keyboardType="number-pad" autoComplete="cc-number" textContentType="creditCardNumber" />
+  <Row relaxed>
+    <Input label="Expiry Date" placeholder="MM/YY" keyboardType="number-pad" autoComplete="cc-exp" textContentType="creditCardExpiration" />
+    <Input label="CVV" placeholder="•••" secureTextEntry keyboardType="number-pad" maxLength={4} autoComplete="cc-csc" textContentType="creditCardSecurityCode" />
+  </Row>
+  <Input label="Cardholder name" placeholder="Name on card" autoCapitalize="words" autoComplete="cc-name" textContentType="creditCardName" />
+</Form>
+```
+
+### Credit card with errors
+
+```tsx
+<Form submitLabel="Pay">
+  <Field label="Card Number" error="Invalid card number.">
+    <Input trailingIcon icon="creditCard" defaultValue="•••• •••• 1478" keyboardType="number-pad" />
+  </Field>
+  <Row relaxed alignStart>
+    <Field label="Expiry Date" error="Invalid expiration date.">
+      <Input defaultValue="13/26" keyboardType="number-pad" />
+    </Field>
+    <Field label="CVV" error="CVV must be 3 digits.">
+      <Input defaultValue="66" keyboardType="number-pad" maxLength={4} />
+    </Field>
+  </Row>
+  <Field label="Cardholder name" error="Name can only contain letters.">
+    <Input defaultValue="Daniel Smith 87" autoCapitalize="words" />
+  </Field>
+</Form>
+```
+
+### Address
+
+```tsx
+<Form submitLabel="Save address">
+  <Input label="Street address" placeholder="123 Main Street" autoComplete="street-address" textContentType="streetAddressLine1" />
+  <Input label="Apartment, suite, unit (optional)" placeholder="Apt 5B" textContentType="streetAddressLine2" />
+  <Row relaxed>
+    <Input label="City" placeholder="San Francisco" textContentType="addressCity" />
+    <Input label="ZIP code" placeholder="94105" keyboardType="number-pad" autoComplete="postal-code" textContentType="postalCode" />
+  </Row>
+  <Select
+    label="Country"
+    defaultValue="US"
+    options={[
+      { value: "US", label: "United States", leading: "🇺🇸" },
+      { value: "CA", label: "Canada", leading: "🇨🇦" },
+      { value: "GB", label: "United Kingdom", leading: "🇬🇧" },
+      { value: "DE", label: "Germany", leading: "🇩🇪" },
+      { value: "JP", label: "Japan", leading: "🇯🇵" },
+    ]}
+  />
+</Form>
+```
+
+### Address with errors
+
+```tsx
+<Form submitLabel="Save address">
+  <Field label="Street address" error="Street address is required.">
+    <Input placeholder="123 Main Street" />
+  </Field>
+  <Field label="Apartment, suite, unit (optional)" error="Street address is required.">
+    <Input placeholder="Apt 5B" />
+  </Field>
+  <Row relaxed alignStart>
+    <Field label="City" error="City is required.">
+      <Input placeholder="San Francisco" />
+    </Field>
+    <Field label="ZIP code" error="Invalid postal code.">
+      <Input defaultValue="101" keyboardType="number-pad" />
+    </Field>
+  </Row>
+  <Select
+    label="Country"
+    defaultValue="US"
+    options={[
+      { value: "US", label: "United States", leading: "🇺🇸" },
+      { value: "CA", label: "Canada", leading: "🇨🇦" },
+      { value: "GB", label: "United Kingdom", leading: "🇬🇧" },
+    ]}
+  />
+</Form>
+```
+
 ### Select and switch controls
 
 ```tsx

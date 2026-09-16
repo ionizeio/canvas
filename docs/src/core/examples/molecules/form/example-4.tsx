@@ -3,11 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Form, Select, Switch } = scope;
+  const { Form, Input, PhoneInput } = scope;
   return (
-<Form submitLabel="Save">
-  <Select label="Role" options={["Admin", "Editor", "Viewer"]} defaultValue="Editor" />
-  <Switch defaultChecked>Notifications</Switch>
+<Form submitLabel="Create account">
+  <Input label="Email address" leadingIcon icon="mail" placeholder="example@domain.com" keyboardType="email-address" autoCapitalize="none" autoComplete="email" />
+  <Input label="Password" leadingIcon icon="lock" secureTextEntry passwordToggle placeholder="••••••••" autoComplete="new-password" />
+  <Input label="Username" leadingIcon icon="user" placeholder="yourname" autoCapitalize="none" autoComplete="username" />
+  <PhoneInput label="Phone number" placeholder="Add your phone number" />
+  <Input label="Date of birth" leadingIcon icon="calendar" placeholder="MM/DD/YYYY" keyboardType="numbers-and-punctuation" autoComplete="birthdate-full" />
 </Form>
   );
 }

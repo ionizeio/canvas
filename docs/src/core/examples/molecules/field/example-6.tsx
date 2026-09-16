@@ -5,8 +5,8 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Field, Input } = scope;
   return (
-<Field label="Email address" error="Invalid email format.">
-  <Input leadingIcon icon="mail" defaultValue="exampledomain.com" keyboardType="email-address" autoCapitalize="none" />
+<Field label="Date of birth" error="You must be at least 18 years old.">
+  <Input leadingIcon icon="calendar" defaultValue="10/30/2020" keyboardType="numbers-and-punctuation" />
 </Field>
   );
 }

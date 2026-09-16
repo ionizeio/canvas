@@ -5,6 +5,16 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Select } = scope;
   return (
-<Select icon label="Country" defaultValue="United States" options={["United States", "Canada", "Mexico"]} />
+<Select
+  label="Country"
+  defaultValue="US"
+  options={[
+    { value: "US", label: "United States", leading: "🇺🇸" },
+    { value: "CA", label: "Canada", leading: "🇨🇦" },
+    { value: "GB", label: "United Kingdom", leading: "🇬🇧" },
+    { value: "DE", label: "Germany", leading: "🇩🇪" },
+    { value: "JP", label: "Japan", leading: "🇯🇵" },
+  ]}
+/>
   );
 }

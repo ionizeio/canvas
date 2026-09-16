@@ -3,20 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Field, Input, Column, Container } = scope;
+  const { Field, Input } = scope;
   return (
-<Column>
-  <Field xs start label="ZIP code" helper="xs step, pinned to the start (320)">
-    <Input placeholder="94103" />
-  </Field>
-  <Field lg start label="Street" helper="lg step, pinned to the start (512)">
-    <Input placeholder="1 Market St" />
-  </Field>
-  <Container lg start>
-    <Field label="City" helper="Bare, in an lg Container: fills it (512)">
-      <Input placeholder="San Francisco" />
-    </Field>
-  </Container>
-</Column>
+<Field label="Username" error="Username already taken.">
+  <Input leadingIcon icon="user" defaultValue="danello" autoCapitalize="none" />
+</Field>
   );
 }

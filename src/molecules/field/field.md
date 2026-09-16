@@ -26,6 +26,67 @@ same slot, so the row never changes height and nothing below it jumps.
 </Field>
 ```
 
+### Email address
+
+```tsx
+<Field label="Email address" error="Invalid email format.">
+  <Input leadingIcon icon="mail" defaultValue="exampledomain.com" keyboardType="email-address" autoCapitalize="none" />
+</Field>
+```
+
+### Password
+
+```tsx
+<Field label="Password" error="Password must be at least 8 characters.">
+  <Input leadingIcon icon="lock" secureTextEntry passwordToggle defaultValue="12345" />
+</Field>
+```
+
+### Username
+
+```tsx
+<Field label="Username" error="Username already taken.">
+  <Input leadingIcon icon="user" defaultValue="danello" autoCapitalize="none" />
+</Field>
+```
+
+### Phone number
+
+```tsx
+<Field label="Phone number" error="Invalid phone number.">
+  <PhoneInput defaultCountry="US" defaultValue="(415) 72" />
+</Field>
+```
+
+### Date of birth
+
+```tsx
+<Field label="Date of birth" error="You must be at least 18 years old.">
+  <Input leadingIcon icon="calendar" defaultValue="10/30/2020" keyboardType="numbers-and-punctuation" />
+</Field>
+```
+
+### Amount
+
+```tsx
+<Field label="Amount" error="Invalid amount format.">
+  <Input prefix="$" defaultValue="128a" keyboardType="decimal-pad" />
+</Field>
+```
+
+### Helper text
+
+```tsx
+<Column relaxed>
+  <Field label="Email address" helper="We only use it to sign you in.">
+    <Input leadingIcon icon="mail" placeholder="example@domain.com" keyboardType="email-address" autoCapitalize="none" />
+  </Field>
+  <Field label="Amount" helper="Up to two decimals.">
+    <Input prefix="$" placeholder="0.00" keyboardType="decimal-pad" />
+  </Field>
+</Column>
+```
+
 ### Wrapping a control that keeps its own label
 
 ```tsx

@@ -3,18 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Field, Form, Input, Select, Textarea } = scope;
+  const { Field, Input } = scope;
   return (
-<Form>
-  <Field label="Full name">
-    <Input placeholder="Rachel Chen" />
-  </Field>
-  <Field label="Role">
-    <Select options={["Admin", "Editor", "Viewer"]} placeholder="Pick a role" />
-  </Field>
-  <Field label="Notes">
-    <Textarea rows={3} placeholder="Anything worth remembering" />
-  </Field>
-</Form>
+<Field label="Password" error="Password must be at least 8 characters.">
+  <Input leadingIcon icon="lock" secureTextEntry passwordToggle defaultValue="12345" />
+</Field>
   );
 }

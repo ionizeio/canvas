@@ -3,12 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Input, Column, Container } = scope;
+  const { Input } = scope;
   return (
-<Column snug>
-  <Input xs start placeholder="xs step, pinned to the start (320)" />
-  <Input lg start placeholder="lg step, pinned to the start (512)" />
-  <Container lg start><Input placeholder="Bare, in an lg Container: fills it (512)" /></Container>
-</Column>
+<Input label="Date of birth" leadingIcon icon="calendar" placeholder="MM/DD/YYYY" keyboardType="numbers-and-punctuation" autoComplete="birthdate-full" />
   );
 }

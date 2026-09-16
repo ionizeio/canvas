@@ -3,10 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Field, Input } = scope;
+  const { Field, Switch } = scope;
   return (
-<Field label="Email address" error="Invalid email format.">
-  <Input leadingIcon icon="mail" defaultValue="exampledomain.com" keyboardType="email-address" autoCapitalize="none" />
+<Field label="Notifications">
+  <Switch>Release activity</Switch>
 </Field>
   );
 }

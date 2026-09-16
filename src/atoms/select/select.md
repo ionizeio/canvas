@@ -38,6 +38,22 @@ Pass `ref` to access the interactive trigger, preserving overlay measurement. Us
 <Select large label="Country" defaultValue="United States" options={["United States", "Canada", "Mexico"]} />
 ```
 
+### Country
+
+```tsx
+<Select
+  label="Country"
+  defaultValue="US"
+  options={[
+    { value: "US", label: "United States", leading: "🇺🇸" },
+    { value: "CA", label: "Canada", leading: "🇨🇦" },
+    { value: "GB", label: "United Kingdom", leading: "🇬🇧" },
+    { value: "DE", label: "Germany", leading: "🇩🇪" },
+    { value: "JP", label: "Japan", leading: "🇯🇵" },
+  ]}
+/>
+```
+
 ### With leading icon
 
 ```tsx

@@ -1,6 +1,6 @@
 # Input
 
-The Input component is a React Native text field with semantic boolean props (`error`, `small`, `large`, `disabled`), plus prefix/suffix addons and overlaid icons. Input is single-line; for multi-line entry use the dedicated Textarea. Pass `label` (and `required`) to name the field: iOS and web render the label above the control, while Android floats the Material 3 in-container label. Select and the search field share its look, and Field and Form compose that label with helper and error text.
+The Input component is a React Native text field with semantic boolean props (`error`, `small`, `large`, `disabled`), plus prefix/suffix addons, overlaid icons (`leadingIcon` / `trailingIcon` with any Canvas glyph as `icon`), a `passwordToggle` eye for a `secureTextEntry` value, and a `clearable` clear button. Input is single-line; for multi-line entry use the dedicated Textarea. Pass `label` (and `required`) to name the field: iOS and web render the label above the control, while Android floats the Material 3 in-container label. Select and the search field share its look, and Field and Form compose that label with helper and error text. On iOS the field is drawn to the iOS input-field reference: a white box with a hairline, a muted title above, a glyph that tints with focus and error, and an error wash.
 
 Inside an overlay, Escape follows the overlay's cancellation policy. A supplied
 `onKeyPress` runs first and can call `preventDefault()` to handle Escape locally.
@@ -42,6 +42,48 @@ Cancelling an IME candidate keeps the overlay open.
 
 ```tsx
 <Input leadingIcon icon="search" placeholder="Search" />
+```
+
+### Email
+
+```tsx
+<Input label="Email address" leadingIcon icon="mail" placeholder="example@domain.com" keyboardType="email-address" autoCapitalize="none" autoComplete="email" />
+```
+
+### Password
+
+```tsx
+<Input label="Password" leadingIcon icon="lock" secureTextEntry passwordToggle placeholder="••••••••" autoComplete="password" />
+```
+
+### Username
+
+```tsx
+<Input label="Username" leadingIcon icon="user" placeholder="yourname" defaultValue="danello87" autoCapitalize="none" autoComplete="username" />
+```
+
+### Date of birth
+
+```tsx
+<Input label="Date of birth" leadingIcon icon="calendar" placeholder="MM/DD/YYYY" keyboardType="numbers-and-punctuation" autoComplete="birthdate-full" />
+```
+
+### Currency
+
+```tsx
+<Input label="Amount" prefix="$" placeholder="0.00" keyboardType="decimal-pad" />
+```
+
+### Search
+
+```tsx
+<Input leadingIcon icon="search" clearable placeholder="Search" defaultValue="example" />
+```
+
+### Card number
+
+```tsx
+<Input label="Card Number" trailingIcon icon="creditCard" placeholder="•••• •••• •••• ••••" keyboardType="number-pad" autoComplete="cc-number" textContentType="creditCardNumber" />
 ```
 
 ### Error
