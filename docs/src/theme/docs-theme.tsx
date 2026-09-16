@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { Appearance, Platform, useColorScheme } from "react-native";
 import { useGlobalSearchParams } from "expo-router";
 import { ThemeProvider, type Surface } from "@nannier-com/canvas";
+import { CANVAS_FONTS } from "../ui/fonts";
 
 // The docs' theme controls. Canvas's ThemeProvider is driven by the dark/light
 // and glass/solid boolean axes; this holds that state and exposes setters to the toggles, so the
@@ -94,7 +95,8 @@ export function DocsThemeProvider({ children }: { children: ReactNode }) {
       {/* The toggle state is a Surface value, so the axis booleans take
           expressions: both are explicit because the docs never want the
           platform default (the Glass/Solid toggle owns the choice). */}
-      <ThemeProvider dark={scheme === "dark"} light={scheme === "light"} glass={surface === "glass"} solid={surface === "solid"}>{children}</ThemeProvider>
+      {/* `fonts` hands the kit the Urbanist faces the docs registered (docs/src/ui/fonts.ts). */}
+      <ThemeProvider dark={scheme === "dark"} light={scheme === "light"} glass={surface === "glass"} solid={surface === "solid"} fonts={CANVAS_FONTS}>{children}</ThemeProvider>
     </Ctx.Provider>
   );
 }

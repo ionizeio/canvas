@@ -1,45 +1,43 @@
 import { useWindowDimensions } from "react-native";
-import { View, Text, Row, Column, useTheme } from "@nannier-com/canvas";
+import { View, Text, Row, Column, Typography, useTheme } from "@nannier-com/canvas";
 import { Page } from "../../../ui/page";
 import { PageNav } from "../../../ui/page-nav";
-import { geist, geistMono } from "../../../ui/fonts";
+import { geist, geistMono, urbanist } from "../../../ui/fonts";
 import { TokenH1, TokenLede, TokenSection, Surface, Grid } from "../../../ui/tokens-kit";
 
-// The Canvas type scale is the Typography component's roles. Each row mirrors a
-// role on the Typography atom (src/atoms/typography/typography.tsx), whose
-// `roleType` maps display..tiny to absolute, token-backed sizes, so the preview
-// reflects the real package values rather than the docs site's own chrome. Note
-// headings down to h4 carry a flat -0.4px tracking (RN letterSpacing), not
-// per-size em; h5 runs untracked.
+// The Canvas type scale is the Typography component's roles: the Riskora ladder in
+// Urbanist, titles at the regular weight so hierarchy comes from size alone. The
+// specimen rows render the real <Typography> role (src/atoms/typography), so the
+// preview reflects the package values rather than a copy; the `spec` column is the
+// human-readable summary of roleType.
 const SCALE = [
-  { name: "Display", role: "display", spec: "48 / 48 · bold", fontSize: 48, lineHeight: 48, weight: "700" as const, tracking: -0.4, use: "Hero titles. One per screen, at most." },
-  { name: "H1", role: "h1", spec: "36 / 40 · bold", fontSize: 36, lineHeight: 40, weight: "700" as const, tracking: -0.4, use: "Top-level page titles." },
-  { name: "H2", role: "h2", spec: "30 / 36 · semibold", fontSize: 30, lineHeight: 36, weight: "600" as const, tracking: -0.4, use: "Major page sections." },
-  { name: "H3", role: "h3", spec: "24 / 32 · semibold", fontSize: 24, lineHeight: 32, weight: "600" as const, tracking: -0.4, use: "Subsections; in-app page titles." },
-  { name: "H4", role: "h4", spec: "20 / 28 · semibold", fontSize: 20, lineHeight: 28, weight: "600" as const, tracking: -0.4, use: "Card titles, dialog headings." },
-  { name: "H5", role: "h5", spec: "18 / 28 · semibold", fontSize: 18, lineHeight: 28, weight: "600" as const, tracking: 0, use: "Subgroup headers, form section labels." },
-  { name: "Lead", role: "lead", spec: "16 / 24 · regular", fontSize: 16, lineHeight: 24, weight: "400" as const, tracking: 0, use: "Lead paragraphs, identity names." },
-  { name: "Body", role: "body", spec: "14 / 28 · regular", fontSize: 14, lineHeight: 28, weight: "400" as const, tracking: 0, use: "Default reading text." },
-  { name: "Small", role: "small", spec: "14 / 20 · muted", fontSize: 14, lineHeight: 20, weight: "400" as const, tracking: 0, muted: true, use: "Secondary text, helpers." },
-  { name: "Tiny", role: "tiny", spec: "12 / 16 · muted", fontSize: 12, lineHeight: 16, weight: "400" as const, tracking: 0, muted: true, use: "Metadata, timestamps, labels." },
-];
+  { name: "Display", role: "display", spec: "64 / 70 · regular", use: "Hero titles. One per screen, at most." },
+  { name: "H1", role: "h1", spec: "55 / 64 · regular", use: "Top-level page titles." },
+  { name: "H2", role: "h2", spec: "40 / 48 · regular", use: "Major page sections." },
+  { name: "H3", role: "h3", spec: "36 / 44 · regular", use: "Subsections; in-app page titles." },
+  { name: "H4", role: "h4", spec: "28 / 36 · regular", use: "Card titles, dialog headings." },
+  { name: "H5", role: "h5", spec: "20 / 30 · regular", use: "Section and card titles, form section labels." },
+  { name: "Lead", role: "lead", spec: "20 / 30 · regular", use: "Lead paragraphs, identity names." },
+  { name: "Body", role: "body", spec: "16 / 24 · regular", use: "Default reading text." },
+  { name: "Small", role: "small", spec: "14 / 20 · muted", muted: true, use: "Secondary text, helpers." },
+  { name: "Tiny", role: "tiny", spec: "12 / 16 · muted", muted: true, use: "Metadata, timestamps, labels." },
+] as const;
 
 // Helper roles beyond the size scale, also boolean props on Typography: a muted
 // body, an uppercase caption/eyebrow, and two monospace roles (code carries the
-// muted pill fill; mono is bare). These mirror roleType + roleColor in
-// src/atoms/typography.
+// muted pill fill; mono is bare). Rendered with the real component as well.
 const HELPERS = [
-  { name: "Muted", role: "muted", fontSize: 14, lineHeight: 20, sample: "Sphinx of black quartz, judge my vow.", use: "De-emphasised body text." },
-  { name: "Caption", role: "caption", fontSize: 12, lineHeight: 16, uppercase: true, tracking: 0.4, sample: "Section label", use: "Eyebrows, uppercase section labels." },
-  { name: "Code", role: "code", fontSize: 14, lineHeight: 20, mono: true, fill: true, sample: "--primary", use: "Inline code, tokens, IDs (muted pill)." },
-  { name: "Mono", role: "mono", fontSize: 14, lineHeight: 20, mono: true, sample: "01HZK7M8N9P0Q1R2", use: "Monospace values, no fill." },
-];
+  { name: "Muted", role: "muted", sample: "Sphinx of black quartz, judge my vow.", use: "De-emphasised body text." },
+  { name: "Caption", role: "caption", sample: "Section label", use: "Eyebrows, uppercase section labels (12/16 medium, 4% tracking)." },
+  { name: "Code", role: "code", sample: "--primary", use: "Inline code, tokens, IDs (muted pill)." },
+  { name: "Mono", role: "mono", sample: "01HZK7M8N9P0Q1R2", use: "Monospace values, no fill." },
+] as const;
 
 const WEIGHTS = [
-  { w: "400" as const, name: "Regular", use: "Body text (the default role weight)" },
-  { w: "500" as const, name: "Medium", use: "Labels, table values, buttons" },
-  { w: "600" as const, name: "Semibold", use: "Headings h2-h5, card titles" },
-  { w: "700" as const, name: "Bold", use: "Display and h1" },
+  { w: "400" as const, name: "Regular", use: "Body text and every title role (the default weight)" },
+  { w: "500" as const, name: "Medium", use: "Labels, table values, buttons, captions" },
+  { w: "600" as const, name: "Semibold", use: "Emphasis inside a paragraph, a stat value" },
+  { w: "700" as const, name: "Bold", use: "The Subheading eyebrow at 16" },
 ];
 
 // The uppercase eyebrow used by the font cards and the "Patterns in use" cards:
@@ -95,16 +93,10 @@ function ScaleRow({ s, i }: { s: typeof SCALE[number]; i: number }) {
         <Text style={{ fontFamily: geist("500"), fontSize: 12.5, color: tokens.foreground }}>{s.name}</Text>
         <Text style={{ fontFamily: geistMono("400"), fontSize: 11, color: tokens["muted-foreground"] }}>{s.role}</Text>
       </View>
-      <Text style={{
-        flex: 1,
-        fontSize: s.fontSize,
-        lineHeight: s.lineHeight,
-        fontFamily: geist(s.weight),
-        letterSpacing: s.tracking,
-        color: s.muted ? tokens["muted-foreground"] : tokens.foreground,
-      }}>
+      {/* The real role, so the specimen IS the package value (face, size, leading, weight). */}
+      <Typography {...{ [s.role]: true }} style={{ flex: 1 }}>
         Sphinx of black quartz, judge my vow.
-      </Text>
+      </Typography>
       <Text style={{ fontSize: 11, fontFamily: geistMono("400"), color: tokens["muted-foreground"], textAlign: "right", width: 160 }}>
         {s.spec}
       </Text>
@@ -114,7 +106,6 @@ function ScaleRow({ s, i }: { s: typeof SCALE[number]; i: number }) {
 
 function HelperRow({ h, i }: { h: typeof HELPERS[number]; i: number }) {
   const { tokens } = useTheme();
-  const muted = h.role === "muted" || h.role === "caption";
   return (
     <Row loose alignCenter style={{
       paddingVertical: 16,
@@ -127,21 +118,7 @@ function HelperRow({ h, i }: { h: typeof HELPERS[number]; i: number }) {
         <Text style={{ fontFamily: geistMono("400"), fontSize: 11, color: tokens["muted-foreground"] }}>{h.role}</Text>
       </View>
       <View style={{ flex: 1 }}>
-        <Text style={{
-          alignSelf: "flex-start",
-          fontSize: h.fontSize,
-          lineHeight: h.lineHeight,
-          fontFamily: h.mono ? geistMono("400") : geist("400"),
-          textTransform: h.uppercase ? "uppercase" : undefined,
-          letterSpacing: h.tracking,
-          color: muted ? tokens["muted-foreground"] : tokens.foreground,
-          backgroundColor: h.fill ? tokens.muted : undefined,
-          borderRadius: h.fill ? 4 : undefined,
-          paddingHorizontal: h.fill ? 6 : undefined,
-          paddingVertical: h.fill ? 2 : undefined,
-        }}>
-          {h.sample}
-        </Text>
+        <Typography {...{ [h.role]: true }}>{h.sample}</Typography>
       </View>
       <Text style={{ fontSize: 11, color: tokens["muted-foreground"], textAlign: "right", width: 220 }}>
         {h.use}
@@ -162,7 +139,7 @@ function WeightRow({ row, i }: { row: typeof WEIGHTS[number]; i: number }) {
       <Text style={{ width: 100, flexShrink: 0, fontSize: 12.5, fontFamily: geistMono("400"), color: tokens["muted-foreground"] }}>
         {row.w}
       </Text>
-      <Text style={{ flex: 1, fontSize: 20, fontFamily: geist(row.w), color: tokens.foreground }}>{row.name}</Text>
+      <Text style={{ flex: 1, fontSize: 20, fontFamily: urbanist(row.w), color: tokens.foreground }}>{row.name}</Text>
       <Text style={{ fontSize: 12, color: tokens["muted-foreground"] }}>{row.use}</Text>
     </Row>
   );
@@ -181,8 +158,8 @@ export default function TypographyScreen() {
         <Column cozy>
           <TokenH1>Typography</TokenH1>
           <TokenLede>
-            Two families do all the work. Geist Sans for prose and chrome; Geist Mono for code,
-            IDs, timestamps, and any value the user might copy. The scale runs display down to tiny as
+            Two families do all the work. Urbanist for every label, title and paragraph; Geist Mono for
+            code, IDs, timestamps, and any value the user might copy. The scale runs display down to tiny as
             boolean roles on the{" "}
             <Text style={{ fontFamily: geistMono("400") }}>Typography</Text> component; helper
             roles (muted, caption, code, mono) cover the rest.
@@ -191,17 +168,17 @@ export default function TypographyScreen() {
 
         <TokenSection
           title="Font families"
-          description="Two families, self-hosted by the consumer: the package ships no font files, and the --font-sans / --font-mono stacks fall back to system faces until Geist loads. Upstream, each family is an upright-only variable font spanning weights 100-900; React Native does not auto-map fontWeight for custom fonts, so the kit selects a face per weight, while the web can lean on the weight axis."
+          description="Two families, registered by the consumer: the package ships no font files. Hand the registered faces to <ThemeProvider fonts> (one family that carries every weight, or a face per weight) and every kit label renders in them; omit it and the system face stands in. On the web the --font-sans / --font-mono stacks fall back to system faces until Urbanist loads."
         >
           <Grid cols={c2}>
             {[
               <FontCard
                 key="sans"
                 varName="--font-sans"
-                sample="Geist"
-                sampleFamily={geist("600")}
-                sampleTracking={-0.8}
-                caption={'"Geist", ui-sans-serif, system-ui, ...'}
+                sample="Urbanist"
+                sampleFamily={urbanist("500")}
+                sampleTracking={0}
+                caption={'"Urbanist", ui-sans-serif, system-ui, ...'}
                 specimen="The quick brown fox jumps over the lazy dog 0123456789"
               />,
               <FontCard
@@ -221,7 +198,7 @@ export default function TypographyScreen() {
         <TokenSection
           title="Type scale"
           description="Each role pairs a size with a line-height. Select one with a boolean prop on Typography (e.g. <Typography h2>), never a raw font-size."
-          anatomy="display (48/48) and h1 (36/40) are distinct roles, not a shared rule; h3 doubles as the in-app page title. Roles are mutually exclusive, first-match precedence."
+          anatomy="display (64/70) and h1 (55/64) are distinct roles, not a shared rule; every title sits at the regular weight, so the hierarchy is size. Roles are mutually exclusive, first-match precedence."
         >
           <Surface padding={0} style={{ overflow: "hidden" }}>
             {SCALE.map((s, i) => <ScaleRow key={s.role} s={s} i={i} />)}
@@ -245,7 +222,7 @@ export default function TypographyScreen() {
           </Surface>
         </TokenSection>
 
-        <TokenSection title="Weights" description="Geist's weight axis spans 100-900, but the kit standardizes on four; on native each weight loads as its own face, since RN does not auto-map fontWeight for custom fonts.">
+        <TokenSection title="Weights" description="Urbanist's weight axis spans 100-900, but the kit standardizes on four; each weight is registered as its own face and ThemeProvider fonts maps a style's fontWeight onto it, since RN does not auto-map fontWeight for custom fonts.">
           <Surface padding={0} style={{ overflow: "hidden" }}>
             {WEIGHTS.map((row, i) => <WeightRow key={row.w} row={row} i={i} />)}
           </Surface>

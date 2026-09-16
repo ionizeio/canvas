@@ -53,38 +53,45 @@ export interface ColorTokens {
 
 // The semantic color values below are the sRGB rendering of the WEB hand-off
 // (styles/tokens/colors.css), which is the single source of truth for what these
-// tokens ARE: `--destructive:oklch(0.577 0.245 27.325)` there is `#e7000b` here.
+// tokens ARE: `--destructive:oklch(0.556 0.204 23.58)` there is `#d02533` here.
 // RN cannot parse oklch(), so the hand-off's values are carried as the hex they
 // resolve to, and scripts/validate-tokens.ts converts the CSS back to sRGB and
 // fails the build on any drift. Change a value in the CSS hand-off first, never
 // only here. (The `chart-*` series and the Tailwind v3 `palette` below are
 // authored as hex on both sides and compared verbatim.)
+//
+// The values are the Riskora Dashboard UI Kit's (Figma file YLbmaRirWTzivAzXirDTmX;
+// the vendored export is tools/figma/riskora-variables.json): a sky/400 brand on a
+// charcoal-and-white neutral family, with every pair solved to the kit's contrast
+// floors where the source falls short (the CSS hand-off says which, and why).
 export const lightColors: ColorTokens = {
-  background: "#ffffff",
-  foreground: "#09090b",
+  background: "#f8fafe",
+  foreground: "#0d121b",
   card: "#ffffff",
-  "card-foreground": "#09090b",
+  "card-foreground": "#0d121b",
   popover: "#ffffff",
-  "popover-foreground": "#09090b",
-  primary: "#4f39f6",
-  "primary-text": "#4b30ef",
-  "primary-foreground": "#fafafa",
-  secondary: "#f4f4f5",
-  "secondary-foreground": "#18181b",
-  muted: "#f4f4f5",
-  "muted-foreground": "#6d6d77",
-  accent: "#f4f4f5",
-  "accent-foreground": "#18181b",
-  destructive: "#e7000b",
-  // Retain the red hue while keeping enabled capsule/pressed text above 4.5:1,
-  // including +/-1 sRGB rounding. The authored OKLCH pair stays inside gamut.
-  "destructive-text": "#a70510",
-  "destructive-foreground": "#fafafa",
-  success: "#16a34a",
-  "success-foreground": "#042812",
-  warning: "#d97708",
-  "warning-foreground": "#451a03",
-  border: "#e4e4e7",
+  "popover-foreground": "#0d121b",
+  primary: "#3da3f5",
+  "primary-text": "#0061b5",
+  // The dark ink, in both schemes: Riskora's own dark-mode label on a sky fill.
+  // White-on-sky is 2.7:1 and fails the 4.5:1 text floor.
+  "primary-foreground": "#0d121b",
+  secondary: "#f6f7f8",
+  "secondary-foreground": "#0d121b",
+  muted: "#f6f7f8",
+  "muted-foreground": "#525864",
+  accent: "#f6f7f8",
+  "accent-foreground": "#0d121b",
+  destructive: "#d02533",
+  // Riskora red/700 clears 4.5:1 on every light surface by itself, so the fill and
+  // the text role share one value here (dark below lifts the text role separately).
+  "destructive-text": "#b0001a",
+  "destructive-foreground": "#ffffff",
+  success: "#197544",
+  "success-foreground": "#ffffff",
+  warning: "#ad4e1e",
+  "warning-foreground": "#ffffff",
+  border: "#f1f2f3",
   // `input` and `border` part company here, and the split is the point of having
   // two names. `border` separates two SURFACES (a card edge, a divider, a table
   // rule) and carries no contrast floor: it is read against the fills either side
@@ -98,55 +105,55 @@ export const lightColors: ColorTokens = {
   // popover, and a muted panel), so re-tuning either means re-solving it, not
   // nudging it by eye. test/tokens.test.ts pins the floor, and asserts `border`
   // stays BELOW it so the two cannot be collapsed back together.
-  input: "#88888b",
-  ring: "#615fff", // one ring value in both schemes; see colors.css
-  "chart-1": "#6366f1", // indigo-500
-  "chart-2": "#0d9488", // teal-600
-  "chart-3": "#ea580c", // orange-600
-  "chart-4": "#f43f5e", // rose-500
-  "chart-5": "#8b5cf6", // violet-500
-  "chart-6": "#0891b2", // cyan-600
-  "chart-7": "#059669", // emerald-600
-  "chart-8": "#ec4899", // pink-500
+  input: "#8b8f97",
+  ring: "#3da3f5", // one ring value in both schemes; see colors.css
+  "chart-1": "#3da3f5", // Riskora sky/400
+  "chart-2": "#fb8c4c", // Riskora orange/400 (the bar highlight)
+  "chart-3": "#2eb872", // green
+  "chart-4": "#6676ff", // Riskora blue/300
+  "chart-5": "#f0a41a", // amber
+  "chart-6": "#14b8a6", // teal
+  "chart-7": "#ec4899", // pink
+  "chart-8": "#8b5cf6", // violet
 };
 
 export const darkColors: ColorTokens = {
-  background: "#09090b",
-  foreground: "#fafafa",
-  card: "#18181b",
-  "card-foreground": "#fafafa",
-  popover: "#18181b",
-  "popover-foreground": "#fafafa",
-  primary: "#615fff",
-  "primary-text": "#8893fe",
-  "primary-foreground": "#ffffff",
-  secondary: "#27272a",
-  "secondary-foreground": "#fafafa",
-  muted: "#27272a",
-  "muted-foreground": "#9f9fa9",
-  accent: "#27272a",
-  "accent-foreground": "#fafafa",
-  destructive: "#ff6467",
-  "destructive-text": "#fe9b97",
-  "destructive-foreground": "#460809",
-  success: "#22c55e",
+  background: "#111213",
+  foreground: "#ffffff",
+  card: "#18191c",
+  "card-foreground": "#ffffff",
+  popover: "#18191c",
+  "popover-foreground": "#ffffff",
+  primary: "#68cdff",
+  "primary-text": "#68cdff",
+  "primary-foreground": "#0d121b",
+  secondary: "#212327",
+  "secondary-foreground": "#ffffff",
+  muted: "#212327",
+  "muted-foreground": "#99a0ad",
+  accent: "#212327",
+  "accent-foreground": "#ffffff",
+  destructive: "#d53b44",
+  "destructive-text": "#fe9b98",
+  "destructive-foreground": "#ffffff",
+  success: "#35c26d",
   "success-foreground": "#052e16",
-  warning: "#f59e09",
+  warning: "#ff9a68",
   "warning-foreground": "#451a03",
-  border: "#27272a",
+  border: "#222427",
   // Control boundary held to 3:1; see the light `input` above for the full note.
-  input: "#747478",
-  ring: "#615fff",
+  input: "#696d74",
+  ring: "#3da3f5",
   // Same series values as light: the palette was validated against both
   // surfaces, so brand overrides stay consistent across schemes by default.
-  "chart-1": "#6366f1",
-  "chart-2": "#0d9488",
-  "chart-3": "#ea580c",
-  "chart-4": "#f43f5e",
-  "chart-5": "#8b5cf6",
-  "chart-6": "#0891b2",
-  "chart-7": "#059669",
-  "chart-8": "#ec4899",
+  "chart-1": "#3da3f5",
+  "chart-2": "#fb8c4c",
+  "chart-3": "#2eb872",
+  "chart-4": "#6676ff",
+  "chart-5": "#f0a41a",
+  "chart-6": "#14b8a6",
+  "chart-7": "#ec4899",
+  "chart-8": "#8b5cf6",
 };
 
 export const colorsByScheme: Record<ColorScheme, ColorTokens> = {
@@ -215,10 +222,13 @@ export interface BrandColors {
   "orb-cyan": string;
 }
 
+// The keys are historical (the orbs were indigo/violet/cyan and renaming them would
+// break consumers reading `brandColors["orb-indigo"]`); the values are the Riskora
+// sky family: sky/400, blue/300, sky/400 dark.
 export const brandColors: BrandColors = {
-  "orb-indigo": "#6366f1",
-  "orb-violet": "#8b5cf6",
-  "orb-cyan": "#06b6d4",
+  "orb-indigo": "#3da3f5",
+  "orb-violet": "#6676ff",
+  "orb-cyan": "#68cdff",
 };
 
 /** Fixed, scheme-independent base colors. */
@@ -547,18 +557,61 @@ export const radius: Record<string, number> = {
   full: 9999,
 };
 
-/** Font size and matching line height, in px. */
+/** The platforms a skin file is written for. */
+export type PlatformKey = "web" | "ios" | "android";
+
+/**
+ * The corner radii a platform's skins share, by what the corner belongs to. Skins
+ * read these instead of spelling a number, so a shape decision is made once per
+ * platform: `control` is a button, an icon button, a segmented tab, a nav row;
+ * `field` a text field, select, or autocomplete box; `card` a content surface;
+ * `dialog` a dialog, alert, or toast; `menu` a menu, popover, or select list;
+ * `sheet` a sheet, drawer, or app shell; `checkbox` the box of a checkbox; `pill`
+ * a chip, badge, or capsule. The web skins consume these (the Riskora shapes); the
+ * iOS and Android rows record the values their skins already spell per component,
+ * so the three columns can be read side by side. Mirrored as `--radius-*` in
+ * styles/tokens/radius.css.
+ */
+export interface ShapeTokens {
+  control: number;
+  field: number;
+  card: number;
+  dialog: number;
+  menu: number;
+  sheet: number;
+  checkbox: number;
+  pill: number;
+}
+
+export const shape: Record<PlatformKey, ShapeTokens> = {
+  // Riskora: 12 on every control and field, 16 on floating surfaces, 20 on cards,
+  // 30 on the app shell and sheets, a 6 checkbox, capsules for chips and badges.
+  web: { control: 12, field: 12, card: 20, dialog: 16, menu: 16, sheet: 30, checkbox: 6, pill: 9999 },
+  // HIG / iOS 26: capsule buttons, 10 rounded-border fields, 12 grouped surfaces
+  // with the continuous curve, 28 alerts, 26 menus, the 38 sheet corner, a 5 box.
+  ios: { control: 9999, field: 10, card: 12, dialog: 28, menu: 26, sheet: 38, checkbox: 5, pill: 9999 },
+  // Material 3: stadium buttons, the 4 filled-field top corner, the 12 medium shape
+  // for cards, 28 extra-large dialogs and sheets, 4 extra-small menus, a 2 box.
+  android: { control: 9999, field: 4, card: 12, dialog: 28, menu: 4, sheet: 28, checkbox: 2, pill: 9999 },
+};
+
+/**
+ * Font size and matching line height, in px: the Riskora ladder (Paragraph X Small
+ * 12 up to Title H1 64), mirrored in styles/tokens/typography.css `--text-*` /
+ * `--leading-*`.
+ */
 export const fontSize: Record<string, { fontSize: number; lineHeight: number }> = {
   xs: { fontSize: 12, lineHeight: 16 },
   sm: { fontSize: 14, lineHeight: 20 },
   base: { fontSize: 16, lineHeight: 24 },
   lg: { fontSize: 18, lineHeight: 28 },
-  xl: { fontSize: 20, lineHeight: 28 },
+  xl: { fontSize: 20, lineHeight: 30 },
   "2xl": { fontSize: 24, lineHeight: 32 },
-  "3xl": { fontSize: 30, lineHeight: 36 },
-  "4xl": { fontSize: 36, lineHeight: 40 },
-  "5xl": { fontSize: 48, lineHeight: 48 },
-  "6xl": { fontSize: 60, lineHeight: 60 },
+  "3xl": { fontSize: 28, lineHeight: 36 },
+  "4xl": { fontSize: 36, lineHeight: 44 },
+  "5xl": { fontSize: 40, lineHeight: 48 },
+  "6xl": { fontSize: 55, lineHeight: 64 },
+  "7xl": { fontSize: 64, lineHeight: 70 },
 };
 
 /** Font weights (RN expects string values). */

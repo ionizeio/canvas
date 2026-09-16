@@ -165,8 +165,8 @@ describe("Chip", () => {
     expect(bg("blue")).not.toBe(bg("neutral"));
     expect(bg("blue")).not.toBe(bg("green"));
     // The whole point: `primary` is now a SOFT accent tint, not the saturated
-    // #4f39f6 primary fill a Button wears, and it is not the neutral gray either.
-    expect(["#4f39f6", "rgb(79, 57, 246)"]).not.toContain(bg("primary"));
+    // `primary` fill a Button wears (#3da3f5 today), and it is not the neutral gray either.
+    expect(["#3da3f5", "rgb(61, 163, 245)", "rgba(61, 163, 245, 1.00)"]).not.toContain(bg("primary"));
     expect(bg("primary")).not.toBe(bg("neutral"));
   });
 
@@ -263,10 +263,10 @@ describe("Emblem", () => {
 
   it("warning tints the surface with the amber wash and paints the monogram to match", () => {
     const { container, getByText } = ui(<Emblem warning label="W" testID="warn" />);
-    // Light-scheme warning token (#d97708) at the shared 12% tint recipe.
-    expect(at(container, "warn").style.backgroundColor).toBe("rgba(217, 119, 8, 0.12)");
+    // Light-scheme warning token (#ad4e1e, Riskora orange/800) at the shared 12% tint recipe.
+    expect(at(container, "warn").style.backgroundColor).toBe("rgba(173, 78, 30, 0.12)");
     // The monogram paints in the solid warning token, not the muted foreground.
-    expect((getByText("W") as HTMLElement).style.color).toBe("rgba(217, 119, 8, 1.00)");
+    expect((getByText("W") as HTMLElement).style.color).toBe("rgba(173, 78, 30, 1.00)");
   });
 
   it("resolves tone conflicts by fixed precedence (destructive outranks warning)", () => {

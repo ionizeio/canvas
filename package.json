@@ -70,7 +70,7 @@
     "check:interactions": "bun scripts/check-interaction-coverage.ts",
     "check-parity": "bun scripts/check-handoff-parity.ts",
     "check-parity:check": "bun scripts/check-handoff-parity.ts --check",
-    "check-render": "bun scripts/check-render-parity.ts",
+    "check-figma": "bun scripts/check-figma-parity.ts",
     "looks": "bun scripts/capture-looks.ts",
     "changeset": "changeset",
     "version-packages": "changeset version",

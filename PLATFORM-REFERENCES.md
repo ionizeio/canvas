@@ -19,7 +19,8 @@ reference, not the design reference. Note for tooling: m3.material.io is a JS ap
 cannot be WebFetched; read them in a browser session, and verify URLs against
 https://m3.material.io/sitemap.xml.
 
-Canvas is **platform-forward**: the brand survives (the indigo `primary` and the type stay the
+Canvas is **platform-forward**: the brand survives (the sky `primary`, the Urbanist type and the
+Riskora token set stay the
 same on every platform); only the native shape, sizing, structure, and interaction feedback change
 per OS. React Native does not provide these looks for free (its primitives are unstyled and its
 core `<Button>` is unusable), so each control's per-OS appearance is hand-written, EXCEPT the few

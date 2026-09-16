@@ -13,11 +13,11 @@ describe("shadow", () => {
 
   it("scales the shadow with the level (web boxShadow)", () => {
     expect(shadow("none")).toEqual({ boxShadow: "none" });
-    expect(shadow("sm").boxShadow).toBe("0px 1px 2px rgba(0, 0, 0, 0.05)");
-    expect(shadow("DEFAULT").boxShadow).toBe("0px 1px 3px rgba(0, 0, 0, 0.1)");
-    expect(shadow("md").boxShadow).toBe("0px 4px 6px rgba(0, 0, 0, 0.1)");
-    expect(shadow("lg").boxShadow).toBe("0px 10px 15px rgba(0, 0, 0, 0.1)");
-    expect(shadow("xl").boxShadow).toBe("0px 20px 25px rgba(0, 0, 0, 0.1)");
+    expect(shadow("sm").boxShadow).toBe("0px 1px 2px rgba(13, 18, 27, 0.04)");
+    expect(shadow("DEFAULT").boxShadow).toBe("0px 0px 20px rgba(13, 18, 27, 0.06)");
+    expect(shadow("md").boxShadow).toBe("0px 0px 24px rgba(13, 18, 27, 0.1)");
+    expect(shadow("lg").boxShadow).toBe("0px 0px 40px rgba(13, 18, 27, 0.14)");
+    expect(shadow("xl").boxShadow).toBe("0px 0px 60px rgba(13, 18, 27, 0.18)");
   });
 
   it("does not emit the deprecated shadow* props on web", () => {

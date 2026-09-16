@@ -37,7 +37,8 @@ class matches; cite them as "M3 <value> (canvas rubric)":
 
 ## Platform reference: Web rows
 
-- The established Canvas look: medium-rounded corners, medium-weight labels,
+- The established Canvas look (the Riskora kit): 12px controls and fields, 20px cards,
+  medium-weight labels, titles at the regular weight, sky accent on charcoal or white,
   visible focus treatment on keyboard focus, hover affordances.
 - No minimum touch target; pointer targets are visual-sized.
 
@@ -144,9 +145,9 @@ a missing state from an example that is not about one.
 
 ## Do not file (extends the touch-target rule above)
 
-- The design language itself: the indigo primary, the chart series hues, colour
-  saturation, "one accent colour", the Geist typeface, the pure-white light
-  surfaces, hairline card borders, the corner-radius scale, information density.
+- The design language itself: the sky primary, the chart series hues, colour
+  saturation, "one accent colour", the Urbanist typeface, the tinted light page and white
+  cards, soft hairline card borders, the corner-radius scale, information density.
   Those are decisions, and the config's `neverFile` list records the ones that
   keep being re-litigated.
 - Landing-page and marketing critique: hero size, section rhythm, three-column

@@ -15,9 +15,9 @@ const lineHeightOf = (container: HTMLElement) => {
 
 describe("Typography leading axis", () => {
   it("tightLeading pulls a role's reading line box in to 1.25x", () => {
-    // lead is 16/24 (a 1.5 reading ratio); tight caps it at round(16 * 1.25) = 20.
-    expect(lineHeightOf(ui(<Typography lead>Canvas</Typography>).container)).toBe("24px");
-    expect(lineHeightOf(ui(<Typography lead tightLeading>Canvas</Typography>).container)).toBe("20px");
+    // lead is 20/30 (a 1.5 reading ratio); tight caps it at round(20 * 1.25) = 25.
+    expect(lineHeightOf(ui(<Typography lead>Canvas</Typography>).container)).toBe("30px");
+    expect(lineHeightOf(ui(<Typography lead tightLeading>Canvas</Typography>).container)).toBe("25px");
 
     // tiny is 12/16; tight caps it at round(12 * 1.25) = 15.
     expect(lineHeightOf(ui(<Typography tiny>design system</Typography>).container)).toBe("16px");
@@ -25,13 +25,13 @@ describe("Typography leading axis", () => {
   });
 
   it("only ever tightens: roles already at or below 1.25x keep their own line box", () => {
-    // The display scale is already tight (display 48/48 = 1.0, h1 36/40 = 1.11,
-    // h2 30/36 = 1.2). Without the min() clamp the ratio would LOOSEN these, so the
+    // The display scale is already tight (display 64/70 = 1.09, h1 55/64 = 1.16,
+    // h2 40/48 = 1.2). Without the min() clamp the ratio would LOOSEN these, so the
     // prop would be unsafe on the roles most likely to carry a lockup's first line.
     for (const [node, expected] of [
-      [<Typography display tightLeading>Canvas</Typography>, "48px"],
-      [<Typography h1 tightLeading>Canvas</Typography>, "40px"],
-      [<Typography h2 tightLeading>Canvas</Typography>, "36px"],
+      [<Typography display tightLeading>Canvas</Typography>, "70px"],
+      [<Typography h1 tightLeading>Canvas</Typography>, "64px"],
+      [<Typography h2 tightLeading>Canvas</Typography>, "48px"],
     ] as const) {
       expect(lineHeightOf(ui(node).container)).toBe(expected);
     }
@@ -50,7 +50,7 @@ describe("Typography leading axis", () => {
   });
 
   it("omitting it leaves the role's reading leading untouched", () => {
-    expect(lineHeightOf(ui(<Typography body>The quick brown fox</Typography>).container)).toBe("28px");
-    expect(lineHeightOf(ui(<Typography lead>The quick brown fox</Typography>).container)).toBe("24px");
+    expect(lineHeightOf(ui(<Typography body>The quick brown fox</Typography>).container)).toBe("24px");
+    expect(lineHeightOf(ui(<Typography lead>The quick brown fox</Typography>).container)).toBe("30px");
   });
 });

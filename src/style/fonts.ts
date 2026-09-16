@@ -1,0 +1,90 @@
+// The kit's typefaces, and how a loaded face is matched to a text style.
+//
+// React Native has no font loading of its own: an app registers faces (expo-font,
+// a native asset, an @font-face rule on the web) and refers to them by the family
+// name it registered. So the kit cannot bundle Urbanist; it names the brand faces
+// (`typeface`) and lets the app hand the registered families to the ThemeProvider
+// (`fonts`), from which the themed Text/TextInput primitives (src/style/text.tsx)
+// paint every kit label. With no `fonts` the kit renders in the platform's system
+// face, exactly as before the brand faces existed, so no consumer breaks.
+//
+// Two shapes are accepted, because registrations come in two shapes:
+// - ONE family name that carries every weight: a variable font, or a family the
+//   platform resolves by weight (a web @font-face with a `font-weight` range, a
+//   font installed on the OS). `fontWeight` stays on the style.
+// - A MAP from weight to the face registered for it (expo-google-fonts ships one
+//   module per weight: Urbanist_400Regular, Urbanist_500Medium, ...). The face
+//   already encodes the weight, so the resolver picks the nearest registered face
+//   and DROPS `fontWeight`: on iOS a weight on a single-weight family falls back
+//   to the system face, and on the web the browser would synthesize a fake bold.
+
+/** The RN string weights a style can carry. */
+export type FontWeightKey = "100" | "200" | "300" | "400" | "500" | "600" | "700" | "800" | "900";
+
+/** A registered typeface: one family for every weight, or a face per weight. */
+export type FontFaces = string | Partial<Record<FontWeightKey, string>>;
+
+/** The families an app hands to the ThemeProvider. Both optional: a missing face keeps the system default. */
+export interface ThemeFonts {
+  /** The text face (the brand's is `typeface.sans`). */
+  sans?: FontFaces;
+  /** The monospace face, substituted wherever the kit asks for `MONO_FONT`. */
+  mono?: FontFaces;
+}
+
+/**
+ * The brand faces by name: what the design specifies and what an app is expected
+ * to register. Urbanist is the Riskora kit's face (every text style in the source
+ * is Urbanist 400 or 500); Geist Mono stays the kit's code face.
+ */
+export const typeface = {
+  sans: "Urbanist",
+  mono: "Geist Mono",
+} as const;
+
+const WEIGHTS: readonly FontWeightKey[] = ["100", "200", "300", "400", "500", "600", "700", "800", "900"];
+
+/** Normalize an RN fontWeight (string, number, "bold"/"normal") to a weight key. */
+export function weightKey(weight: string | number | undefined): FontWeightKey {
+  if (weight == null) return "400";
+  if (weight === "bold") return "700";
+  if (weight === "normal") return "400";
+  const n = typeof weight === "number" ? weight : parseInt(weight, 10);
+  if (!Number.isFinite(n)) return "400";
+  // Snap to the hundreds the keys use (RN accepts e.g. "550" on some platforms).
+  const snapped = Math.min(900, Math.max(100, Math.round(n / 100) * 100));
+  return String(snapped) as FontWeightKey;
+}
+
+export interface ResolvedFace {
+  fontFamily: string;
+  /** True when the face already carries its weight and the style's fontWeight must go. */
+  dropWeight: boolean;
+}
+
+/**
+ * Pick the registered face for a requested weight. A single family resolves as-is
+ * (the platform picks the weight). A map resolves to the exact weight when it was
+ * registered, else the nearest registered weight (ties go to the heavier face, so a
+ * semibold request on a {400, 500, 700} registration reads as emphasis, not body).
+ * Returns null when nothing was registered, so callers leave the style untouched.
+ */
+export function resolveFontFace(faces: FontFaces | undefined, weight: string | number | undefined): ResolvedFace | null {
+  if (!faces) return null;
+  if (typeof faces === "string") return { fontFamily: faces, dropWeight: false };
+  const want = weightKey(weight);
+  const exact = faces[want];
+  if (exact) return { fontFamily: exact, dropWeight: true };
+  const target = parseInt(want, 10);
+  let best: { family: string; distance: number; weight: number } | null = null;
+  for (const key of WEIGHTS) {
+    const family = faces[key];
+    if (!family) continue;
+    const w = parseInt(key, 10);
+    const distance = Math.abs(w - target);
+    if (!best || distance < best.distance || (distance === best.distance && w > best.weight)) {
+      best = { family, distance, weight: w };
+    }
+  }
+  return best ? { fontFamily: best.family, dropWeight: true } : null;
+}

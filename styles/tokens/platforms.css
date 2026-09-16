@@ -20,7 +20,7 @@
   --p-btn-square:40px;--p-btn-square-sm:32px;--p-btn-square-lg:48px;
   --p-press:0.9 /* @kind other */;--p-disabled:0.5 /* @kind other */;
   /* Card — hairline + soft resting shadow, 24px inset */
-  --p-card-radius:8px;--p-card-shadow:0px 1px 2px rgba(0,0,0,0.05);--p-card-shadow-raised:0px 4px 6px rgba(0,0,0,0.1);
+  --p-card-radius:8px;--p-card-shadow:0px 1px 2px rgba(13,18,27,0.04);--p-card-shadow-raised:0px 0px 24px rgba(13,18,27,0.1);
   --p-card-pad:24px;--p-card-gap:16px;--p-card-pad-compact:16px;--p-card-gap-compact:12px;
   --p-card-pad-comfortable:32px;--p-card-gap-comfortable:24px;--p-card-border:var(--border) /* @kind other */;
   /* Field — full 1px border, 36px tall, background fill */
@@ -57,7 +57,7 @@
   --p-alert-radius:8px;--p-alert-tracking:0px;
   --p-overlay-radius:8px;--p-sheet-radius:12px;
   /* Popover (popover.styles.tsx webSkin: 8px card, full 1px border, lg shadow, no beak) */
-  --p-popover-radius:8px;--p-popover-border:1px;--p-popover-shadow:0px 10px 15px rgba(0,0,0,0.1);--p-popover-beak-display:none /* @kind other */;
+  --p-popover-radius:8px;--p-popover-border:1px;--p-popover-shadow:0px 0px 40px rgba(13,18,27,0.14);--p-popover-beak-display:none /* @kind other */;
   /* Spinner (spinner.styles.tsx webSkin: the ActivityIndicator arc ring; iOS swaps in the spoke ring) */
   --p-spinner-arc-display:inline-block /* @kind other */;--p-spinner-spokes-display:none /* @kind other */;
   /* Tabs — underline rule, 2px brand indicator */
@@ -69,7 +69,7 @@
   /* Tabs pills + vertical (tabs.styles.ts webSkin: muted radius-8 track with a raised white thumb; accent-filled rail) */
   --p-tab-pill-track-radius:8px;--p-tab-pill-track-pad:4px;--p-tab-pill-gap:4px;
   --p-tab-pill-radius:6px;--p-tab-pill-pad-x:12px;--p-tab-pill-pad-y:6px;
-  --p-tab-pill-selected-bg:var(--background);--p-tab-pill-selected-shadow:0px 1px 2px rgba(0,0,0,0.05);
+  --p-tab-pill-selected-bg:var(--background);--p-tab-pill-selected-shadow:0px 1px 2px rgba(13,18,27,0.04);
   --p-tab-pill-label:var(--muted-foreground);--p-tab-pill-selected-weight:500;
   --p-tab-v-radius:6px;--p-tab-v-pad-x:12px;--p-tab-v-pad-y:8px;--p-tab-v-font:14px;--p-tab-v-lh:20px;
   --p-tab-v-weight:500;--p-tab-v-selected-weight:500;
@@ -95,7 +95,7 @@
   --p-nav-links-gap:4px;--p-nav-link-radius:6px;--p-nav-link-pad-x:12px;--p-nav-link-pad-y:6px;
   --p-nav-link-font:14px;--p-nav-link-lh:20px;
   /* Stats (stats.styles.ts webSkin) */
-  --p-stat-radius:8px;--p-stat-pad:20px;--p-stat-shadow:0px 1px 2px rgba(0,0,0,0.05);--p-stat-gap:14px;
+  --p-stat-radius:8px;--p-stat-pad:20px;--p-stat-shadow:0px 1px 2px rgba(13,18,27,0.04);--p-stat-gap:14px;
   --p-stat-label:14px;--p-stat-label-lh:20px;--p-stat-label-tracking:0px;
   --p-stat-value:24px;--p-stat-value-lh:32px;--p-stat-value-weight:600;--p-stat-value-tracking:-0.4px;
   --p-stat-delta-tracking:0px;
@@ -144,7 +144,7 @@
   --p-emblem-radius-small:6px;--p-emblem-radius-default:8px;--p-emblem-radius-large:10px;
   --p-emblem-monogram-weight:600;--p-emblem-monogram-tracking:0px;
   /* StackedList (stacked-lists.styles.ts webSkin) */
-  --p-list-radius:8px;--p-list-border:1px;--p-list-shadow:0px 1px 2px rgba(0,0,0,0.05);
+  --p-list-radius:8px;--p-list-border:1px;--p-list-shadow:0px 1px 2px rgba(13,18,27,0.04);
   --p-list-row-pad-x:20px;--p-list-row-pad-y:12px;--p-list-row-gap:12px;--p-list-row-min-h:0px;--p-list-divider-inset:0px;
   --p-list-name:14px;--p-list-name-lh:20px;--p-list-name-weight:500;--p-list-name-tracking:0px;
   --p-list-sub:12px;--p-list-sub-lh:16px;--p-list-sub-tracking:0px;
@@ -181,7 +181,7 @@
   --p-select-border-color:var(--input);--p-select-underline-rest:var(--input);--p-select-fill:var(--background);--p-select-pad-x:12px;
   --p-select-font:14px;--p-select-lh:20px;--p-select-chevron:"▾" /* @kind other */;--p-select-chevron-color:var(--muted-foreground);--p-select-chevron-weight:400;
   --p-select-panel-max:240px;--p-select-panel-radius:6px;--p-select-panel-border:1px;--p-select-panel-pad-x:4px;--p-select-panel-pad-y:4px;
-  --p-select-panel-shadow:0px 10px 15px rgba(0,0,0,0.1);
+  --p-select-panel-shadow:0px 0px 40px rgba(13,18,27,0.14);
   --p-select-row-radius:2px;--p-select-row-pad-x:8px;--p-select-row-pad-y:6px;--p-select-row-gap:8px;--p-select-row-min-h:0px;
   --p-select-row-font:14px;--p-select-row-lh:20px;--p-select-row-selected-fill:var(--accent);
   --p-select-check-color:var(--popover-foreground);--p-select-check-weight:400;
@@ -196,21 +196,21 @@
   --p-ac-border-color:var(--input);--p-ac-underline-rest:var(--input);--p-ac-fill:var(--background);--p-ac-pad-x:12px;
   --p-ac-font:14px;--p-ac-lh:20px;--p-ac-chevron:var(--muted-foreground);
   --p-ac-menu-max:240px;--p-ac-menu-radius:6px;--p-ac-menu-border:1px;--p-ac-menu-pad-x:4px;--p-ac-menu-pad-y:4px;
-  --p-ac-menu-shadow:0px 10px 15px rgba(0,0,0,0.1);
+  --p-ac-menu-shadow:0px 0px 40px rgba(13,18,27,0.14);
   --p-ac-row-radius:2px;--p-ac-row-pad-x:8px;--p-ac-row-pad-y:6px;--p-ac-row-gap:8px;--p-ac-row-min-h:0px;--p-ac-row-separator:0px;
   --p-ac-row-font:14px;--p-ac-row-lh:20px;--p-ac-row-selected:var(--accent);
   --p-ac-check-w:14px;--p-ac-check-color:var(--popover-foreground);
   /* Dropdown menu (dropdown.styles.ts webSkin) */
-  --p-menu-radius:6px;--p-menu-border:1px;--p-menu-pad-x:4px;--p-menu-pad-y:4px;--p-menu-shadow:0px 10px 15px rgba(0,0,0,0.1);
+  --p-menu-radius:6px;--p-menu-border:1px;--p-menu-pad-x:4px;--p-menu-pad-y:4px;--p-menu-shadow:0px 0px 40px rgba(13,18,27,0.14);
   --p-menu-label-font:12px;--p-menu-label-lh:16px;--p-menu-label-weight:500;--p-menu-label-tracking:0px;--p-menu-label-pad-x:8px;--p-menu-label-pad-y:6px;
   --p-menu-sep-h:1px;--p-menu-sep-margin:4px;
   --p-menu-row-radius:2px;--p-menu-row-pad-x:8px;--p-menu-row-pad-y:6px;--p-menu-row-gap:8px;--p-menu-row-min-h:0px;
   --p-menu-row-font:14px;--p-menu-row-lh:20px;
   --p-menu-shortcut-font:12px;--p-menu-shortcut-lh:16px;--p-menu-shortcut-tracking:1.6px;
   /* Tooltip (tooltip.styles.ts webSkin) */
-  --p-tip-radius:6px;--p-tip-shadow:0px 4px 6px rgba(0,0,0,0.1);--p-tip-weight:500;--p-tip-min-h:0px;
+  --p-tip-radius:6px;--p-tip-shadow:0px 0px 24px rgba(13,18,27,0.1);--p-tip-weight:500;--p-tip-min-h:0px;
   /* Dialog (dialog.styles.ts webSkin) */
-  --p-dialog-scrim:rgba(0,0,0,0.5);--p-dialog-radius:8px;--p-dialog-border:1px;--p-dialog-shadow:0px 20px 25px rgba(0,0,0,0.1);
+  --p-dialog-scrim:rgba(0,0,0,0.5);--p-dialog-radius:8px;--p-dialog-border:1px;--p-dialog-shadow:0px 0px 60px rgba(13,18,27,0.18);
   --p-dialog-title:16px;--p-dialog-title-lh:24px;--p-dialog-title-weight:600;
   --p-dialog-body:14px;--p-dialog-body-lh:20px;--p-dialog-body-gap:8px;--p-dialog-footer-gap:8px;--p-dialog-footer-top:24px;
   --p-alert-btn-flex:0 0 auto /* @kind other */;--p-alert-btn-min-h:0px;--p-alert-btn-pad:8px 16px;--p-alert-btn-radius:6px;
@@ -219,7 +219,7 @@
   --p-alert-confirm-fill:var(--primary);--p-alert-confirm-label:var(--primary-foreground);
   --p-alert-confirm-destructive-fill:var(--destructive);--p-alert-confirm-destructive-label:var(--destructive-foreground);
   /* AlertDialog (alert-dialog.styles.ts webSkin — its own skin) */
-  --p-ad-scrim:rgba(0,0,0,0.5);--p-ad-radius:8px;--p-ad-border:1px;--p-ad-shadow:0px 20px 25px rgba(0,0,0,0.1);
+  --p-ad-scrim:rgba(0,0,0,0.5);--p-ad-radius:8px;--p-ad-border:1px;--p-ad-shadow:0px 0px 60px rgba(13,18,27,0.18);
   --p-ad-title:16px;--p-ad-title-lh:24px;--p-ad-title-weight:600;
   --p-ad-desc:14px;--p-ad-desc-lh:20px;--p-ad-desc-gap:8px;
   --p-ad-actions-justify:flex-end /* @kind other */;--p-ad-actions-gap:8px;
@@ -233,7 +233,7 @@
   --p-drawer-handle-w:0px;--p-drawer-handle-h:0px;--p-drawer-handle-top:0px;
   /* ActionSheet (action-sheet.styles.ts webSkin — the iOS idiom on web too) */
   --p-sheet-scrim:rgba(0,0,0,0.4);--p-sheet-stack-pad:8px;--p-sheet-stack-gap:8px;
-  --p-sheet-card-radius:14px;--p-sheet-card-radius-top:14px;--p-sheet-card-pad:0px;--p-sheet-shadow:0px 10px 15px rgba(0,0,0,0.1);
+  --p-sheet-card-radius:14px;--p-sheet-card-radius-top:14px;--p-sheet-card-pad:0px;--p-sheet-shadow:0px 0px 40px rgba(13,18,27,0.14);
   --p-sheet-cancel-layout:separateCard /* @kind other */;--p-sheet-cancel-inset:0px;--p-sheet-cancel-radius:14px;--p-sheet-cancel-min-h:57px;--p-sheet-cancel-label:var(--popover-foreground);
   --p-sheet-handle-display:none /* @kind other */;
   --p-sheet-header-pad:14px 16px;--p-sheet-header-align:center /* @kind other */;--p-sheet-header-gap:2px;--p-sheet-title-align:center /* @kind other */;
@@ -290,7 +290,7 @@
   --p-otp-digit-small:15px;--p-otp-digit-base:18px;--p-otp-digit-large:22px;--p-otp-digit-weight:500;--p-otp-digit-tracking:0px;
   --p-otp-caret:var(--foreground);--p-otp-caret-blink:none /* @kind other */;
   /* DescriptionList (description-lists.styles.ts webSkin) */
-  --p-dl-radius:8px;--p-dl-shadow:0px 1px 2px rgba(0,0,0,0.05);--p-dl-pad:24px;--p-dl-row-gap:12px;
+  --p-dl-radius:8px;--p-dl-shadow:0px 1px 2px rgba(13,18,27,0.04);--p-dl-pad:24px;--p-dl-row-gap:12px;
   --p-dl-row-align:baseline /* @kind other */;--p-dl-row-min-h:0px;--p-dl-divided-pad:12px;
   --p-dl-term-font:14px;--p-dl-term-lh:20px;--p-dl-term-weight:400;--p-dl-term-tracking:0px;--p-dl-term-color:var(--muted-foreground);
   --p-dl-value-font:14px;--p-dl-value-lh:20px;--p-dl-value-weight:500;--p-dl-value-tracking:0px;--p-dl-value-color:var(--foreground);
@@ -314,7 +314,7 @@
   --p-panel-inline-gap:24px;--p-panel-inline-align:flex-start /* @kind other */;
   /* Carousel (carousel.styles.ts webSkin — Embla/shadcn) */
   --p-carousel-slide-radius:8px;--p-carousel-arrows:1 /* @kind other */;--p-carousel-dots:1 /* @kind other */;
-  --p-carousel-arrow-size:32px;--p-carousel-arrow-border:1px;--p-carousel-arrow-fill:var(--card);--p-carousel-arrow-shadow:0px 1px 2px rgba(0,0,0,0.05);
+  --p-carousel-arrow-size:32px;--p-carousel-arrow-border:1px;--p-carousel-arrow-fill:var(--card);--p-carousel-arrow-shadow:0px 1px 2px rgba(13,18,27,0.04);
   --p-carousel-dot:8px;--p-carousel-dot-active-w:18px;--p-carousel-dot-gap:6px;--p-carousel-dot-alpha:40%;
   --p-carousel-text-font:16px;--p-carousel-text-lh:24px;--p-carousel-text-weight:500;--p-carousel-text-tracking:0px;
   /* Stats (stats.styles.ts webSkin) */
@@ -350,7 +350,7 @@
   --p-btn-square:44px;--p-btn-square-sm:36px;--p-btn-square-lg:52px;
   --p-press:0.8 /* @kind other */;--p-disabled:0.4 /* @kind other */;
   --p-min-target:44px;
-  --p-card-radius:12px;--p-card-shadow:none;--p-card-shadow-raised:0px 1px 2px rgba(0,0,0,0.05);
+  --p-card-radius:12px;--p-card-shadow:none;--p-card-shadow-raised:0px 1px 2px rgba(13,18,27,0.04);
   --p-field-radius:10px;--p-field-height:44px;--p-field-height-sm:36px;--p-field-height-lg:50px;
   --p-field-fill:var(--secondary);--p-field-radius-bottom:10px;--p-field-pad-x:16px;
   --p-label-weight:600;--p-label-tracking:-0.15px;
@@ -481,7 +481,7 @@
   --p-cmd-radius:16px;--p-cmd-search-pad-x:16px;--p-cmd-search-pad-y:14px;--p-cmd-search-gap:10px;--p-cmd-search-min-h:44px;--p-cmd-glyph:20px;
   --p-cmd-row-pad-x:16px;--p-cmd-row-pad-y:11px;--p-cmd-row-min-h:44px;--p-cmd-row-font:17px;--p-cmd-row-lh:22px;--p-cmd-row-tracking:-0.4px;
   /* Dialog — iOS 27 alert: borderless 28pt card, 30% scrim, capsule actions */
-  --p-dialog-scrim:rgba(0,0,0,0.3);--p-dialog-radius:28px;--p-dialog-border:0px;--p-dialog-shadow:0px 10px 15px rgba(0,0,0,0.1);
+  --p-dialog-scrim:rgba(0,0,0,0.3);--p-dialog-radius:28px;--p-dialog-border:0px;--p-dialog-shadow:0px 0px 40px rgba(13,18,27,0.14);
   --p-dialog-title:20px;--p-dialog-title-lh:25px;--p-dialog-title-weight:700;
   --p-dialog-body:15px;--p-dialog-body-lh:20px;
   --p-dialog-footer-gap:12px;--p-dialog-footer-top:20px;
@@ -490,7 +490,7 @@
   --p-alert-cancel-border:0px;--p-alert-cancel-fill:var(--secondary);--p-alert-cancel-label:var(--secondary-foreground);
   --p-alert-confirm-destructive-fill:var(--secondary);--p-alert-confirm-destructive-label:var(--destructive-text);
   /* AlertDialog — iOS 27: borderless 28pt card, two equal capsules; a destructive confirm keeps the GRAY fill and reds only its label */
-  --p-ad-scrim:rgba(0,0,0,0.4);--p-ad-radius:28px;--p-ad-border:0px;--p-ad-shadow:0px 10px 15px rgba(0,0,0,0.1);
+  --p-ad-scrim:rgba(0,0,0,0.4);--p-ad-radius:28px;--p-ad-border:0px;--p-ad-shadow:0px 0px 40px rgba(13,18,27,0.14);
   --p-ad-title:20px;--p-ad-title-lh:25px;--p-ad-title-weight:700;
   --p-ad-desc:16px;--p-ad-desc-lh:21px;
   --p-ad-actions-justify:stretch /* @kind other */;--p-ad-actions-gap:12px;
@@ -583,7 +583,7 @@
   --p-btn-pad-x-lg:24px;--p-btn-pad-y-lg:13px;--p-btn-font-lg:14px;--p-btn-lh-lg:20px;
   --p-btn-square:40px;--p-btn-square-sm:32px;--p-btn-square-lg:48px;
   --p-press:1 /* @kind other */;--p-disabled:0.38 /* @kind other */;
-  --p-card-radius:12px;--p-card-shadow:0px 1px 2px rgba(0,0,0,0.05);--p-card-shadow-raised:0px 4px 6px rgba(0,0,0,0.1);
+  --p-card-radius:12px;--p-card-shadow:0px 1px 2px rgba(13,18,27,0.04);--p-card-shadow-raised:0px 4px 6px rgba(0,0,0,0.1);
   --p-card-pad:16px;--p-card-gap:12px;--p-card-pad-compact:12px;--p-card-gap-compact:8px;
   --p-card-pad-comfortable:24px;--p-card-gap-comfortable:20px;--p-card-border:transparent /* @kind other */;
   --p-field-radius:4px;--p-field-radius-bottom:0px;--p-field-height:56px;--p-field-height-sm:48px;--p-field-height-lg:60px;
@@ -612,7 +612,7 @@
   --p-alert-radius:12px;--p-alert-tracking:0.25px;
   --p-overlay-radius:12px;--p-sheet-radius:12px;
   /* Popover (M3, no native popover): a 12dp borderless card on md elevation, no beak */
-  --p-popover-radius:12px;--p-popover-border:0px;--p-popover-shadow:0px 4px 6px rgba(0,0,0,0.1);
+  --p-popover-radius:12px;--p-popover-border:0px;--p-popover-shadow:0px 0px 24px rgba(13,18,27,0.1);
   --p-tab-item-pad-y:12px;--p-tab-indicator-h:3px;--p-tab-label-selected:var(--primary-text);
   /* Tabs pills + vertical (M3): capsule tonal primary-12% fills with brand labels, flat (no thumb shadow) */
   --p-tab-pill-track-radius:9999px;--p-tab-pill-radius:9999px;--p-tab-pill-pad-x:14px;--p-tab-pill-pad-y:7px;
@@ -668,7 +668,7 @@
   --p-dl-term-tracking:0.1px;--p-dl-value-tracking:0.1px;--p-dl-stacked-tracking:0.5px;
   --p-dl-header-weight:500;--p-dl-header-tracking:0.15px;
   /* MediaObject — M3: 16dp gap, ELEVATED 12dp card (transparent outline), M3 roles */
-  --p-media-gap:16px;--p-media-gap-compact:12px;--p-media-radius:12px;--p-media-border-color:transparent /* @kind other */;--p-media-shadow:0px 1px 2px rgba(0,0,0,0.05);
+  --p-media-gap:16px;--p-media-gap-compact:12px;--p-media-radius:12px;--p-media-border-color:transparent /* @kind other */;--p-media-shadow:0px 1px 2px rgba(13,18,27,0.04);
   --p-media-icon-radius:12px;--p-media-title-weight:500;--p-media-title-tracking:0.1px;
   --p-media-desc-tracking:0.4px;--p-media-body-lh:20px;--p-media-body-tracking:0.25px;
   /* GridList — M3: 12dp thumbnail, roomier gap, M3 type roles */
@@ -722,7 +722,7 @@
   --p-cmd-search-pad-x:16px;--p-cmd-search-pad-y:14px;--p-cmd-search-gap:12px;--p-cmd-search-min-h:48px;--p-cmd-glyph:20px;
   --p-cmd-row-pad-x:16px;--p-cmd-row-pad-y:12px;--p-cmd-row-min-h:48px;--p-cmd-row-font:16px;--p-cmd-row-lh:24px;--p-cmd-row-tracking:0.5px;
   /* Dialog — M3 basic dialog: 28dp elevated card, 32% scrim, flat text-button actions */
-  --p-dialog-scrim:rgba(0,0,0,0.32);--p-dialog-radius:28px;--p-dialog-border:0px;--p-dialog-shadow:0px 10px 15px rgba(0,0,0,0.1);
+  --p-dialog-scrim:rgba(0,0,0,0.32);--p-dialog-radius:28px;--p-dialog-border:0px;--p-dialog-shadow:0px 0px 40px rgba(13,18,27,0.14);
   --p-dialog-title:22px;--p-dialog-title-lh:28px;--p-dialog-title-weight:500;
   --p-dialog-body-gap:12px;--p-dialog-footer-top:24px;
   --p-alert-btn-min-h:40px;--p-alert-btn-pad:10px 12px;--p-alert-btn-radius:20px;--p-alert-btn-tracking:0.1px;
@@ -730,14 +730,14 @@
   --p-alert-confirm-fill:transparent;--p-alert-confirm-label:var(--primary-text);
   --p-alert-confirm-destructive-fill:transparent;--p-alert-confirm-destructive-label:var(--destructive-text);
   /* AlertDialog — M3: 28dp elevated card, headline-small title, flat TEXT actions */
-  --p-ad-scrim:rgba(0,0,0,0.32);--p-ad-radius:28px;--p-ad-border:0px;--p-ad-shadow:0px 4px 6px rgba(0,0,0,0.1);
+  --p-ad-scrim:rgba(0,0,0,0.32);--p-ad-radius:28px;--p-ad-border:0px;--p-ad-shadow:0px 0px 24px rgba(13,18,27,0.1);
   --p-ad-title:24px;--p-ad-title-lh:32px;--p-ad-title-weight:400;--p-ad-desc-gap:16px;
   --p-ad-btn-min-h:40px;--p-ad-btn-pad:10px 12px;--p-ad-btn-radius:20px;
   --p-ad-cancel-border:0px;--p-ad-cancel-fill:transparent;--p-ad-cancel-label:var(--primary-text);
   --p-ad-confirm-fill:transparent;--p-ad-confirm-label:var(--primary-text);
   --p-ad-confirm-destructive-fill:transparent;--p-ad-confirm-destructive-label:var(--destructive-text);
   /* Drawer — M3 sheets: lineless, side 16dp / bottom 28dp, level-1 elevation, 32x4 handle */
-  --p-drawer-scrim:rgba(0,0,0,0.32);--p-drawer-border:0px;--p-drawer-shadow:0px 1px 2px rgba(0,0,0,0.05);
+  --p-drawer-scrim:rgba(0,0,0,0.32);--p-drawer-border:0px;--p-drawer-shadow:0px 1px 2px rgba(13,18,27,0.04);
   --p-drawer-side-radius:16px;--p-drawer-sheet-radius:28px;--p-drawer-sheet-max:640px /* @kind other */;
   --p-drawer-handle-w:32px;--p-drawer-handle-h:4px;--p-drawer-handle-top:16px;
   /* AvatarMenu — M3: a 40dp tonal pill (12% primary), M3 label tracking */
@@ -750,7 +750,7 @@
   --p-ac-border-color:transparent;--p-ac-underline-rest:var(--muted-foreground);
   --p-ac-fill:var(--muted);--p-ac-pad-x:16px;--p-ac-font:16px;--p-ac-lh:24px;
   --p-ac-menu-max:280px;--p-ac-menu-radius:4px;--p-ac-menu-border:0px;--p-ac-menu-pad-x:0px;--p-ac-menu-pad-y:8px;
-  --p-ac-menu-shadow:0px 4px 6px rgba(0,0,0,0.1);
+  --p-ac-menu-shadow:0px 0px 24px rgba(13,18,27,0.1);
   --p-ac-row-radius:0px;--p-ac-row-pad-x:16px;--p-ac-row-pad-y:12px;--p-ac-row-gap:12px;--p-ac-row-min-h:48px;
   --p-ac-check-w:16px;--p-ac-check-color:var(--primary);
   /* Select — M3 exposed dropdown: filled 56dp trigger, 4dp elevated menu */
@@ -758,13 +758,13 @@
   --p-select-border-color:transparent;--p-select-underline-rest:var(--muted-foreground);
   --p-select-fill:var(--muted);--p-select-pad-x:16px;--p-select-font:16px;--p-select-lh:24px;
   --p-select-chevron:"⌄" /* @kind other */;--p-select-panel-max:280px;--p-select-panel-radius:4px;--p-select-panel-border:0px;--p-select-panel-pad-y:8px;--p-select-panel-pad-x:0px;
-  --p-select-panel-shadow:0px 4px 6px rgba(0,0,0,0.1);
+  --p-select-panel-shadow:0px 0px 24px rgba(13,18,27,0.1);
   --p-select-row-radius:0px;--p-select-row-pad-x:16px;--p-select-row-pad-y:12px;--p-select-row-gap:12px;--p-select-row-min-h:48px;
   --p-select-row-font:14px;--p-select-row-lh:20px;
   --p-select-row-selected-fill:color-mix(in oklab, var(--primary) 12%, transparent);
   --p-select-check-color:var(--primary);--p-select-check-weight:700;
   /* Dropdown — M3 menu: 4dp elevated surface, 48dp rows, no dividers */
-  --p-menu-radius:4px;--p-menu-border:0px;--p-menu-pad-x:0px;--p-menu-pad-y:8px;--p-menu-shadow:0px 4px 6px rgba(0,0,0,0.1);
+  --p-menu-radius:4px;--p-menu-border:0px;--p-menu-pad-x:0px;--p-menu-pad-y:8px;--p-menu-shadow:0px 0px 24px rgba(13,18,27,0.1);
   --p-menu-label-tracking:0.5px;--p-menu-label-pad-x:16px;--p-menu-label-pad-y:8px;
   --p-menu-sep-h:0px;--p-menu-sep-margin:0px;
   --p-menu-row-radius:0px;--p-menu-row-pad-x:16px;--p-menu-row-pad-y:0px;--p-menu-row-gap:12px;--p-menu-row-min-h:48px;

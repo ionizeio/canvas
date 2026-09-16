@@ -30,8 +30,8 @@ describe("color tokens", () => {
   });
 
   it("light and dark use distinct surface + text colors", () => {
-    expect(lightColors.background).toBe("#ffffff");
-    expect(darkColors.background).toBe("#09090b");
+    expect(lightColors.background).toBe("#f8fafe");
+    expect(darkColors.background).toBe("#111213");
     expect(lightColors.foreground).not.toBe(darkColors.foreground);
     expect(lightColors.primary).not.toBe(darkColors.primary);
   });
@@ -116,9 +116,9 @@ describe("glassByScheme (the glass material's own tokens)", () => {
     }
     // popover and card stay opaque in both schemes, exactly as the hand-off ships them.
     expect(lightColors.popover).toBe("#ffffff");
-    expect(darkColors.popover).toBe("#18181b");
+    expect(darkColors.popover).toBe("#18191c");
     expect(lightColors.card).toBe("#ffffff");
-    expect(darkColors.card).toBe("#18181b");
+    expect(darkColors.card).toBe("#18191c");
   });
 
   it("keys the family by its CSS custom-property name, so the hand-off stays cross-checked", () => {

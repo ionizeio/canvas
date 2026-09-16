@@ -73,12 +73,12 @@ describe("splitSurfaceStyle", () => {
 describe("contrastBorder", () => {
   it("is a 1px foreground border on light", () => {
     expect(contrastBorder(lightColors)).toEqual({ borderWidth: CONTRAST_BORDER_WIDTH, borderColor: lightColors.foreground });
-    expect(lightColors.foreground).toBe("#09090b");
+    expect(lightColors.foreground).toBe("#0d121b");
   });
 
   it("is a 1px foreground border on dark", () => {
     expect(contrastBorder(darkColors)).toEqual({ borderWidth: CONTRAST_BORDER_WIDTH, borderColor: darkColors.foreground });
-    expect(darkColors.foreground).toBe("#fafafa");
+    expect(darkColors.foreground).toBe("#ffffff");
   });
 });
 

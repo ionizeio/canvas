@@ -39,38 +39,41 @@ export type Role =
   | "mono";
 
 // Type + layout per role, color-free (the parts that don't read a token).
-// Mirrors the docs' typeScale: heading sizes get the tight tracking, body gets
-// the relaxed line height, caption gets uppercase + wide tracking, and `code`
-// carries the self-start pill box (radius + padding).
+// The Riskora type ladder (styles/tokens/typography.css carries the same values as
+// `--role-*`): the Title styles H1 64 down to H6 20 at the REGULAR weight, so the
+// hierarchy is carried by size alone and a heading never shouts; the Paragraph
+// styles X Large / Medium / Small / X Small for lead / body / small / tiny; caption
+// is Subheading X Small (12/16 medium, uppercase, +4% tracking); `code` carries the
+// self-start pill box (radius + padding).
 const roleType: Record<Role, TextStyle> = {
-  // text-5xl font-bold tracking-tight
-  display: { fontSize: 48, lineHeight: 48, fontWeight: "700", letterSpacing: -0.4 },
-  // text-4xl font-bold tracking-tight
-  h1: { fontSize: 36, lineHeight: 40, fontWeight: "700", letterSpacing: -0.4 },
-  // text-3xl font-semibold tracking-tight
-  h2: { fontSize: 30, lineHeight: 36, fontWeight: "600", letterSpacing: -0.4 },
-  // text-2xl font-semibold tracking-tight
-  h3: { fontSize: 24, lineHeight: 32, fontWeight: "600", letterSpacing: -0.4 },
-  // text-xl font-semibold tracking-tight
-  h4: { fontSize: 20, lineHeight: 28, fontWeight: "600", letterSpacing: -0.4 },
-  // text-lg font-semibold
-  h5: { fontSize: 18, lineHeight: 28, fontWeight: "600" },
-  // text-base: a 16px lead paragraph / identity name (weight comes from the weight axis)
-  lead: { fontSize: 16, lineHeight: 24 },
-  // text-sm leading-relaxed (the relaxed line height overrides text-sm's 20)
-  body: { fontSize: 14, lineHeight: 28 },
-  // text-sm
+  // Title/H1 Title: 64, leading 1.09
+  display: { fontSize: 64, lineHeight: 70, fontWeight: "400" },
+  // Title/H2 Title: 55 (the page title on every Riskora screen)
+  h1: { fontSize: 55, lineHeight: 64, fontWeight: "400" },
+  // Title/H3 Title: 40/48
+  h2: { fontSize: 40, lineHeight: 48, fontWeight: "400" },
+  // Title/H4 Title: 36
+  h3: { fontSize: 36, lineHeight: 44, fontWeight: "400" },
+  // Title/H5 Title: 28
+  h4: { fontSize: 28, lineHeight: 36, fontWeight: "400" },
+  // Title/H6 Title: 20 (a card or section title)
+  h5: { fontSize: 20, lineHeight: 30, fontWeight: "400" },
+  // Paragraph/X Large: 20 (weight comes from the weight axis)
+  lead: { fontSize: 20, lineHeight: 30 },
+  // Paragraph/Medium: 16, leading 1.5
+  body: { fontSize: 16, lineHeight: 24 },
+  // Paragraph/Small: 14/20
   small: { fontSize: 14, lineHeight: 20 },
-  // text-xs
+  // Paragraph/X Small: 12/16
   tiny: { fontSize: 12, lineHeight: 16 },
-  // text-sm
+  // Paragraph/Small in the muted ink
   muted: { fontSize: 14, lineHeight: 20 },
-  // text-xs uppercase tracking-wide
-  caption: { fontSize: 12, lineHeight: 16, textTransform: "uppercase", letterSpacing: 0.4 },
+  // Subheading/X Small: 12/16 medium, uppercase, 4% tracking (0.48px at 12)
+  caption: { fontSize: 12, lineHeight: 16, fontWeight: "500", textTransform: "uppercase", letterSpacing: 0.48 },
   // self-start rounded bg-muted px-1.5 py-0.5 text-sm (fill added in roleColor)
   code: {
     alignSelf: "flex-start",
-    borderRadius: 4,
+    borderRadius: 6,
     paddingHorizontal: 6,
     paddingVertical: 2,
     fontSize: 14,
@@ -80,8 +83,7 @@ const roleType: Record<Role, TextStyle> = {
   mono: { fontSize: 14, lineHeight: 20 },
 };
 
-// Web base skin: the established Canvas type scale (the current look, preserved
-// verbatim).
+// Web base skin: the Riskora type scale.
 export const webSkin: TypographySkin = { roleType };
 
 // iOS (HIG) and Material 3 skins. Typography is a Shared treatment, so both

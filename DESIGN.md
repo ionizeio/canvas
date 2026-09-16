@@ -6,120 +6,125 @@ description: >-
   natively on iOS and Android and, through React Native Web, in the browser. Every
   visual variation is a semantic boolean prop; there is no style escape hatch.
 colors:
-  background: "#ffffff"
-  foreground: "#09090b"
+  background: "#f8fafe"
+  foreground: "#0d121b"
   card: "#ffffff"
-  card-foreground: "#09090b"
+  card-foreground: "#0d121b"
   popover: "#ffffff"
-  popover-foreground: "#09090b"
-  primary: "#4f39f6"
-  primary-text: "#4b30ef"
-  primary-foreground: "#fafafa"
-  secondary: "#f4f4f5"
-  secondary-foreground: "#18181b"
-  muted: "#f4f4f5"
-  muted-foreground: "#6d6d77"
-  accent: "#f4f4f5"
-  accent-foreground: "#18181b"
-  destructive: "#e7000b"
-  destructive-text: "#a70510"
-  destructive-foreground: "#fafafa"
-  success: "#16a34a"
-  success-foreground: "#042812"
-  warning: "#d97708"
-  warning-foreground: "#451a03"
-  border: "#e4e4e7"
-  input: "#88888b"
-  ring: "#615fff"
+  popover-foreground: "#0d121b"
+  primary: "#3da3f5"
+  primary-text: "#0061b5"
+  primary-foreground: "#0d121b"
+  secondary: "#f6f7f8"
+  secondary-foreground: "#0d121b"
+  muted: "#f6f7f8"
+  muted-foreground: "#525864"
+  accent: "#f6f7f8"
+  accent-foreground: "#0d121b"
+  destructive: "#d02533"
+  destructive-text: "#b0001a"
+  destructive-foreground: "#ffffff"
+  success: "#197544"
+  success-foreground: "#ffffff"
+  warning: "#ad4e1e"
+  warning-foreground: "#ffffff"
+  border: "#f1f2f3"
+  input: "#8b8f97"
+  ring: "#3da3f5"
 colorsDark:
-  background: "#09090b"
-  foreground: "#fafafa"
-  card: "#18181b"
-  card-foreground: "#fafafa"
-  popover: "#18181b"
-  popover-foreground: "#fafafa"
-  primary: "#615fff"
-  primary-text: "#8893fe"
-  primary-foreground: "#ffffff"
-  secondary: "#27272a"
-  secondary-foreground: "#fafafa"
-  muted: "#27272a"
-  muted-foreground: "#9f9fa9"
-  accent: "#27272a"
-  accent-foreground: "#fafafa"
-  destructive: "#ff6467"
-  destructive-text: "#fe9b97"
-  destructive-foreground: "#460809"
-  success: "#22c55e"
+  background: "#111213"
+  foreground: "#ffffff"
+  card: "#18191c"
+  card-foreground: "#ffffff"
+  popover: "#18191c"
+  popover-foreground: "#ffffff"
+  primary: "#68cdff"
+  primary-text: "#68cdff"
+  primary-foreground: "#0d121b"
+  secondary: "#212327"
+  secondary-foreground: "#ffffff"
+  muted: "#212327"
+  muted-foreground: "#99a0ad"
+  accent: "#212327"
+  accent-foreground: "#ffffff"
+  destructive: "#d53b44"
+  destructive-text: "#fe9b98"
+  destructive-foreground: "#ffffff"
+  success: "#35c26d"
   success-foreground: "#052e16"
-  warning: "#f59e09"
+  warning: "#ff9a68"
   warning-foreground: "#451a03"
-  border: "#27272a"
-  input: "#747478"
-  ring: "#615fff"
+  border: "#222427"
+  input: "#696d74"
+  ring: "#3da3f5"
 chart:
-  chart-1: "#6366f1"
-  chart-2: "#0d9488"
-  chart-3: "#ea580c"
-  chart-4: "#f43f5e"
-  chart-5: "#8b5cf6"
-  chart-6: "#0891b2"
-  chart-7: "#059669"
-  chart-8: "#ec4899"
+  chart-1: "#3da3f5"
+  chart-2: "#fb8c4c"
+  chart-3: "#2eb872"
+  chart-4: "#6676ff"
+  chart-5: "#f0a41a"
+  chart-6: "#14b8a6"
+  chart-7: "#ec4899"
+  chart-8: "#8b5cf6"
 brand:
-  orb-indigo: "#6366f1"
-  orb-violet: "#8b5cf6"
-  orb-cyan: "#06b6d4"
+  orb-indigo: "#3da3f5"
+  orb-violet: "#6676ff"
+  orb-cyan: "#68cdff"
 typography:
   display:
-    fontFamily: "\"Geist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
-    fontSize: "48px"
-    fontWeight: 700
-    lineHeight: "48px"
+    fontFamily: "\"Urbanist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontSize: "64px"
+    fontWeight: 400
+    lineHeight: "70px"
   h1:
-    fontFamily: "\"Geist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
-    fontSize: "36px"
-    fontWeight: 700
-    lineHeight: "40px"
+    fontFamily: "\"Urbanist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontSize: "55px"
+    fontWeight: 400
+    lineHeight: "64px"
   h2:
-    fontFamily: "\"Geist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
-    fontSize: "30px"
-    fontWeight: 600
-    lineHeight: "36px"
+    fontFamily: "\"Urbanist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontSize: "40px"
+    fontWeight: 400
+    lineHeight: "48px"
   h3:
-    fontFamily: "\"Geist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
-    fontSize: "24px"
-    fontWeight: 600
-    lineHeight: "32px"
+    fontFamily: "\"Urbanist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontSize: "36px"
+    fontWeight: 400
+    lineHeight: "44px"
   h4:
-    fontFamily: "\"Geist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
-    fontSize: "20px"
-    fontWeight: 600
-    lineHeight: "28px"
+    fontFamily: "\"Urbanist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontSize: "28px"
+    fontWeight: 400
+    lineHeight: "36px"
   h5:
-    fontFamily: "\"Geist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
-    fontSize: "18px"
-    fontWeight: 600
-    lineHeight: "28px"
+    fontFamily: "\"Urbanist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontSize: "20px"
+    fontWeight: 400
+    lineHeight: "30px"
   lead:
-    fontFamily: "\"Geist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontFamily: "\"Urbanist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontSize: "20px"
+    fontWeight: 400
+    lineHeight: "30px"
+  body:
+    fontFamily: "\"Urbanist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
     fontSize: "16px"
     fontWeight: 400
     lineHeight: "24px"
-  body:
-    fontFamily: "\"Geist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
-    fontSize: "14px"
-    fontWeight: 400
-    lineHeight: "28px"
   small:
-    fontFamily: "\"Geist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontFamily: "\"Urbanist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
     fontSize: "14px"
     fontWeight: 400
     lineHeight: "20px"
   tiny:
-    fontFamily: "\"Geist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontFamily: "\"Urbanist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
     fontSize: "12px"
     fontWeight: 400
+    lineHeight: "16px"
+  caption:
+    fontFamily: "\"Urbanist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontSize: "12px"
+    fontWeight: 500
     lineHeight: "16px"
 spacing:
   "0": "0px"
@@ -163,11 +168,11 @@ rounded:
   full: "9999px"
 shadows:
   none: none
-  sm: "0px 1px 2px rgba(0,0,0,0.05)"
-  base: "0px 1px 3px rgba(0,0,0,0.1)"
-  md: "0px 4px 6px rgba(0,0,0,0.1)"
-  lg: "0px 10px 15px rgba(0,0,0,0.1)"
-  xl: "0px 20px 25px rgba(0,0,0,0.1)"
+  sm: "0px 1px 2px rgba(13,18,27,0.04)"
+  base: "0px 0px 20px rgba(13,18,27,0.06)"
+  md: "0px 0px 24px rgba(13,18,27,0.1)"
+  lg: "0px 0px 40px rgba(13,18,27,0.14)"
+  xl: "0px 0px 60px rgba(13,18,27,0.18)"
 motion:
   duration-fast: "120ms"
   duration-base: "180ms"
@@ -212,7 +217,7 @@ components:
     stat-radius: "8px"
     stat-pad: "20px"
     stat-gap: "14px"
-    stat-shadow: "0px 1px 2px rgba(0,0,0,0.05)"
+    stat-shadow: "0px 1px 2px rgba(13,18,27,0.04)"
     stat-value-lh: "32px"
     stat-value-tracking: "-0.4px"
     stat-label-tracking: "0px"
@@ -220,8 +225,8 @@ components:
     empty-radius: "8px"
   card:
     card-radius: "8px"
-    card-shadow: "0px 1px 2px rgba(0,0,0,0.05)"
-    card-shadow-raised: "0px 4px 6px rgba(0,0,0,0.1)"
+    card-shadow: "0px 1px 2px rgba(13,18,27,0.04)"
+    card-shadow-raised: "0px 0px 24px rgba(13,18,27,0.1)"
 platformSkins:
   ios:
     stats:
@@ -237,7 +242,7 @@ platformSkins:
     card:
       card-radius: "12px"
       card-shadow: none
-      card-shadow-raised: "0px 1px 2px rgba(0,0,0,0.05)"
+      card-shadow-raised: "0px 1px 2px rgba(13,18,27,0.04)"
   android:
     stats:
       stat-radius: "12px"
@@ -250,7 +255,7 @@ platformSkins:
       empty-radius: "12px"
     card:
       card-radius: "12px"
-      card-shadow: "0px 1px 2px rgba(0,0,0,0.05)"
+      card-shadow: "0px 1px 2px rgba(13,18,27,0.04)"
       card-shadow-raised: "0px 4px 6px rgba(0,0,0,0.1)"
 ---
 
@@ -264,7 +269,8 @@ One component API, three native looks. Canvas is a React Native UI kit that rend
 natively on iOS and Android and, through React Native Web, in a browser, from a single
 codebase. Each component ships a shared shell and a skin per platform, so a Button is
 an iOS capsule with a semibold label, a Material 3 stadium with a ripple, and a
-medium-rounded web control with a focus ring, without the caller choosing between them.
+12px-rounded web control in the Riskora dashboard language (sky accent, Urbanist, charcoal
+and white surfaces), without the caller choosing between them.
 
 The rest of this document is what an agent or a developer needs to build with the kit
 and get it right: the values, and the four rules that are easy to break by accident.
@@ -315,7 +321,9 @@ appears.
 
 ## Colors
 
-Semantic tokens, one set per scheme. Components read them through `useTheme()`; the
+Semantic tokens, one set per scheme, taken from the Riskora Dashboard UI Kit (the Figma
+source of truth, vendored at `tools/figma/riskora-variables.json`) and solved to the kit's
+contrast floors where the source fell short. Components read them through `useTheme()`; the
 scheme follows the OS unless `<ThemeProvider dark>` or `<ThemeProvider light>` forces
 one. On the web the same values ship as custom properties in `styles/canvas.css`, where
 dark keys off a `.dark` class on the root rather than `prefers-color-scheme`.
@@ -323,31 +331,31 @@ dark keys off a `.dark` class on the root rather than `prefers-color-scheme`.
 <!-- @generated:colors -->
 | Token | Light | Dark |
 | --- | --- | --- |
-| `background` | `#ffffff` | `#09090b` |
-| `foreground` | `#09090b` | `#fafafa` |
-| `card` | `#ffffff` | `#18181b` |
-| `card-foreground` | `#09090b` | `#fafafa` |
-| `popover` | `#ffffff` | `#18181b` |
-| `popover-foreground` | `#09090b` | `#fafafa` |
-| `primary` | `#4f39f6` | `#615fff` |
-| `primary-text` | `#4b30ef` | `#8893fe` |
-| `primary-foreground` | `#fafafa` | `#ffffff` |
-| `secondary` | `#f4f4f5` | `#27272a` |
-| `secondary-foreground` | `#18181b` | `#fafafa` |
-| `muted` | `#f4f4f5` | `#27272a` |
-| `muted-foreground` | `#6d6d77` | `#9f9fa9` |
-| `accent` | `#f4f4f5` | `#27272a` |
-| `accent-foreground` | `#18181b` | `#fafafa` |
-| `destructive` | `#e7000b` | `#ff6467` |
-| `destructive-text` | `#a70510` | `#fe9b97` |
-| `destructive-foreground` | `#fafafa` | `#460809` |
-| `success` | `#16a34a` | `#22c55e` |
-| `success-foreground` | `#042812` | `#052e16` |
-| `warning` | `#d97708` | `#f59e09` |
-| `warning-foreground` | `#451a03` | `#451a03` |
-| `border` | `#e4e4e7` | `#27272a` |
-| `input` | `#88888b` | `#747478` |
-| `ring` | `#615fff` | `#615fff` |
+| `background` | `#f8fafe` | `#111213` |
+| `foreground` | `#0d121b` | `#ffffff` |
+| `card` | `#ffffff` | `#18191c` |
+| `card-foreground` | `#0d121b` | `#ffffff` |
+| `popover` | `#ffffff` | `#18191c` |
+| `popover-foreground` | `#0d121b` | `#ffffff` |
+| `primary` | `#3da3f5` | `#68cdff` |
+| `primary-text` | `#0061b5` | `#68cdff` |
+| `primary-foreground` | `#0d121b` | `#0d121b` |
+| `secondary` | `#f6f7f8` | `#212327` |
+| `secondary-foreground` | `#0d121b` | `#ffffff` |
+| `muted` | `#f6f7f8` | `#212327` |
+| `muted-foreground` | `#525864` | `#99a0ad` |
+| `accent` | `#f6f7f8` | `#212327` |
+| `accent-foreground` | `#0d121b` | `#ffffff` |
+| `destructive` | `#d02533` | `#d53b44` |
+| `destructive-text` | `#b0001a` | `#fe9b98` |
+| `destructive-foreground` | `#ffffff` | `#ffffff` |
+| `success` | `#197544` | `#35c26d` |
+| `success-foreground` | `#ffffff` | `#052e16` |
+| `warning` | `#ad4e1e` | `#ff9a68` |
+| `warning-foreground` | `#ffffff` | `#451a03` |
+| `border` | `#f1f2f3` | `#222427` |
+| `input` | `#8b8f97` | `#696d74` |
+| `ring` | `#3da3f5` | `#3da3f5` |
 <!-- @/generated -->
 
 The chart series is a fixed assignment: series one is always `chart-1`, and filtering a
@@ -365,7 +373,8 @@ onto a component is not a supported way to get one.
 
 ## Typography
 
-Two faces, Geist and Geist Mono, and one scale. The semantic roles below are what the
+Two faces, Urbanist and Geist Mono, and one scale (the Riskora ladder, titles at the regular
+weight so hierarchy comes from size). The semantic roles below are what the
 Typography component renders. Headings lead tighter than body copy; every body role
 sits at 14px or above, and the one role below it, `tiny`, is for captions and metadata
 rather than for anything a reader has to work through.
@@ -373,16 +382,17 @@ rather than for anything a reader has to work through.
 <!-- @generated:typography -->
 | Role | Size | Line height | Weight |
 | --- | --- | --- | --- |
-| `display` | 48px | 48px | 700 |
-| `h1` | 36px | 40px | 700 |
-| `h2` | 30px | 36px | 600 |
-| `h3` | 24px | 32px | 600 |
-| `h4` | 20px | 28px | 600 |
-| `h5` | 18px | 28px | 600 |
-| `lead` | 16px | 24px | 400 |
-| `body` | 14px | 28px | 400 |
+| `display` | 64px | 70px | 400 |
+| `h1` | 55px | 64px | 400 |
+| `h2` | 40px | 48px | 400 |
+| `h3` | 36px | 44px | 400 |
+| `h4` | 28px | 36px | 400 |
+| `h5` | 20px | 30px | 400 |
+| `lead` | 20px | 30px | 400 |
+| `body` | 16px | 24px | 400 |
 | `small` | 14px | 20px | 400 |
 | `tiny` | 12px | 16px | 400 |
+| `caption` | 12px | 16px | 500 |
 <!-- @/generated -->
 
 ## Layout
@@ -403,7 +413,8 @@ are a `Row stacks`.
 
 Corner radius and the platform touch minimums, which differ by design: iOS rounds to a
 continuous 10 to 12, Material 3 uses its medium shape and a full pill on buttons, and
-the web keeps a tighter 6 on controls and 8 on cards.
+the web follows the Riskora kit: 12 on every control and field, 16 on floating surfaces,
+20 on cards, 30 on the app shell (`shape` in `src/style/tokens.ts`).
 
 <!-- @generated:shapes -->
 | Platform | Button | Card | Field | Minimum touch target |
@@ -420,19 +431,19 @@ kit measures the rendered control and extends it with hitSlop, so nothing moves.
 
 ## Elevation and depth
 
-One ladder, cast from a single light source: no horizontal offset, the shade always
-falls downward, and the opacity never exceeds 0.2, so a shadow reads as depth rather
+One ambient ladder in the ink (the Riskora 0/0/20 halo): no horizontal offset, the shade never
+rises, and the opacity never exceeds 0.2, so a shadow reads as depth rather
 than as a border.
 
 <!-- @generated:elevation -->
 | Level | Value |
 | --- | --- |
 | `none` | `none` |
-| `sm` | `0px 1px 2px rgba(0,0,0,0.05)` |
-| `base` | `0px 1px 3px rgba(0,0,0,0.1)` |
-| `md` | `0px 4px 6px rgba(0,0,0,0.1)` |
-| `lg` | `0px 10px 15px rgba(0,0,0,0.1)` |
-| `xl` | `0px 20px 25px rgba(0,0,0,0.1)` |
+| `sm` | `0px 1px 2px rgba(13,18,27,0.04)` |
+| `base` | `0px 0px 20px rgba(13,18,27,0.06)` |
+| `md` | `0px 0px 24px rgba(13,18,27,0.1)` |
+| `lg` | `0px 0px 40px rgba(13,18,27,0.14)` |
+| `xl` | `0px 0px 60px rgba(13,18,27,0.18)` |
 <!-- @/generated -->
 
 Cards rest at `sm`, raised cards at `md`, overlays at `lg` and `xl`. iOS surfaces are

@@ -6,6 +6,7 @@
   "dependencies": {
     "@expo-google-fonts/geist": "^0.4.2",
     "@expo-google-fonts/geist-mono": "^0.4.2",
+    "@expo-google-fonts/urbanist": "^0.4.2",
     "expo": "~57.0.16",
     "expo-blur": "~57.0.2",
     "expo-clipboard": "~57.0.1",

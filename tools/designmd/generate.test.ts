@@ -51,9 +51,9 @@ describe("the frontmatter", () => {
 
   it("describes a type role fully enough to render it", () => {
     const body = (data.typography as Record<string, Record<string, unknown>>).body;
-    expect(body.fontSize).toBe("14px");
+    expect(body.fontSize).toBe("16px");
     expect(body.fontWeight).toBe(400);
-    expect(String(body.fontFamily)).toContain("Geist");
+    expect(String(body.fontFamily)).toContain("Urbanist");
     expect(String(body.lineHeight)).toMatch(/^\d+px$/);
   });
 

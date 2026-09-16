@@ -1,4 +1,0 @@
-/* Canvas faces: Geist (sans) and Geist Mono. The kit self-hosts these in the
-   product (expo-google-fonts); here they load from the Google Fonts CDN, which
-   serves the same upstream binaries. Weights: sans 400/500/600/700/800, mono 400/500/600. */
-@import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap");

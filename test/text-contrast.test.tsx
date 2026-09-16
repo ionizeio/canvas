@@ -295,9 +295,9 @@ describe("error and destructive text on authored enabled surfaces", () => {
     expect(web["p-alert-confirm-destructive-fill"]).toBe("var(--destructive)");
     expect(web["p-alert-confirm-destructive-label"]).toBe("var(--destructive-foreground)");
     expect(blockDeclarations(platformCss, '[data-platform="android"]').decls["p-textarea-fill"]).toBe("var(--muted)");
-    expect(blockDeclarations(css, ":root").decls["p-menu-destructive"]).toBe("#b91c1c");
-    expect(blockDeclarations(css, ".dark").decls["p-menu-destructive"]).toBe("#f87171");
-    for (const t of Object.values(colorsByScheme)) expect(t.ring).toBe("#615fff");
+    expect(blockDeclarations(css, ":root").decls["p-menu-destructive"]).toBe("#d02533");
+    expect(blockDeclarations(css, ".dark").decls["p-menu-destructive"]).toBe("#dc6565");
+    for (const t of Object.values(colorsByScheme)) expect(t.ring).toBe("#3da3f5");
   });
 });
 
@@ -414,7 +414,7 @@ describe("primary text on authored surfaces", () => {
         const background = composite(tab.style.backgroundColor, track.style.backgroundColor);
         expect(hexOf(label.style.color)).toBe(tokens["primary-text"]);
         expect(contrast(label.style.color, background)).toBeGreaterThanOrEqual(4.65);
-        if (scheme === "dark") expect(contrast(tokens.primary, background)).toBeLessThan(4.5);
+        if (scheme === "dark" && tokens.primary !== tokens["primary-text"]) expect(contrast(tokens.primary, background)).toBeLessThan(4.5);
       }
     });
 
@@ -428,7 +428,7 @@ describe("primary text on authored surfaces", () => {
       const label = within(today).getByText("4");
       expect(hexOf(label.style.color)).toBe(tokens["primary-text"]);
       expect(contrast(label.style.color, background)).toBeGreaterThanOrEqual(4.65);
-      expect(contrast(tokens.primary, background)).toBeLessThan(4.5);
+      if (tokens.primary !== tokens["primary-text"]) expect(contrast(tokens.primary, background)).toBeLessThan(4.5);
       const endpoint = screen.getByRole("button", { name: "2, selected, start of range" });
       expect(hexOf(endpoint.style.backgroundColor)).toBe(tokens.primary);
       expect(hexOf(within(endpoint).getByText("2").style.color)).toBe(tokens["primary-foreground"]);

@@ -427,13 +427,13 @@ describe("AvatarMenu per-OS pill metrics", () => {
     // The open fill is the hand-off's
     // `color-mix(in oklab, var(--foreground) 6%, var(--secondary))`, computed in
     // Oklab rather than approximated with an sRGB channel lerp (which lands
-    // rgb(230, 230, 231), two steps per channel too light).
-    expect(open.backgroundColor).toBe("rgb(228, 228, 229)");
+    // rgb(232, 233, 235), two steps per channel too light).
+    expect(open.backgroundColor).toBe("rgb(230, 231, 233)");
     expect(open.backgroundColor).toBe(mixOklab(lightColors.secondary, lightColors.foreground, 0.06));
 
-    // The same mix in dark, where the lift goes the other way (secondary #27272a
-    // toward foreground #fafafa).
-    expect(webMenuSkin.menuPillFill(darkColors, true).backgroundColor).toBe("rgb(50, 50, 53)");
+    // The same mix in dark, where the lift goes the other way (secondary #212327
+    // toward foreground #ffffff).
+    expect(webMenuSkin.menuPillFill(darkColors, true).backgroundColor).toBe("rgb(44, 46, 50)");
   });
 
   it("iOS: a 36pt capsule whose border hairline is always visible", () => {

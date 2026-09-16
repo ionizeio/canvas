@@ -1,31 +1,39 @@
 import { Platform, type ViewStyle } from "react-native";
 
-// Elevation presets, matching the engine's old `shadow-*` scale one-for-one, as
-// ready-to-spread RN ViewStyle objects. On native they resolve to the platform-correct
-// shadow APIs (iOS `shadow*` props + Android `elevation`). On react-native-web the
-// `shadow*` props are deprecated in favor of the cross-platform `boxShadow` string, so
-// the web branch emits the equivalent boxShadow (the same conversion RN Web does
-// internally, minus the console deprecation warning). Spread the result into a style:
-// `{ ...shadow("md") }`.
+// Elevation presets, as ready-to-spread RN ViewStyle objects. The ladder is the
+// Riskora kit's AMBIENT elevation: a shade with no offset that halos the surface
+// evenly (the source's one shadow effect is a 0/0/20 drop in a 10% tint), tinted in
+// the ink rather than pure black so it sits on the tinted page. `sm` keeps a 1px
+// fall so a resting card still reads as lifted at the smallest step; every other
+// level is centred. On native they resolve to the platform-correct shadow APIs (iOS
+// `shadow*` props + Android `elevation`). On react-native-web the `shadow*` props are
+// deprecated in favor of the cross-platform `boxShadow` string, so the web branch
+// emits the equivalent boxShadow (the same conversion RN Web does internally, minus
+// the console deprecation warning). Spread the result into a style: `{ ...shadow("md") }`.
 
 export type ShadowLevel = "none" | "sm" | "DEFAULT" | "md" | "lg" | "xl";
 
+// The shade is the light-scheme ink (`foreground`), so the halo reads as the surface's
+// own shadow on the tinted page rather than as a gray smudge.
+const INK = "#0d121b";
+
 const NATIVE_SHADOWS: Record<ShadowLevel, ViewStyle> = {
   none: { shadowOpacity: 0, elevation: 0 },
-  sm: { shadowColor: "#000000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 },
-  DEFAULT: { shadowColor: "#000000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 2 },
-  md: { shadowColor: "#000000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 6, elevation: 4 },
-  lg: { shadowColor: "#000000", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 15, elevation: 8 },
-  xl: { shadowColor: "#000000", shadowOffset: { width: 0, height: 20 }, shadowOpacity: 0.1, shadowRadius: 25, elevation: 12 },
+  sm: { shadowColor: INK, shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 1, elevation: 1 },
+  DEFAULT: { shadowColor: INK, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.06, shadowRadius: 10, elevation: 2 },
+  md: { shadowColor: INK, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.1, shadowRadius: 12, elevation: 4 },
+  lg: { shadowColor: INK, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.14, shadowRadius: 20, elevation: 8 },
+  xl: { shadowColor: INK, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.18, shadowRadius: 30, elevation: 12 },
 };
 
-// The same drop shadows as a `boxShadow` string (offsetX offsetY blur color) for web.
+// The same shades as a `boxShadow` string (offsetX offsetY blur color) for web; the
+// CSS hand-off (styles/tokens/shadows.css) carries these verbatim.
 const WEB_SHADOWS: Record<Exclude<ShadowLevel, "none">, string> = {
-  sm: "0px 1px 2px rgba(0, 0, 0, 0.05)",
-  DEFAULT: "0px 1px 3px rgba(0, 0, 0, 0.1)",
-  md: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-  lg: "0px 10px 15px rgba(0, 0, 0, 0.1)",
-  xl: "0px 20px 25px rgba(0, 0, 0, 0.1)",
+  sm: "0px 1px 2px rgba(13, 18, 27, 0.04)",
+  DEFAULT: "0px 0px 20px rgba(13, 18, 27, 0.06)",
+  md: "0px 0px 24px rgba(13, 18, 27, 0.1)",
+  lg: "0px 0px 40px rgba(13, 18, 27, 0.14)",
+  xl: "0px 0px 60px rgba(13, 18, 27, 0.18)",
 };
 
 /** The elevation preset for a level (defaults to the standard `shadow`). */

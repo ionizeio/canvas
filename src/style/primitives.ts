@@ -9,12 +9,16 @@
 // that wraps RN's Image with boolean fit props (contain/cover/…), so the public
 // `Image` is that atom, not the raw primitive. The `ImageStyle` type stays here
 // because components (e.g. Avatar) still type their image style objects with it.
+//
+// Text and TextInput are RN's own components wrapped once, in src/style/text.tsx,
+// so the theme's registered typefaces (ThemeProvider `fonts`) reach every kit label
+// without a fontFamily at any call site. Their prop types are still RN's.
+
+export { Text, TextInput } from "./text.js";
 
 export {
   View,
-  Text,
   Pressable,
-  TextInput,
   ScrollView,
   StyleSheet,
   type ViewProps,

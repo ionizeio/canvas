@@ -17,6 +17,8 @@ export * from "./touch-target.js";
 export * from "./color.js";
 export * from "./rtl.js";
 export * from "./mono.js";
+export * from "./fonts.js";
+export * from "./text.js";
 export * from "./dev-warn.js";
 export * from "./sizing.js";
 export * from "./focus-reset.js";

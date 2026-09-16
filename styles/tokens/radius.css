@@ -1,12 +1,19 @@
-/* Corner radius scale in px, and the per-platform shape values the skins use:
-   web keeps 6 (control) / 8 (card); iOS rounds to 10-12 with Apple's continuous
-   curve; Android uses the M3 medium shape (12) and a full pill on buttons. */
+/* Corner radius scale in px, and the per-platform shape values the skins use
+   (src/style/tokens.ts `shape`): the web is the Riskora kit, 12 on every control
+   and field, 16 on floating surfaces, 20 on cards, 30 on the app shell; iOS rounds
+   to 10-12 with Apple's continuous curve and 28 alerts; Android uses the M3 medium
+   shape (12) for cards, 28 for dialogs and a full pill on buttons. */
 :root{
   --radius-none:0px;--radius-sm:2px;--radius:4px;--radius-md:6px;--radius-lg:8px;
   --radius-xl:12px;--radius-2xl:16px;--radius-3xl:24px;--radius-full:9999px;
 
-  --radius-control:6px;   /* web button, input, select, menu item */
-  --radius-card:8px;      /* web card surface */
+  --radius-control:12px;  /* web button, icon button, segmented tab, nav row */
+  --radius-field:12px;    /* web text field, select, autocomplete */
+  --radius-card:20px;     /* web card surface */
+  --radius-dialog:16px;   /* web dialog, alert, toast */
+  --radius-menu:16px;     /* web menu, popover, select list */
+  --radius-sheet:30px;    /* web sheet, drawer, app shell */
+  --radius-checkbox:6px;  /* web checkbox box */
   --radius-control-ios:10px;
   --radius-card-ios:12px;
   --radius-card-android:12px;

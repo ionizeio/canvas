@@ -6,6 +6,7 @@
 import { type ReactNode, createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useColorScheme } from "react-native";
 import { colorsByScheme, glassByScheme, type BreakpointKey, type ColorScheme, type ColorTokens, type GlassTokens } from "./tokens.js";
+import { type ThemeFonts } from "./fonts.js";
 import { SsrBreakpointContext } from "./responsive.js";
 import { liquidGlassAvailable } from "./glass-surface/liquid-glass.js";
 import { useReducedTransparency, useIncreasedContrast } from "./a11y-preferences.js";
@@ -61,6 +62,12 @@ export interface ThemeValue {
    * the material (see CLAUDE.md, "no component hand-paints glass").
    */
   glass: GlassTokens;
+  /**
+   * The typefaces the app registered (the ThemeProvider `fonts` prop, or `{}` when
+   * it passed none). The themed Text/TextInput primitives read this to put the
+   * brand face on every kit label; nothing else needs to.
+   */
+  fonts: ThemeFonts;
   dark: boolean;
   /** OS "Reduce Transparency" is on: GlassSurface renders opaque (Apple AX). */
   reducedTransparency: boolean;
@@ -69,11 +76,13 @@ export interface ThemeValue {
 }
 
 const ThemeContext = createContext<ThemeValue | null>(null);
+const NO_FONTS: ThemeFonts = {};
 const FALLBACK: ThemeValue = {
   scheme: "light",
   surface: "solid",
   tokens: colorsByScheme.light,
   glass: glassByScheme.light,
+  fonts: NO_FONTS,
   dark: false,
   reducedTransparency: false,
   increasedContrast: false,
@@ -146,6 +155,17 @@ export interface ThemeProviderProps {
    * object); an inline literal re-creates the theme value on every render.
    */
   tokens?: ThemeTokenOverrides;
+  /**
+   * The typefaces the app registered, so the kit can paint its labels in the brand
+   * face (`typeface.sans` is Urbanist, `typeface.mono` Geist Mono). Each entry is
+   * either one family name that carries every weight (a variable font, an
+   * OS-installed family) or a map from weight to the face registered for that
+   * weight (expo-google-fonts style: `{ "400": "Urbanist_400Regular", "500":
+   * "Urbanist_500Medium" }`). Omit it and the kit renders in the platform's system
+   * face, as it always has. Pass a stable reference (a module constant); an inline
+   * literal re-creates the theme value on every render.
+   */
+  fonts?: ThemeFonts;
   children: ReactNode;
 }
 
@@ -156,7 +176,7 @@ function defaultSurface(): Surface {
   return liquidGlassAvailable() ? "glass" : "solid";
 }
 
-export function ThemeProvider({ dark, light, scheme, ssrScheme, ssrBreakpoint, glass, solid, surface, tokens, children }: ThemeProviderProps) {
+export function ThemeProvider({ dark, light, scheme, ssrScheme, ssrBreakpoint, glass, solid, surface, tokens, fonts, children }: ThemeProviderProps) {
   const system = useColorScheme();
   // Reading the accessibility preferences here (not deep in a leaf) is what makes
   // glass REACTIVE: when the user toggles Reduce Transparency / Increase Contrast,
@@ -209,11 +229,12 @@ export function ThemeProvider({ dark, light, scheme, ssrScheme, ssrBreakpoint, g
       // opaque surface, and the skin's own fill is already opaque now that glass never
       // rewrites it), so no token has to lie about its value to carry that decision.
       glass: glassByScheme[active],
+      fonts: fonts ?? NO_FONTS,
       dark: active === "dark",
       reducedTransparency,
       increasedContrast,
     };
-  }, [active, resolved, tokens, reducedTransparency, increasedContrast]);
+  }, [active, resolved, tokens, fonts, reducedTransparency, increasedContrast]);
   const themed = <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
   // The viewport axis' server assumption rides the theme provider (the only
   // provider Canvas apps already mount); useBreakpoint reads it as its server

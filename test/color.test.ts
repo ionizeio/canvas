@@ -56,17 +56,17 @@ describe("mixOklab", () => {
 
   it("computes the identity pill's 6% open fill in both schemes", () => {
     // color-mix(in oklab, var(--foreground) 6%, var(--secondary)) per scheme.
-    expect(mixOklab(lightColors.secondary, lightColors.foreground, 0.06)).toBe("rgb(228, 228, 229)");
-    expect(mixOklab(darkColors.secondary, darkColors.foreground, 0.06)).toBe("rgb(50, 50, 53)");
+    expect(mixOklab(lightColors.secondary, lightColors.foreground, 0.06)).toBe("rgb(230, 231, 233)");
+    expect(mixOklab(darkColors.secondary, darkColors.foreground, 0.06)).toBe("rgb(44, 46, 50)");
   });
 
   it("lands away from the sRGB channel lerp it replaces", () => {
-    // The sRGB shortcut is 2/255 per channel too light in light, 2/2/1 in dark.
+    // The sRGB shortcut lands 2/255 per channel too light in light.
     const srgb = (base: string, over: string, t: number) => {
       const ch = (c: string, i: number) => parseInt(c.slice(1 + i * 2, 3 + i * 2), 16);
       return `rgb(${[0, 1, 2].map((i) => Math.round(ch(base, i) + (ch(over, i) - ch(base, i)) * t)).join(", ")})`;
     };
-    expect(srgb(lightColors.secondary, lightColors.foreground, 0.06)).toBe("rgb(230, 230, 231)");
+    expect(srgb(lightColors.secondary, lightColors.foreground, 0.06)).toBe("rgb(232, 233, 235)");
     expect(mixOklab(lightColors.secondary, lightColors.foreground, 0.06)).not.toBe(
       srgb(lightColors.secondary, lightColors.foreground, 0.06),
     );

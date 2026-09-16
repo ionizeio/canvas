@@ -12,7 +12,8 @@ One component API, three native looks. Canvas is a React Native UI kit that rend
 natively on iOS and Android and, through React Native Web, in a browser, from a single
 codebase. Each component ships a shared shell and a skin per platform, so a Button is
 an iOS capsule with a semibold label, a Material 3 stadium with a ripple, and a
-medium-rounded web control with a focus ring, without the caller choosing between them.
+12px-rounded web control in the Riskora dashboard language (sky accent, Urbanist, charcoal
+and white surfaces), without the caller choosing between them.
 
 The rest of this document is what an agent or a developer needs to build with the kit
 and get it right: the values, and the four rules that are easy to break by accident.
@@ -63,7 +64,9 @@ appears.
 
 ## Colors
 
-Semantic tokens, one set per scheme. Components read them through `useTheme()`; the
+Semantic tokens, one set per scheme, taken from the Riskora Dashboard UI Kit (the Figma
+source of truth, vendored at `tools/figma/riskora-variables.json`) and solved to the kit's
+contrast floors where the source fell short. Components read them through `useTheme()`; the
 scheme follows the OS unless `<ThemeProvider dark>` or `<ThemeProvider light>` forces
 one. On the web the same values ship as custom properties in `styles/canvas.css`, where
 dark keys off a `.dark` class on the root rather than `prefers-color-scheme`.
@@ -86,7 +89,8 @@ onto a component is not a supported way to get one.
 
 ## Typography
 
-Two faces, Geist and Geist Mono, and one scale. The semantic roles below are what the
+Two faces, Urbanist and Geist Mono, and one scale (the Riskora ladder, titles at the regular
+weight so hierarchy comes from size). The semantic roles below are what the
 Typography component renders. Headings lead tighter than body copy; every body role
 sits at 14px or above, and the one role below it, `tiny`, is for captions and metadata
 rather than for anything a reader has to work through.
@@ -111,7 +115,8 @@ are a `Row stacks`.
 
 Corner radius and the platform touch minimums, which differ by design: iOS rounds to a
 continuous 10 to 12, Material 3 uses its medium shape and a full pill on buttons, and
-the web keeps a tighter 6 on controls and 8 on cards.
+the web follows the Riskora kit: 12 on every control and field, 16 on floating surfaces,
+20 on cards, 30 on the app shell (`shape` in `src/style/tokens.ts`).
 
 <!-- @generated:shapes -->
 <!-- @/generated -->
@@ -123,8 +128,8 @@ kit measures the rendered control and extends it with hitSlop, so nothing moves.
 
 ## Elevation and depth
 
-One ladder, cast from a single light source: no horizontal offset, the shade always
-falls downward, and the opacity never exceeds 0.2, so a shadow reads as depth rather
+One ambient ladder in the ink (the Riskora 0/0/20 halo): no horizontal offset, the shade never
+rises, and the opacity never exceeds 0.2, so a shadow reads as depth rather
 than as a border.
 
 <!-- @generated:elevation -->

@@ -1,59 +1,78 @@
 /* Semantic color tokens. :root is light; .dark on <html> selects dark.
-   See src/style/tokens.ts for native counterparts and contrast constraints. */
+   See src/style/tokens.ts for native counterparts and contrast constraints.
+   The values are the Riskora Dashboard UI Kit (Figma, file YLbmaRirWTzivAzXirDTmX),
+   whose variables are AlignUI-named: bg/weak-50 is the page, bg/white-0 the card,
+   bg/soft-200 the panel, text/strong-950 the ink, text/sub-600 the muted ink,
+   stroke/soft-200 the hairline, sky/400 the brand. */
 :root{
-  --background:oklch(1 0 0);
-  --foreground:oklch(0.141 0.005 285.823);
+  /* Neutrals: the Riskora family re-authored on ONE hue (262) at the source's
+     lightness and chroma. The source spreads its surfaces (~230) and its text (~265)
+     across two hues, which "one neutral family" forbids and no eye can tell apart at
+     this chroma. */
+  --background:oklch(0.985 0.006 262);
+  --foreground:oklch(0.183 0.02 262);
   --card:oklch(1 0 0);
-  --card-foreground:oklch(0.141 0.005 285.823);
+  --card-foreground:oklch(0.183 0.02 262);
   --popover:oklch(1 0 0);
-  --popover-foreground:oklch(0.141 0.005 285.823);
-  --primary:oklch(0.511 0.262 276.966);
-  --primary-text:oklch(0.490 0.262 276.966);
-  --primary-foreground:oklch(0.985 0 0);
-  --secondary:oklch(0.967 0.001 286.375);
-  --secondary-foreground:oklch(0.21 0.006 285.885);
-  --muted:oklch(0.967 0.001 286.375);
-  --muted-foreground:oklch(0.538 0.016 285.938);
-  --accent:oklch(0.967 0.001 286.375);
-  --accent-foreground:oklch(0.21 0.006 285.885);
-  --destructive:oklch(0.577 0.245 27.325);
-  --destructive-text:oklch(0.46 0.185 27.325);
-  --destructive-foreground:oklch(0.985 0 0);
-  --success:oklch(0.627 0.17 149.214);
-  --success-foreground:oklch(0.244800 0.058170 152.469480);
-  --warning:oklch(0.666 0.157 58.318);
-  --warning-foreground:oklch(0.279 0.074 45.635);
-  --border:oklch(0.92 0.004 286.32);
+  --popover-foreground:oklch(0.183 0.02 262);
+  /* Brand: Riskora sky/400. The label on a sky fill is the dark ink, in BOTH schemes
+     (the source's own dark-mode treatment); white-on-sky is 2.7:1 and fails AA. */
+  --primary:oklch(0.694 0.152 246.867);
+  /* Link/brand text on neutral surfaces: the same sky hue deepened until it clears
+     4.5:1 on the page, a card and a muted panel (solved, not eyeballed). */
+  --primary-text:oklch(0.48 0.17 245);
+  --primary-foreground:oklch(0.183 0.02 262);
+  --secondary:oklch(0.976 0.002 262);
+  --secondary-foreground:oklch(0.183 0.02 262);
+  --muted:oklch(0.976 0.002 262);
+  --muted-foreground:oklch(0.46 0.02 262);
+  --accent:oklch(0.976 0.002 262);
+  --accent-foreground:oklch(0.183 0.02 262);
+  /* Riskora red/700: the lightest red on the source ramp that carries white text at
+     4.5:1 (the source's state/error/base is 3.7:1 with white). */
+  --destructive:oklch(0.556 0.204 23.58);
+  --destructive-text:oklch(0.47 0.2 23.58);
+  --destructive-foreground:oklch(1 0 0);
+  /* Riskora green/800 and orange/800: deep enough to carry white text. */
+  --success:oklch(0.498 0.114 154.365);
+  --success-foreground:oklch(1 0 0);
+  --warning:oklch(0.538 0.138 43.874);
+  --warning-foreground:oklch(1 0 0);
+  --border:oklch(0.961 0.002 262);
   /* `input` is a control boundary (WCAG 1.4.11: 3:1 vs page, card and muted
      panel); `border` only separates surfaces. Solve, do not eyeball. Why in
-     src/style/tokens.ts. Dark below is solved the same way. */
-  --input:oklch(0.629 0.004 286.32);
-  /* The focus ring is ONE value in both schemes (indigo-500), not the per-scheme
-     primary. It has to read against a light page, a dark page, and the primary fill
-     itself, and a ring equal to that fill disappears on the control it is marking. */
-  --ring:oklch(0.585 0.233 277.117);
+     src/style/tokens.ts. Dark below is solved the same way. The source's field
+     border (stroke/sub-300, 1.7:1) does not clear the floor. */
+  --input:oklch(0.65 0.012 262);
+  /* The focus ring is ONE value in both schemes (the light-scheme sky), not the
+     per-scheme primary: it has to read against a light page and a dark page. */
+  --ring:oklch(0.694 0.152 246.867);
 
   /* Data-viz series palette. Fixed assignment order — series 1 is always chart-1,
-     never re-ranked when a series is filtered out. Same values in both schemes. */
-  --chart-1:#6366f1;
-  --chart-2:#0d9488;
-  --chart-3:#ea580c;
-  --chart-4:#f43f5e;
-  --chart-5:#8b5cf6;
-  --chart-6:#0891b2;
-  --chart-7:#059669;
-  --chart-8:#ec4899;
+     never re-ranked when a series is filtered out. Same values in both schemes.
+     Seeded from the Riskora charts (sky bars, an orange highlight) and kept distinct
+     from the status intents. */
+  --chart-1:#3da3f5;
+  --chart-2:#fb8c4c;
+  --chart-3:#2eb872;
+  --chart-4:#6676ff;
+  --chart-5:#f0a41a;
+  --chart-6:#14b8a6;
+  --chart-7:#ec4899;
+  --chart-8:#8b5cf6;
 
-  /* Brand constants (do not flip with theme): avatar gradient, sign-in orbs. */
-  --orb-indigo:#6366f1;
-  --orb-violet:#8b5cf6;
-  --orb-cyan:#06b6d4;
+  /* Brand constants (do not flip with theme): avatar gradient, sign-in orbs. The
+     keys are historical (the orbs were indigo/violet/cyan); the values are the
+     Riskora sky family: sky/400, blue/300, sky/400 dark. */
+  --orb-indigo:#3da3f5;
+  --orb-violet:#6676ff;
+  --orb-cyan:#68cdff;
 
-  /* Fixed palette for menu/panel text and activity deltas. */
-  --p-menu-destructive:#b91c1c;
-  --panel-danger:#b91c1c;
-  --delta-up:#16a34a;
-  --delta-down:#dc2626;
+  /* Fixed palette for menu/panel text and activity deltas (Riskora red/700, green/800). */
+  --p-menu-destructive:#d02533;
+  --panel-danger:#d02533;
+  --delta-up:#1a7544;
+  --delta-down:#d02533;
 
   /* Glass: the FUNCTIONAL layer's material (bars, sheets, popovers, controls) floating above
      the content layer, which stays solid. It is a LENS, not a frost: the bend concentrates at
@@ -72,38 +91,41 @@
   --glass-scroll-edge:76px /* @kind shadow */;
 }
 .dark{
-  --background:oklch(0.141 0.005 285.823);
-  --foreground:oklch(0.985 0 0);
-  --card:oklch(0.21 0.006 285.885);
-  --card-foreground:oklch(0.985 0 0);
-  --popover:oklch(0.21 0.006 285.885);
-  --popover-foreground:oklch(0.985 0 0);
-  --primary:oklch(0.585 0.233 277.117);
-  --primary-text:oklch(0.701 0.157 277.117);
-  /* Foregrounds are paired with their fills at >=4.5:1 for normal text.
-     Preserve the semantic fills, including their use as standalone accents. */
-  --primary-foreground:oklch(1 0 0);
-  --secondary:oklch(0.274 0.006 286.033);
-  --secondary-foreground:oklch(0.985 0 0);
-  --muted:oklch(0.274 0.006 286.033);
-  --muted-foreground:oklch(0.705 0.015 286.067);
-  --accent:oklch(0.274 0.006 286.033);
-  --accent-foreground:oklch(0.985 0 0);
-  --destructive:oklch(0.704 0.191 22.216);
-  --destructive-text:oklch(0.79 0.12 22.216);
-  --destructive-foreground:oklch(0.258 0.092 26.042);
-  --success:oklch(0.723 0.192 149.579);
+  /* Riskora dark: a near-black charcoal page (bg/weak-50), lifted charcoal cards
+     (bg/white-0) and a lighter panel (bg/soft-200), all on the 262 neutral hue. */
+  --background:oklch(0.18 0.004 262);
+  --foreground:oklch(1 0 0);
+  --card:oklch(0.215 0.006 262);
+  --card-foreground:oklch(1 0 0);
+  --popover:oklch(0.215 0.006 262);
+  --popover-foreground:oklch(1 0 0);
+  /* Riskora sky/400 dark: a pale sky that carries the dark ink at 10:1. */
+  --primary:oklch(0.807 0.118 232.325);
+  --primary-text:oklch(0.807 0.118 232.325);
+  --primary-foreground:oklch(0.183 0.02 262);
+  --secondary:oklch(0.257 0.008 262);
+  --secondary-foreground:oklch(1 0 0);
+  --muted:oklch(0.257 0.008 262);
+  --muted-foreground:oklch(0.705 0.02 262);
+  --accent:oklch(0.257 0.008 262);
+  --accent-foreground:oklch(1 0 0);
+  /* The source's dark error base (4.15:1 with white) deepened until white text
+     clears 4.5:1; the text role is lifted until it clears 4.5:1 on the dark surfaces. */
+  --destructive:oklch(0.585 0.19 22.342);
+  --destructive-text:oklch(0.79 0.12 22);
+  --destructive-foreground:oklch(1 0 0);
+  --success:oklch(0.72 0.17 152);
   --success-foreground:oklch(0.266 0.063 152.934);
-  --warning:oklch(0.769 0.165 70.08);
+  --warning:oklch(0.781 0.138 46.412);
   --warning-foreground:oklch(0.279 0.074 45.635);
-  --border:oklch(0.274 0.006 286.033);
-  --input:oklch(0.559 0.006 286.033);
-  --ring:oklch(0.585 0.233 277.117);
-  --p-menu-destructive:#f87171;
+  --border:oklch(0.26 0.006 262);
+  --input:oklch(0.532 0.012 262);
+  --ring:oklch(0.694 0.152 246.867);
+  --p-menu-destructive:#dc6565;
   /* iOS resolves its drawer scrim per scheme: 0.2 light, 0.48 dark. */
-  --panel-danger:#f87171;
+  --panel-danger:#dc6565;
   --delta-up:#4ade80;
-  --delta-down:#f87171;
+  --delta-down:#dc6565;
   /* Dark glass: less light behind it to bend, so the tint drops further and the rim carries more
      of the read. Apple's dark material is dimmer, not brighter. */
   --glass-tint:rgba(22,22,28,0.30);

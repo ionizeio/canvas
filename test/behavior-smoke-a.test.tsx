@@ -20,7 +20,8 @@ afterEach(cleanup);
 const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
 
 // Semantic hues the kit resolves for these tones (Tailwind 600 in light mode).
-const GREEN = "22, 163, 74"; // green-600 (a rise / success)
+const GREEN = "22, 163, 74"; // green-600 (a rise, from the palette hue ramp)
+const SUCCESS = "25, 117, 68"; // the success token (Riskora green/800)
 const RED = "220, 38, 38"; // red-600 (a decline)
 
 describe("Alert", () => {
@@ -193,11 +194,11 @@ describe("EmptyState", () => {
   // the success glyph is green and the default glyph is NOT (tone axis flips).
   it("paints the glyph green for the success tone and muted otherwise", () => {
     const good = ui(<EmptyState icon="✅" title="All clear" success />);
-    expect(good.getByText("✅").getAttribute("style")).toContain(GREEN);
+    expect(good.getByText("✅").getAttribute("style")).toContain(SUCCESS);
     good.unmount();
 
     const plain = ui(<EmptyState icon="📦" title="Nothing yet" />);
-    expect(plain.getByText("📦").getAttribute("style")).not.toContain(GREEN);
+    expect(plain.getByText("📦").getAttribute("style")).not.toContain(SUCCESS);
   });
 
   it("fires onAction when the action button is pressed", () => {

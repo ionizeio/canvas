@@ -104,7 +104,7 @@ describe("glass and the semantic tokens", () => {
       </ThemeProvider>,
     );
     await waitFor(() =>
-      expect(screen.getByText("glass|popover:#18181b|tint:rgba(22, 22, 28, 0.30)|rt:false|ic:false")).toBeDefined(),
+      expect(screen.getByText("glass|popover:#18191c|tint:rgba(22, 22, 28, 0.30)|rt:false|ic:false")).toBeDefined(),
     );
   });
 
@@ -160,8 +160,8 @@ describe("GlassSurface increase-contrast border", () => {
       await waitFor(() => {
         const node = screen.getByTestId("gs") as HTMLElement;
         expect(node.style.borderWidth).toBe("1px");
-        // foreground token #09090b => rgb(9, 9, 11)
-        expect(node.getAttribute("style")).toContain("border-color: rgba(9, 9, 11");
+        // foreground token #0d121b => rgb(13, 18, 27)
+        expect(node.getAttribute("style")).toContain("border-color: rgba(13, 18, 27");
       });
     } finally {
       spy.mockRestore();
