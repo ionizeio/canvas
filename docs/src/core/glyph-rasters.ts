@@ -67,6 +67,7 @@ export const GLYPH_RASTERS: Record<string, number> = {
   palette: require("../../assets/images/menu-glyphs/palette.png"),
   panelRight: require("../../assets/images/menu-glyphs/panelRight.png"),
   percent: require("../../assets/images/menu-glyphs/percent.png"),
+  phone: require("../../assets/images/menu-glyphs/phone.png"),
   plug: require("../../assets/images/menu-glyphs/plug.png"),
   plus: require("../../assets/images/menu-glyphs/plus.png"),
   pointer: require("../../assets/images/menu-glyphs/pointer.png"),
