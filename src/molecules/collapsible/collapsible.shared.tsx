@@ -13,6 +13,7 @@ import {
   type ViewStyle,
   type TextStyle,
   type LayoutStyle,
+  useFillStyle,
 } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 
@@ -144,6 +145,8 @@ export function createCollapsible(skin: CollapsibleSkin) {
   return function Collapsible(props: CollapsibleProps) {
     const { title, description, trigger, children, open: openProp, onOpenChange, defaultOpen = false, disabled, card, testID, style } = props;
     const { tokens } = useTheme();
+    // FILL: the disclosure spans the parent it is given.
+    const fill = useFillStyle("Collapsible");
     const reduced = useReducedMotion();
 
     // Uncontrolled store, seeded once from defaultOpen; ignored when controlled.
@@ -187,7 +190,7 @@ export function createCollapsible(skin: CollapsibleSkin) {
     const a11yLabel = title ?? "Toggle section";
 
     return (
-      <View testID={testID} style={[skin.container(tokens), card ? skin.cardContainer(tokens) : null, style]}>
+      <View testID={testID} style={[skin.container(tokens), card ? skin.cardContainer(tokens) : null, fill, style]}>
         <Pressable
           onPress={disabled ? undefined : toggle}
           disabled={disabled}

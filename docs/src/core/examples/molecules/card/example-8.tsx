@@ -3,30 +3,28 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, Card, Typography, Row, Column, Container } = scope;
+  const { Stateful, Card, Typography, Row, Column } = scope;
   return (
 <Stateful initial="pro">
   {(plan, setPlan) => (
-    <Container sm>
-      <Row cozy>
-        <Column fill>
-          <Card grow selected={plan === "starter"} onPress={() => setPlan("starter")}>
-            <Column tight>
-              <Typography lead semibold>Starter</Typography>
-              <Typography small muted>3 projects, 1 seat</Typography>
-            </Column>
-          </Card>
-        </Column>
-        <Column fill>
-          <Card grow selected={plan === "pro"} onPress={() => setPlan("pro")}>
-            <Column tight>
-              <Typography lead semibold>Pro</Typography>
-              <Typography small muted>Unlimited, 10 seats</Typography>
-            </Column>
-          </Card>
-        </Column>
-      </Row>
-    </Container>
+    <Row cozy>
+      <Column fill>
+        <Card grow selected={plan === "starter"} onPress={() => setPlan("starter")}>
+          <Column tight>
+            <Typography lead semibold>Starter</Typography>
+            <Typography small muted>3 projects, 1 seat</Typography>
+          </Column>
+        </Card>
+      </Column>
+      <Column fill>
+        <Card grow selected={plan === "pro"} onPress={() => setPlan("pro")}>
+          <Column tight>
+            <Typography lead semibold>Pro</Typography>
+            <Typography small muted>Unlimited, 10 seats</Typography>
+          </Column>
+        </Card>
+      </Column>
+    </Row>
   )}
 </Stateful>
   );

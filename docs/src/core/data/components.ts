@@ -56,7 +56,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "container",
     name: "Container",
-    description: "The bounds provider. A component never dictates its own width; Container spans its parent, caps at one named step of the shared width scale (xxxs 192 through page 1280), and centers itself, so a form, an article, or a card stack has a measure you can name instead of a width invented at the call site. fluid drops the cap, start pins it to the leading edge, and the pad scale adds horizontal gutters.",
+    description: "The bounds provider. A component never dictates its own width; Container conforms to its parent (full width, no cap) by default, and a named step of the shared width scale (xxxs 192 through page 1280) caps and centers it, so a form, an article, or a card stack has a measure you can name instead of a width invented at the call site. start pins a capped box to the leading edge, and the pad scale adds horizontal gutters.",
     category: "Atoms",
   },
 

@@ -5,19 +5,17 @@ The running-total bridge: each step floats from the running total by its signed 
 ## Usage
 
 ```tsx
-<Container xl>
-  <WaterfallChart
-  title="Q3 revenue bridge"
-  steps={[
-    { label: "Q2", value: 4200, total: true },
-    { label: "New", value: 980 },
-    { label: "Expansion", value: 460 },
-    { label: "Churn", value: -540 },
-    { label: "FX", value: -120 },
-    { label: "Q3", total: true },
-  ]}
+<WaterfallChart
+title="Q3 revenue bridge"
+steps={[
+  { label: "Q2", value: 4200, total: true },
+  { label: "New", value: 980 },
+  { label: "Expansion", value: 460 },
+  { label: "Churn", value: -540 },
+  { label: "FX", value: -120 },
+  { label: "Q3", total: true },
+]}
 />
-</Container>
 ```
 
 ## Variants
@@ -25,35 +23,31 @@ The running-total bridge: each step floats from the running total by its signed 
 ### Signed steps only
 
 ```tsx
-<Container xl>
-  <WaterfallChart
-  title="Headcount"
-  steps={[
-    { label: "Hired", value: 24 },
-    { label: "Backfill", value: 8 },
-    { label: "Attrition", value: -11 },
-    { label: "Transfers", value: -3 },
-    { label: "Net", total: true },
-  ]}
+<WaterfallChart
+title="Headcount"
+steps={[
+  { label: "Hired", value: 24 },
+  { label: "Backfill", value: 8 },
+  { label: "Attrition", value: -11 },
+  { label: "Transfers", value: -3 },
+  { label: "Net", total: true },
+]}
 />
-</Container>
 ```
 
 ### Compact, inspected
 
 ```tsx
-<Container xl>
-  <WaterfallChart
-  compact
-  defaultSelected={2}
-  steps={[
-    { label: "Start", value: 100, total: true },
-    { label: "Wins", value: 30 },
-    { label: "Losses", value: -12 },
-    { label: "End", total: true },
-  ]}
+<WaterfallChart
+compact
+defaultSelected={2}
+steps={[
+  { label: "Start", value: 100, total: true },
+  { label: "Wins", value: 30 },
+  { label: "Losses", value: -12 },
+  { label: "End", total: true },
+]}
 />
-</Container>
 ```
 
 ## Do & Don't
@@ -63,28 +57,24 @@ The running-total bridge: each step floats from the running total by its signed 
 **Do** - Bridge from one total to the next with signed steps; let the fixed coloring carry rise and fall.
 
 ```tsx
-<Container xl>
-  <WaterfallChart
-  title="Q3 revenue bridge"
-  steps={[
-    { label: "Q2", value: 4200, total: true },
-    { label: "New", value: 980 },
-    { label: "Churn", value: -540 },
-    { label: "Q3", total: true },
-  ]}
+<WaterfallChart
+title="Q3 revenue bridge"
+steps={[
+  { label: "Q2", value: 4200, total: true },
+  { label: "New", value: 980 },
+  { label: "Churn", value: -540 },
+  { label: "Q3", total: true },
+]}
 />
-</Container>
 ```
 
 **Don't** - Plain bars of period totals hide the walk: what rose, what fell, and by how much.
 
 ```tsx
-<Container xl>
-  <Chart
-  data={[
-    { label: "Q2", value: 4200 },
-    { label: "Q3", value: 4640 },
-  ]}
+<Chart
+data={[
+  { label: "Q2", value: 4200 },
+  { label: "Q3", value: 4640 },
+]}
 />
-</Container>
 ```

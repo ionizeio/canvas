@@ -3,15 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { shadow, Card, Typography, Column, Container } = scope;
+  const { shadow, Card, Typography, Column } = scope;
   return (
-<Container sm>
-  <Card>
-    <Column tight>
-      <Typography lead semibold>Anything goes here</Typography>
-      <Typography small muted>The card surface gives you the border, radius, and shadow. You bring the content.</Typography>
-    </Column>
-  </Card>
-</Container>
+<Card>
+  <Column tight>
+    <Typography lead semibold>Anything goes here</Typography>
+    <Typography small muted>The card surface gives you the border, radius, and shadow. You bring the content.</Typography>
+  </Column>
+</Card>
   );
 }

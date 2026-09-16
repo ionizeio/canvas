@@ -3,12 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stats, Container } = scope;
+  const { Stats } = scope;
   return (
-<Container xxs>
-  <Stats items={[
-    { label: "Active users", value: "71,897", delta: "+12.3% vs. last 30 days" }
-  ]} />
-</Container>
+<Stats items={[
+  { label: "Active users", value: "71,897", delta: "+12.3% vs. last 30 days" }
+]} />
   );
 }

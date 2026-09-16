@@ -5,17 +5,15 @@ Ranked label and value rows, each with a color swatch, a truncating label, a rig
 ## Usage
 
 ```tsx
-<Container md>
-  <BarList
-  title="Top pages"
-  items={[
-    { label: "/pricing", value: 18400, delta: "+12%" },
-    { label: "/docs", value: 12100, delta: "+4%" },
-    { label: "/blog/launch", value: 8700, delta: "-2%", down: true },
-    { label: "/changelog", value: 5300, delta: "+1%" },
-  ]}
+<BarList
+title="Top pages"
+items={[
+  { label: "/pricing", value: 18400, delta: "+12%" },
+  { label: "/docs", value: 12100, delta: "+4%" },
+  { label: "/blog/launch", value: 8700, delta: "-2%", down: true },
+  { label: "/changelog", value: 5300, delta: "+1%" },
+]}
 />
-</Container>
 ```
 
 ## Variants
@@ -23,55 +21,49 @@ Ranked label and value rows, each with a color swatch, a truncating label, a rig
 ### Share of total
 
 ```tsx
-<Container md>
-  <BarList
-  title="Sign-up sources"
-  share
-  items={[
-    { label: "google", value: 412 },
-    { label: "email", value: 318 },
-    { label: "github", value: 142 },
-    { label: "passkey", value: 88 },
-  ]}
+<BarList
+title="Sign-up sources"
+share
+items={[
+  { label: "google", value: 412 },
+  { label: "email", value: 318 },
+  { label: "github", value: 142 },
+  { label: "passkey", value: 88 },
+]}
 />
-</Container>
 ```
 
 ### Drill-in rows
 
 ```tsx
-<Container md>
-  <BarList
-  title="Top referrers"
-  onPressItem={() => {}}
-  items={[
-    { label: "news.ycombinator.com", value: 4210, delta: "+18%" },
-    { label: "reddit.com", value: 2380, delta: "-6%", down: true },
-    { label: "linkedin.com", value: 1240, delta: "+2%" },
-  ]}
+<BarList
+title="Top referrers"
+onPressItem={() => {}}
+items={[
+  { label: "news.ycombinator.com", value: 4210, delta: "+18%" },
+  { label: "reddit.com", value: 2380, delta: "-6%", down: true },
+  { label: "linkedin.com", value: 1240, delta: "+2%" },
+]}
 />
-</Container>
 ```
 
 ### Plain, inside a card
 
 ```tsx
-<Container md>
-  <Card padded>
-    <Column>
-      <Typography h4>This week</Typography>
-      <BarList
-        plain
-        compact
-        items={[
-          { label: "Deploys", value: 42 },
-          { label: "Rollbacks", value: 3, chart4: true },
-          { label: "Incidents", value: 1, chart8: true },
-        ]}
-      />
-    </Column>
-  </Card>
-</Container>
+<Card padded>
+  <Column>
+    <Typography h4>This week</Typography>
+    <BarList
+      plain
+      compact
+      items={[
+        { label: "Deploys", value: 42 },
+        { label: "Rollbacks", value: 3, chart4: true },
+        { label: "Incidents", value: 1, chart8: true },
+      ]}
+    />
+  </Column>
+</Card>
 ```
 
 ## Do & Don't
@@ -81,15 +73,13 @@ Ranked label and value rows, each with a color swatch, a truncating label, a rig
 **Do** - Let the component own the whole row anatomy: swatch, label, value, delta, and the proportional bar.
 
 ```tsx
-<Container md>
-  <BarList
-  title="Top pages"
-  items={[
-    { label: "/pricing", value: 18400, delta: "+12%" },
-    { label: "/docs", value: 12100, delta: "-4%", down: true },
-  ]}
+<BarList
+title="Top pages"
+items={[
+  { label: "/pricing", value: 18400, delta: "+12%" },
+  { label: "/docs", value: 12100, delta: "-4%", down: true },
+]}
 />
-</Container>
 ```
 
 **Don't** - A hand-rolled row of Text and colored Views splits the anatomy, drifts from the type scale, and hides its share from assistive tech.

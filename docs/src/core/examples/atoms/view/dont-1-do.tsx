@@ -3,12 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Typography, Container } = scope;
+  const { Card, Typography } = scope;
   return (
-<Container xxs>
-  <Card>
-    <Typography>A real surface</Typography>
-  </Card>
-</Container>
+<Card>
+  <Typography>A real surface</Typography>
+</Card>
   );
 }

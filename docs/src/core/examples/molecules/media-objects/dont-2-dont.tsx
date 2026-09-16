@@ -3,10 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, MediaObject, Container } = scope;
+  const { Button, MediaObject } = scope;
   return (
-<Container xs>
-  <MediaObject bordered center src="/ada-lovelace.jpg" title="Ada Lovelace" description="ada.lovelace@analytical-engine.example.com" action={<Button outline small>Invite</Button>} />
-</Container>
+<MediaObject bordered center src="/ada-lovelace.jpg" title="Ada Lovelace" description="ada.lovelace@analytical-engine.example.com" action={<Button outline small>Invite</Button>} />
   );
 }

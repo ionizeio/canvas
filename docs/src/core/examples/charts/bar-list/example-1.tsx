@@ -3,19 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Container, BarList } = scope;
+  const { BarList } = scope;
   return (
-<Container md>
-  <BarList
-  title="Sign-up sources"
-  share
-  items={[
-    { label: "google", value: 412 },
-    { label: "email", value: 318 },
-    { label: "github", value: 142 },
-    { label: "passkey", value: 88 },
-  ]}
+<BarList
+title="Sign-up sources"
+share
+items={[
+  { label: "google", value: 412 },
+  { label: "email", value: 318 },
+  { label: "github", value: 142 },
+  { label: "passkey", value: 88 },
+]}
 />
-</Container>
   );
 }

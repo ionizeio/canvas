@@ -3,20 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Tabs, Container } = scope;
+  const { Tabs } = scope;
   return (
-<Container xs>
-  <Tabs
-    tabs={[
-      "General",
-      "Security",
-      "Notifications",
-      "Billing",
-      "Integrations",
-      "Advanced"
-    ]}
-    defaultActive={0}
-  />
-</Container>
+<Tabs
+  tabs={[
+    "General",
+    "Security",
+    "Notifications",
+    "Billing",
+    "Integrations",
+    "Advanced"
+  ]}
+  defaultActive={0}
+/>
   );
 }

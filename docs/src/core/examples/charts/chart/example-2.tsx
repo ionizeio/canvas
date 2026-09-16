@@ -3,20 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Chart, Container } = scope;
+  const { Chart } = scope;
   return (
-<Container xl>
-  <Chart
-  title="Token issuance by client"
-  stacked
-  labels={["acme", "globex", "initech", "umbrella", "soylent"]}
-  series={[
-    { label: "Authorization code", values: [1840, 1210, 960, 640, 410] },
-    { label: "Client credentials", values: [920, 1480, 340, 1120, 260] },
-    { label: "Refresh token", values: [610, 380, 720, 290, 180] },
-    { label: "Device code", values: [140, 90, 260, 70, 55] }
-  ]}
+<Chart
+title="Token issuance by client"
+stacked
+labels={["acme", "globex", "initech", "umbrella", "soylent"]}
+series={[
+  { label: "Authorization code", values: [1840, 1210, 960, 640, 410] },
+  { label: "Client credentials", values: [920, 1480, 340, 1120, 260] },
+  { label: "Refresh token", values: [610, 380, 720, 290, 180] },
+  { label: "Device code", values: [140, 90, 260, 70, 55] }
+]}
 />
-</Container>
   );
 }

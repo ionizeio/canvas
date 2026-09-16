@@ -3,19 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Container, GeoMap } = scope;
+  const { GeoMap } = scope;
   return (
-<Container xl>
-  <GeoMap
-  zoomable
-  title="Regional totals"
-  points={[
-    { label: "New York", lat: 40.7128, lng: -74.006, count: 6310 },
-    { label: "London", lat: 51.5072, lng: -0.1276, count: 5170 },
-    { label: "Tokyo", lat: 35.6895, lng: 139.6917, count: 3110 },
-    { label: "Sydney", lat: -33.8688, lng: 151.2093, count: 1260 },
-  ]}
+<GeoMap
+zoomable
+title="Regional totals"
+points={[
+  { label: "New York", lat: 40.7128, lng: -74.006, count: 6310 },
+  { label: "London", lat: 51.5072, lng: -0.1276, count: 5170 },
+  { label: "Tokyo", lat: 35.6895, lng: 139.6917, count: 3110 },
+  { label: "Sydney", lat: -33.8688, lng: 151.2093, count: 1260 },
+]}
 />
-</Container>
   );
 }

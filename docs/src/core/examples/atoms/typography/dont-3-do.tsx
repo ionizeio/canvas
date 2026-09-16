@@ -3,13 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Typography, Column, Container } = scope;
+  const { Typography, Column } = scope;
   return (
-<Container xs>
-  <Column tight>
-    <Typography h3>About Canvas</Typography>
-    <Typography body>Canvas is a universal React Native UI kit for building consistent product interfaces.</Typography>
-  </Column>
-</Container>
+<Column tight>
+  <Typography h3>About Canvas</Typography>
+  <Typography body>Canvas is a universal React Native UI kit for building consistent product interfaces.</Typography>
+</Column>
   );
 }

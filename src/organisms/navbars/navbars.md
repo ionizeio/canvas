@@ -160,16 +160,14 @@ nor the menu button that stands in for it.
 **Do** — Collapse the links into a hamburger and keep only the logo and avatar in the bar.
 
 ```tsx
-<Container sm>
-  <Card flat flush style={{ overflow: "hidden" }}>
-    <Row alignCenter snug pad style={{ height: 56 }}>
-      <Button ghost iconLeft={<Icon menu muted size={18} />} accessibilityLabel="Open menu" />
-      <Typography small semibold>Canvas</Typography>
-      <Column grow />
-      <Avatar small src="/rachel-chen.jpg" name="RC" />
-    </Row>
-  </Card>
-</Container>
+<Card flat flush style={{ overflow: "hidden" }}>
+  <Row alignCenter snug pad style={{ height: 56 }}>
+    <Button ghost iconLeft={<Icon menu muted size={18} />} accessibilityLabel="Open menu" />
+    <Typography small semibold>Canvas</Typography>
+    <Column grow />
+    <Avatar small src="/rachel-chen.jpg" name="RC" />
+  </Row>
+</Card>
 ```
 
 **Don't** — A full horizontal nav at phone width wraps onto a second row and crowds out the logo.

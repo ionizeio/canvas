@@ -3,24 +3,22 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Container, RangeAreaChart } = scope;
+  const { RangeAreaChart } = scope;
   return (
-<Container xl>
-  <RangeAreaChart
-  title="Latency envelope"
-  label="p50 to p99"
-  labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
-  curved
-  data={[
-    { low: 42, high: 118, mid: 61 },
-    { low: 38, high: 102, mid: 55 },
-    { low: 44, high: 131, mid: 66 },
-    { low: 40, high: 95, mid: 52 },
-    { low: 47, high: 144, mid: 71 },
-    { low: 36, high: 88, mid: 49 },
-    { low: 34, high: 81, mid: 46 },
-  ]}
+<RangeAreaChart
+title="Latency envelope"
+label="p50 to p99"
+labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
+curved
+data={[
+  { low: 42, high: 118, mid: 61 },
+  { low: 38, high: 102, mid: 55 },
+  { low: 44, high: 131, mid: 66 },
+  { low: 40, high: 95, mid: 52 },
+  { low: 47, high: 144, mid: 71 },
+  { low: 36, high: 88, mid: 49 },
+  { low: 34, high: 81, mid: 46 },
+]}
 />
-</Container>
   );
 }

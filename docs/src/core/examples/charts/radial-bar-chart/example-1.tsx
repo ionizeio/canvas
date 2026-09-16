@@ -3,21 +3,19 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Container, RadialBarChart } = scope;
+  const { Card, RadialBarChart } = scope;
   return (
-<Container xxxs>
-  <Card padded>
-    <RadialBarChart
-      label="Quota"
-      compact
-      hideLegend
-      data={[
-        { label: "Q1", value: 92 },
-        { label: "Q2", value: 71 },
-      ]}
-      max={100}
-    />
-  </Card>
-</Container>
+<Card padded>
+  <RadialBarChart
+    label="Quota"
+    compact
+    hideLegend
+    data={[
+      { label: "Q1", value: 92 },
+      { label: "Q2", value: 71 },
+    ]}
+    max={100}
+  />
+</Card>
   );
 }

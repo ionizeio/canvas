@@ -3,14 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Divider, Typography, Column, Container } = scope;
+  const { Divider, Typography, Column } = scope;
   return (
-<Container xs>
-  <Column snug>
-    <Typography small>Profile</Typography>
-    <Divider />
-    <Typography small>Account</Typography>
-  </Column>
-</Container>
+<Column snug>
+  <Typography small>Profile</Typography>
+  <Divider />
+  <Typography small>Account</Typography>
+</Column>
   );
 }

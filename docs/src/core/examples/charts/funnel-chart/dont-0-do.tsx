@@ -3,17 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Container, FunnelChart } = scope;
+  const { FunnelChart } = scope;
   return (
-<Container lg>
-  <FunnelChart
-  title="Signup funnel"
-  stages={[
-    { label: "Visits", value: 12400 },
-    { label: "Signups", value: 4200 },
-    { label: "Paid", value: 480 },
-  ]}
+<FunnelChart
+title="Signup funnel"
+stages={[
+  { label: "Visits", value: 12400 },
+  { label: "Signups", value: 4200 },
+  { label: "Paid", value: 480 },
+]}
 />
-</Container>
   );
 }

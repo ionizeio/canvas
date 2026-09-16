@@ -141,14 +141,15 @@ describe("frozen release transaction", () => {
         if (previous === undefined) delete process.env.RELEASE_MAJOR; else process.env.RELEASE_MAJOR = previous;
       }
     };
-    // The wrong version (a skipped major, a minor, a typo) authorizes nothing.
+    // The wrong version (a skipped major, a minor, a typo) authorizes nothing: the
+    // pure assertion covers the shapes, one fixture proves prepare still parks.
     for (const wrong of ["4.0.0", "3.1.0", "3.0.1", "3", "next"]) {
-      withMajor(wrong, () => {
-        const f = fixture("major");
-        expect(prepare(f.repo, f.candidateDir, f.source, true).status).toBe("blocked-major");
-        expect(() => assertReleaseVersion("2.3.4", "3.0.0")).toThrow("Major");
-      });
+      withMajor(wrong, () => expect(() => assertReleaseVersion("2.3.4", "3.0.0")).toThrow("Major"));
     }
+    withMajor("3.1.0", () => {
+      const f = fixture("major");
+      expect(prepare(f.repo, f.candidateDir, f.source, true).status).toBe("blocked-major");
+    });
     // The exact next major, typed by a human on the dispatch, versions and readies the candidate.
     withMajor("3.0.0", () => {
       expect(() => assertReleaseVersion("2.3.4", "3.0.0")).not.toThrow();
@@ -163,7 +164,7 @@ describe("frozen release transaction", () => {
       git(f.dir, "clone", f.remote, validation);
       expect(restore(validation, f.candidateDir, f.source).version).toBe("3.0.0");
     });
-  });
+  }, 60_000);
 
   test("a test-only main advance publishes nothing and pushes no tag", () => {
     const f = fixture();

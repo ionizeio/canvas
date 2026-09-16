@@ -203,9 +203,7 @@ setTheme(theme === "dark" ? "light" : "dark");`} />
 **Don't** — A paragraph collapses the line breaks and indentation, so multi-line code reads as one run-on string.
 
 ```tsx
-<Container sm>
-  <Text style={{ fontSize: 13, fontFamily: "monospace" }}>const theme = getTheme(); setTheme(theme === "dark" ? "light" : "dark");</Text>
-</Container>
+<Text style={{ fontSize: 13, fontFamily: "monospace" }}>const theme = getTheme(); setTheme(theme === "dark" ? "light" : "dark");</Text>
 ```
 
 ### Terminal
@@ -294,13 +292,11 @@ setTheme(theme);`} />
 **Do** — Reserve inline code for short tokens; move anything multi-line into a block.
 
 ```tsx
-<Container sm>
-  <Column snug>
-    <Typography body>Run the setup command:</Typography>
-    <CodeBlock code={`npm install @nannier-com/canvas
-  npm run build`} />
-  </Column>
-</Container>
+<Column snug>
+  <Typography body>Run the setup command:</Typography>
+  <CodeBlock code={`npm install @nannier-com/canvas
+npm run build`} />
+</Column>
 ```
 
 **Don't** — A long, multi-step command crammed inline wraps mid-token and offers no horizontal scroll.

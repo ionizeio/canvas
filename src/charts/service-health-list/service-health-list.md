@@ -5,16 +5,14 @@ Per-service status rows: a status dot (down > degraded > operational), the servi
 ## Usage
 
 ```tsx
-<Container lg>
-  <ServiceHealthList
-  title="System status"
-  items={[
-    { label: "API", detail: "99.98%", periods: Array.from({ length: 45 }, () => ({})) },
-    { label: "Dashboard", detail: "99.92%", periods: Array.from({ length: 45 }, (_, i) => (i === 30 ? { degraded: true } : {})), degraded: true },
-    { label: "Webhooks", detail: "97.10%", periods: Array.from({ length: 45 }, (_, i) => (i > 40 ? { down: true } : {})), down: true },
-  ]}
+<ServiceHealthList
+title="System status"
+items={[
+  { label: "API", detail: "99.98%", periods: Array.from({ length: 45 }, () => ({})) },
+  { label: "Dashboard", detail: "99.92%", periods: Array.from({ length: 45 }, (_, i) => (i === 30 ? { degraded: true } : {})), degraded: true },
+  { label: "Webhooks", detail: "97.10%", periods: Array.from({ length: 45 }, (_, i) => (i > 40 ? { down: true } : {})), down: true },
+]}
 />
-</Container>
 ```
 
 ## Variants
@@ -22,50 +20,44 @@ Per-service status rows: a status dot (down > degraded > operational), the servi
 ### Compact
 
 ```tsx
-<Container lg>
-  <ServiceHealthList
-  title="System status"
-  compact
-  items={[
-    { label: "API", detail: "99.98%" },
-    { label: "Dashboard", detail: "99.92%", degraded: true },
-    { label: "Webhooks", detail: "97.10%", down: true },
-  ]}
+<ServiceHealthList
+title="System status"
+compact
+items={[
+  { label: "API", detail: "99.98%" },
+  { label: "Dashboard", detail: "99.92%", degraded: true },
+  { label: "Webhooks", detail: "97.10%", down: true },
+]}
 />
-</Container>
 ```
 
 ### Drill-in rows
 
 ```tsx
-<Container lg>
-  <ServiceHealthList
-  title="System status"
-  onPressItem={() => {}}
-  items={[
-    { label: "API", detail: "99.98%" },
-    { label: "Search", detail: "99.95%" },
-    { label: "Exports", detail: "99.80%", degraded: true },
-  ]}
+<ServiceHealthList
+title="System status"
+onPressItem={() => {}}
+items={[
+  { label: "API", detail: "99.98%" },
+  { label: "Search", detail: "99.95%" },
+  { label: "Exports", detail: "99.80%", degraded: true },
+]}
 />
-</Container>
 ```
 
 ### Plain, inside a card
 
 ```tsx
-<Container lg>
-  <Card padded>
-    <ServiceHealthList
-      plain
-      compact
-      items={[
-        { label: "API", detail: "operational" },
-        { label: "Dashboard", detail: "degraded", degraded: true },
-      ]}
-    />
-  </Card>
-</Container>
+<Card padded>
+  <ServiceHealthList
+    plain
+    compact
+    items={[
+      { label: "API", detail: "operational" },
+      { label: "Dashboard", detail: "degraded", degraded: true },
+    ]}
+  />
+</Card>
 ```
 
 ## Do & Don't
@@ -75,15 +67,13 @@ Per-service status rows: a status dot (down > degraded > operational), the servi
 **Do** - One row per service, with the status carried by the dot, the composed accessible name, and the embedded strip.
 
 ```tsx
-<Container lg>
-  <ServiceHealthList
-  title="System status"
-  items={[
-    { label: "API", detail: "99.98%" },
-    { label: "Webhooks", detail: "97.10%", down: true },
-  ]}
+<ServiceHealthList
+title="System status"
+items={[
+  { label: "API", detail: "99.98%" },
+  { label: "Webhooks", detail: "97.10%", down: true },
+]}
 />
-</Container>
 ```
 
 **Don't** - A hand-rolled status row splits the tap target and loses the status from assistive tech.

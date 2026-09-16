@@ -94,19 +94,17 @@ of its neighbor left showing. `block` shares the row equally and never
 overflows; a vertical rail stacks instead.
 
 ```tsx
-<Container xs>
-  <Tabs
-    tabs={[
-      "General",
-      "Security",
-      "Notifications",
-      "Billing",
-      "Integrations",
-      "Advanced"
-    ]}
-    defaultActive={0}
-  />
-</Container>
+<Tabs
+  tabs={[
+    "General",
+    "Security",
+    "Notifications",
+    "Billing",
+    "Integrations",
+    "Advanced"
+  ]}
+  defaultActive={0}
+/>
 ```
 
 ## Do & Don't

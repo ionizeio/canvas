@@ -3,15 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Container, Histogram } = scope;
+  const { Histogram } = scope;
   return (
-<Container xl>
-  <Histogram
-  title="Order sizes"
-  label="Items per order"
-  bins={5}
-  values={[1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 5, 5, 6, 7, 8, 9, 12, 2, 3, 1, 4, 2, 3, 5]}
+<Histogram
+title="Order sizes"
+label="Items per order"
+bins={5}
+values={[1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 5, 5, 6, 7, 8, 9, 12, 2, 3, 1, 4, 2, 3, 5]}
 />
-</Container>
   );
 }

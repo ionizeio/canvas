@@ -3,10 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { ActionPanel, Container } = scope;
+  const { ActionPanel } = scope;
   return (
-<Container md>
-  <ActionPanel title="Two-factor authentication" toggle defaultChecked />
-</Container>
+<ActionPanel title="Two-factor authentication" toggle defaultChecked />
   );
 }

@@ -3,16 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Container, LineChart } = scope;
+  const { LineChart } = scope;
   return (
-<Container xl>
-  <LineChart
-  labels={["W1", "W2", "W3", "W4"]}
-  series={[
-    { label: "Low", values: [90, 95, 100, 104] },
-    { label: "High", values: [110, 125, 140, 158] },
-  ]}
+<LineChart
+labels={["W1", "W2", "W3", "W4"]}
+series={[
+  { label: "Low", values: [90, 95, 100, 104] },
+  { label: "High", values: [110, 125, 140, 158] },
+]}
 />
-</Container>
   );
 }

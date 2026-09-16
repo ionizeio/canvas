@@ -3,14 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, Text, Pressable, Container } = scope;
+  const { tokens, View, Text, Pressable } = scope;
   return (
-<Container xs>
+<View>
   <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Plan</Text>
   <Pressable style={{ height: 40, flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12 }} accessibilityRole="button">
     <Text style={{ fontSize: 12, lineHeight: 16, color: tokens.foreground }}>Starter</Text>
     <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>▾</Text>
   </Pressable>
-</Container>
+</View>
   );
 }

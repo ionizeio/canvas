@@ -3,21 +3,19 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Divider, Row, Column, Container } = scope;
+  const { Button, Divider, Row, Column } = scope;
   return (
-<Container xs>
-  <Column snug>
-    <Button primary block>Sign in</Button>
-    <Divider>or continue with</Divider>
-    <Row snug>
-      <Column fill>
-        <Button outline block>Google</Button>
-      </Column>
-      <Column fill>
-        <Button outline block>GitHub</Button>
-      </Column>
-    </Row>
-  </Column>
-</Container>
+<Column snug>
+  <Button primary block>Sign in</Button>
+  <Divider>or continue with</Divider>
+  <Row snug>
+    <Column fill>
+      <Button outline block>Google</Button>
+    </Column>
+    <Column fill>
+      <Button outline block>GitHub</Button>
+    </Column>
+  </Row>
+</Column>
   );
 }

@@ -3,15 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Steps, Container } = scope;
+  const { Steps } = scope;
   return (
-<Container xs>
-  <Steps vertical defaultCurrent={1} steps={[
-    { label: "Account created" },
-    { label: "Profile setup" },
-    { label: "Team invite" },
-    { label: "Done" }
-  ]} />
-</Container>
+<Steps vertical defaultCurrent={1} steps={[
+  { label: "Account created" },
+  { label: "Profile setup" },
+  { label: "Team invite" },
+  { label: "Done" }
+]} />
   );
 }

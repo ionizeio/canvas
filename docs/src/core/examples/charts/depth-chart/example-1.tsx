@@ -3,28 +3,26 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Container, DepthChart } = scope;
+  const { DepthChart } = scope;
   return (
-<Container md>
-  <DepthChart
-  title="OLY · thin book"
-  compact
-  hideAxes
-  bids={[
-    { price: 191.3, size: 90 },
-    { price: 191.15, size: 150 },
-    { price: 191.0, size: 220 },
-    { price: 190.85, size: 310 },
-    { price: 190.7, size: 420 }
-  ]}
-  asks={[
-    { price: 191.6, size: 110 },
-    { price: 191.75, size: 180 },
-    { price: 191.9, size: 260 },
-    { price: 192.05, size: 350 },
-    { price: 192.2, size: 470 }
-  ]}
+<DepthChart
+title="OLY · thin book"
+compact
+hideAxes
+bids={[
+  { price: 191.3, size: 90 },
+  { price: 191.15, size: 150 },
+  { price: 191.0, size: 220 },
+  { price: 190.85, size: 310 },
+  { price: 190.7, size: 420 }
+]}
+asks={[
+  { price: 191.6, size: 110 },
+  { price: 191.75, size: 180 },
+  { price: 191.9, size: 260 },
+  { price: 192.05, size: 350 },
+  { price: 192.2, size: 470 }
+]}
 />
-</Container>
   );
 }

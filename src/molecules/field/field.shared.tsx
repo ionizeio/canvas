@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { type StyleProp, type ViewStyle } from "react-native";
-import { View, Text, useTheme, LabelContent, type LayoutStyle } from "../../style/index.js";
+import { View, Text, useTheme, LabelContent, type LayoutStyle, useFillStyle } from "../../style/index.js";
 import { type FieldSkin } from "./field.styles.js";
 
 // Shared Field shell. A form row: a label, the control, and one message line under it.
@@ -62,6 +62,8 @@ export function createField(skin: FieldSkin, labelOwners: ComponentType<never>[]
   function Field(props: FieldProps) {
     const { label, helper, error, required, children, testID, style } = props;
     const { tokens } = useTheme();
+    // FILL: the labeled field spans the parent it is given.
+    const fill = useFillStyle("Field");
 
     // One id for the message, so a delegated control can point at it. The hand-off's Field skips
     // this wiring; a screen reader should hear the hint with the field, so the kit does it.
@@ -95,7 +97,7 @@ export function createField(skin: FieldSkin, labelOwners: ComponentType<never>[]
       : children;
 
     return (
-      <View testID={testID} style={[skin.stack, style]}>
+      <View testID={testID} style={[skin.stack, fill, style]}>
         {label != null && !delegate ? (
           <Text style={skin.label(tokens)}>
             <LabelContent label={label} required={required} starColor={tokens.destructive} />

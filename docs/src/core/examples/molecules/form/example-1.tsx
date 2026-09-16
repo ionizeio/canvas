@@ -3,14 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Form, Input, Container } = scope;
+  const { Form, Input } = scope;
   return (
-<Container xl>
-  <Form twoColumn submitLabel="Create" cancelLabel="Cancel">
-    <Input label="First name" placeholder="Ada" />
-    <Input label="Last name" placeholder="King" />
-    <Input label="Email" placeholder="ada@example.com" />
-  </Form>
-</Container>
+<Form twoColumn submitLabel="Create" cancelLabel="Cancel">
+  <Input label="First name" placeholder="Ada" />
+  <Input label="Last name" placeholder="King" />
+  <Input label="Email" placeholder="ada@example.com" />
+</Form>
   );
 }

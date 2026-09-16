@@ -3,13 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { DescriptionList, Container } = scope;
+  const { DescriptionList } = scope;
   return (
-<Container md>
-  <DescriptionList twoColumn items={[
-    { term: "Name", value: "Rachel Chen" },
-    { term: "Email", value: "rachel.chen@example.com" }
-  ]} />
-</Container>
+<DescriptionList twoColumn items={[
+  { term: "Name", value: "Rachel Chen" },
+  { term: "Email", value: "rachel.chen@example.com" }
+]} />
   );
 }

@@ -3,15 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Divider, Typography, Column, Container } = scope;
+  const { Button, Divider, Typography, Column } = scope;
   return (
-<Container xs>
-  <Column snug>
-    <Typography small muted>Logged in from 2 new devices · 3 more entries</Typography>
-    <Divider>
-      <Button ghost small>Show less</Button>
-    </Divider>
-  </Column>
-</Container>
+<Column snug>
+  <Typography small muted>Logged in from 2 new devices · 3 more entries</Typography>
+  <Divider>
+    <Button ghost small>Show less</Button>
+  </Divider>
+</Column>
   );
 }

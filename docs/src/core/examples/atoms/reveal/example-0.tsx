@@ -3,17 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Reveal, Typography, Column, Container } = scope;
+  const { Card, Reveal, Typography, Column } = scope;
   return (
 <Reveal>
-  <Container xs>
-    <Card padded>
-      <Column tight>
-        <Typography h4 semibold>Built for scroll</Typography>
-        <Typography small muted>This card rose into place when it reached the viewport.</Typography>
-      </Column>
-    </Card>
-  </Container>
+  <Card padded>
+    <Column tight>
+      <Typography h4 semibold>Built for scroll</Typography>
+      <Typography small muted>This card rose into place when it reached the viewport.</Typography>
+    </Column>
+  </Card>
 </Reveal>
   );
 }

@@ -3,17 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, Text, Card, CardContent, CardHeader, CardTitle, Container } = scope;
+  const { tokens, Text, Card, CardContent, CardHeader, CardTitle } = scope;
   return (
-<Container sm>
-  <Card flush>
-    <CardHeader>
-      <CardTitle>Recent activity</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["card-foreground"] }}>Two events today.</Text>
-    </CardContent>
-  </Card>
-</Container>
+<Card flush>
+  <CardHeader>
+    <CardTitle>Recent activity</CardTitle>
+  </CardHeader>
+  <CardContent>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["card-foreground"] }}>Two events today.</Text>
+  </CardContent>
+</Card>
   );
 }

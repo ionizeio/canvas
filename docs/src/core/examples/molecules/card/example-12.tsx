@@ -3,23 +3,21 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Typography, Row, Column, Container } = scope;
+  const { Card, Typography, Row, Column } = scope;
   return (
-<Container lg>
-  <Row cozy>
-    <Column fill>
-      <Card compact grow>
-        <Typography lead semibold>Compact</Typography>
-        <Typography small muted>Tight padding and rhythm for dense dashboards.</Typography>
-      </Card>
-    </Column>
-    <Column fill>
-      <Card comfortable grow>
-        <Typography lead semibold>Comfortable</Typography>
-        <Typography small muted>Roomy padding and rhythm for relaxed reading.</Typography>
-      </Card>
-    </Column>
-  </Row>
-</Container>
+<Row cozy>
+  <Column fill>
+    <Card compact grow>
+      <Typography lead semibold>Compact</Typography>
+      <Typography small muted>Tight padding and rhythm for dense dashboards.</Typography>
+    </Card>
+  </Column>
+  <Column fill>
+    <Card comfortable grow>
+      <Typography lead semibold>Comfortable</Typography>
+      <Typography small muted>Roomy padding and rhythm for relaxed reading.</Typography>
+    </Card>
+  </Column>
+</Row>
   );
 }

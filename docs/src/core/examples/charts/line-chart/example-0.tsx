@@ -3,20 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Container, LineChart } = scope;
+  const { LineChart } = scope;
   return (
-<Container xl>
-  <LineChart
-  title="Active users"
-  labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb"]}
-  series={[
-    { label: "Web", values: [119, 119, 122, 114, 131, 154, 147, 164, 157, 155, 176, 175, 179, 182] },
-    { label: "Mobile", values: [63, 68, 93, 104, 101, 98, 121, 143, 162, 186, 207, 230, 228, 251] },
-    { label: "API", values: [32, 41, 41, 38, 35, 37, 39, 47, 50, 62, 71, 69, 81, 79] }
-  ]}
-  curved
-  dots
+<LineChart
+title="Active users"
+labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb"]}
+series={[
+  { label: "Web", values: [119, 119, 122, 114, 131, 154, 147, 164, 157, 155, 176, 175, 179, 182] },
+  { label: "Mobile", values: [63, 68, 93, 104, 101, 98, 121, 143, 162, 186, 207, 230, 228, 251] },
+  { label: "API", values: [32, 41, 41, 38, 35, 37, 39, 47, 50, 62, 71, 69, 81, 79] }
+]}
+curved
+dots
 />
-</Container>
   );
 }

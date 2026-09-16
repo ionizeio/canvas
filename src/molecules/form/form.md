@@ -12,12 +12,10 @@ Form is a composition surface: you stitch the field atoms as children and keep t
 <Stateful initial={0}>
   {(saves, setSaves) => (
     <Column snug>
-      <Container sm>
-        <Form submitLabel="Sign in" onSubmit={() => setSaves(saves + 1)}>
-          <Input label="Email" placeholder="you@example.com" />
-          <Input label="Password" />
-        </Form>
-      </Container>
+      <Form submitLabel="Sign in" onSubmit={() => setSaves(saves + 1)}>
+        <Input label="Email" placeholder="you@example.com" />
+        <Input label="Password" />
+      </Form>
       <Typography muted>{saves === 0 ? "Not submitted yet" : `Submitted ${saves} ${saves === 1 ? "time" : "times"}`}</Typography>
     </Column>
   )}
@@ -29,53 +27,45 @@ Form is a composition surface: you stitch the field atoms as children and keep t
 ### Two-column
 
 ```tsx
-<Container xl>
-  <Form twoColumn submitLabel="Create" cancelLabel="Cancel">
-    <Input label="First name" placeholder="Ada" />
-    <Input label="Last name" placeholder="King" />
-    <Input label="Email" placeholder="ada@example.com" />
-  </Form>
-</Container>
+<Form twoColumn submitLabel="Create" cancelLabel="Cancel">
+  <Input label="First name" placeholder="Ada" />
+  <Input label="Last name" placeholder="King" />
+  <Input label="Email" placeholder="ada@example.com" />
+</Form>
 ```
 
 ### Sections
 
 ```tsx
-<Container xl>
-  <Form submitLabel="Save">
-    <FormSection title="Personal info" description="This information will be displayed on your public profile.">
-      <Input label="Full name" defaultValue="Rachel Chen" />
-      <Input label="Email" defaultValue="rachel@example.com" />
-    </FormSection>
-    <FormSection title="Notifications" description="Choose how you'd like to be notified.">
-      <Checkbox defaultChecked>Email notifications</Checkbox>
-      <Checkbox>SMS alerts</Checkbox>
-    </FormSection>
-  </Form>
-</Container>
+<Form submitLabel="Save">
+  <FormSection title="Personal info" description="This information will be displayed on your public profile.">
+    <Input label="Full name" defaultValue="Rachel Chen" />
+    <Input label="Email" defaultValue="rachel@example.com" />
+  </FormSection>
+  <FormSection title="Notifications" description="Choose how you'd like to be notified.">
+    <Checkbox defaultChecked>Email notifications</Checkbox>
+    <Checkbox>SMS alerts</Checkbox>
+  </FormSection>
+</Form>
 ```
 
 ### Required fields
 
 ```tsx
-<Container sm>
-  <Form submitLabel="Create account">
-    <Input label="Email" required placeholder="you@example.com" />
-    <Input label="Password" required />
-    <Input label="Referral code" placeholder="Optional" />
-  </Form>
-</Container>
+<Form submitLabel="Create account">
+  <Input label="Email" required placeholder="you@example.com" />
+  <Input label="Password" required />
+  <Input label="Referral code" placeholder="Optional" />
+</Form>
 ```
 
 ### Select and switch controls
 
 ```tsx
-<Container xl>
-  <Form twoColumn submitLabel="Save" cancelLabel="Cancel">
-    <Select label="Role" options={["Admin", "Editor", "Viewer"]} defaultValue="Editor" />
-    <Switch defaultChecked description="Email me when someone mentions me.">Notifications</Switch>
-  </Form>
-</Container>
+<Form twoColumn submitLabel="Save" cancelLabel="Cancel">
+  <Select label="Role" options={["Admin", "Editor", "Viewer"]} defaultValue="Editor" />
+  <Switch defaultChecked description="Email me when someone mentions me.">Notifications</Switch>
+</Form>
 ```
 
 ## Do & Don't
@@ -85,23 +75,19 @@ Form is a composition surface: you stitch the field atoms as children and keep t
 **Do** — Keep short forms one field per row so each label sits directly above its input and the eye flows straight down.
 
 ```tsx
-<Container sm>
-  <Form submitLabel="Sign in">
-    <Input label="Email" placeholder="you@example.com" />
-    <Input label="Password" />
-  </Form>
-</Container>
+<Form submitLabel="Sign in">
+  <Input label="Email" placeholder="you@example.com" />
+  <Input label="Password" />
+</Form>
 ```
 
 **Don't** — Pairing an email and password side by side cramps a sign-in form and breaks the natural top-to-bottom reading order.
 
 ```tsx
-<Container sm>
-  <Form twoColumn submitLabel="Sign in">
-    <Input label="Email" placeholder="you@example.com" />
-    <Input label="Password" />
-  </Form>
-</Container>
+<Form twoColumn submitLabel="Sign in">
+  <Input label="Email" placeholder="you@example.com" />
+  <Input label="Password" />
+</Form>
 ```
 
 ### Two-column
@@ -109,30 +95,26 @@ Form is a composition surface: you stitch the field atoms as children and keep t
 **Do** — Compose mixed rows inside the stacked form: give a full-width field like the street its own line and pair the similar-width city and ZIP in a Row.
 
 ```tsx
-<Container xl>
-  <Form submitLabel="Save">
-    <Input label="Street address" placeholder="123 Market St" />
-    <Row cozy>
-      <Column fill>
-        <Input label="City" placeholder="San Francisco" />
-      </Column>
-      <Column fill>
-        <Input label="ZIP" placeholder="94103" />
-      </Column>
-    </Row>
-  </Form>
-</Container>
+<Form submitLabel="Save">
+  <Input label="Street address" placeholder="123 Market St" />
+  <Row cozy>
+    <Column fill>
+      <Input label="City" placeholder="San Francisco" />
+    </Column>
+    <Column fill>
+      <Input label="ZIP" placeholder="94103" />
+    </Column>
+  </Row>
+</Form>
 ```
 
 **Don't** — Putting a wide field next to a tiny one in the same two-column row leaves the short input awkwardly oversized.
 
 ```tsx
-<Container xl>
-  <Form twoColumn submitLabel="Save">
-    <Input label="Street address" placeholder="123 Market St" />
-    <Input label="ZIP" placeholder="94103" />
-  </Form>
-</Container>
+<Form twoColumn submitLabel="Save">
+  <Input label="Street address" placeholder="123 Market St" />
+  <Input label="ZIP" placeholder="94103" />
+</Form>
 ```
 
 ### Sections
@@ -140,16 +122,14 @@ Form is a composition surface: you stitch the field atoms as children and keep t
 **Do** — Group related fields in a `FormSection` so each cluster carries its heading, its supporting line, and group semantics a screen reader announces.
 
 ```tsx
-<Container xl>
-  <Form submitLabel="Save">
-    <FormSection title="Personal info" description="Displayed on your public profile.">
-      <Input label="Full name" defaultValue="Rachel Chen" />
-    </FormSection>
-    <FormSection title="Billing" description="Used for invoices and receipts.">
-      <Input label="Card number" defaultValue="•••• 4242" />
-    </FormSection>
-  </Form>
-</Container>
+<Form submitLabel="Save">
+  <FormSection title="Personal info" description="Displayed on your public profile.">
+    <Input label="Full name" defaultValue="Rachel Chen" />
+  </FormSection>
+  <FormSection title="Billing" description="Used for invoices and receipts.">
+    <Input label="Card number" defaultValue="•••• 4242" />
+  </FormSection>
+</Form>
 ```
 
 **Don't** — Hand-rolled headings spliced between fields carry no grouping semantics, so assistive tech never hears which section a field belongs to.
@@ -168,22 +148,20 @@ Form is a composition surface: you stitch the field atoms as children and keep t
 **Do** — Keep the input and its submit button on one row so the input + action reads as one step.
 
 ```tsx
-<Container md>
-  <Card padded>
-    <Column relaxed>
-      <Column tight>
-        <Typography lead semibold>Subscribe to updates</Typography>
-        <Typography small muted>We'll send you a weekly digest of what changed.</Typography>
-      </Column>
-      <Row alignCenter snug>
-        <Column fill>
-          <Input placeholder="you@example.com" />
-        </Column>
-        <Button primary>Subscribe</Button>
-      </Row>
+<Card padded>
+  <Column relaxed>
+    <Column tight>
+      <Typography lead semibold>Subscribe to updates</Typography>
+      <Typography small muted>We'll send you a weekly digest of what changed.</Typography>
     </Column>
-  </Card>
-</Container>
+    <Row alignCenter snug>
+      <Column fill>
+        <Input placeholder="you@example.com" />
+      </Column>
+      <Button primary>Subscribe</Button>
+    </Row>
+  </Column>
+</Card>
 ```
 
 **Don't** — Stacking the field above its button breaks the single-decision rhythm and adds a row of dead space.

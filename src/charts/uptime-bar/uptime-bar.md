@@ -5,17 +5,15 @@ The statuspage strip: a single row of per-period status pills, oldest on the lef
 ## Usage
 
 ```tsx
-<Container lg>
-  <UptimeBar
-  label="API uptime"
-  caption="99.98% uptime"
-  startLabel="90 days ago"
-  endLabel="Today"
-  periods={Array.from({ length: 90 }, (_, i) =>
-    i === 61 ? { down: true } : i === 62 || i === 78 ? { degraded: true } : {},
-  )}
+<UptimeBar
+label="API uptime"
+caption="99.98% uptime"
+startLabel="90 days ago"
+endLabel="Today"
+periods={Array.from({ length: 90 }, (_, i) =>
+  i === 61 ? { down: true } : i === 62 || i === 78 ? { degraded: true } : {},
+)}
 />
-</Container>
 ```
 
 ## Variants
@@ -23,27 +21,23 @@ The statuspage strip: a single row of per-period status pills, oldest on the lef
 ### Compact
 
 ```tsx
-<Container lg>
-  <UptimeBar
-  label="CDN uptime"
-  compact
-  periods={Array.from({ length: 60 }, (_, i) => (i === 40 ? { degraded: true } : {}))}
+<UptimeBar
+label="CDN uptime"
+compact
+periods={Array.from({ length: 60 }, (_, i) => (i === 40 ? { degraded: true } : {}))}
 />
-</Container>
 ```
 
 ### With unknown periods
 
 ```tsx
-<Container lg>
-  <UptimeBar
-  label="Worker uptime"
-  caption="Monitoring began mid-window"
-  startLabel="30 days ago"
-  endLabel="Today"
-  periods={Array.from({ length: 30 }, (_, i) => (i < 6 ? { unknown: true } : i === 21 ? { down: true } : {}))}
+<UptimeBar
+label="Worker uptime"
+caption="Monitoring began mid-window"
+startLabel="30 days ago"
+endLabel="Today"
+periods={Array.from({ length: 30 }, (_, i) => (i < 6 ? { unknown: true } : i === 21 ? { down: true } : {}))}
 />
-</Container>
 ```
 
 ## Do & Don't
@@ -53,15 +47,13 @@ The statuspage strip: a single row of per-period status pills, oldest on the lef
 **Do** - Let the strip carry the whole anatomy: pills, summary caption, and edge labels, with the status tally in its accessible name.
 
 ```tsx
-<Container lg>
-  <UptimeBar
-  label="API uptime"
-  caption="99.98% uptime"
-  startLabel="90 days ago"
-  endLabel="Today"
-  periods={Array.from({ length: 90 }, (_, i) => (i === 61 ? { down: true } : {}))}
+<UptimeBar
+label="API uptime"
+caption="99.98% uptime"
+startLabel="90 days ago"
+endLabel="Today"
+periods={Array.from({ length: 90 }, (_, i) => (i === 61 ? { down: true } : {}))}
 />
-</Container>
 ```
 
 **Don't** - A hand-rolled row of colored Views has no accessible tally and no edge-caption anatomy.

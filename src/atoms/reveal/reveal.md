@@ -6,14 +6,12 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal>
-  <Container xs>
-    <Card padded>
-      <Column tight>
-        <Typography h4 semibold>Built for scroll</Typography>
-        <Typography small muted>This card rose into place when it reached the viewport.</Typography>
-      </Column>
-    </Card>
-  </Container>
+  <Card padded>
+    <Column tight>
+      <Typography h4 semibold>Built for scroll</Typography>
+      <Typography small muted>This card rose into place when it reached the viewport.</Typography>
+    </Column>
+  </Card>
 </Reveal>
 ```
 
@@ -25,14 +23,12 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 <Ticker values={[1, 2]} interval={2800}>
   {(pass) => (
     <Reveal key={pass}>
-      <Container xs>
-        <Card padded>
-          <Column tight>
-            <Typography h4 semibold>Arriving</Typography>
-            <Typography small muted>The same entrance, played again every few seconds.</Typography>
-          </Column>
-        </Card>
-      </Container>
+      <Card padded>
+        <Column tight>
+          <Typography h4 semibold>Arriving</Typography>
+          <Typography small muted>The same entrance, played again every few seconds.</Typography>
+        </Column>
+      </Card>
     </Reveal>
   )}
 </Ticker>
@@ -76,11 +72,9 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal fromAbove>
-  <Container xs>
-    <Card padded>
-      <Typography small semibold>Descends into place</Typography>
-    </Card>
-  </Container>
+  <Card padded>
+    <Typography small semibold>Descends into place</Typography>
+  </Card>
 </Reveal>
 ```
 
@@ -88,11 +82,9 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal fromLeft>
-  <Container xs>
-    <Card padded>
-      <Typography small semibold>Slides in from the left</Typography>
-    </Card>
-  </Container>
+  <Card padded>
+    <Typography small semibold>Slides in from the left</Typography>
+  </Card>
 </Reveal>
 ```
 
@@ -100,11 +92,9 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal fromRight>
-  <Container xs>
-    <Card padded>
-      <Typography small semibold>Slides in from the right</Typography>
-    </Card>
-  </Container>
+  <Card padded>
+    <Typography small semibold>Slides in from the right</Typography>
+  </Card>
 </Reveal>
 ```
 
@@ -112,11 +102,9 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal pronounced>
-  <Container xs>
-    <Card padded>
-      <Typography small semibold>Travels further before settling</Typography>
-    </Card>
-  </Container>
+  <Card padded>
+    <Typography small semibold>Travels further before settling</Typography>
+  </Card>
 </Reveal>
 ```
 
@@ -124,11 +112,9 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal brisk>
-  <Container xs>
-    <Card padded>
-      <Typography small semibold>Arrives faster</Typography>
-    </Card>
-  </Container>
+  <Card padded>
+    <Typography small semibold>Arrives faster</Typography>
+  </Card>
 </Reveal>
 ```
 
@@ -136,11 +122,9 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal deepInView>
-  <Container xs>
-    <Card padded>
-      <Typography small semibold>Waits until it is properly in view</Typography>
-    </Card>
-  </Container>
+  <Card padded>
+    <Typography small semibold>Waits until it is properly in view</Typography>
+  </Card>
 </Reveal>
 ```
 
@@ -260,32 +244,28 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal>
-  <Container xs>
-    <Card padded>
-      <Column tight>
-        <Typography h4 semibold>One entrance</Typography>
-        <Typography small muted>The card and its lines arrive as a single object.</Typography>
-      </Column>
-    </Card>
-  </Container>
+  <Card padded>
+    <Column tight>
+      <Typography h4 semibold>One entrance</Typography>
+      <Typography small muted>The card and its lines arrive as a single object.</Typography>
+    </Column>
+  </Card>
 </Reveal>
 ```
 
 **Don't** - Reveal each leaf inside one card; the card assembles itself in pieces in front of the reader.
 
 ```tsx
-<Container xs>
-  <Card padded>
-    <Column tight>
-      <Reveal>
-        <Typography h4 semibold>Three entrances</Typography>
-      </Reveal>
-      <Reveal>
-        <Typography small muted>Every line arrives on its own schedule.</Typography>
-      </Reveal>
-    </Column>
-  </Card>
-</Container>
+<Card padded>
+  <Column tight>
+    <Reveal>
+      <Typography h4 semibold>Three entrances</Typography>
+    </Reveal>
+    <Reveal>
+      <Typography small muted>Every line arrives on its own schedule.</Typography>
+    </Reveal>
+  </Column>
+</Card>
 ```
 
 ### the real thing
@@ -294,11 +274,9 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal pronounced>
-  <Container xs>
-    <Card padded>
-      <Typography small semibold>Reveals itself</Typography>
-    </Card>
-  </Container>
+  <Card padded>
+    <Typography small semibold>Reveals itself</Typography>
+  </Card>
 </Reveal>
 ```
 

@@ -3,20 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Container, GeoMap } = scope;
+  const { GeoMap } = scope;
   return (
-<Container xl>
-  <GeoMap
-  title="Bandwidth served"
-  formatValue={(v) => `${v} TB`}
-  points={[
-    { label: "Los Angeles", lat: 34.0522, lng: -118.2437, count: 88 },
-    { label: "Amsterdam", lat: 52.3676, lng: 4.9041, count: 64 },
-    { label: "Nairobi", lat: -1.2921, lng: 36.8219, count: 12 },
-    { label: "Santiago", lat: -33.4489, lng: -70.6693, count: 21 },
-    { label: "Osaka", lat: 34.6937, lng: 135.5023, count: 39 },
-  ]}
+<GeoMap
+title="Bandwidth served"
+formatValue={(v) => `${v} TB`}
+points={[
+  { label: "Los Angeles", lat: 34.0522, lng: -118.2437, count: 88 },
+  { label: "Amsterdam", lat: 52.3676, lng: 4.9041, count: 64 },
+  { label: "Nairobi", lat: -1.2921, lng: 36.8219, count: 12 },
+  { label: "Santiago", lat: -33.4489, lng: -70.6693, count: 21 },
+  { label: "Osaka", lat: 34.6937, lng: 135.5023, count: 39 },
+]}
 />
-</Container>
   );
 }

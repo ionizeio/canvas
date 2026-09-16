@@ -3,20 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { DescriptionList, Container } = scope;
+  const { DescriptionList } = scope;
   return (
-<Container sm>
-  <DescriptionList
-  card
-  inline
-  divided
-  title="Subscription"
-  items={[
-    { term: "Status", value: "Active", status: true },
-    { term: "Seats", value: "12 of 20" },
-    { term: "Renews", value: "Mar 1, 2026" }
-  ]}
+<DescriptionList
+card
+inline
+divided
+title="Subscription"
+items={[
+  { term: "Status", value: "Active", status: true },
+  { term: "Seats", value: "12 of 20" },
+  { term: "Renews", value: "Mar 1, 2026" }
+]}
 />
-</Container>
   );
 }

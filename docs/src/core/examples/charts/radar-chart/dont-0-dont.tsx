@@ -3,13 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Container, RadarChart } = scope;
+  const { RadarChart } = scope;
   return (
-<Container lg>
-  <RadarChart
-  axes={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
-  series={[{ label: "Revenue", values: [4, 5, 6, 7, 8, 9] }]}
+<RadarChart
+axes={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
+series={[{ label: "Revenue", values: [4, 5, 6, 7, 8, 9] }]}
 />
-</Container>
   );
 }

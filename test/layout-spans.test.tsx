@@ -186,16 +186,20 @@ describe("Container", () => {
     expect(at("c").style.alignSelf).toBe("center");
   });
 
-  it("defaults to the page step, fluid drops the cap, start pins to the leading edge", () => {
+  it("conforms to its parent by default (no cap), page is a step, start pins to the leading edge", () => {
     ui(<Container testID="p" />);
-    expect(at("p").style.maxWidth).toBe(`${widths.page}px`);
+    expect(at("p").style.width).toBe("100%");
+    expect(at("p").style.maxWidth).toBe("");
+    ui(<Container page testID="pg" />);
+    expect(at("pg").style.maxWidth).toBe(`${widths.page}px`);
     ui(<Container fluid start testID="f" />);
     expect(at("f").style.maxWidth).toBe("");
     expect(at("f").style.alignSelf).toBe("flex-start");
   });
 
   it("resolves the measure narrowest-first, with fluid winning outright", () => {
-    expect(measureOf({})).toBe("page");
+    expect(measureOf({})).toBe("fluid");
+    expect(measureOf({ page: true })).toBe("page");
     expect(measureOf({ xl: true, sm: true })).toBe("sm");
     expect(measureOf({ fluid: true, xs: true })).toBe("fluid");
     expect(containerStyle("md", false)).toEqual({ width: "100%", alignSelf: "center", maxWidth: widths.md });

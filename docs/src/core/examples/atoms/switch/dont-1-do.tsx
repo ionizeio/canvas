@@ -3,13 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Switch, Column, Container } = scope;
+  const { Button, Switch, Column } = scope;
   return (
-<Container xxs>
-  <Column cozy alignStart>
-    <Switch defaultChecked>Auto-save drafts</Switch>
-    <Button destructive small>Delete account…</Button>
-  </Column>
-</Container>
+<Column cozy alignStart>
+  <Switch defaultChecked>Auto-save drafts</Switch>
+  <Button destructive small>Delete account…</Button>
+</Column>
   );
 }

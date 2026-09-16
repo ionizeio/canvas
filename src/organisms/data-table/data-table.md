@@ -273,22 +273,20 @@ no scrolling tab stop. The iOS compact primary-column layout is unchanged.
 **Do** — Use the built-in paginated footer so the search result is always anchored to the total.
 
 ```tsx
-<Container lg>
-  <Card flat flush style={{ overflow: "hidden" }}>
-    <Row snug alignCenter between pad>
-      <Input small placeholder="Search users..." />
-      <Button outline small>Export</Button>
-    </Row>
-    <Divider />
-    <DataTable paginated pageSize={3} columns={["Name", "Email"]} rows={[
-      ["Alice Johnson", "alice@example.com"],
-      ["Bob Smith", "bob@example.com"],
-      ["Rachel Chen", "rachel@example.com"],
-      ["Dan Wright", "dan@example.com"],
-      ["Eve Park", "eve@example.com"]
-    ]} />
-  </Card>
-</Container>
+<Card flat flush style={{ overflow: "hidden" }}>
+  <Row snug alignCenter between pad>
+    <Input small placeholder="Search users..." />
+    <Button outline small>Export</Button>
+  </Row>
+  <Divider />
+  <DataTable paginated pageSize={3} columns={["Name", "Email"]} rows={[
+    ["Alice Johnson", "alice@example.com"],
+    ["Bob Smith", "bob@example.com"],
+    ["Rachel Chen", "rachel@example.com"],
+    ["Dan Wright", "dan@example.com"],
+    ["Eve Park", "eve@example.com"]
+  ]} />
+</Card>
 ```
 
 **Don't** — Wiring search but dropping the footer leaves the user with no result count or way to page through 142 rows.
@@ -313,23 +311,21 @@ no scrolling tab stop. The iOS compact primary-column layout is unchanged.
 **Do** — Pair the selection with a bulk bar that leads with the non-destructive action and keeps Delete visually distinct.
 
 ```tsx
-<Container lg>
-  <Card flat flush style={{ overflow: "hidden" }}>
-    <Row snug alignCenter between pad>
-      <Typography tiny muted>2 selected</Typography>
-      <Row snug alignCenter>
-        <Button outline small>Bulk edit</Button>
-        <Button destructive small>Delete</Button>
-      </Row>
+<Card flat flush style={{ overflow: "hidden" }}>
+  <Row snug alignCenter between pad>
+    <Typography tiny muted>2 selected</Typography>
+    <Row snug alignCenter>
+      <Button outline small>Bulk edit</Button>
+      <Button destructive small>Delete</Button>
     </Row>
-    <Divider />
-    <DataTable selectable defaultSelectedKeys={[0, 2]} columns={["Name", "Email"]} rows={[
-      ["Alice Johnson", "alice@example.com"],
-      ["Bob Smith", "bob@example.com"],
-      ["Rachel Chen", "rachel@example.com"]
-    ]} />
-  </Card>
-</Container>
+  </Row>
+  <Divider />
+  <DataTable selectable defaultSelectedKeys={[0, 2]} columns={["Name", "Email"]} rows={[
+    ["Alice Johnson", "alice@example.com"],
+    ["Bob Smith", "bob@example.com"],
+    ["Rachel Chen", "rachel@example.com"]
+  ]} />
+</Card>
 ```
 
 **Don't** — Surfacing only the destructive Delete on a selection invites accidental data loss with no safer path.
@@ -347,17 +343,15 @@ no scrolling tab stop. The iOS compact primary-column layout is unchanged.
 **Do** — Echo the live result count next to the filter so its effect is visible.
 
 ```tsx
-<Container lg>
-    <Card flat padded>
-      <Row snug alignCenter between>
-        <Row snug alignCenter>
-          <Typography tiny muted>Status:</Typography>
-          <Column><Select value="All" options={["All", "Active", "Inactive"]} small /></Column>
-        </Row>
-        <Typography tiny muted>142 results</Typography>
+  <Card flat padded>
+    <Row snug alignCenter between>
+      <Row snug alignCenter>
+        <Typography tiny muted>Status:</Typography>
+        <Column><Select value="All" options={["All", "Active", "Inactive"]} small /></Column>
       </Row>
-    </Card>
-</Container>
+      <Typography tiny muted>142 results</Typography>
+    </Row>
+  </Card>
 ```
 
 **Don't** — A filter control with no result count leaves the user guessing whether the filter narrowed anything.
@@ -374,17 +368,13 @@ no scrolling tab stop. The iOS compact primary-column layout is unchanged.
 **Do** — Keep the header and let the built-in emptyMessage span a centered row so the structure stays intact.
 
 ```tsx
-<Container lg>
-    <DataTable bordered columns={["Name", "Email", "Status"]} rows={[]} emptyMessage="No results found." />
-</Container>
+  <DataTable bordered columns={["Name", "Email", "Status"]} rows={[]} emptyMessage="No results found." />
 ```
 
 **Don't** — Hiding the body entirely on no results collapses the table and looks broken.
 
 ```tsx
-<Container lg>
-    <DataTable bordered columns={["Name", "Email", "Status"]} rows={[]} />
-</Container>
+  <DataTable bordered columns={["Name", "Email", "Status"]} rows={[]} />
 ```
 
 ### loading
@@ -392,9 +382,7 @@ no scrolling tab stop. The iOS compact primary-column layout is unchanged.
 **Do** — Use the built-in loading skeletons so the load reads as the table taking shape in place.
 
 ```tsx
-<Container lg>
-    <DataTable bordered loading columns={["Name", "Email", "Status"]} rows={[]} />
-</Container>
+  <DataTable bordered loading columns={["Name", "Email", "Status"]} rows={[]} />
 ```
 
 **Don't** — A bare "Loading…" string gives no sense of progress and reads like static content.

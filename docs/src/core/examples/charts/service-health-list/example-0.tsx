@@ -3,17 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Container, ServiceHealthList } = scope;
+  const { ServiceHealthList } = scope;
   return (
-<Container lg>
-  <ServiceHealthList
-  title="System status"
-  items={[
-    { label: "API", detail: "99.98%", periods: Array.from({ length: 45 }, () => ({})) },
-    { label: "Dashboard", detail: "99.92%", periods: Array.from({ length: 45 }, (_, i) => (i === 30 ? { degraded: true } : {})), degraded: true },
-    { label: "Webhooks", detail: "97.10%", periods: Array.from({ length: 45 }, (_, i) => (i > 40 ? { down: true } : {})), down: true },
-  ]}
+<ServiceHealthList
+title="System status"
+items={[
+  { label: "API", detail: "99.98%", periods: Array.from({ length: 45 }, () => ({})) },
+  { label: "Dashboard", detail: "99.92%", periods: Array.from({ length: 45 }, (_, i) => (i === 30 ? { degraded: true } : {})), degraded: true },
+  { label: "Webhooks", detail: "97.10%", periods: Array.from({ length: 45 }, (_, i) => (i > 40 ? { down: true } : {})), down: true },
+]}
 />
-</Container>
   );
 }

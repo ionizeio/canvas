@@ -3,19 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Container, ServiceHealthList } = scope;
+  const { Card, ServiceHealthList } = scope;
   return (
-<Container lg>
-  <Card padded>
-    <ServiceHealthList
-      plain
-      compact
-      items={[
-        { label: "API", detail: "operational" },
-        { label: "Dashboard", detail: "degraded", degraded: true },
-      ]}
-    />
-  </Card>
-</Container>
+<Card padded>
+  <ServiceHealthList
+    plain
+    compact
+    items={[
+      { label: "API", detail: "operational" },
+      { label: "Dashboard", detail: "degraded", degraded: true },
+    ]}
+  />
+</Card>
   );
 }

@@ -2,7 +2,7 @@ import { Fragment, type ComponentType, type ReactNode, useEffect, useMemo, useRe
 import { consumeEscapeKey } from "../../style/escape-layer.js";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 import { FlatList, StyleSheet, ScrollView, type ViewProps, type ViewStyle as RNViewStyle } from "react-native";
-import { View, Pressable, Text, TextInput, useTheme, useControllableState, controlRipple, devWarn, breakpoints, useMeasuredWidth, tabularNums, type StyleProp, type TextStyle, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useTheme, useControllableState, controlRipple, devWarn, breakpoints, useMeasuredWidth, tabularNums, type StyleProp, type TextStyle, type ViewStyle, type LayoutStyle, useFillStyle } from "../../style/index.js";
 import { type CheckboxProps } from "../../atoms/checkbox/checkbox.shared.js";
 import { type PaginationProps } from "../../atoms/pagination/pagination.shared.js";
 import { type SkeletonProps } from "../../atoms/skeleton/skeleton.shared.js";
@@ -354,6 +354,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     const { columns, rows, striped, bordered, selectable, onRowPress, onRowEdit, onRowDelete, inlineEdit, rowKey, virtualized, loading, emptyMessage, paginated, testID, style } = props;
     const density = densityOf(props);
     const { tokens } = useTheme();
+    const fill = useFillStyle("DataTable");
 
     const cols = useMemo(() => normalizeColumns(columns), [columns]);
 
@@ -568,6 +569,8 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     };
 
     const wrap: StyleProp<ViewStyle> = [
+      // FILL: the table spans the parent it is given (the 320 floor below is the skin's).
+      fill,
       skin.wrap,
       // The skin's 320 floor keeps columns readable in content-sized contexts,
       // but once the table has MEASURED a narrower container (a real phone, a

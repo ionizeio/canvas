@@ -104,21 +104,19 @@ Floating menus triggered by a button: actions, options, navigation.
 ### End alignment
 
 ```tsx
-<Container sm>
-  <Row end>
-    <Dropdown
-      trigger="Account"
-      alignEnd
-      title="Rachel Chen"
-      description="rachel@nannier.com"
-      items={[
-        { label: "Profile", icon: "user" },
-        { label: "Settings", icon: "settings" },
-        { label: "Log out", icon: "logOut", separatorBefore: true }
-      ]}
-    />
-  </Row>
-</Container>
+<Row end>
+  <Dropdown
+    trigger="Account"
+    alignEnd
+    title="Rachel Chen"
+    description="rachel@nannier.com"
+    items={[
+      { label: "Profile", icon: "user" },
+      { label: "Settings", icon: "settings" },
+      { label: "Log out", icon: "logOut", separatorBefore: true }
+    ]}
+  />
+</Row>
 ```
 
 ### Disabled trigger

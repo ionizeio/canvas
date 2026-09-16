@@ -5,13 +5,11 @@ A full-circle completion ring, the Gauge's sibling: a muted track ring, a tone-c
 ## Usage
 
 ```tsx
-<Container xxxs>
-  <Card padded>
-    <Column alignCenter>
-      <ProgressRing value={72} label="Complete" />
-    </Column>
-  </Card>
-</Container>
+<Card padded>
+  <Column alignCenter>
+    <ProgressRing value={72} label="Complete" />
+  </Column>
+</Card>
 ```
 
 ## Variants
@@ -19,25 +17,21 @@ A full-circle completion ring, the Gauge's sibling: a muted track ring, a tone-c
 ### Success tone
 
 ```tsx
-<Container xxxs>
-  <Card padded>
-    <Column alignCenter>
-      <ProgressRing value={92} success label="Tests passing" />
-    </Column>
-  </Card>
-</Container>
+<Card padded>
+  <Column alignCenter>
+    <ProgressRing value={92} success label="Tests passing" />
+  </Column>
+</Card>
 ```
 
 ### Warning tone, compact
 
 ```tsx
-<Container xxxs>
-  <Card padded>
-    <Column alignCenter>
-      <ProgressRing value={81} warning compact label="Budget used" />
-    </Column>
-  </Card>
-</Container>
+<Card padded>
+  <Column alignCenter>
+    <ProgressRing value={81} warning compact label="Budget used" />
+  </Column>
+</Card>
 ```
 
 ## Do & Don't
@@ -47,13 +41,11 @@ A full-circle completion ring, the Gauge's sibling: a muted track ring, a tone-c
 **Do** - Put a muted track behind the value arc, the percent readout in the ring's center, and the label below the graphic.
 
 ```tsx
-<Container xxxs>
-  <Card padded>
-    <Column alignCenter>
-      <ProgressRing value={72} label="Complete" />
-    </Column>
-  </Card>
-</Container>
+<Card padded>
+  <Column alignCenter>
+    <ProgressRing value={72} label="Complete" />
+  </Column>
+</Card>
 ```
 
 **Don't** - A bordered circle with no track and no readout gives no baseline to read the fill against and no exact value.

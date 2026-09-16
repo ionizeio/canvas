@@ -3,19 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Container, ComposedChart } = scope;
+  const { ComposedChart } = scope;
   return (
-<Container xl>
-  <ComposedChart
-  title="Deploys and incidents"
-  labels={["W1", "W2", "W3", "W4", "W5", "W6"]}
-  dots
-  defaultSelected={3}
-  series={[
-    { label: "Deploys", values: [12, 18, 15, 22, 19, 24] },
-    { label: "Incidents", values: [2, 1, 3, 1, 2, 1], line: true },
-  ]}
+<ComposedChart
+title="Deploys and incidents"
+labels={["W1", "W2", "W3", "W4", "W5", "W6"]}
+dots
+defaultSelected={3}
+series={[
+  { label: "Deploys", values: [12, 18, 15, 22, 19, 24] },
+  { label: "Incidents", values: [2, 1, 3, 1, 2, 1], line: true },
+]}
 />
-</Container>
   );
 }

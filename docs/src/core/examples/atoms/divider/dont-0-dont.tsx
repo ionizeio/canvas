@@ -3,9 +3,9 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Text, Divider, Container } = scope;
+  const { View, Text, Divider } = scope;
   return (
-<Container xxs>
+<View>
   <Text style={{ borderRadius: 6, paddingHorizontal: 8, paddingVertical: 6, fontSize: 14, lineHeight: 20 }}>Profile</Text>
   <Divider />
   <Text style={{ borderRadius: 6, paddingHorizontal: 8, paddingVertical: 6, fontSize: 14, lineHeight: 20 }}>Account</Text>
@@ -13,6 +13,6 @@ export default function Example(scope: ExampleScope) {
   <Text style={{ borderRadius: 6, paddingHorizontal: 8, paddingVertical: 6, fontSize: 14, lineHeight: 20 }}>Notifications</Text>
   <Divider />
   <Text style={{ borderRadius: 6, paddingHorizontal: 8, paddingVertical: 6, fontSize: 14, lineHeight: 20 }}>Billing</Text>
-</Container>
+</View>
   );
 }

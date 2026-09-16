@@ -3,20 +3,22 @@ import { CELL_AXIS, LayoutAxisProvider, View, widths, type StyleProp, type ViewS
 import { type FlexSkin } from "../layout/layout.styles.js";
 import { type Pad } from "../layout/layout.shared.js";
 
-// Container: the bounds provider (Bootstrap `.container` / `.container-fluid`).
+// Container: the bounds provider (Bootstrap `.container-fluid` / `.container`).
 // A Canvas component never dictates its own width; it is FILL or HUG and the
 // nearest layout container provides the bounds. Container is the container that
-// exists to provide a MEASURE: it spans its parent (`width:"100%"`), caps at one
-// step of the shared width scale (`maxWidth`), and centers itself, so the reading
-// measure of a form, an article, a settings page, or a card stack is one named
-// step instead of a `maxWidth` invented at the call site. The cap is fluid: below
-// the step the container simply fills its parent, which is all a phone is.
+// exists to provide a MEASURE. By default it conforms to its own parent: it spans
+// it (`width:"100%"`) with no cap, because the parent is the conformance factor
+// and a width the box invents for itself is exactly what the kit forbids. A named
+// step of the shared width scale caps it (`maxWidth`) and centers it, so the
+// reading measure of a form, an article, a settings page, or a card stack is one
+// named step instead of a `maxWidth` invented at the call site. A cap is fluid:
+// below the step the container simply fills its parent, which is all a phone is.
 //
 // Axes (each a boolean; first match wins, narrowest first, so a stray wider
 // step never silently widens a deliberate narrow one):
-//   - measure   xxxs 192 / xxs 256 / xs 320 / sm 384 / md 448 / lg 512 / xl 576 /
-//               xxl 672 / xxxl 768 / wide 896 / wider 1024 / widest 1152 /
-//               page 1280 (default) / fluid (no cap)
+//   - measure   full width (default) / xxxs 192 / xxs 256 / xs 320 / sm 384 /
+//               md 448 / lg 512 / xl 576 / xxl 672 / xxxl 768 / wide 896 /
+//               wider 1024 / widest 1152 / page 1280
 //   - alignment centered (default) / start
 //   - gutters   padTight 8 / pad 16 / padLoose 24 of HORIZONTAL padding (Row and
 //               Column's pad scale); vertical rhythm belongs to the Column inside.
@@ -27,10 +29,13 @@ import { type Pad } from "../layout/layout.shared.js";
 
 export type Measure = WidthKey | "fluid";
 
+/** The default measure: no cap, the container conforms to its parent. */
+export const FLUID: Measure = "fluid";
+
 export interface ContainerProps {
   children?: ReactNode;
 
-  // Measure (pick one; default `page`). The step of the width scale the container caps at.
+  // Measure (pick one; omit for full width). The step of the width scale the container caps at.
   xxxs?: boolean; // 192, a small KPI tile
   xxs?: boolean; // 256, a chart tile
   xs?: boolean; // 320
@@ -43,8 +48,8 @@ export interface ContainerProps {
   wide?: boolean; // 896
   wider?: boolean; // 1024
   widest?: boolean; // 1152
-  page?: boolean; // 1280 (default)
-  /** No cap: the container spans its parent (Bootstrap `.container-fluid`). Wins over every step. */
+  page?: boolean; // 1280
+  /** No cap, the default: the container spans its parent. Explicit `fluid` wins over every step when several are passed. */
   fluid?: boolean;
 
   /** Pin the container to the leading edge instead of centering it in its parent. */
@@ -64,7 +69,7 @@ export interface ContainerProps {
   style?: StyleProp<ViewStyle>;
 }
 
-// Measure precedence: fluid, then narrowest first; default `page`.
+// Measure precedence: fluid, then narrowest first; default full width (fluid).
 export function measureOf(p: ContainerProps): Measure {
   if (p.fluid) return "fluid";
   if (p.xxxs) return "xxxs";
@@ -79,7 +84,8 @@ export function measureOf(p: ContainerProps): Measure {
   if (p.wide) return "wide";
   if (p.wider) return "wider";
   if (p.widest) return "widest";
-  return "page";
+  if (p.page) return "page";
+  return FLUID;
 }
 
 // Gutter precedence, loosest first (Row and Column's own); default none.

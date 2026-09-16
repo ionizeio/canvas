@@ -3,19 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Reveal, Typography, Column, Container } = scope;
+  const { Card, Reveal, Typography, Column } = scope;
   return (
-<Container xs>
-  <Card padded>
-    <Column tight>
-      <Reveal>
-        <Typography h4 semibold>Three entrances</Typography>
-      </Reveal>
-      <Reveal>
-        <Typography small muted>Every line arrives on its own schedule.</Typography>
-      </Reveal>
-    </Column>
-  </Card>
-</Container>
+<Card padded>
+  <Column tight>
+    <Reveal>
+      <Typography h4 semibold>Three entrances</Typography>
+    </Reveal>
+    <Reveal>
+      <Typography small muted>Every line arrives on its own schedule.</Typography>
+    </Reveal>
+  </Column>
+</Card>
   );
 }

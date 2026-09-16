@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle } from "../../style/index.js";
 import { Sparkline } from "../../charts/sparkline/sparkline.js";
 import { StackedBar } from "../../charts/stacked-bar/stacked-bar.js";
 import { type StackedSegment } from "../../charts/shared/types.js";
@@ -240,9 +240,11 @@ export function createStats(skin: StatsSkin) {
     // surface wraps the stacks in a shared parent card so the borderless metrics
     // have something to sit on.
     const isPlain = surface === "plain";
+    // FILL: the group spans the parent it is given; the items flex-wrap inside it.
+    const fill = useFillStyle("Stats");
 
     return (
-      <View testID={testID} style={[isPlain ? skin.plainContainer(tokens) : null, style]}>
+      <View testID={testID} style={[isPlain ? skin.plainContainer(tokens) : null, fill, style]}>
         {title != null && title !== "" ? <Text style={skin.title(tokens, surface)}>{title}</Text> : null}
         <View style={[row, skin.rowGap[surface]]}>
           {items.map((item, i) => (

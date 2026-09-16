@@ -1,5 +1,5 @@
 import { cloneElement, isValidElement, type ComponentType, type ReactElement } from "react";
-import { View, Text, useTheme, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Text, useTheme, type StyleProp, type ViewStyle, type LayoutStyle, useFillStyle } from "../../style/index.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
 import * as s from "./empty-state.styles.js";
@@ -85,6 +85,8 @@ export function createEmptyState(skin: EmptyStateSkin, Button: ButtonComponent =
   return function EmptyState(props: EmptyStateProps) {
     const { icon, title, description, actionLabel, onAction, bordered, compact, testID, style } = props;
     const { tokens } = useTheme();
+    // FILL: the state spans the parent it is given.
+    const fill = useFillStyle("EmptyState");
     const tone: Tone = toneOf(props);
 
     const container: StyleProp<ViewStyle> = [
@@ -92,6 +94,7 @@ export function createEmptyState(skin: EmptyStateSkin, Button: ButtonComponent =
       bordered ? skin.borderedBase : null,
       bordered ? s.borderedSurface(tokens) : null,
       bordered ? skin.borderedPad[compact ? "compact" : "default"] : null,
+      fill,
       style,
     ];
 

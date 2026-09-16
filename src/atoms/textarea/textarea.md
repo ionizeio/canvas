@@ -45,19 +45,17 @@ Cancelling an IME candidate keeps the overlay open.
 ### Formatting toolbar
 
 ```tsx
-<Container sm>
-  <Card flat flush style={{ overflow: "hidden" }}>
-    <Row alignCenter tight padTight>
-      <Button ghost small>B</Button>
-      <Button ghost small>I</Button>
-      <Button ghost small>{"</>"}</Button>
-      <Divider vertical style={{ height: 16 }} />
-      <Button ghost small>Comment</Button>
-    </Row>
-    <Divider />
-    <Textarea rows={4} flush placeholder="Leave a comment…" />
-  </Card>
-</Container>
+<Card flat flush style={{ overflow: "hidden" }}>
+  <Row alignCenter tight padTight>
+    <Button ghost small>B</Button>
+    <Button ghost small>I</Button>
+    <Button ghost small>{"</>"}</Button>
+    <Divider vertical style={{ height: 16 }} />
+    <Button ghost small>Comment</Button>
+  </Row>
+  <Divider />
+  <Textarea rows={4} flush placeholder="Leave a comment…" />
+</Card>
 ```
 
 ### Disabled
@@ -120,17 +118,15 @@ Cancelling an IME candidate keeps the overlay open.
 **Do** — Make each control a real focusable button that toggles an active state when pressed.
 
 ```tsx
-<Container sm>
-  <Card flat flush style={{ overflow: "hidden" }}>
-    <Row alignCenter tight padTight>
-      <Button ghost small>B</Button>
-      <Button ghost small>I</Button>
-      <Button ghost small>{"</>"}</Button>
-    </Row>
-    <Divider />
-    <Textarea rows={4} flush placeholder="Leave a comment" />
-  </Card>
-</Container>
+<Card flat flush style={{ overflow: "hidden" }}>
+  <Row alignCenter tight padTight>
+    <Button ghost small>B</Button>
+    <Button ghost small>I</Button>
+    <Button ghost small>{"</>"}</Button>
+  </Row>
+  <Divider />
+  <Textarea rows={4} flush placeholder="Leave a comment" />
+</Card>
 ```
 
 **Don't** — Static, unclickable glyphs look like a toolbar but cannot be pressed or focused.

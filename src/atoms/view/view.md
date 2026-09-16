@@ -67,11 +67,9 @@ The layout primitive: a flex container that runs identically on iOS, Android, an
 **Do** — A bordered, filled, padded surface is a Card; it carries the platform's own radius, hairline and elevation.
 
 ```tsx
-<Container xxs>
-  <Card>
-    <Typography>A real surface</Typography>
-  </Card>
-</Container>
+<Card>
+  <Typography>A real surface</Typography>
+</Card>
 ```
 
 **Don't** — Rebuilding the same box out of a View and four style properties drifts from the platform skins the moment one of them changes.

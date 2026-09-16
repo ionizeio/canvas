@@ -1,6 +1,6 @@
 import { type ComponentType, useState } from "react";
 import { consumeEscapeKey } from "../../style/escape-layer.js";
-import { View, Text, TextInput, useTheme, useResponsive, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Text, TextInput, useTheme, useResponsive, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle } from "../../style/index.js";
 import { Avatar as WebAvatar, AvatarGroup as WebAvatarGroup } from "../../atoms/avatar/avatar.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
@@ -242,6 +242,8 @@ export function createDescriptionList(
   return function DescriptionList(props: DescriptionListProps) {
     const { items, title, subtitle, divided, card, onUpdate, onCopy, testID, style } = props;
     const { tokens } = useTheme();
+    // FILL: the list spans the parent it is given.
+    const fill = useFillStyle("DescriptionList");
     const layout = layoutOf(props);
     // The two-column term label narrows at phone widths (160 -> 120) so the
     // value column keeps room to breathe.
@@ -265,6 +267,7 @@ export function createDescriptionList(
       // No global padding when a header band supplies its own px-6 per section.
       card && !hasHeader ? { padding: skin.cardPadding } : null,
       !hasHeader ? { gap: skin.rowGap } : null,
+      fill,
       style,
     ];
 

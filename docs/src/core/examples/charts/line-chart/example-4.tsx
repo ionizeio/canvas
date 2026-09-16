@@ -3,16 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Container, LineChart } = scope;
+  const { LineChart } = scope;
   return (
-<Container md>
-  <LineChart
-  compact
-  title="Signups"
-  labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
-  series={[{ label: "Signups", values: [24, 31, 28, 42, 39, 47, 51] }]}
-  curved
+<LineChart
+compact
+title="Signups"
+labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
+series={[{ label: "Signups", values: [24, 31, 28, 42, 39, 47, 51] }]}
+curved
 />
-</Container>
   );
 }

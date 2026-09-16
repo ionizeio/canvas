@@ -25,102 +25,90 @@ A single- or multi-series bar chart: vertical columns (or horizontal rows) sized
 ### Grouped bars
 
 ```tsx
-<Container xl>
-  <Chart
-  title="Revenue, costs, profit"
-  labels={["Q1 '23", "Q2 '23", "Q3 '23", "Q4 '23", "Q1 '24", "Q2 '24", "Q3 '24", "Q4 '24"]}
-  series={[
-    { label: "Revenue", values: [49, 51, 61, 61, 62, 70, 84, 89] },
-    { label: "Costs", values: [32, 32, 33, 38, 41, 48, 55, 59] },
-    { label: "Profit", values: [17, 19, 28, 23, 21, 22, 29, 30] }
-  ]}
+<Chart
+title="Revenue, costs, profit"
+labels={["Q1 '23", "Q2 '23", "Q3 '23", "Q4 '23", "Q1 '24", "Q2 '24", "Q3 '24", "Q4 '24"]}
+series={[
+  { label: "Revenue", values: [49, 51, 61, 61, 62, 70, 84, 89] },
+  { label: "Costs", values: [32, 32, 33, 38, 41, 48, 55, 59] },
+  { label: "Profit", values: [17, 19, 28, 23, 21, 22, 29, 30] }
+]}
 />
-</Container>
 ```
 
 ### Stacked columns
 
 ```tsx
-<Container xl>
-  <Chart
-  title="Token issuance by client"
-  stacked
-  labels={["acme", "globex", "initech", "umbrella", "soylent"]}
-  series={[
-    { label: "Authorization code", values: [1840, 1210, 960, 640, 410] },
-    { label: "Client credentials", values: [920, 1480, 340, 1120, 260] },
-    { label: "Refresh token", values: [610, 380, 720, 290, 180] },
-    { label: "Device code", values: [140, 90, 260, 70, 55] }
-  ]}
+<Chart
+title="Token issuance by client"
+stacked
+labels={["acme", "globex", "initech", "umbrella", "soylent"]}
+series={[
+  { label: "Authorization code", values: [1840, 1210, 960, 640, 410] },
+  { label: "Client credentials", values: [920, 1480, 340, 1120, 260] },
+  { label: "Refresh token", values: [610, 380, 720, 290, 180] },
+  { label: "Device code", values: [140, 90, 260, 70, 55] }
+]}
 />
-</Container>
 ```
 
 ### Success vs failure
 
 ```tsx
-<Container xl>
-  <Chart
-  title="Sign-ins"
-  labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
-  series={[
-    { label: "Granted", values: [812, 905, 874, 961, 1024, 640, 588], success: true },
-    { label: "Denied", values: [41, 38, 56, 47, 62, 29, 24], destructive: true }
-  ]}
+<Chart
+title="Sign-ins"
+labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
+series={[
+  { label: "Granted", values: [812, 905, 874, 961, 1024, 640, 588], success: true },
+  { label: "Denied", values: [41, 38, 56, 47, 62, 29, 24], destructive: true }
+]}
 />
-</Container>
 ```
 
 ### Horizontal rows
 
 ```tsx
-<Container xl>
-  <Chart
-  title="Coverage"
-  horizontal
-  data={[
-    { label: "Atoms", value: 92 },
-    { label: "Molecules", value: 78 },
-    { label: "Organisms", value: 64 },
-    { label: "Charts", value: 85 }
-  ]}
-  max={100}
+<Chart
+title="Coverage"
+horizontal
+data={[
+  { label: "Atoms", value: 92 },
+  { label: "Molecules", value: 78 },
+  { label: "Organisms", value: 64 },
+  { label: "Charts", value: 85 }
+]}
+max={100}
 />
-</Container>
 ```
 
 ### Tones
 
 ```tsx
 <Column loose>
-  <Container xl>
-    <Chart
-    title="Checks passing"
-    success
-    data={[
-      { label: "Mon", value: 82 },
-      { label: "Tue", value: 88 },
-      { label: "Wed", value: 91 },
-      { label: "Thu", value: 86 },
-      { label: "Fri", value: 94 }
-    ]}
-    max={100}
+  <Chart
+  title="Checks passing"
+  success
+  data={[
+    { label: "Mon", value: 82 },
+    { label: "Tue", value: 88 },
+    { label: "Wed", value: 91 },
+    { label: "Thu", value: 86 },
+    { label: "Fri", value: 94 }
+  ]}
+  max={100}
   />
-  </Container>
-  <Container xl>
-    <Chart
-    title="Error rate"
-    destructive
-    data={[
-      { label: "Mon", value: 14 },
-      { label: "Tue", value: 9 },
-      { label: "Wed", value: 22 },
-      { label: "Thu", value: 12 },
-      { label: "Fri", value: 7 }
-    ]}
-    max={25}
+  <Chart
+  title="Error rate"
+  destructive
+  data={[
+    { label: "Mon", value: 14 },
+    { label: "Tue", value: 9 },
+    { label: "Wed", value: 22 },
+    { label: "Thu", value: 12 },
+    { label: "Fri", value: 7 }
+  ]}
+  max={25}
   />
-  </Container>
 </Column>
 ```
 
@@ -131,17 +119,15 @@ A single- or multi-series bar chart: vertical columns (or horizontal rows) sized
 **Do** — Keep a labelled axis row and a single bar tone so the buckets read at a glance.
 
 ```tsx
-<Container xl>
-  <Chart title="Signups" max={100} data={[
-    { label: "Mon", value: 45 },
-    { label: "Tue", value: 60 },
-    { label: "Wed", value: 35 },
-    { label: "Thu", value: 70 },
-    { label: "Fri", value: 55 },
-    { label: "Sat", value: 80 },
-    { label: "Sun", value: 95 }
-  ]} />
-</Container>
+<Chart title="Signups" max={100} data={[
+  { label: "Mon", value: 45 },
+  { label: "Tue", value: 60 },
+  { label: "Wed", value: 35 },
+  { label: "Thu", value: 70 },
+  { label: "Fri", value: 55 },
+  { label: "Sat", value: 80 },
+  { label: "Sun", value: 95 }
+]} />
 
 ```
 

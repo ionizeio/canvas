@@ -5,20 +5,18 @@ Squarified value tiles: each datum becomes a ramp-colored rectangle whose area i
 ## Usage
 
 ```tsx
-<Container xl>
-  <Treemap
-  title="Storage by service"
-  data={[
-    { label: "Media", value: 620 },
-    { label: "Backups", value: 340 },
-    { label: "Logs", value: 180 },
-    { label: "Search index", value: 120 },
-    { label: "Thumbnails", value: 90 },
-    { label: "Exports", value: 45 },
-    { label: "Other", value: 25 },
-  ]}
+<Treemap
+title="Storage by service"
+data={[
+  { label: "Media", value: 620 },
+  { label: "Backups", value: 340 },
+  { label: "Logs", value: 180 },
+  { label: "Search index", value: 120 },
+  { label: "Thumbnails", value: 90 },
+  { label: "Exports", value: 45 },
+  { label: "Other", value: 25 },
+]}
 />
-</Container>
 ```
 
 ## Variants
@@ -26,35 +24,31 @@ Squarified value tiles: each datum becomes a ramp-colored rectangle whose area i
 ### Compact
 
 ```tsx
-<Container xl>
-  <Treemap
-  compact
-  data={[
-    { label: "Chrome", value: 61 },
-    { label: "Safari", value: 24 },
-    { label: "Edge", value: 8 },
-    { label: "Firefox", value: 5 },
-    { label: "Other", value: 2 },
-  ]}
+<Treemap
+compact
+data={[
+  { label: "Chrome", value: 61 },
+  { label: "Safari", value: 24 },
+  { label: "Edge", value: 8 },
+  { label: "Firefox", value: 5 },
+  { label: "Other", value: 2 },
+]}
 />
-</Container>
 ```
 
 ### Inspected
 
 ```tsx
-<Container xl>
-  <Treemap
-  title="Revenue by product"
-  defaultSelected={0}
-  data={[
-    { label: "Platform", value: 4200 },
-    { label: "Add-ons", value: 1400 },
-    { label: "Services", value: 900 },
-    { label: "Training", value: 300 },
-  ]}
+<Treemap
+title="Revenue by product"
+defaultSelected={0}
+data={[
+  { label: "Platform", value: 4200 },
+  { label: "Add-ons", value: 1400 },
+  { label: "Services", value: 900 },
+  { label: "Training", value: 300 },
+]}
 />
-</Container>
 ```
 
 ## Do & Don't
@@ -64,29 +58,25 @@ Squarified value tiles: each datum becomes a ramp-colored rectangle whose area i
 **Do** - Reserve the treemap for part-of-whole data with real size contrast, where area comparison earns the space.
 
 ```tsx
-<Container xl>
-  <Treemap
-  title="Storage by service"
-  data={[
-    { label: "Media", value: 620 },
-    { label: "Backups", value: 340 },
-    { label: "Logs", value: 180 },
-  ]}
+<Treemap
+title="Storage by service"
+data={[
+  { label: "Media", value: 620 },
+  { label: "Backups", value: 340 },
+  { label: "Logs", value: 180 },
+]}
 />
-</Container>
 ```
 
 **Don't** - A handful of near-equal shares reads better as a PieChart or a BarList; near-equal tiles defeat the area encoding.
 
 ```tsx
-<Container xl>
-  <Treemap
-  data={[
-    { label: "A", value: 26 },
-    { label: "B", value: 25 },
-    { label: "C", value: 25 },
-    { label: "D", value: 24 },
-  ]}
+<Treemap
+data={[
+  { label: "A", value: 26 },
+  { label: "B", value: 25 },
+  { label: "C", value: 25 },
+  { label: "D", value: 24 },
+]}
 />
-</Container>
 ```

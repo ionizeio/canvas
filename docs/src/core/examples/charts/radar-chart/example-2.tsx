@@ -3,15 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Container, RadarChart } = scope;
+  const { RadarChart } = scope;
   return (
-<Container lg>
-  <RadarChart
-  compact
-  hideGrid
-  axes={["Spd", "Pwr", "Def", "Mag", "Luck", "HP"]}
-  series={[{ label: "Build A", values: [12, 18, 9, 15, 7, 14] }]}
+<RadarChart
+compact
+hideGrid
+axes={["Spd", "Pwr", "Def", "Mag", "Luck", "HP"]}
+series={[{ label: "Build A", values: [12, 18, 9, 15, 7, 14] }]}
 />
-</Container>
   );
 }

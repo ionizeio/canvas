@@ -119,17 +119,13 @@ your app that state is your own.)
 **Do** — Spell out the consequence above the button so the stakes are clear before the click.
 
 ```tsx
-<Container md>
-  <ActionPanel title="Delete this project" description="Once you delete a project, there is no going back. Please be certain." actionLabel="Delete project" destructive />
-</Container>
+<ActionPanel title="Delete this project" description="Once you delete a project, there is no going back. Please be certain." actionLabel="Delete project" destructive />
 ```
 
 **Don't** — A destructive action with no consequence copy invites accidental, irreversible clicks.
 
 ```tsx
-<Container md>
-  <ActionPanel title="Delete this project" actionLabel="Delete project" destructive />
-</Container>
+<ActionPanel title="Delete this project" actionLabel="Delete project" destructive />
 ```
 
 ### With toggle
@@ -137,15 +133,11 @@ your app that state is your own.)
 **Do** — Pair the switch with a one-line explanation of what turning it on or off does.
 
 ```tsx
-<Container md>
-  <ActionPanel title="Two-factor authentication" description="Add an extra layer of security to your account by requiring a verification code on login." toggle defaultChecked />
-</Container>
+<ActionPanel title="Two-factor authentication" description="Add an extra layer of security to your account by requiring a verification code on login." toggle defaultChecked />
 ```
 
 **Don't** — A bare switch with no description leaves the user guessing what flipping it actually changes.
 
 ```tsx
-<Container md>
-  <ActionPanel title="Two-factor authentication" toggle defaultChecked />
-</Container>
+<ActionPanel title="Two-factor authentication" toggle defaultChecked />
 ```

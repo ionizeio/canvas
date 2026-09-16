@@ -3,18 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Container, BarList } = scope;
+  const { BarList } = scope;
   return (
-<Container md>
-  <BarList
-  title="Top referrers"
-  onPressItem={() => {}}
-  items={[
-    { label: "news.ycombinator.com", value: 4210, delta: "+18%" },
-    { label: "reddit.com", value: 2380, delta: "-6%", down: true },
-    { label: "linkedin.com", value: 1240, delta: "+2%" },
-  ]}
+<BarList
+title="Top referrers"
+onPressItem={() => {}}
+items={[
+  { label: "news.ycombinator.com", value: 4210, delta: "+18%" },
+  { label: "reddit.com", value: 2380, delta: "-6%", down: true },
+  { label: "linkedin.com", value: 1240, delta: "+2%" },
+]}
 />
-</Container>
   );
 }

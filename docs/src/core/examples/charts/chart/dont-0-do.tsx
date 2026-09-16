@@ -3,18 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Chart, Container } = scope;
+  const { Chart } = scope;
   return (
-<Container xl>
-  <Chart title="Signups" max={100} data={[
-    { label: "Mon", value: 45 },
-    { label: "Tue", value: 60 },
-    { label: "Wed", value: 35 },
-    { label: "Thu", value: 70 },
-    { label: "Fri", value: 55 },
-    { label: "Sat", value: 80 },
-    { label: "Sun", value: 95 }
-  ]} />
-</Container>
+<Chart title="Signups" max={100} data={[
+  { label: "Mon", value: 45 },
+  { label: "Tue", value: 60 },
+  { label: "Wed", value: 35 },
+  { label: "Thu", value: 70 },
+  { label: "Fri", value: 55 },
+  { label: "Sat", value: 80 },
+  { label: "Sun", value: 95 }
+]} />
   );
 }

@@ -3,14 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Typography, Container } = scope;
+  const { Card, Typography } = scope;
   return (
-<Container sm>
-  <Card>
-    <Typography lead semibold>The surface owns the rhythm</Typography>
-    <Typography small muted>A padded card spaces its flat children by itself: each line lands a steady step below the last.</Typography>
-    <Typography small muted>Three flat Typography children, no layout wrapper between them.</Typography>
-  </Card>
-</Container>
+<Card>
+  <Typography lead semibold>The surface owns the rhythm</Typography>
+  <Typography small muted>A padded card spaces its flat children by itself: each line lands a steady step below the last.</Typography>
+  <Typography small muted>Three flat Typography children, no layout wrapper between them.</Typography>
+</Card>
   );
 }

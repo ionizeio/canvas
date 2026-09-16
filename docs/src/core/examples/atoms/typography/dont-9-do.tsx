@@ -3,13 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Typography, Container } = scope;
+  const { View, Typography } = scope;
   return (
-<Container xs>
-  <Typography body>
-    Payment due May 31. 
-    <Typography body primary underline>View invoices</Typography>
-  </Typography>
-</Container>
+<Typography body>
+  Payment due May 31. 
+  <Typography body primary underline>View invoices</Typography>
+</Typography>
   );
 }

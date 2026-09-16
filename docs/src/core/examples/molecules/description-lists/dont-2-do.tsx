@@ -3,13 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { DescriptionList, Container } = scope;
+  const { DescriptionList } = scope;
   return (
-<Container xs>
-  <DescriptionList stacked items={[
-    { term: "Full name", value: "Rachel Chen" },
-    { term: "Email", value: "rachel.chen@example.com" }
-  ]} />
-</Container>
+<DescriptionList stacked items={[
+  { term: "Full name", value: "Rachel Chen" },
+  { term: "Email", value: "rachel.chen@example.com" }
+]} />
   );
 }

@@ -3,24 +3,22 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Card, DataTable, Divider, Typography, Row, Container } = scope;
+  const { Button, Card, DataTable, Divider, Typography, Row } = scope;
   return (
-<Container lg>
-  <Card flat flush style={{ overflow: "hidden" }}>
-    <Row snug alignCenter between pad>
-      <Typography tiny muted>2 selected</Typography>
-      <Row snug alignCenter>
-        <Button outline small>Bulk edit</Button>
-        <Button destructive small>Delete</Button>
-      </Row>
+<Card flat flush style={{ overflow: "hidden" }}>
+  <Row snug alignCenter between pad>
+    <Typography tiny muted>2 selected</Typography>
+    <Row snug alignCenter>
+      <Button outline small>Bulk edit</Button>
+      <Button destructive small>Delete</Button>
     </Row>
-    <Divider />
-    <DataTable selectable defaultSelectedKeys={[0, 2]} columns={["Name", "Email"]} rows={[
-      ["Alice Johnson", "alice@example.com"],
-      ["Bob Smith", "bob@example.com"],
-      ["Rachel Chen", "rachel@example.com"]
-    ]} />
-  </Card>
-</Container>
+  </Row>
+  <Divider />
+  <DataTable selectable defaultSelectedKeys={[0, 2]} columns={["Name", "Email"]} rows={[
+    ["Alice Johnson", "alice@example.com"],
+    ["Bob Smith", "bob@example.com"],
+    ["Rachel Chen", "rachel@example.com"]
+  ]} />
+</Card>
   );
 }

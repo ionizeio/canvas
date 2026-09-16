@@ -3,17 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Container, LineChart } = scope;
+  const { LineChart } = scope;
   return (
-<Container xl>
-  <LineChart
-  title="Monthly recurring revenue"
-  labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
-  series={[{ label: "MRR", values: [112, 118, 127, 125, 138, 151] }]}
-  formatValue={(v) => `$${v}k`}
-  curved
-  defaultSelected={4}
+<LineChart
+title="Monthly recurring revenue"
+labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
+series={[{ label: "MRR", values: [112, 118, 127, 125, 138, 151] }]}
+formatValue={(v) => `$${v}k`}
+curved
+defaultSelected={4}
 />
-</Container>
   );
 }

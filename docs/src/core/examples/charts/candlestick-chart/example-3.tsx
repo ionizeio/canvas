@@ -3,29 +3,27 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Container, CandlestickChart } = scope;
+  const { CandlestickChart } = scope;
   return (
-<Container xl>
-  <CandlestickChart
-  title="OLY · 12 sessions"
-  labels={["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "D12"]}
-  candles={[
-    { open: 64.0, high: 64.3, low: 62.7, close: 63.5 },
-    { open: 63.5, high: 64.6, low: 63.2, close: 63.9 },
-    { open: 63.9, high: 64.9, low: 62.4, close: 63.6 },
-    { open: 63.6, high: 65.2, low: 62.4, close: 64.2 },
-    { open: 64.2, high: 64.4, low: 64.0, close: 64.2 },
-    { open: 64.2, high: 65.3, low: 62.8, close: 64.4 },
-    { open: 64.4, high: 65.4, low: 63.8, close: 64.4 },
-    { open: 64.4, high: 64.5, low: 62.6, close: 63.8 },
-    { open: 63.8, high: 65.8, low: 63.6, close: 64.7 },
-    { open: 64.7, high: 65.1, low: 63.9, close: 64.6 },
-    { open: 64.6, high: 66.6, low: 64.3, close: 65.3 },
-    { open: 65.3, high: 66.0, low: 64.7, close: 65.1 }
-  ]}
-  volume={[31, 27, 35, 29, 18, 33, 26, 41, 38, 24, 47, 30]}
-  defaultSelected={8}
+<CandlestickChart
+title="OLY · 12 sessions"
+labels={["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "D12"]}
+candles={[
+  { open: 64.0, high: 64.3, low: 62.7, close: 63.5 },
+  { open: 63.5, high: 64.6, low: 63.2, close: 63.9 },
+  { open: 63.9, high: 64.9, low: 62.4, close: 63.6 },
+  { open: 63.6, high: 65.2, low: 62.4, close: 64.2 },
+  { open: 64.2, high: 64.4, low: 64.0, close: 64.2 },
+  { open: 64.2, high: 65.3, low: 62.8, close: 64.4 },
+  { open: 64.4, high: 65.4, low: 63.8, close: 64.4 },
+  { open: 64.4, high: 64.5, low: 62.6, close: 63.8 },
+  { open: 63.8, high: 65.8, low: 63.6, close: 64.7 },
+  { open: 64.7, high: 65.1, low: 63.9, close: 64.6 },
+  { open: 64.6, high: 66.6, low: 64.3, close: 65.3 },
+  { open: 65.3, high: 66.0, low: 64.7, close: 65.1 }
+]}
+volume={[31, 27, 35, 29, 18, 33, 26, 41, 38, 24, 47, 30]}
+defaultSelected={8}
 />
-</Container>
   );
 }

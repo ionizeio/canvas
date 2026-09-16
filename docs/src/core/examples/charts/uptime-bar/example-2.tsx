@@ -3,16 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Container, UptimeBar } = scope;
+  const { UptimeBar } = scope;
   return (
-<Container lg>
-  <UptimeBar
-  label="Worker uptime"
-  caption="Monitoring began mid-window"
-  startLabel="30 days ago"
-  endLabel="Today"
-  periods={Array.from({ length: 30 }, (_, i) => (i < 6 ? { unknown: true } : i === 21 ? { down: true } : {}))}
+<UptimeBar
+label="Worker uptime"
+caption="Monitoring began mid-window"
+startLabel="30 days ago"
+endLabel="Today"
+periods={Array.from({ length: 30 }, (_, i) => (i < 6 ? { unknown: true } : i === 21 ? { down: true } : {}))}
 />
-</Container>
   );
 }

@@ -3,19 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Container, MetricBreakdown } = scope;
+  const { MetricBreakdown } = scope;
   return (
-<Container md>
-  <MetricBreakdown
-  value="960"
-  label="New sign-ups today"
-  breakdown={[
-    { label: "google", value: 412, delta: "+18%" },
-    { label: "email", value: 318, delta: "+3%" },
-    { label: "github", value: 142, delta: "-6%", down: true },
-    { label: "passkey", value: 88, delta: "+41%" },
-  ]}
+<MetricBreakdown
+value="960"
+label="New sign-ups today"
+breakdown={[
+  { label: "google", value: 412, delta: "+18%" },
+  { label: "email", value: 318, delta: "+3%" },
+  { label: "github", value: 142, delta: "-6%", down: true },
+  { label: "passkey", value: 88, delta: "+41%" },
+]}
 />
-</Container>
   );
 }

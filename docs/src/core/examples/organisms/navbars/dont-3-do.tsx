@@ -3,17 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Avatar, Button, Card, Icon, Typography, Row, Column, Container } = scope;
+  const { Avatar, Button, Card, Icon, Typography, Row, Column } = scope;
   return (
-<Container sm>
-  <Card flat flush style={{ overflow: "hidden" }}>
-    <Row alignCenter snug pad style={{ height: 56 }}>
-      <Button ghost iconLeft={<Icon menu muted size={18} />} accessibilityLabel="Open menu" />
-      <Typography small semibold>Canvas</Typography>
-      <Column grow />
-      <Avatar small src="/rachel-chen.jpg" name="RC" />
-    </Row>
-  </Card>
-</Container>
+<Card flat flush style={{ overflow: "hidden" }}>
+  <Row alignCenter snug pad style={{ height: 56 }}>
+    <Button ghost iconLeft={<Icon menu muted size={18} />} accessibilityLabel="Open menu" />
+    <Typography small semibold>Canvas</Typography>
+    <Column grow />
+    <Avatar small src="/rachel-chen.jpg" name="RC" />
+  </Row>
+</Card>
   );
 }

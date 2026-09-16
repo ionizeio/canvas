@@ -3,30 +3,28 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Container, MetricBreakdown } = scope;
+  const { MetricBreakdown } = scope;
   return (
-<Container md>
-  <MetricBreakdown
-  value="3,771"
-  label="Tokens issued"
-  rate="1.39%"
-  rateLabel="Error rate"
-  rateDestructive
-  spark={[96, 104, 101, 110, 108, 112, 116, 114, 118, 116]}
-  sparkUnit="req/s"
-  breakdown={[
-    { label: "authorization_code", value: 1842, delta: "+12%" },
-    { label: "refresh_token", value: 1264, delta: "+4%" },
-    { label: "client_credentials", value: 618, delta: "-3%", down: true },
-    { label: "password (legacy)", value: 47, delta: "-22%", down: true },
-  ]}
-  chipsLabel="Errors"
-  chips={[
-    { label: "invalid_grant", count: 38, destructive: true },
-    { label: "invalid_client", count: 11, destructive: true },
-    { label: "unauthorized_client", count: 4, destructive: true },
-  ]}
+<MetricBreakdown
+value="3,771"
+label="Tokens issued"
+rate="1.39%"
+rateLabel="Error rate"
+rateDestructive
+spark={[96, 104, 101, 110, 108, 112, 116, 114, 118, 116]}
+sparkUnit="req/s"
+breakdown={[
+  { label: "authorization_code", value: 1842, delta: "+12%" },
+  { label: "refresh_token", value: 1264, delta: "+4%" },
+  { label: "client_credentials", value: 618, delta: "-3%", down: true },
+  { label: "password (legacy)", value: 47, delta: "-22%", down: true },
+]}
+chipsLabel="Errors"
+chips={[
+  { label: "invalid_grant", count: 38, destructive: true },
+  { label: "invalid_client", count: 11, destructive: true },
+  { label: "unauthorized_client", count: 4, destructive: true },
+]}
 />
-</Container>
   );
 }

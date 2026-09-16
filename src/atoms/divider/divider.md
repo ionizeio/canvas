@@ -7,13 +7,11 @@ Horizontal, vertical, with label, with action.
 A divider spans the width of its parent, so give it a bounded container.
 
 ```tsx
-<Container xs>
-  <Column snug>
-    <Typography small>Profile</Typography>
-    <Divider />
-    <Typography small>Account</Typography>
-  </Column>
-</Container>
+<Column snug>
+  <Typography small>Profile</Typography>
+  <Divider />
+  <Typography small>Account</Typography>
+</Column>
 ```
 
 ## Variants
@@ -37,21 +35,19 @@ A divider spans the width of its parent, so give it a bounded container.
 ### Action
 
 ```tsx
-<Container xs>
-  <Column cozy>
-    <Column snug>
-      <Card padded>
-        <Typography small>Ada commented on the draft</Typography>
-      </Card>
-      <Card padded>
-        <Typography small>Grace approved the request</Typography>
-      </Card>
-    </Column>
-    <Divider>
-      <Button ghost small>Show more</Button>
-    </Divider>
+<Column cozy>
+  <Column snug>
+    <Card padded>
+      <Typography small>Ada commented on the draft</Typography>
+    </Card>
+    <Card padded>
+      <Typography small>Grace approved the request</Typography>
+    </Card>
   </Column>
-</Container>
+  <Divider>
+    <Button ghost small>Show more</Button>
+  </Divider>
+</Column>
 ```
 
 ## Do & Don't
@@ -61,21 +57,19 @@ A divider spans the width of its parent, so give it a bounded container.
 **Do** — Click a row: group with spacing and reserve a divider for a real break like Sign out.
 
 ```tsx
-<Container xxs>
-  <Column tight>
-    <Typography small>Profile</Typography>
-    <Typography small>Account</Typography>
-    <Typography small>Notifications</Typography>
-    <Divider />
-    <Typography small>Sign out</Typography>
-  </Column>
-</Container>
+<Column tight>
+  <Typography small>Profile</Typography>
+  <Typography small>Account</Typography>
+  <Typography small>Notifications</Typography>
+  <Divider />
+  <Typography small>Sign out</Typography>
+</Column>
 ```
 
 **Don't** — Click a row: a divider between every one is noise that competes with the content.
 
 ```tsx
-<Container xxs>
+<View>
   <Text style={{ borderRadius: 6, paddingHorizontal: 8, paddingVertical: 6, fontSize: 14, lineHeight: 20 }}>Profile</Text>
   <Divider />
   <Text style={{ borderRadius: 6, paddingHorizontal: 8, paddingVertical: 6, fontSize: 14, lineHeight: 20 }}>Account</Text>
@@ -83,7 +77,7 @@ A divider spans the width of its parent, so give it a bounded container.
   <Text style={{ borderRadius: 6, paddingHorizontal: 8, paddingVertical: 6, fontSize: 14, lineHeight: 20 }}>Notifications</Text>
   <Divider />
   <Text style={{ borderRadius: 6, paddingHorizontal: 8, paddingVertical: 6, fontSize: 14, lineHeight: 20 }}>Billing</Text>
-</Container>
+</View>
 ```
 
 ### With label
@@ -91,20 +85,18 @@ A divider spans the width of its parent, so give it a bounded container.
 **Do** — Click a provider: keep the label to a few words and let the buttons carry the options.
 
 ```tsx
-<Container xs>
-  <Column snug>
-    <Button primary block>Sign in</Button>
-    <Divider>or continue with</Divider>
-    <Row snug>
-      <Column fill>
-        <Button outline block>Google</Button>
-      </Column>
-      <Column fill>
-        <Button outline block>GitHub</Button>
-      </Column>
-    </Row>
-  </Column>
-</Container>
+<Column snug>
+  <Button primary block>Sign in</Button>
+  <Divider>or continue with</Divider>
+  <Row snug>
+    <Column fill>
+      <Button outline block>Google</Button>
+    </Column>
+    <Column fill>
+      <Button outline block>GitHub</Button>
+    </Column>
+  </Row>
+</Column>
 ```
 
 **Don't** — Click Sign in: a full sentence in the label divider buries the choice.
@@ -121,24 +113,20 @@ A divider spans the width of its parent, so give it a bounded container.
 **Do** — Click Show more: the button toggles its label and reveals the rest.
 
 ```tsx
-<Container xs>
-  <Column snug>
-    <Typography small muted>Logged in from 2 new devices · 3 more entries</Typography>
-    <Divider>
-      <Button ghost small>Show less</Button>
-    </Divider>
-  </Column>
-</Container>
+<Column snug>
+  <Typography small muted>Logged in from 2 new devices · 3 more entries</Typography>
+  <Divider>
+    <Button ghost small>Show less</Button>
+  </Divider>
+</Column>
 ```
 
 **Don't** — Click the button: an action divider that does nothing is just decoration.
 
 ```tsx
-<Container xs>
-  <Divider>
-    <Button ghost small>Show more</Button>
-  </Divider>
-</Container>
+<Divider>
+  <Button ghost small>Show more</Button>
+</Divider>
 ```
 
 ### Vertical

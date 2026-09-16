@@ -3,24 +3,22 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, DescriptionList, Typography, Column, Container } = scope;
+  const { Stateful, DescriptionList, Typography, Column } = scope;
   return (
 <Stateful initial="">
   {(copied, setCopied) => (
     <Column snug>
-      <Container md>
-        <DescriptionList
-        twoColumn
-        divided
-        onCopy={(value) => setCopied(value)}
-        items={[
-          { term: "Status", value: "Active", status: true },
-          { term: "Plan", value: "Pro", badge: true },
-          { term: "Members", value: "8 members", avatars: [{ name: "Rachel Chen" }, { name: "Alan Turing" }, { name: "Grace Hopper" }], overflow: 5 },
-          { term: "Client ID", value: "clnt_01H2X8K9", mono: true, copyValue: "clnt_01H2X8K9" }
-        ]}
+      <DescriptionList
+      twoColumn
+      divided
+      onCopy={(value) => setCopied(value)}
+      items={[
+        { term: "Status", value: "Active", status: true },
+        { term: "Plan", value: "Pro", badge: true },
+        { term: "Members", value: "8 members", avatars: [{ name: "Rachel Chen" }, { name: "Alan Turing" }, { name: "Grace Hopper" }], overflow: 5 },
+        { term: "Client ID", value: "clnt_01H2X8K9", mono: true, copyValue: "clnt_01H2X8K9" }
+      ]}
       />
-      </Container>
       <Typography muted>{copied === "" ? "Press Copy to grab the ID" : `Copied ${copied}`}</Typography>
     </Column>
   )}

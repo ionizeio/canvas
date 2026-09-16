@@ -3,10 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Typography, Container } = scope;
+  const { Typography } = scope;
   return (
-<Container xs>
-  <Typography mono>We could not process your request because the upstream service returned an unexpected response.</Typography>
-</Container>
+<Typography mono>We could not process your request because the upstream service returned an unexpected response.</Typography>
   );
 }

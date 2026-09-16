@@ -3,10 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Switch, Container } = scope;
+  const { Switch } = scope;
   return (
-<Container xxs>
-  <Switch defaultChecked>Notifications</Switch>
-</Container>
+<Switch defaultChecked>Notifications</Switch>
   );
 }

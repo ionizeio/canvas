@@ -3,14 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Skeleton, Column, Container } = scope;
+  const { Skeleton, Column } = scope;
   return (
-<Container xs>
-  <Column snug>
-    <Skeleton text animate />
-    <Skeleton text animate long />
-    <Skeleton text animate short />
-  </Column>
-</Container>
+<Column snug>
+  <Skeleton text animate />
+  <Skeleton text animate long />
+  <Skeleton text animate short />
+</Column>
   );
 }

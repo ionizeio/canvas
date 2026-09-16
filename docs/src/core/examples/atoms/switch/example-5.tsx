@@ -3,15 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Switch, Column, Container } = scope;
+  const { Switch, Column } = scope;
   return (
-<Container xs>
-  <Column relaxed>
-    <Switch defaultChecked description="Show your availability to teammates.">Available to chat</Switch>
-    <Switch defaultChecked>Sound effects</Switch>
-    <Switch>Weekly digest</Switch>
-    <Switch defaultChecked>Push notifications</Switch>
-  </Column>
-</Container>
+<Column relaxed>
+  <Switch defaultChecked description="Show your availability to teammates.">Available to chat</Switch>
+  <Switch defaultChecked>Sound effects</Switch>
+  <Switch>Weekly digest</Switch>
+  <Switch defaultChecked>Push notifications</Switch>
+</Column>
   );
 }

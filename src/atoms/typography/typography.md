@@ -194,20 +194,16 @@ Type scale classes for headings, body text, and helper styles.
 **Do** — Reserve heading styles for titles; set running text in a small body utility.
 
 ```tsx
-<Container xs>
-  <Column tight>
-    <Typography h3>About Canvas</Typography>
-    <Typography body>Canvas is a universal React Native UI kit for building consistent product interfaces.</Typography>
-  </Column>
-</Container>
+<Column tight>
+  <Typography h3>About Canvas</Typography>
+  <Typography body>Canvas is a universal React Native UI kit for building consistent product interfaces.</Typography>
+</Column>
 ```
 
 **Don't** — Body copy set in a heading style is hard to read in bulk and flattens the hierarchy.
 
 ```tsx
-<Container xs>
-  <Typography h3>Canvas is a universal React Native UI kit for building consistent product interfaces.</Typography>
-</Container>
+<Typography h3>Canvas is a universal React Native UI kit for building consistent product interfaces.</Typography>
 ```
 
 ### h4
@@ -255,24 +251,20 @@ Type scale classes for headings, body text, and helper styles.
 **Do** — Keep body copy in sentence case and let inline code carry the technical emphasis.
 
 ```tsx
-<Container xs>
-  <Typography body>
-    Run 
-    <Typography code>npm install</Typography>
-    , then restart the dev server before you continue.
-  </Typography>
-</Container>
+<Typography body>
+  Run 
+  <Typography code>npm install</Typography>
+  , then restart the dev server before you continue.
+</Typography>
 ```
 
 **Don't** — All-caps emphasis inside body copy shouts and undercuts the relaxed reading rhythm.
 
 ```tsx
-<Container xs>
-  <Typography body>
-    <Typography code>npm install</Typography>
-     THEN restart the dev server BEFORE you continue.
-  </Typography>
-</Container>
+<Typography body>
+  <Typography code>npm install</Typography>
+   THEN restart the dev server BEFORE you continue.
+</Typography>
 ```
 
 ### small
@@ -308,9 +300,7 @@ Type scale classes for headings, body text, and helper styles.
 **Don't** — tiny is for metadata, not legal prose; long copy at 12px strains the eye.
 
 ```tsx
-<Container xs>
-  <Typography tiny>These terms govern your use of the service and your data; please read them carefully before you continue past this screen.</Typography>
-</Container>
+<Typography tiny>These terms govern your use of the service and your data; please read them carefully before you continue past this screen.</Typography>
 ```
 
 ### muted
@@ -318,12 +308,10 @@ Type scale classes for headings, body text, and helper styles.
 **Do** — Keep muted for de-emphasized context; give the actual action full foreground or primary color.
 
 ```tsx
-<Container xs>
-  <Typography body>
-    Payment due May 31. 
-    <Typography body primary underline>View invoices</Typography>
-  </Typography>
-</Container>
+<Typography body>
+  Payment due May 31. 
+  <Typography body primary underline>View invoices</Typography>
+</Typography>
 ```
 
 **Don't** — A primary, clickable action in muted-foreground reads as disabled and is easy to miss.
@@ -346,9 +334,7 @@ Type scale classes for headings, body text, and helper styles.
 **Don't** — Uppercase, letter-spaced caption text is illegible for anything longer than a label.
 
 ```tsx
-<Container xs>
-  <Typography caption>Your subscription renews automatically each month unless you cancel from the billing page.</Typography>
-</Container>
+<Typography caption>Your subscription renews automatically each month unless you cancel from the billing page.</Typography>
 ```
 
 ### code
@@ -385,9 +371,7 @@ git commit -m "wip"</Typography>
 **Don't** — Mono spacing makes prose sentences sparse and slow to read; it is meant for fixed-width data.
 
 ```tsx
-<Container xs>
-  <Typography mono>We could not process your request because the upstream service returned an unexpected response.</Typography>
-</Container>
+<Typography mono>We could not process your request because the upstream service returned an unexpected response.</Typography>
 ```
 
 ## Inline links (href)

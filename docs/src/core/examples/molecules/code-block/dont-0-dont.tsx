@@ -3,10 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Text, Container } = scope;
+  const { Text } = scope;
   return (
-<Container sm>
-  <Text style={{ fontSize: 13, fontFamily: "monospace" }}>const theme = getTheme(); setTheme(theme === "dark" ? "light" : "dark");</Text>
-</Container>
+<Text style={{ fontSize: 13, fontFamily: "monospace" }}>const theme = getTheme(); setTheme(theme === "dark" ? "light" : "dark");</Text>
   );
 }

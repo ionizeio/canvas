@@ -100,7 +100,8 @@ box, `.form-control` is `width: 100%`):
 
 Only the **layout containers** carry widths, from the one width scale (`widths` in
 `src/style/tokens.ts`: Tailwind's `max-w` values copied by hand, `xxxs` 192 through
-`page` 1280): `Container` (a step as `maxWidth`, centered, `fluid`, `start`), Row
+`page` 1280): `Container` (full width by default; a step caps and centers it, `start`
+pins it), Row
 children's `span={1..12}` (container-measured px cells with the gaps in the math,
 `stacks` ignores spans once stacked), `Grid` tiles, and the shells and floating
 overlays (Sidebar, FilterPanel, Dialog, AlertDialog, Popover, Command) that are

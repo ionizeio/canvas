@@ -13,6 +13,7 @@ import {
   type ViewStyle,
   type TextStyle,
   type LayoutStyle,
+  FILL,
 } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 
@@ -300,7 +301,7 @@ export function createAccordion(skin: AccordionSkin) {
     );
 
     return (
-      <View testID={testID} style={[FULL_WIDTH, skin.container(tokens), card ? skin.cardContainer(tokens) : null, style]}>
+      <View testID={testID} style={[FILL, skin.container(tokens), card ? skin.cardContainer(tokens) : null, style]}>
         {items.map((item, i) => (
           <Row
             key={item.key}
@@ -329,4 +330,3 @@ const LABEL_COLUMN: ViewStyle = { flexShrink: 1, gap: 2 };
 // default (so it spans the full width minus the parent's padding), rather than
 // shrinking to the width of its widest row. Placed first so a skin's container
 // shape and the consumer's `style` (the width/flex layout hook) still override it.
-const FULL_WIDTH: ViewStyle = { width: "100%" };

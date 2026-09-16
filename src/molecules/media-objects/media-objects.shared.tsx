@@ -1,6 +1,6 @@
 import { type ComponentType, type ReactNode } from "react";
 import { StyleSheet } from "react-native";
-import { View, Pressable, Text, useTheme, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle } from "../../style/index.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { type AvatarProps } from "../../atoms/avatar/avatar.shared.js";
 import { type Align, type Direction, DIRECTION_ROW, ALIGN_ITEMS } from "./media-objects.styles.js";
@@ -184,6 +184,8 @@ export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent
   return function MediaObject(props: MediaObjectProps) {
     const { title, description, body, meta, avatar, src, icon, action, truncate, testID, style } = props;
     const { tokens } = useTheme();
+    // FILL: the identity row spans the parent it is given, so a long body wraps.
+    const fill = useFillStyle("MediaObject");
     const align = alignOf(props);
     const direction = directionOf(props);
     // Compact (menu-header) density: a tighter row gap, a smaller leading avatar/icon,
@@ -264,7 +266,7 @@ export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent
         : null;
       const { parent: elevParent, child: elevZero } = splitElevation(borderedElevation);
       return (
-        <RippleClip shape={props.bordered ? cornerRadii(skin.borderedSurface) : undefined} style={[elevParent, style]}>
+        <RippleClip shape={props.bordered ? cornerRadii(skin.borderedSurface) : undefined} style={[elevParent, fill, style]}>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={a11yLabel}
@@ -279,6 +281,6 @@ export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent
       );
     }
 
-    return <View testID={testID} style={[surface, style]}>{inner}</View>;
+    return <View testID={testID} style={[surface, fill, style]}>{inner}</View>;
   };
 }

@@ -5,9 +5,9 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Card, Typography, Container } = scope;
   return (
-<Container fluid pad>
+<Container pad>
   <Card padded>
-    <Typography small>No cap, 16px gutters on both sides.</Typography>
+    <Typography small>The default measure is the parent's own width; pad adds 16px gutters on both sides.</Typography>
   </Card>
 </Container>
   );

@@ -40,3 +40,9 @@ text lines take `long` / `short` instead of a width; the width scale gains the `
 (192) and `xxs` (256) tile steps; and the docs generator rejects `width` / `maxWidth` /
 `minWidth` in a `style` on any non-layout tag, so the showcase composes bounds with
 `Container`, Row `span`, and `Grid`.
+
+`Container` conforms to its parent by default: no cap and full width unless a step is
+named (`page` is now an explicit step, not the default). MediaObject, DescriptionList,
+EmptyState, Collapsible, Accordion, Form, Field, Stats, and DataTable are FILL too, and
+the docs examples render every component at the width its parent gives it; a Container
+step appears in a fence only where the measure is the lesson.

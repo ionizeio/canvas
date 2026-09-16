@@ -3,19 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Container, FunnelChart } = scope;
+  const { FunnelChart } = scope;
   return (
-<Container lg>
-  <FunnelChart
-  title="Checkout"
-  share
-  stages={[
-    { label: "Cart", value: 8600 },
-    { label: "Address", value: 5200 },
-    { label: "Payment", value: 3900 },
-    { label: "Placed", value: 3400 },
-  ]}
+<FunnelChart
+title="Checkout"
+share
+stages={[
+  { label: "Cart", value: 8600 },
+  { label: "Address", value: 5200 },
+  { label: "Payment", value: 3900 },
+  { label: "Placed", value: 3400 },
+]}
 />
-</Container>
   );
 }

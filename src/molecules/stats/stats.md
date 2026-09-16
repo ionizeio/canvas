@@ -147,21 +147,17 @@ that varies.
 **Do** — Name the comparison and the period so the delta is unambiguous.
 
 ```tsx
-<Container xxs>
-  <Stats items={[
-    { label: "Active users", value: "71,897", delta: "+12.3% vs. last 30 days" }
-  ]} />
-</Container>
+<Stats items={[
+  { label: "Active users", value: "71,897", delta: "+12.3% vs. last 30 days" }
+]} />
 ```
 
 **Don't** — A bare delta with no baseline leaves the reader asking: up against what, and over what window?
 
 ```tsx
-<Container xxs>
-  <Stats items={[
-    { label: "Active users", value: "71,897", delta: "+12.3%" }
-  ]} />
-</Container>
+<Stats items={[
+  { label: "Active users", value: "71,897", delta: "+12.3%" }
+]} />
 ```
 
 ### Group

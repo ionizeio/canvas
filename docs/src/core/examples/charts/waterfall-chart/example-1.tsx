@@ -3,19 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Container, WaterfallChart } = scope;
+  const { WaterfallChart } = scope;
   return (
-<Container xl>
-  <WaterfallChart
-  title="Headcount"
-  steps={[
-    { label: "Hired", value: 24 },
-    { label: "Backfill", value: 8 },
-    { label: "Attrition", value: -11 },
-    { label: "Transfers", value: -3 },
-    { label: "Net", total: true },
-  ]}
+<WaterfallChart
+title="Headcount"
+steps={[
+  { label: "Hired", value: 24 },
+  { label: "Backfill", value: 8 },
+  { label: "Attrition", value: -11 },
+  { label: "Transfers", value: -3 },
+  { label: "Net", total: true },
+]}
 />
-</Container>
   );
 }

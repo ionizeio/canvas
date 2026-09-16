@@ -3,9 +3,9 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Badge, Container } = scope;
+  const { tokens, View, Text, Badge } = scope;
   return (
-<Container md>
+<View>
   <View style={{ flexDirection: "row", alignItems: "baseline", gap: 16, borderBottomWidth: 1, borderColor: tokens.border, paddingVertical: 12 }}>
     <Text style={{ width: 64, fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Client identifier</Text>
     <Text style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", fontSize: 12.5, fontWeight: "500", color: tokens.foreground, fontFamily: "monospace" }}>clnt_01H2X8K9P3Q7VN4W6R5T0JYMZF</Text>
@@ -16,6 +16,6 @@ export default function Example(scope: ExampleScope) {
       <Badge status success>Active</Badge>
     </View>
   </View>
-</Container>
+</View>
   );
 }

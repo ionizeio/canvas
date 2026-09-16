@@ -5,12 +5,10 @@ Placeholders for loading content.
 ## Usage
 
 ```tsx
-<Container xs>
-  <Column snug>
-    <Skeleton text animate />
-    <Skeleton text animate short />
-  </Column>
-</Container>
+<Column snug>
+  <Skeleton text animate />
+  <Skeleton text animate short />
+</Column>
 ```
 
 ## Variants
@@ -52,13 +50,11 @@ Placeholders for loading content.
 **Do** — Vary the line widths and shorten the last line so it reads like real wrapped text.
 
 ```tsx
-<Container xs>
-  <Column snug>
-    <Skeleton text animate />
-    <Skeleton text animate long />
-    <Skeleton text animate short />
-  </Column>
-</Container>
+<Column snug>
+  <Skeleton text animate />
+  <Skeleton text animate long />
+  <Skeleton text animate short />
+</Column>
 ```
 
 **Don't** — Three full-width lines read as a solid block, not as a paragraph of prose.

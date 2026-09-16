@@ -3,17 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Input, Select, Row, Column, Container } = scope;
+  const { Input, Select, Row, Column } = scope;
   return (
-<Container md>
-  <Row alignEnd cozy>
-    <Column fill>
-      <Input label="City" defaultValue="Austin" />
-    </Column>
-    <Column fill>
-      <Select label="State" defaultValue="Texas" options={["Texas", "Oregon"]} />
-    </Column>
-  </Row>
-</Container>
+<Row alignEnd cozy>
+  <Column fill>
+    <Input label="City" defaultValue="Austin" />
+  </Column>
+  <Column fill>
+    <Select label="State" defaultValue="Texas" options={["Texas", "Oregon"]} />
+  </Column>
+</Row>
   );
 }

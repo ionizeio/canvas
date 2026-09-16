@@ -3,18 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, CardContent, CardHeader, CardSeparator, CardTitle, Typography, Container } = scope;
+  const { Card, CardContent, CardHeader, CardSeparator, CardTitle, Typography } = scope;
   return (
-<Container sm>
-  <Card flush>
-    <CardHeader>
-      <CardTitle>Recent activity</CardTitle>
-    </CardHeader>
-    <CardSeparator />
-    <CardContent>
-      <Typography small>Two events today.</Typography>
-    </CardContent>
-  </Card>
-</Container>
+<Card flush>
+  <CardHeader>
+    <CardTitle>Recent activity</CardTitle>
+  </CardHeader>
+  <CardSeparator />
+  <CardContent>
+    <Typography small>Two events today.</Typography>
+  </CardContent>
+</Card>
   );
 }
