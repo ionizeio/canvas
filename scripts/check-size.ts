@@ -67,13 +67,18 @@ export interface JavaScriptBudget {
 // ThemeProvider exported, so tree shaking measures a usable named-import consumer.
 // The complete-kit limit cannot catch dependencies moving into common components.
 // Measured with esbuild 0.28.2 under Bun 1.4.0, in web / iOS / Android order:
-// Button 3,041 / 3,227 / 3,086B; Input 29,761 / 30,023 / 29,953B;
-// DataTable 36,866 / 37,214 / 36,946B; StackedList 47,425 / 46,077 / 47,518B.
+// Button 3,617 / 3,799 / 3,655B; Input 31,895 / 32,203 / 32,210B;
+// DataTable 38,051 / 38,373 / 38,222B; StackedList 50,241 / 49,006 / 50,443B.
+// Button was 3,041 / 3,227 / 3,086B before the themed Text/TextInput primitives
+// (ThemeProvider `fonts`, src/style/text.tsx + fonts.ts): every consumer now carries
+// the face resolver, ~580B gzip, which is the cost of one brand face on every label
+// without a fontFamily at any call site. The ceiling moved from 3,584 to 4,096B for
+// that deliberate growth; the others keep their headroom.
 // Fixed ceilings leave room for deliberate growth while catching a heavy import.
 // These are independent budgets, not a combined total: shared modules legitimately
 // occur in more than one consumer. Changes require a fresh measurement and rationale.
 export const NAMED_IMPORT_BUDGETS: readonly JavaScriptBudget[] = [
-  { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 3_584, requiredExports: ["Button", "ThemeProvider"] },
+  { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 4_096, requiredExports: ["Button", "ThemeProvider"] },
   { label: "Input + ThemeProvider", entry: "scripts/size-fixtures/input.ts", maxGzip: 32_768, requiredExports: ["Input", "ThemeProvider"] },
   { label: "DataTable + ThemeProvider", entry: "scripts/size-fixtures/data-table.ts", maxGzip: 40_960, requiredExports: ["DataTable", "ThemeProvider"] },
   { label: "StackedList + ThemeProvider", entry: "scripts/size-fixtures/stacked-list.ts", maxGzip: 53_248, requiredExports: ["StackedList", "ThemeProvider"] },

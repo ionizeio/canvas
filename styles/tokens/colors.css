@@ -1,25 +1,15 @@
-/* Semantic color tokens. :root is light; .dark on <html> selects dark.
-   See src/style/tokens.ts for native counterparts and contrast constraints.
-   The values are the Riskora Dashboard UI Kit (Figma, file YLbmaRirWTzivAzXirDTmX),
-   whose variables are AlignUI-named: bg/weak-50 is the page, bg/white-0 the card,
-   bg/soft-200 the panel, text/strong-950 the ink, text/sub-600 the muted ink,
-   stroke/soft-200 the hairline, sky/400 the brand. */
+/* Semantic color tokens. :root is light; .dark on <html> selects dark. See
+   src/style/tokens.ts for native counterparts and contrast constraints, and
+   tools/figma/riskora-variables.json for the Riskora source variable each derives
+   from and every documented deviation. */
 :root{
-  /* Neutrals: the Riskora family re-authored on ONE hue (262) at the source's
-     lightness and chroma. The source spreads its surfaces (~230) and its text (~265)
-     across two hues, which "one neutral family" forbids and no eye can tell apart at
-     this chroma. */
   --background:oklch(0.985 0.006 262);
   --foreground:oklch(0.183 0.02 262);
   --card:oklch(1 0 0);
   --card-foreground:oklch(0.183 0.02 262);
   --popover:oklch(1 0 0);
   --popover-foreground:oklch(0.183 0.02 262);
-  /* Brand: Riskora sky/400. The label on a sky fill is the dark ink, in BOTH schemes
-     (the source's own dark-mode treatment); white-on-sky is 2.7:1 and fails AA. */
   --primary:oklch(0.694 0.152 246.867);
-  /* Link/brand text on neutral surfaces: the same sky hue deepened until it clears
-     4.5:1 on the page, a card and a muted panel (solved, not eyeballed). */
   --primary-text:oklch(0.48 0.17 245);
   --primary-foreground:oklch(0.183 0.02 262);
   --secondary:oklch(0.976 0.002 262);
@@ -28,12 +18,9 @@
   --muted-foreground:oklch(0.46 0.02 262);
   --accent:oklch(0.976 0.002 262);
   --accent-foreground:oklch(0.183 0.02 262);
-  /* Riskora red/700: the lightest red on the source ramp that carries white text at
-     4.5:1 (the source's state/error/base is 3.7:1 with white). */
   --destructive:oklch(0.556 0.204 23.58);
   --destructive-text:oklch(0.47 0.2 23.58);
   --destructive-foreground:oklch(1 0 0);
-  /* Riskora green/800 and orange/800: deep enough to carry white text. */
   --success:oklch(0.498 0.114 154.365);
   --success-foreground:oklch(1 0 0);
   --warning:oklch(0.538 0.138 43.874);
@@ -41,17 +28,13 @@
   --border:oklch(0.961 0.002 262);
   /* `input` is a control boundary (WCAG 1.4.11: 3:1 vs page, card and muted
      panel); `border` only separates surfaces. Solve, do not eyeball. Why in
-     src/style/tokens.ts. Dark below is solved the same way. The source's field
-     border (stroke/sub-300, 1.7:1) does not clear the floor. */
+     src/style/tokens.ts. Dark below is solved the same way. */
   --input:oklch(0.65 0.012 262);
-  /* The focus ring is ONE value in both schemes (the light-scheme sky), not the
-     per-scheme primary: it has to read against a light page and a dark page. */
+  /* One ring value in both schemes: it reads on a light page and a dark page. */
   --ring:oklch(0.694 0.152 246.867);
 
   /* Data-viz series palette. Fixed assignment order — series 1 is always chart-1,
-     never re-ranked when a series is filtered out. Same values in both schemes.
-     Seeded from the Riskora charts (sky bars, an orange highlight) and kept distinct
-     from the status intents. */
+     never re-ranked when a series is filtered out. Same values in both schemes. */
   --chart-1:#3da3f5;
   --chart-2:#fb8c4c;
   --chart-3:#2eb872;
@@ -62,13 +45,12 @@
   --chart-8:#8b5cf6;
 
   /* Brand constants (do not flip with theme): avatar gradient, sign-in orbs. The
-     keys are historical (the orbs were indigo/violet/cyan); the values are the
-     Riskora sky family: sky/400, blue/300, sky/400 dark. */
+     keys are historical; the values are the sky family. */
   --orb-indigo:#3da3f5;
   --orb-violet:#6676ff;
   --orb-cyan:#68cdff;
 
-  /* Fixed palette for menu/panel text and activity deltas (Riskora red/700, green/800). */
+  /* Fixed palette for menu/panel text and activity deltas. */
   --p-menu-destructive:#d02533;
   --panel-danger:#d02533;
   --delta-up:#1a7544;
@@ -91,15 +73,12 @@
   --glass-scroll-edge:76px /* @kind shadow */;
 }
 .dark{
-  /* Riskora dark: a near-black charcoal page (bg/weak-50), lifted charcoal cards
-     (bg/white-0) and a lighter panel (bg/soft-200), all on the 262 neutral hue. */
   --background:oklch(0.18 0.004 262);
   --foreground:oklch(1 0 0);
   --card:oklch(0.215 0.006 262);
   --card-foreground:oklch(1 0 0);
   --popover:oklch(0.215 0.006 262);
   --popover-foreground:oklch(1 0 0);
-  /* Riskora sky/400 dark: a pale sky that carries the dark ink at 10:1. */
   --primary:oklch(0.807 0.118 232.325);
   --primary-text:oklch(0.807 0.118 232.325);
   --primary-foreground:oklch(0.183 0.02 262);
@@ -109,8 +88,6 @@
   --muted-foreground:oklch(0.705 0.02 262);
   --accent:oklch(0.257 0.008 262);
   --accent-foreground:oklch(1 0 0);
-  /* The source's dark error base (4.15:1 with white) deepened until white text
-     clears 4.5:1; the text role is lifted until it clears 4.5:1 on the dark surfaces. */
   --destructive:oklch(0.585 0.19 22.342);
   --destructive-text:oklch(0.79 0.12 22);
   --destructive-foreground:oklch(1 0 0);

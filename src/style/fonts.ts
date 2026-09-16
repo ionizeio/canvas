@@ -42,18 +42,13 @@ export const typeface = {
   mono: "Geist Mono",
 } as const;
 
-const WEIGHTS: readonly FontWeightKey[] = ["100", "200", "300", "400", "500", "600", "700", "800", "900"];
-
-/** Normalize an RN fontWeight (string, number, "bold"/"normal") to a weight key. */
+/**
+ * Normalize an RN fontWeight (string, number, "bold"/"normal") to a weight key,
+ * snapped to the hundreds the keys use (RN accepts e.g. "550" on some platforms).
+ */
 export function weightKey(weight: string | number | undefined): FontWeightKey {
-  if (weight == null) return "400";
-  if (weight === "bold") return "700";
-  if (weight === "normal") return "400";
-  const n = typeof weight === "number" ? weight : parseInt(weight, 10);
-  if (!Number.isFinite(n)) return "400";
-  // Snap to the hundreds the keys use (RN accepts e.g. "550" on some platforms).
-  const snapped = Math.min(900, Math.max(100, Math.round(n / 100) * 100));
-  return String(snapped) as FontWeightKey;
+  const n = weight === "bold" ? 700 : typeof weight === "number" ? weight : parseInt(String(weight ?? ""), 10);
+  return (Number.isFinite(n) ? String(Math.min(900, Math.max(100, Math.round(n / 100) * 100))) : "400") as FontWeightKey;
 }
 
 export interface ResolvedFace {
@@ -72,19 +67,17 @@ export interface ResolvedFace {
 export function resolveFontFace(faces: FontFaces | undefined, weight: string | number | undefined): ResolvedFace | null {
   if (!faces) return null;
   if (typeof faces === "string") return { fontFamily: faces, dropWeight: false };
-  const want = weightKey(weight);
-  const exact = faces[want];
-  if (exact) return { fontFamily: exact, dropWeight: true };
-  const target = parseInt(want, 10);
-  let best: { family: string; distance: number; weight: number } | null = null;
-  for (const key of WEIGHTS) {
-    const family = faces[key];
-    if (!family) continue;
+  const target = parseInt(weightKey(weight), 10);
+  let fontFamily: string | undefined;
+  let bestDistance = Infinity;
+  for (const [key, family] of Object.entries(faces)) {
     const w = parseInt(key, 10);
     const distance = Math.abs(w - target);
-    if (!best || distance < best.distance || (distance === best.distance && w > best.weight)) {
-      best = { family, distance, weight: w };
+    // On a tie the heavier face wins (keys iterate ascending, so it comes second).
+    if (family && (distance < bestDistance || (distance === bestDistance && w > target))) {
+      fontFamily = family;
+      bestDistance = distance;
     }
   }
-  return best ? { fontFamily: best.family, dropWeight: true } : null;
+  return fontFamily ? { fontFamily, dropWeight: true } : null;
 }
