@@ -3,18 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, Form, Input, Typography, Column } = scope;
+  const { Form, Input } = scope;
   return (
-<Stateful initial={0}>
-  {(saves, setSaves) => (
-    <Column snug>
-      <Form submitLabel="Sign in" onSubmit={() => setSaves(saves + 1)}>
-        <Input label="Email" placeholder="you@example.com" />
-        <Input label="Password" />
-      </Form>
-      <Typography muted>{saves === 0 ? "Not submitted yet" : `Submitted ${saves} ${saves === 1 ? "time" : "times"}`}</Typography>
-    </Column>
-  )}
-</Stateful>
+<Form submitLabel="Sign in">
+  <Input label="Email" placeholder="you@example.com" />
+  <Input label="Password" />
+</Form>
   );
 }

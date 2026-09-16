@@ -6,10 +6,9 @@ Vertical activity streams with icons and timestamps. Used for audit logs, change
 
 ```tsx
 <Feed
-  connector
   items={[
     { actor: "Rachel Chen", action: "approved the request", time: "2 hours ago" },
-    { actor: "Ada Lovelace", action: "updated the description", time: "5 hours ago" },
+    { actor: "Ada Lovelace", action: "merged", target: "release/4.2", time: "5 hours ago" },
     { actor: "System", action: "created the project", time: "3 days ago" }
   ]}
 />
@@ -27,11 +26,10 @@ the person.
 
 ```tsx
 <Feed
-  connector
   items={[
     { icon: "shieldCheck", actor: "System", action: "rotated the signing key", time: "12 minutes ago" },
-    { icon: "userPlus", actor: "Rachel Chen", action: "invited", target: "marco@acme.co", time: "2 hours ago" },
-    { icon: "gitMerge", actor: "Ada Lovelace", action: "merged", target: "release/4.2", time: "1 day ago" }
+    { icon: "userPlus", actor: "Rachel Chen", action: "invited a teammate", time: "2 hours ago" },
+    { icon: "gitMerge", actor: "Ada Lovelace", action: "merged a release", time: "1 day ago" }
   ]}
 />
 ```

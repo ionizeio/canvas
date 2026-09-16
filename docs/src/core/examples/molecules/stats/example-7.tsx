@@ -6,9 +6,10 @@ export default function Example(scope: ExampleScope) {
   const { Stats } = scope;
   return (
 <Stats
+  framed
   items={[
-    { label: "Verified identities", value: "81.3%", delta: "1,502 of 1,847 verified", steady: true, share: [{ label: "Verified", value: 1502 }, { label: "Unverified", value: 345 }] },
-    { label: "Courier queue", value: "0", delta: "None waiting", steady: true, share: [{ label: "Sent", value: 0 }, { label: "Queued", value: 0 }] }
+    { label: "Requests", value: "24.5k", delta: "+8.2%", spark: [4, 8, 6, 12, 10, 16, 14, 18] },
+    { label: "Verified identities", value: "81.3%", delta: "1,502 of 1,847 verified", steady: true, share: [{ label: "Verified", value: 1502 }, { label: "Unverified", value: 345 }] }
   ]}
 />
   );

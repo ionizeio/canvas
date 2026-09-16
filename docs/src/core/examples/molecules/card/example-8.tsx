@@ -3,29 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, Card, Typography, Row, Column } = scope;
+  const { Card, Icon } = scope;
   return (
-<Stateful initial="pro">
-  {(plan, setPlan) => (
-    <Row cozy>
-      <Column fill>
-        <Card grow selected={plan === "starter"} onPress={() => setPlan("starter")}>
-          <Column tight>
-            <Typography lead semibold>Starter</Typography>
-            <Typography small muted>3 projects, 1 seat</Typography>
-          </Column>
-        </Card>
-      </Column>
-      <Column fill>
-        <Card grow selected={plan === "pro"} onPress={() => setPlan("pro")}>
-          <Column tight>
-            <Typography lead semibold>Pro</Typography>
-            <Typography small muted>Unlimited, 10 seats</Typography>
-          </Column>
-        </Card>
-      </Column>
-    </Row>
-  )}
-</Stateful>
+<Card
+  title="Identity"
+  icon={<Icon user size={16} />}
+  body="Name, primary email, and sign-in methods."
+  footer="Updated 2 minutes ago"
+/>
   );
 }

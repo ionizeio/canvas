@@ -5,47 +5,38 @@ Section card with headline, body text, and a primary action. Used to surface a s
 ## Usage
 
 The panel's single action fires `onAction`; wire it to your own handler and every
-press runs it. Here each press commits the delete, and the line underneath reports
-the result. (`Stateful` is a docs-only helper that holds the example's state; in
-your app that state is your own.)
+press runs it.
 
 ```tsx
-<Stateful initial={0}>
-  {(deletes, setDeletes) => (
-    <Column snug>
-      <ActionPanel
-        title="Delete this project"
-        description="Once you delete a project, there is no going back. Please be certain."
-        actionLabel="Delete project"
-        destructive
-        onAction={() => setDeletes(deletes + 1)}
-      />
-      <Typography muted>{deletes === 0 ? "Nothing deleted yet" : `Delete fired ${deletes} ${deletes === 1 ? "time" : "times"}`}</Typography>
-    </Column>
-  )}
-</Stateful>
+<ActionPanel
+  title="Export your data"
+  description="Download everything in this workspace as a ZIP archive."
+  actionLabel="Export"
+/>
 ```
 
 ## Variants
 
+### Destructive
+
+```tsx
+<ActionPanel
+  title="Delete this project"
+  description="Once you delete a project, there is no going back."
+  actionLabel="Delete project"
+  destructive
+/>
+```
+
 ### Inline
 
 ```tsx
-<Stateful initial={0}>
-  {(discards, setDiscards) => (
-    <Column snug>
-      <ActionPanel
-        title="Discard unsaved changes?"
-        description="You have unsaved edits in this form. Leaving now will lose all progress."
-        actionLabel="Discard"
-        destructive
-        inline
-        onAction={() => setDiscards(discards + 1)}
-      />
-      <Typography muted>{discards === 0 ? "No edits discarded yet" : `Discarded ${discards} ${discards === 1 ? "time" : "times"}`}</Typography>
-    </Column>
-  )}
-</Stateful>
+<ActionPanel
+  title="Weekly digest"
+  description="A summary of workspace activity, sent every Monday."
+  actionLabel="Subscribe"
+  inline
+/>
 ```
 
 ### Toggle
@@ -53,9 +44,8 @@ your app that state is your own.)
 ```tsx
 <ActionPanel
   title="Two-factor authentication"
-  description="Add an extra layer of security to your account by requiring a verification code on login."
+  description="Require a verification code on every login."
   toggle
-  defaultChecked
 />
 ```
 
@@ -64,12 +54,11 @@ your app that state is your own.)
 ```tsx
 <ActionPanel
   title="Workspace profile"
-  description="These details appear on every invoice this workspace sends out."
+  description="These details appear on every invoice."
   actionLabel="Save changes"
 >
   <Input label="Workspace name" defaultValue="Northwind" />
   <Input label="Billing email" defaultValue="billing@northwind.com" />
-  <Input label="VAT number" defaultValue="GB123456789" />
 </ActionPanel>
 ```
 
@@ -78,9 +67,8 @@ your app that state is your own.)
 ```tsx
 <ActionPanel
   title="Two-factor authentication"
-  description="Add an extra layer of security to your account by requiring a verification code on login."
+  description="Require a verification code on every login."
   toggle
-  defaultChecked
 >
   <Input label="Recovery phone" defaultValue="+1 555 0148" />
 </ActionPanel>
@@ -91,10 +79,10 @@ your app that state is your own.)
 ```tsx
 <Stateful initial={false}>
   {(open, setOpen) => (
-    <Column snug>
+    <Container md>
       <ActionPanel
         title="Delete this project"
-        description="Once you delete a project, there is no going back. Please be certain."
+        description="Once you delete a project, there is no going back."
         actionLabel="Delete project"
         destructive
         onAction={() => setOpen(true)}
@@ -104,10 +92,10 @@ your app that state is your own.)
         onOpenChange={setOpen}
         destructive
         title="Delete this project?"
-        description="This permanently removes the project and all of its data. This action cannot be undone."
+        description="This permanently removes the project and its data."
         confirmLabel="Delete"
       />
-    </Column>
+    </Container>
   )}
 </Stateful>
 ```

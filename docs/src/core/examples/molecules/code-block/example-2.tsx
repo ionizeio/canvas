@@ -7,10 +7,8 @@ export default function Example(scope: ExampleScope) {
   return (
 <CodeBlock
   terminal
-  copy
   code={`$ npm install @nannier-com/canvas
-added 42 packages in 3s
-$ npm run dev`}
+added 42 packages in 3s`}
 />
   );
 }

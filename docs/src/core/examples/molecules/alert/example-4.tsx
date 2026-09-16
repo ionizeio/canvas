@@ -9,7 +9,6 @@ export default function Example(scope: ExampleScope) {
   icon={<Icon bell size={16} />}
   title="Scheduled maintenance"
   description="The dashboard may be briefly unavailable on Sunday between 2:00 and 3:00 UTC."
-  dismissible
 />
   );
 }

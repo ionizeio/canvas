@@ -3,31 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, View, GridList, Typography, Column } = scope;
+  const { GridList } = scope;
   return (
-<Stateful initial="">
-  {(status, setStatus) => (
-    <Column snug>
-      <GridList
-        items={[
-          { title: "Rachel Chen", subtitle: "Engineering Lead", avatar: "/rachel-chen.jpg", actions: [
-            { label: "Message", outline: true, onPress: () => setStatus("Messaged Rachel Chen") },
-            { label: "View", ghost: true, onPress: () => setStatus("Viewed Rachel Chen") }
-          ] },
-          { title: "Ada Lovelace", subtitle: "Staff Engineer", avatar: "/ada-lovelace.jpg", actions: [
-            { label: "Message", outline: true, onPress: () => setStatus("Messaged Ada Lovelace") },
-            { label: "View", ghost: true, onPress: () => setStatus("Viewed Ada Lovelace") }
-          ] },
-          { title: "Kevin Turner", subtitle: "Product Designer", avatar: "KT", actions: [
-            { label: "Message", outline: true, onPress: () => setStatus("Messaged Kevin Turner") },
-            { label: "View", ghost: true, onPress: () => setStatus("Viewed Kevin Turner") }
-          ] }
-        ]}
-        cols2
-      />
-      <Typography muted>{status === "" ? "Press an action on a card" : status}</Typography>
-    </Column>
-  )}
-</Stateful>
+<GridList
+  items={[
+    { title: "Rachel Chen", subtitle: "Engineering Lead", avatar: "RC", badge: "Active", actions: [{ label: "Message", outline: true, onPress: () => {} }] },
+    { title: "Ada Lovelace", subtitle: "Staff Engineer", avatar: "AL", badge: "Active", actions: [{ label: "Message", outline: true, onPress: () => {} }] },
+    { title: "Kevin Turner", subtitle: "Product Designer", avatar: "KT", badge: "Away", actions: [{ label: "Message", outline: true, onPress: () => {} }] }
+  ]}
+/>
   );
 }

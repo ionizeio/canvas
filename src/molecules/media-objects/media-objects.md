@@ -10,73 +10,46 @@ Image or icon paired with text content. The fundamental building block for list 
   title="Rachel Chen"
   description="Engineering Lead"
   body="Reviewed the latest pull request and left comments on the auth middleware changes."
-  start
   bordered
 />
 ```
 
 ## Variants
 
-### Tappable
-
-Passing `onPress` makes the whole row a single tap target; wire it to your own
-handler and every tap runs it. Here the line underneath reports which row was
-tapped. (`Stateful` is a docs-only helper that holds the example's state; in
-your app that state is your own.)
-
-```tsx
-<Stateful initial="">
-  {(opened, setOpened) => (
-    <Column snug>
-      <MediaObject onPress={() => setOpened("Rachel Chen")} bordered center avatar="RC" title="Rachel Chen" description="Engineering Lead" meta="admin" truncate />
-      <MediaObject onPress={() => setOpened("Ada Lovelace")} bordered center avatar="AL" title="Ada Lovelace" description="Staff Engineer" meta="2h ago" truncate />
-      <Typography muted>{opened === "" ? "No profile opened yet" : `Opened ${opened}'s profile`}</Typography>
-    </Column>
-  )}
-</Stateful>
-```
-
-### Icon
-
-```tsx
-<Column cozy>
-  <MediaObject bordered start title="Security first" description="End-to-end encryption with automatic key rotation." icon={<Icon shield primary size={18} />} />
-  <MediaObject bordered start title="Real-time analytics" description="Live dashboards with sub-second refresh latency." icon={<Icon activity primary size={18} />} />
-</Column>
-```
-
-### Action
-
-The trailing `action` slot takes any control; the button's `onPress` is yours to
-wire, and the line underneath reports each press.
-
-```tsx
-<Stateful initial={0}>
-  {(invites, setInvites) => (
-    <Column snug>
-      <MediaObject bordered center truncate src="/ada-lovelace.jpg" title="Ada Lovelace" description="ada@example.com" action={<Button outline small onPress={() => setInvites(invites + 1)}>Invite</Button>} />
-      <Typography muted>{invites === 0 ? "No invite sent yet" : `Invite sent ${invites} ${invites === 1 ? "time" : "times"}`}</Typography>
-    </Column>
-  )}
-</Stateful>
-```
-
 ### Compact
 
 ```tsx
-<Column cozy>
-  <MediaObject avatar="RC" title="Rachel Chen" description="rachel.chen@example.com" />
-  <MediaObject compact avatar="RC" title="Rachel Chen" description="rachel.chen@example.com" />
-</Column>
+<MediaObject compact avatar="RC" title="Rachel Chen" description="rachel.chen@example.com" />
 ```
 
 ### Bare row with meta
 
 ```tsx
-<Column snug>
-  <MediaObject center truncate avatar="RC" title="Rachel Chen" description="Commented on the deploy pipeline." meta="1h" />
-  <MediaObject center truncate avatar="AL" title="Ada Lovelace" description="Pushed 3 commits to main." meta="2h" />
-</Column>
+<MediaObject avatar="RC" title="Rachel Chen" description="Commented on the deploy pipeline." meta="1h" />
+```
+
+### Icon
+
+```tsx
+<MediaObject bordered title="Security first" description="End-to-end encryption with automatic key rotation." icon={<Icon shield primary size={18} />} />
+```
+
+### Action
+
+The trailing `action` slot takes any control; the button's `onPress` is yours to
+wire.
+
+```tsx
+<MediaObject bordered src="/ada-lovelace.jpg" title="Ada Lovelace" description="ada@example.com" action={<Button outline small>Invite</Button>} />
+```
+
+### Tappable
+
+Passing `onPress` makes the whole row a single tap target; wire it to your own
+handler and every tap runs it.
+
+```tsx
+<MediaObject onPress={() => {}} bordered avatar="RC" title="Rachel Chen" description="Engineering Lead" />
 ```
 
 ## Do & Don't

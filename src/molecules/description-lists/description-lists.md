@@ -6,48 +6,27 @@ Key-value pairs in stacked, two-column, or inline-edit layouts. Used for detail 
 
 ```tsx
 <DescriptionList
-  card
-  twoColumn
-  divided
-  title="Application details"
-  subtitle="Personal information and credentials."
   items={[
     { term: "Full name", value: "Rachel Chen" },
     { term: "Email", value: "rachel.chen@example.com" },
-    { term: "Role", value: "admin", badge: true },
-    { term: "Status", value: "Active", status: true }
+    { term: "Role", value: "Admin" }
   ]}
 />
 ```
 
 ## Variants
 
-### Inline-edit
+### Card
 
 ```tsx
 <DescriptionList
   card
-  twoColumn
-  divided
-  title="Profile"
-  items={[
-    { term: "Name", value: "Rachel Chen", update: true },
-    { term: "Email", value: "rachel.chen@example.com", update: true },
-    { term: "Title", value: "Senior Engineer", update: true }
-  ]}
-/>
-```
-
-### Stacked
-
-```tsx
-<DescriptionList
-  card
-  stacked
+  title="Application details"
+  subtitle="Personal information and credentials."
   items={[
     { term: "Full name", value: "Rachel Chen" },
     { term: "Email", value: "rachel.chen@example.com" },
-    { term: "Client ID", value: "clnt_01H2X8K9P3Q7VN4W6R5T0JYMZF", mono: true }
+    { term: "Role", value: "Admin" }
   ]}
 />
 ```
@@ -56,41 +35,41 @@ Key-value pairs in stacked, two-column, or inline-edit layouts. Used for detail 
 
 ```tsx
 <DescriptionList
-card
-inline
-divided
-title="Subscription"
-items={[
-  { term: "Status", value: "Active", status: true },
-  { term: "Seats", value: "12 of 20" },
-  { term: "Renews", value: "Mar 1, 2026" }
-]}
+  inline
+  items={[
+    { term: "Status", value: "Active" },
+    { term: "Seats", value: "12 of 20" },
+    { term: "Renews", value: "Mar 1, 2026" }
+  ]}
 />
 ```
 
 ### Rich values
 
-A row's value can compose real atoms: `status`/`badge` render Badges, `avatars` renders an overlapping AvatarGroup (`overflow` folds the rest into its "+N" chip), and `copyValue` appends a ghost Copy button that hands the string to `onCopy` (the line below reports the press; wire your clipboard there).
+A row's value can compose real atoms: `status`/`badge` render Badges, `avatars` renders an overlapping AvatarGroup (`overflow` folds the rest into its "+N" chip), and `copyValue` appends a ghost Copy button that hands the string to `onCopy` (wire your clipboard there).
 
 ```tsx
-<Stateful initial="">
-  {(copied, setCopied) => (
-    <Column snug>
-      <DescriptionList
-      twoColumn
-      divided
-      onCopy={(value) => setCopied(value)}
-      items={[
-        { term: "Status", value: "Active", status: true },
-        { term: "Plan", value: "Pro", badge: true },
-        { term: "Members", value: "8 members", avatars: [{ name: "Rachel Chen" }, { name: "Alan Turing" }, { name: "Grace Hopper" }], overflow: 5 },
-        { term: "Client ID", value: "clnt_01H2X8K9", mono: true, copyValue: "clnt_01H2X8K9" }
-      ]}
-      />
-      <Typography muted>{copied === "" ? "Press Copy to grab the ID" : `Copied ${copied}`}</Typography>
-    </Column>
-  )}
-</Stateful>
+<DescriptionList
+  twoColumn
+  items={[
+    { term: "Status", value: "Active", status: true },
+    { term: "Plan", value: "Pro", badge: true },
+    { term: "Members", value: "8 members", avatars: [{ name: "Rachel Chen" }, { name: "Alan Turing" }, { name: "Grace Hopper" }], overflow: 5 },
+    { term: "Client ID", value: "clnt_01H2X8K9", mono: true, copyValue: "clnt_01H2X8K9" }
+  ]}
+/>
+```
+
+### Inline-edit
+
+```tsx
+<DescriptionList
+  twoColumn
+  items={[
+    { term: "Name", value: "Rachel Chen", update: true },
+    { term: "Email", value: "rachel.chen@example.com", update: true }
+  ]}
+/>
 ```
 
 ## Do & Don't

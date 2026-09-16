@@ -6,12 +6,10 @@ export default function Example(scope: ExampleScope) {
   const { CodeBlock } = scope;
   return (
 <CodeBlock
-  diff
   copy
   language="ts"
-  code={`-const theme = "light";
-+const theme = getTheme();
- setTheme(theme);`}
+  code={`const theme = getTheme();
+setTheme(theme === "dark" ? "light" : "dark");`}
 />
   );
 }

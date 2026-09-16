@@ -7,9 +7,9 @@ export default function Example(scope: ExampleScope) {
   return (
 <Accordion
   items={[
-    { key: "what", title: "What is Canvas?", content: "A universal React Native UI kit that renders natively on iOS and Android and on the web through React Native Web." },
-    { key: "access", title: "Is it accessible?", content: "Yes. Each header is a button that exposes its expanded and disabled state to assistive technology." },
-    { key: "theme", title: "Is it themed?", content: "Yes. All colors come from the active theme tokens, so light, dark, and glass surfaces keep working." }
+    { key: "what", title: "What is Canvas?", content: "A universal React Native UI kit for iOS, Android, and the web." },
+    { key: "access", title: "Is it accessible?", content: "Yes. Each header is a button that exposes its expanded state." },
+    { key: "theme", title: "Is it themed?", content: "Yes. Every color comes from the active theme tokens." }
   ]}
   defaultValue="what"
 />

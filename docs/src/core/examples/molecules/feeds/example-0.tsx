@@ -6,10 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { Feed } = scope;
   return (
 <Feed
-  connector
   items={[
     { actor: "Rachel Chen", action: "approved the request", time: "2 hours ago" },
-    { actor: "Ada Lovelace", action: "updated the description", time: "5 hours ago" },
+    { actor: "Ada Lovelace", action: "merged", target: "release/4.2", time: "5 hours ago" },
     { actor: "System", action: "created the project", time: "3 days ago" }
   ]}
 />

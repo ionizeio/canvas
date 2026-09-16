@@ -3,22 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, Alert, Button, Icon, Typography, Column } = scope;
+  const { Alert, Icon } = scope;
   return (
-<Stateful initial={0}>
-  {(opens, setOpens) => (
-    <Column snug>
-      <Alert
-        info
-        icon={<Icon info size={16} />}
-        title="Heads up"
-        description="Maintenance window scheduled for Sunday 2:00 UTC."
-        dismissible
-        actions={<Button link small onPress={() => setOpens(opens + 1)}>Learn more</Button>}
-      />
-      <Typography muted>{opens === 0 ? "Maintenance notes not opened yet" : `Opened the maintenance notes ${opens} ${opens === 1 ? "time" : "times"}`}</Typography>
-    </Column>
-  )}
-</Stateful>
+<Alert
+  info
+  icon={<Icon info size={16} />}
+  title="Heads up"
+  description="Maintenance window scheduled for Sunday 2:00 UTC."
+/>
   );
 }

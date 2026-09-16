@@ -7,12 +7,9 @@ export default function Example(scope: ExampleScope) {
   return (
 <CodeBlock
   terminal
-  copy
-  tabs={[
-    { label: "npm", code: "npm install @nannier-com/canvas" },
-    { label: "yarn", code: "yarn add @nannier-com/canvas" },
-    { label: "bun", code: "bun add @nannier-com/canvas" },
-  ]}
+  filename="deploy.sh"
+  code={`$ ./deploy.sh --stage production
+Build complete in 12s`}
 />
   );
 }

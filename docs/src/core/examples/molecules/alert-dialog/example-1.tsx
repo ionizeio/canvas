@@ -6,12 +6,10 @@ export default function Example(scope: ExampleScope) {
   const { AlertDialog } = scope;
   return (
 <AlertDialog
-  title="Delete this identity?"
-  description="This permanently removes the identity and revokes any active sessions. This action cannot be undone."
-  confirmLabel="Delete"
-  destructive
   narrow
-  trigger="Delete identity…"
+  title="Sign out?"
+  confirmLabel="Sign out"
+  trigger="Sign out…"
 />
   );
 }

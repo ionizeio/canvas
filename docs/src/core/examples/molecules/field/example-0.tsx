@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Field, Input } = scope;
   return (
-<Field label="Email" helper="We'll never share your email." required>
+<Field label="Email" helper="We'll never share your email.">
   <Input placeholder="you@example.com" />
 </Field>
   );

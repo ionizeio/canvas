@@ -26,12 +26,10 @@ closure without passing that request to a parent or calling `onConfirm`.
 
 ```tsx
 <AlertDialog
-  title="Delete this identity?"
-  description="This permanently removes the identity and revokes any active sessions. This action cannot be undone."
-  confirmLabel="Delete"
-  destructive
   narrow
-  trigger="Delete identity…"
+  title="Sign out?"
+  confirmLabel="Sign out"
+  trigger="Sign out…"
 />
 ```
 
@@ -39,12 +37,11 @@ closure without passing that request to a parent or calling `onConfirm`.
 
 ```tsx
 <AlertDialog
-  title="Delete this identity?"
-  description="This permanently removes the identity and revokes any active sessions. This action cannot be undone."
-  confirmLabel="Delete"
-  destructive
   small
-  trigger="Delete identity…"
+  title="Transfer ownership?"
+  description="You will lose admin access to this workspace."
+  confirmLabel="Transfer"
+  trigger="Transfer ownership…"
 />
 ```
 
@@ -52,12 +49,11 @@ closure without passing that request to a parent or calling `onConfirm`.
 
 ```tsx
 <AlertDialog
-  title="Delete this identity?"
-  description="This permanently removes the identity and revokes any active sessions. This action cannot be undone."
-  confirmLabel="Delete"
-  destructive
   large
-  trigger="Delete identity…"
+  title="Transfer ownership?"
+  description="You will lose admin access to this workspace, and the new owner can remove you from it. Billing, integrations, and the audit history move with the workspace."
+  confirmLabel="Transfer"
+  trigger="Transfer ownership…"
 />
 ```
 
@@ -75,7 +71,6 @@ button enables, so it is a real safety check rather than a decorative field. Pas
   confirmLabel="Delete"
   destructive
   withInput
-  confirmText="DELETE"
   trigger="Delete identity…"
 />
 ```
@@ -84,25 +79,20 @@ button enables, so it is a real safety check rather than a decorative field. Pas
 
 Drive the open state from outside the dialog: omit `trigger`, own `open` yourself,
 and pass `onOpenChange` so every way the dialog closes (confirm, cancel, browser
-Escape or iOS accessibility escape) reports back and keeps your state in sync. The readout below is wired
-to that same state, so it flips the moment `onOpenChange` fires. (`Stateful` is a
+Escape or iOS accessibility escape) reports back and keeps your state in sync. (`Stateful` is a
 docs-only state holder; in an app you would hold `open` with `useState`.)
 
 ```tsx
 <Stateful initial={false}>
   {(open, setOpen) => (
     <Column relaxed>
-      <Row snug alignCenter>
-        <Button small outline onPress={() => setOpen(true)}>Delete identity…</Button>
-        <Typography muted>{open ? "Dialog is open" : "Dialog is closed"}</Typography>
-      </Row>
+      <Button onPress={() => setOpen(true)}>Transfer ownership…</Button>
       <AlertDialog
         open={open}
         onOpenChange={setOpen}
-        destructive
-        title="Delete this identity?"
-        description="This permanently removes the identity and revokes any active sessions. This action cannot be undone."
-        confirmLabel="Delete"
+        title="Transfer ownership?"
+        description="You will lose admin access to this workspace."
+        confirmLabel="Transfer"
       />
     </Column>
   )}

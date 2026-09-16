@@ -5,51 +5,20 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 ## Usage
 
 ```tsx
-<Card padded>
-  <Row between alignStart>
-    <Column tight>
-      <Typography caption medium>Active identities</Typography>
-      <Typography h3 bold>12,348</Typography>
-      <Typography tiny muted>+142 today</Typography>
-    </Column>
-    <Emblem primary label="U" />
-  </Row>
+<Card>
+  <Typography caption medium>Active identities</Typography>
+  <Typography h3 bold>12,348</Typography>
+  <Typography tiny muted>+142 today</Typography>
 </Card>
 ```
 
 ## Variants
 
-### Section
-
-```tsx
-<Card
-  onPress={() => {}}
-  title="Recent activity"
-  body="A labeled content surface. Drop fields, a list, or any module of content here."
-/>
-```
-
-### Section with children
-
-```tsx
-<Card title="Identity" description="Core attributes" actions={<Button ghost small>Edit</Button>}>
-  <DescriptionList
-    items={[
-      { term: "ID", value: "6f1c2a", mono: true },
-      { term: "State", value: "Active", status: true },
-    ]}
-  />
-</Card>
-```
-
 ### Generic
 
 ```tsx
 <Card>
-  <Column tight>
-    <Typography lead semibold>Anything goes here</Typography>
-    <Typography small muted>The card surface gives you the border, radius, and shadow. You bring the content.</Typography>
-  </Column>
+  <Typography lead semibold>Anything goes here</Typography>
 </Card>
 ```
 
@@ -58,100 +27,16 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 ```tsx
 <Card>
   <Typography lead semibold>The surface owns the rhythm</Typography>
-  <Typography small muted>A padded card spaces its flat children by itself: each line lands a steady step below the last.</Typography>
-  <Typography small muted>Three flat Typography children, no layout wrapper between them.</Typography>
+  <Typography small muted>Each line lands a steady step below the last.</Typography>
+  <Typography small muted>No layout wrapper between them.</Typography>
 </Card>
-```
-
-### Media
-
-```tsx
-<Card flush>
-  <CardMedia src="/kira-tanaka.jpg" height={180} alt="Portrait of Kira Tanaka" />
-  <CardContent>
-    <Column cozy>
-      <Column tight>
-        <Typography h5 semibold>Kira Tanaka</Typography>
-        <Typography small muted>Design engineer. Ships the pixels and the pipeline that delivers them.</Typography>
-      </Column>
-      <Row snug>
-        <Button primary small>Follow</Button>
-        <Button outline small>Message</Button>
-      </Row>
-    </Column>
-  </CardContent>
-</Card>
-```
-
-### Horizontal
-
-```tsx
-<Card>
-  <MediaObject
-    src="/rachel-chen.jpg"
-    title="Rachel Chen"
-    description="Platform engineering, San Francisco"
-    action={<Button outline small>View</Button>}
-    center
-  />
-</Card>
-```
-
-### Actions
-
-```tsx
-<Card flush>
-  <CardHeader>
-    <CardTitle>Workspace settings</CardTitle>
-    <CardDescription>Rename the workspace. The URL updates everywhere.</CardDescription>
-  </CardHeader>
-  <CardSeparator />
-  <CardContent>
-    <Input label="Workspace name" placeholder="Acme Inc." />
-  </CardContent>
-  <CardSeparator />
-  <CardFooter>
-    <Button ghost small>Cancel</Button>
-    <Button primary small>Save changes</Button>
-  </CardFooter>
-</Card>
-```
-
-### Selectable
-
-```tsx
-<Stateful initial="pro">
-  {(plan, setPlan) => (
-    <Row cozy>
-      <Column fill>
-        <Card grow selected={plan === "starter"} onPress={() => setPlan("starter")}>
-          <Column tight>
-            <Typography lead semibold>Starter</Typography>
-            <Typography small muted>3 projects, 1 seat</Typography>
-          </Column>
-        </Card>
-      </Column>
-      <Column fill>
-        <Card grow selected={plan === "pro"} onPress={() => setPlan("pro")}>
-          <Column tight>
-            <Typography lead semibold>Pro</Typography>
-            <Typography small muted>Unlimited, 10 seats</Typography>
-          </Column>
-        </Card>
-      </Column>
-    </Row>
-  )}
-</Stateful>
 ```
 
 ### Flat
 
 ```tsx
 <Card flat>
-  <Column tight>
-    <Typography lead semibold>Outlined and quiet</Typography>
-    <Typography small muted>Flat drops the shadow so the card sits flush with the page. On Android this is the Material outlined card.</Typography>
-  </Column>
+  <Typography lead semibold>Outlined and quiet</Typography>
 </Card>
 ```
 
@@ -159,10 +44,41 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 
 ```tsx
 <Card raised>
-  <Column tight>
-    <Typography lead semibold>Lifted above the page</Typography>
-    <Typography small muted>Raised deepens the shadow for the moments a card needs emphasis: a drag preview, a featured module.</Typography>
-  </Column>
+  <Typography lead semibold>Lifted above the page</Typography>
+</Card>
+```
+
+### Density
+
+```tsx
+<Column cozy>
+  <Card compact>
+    <Typography lead semibold>Compact</Typography>
+    <Typography small muted>Tight padding and rhythm.</Typography>
+  </Card>
+  <Card comfortable>
+    <Typography lead semibold>Comfortable</Typography>
+    <Typography small muted>Roomy padding and rhythm.</Typography>
+  </Card>
+</Column>
+```
+
+### Section
+
+```tsx
+<Card title="Recent activity" body="Two events today." />
+```
+
+### Section with children
+
+```tsx
+<Card title="Identity">
+  <DescriptionList
+    items={[
+      { term: "ID", value: "6f1c2a" },
+      { term: "State", value: "Active" },
+    ]}
+  />
 </Card>
 ```
 
@@ -170,31 +86,45 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 
 ```tsx
 <Card
-title="Identity"
-icon={<Icon user muted size={16} />}
-description="Core attributes"
-body="Name, primary email, and sign-in methods for this account."
-footer="Updated 2 minutes ago"
+  title="Identity"
+  icon={<Icon user size={16} />}
+  body="Name, primary email, and sign-in methods."
+  footer="Updated 2 minutes ago"
 />
 ```
 
-### Density
+### Media
 
 ```tsx
-<Row cozy>
-  <Column fill>
-    <Card compact grow>
-      <Typography lead semibold>Compact</Typography>
-      <Typography small muted>Tight padding and rhythm for dense dashboards.</Typography>
-    </Card>
-  </Column>
-  <Column fill>
-    <Card comfortable grow>
-      <Typography lead semibold>Comfortable</Typography>
-      <Typography small muted>Roomy padding and rhythm for relaxed reading.</Typography>
-    </Card>
-  </Column>
-</Row>
+<Card flush>
+  <CardMedia src="/kira-tanaka.jpg" alt="Portrait of Kira Tanaka" />
+  <CardContent>
+    <Typography h5 semibold>Kira Tanaka</Typography>
+  </CardContent>
+</Card>
+```
+
+### Actions
+
+```tsx
+<Card flush>
+  <CardContent>
+    <Typography small>Rename the workspace. The URL updates everywhere.</Typography>
+  </CardContent>
+  <CardSeparator />
+  <CardFooter>
+    <Button ghost small>Cancel</Button>
+    <Button primary small>Save</Button>
+  </CardFooter>
+</Card>
+```
+
+### Selectable
+
+```tsx
+<Card selected onPress={() => {}}>
+  <Typography lead semibold>Pro</Typography>
+</Card>
 ```
 
 ## Do & Don't

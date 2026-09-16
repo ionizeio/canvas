@@ -7,9 +7,9 @@ A vertically stacked group of disclosure rows: each `items` entry is a header (i
 ```tsx
 <Accordion
   items={[
-    { key: "what", title: "What is Canvas?", content: "A universal React Native UI kit that renders natively on iOS and Android and on the web through React Native Web." },
-    { key: "access", title: "Is it accessible?", content: "Yes. Each header is a button that exposes its expanded and disabled state to assistive technology." },
-    { key: "theme", title: "Is it themed?", content: "Yes. All colors come from the active theme tokens, so light, dark, and glass surfaces keep working." }
+    { key: "what", title: "What is Canvas?", content: "A universal React Native UI kit for iOS, Android, and the web." },
+    { key: "access", title: "Is it accessible?", content: "Yes. Each header is a button that exposes its expanded state." },
+    { key: "theme", title: "Is it themed?", content: "Yes. Every color comes from the active theme tokens." }
   ]}
   defaultValue="what"
 />
@@ -79,7 +79,7 @@ card, so `card` changes nothing there (a documented no-op).
 
 Drive the open step from outside the accordion: a parent owns the active step and
 passes it as `value`, so the group reflects that external state rather than toggling on
-a header press. Here the Previous / Next buttons are the trigger. (`Stateful` is a
+a header press. Here the Next step button is the trigger. (`Stateful` is a
 docs-only helper standing in for your own state; in an app you would hold `step` with
 `useState` and pass `value={step}` plus `onValueChange` if you also want header presses
 to update it.)
@@ -88,10 +88,7 @@ to update it.)
 <Stateful initial="step-1">
   {(step, setStep) => (
     <Column relaxed>
-      <Row snug alignCenter>
-        <Button small outline disabled={step === "step-1"} onPress={() => setStep(step === "step-3" ? "step-2" : "step-1")}>Previous</Button>
-        <Button small primary disabled={step === "step-3"} onPress={() => setStep(step === "step-1" ? "step-2" : "step-3")}>Next step</Button>
-      </Row>
+      <Button small outline onPress={() => setStep(step === "step-1" ? "step-2" : step === "step-2" ? "step-3" : "step-1")}>Next step</Button>
       <Accordion
         value={step}
         items={[

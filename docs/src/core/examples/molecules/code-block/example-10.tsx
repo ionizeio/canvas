@@ -5,6 +5,13 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { CodeBlock } = scope;
   return (
-<CodeBlock inline language="bash" code="npm install" />
+<CodeBlock
+  numbered
+  startLine={128}
+  language="ts"
+  code={`function resolveTokens(scheme: Scheme) {
+  return scheme === "dark" ? darkTokens : lightTokens;
+}`}
+/>
   );
 }

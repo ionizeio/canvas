@@ -45,33 +45,27 @@ Vertical lists with avatar, two-line items, and trailing metadata. Used for cont
 
 ```tsx
 <StackedList
+  card
+  title="Team members"
   items={[
     { name: "Rachel Chen", detail: "Engineering Lead" },
     { name: "Ada Lovelace", detail: "Staff Engineer" }
   ]}
-  card
-  title="Team members"
-  addAction="Add"
-  rowMenu
 />
 ```
 
 ### Custom header action
 
 ```tsx
-<Stateful initial={[
-  { id: "rachel", name: "Rachel Chen", detail: "Engineering Lead" },
-  { id: "ada", name: "Ada Lovelace", detail: "Staff Engineer" },
-]}>
-  {(people, setPeople) => (
-    <StackedList
-      card
-      title="Team members"
-      action={<Button ghost small onPress={() => setPeople([...people, { id: `invite-${people.length}`, name: "Kevin Turner", detail: "Pending invite" }])}>Invite</Button>}
-      items={people}
-    />
-  )}
-</Stateful>
+<StackedList
+  card
+  title="Team members"
+  action={<Button ghost small>Invite</Button>}
+  items={[
+    { name: "Rachel Chen", detail: "Engineering Lead" },
+    { name: "Ada Lovelace", detail: "Staff Engineer" }
+  ]}
+/>
 ```
 
 ### Reorderable

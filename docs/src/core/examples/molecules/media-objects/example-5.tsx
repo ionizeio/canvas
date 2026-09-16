@@ -3,11 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { MediaObject, Column } = scope;
+  const { MediaObject } = scope;
   return (
-<Column snug>
-  <MediaObject center truncate avatar="RC" title="Rachel Chen" description="Commented on the deploy pipeline." meta="1h" />
-  <MediaObject center truncate avatar="AL" title="Ada Lovelace" description="Pushed 3 commits to main." meta="2h" />
-</Column>
+<MediaObject onPress={() => {}} bordered avatar="RC" title="Rachel Chen" description="Engineering Lead" />
   );
 }

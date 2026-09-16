@@ -3,15 +3,28 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, EmptyState, Icon } = scope;
+  const { Stateful, DataTable, EmptyState, Icon } = scope;
   return (
-<EmptyState
-  icon={<Icon circleCheck />}
-  title="No errors"
-  description="Everything is running smoothly."
-  actionLabel="View logs"
-  success
-  bordered
-/>
+<Stateful initial={true}>
+  {(filtered, setFiltered) => (
+    <DataTable
+      columns={["Name", "Email", "Role"]}
+      rows={filtered ? [] : [
+        ["Alice Johnson", "alice@example.com", "Admin"],
+        ["Bob Smith", "bob@example.com", "Editor"],
+        ["Rachel Chen", "rachel@example.com", "Admin"]
+      ]}
+      emptyMessage={
+        <EmptyState
+          icon={<Icon search />}
+          title="No results found"
+          description="Try adjusting your search filters."
+          actionLabel="Clear filters"
+          onAction={() => setFiltered(false)}
+        />
+      }
+    />
+  )}
+</Stateful>
   );
 }

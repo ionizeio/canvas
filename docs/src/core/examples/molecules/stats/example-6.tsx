@@ -6,9 +6,10 @@ export default function Example(scope: ExampleScope) {
   const { Stats } = scope;
   return (
 <Stats
+  framed
   items={[
-    { label: "Requests", value: "24.5k", delta: "+8.2%", spark: [4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24] },
-    { label: "Latency", value: "142ms", delta: "+12ms", down: true, spark: [10, 9, 11, 10, 12, 11, 13, 12, 14, 13, 15] }
+    { label: "Requests", value: "24.5k", delta: "+8.2%", spark: [4, 8, 6, 12, 10, 16, 14, 18] },
+    { label: "Errors", value: "0", delta: "None in the last hour", steady: true, spark: [0, 0, 0, 0, 0, 0, 0, 0] }
   ]}
 />
   );

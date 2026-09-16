@@ -3,22 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, AlertDialog, Button, Dialog, Typography, Row, Column } = scope;
+  const { Stateful, AlertDialog, Button, Column } = scope;
   return (
 <Stateful initial={false}>
   {(open, setOpen) => (
     <Column relaxed>
-      <Row snug alignCenter>
-        <Button small outline onPress={() => setOpen(true)}>Delete identity…</Button>
-        <Typography muted>{open ? "Dialog is open" : "Dialog is closed"}</Typography>
-      </Row>
+      <Button onPress={() => setOpen(true)}>Transfer ownership…</Button>
       <AlertDialog
         open={open}
         onOpenChange={setOpen}
-        destructive
-        title="Delete this identity?"
-        description="This permanently removes the identity and revokes any active sessions. This action cannot be undone."
-        confirmLabel="Delete"
+        title="Transfer ownership?"
+        description="You will lose admin access to this workspace."
+        confirmLabel="Transfer"
       />
     </Column>
   )}

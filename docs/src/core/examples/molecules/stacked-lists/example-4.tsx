@@ -3,20 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, Button, StackedList } = scope;
+  const { Button, StackedList } = scope;
   return (
-<Stateful initial={[
-  { id: "rachel", name: "Rachel Chen", detail: "Engineering Lead" },
-  { id: "ada", name: "Ada Lovelace", detail: "Staff Engineer" },
-]}>
-  {(people, setPeople) => (
-    <StackedList
-      card
-      title="Team members"
-      action={<Button ghost small onPress={() => setPeople([...people, { id: `invite-${people.length}`, name: "Kevin Turner", detail: "Pending invite" }])}>Invite</Button>}
-      items={people}
-    />
-  )}
-</Stateful>
+<StackedList
+  card
+  title="Team members"
+  action={<Button ghost small>Invite</Button>}
+  items={[
+    { name: "Rachel Chen", detail: "Engineering Lead" },
+    { name: "Ada Lovelace", detail: "Staff Engineer" }
+  ]}
+/>
   );
 }

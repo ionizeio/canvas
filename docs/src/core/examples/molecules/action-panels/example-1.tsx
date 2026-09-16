@@ -3,22 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, ActionPanel, Typography, Column } = scope;
+  const { ActionPanel } = scope;
   return (
-<Stateful initial={0}>
-  {(discards, setDiscards) => (
-    <Column snug>
-      <ActionPanel
-        title="Discard unsaved changes?"
-        description="You have unsaved edits in this form. Leaving now will lose all progress."
-        actionLabel="Discard"
-        destructive
-        inline
-        onAction={() => setDiscards(discards + 1)}
-      />
-      <Typography muted>{discards === 0 ? "No edits discarded yet" : `Discarded ${discards} ${discards === 1 ? "time" : "times"}`}</Typography>
-    </Column>
-  )}
-</Stateful>
+<ActionPanel
+  title="Delete this project"
+  description="Once you delete a project, there is no going back."
+  actionLabel="Delete project"
+  destructive
+/>
   );
 }

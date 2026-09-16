@@ -3,10 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Field, Switch } = scope;
+  const { Field, Form, Input, Select, Textarea } = scope;
   return (
-<Field label="Notifications" helper="You can change this at any time.">
-  <Switch defaultChecked>Release activity</Switch>
-</Field>
+<Form>
+  <Field label="Full name">
+    <Input placeholder="Rachel Chen" />
+  </Field>
+  <Field label="Role">
+    <Select options={["Admin", "Editor", "Viewer"]} placeholder="Pick a role" />
+  </Field>
+  <Field label="Notes">
+    <Textarea rows={3} placeholder="Anything worth remembering" />
+  </Field>
+</Form>
   );
 }

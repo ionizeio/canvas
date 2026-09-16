@@ -6,12 +6,11 @@ export default function Example(scope: ExampleScope) {
   const { AlertDialog } = scope;
   return (
 <AlertDialog
-  title="Delete this identity?"
-  description="This permanently removes the identity and revokes any active sessions. This action cannot be undone."
-  confirmLabel="Delete"
-  destructive
   large
-  trigger="Delete identity…"
+  title="Transfer ownership?"
+  description="You will lose admin access to this workspace, and the new owner can remove you from it. Billing, integrations, and the audit history move with the workspace."
+  confirmLabel="Transfer"
+  trigger="Transfer ownership…"
 />
   );
 }

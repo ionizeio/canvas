@@ -3,17 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, CodeBlock } = scope;
+  const { CodeBlock } = scope;
   return (
 <CodeBlock
-  numbered
-  language="tsx"
-  highlightLines={["4-5"]}
-  code={`import { Button } from "@nannier-com/canvas";
-
-export function Cta() {
-  const label = getLabel();
-  return <Button primary large>{label}</Button>;
+  compact
+  language="json"
+  code={`{
+  "theme": "system",
+  "surface": "glass",
+  "primary": "#6366f1"
 }`}
 />
   );

@@ -3,15 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, Button, MediaObject, Typography, Column } = scope;
+  const { Icon, MediaObject } = scope;
   return (
-<Stateful initial={0}>
-  {(invites, setInvites) => (
-    <Column snug>
-      <MediaObject bordered center truncate src="/ada-lovelace.jpg" title="Ada Lovelace" description="ada@example.com" action={<Button outline small onPress={() => setInvites(invites + 1)}>Invite</Button>} />
-      <Typography muted>{invites === 0 ? "No invite sent yet" : `Invite sent ${invites} ${invites === 1 ? "time" : "times"}`}</Typography>
-    </Column>
-  )}
-</Stateful>
+<MediaObject bordered title="Security first" description="End-to-end encryption with automatic key rotation." icon={<Icon shield primary size={18} />} />
   );
 }

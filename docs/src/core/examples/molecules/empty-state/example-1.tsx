@@ -6,11 +6,10 @@ export default function Example(scope: ExampleScope) {
   const { EmptyState, Icon } = scope;
   return (
 <EmptyState
+  bordered
   icon={<Icon users />}
   title="No users"
   description="Invite your first team member."
-  actionLabel="Invite member"
-  bordered
 />
   );
 }

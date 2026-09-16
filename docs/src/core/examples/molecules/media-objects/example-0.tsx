@@ -10,7 +10,6 @@ export default function Example(scope: ExampleScope) {
   title="Rachel Chen"
   description="Engineering Lead"
   body="Reviewed the latest pull request and left comments on the auth middleware changes."
-  start
   bordered
 />
   );

@@ -16,9 +16,7 @@ a scrolling tab stop. Native scrolling continues to use the native ScrollView.
 
 ```tsx
 <CodeBlock
-  filename="theme.ts"
   language="ts"
-  copy
   code={`const theme = getTheme();
 setTheme(theme === "dark" ? "light" : "dark");`}
 />
@@ -43,22 +41,8 @@ setTheme(theme === "dark" ? "light" : "dark");`}
 ```tsx
 <CodeBlock
   terminal
-  copy
   code={`$ npm install @nannier-com/canvas
-added 42 packages in 3s
-$ npm run dev`}
-/>
-```
-
-### Terminal label
-
-```tsx
-<CodeBlock
-  terminal
-  copy
-  filename="deploy.sh"
-  code={`$ ./deploy.sh --stage production
-Build complete in 12s`}
+added 42 packages in 3s`}
 />
 ```
 
@@ -73,84 +57,24 @@ setTheme(theme === "dark" ? "light" : "dark");`}
 />
 ```
 
-### Highlight lines
-
-```tsx
-<CodeBlock
-  numbered
-  language="tsx"
-  highlightLines={["4-5"]}
-  code={`import { Button } from "@nannier-com/canvas";
-
-export function Cta() {
-  const label = getLabel();
-  return <Button primary large>{label}</Button>;
-}`}
-/>
-```
-
-### Diff
-
-```tsx
-<CodeBlock
-  diff
-  copy
-  language="ts"
-  code={`-const theme = "light";
-+const theme = getTheme();
- setTheme(theme);`}
-/>
-```
-
-### Collapsible
-
-```tsx
-<CodeBlock
-  collapsible
-  collapsedLines={4}
-  language="ts"
-  code={`export const tokens = {
-  primary: "#6366f1",
-  radius: 8,
-  border: "#e4e4e7",
-  muted: "#f4f4f5",
-  foreground: "#18181b",
-  background: "#ffffff",
-};`}
-/>
-```
-
-### Tabs
-
-```tsx
-<CodeBlock
-  terminal
-  copy
-  tabs={[
-    { label: "npm", code: "npm install @nannier-com/canvas" },
-    { label: "yarn", code: "yarn add @nannier-com/canvas" },
-    { label: "bun", code: "bun add @nannier-com/canvas" },
-  ]}
-/>
-```
-
-### Excerpt
-
-```tsx
-<CodeBlock
-  numbered
-  startLine={128}
-  language="ts"
-  code={`function resolveTokens(scheme: Scheme) {
-  return scheme === "dark" ? darkTokens : lightTokens;
-}`}
-/>
-```
-
 ### Inline
 
 ```tsx
 <CodeBlock inline language="bash" code="npm install" />
+```
+
+### Compact
+
+```tsx
+<CodeBlock
+  compact
+  language="json"
+  code={`{
+  "theme": "system",
+  "surface": "glass",
+  "primary": "#6366f1"
+}`}
+/>
 ```
 
 ### Copy button
@@ -174,18 +98,81 @@ setTheme(theme === "dark" ? "light" : "dark");`}
 />
 ```
 
-### Compact
+### Terminal label
 
 ```tsx
 <CodeBlock
-  compact
-  filename="canvas.config.json"
-  language="json"
-  code={`{
-  "theme": "system",
-  "surface": "glass",
-  "primary": "#6366f1"
+  terminal
+  filename="deploy.sh"
+  code={`$ ./deploy.sh --stage production
+Build complete in 12s`}
+/>
+```
+
+### Highlight lines
+
+```tsx
+<CodeBlock
+  numbered
+  language="tsx"
+  highlightLines={["2-3"]}
+  code={`export function Cta() {
+  const label = getLabel();
+  return <Button primary large>{label}</Button>;
 }`}
+/>
+```
+
+### Excerpt
+
+```tsx
+<CodeBlock
+  numbered
+  startLine={128}
+  language="ts"
+  code={`function resolveTokens(scheme: Scheme) {
+  return scheme === "dark" ? darkTokens : lightTokens;
+}`}
+/>
+```
+
+### Diff
+
+```tsx
+<CodeBlock
+  diff
+  language="ts"
+  code={`-const theme = "light";
++const theme = getTheme();
+ setTheme(theme);`}
+/>
+```
+
+### Collapsible
+
+```tsx
+<CodeBlock
+  collapsible
+  collapsedLines={3}
+  language="ts"
+  code={`export const tokens = {
+  primary: "#6366f1",
+  radius: 8,
+  border: "#e4e4e7",
+  muted: "#f4f4f5",
+};`}
+/>
+```
+
+### Tabs
+
+```tsx
+<CodeBlock
+  tabs={[
+    { label: "npm", code: "npm install @nannier-com/canvas" },
+    { label: "yarn", code: "yarn add @nannier-com/canvas" },
+    { label: "bun", code: "bun add @nannier-com/canvas" },
+  ]}
 />
 ```
 

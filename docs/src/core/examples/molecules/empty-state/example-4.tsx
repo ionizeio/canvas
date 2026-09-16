@@ -3,14 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, EmptyState, Icon } = scope;
+  const { EmptyState, Icon } = scope;
   return (
 <EmptyState
-  icon={<Icon bell />}
-  title="All caught up"
-  description="No new notifications."
-  actionLabel="View archive"
-  bordered
+  success
+  icon={<Icon circleCheck />}
+  title="No errors"
+  description="Everything is running smoothly."
 />
   );
 }

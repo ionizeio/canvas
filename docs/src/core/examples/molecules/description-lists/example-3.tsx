@@ -6,15 +6,13 @@ export default function Example(scope: ExampleScope) {
   const { DescriptionList } = scope;
   return (
 <DescriptionList
-card
-inline
-divided
-title="Subscription"
-items={[
-  { term: "Status", value: "Active", status: true },
-  { term: "Seats", value: "12 of 20" },
-  { term: "Renews", value: "Mar 1, 2026" }
-]}
+  twoColumn
+  items={[
+    { term: "Status", value: "Active", status: true },
+    { term: "Plan", value: "Pro", badge: true },
+    { term: "Members", value: "8 members", avatars: [{ name: "Rachel Chen" }, { name: "Alan Turing" }, { name: "Grace Hopper" }], overflow: 5 },
+    { term: "Client ID", value: "clnt_01H2X8K9", mono: true, copyValue: "clnt_01H2X8K9" }
+  ]}
 />
   );
 }

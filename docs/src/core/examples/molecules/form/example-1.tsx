@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Form, Input } = scope;
   return (
-<Form twoColumn submitLabel="Create" cancelLabel="Cancel">
+<Form twoColumn submitLabel="Create">
   <Input label="First name" placeholder="Ada" />
   <Input label="Last name" placeholder="King" />
   <Input label="Email" placeholder="ada@example.com" />

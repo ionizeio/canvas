@@ -4,24 +4,15 @@ Inline notification banners: info, success, warning, and destructive, plus a ful
 
 ## Usage
 
-Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onDismiss` reports it, and a controlled `dismissed` prop hands that state to the parent instead. Action buttons are real Buttons: wire each one's `onPress`, and the line underneath reports the result. (`Stateful` is a docs-only helper that holds the example's state; in your app that state is your own.)
+Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onDismiss` reports it, and a controlled `dismissed` prop hands that state to the parent instead. Action buttons are real Buttons: wire each one's `onPress`.
 
 ```tsx
-<Stateful initial={0}>
-  {(opens, setOpens) => (
-    <Column snug>
-      <Alert
-        info
-        icon={<Icon info size={16} />}
-        title="Heads up"
-        description="Maintenance window scheduled for Sunday 2:00 UTC."
-        dismissible
-        actions={<Button link small onPress={() => setOpens(opens + 1)}>Learn more</Button>}
-      />
-      <Typography muted>{opens === 0 ? "Maintenance notes not opened yet" : `Opened the maintenance notes ${opens} ${opens === 1 ? "time" : "times"}`}</Typography>
-    </Column>
-  )}
-</Stateful>
+<Alert
+  info
+  icon={<Icon info size={16} />}
+  title="Heads up"
+  description="Maintenance window scheduled for Sunday 2:00 UTC."
+/>
 ```
 
 ## Variants
@@ -29,61 +20,34 @@ Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onD
 ### Success
 
 ```tsx
-<Stateful initial={0}>
-  {(views, setViews) => (
-    <Column snug>
-      <Alert
-        success
-        icon="✓"
-        title="All set"
-        description="Your changes have been saved successfully."
-        dismissible
-        actions={<Button ghost small onPress={() => setViews(views + 1)}>View changes</Button>}
-      />
-      <Typography muted>{views === 0 ? "Changes not viewed yet" : `Viewed ${views} ${views === 1 ? "time" : "times"}`}</Typography>
-    </Column>
-  )}
-</Stateful>
+<Alert
+  success
+  icon="✓"
+  title="All set"
+  description="Your changes have been saved successfully."
+/>
 ```
 
 ### Warning
 
 ```tsx
-<Stateful initial={0}>
-  {(starts, setStarts) => (
-    <Column snug>
-      <Alert
-        warning
-        icon={<Icon alertTriangle size={16} />}
-        title="Action required"
-        description="Your trial expires in 3 days."
-        dismissible
-        actions={<Button primary small onPress={() => setStarts(starts + 1)}>Upgrade plan</Button>}
-      />
-      <Typography muted>{starts === 0 ? "Upgrade flow not opened yet" : `Opened the upgrade flow ${starts} ${starts === 1 ? "time" : "times"}`}</Typography>
-    </Column>
-  )}
-</Stateful>
+<Alert
+  warning
+  icon={<Icon alertTriangle size={16} />}
+  title="Action required"
+  description="Your trial expires in 3 days."
+/>
 ```
 
 ### Destructive
 
 ```tsx
-<Stateful initial={0}>
-  {(retries, setRetries) => (
-    <Column snug>
-      <Alert
-        destructive
-        icon="✕"
-        title="Something went wrong"
-        description="Could not save your changes. Please try again."
-        dismissible
-        actions={<Button primary small onPress={() => setRetries(retries + 1)}>Retry</Button>}
-      />
-      <Typography muted>{retries === 0 ? "Not retried yet" : `Retried ${retries} ${retries === 1 ? "time" : "times"}`}</Typography>
-    </Column>
-  )}
-</Stateful>
+<Alert
+  destructive
+  icon="✕"
+  title="Something went wrong"
+  description="Could not save your changes. Please try again."
+/>
 ```
 
 ### Neutral
@@ -93,7 +57,30 @@ Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onD
   icon={<Icon bell size={16} />}
   title="Scheduled maintenance"
   description="The dashboard may be briefly unavailable on Sunday between 2:00 and 3:00 UTC."
+/>
+```
+
+### Dismissible
+
+```tsx
+<Alert
+  info
+  icon={<Icon info size={16} />}
+  title="Heads up"
+  description="Maintenance window scheduled for Sunday 2:00 UTC."
   dismissible
+/>
+```
+
+### Actions
+
+```tsx
+<Alert
+  warning
+  icon={<Icon alertTriangle size={16} />}
+  title="Action required"
+  description="Your trial expires in 3 days."
+  actions={<Button primary small>Upgrade plan</Button>}
 />
 ```
 
@@ -102,37 +89,18 @@ Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onD
 ```tsx
 <Column snug>
   <Container xs start>
-    <Alert
-      info
-      icon={<Icon info size={16} />}
-      title="In an xs Container"
-      description="The banner fills the 320px step, the measure of a short form."
-    />
+    <Alert title="In an xs Container" description="The banner fills the 320px step, the measure of a short form." />
   </Container>
-  <Container xxl start>
-    <Alert
-      success
-      icon="✓"
-      title="In an xxl Container"
-      description="The banner fills the 672px step for roomy content regions."
-    />
-  </Container>
-  <Alert
-    warning
-    icon={<Icon alertTriangle size={16} />}
-    title="Bare"
-    description="No container of its own: the announcement bar fills whatever parent it sits in."
-  />
+  <Alert title="Bare" description="No container of its own: the banner fills whatever parent it sits in." />
 </Column>
 ```
 
 ### Rich body
 
 ```tsx
-<Alert icon={<Icon info size={16} />} title="Design token renamed">
+<Alert title="Design token renamed">
   <Typography small muted>
-    The field underline now reads from <Typography code>--p-field-underline</Typography> instead
-    of a raw hex value; update any local overrides before upgrading.
+    The field underline now reads from <Typography code>--p-field-underline</Typography> instead of a raw hex value; update any local overrides before upgrading.
   </Typography>
 </Alert>
 ```

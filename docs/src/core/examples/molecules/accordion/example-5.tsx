@@ -3,15 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, Accordion, Button, Row, Column } = scope;
+  const { Stateful, Accordion, Button, Column } = scope;
   return (
 <Stateful initial="step-1">
   {(step, setStep) => (
     <Column relaxed>
-      <Row snug alignCenter>
-        <Button small outline disabled={step === "step-1"} onPress={() => setStep(step === "step-3" ? "step-2" : "step-1")}>Previous</Button>
-        <Button small primary disabled={step === "step-3"} onPress={() => setStep(step === "step-1" ? "step-2" : "step-3")}>Next step</Button>
-      </Row>
+      <Button small outline onPress={() => setStep(step === "step-1" ? "step-2" : step === "step-2" ? "step-3" : "step-1")}>Next step</Button>
       <Accordion
         value={step}
         items={[

@@ -3,12 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card } = scope;
+  const { Card, Typography } = scope;
   return (
-<Card
-  onPress={() => {}}
-  title="Recent activity"
-  body="A labeled content surface. Drop fields, a list, or any module of content here."
-/>
+<Card>
+  <Typography lead semibold>Anything goes here</Typography>
+</Card>
   );
 }

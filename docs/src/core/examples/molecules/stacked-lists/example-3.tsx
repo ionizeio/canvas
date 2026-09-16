@@ -6,14 +6,12 @@ export default function Example(scope: ExampleScope) {
   const { StackedList } = scope;
   return (
 <StackedList
+  card
+  title="Team members"
   items={[
     { name: "Rachel Chen", detail: "Engineering Lead" },
     { name: "Ada Lovelace", detail: "Staff Engineer" }
   ]}
-  card
-  title="Team members"
-  addAction="Add"
-  rowMenu
 />
   );
 }

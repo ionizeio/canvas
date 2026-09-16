@@ -9,26 +9,23 @@ Centered, calm, never blame the user. Always tell them what could be here, and i
   icon={<Icon search />}
   title="No results found"
   description="Try adjusting your search filters."
-  actionLabel="Clear filters"
-  bordered
 />
 ```
 
 ## Variants
 
-### Users
+### Bordered
 
 ```tsx
 <EmptyState
+  bordered
   icon={<Icon users />}
   title="No users"
   description="Invite your first team member."
-  actionLabel="Invite member"
-  bordered
 />
 ```
 
-### Files
+### Action
 
 ```tsx
 <EmptyState
@@ -36,44 +33,29 @@ Centered, calm, never blame the user. Always tell them what could be here, and i
   title="No files"
   description="Upload or drag files here."
   actionLabel="Upload files"
-  bordered
 />
 ```
 
-### Activity
+### Compact
 
 ```tsx
 <EmptyState
+  bordered
+  compact
   icon={<Icon chartLine />}
   title="No activity"
   description="Events will appear as they happen."
-  actionLabel="Refresh"
-  bordered
 />
 ```
 
-### Notifications
+### Success
 
 ```tsx
 <EmptyState
-  icon={<Icon bell />}
-  title="All caught up"
-  description="No new notifications."
-  actionLabel="View archive"
-  bordered
-/>
-```
-
-### Errors
-
-```tsx
-<EmptyState
+  success
   icon={<Icon circleCheck />}
   title="No errors"
   description="Everything is running smoothly."
-  actionLabel="View logs"
-  success
-  bordered
 />
 ```
 
@@ -87,21 +69,23 @@ docs-only helper standing in for your own state; in an app you would hold the fi
 ```tsx
 <Stateful initial={true}>
   {(filtered, setFiltered) => (
-    <Card flat flush style={{ overflow: "hidden" }}>
-      <DataTable
-        columns={["Name", "Email", "Role", "Status"]}
-        rows={filtered ? [] : [
-          ["Alice Johnson", "alice@example.com", "Admin", "Active"],
-          ["Bob Smith", "bob@example.com", "Editor", "Inactive"],
-          ["Rachel Chen", "rachel@example.com", "Admin", "Active"]
-        ]}
-      />
-      {filtered ? (
-        <Column alignCenter padLoose>
-          <EmptyState bordered icon={<Icon search />} title="No results found" description="Try adjusting your search filters." actionLabel="Clear filters" onAction={() => setFiltered(false)} />
-        </Column>
-      ) : null}
-    </Card>
+    <DataTable
+      columns={["Name", "Email", "Role"]}
+      rows={filtered ? [] : [
+        ["Alice Johnson", "alice@example.com", "Admin"],
+        ["Bob Smith", "bob@example.com", "Editor"],
+        ["Rachel Chen", "rachel@example.com", "Admin"]
+      ]}
+      emptyMessage={
+        <EmptyState
+          icon={<Icon search />}
+          title="No results found"
+          description="Try adjusting your search filters."
+          actionLabel="Clear filters"
+          onAction={() => setFiltered(false)}
+        />
+      }
+    />
   )}
 </Stateful>
 ```

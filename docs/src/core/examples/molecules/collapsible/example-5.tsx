@@ -5,10 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Collapsible, Typography } = scope;
   return (
-<Collapsible
-  trigger={<Typography medium>Order #1024, 3 items</Typography>}
-  defaultOpen
->
+<Collapsible trigger={<Typography medium>Order #1024, 3 items</Typography>}>
   Wireless mouse, USB-C cable, laptop stand. Estimated total $84.00.
 </Collapsible>
   );

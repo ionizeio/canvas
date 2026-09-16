@@ -3,22 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, Alert, Button, Typography, Column } = scope;
+  const { Alert } = scope;
   return (
-<Stateful initial={0}>
-  {(retries, setRetries) => (
-    <Column snug>
-      <Alert
-        destructive
-        icon="✕"
-        title="Something went wrong"
-        description="Could not save your changes. Please try again."
-        dismissible
-        actions={<Button primary small onPress={() => setRetries(retries + 1)}>Retry</Button>}
-      />
-      <Typography muted>{retries === 0 ? "Not retried yet" : `Retried ${retries} ${retries === 1 ? "time" : "times"}`}</Typography>
-    </Column>
-  )}
-</Stateful>
+<Alert
+  destructive
+  icon="✕"
+  title="Something went wrong"
+  description="Could not save your changes. Please try again."
+/>
   );
 }

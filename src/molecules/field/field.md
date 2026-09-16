@@ -11,51 +11,43 @@ same slot, so the row never changes height and nothing below it jumps.
 ## Usage
 
 ```tsx
-<Field label="Email" helper="We'll never share your email." required>
+<Field label="Email" helper="We'll never share your email.">
   <Input placeholder="you@example.com" />
 </Field>
 ```
 
 ## Variants
 
-### Helper text
-
-```tsx
-<Field label="Workspace URL" helper="Lowercase letters, numbers and hyphens.">
-  <Input placeholder="acme-inc" />
-</Field>
-```
-
 ### Error
 
 ```tsx
-<Field label="Email" error="Enter a valid email address." required>
-  <Input value="rachel.chen" />
+<Field label="Email" error="Enter a valid email address.">
+  <Input defaultValue="rachel.chen" />
 </Field>
 ```
 
 ### Wrapping a control that keeps its own label
 
 ```tsx
-<Field label="Notifications" helper="You can change this at any time.">
-  <Switch defaultChecked>Release activity</Switch>
+<Field label="Notifications">
+  <Switch>Release activity</Switch>
 </Field>
 ```
 
 ### In a form
 
 ```tsx
-<Column snug>
-  <Field label="Full name" required>
+<Form>
+  <Field label="Full name">
     <Input placeholder="Rachel Chen" />
   </Field>
-  <Field label="Role" helper="Controls what this person can see.">
+  <Field label="Role">
     <Select options={["Admin", "Editor", "Viewer"]} placeholder="Pick a role" />
   </Field>
   <Field label="Notes">
     <Textarea rows={3} placeholder="Anything worth remembering" />
   </Field>
-</Column>
+</Form>
 ```
 
 ## Do & Don't

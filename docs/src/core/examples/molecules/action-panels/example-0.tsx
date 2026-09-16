@@ -3,21 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, ActionPanel, Typography, Column } = scope;
+  const { ActionPanel } = scope;
   return (
-<Stateful initial={0}>
-  {(deletes, setDeletes) => (
-    <Column snug>
-      <ActionPanel
-        title="Delete this project"
-        description="Once you delete a project, there is no going back. Please be certain."
-        actionLabel="Delete project"
-        destructive
-        onAction={() => setDeletes(deletes + 1)}
-      />
-      <Typography muted>{deletes === 0 ? "Nothing deleted yet" : `Delete fired ${deletes} ${deletes === 1 ? "time" : "times"}`}</Typography>
-    </Column>
-  )}
-</Stateful>
+<ActionPanel
+  title="Export your data"
+  description="Download everything in this workspace as a ZIP archive."
+  actionLabel="Export"
+/>
   );
 }

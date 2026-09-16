@@ -6,12 +6,11 @@ export default function Example(scope: ExampleScope) {
   const { DescriptionList } = scope;
   return (
 <DescriptionList
-  card
-  stacked
+  inline
   items={[
-    { term: "Full name", value: "Rachel Chen" },
-    { term: "Email", value: "rachel.chen@example.com" },
-    { term: "Client ID", value: "clnt_01H2X8K9P3Q7VN4W6R5T0JYMZF", mono: true }
+    { term: "Status", value: "Active" },
+    { term: "Seats", value: "12 of 20" },
+    { term: "Renews", value: "Mar 1, 2026" }
   ]}
 />
   );

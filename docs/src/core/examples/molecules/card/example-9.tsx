@@ -3,13 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { shadow, Card, Typography, Column } = scope;
+  const { Card, CardContent, CardMedia, Typography } = scope;
   return (
-<Card flat>
-  <Column tight>
-    <Typography lead semibold>Outlined and quiet</Typography>
-    <Typography small muted>Flat drops the shadow so the card sits flush with the page. On Android this is the Material outlined card.</Typography>
-  </Column>
+<Card flush>
+  <CardMedia src="/kira-tanaka.jpg" alt="Portrait of Kira Tanaka" />
+  <CardContent>
+    <Typography h5 semibold>Kira Tanaka</Typography>
+  </CardContent>
 </Card>
   );
 }

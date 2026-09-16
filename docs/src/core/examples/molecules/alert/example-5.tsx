@@ -3,31 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Alert, Icon, Column, Container } = scope;
+  const { Alert, Icon } = scope;
   return (
-<Column snug>
-  <Container xs start>
-    <Alert
-      info
-      icon={<Icon info size={16} />}
-      title="In an xs Container"
-      description="The banner fills the 320px step, the measure of a short form."
-    />
-  </Container>
-  <Container xxl start>
-    <Alert
-      success
-      icon="✓"
-      title="In an xxl Container"
-      description="The banner fills the 672px step for roomy content regions."
-    />
-  </Container>
-  <Alert
-    warning
-    icon={<Icon alertTriangle size={16} />}
-    title="Bare"
-    description="No container of its own: the announcement bar fills whatever parent it sits in."
-  />
-</Column>
+<Alert
+  info
+  icon={<Icon info size={16} />}
+  title="Heads up"
+  description="Maintenance window scheduled for Sunday 2:00 UTC."
+  dismissible
+/>
   );
 }

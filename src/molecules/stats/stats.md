@@ -16,52 +16,14 @@ Under the value each tile can draw one strip: its trend (`spark`) or its composi
 
 ## Variants
 
-### Per-tile icon, control and accent
-
-```tsx
-<Stats
-  items={[
-    { label: "Active identities", value: "12,348", delta: "+142 today", icon: <Icon users muted size={16} />, chart1: true },
-    { label: "Active sessions", value: "489", delta: "+12%", chart2: true },
-    { label: "OAuth2 clients", value: "12", delta: "8 M2M / 4 user", steady: true, chart4: true },
-    { label: "Locked accounts", value: "3", delta: "-2", down: true, icon: <Icon lock muted size={16} /> },
-  ]}
-/>
-```
-
-### Emblem tiles
-
-```tsx
-<Stats
-  items={[
-    { label: "Active users", value: "71,897", delta: "+12.3%", icon: <Emblem small><Icon users /></Emblem> },
-    { label: "Uptime", value: "99.98%", delta: "last 30 days", steady: true, icon: <Emblem small success><Icon check /></Emblem> },
-  ]}
-/>
-```
-
-### Tappable
-
-```tsx
-<Stats
-  onPressItem={() => {}}
-  items={[
-    { label: "Active users", value: "71,897", delta: "+12.3%" },
-    { label: "Revenue", value: "$48.2k", delta: "+8.1%" },
-    { label: "Churn", value: "1.2%", delta: "-0.4%", down: true }
-  ]}
-/>
-```
-
 ### Group
 
 ```tsx
 <Stats
   items={[
     { label: "Total users", value: "12,847", delta: "+12.5%" },
-    { label: "Active sessions", value: "1,024", delta: "+3.2%" },
     { label: "Error rate", value: "0.12%", delta: "+0.03%", down: true },
-    { label: "Avg. session", value: "4m 32s", delta: "+0.8%" }
+    { label: "Avg. session", value: "4m 32s", delta: "last 30 days", steady: true }
   ]}
 />
 ```
@@ -71,12 +33,21 @@ Under the value each tile can draw one strip: its trend (`spark`) or its composi
 ```tsx
 <Stats
   plain
-  title="Key metrics"
   items={[
     { label: "Revenue", value: "$48.2k" },
     { label: "Orders", value: "842" },
-    { label: "Avg. value", value: "$57.24" },
     { label: "Conversion", value: "3.6%" }
+  ]}
+/>
+```
+
+### Per-tile icon, control and accent
+
+```tsx
+<Stats
+  items={[
+    { label: "Active users", value: "12,348", icon: <Icon users muted size={16} />, chart1: true },
+    { label: "Sessions", value: "489", actions: <Button ghost small>7d</Button>, chart2: true }
   ]}
 />
 ```
@@ -86,8 +57,7 @@ Under the value each tile can draw one strip: its trend (`spark`) or its composi
 ```tsx
 <Stats
   items={[
-    { label: "Requests", value: "24.5k", delta: "+8.2%", spark: [4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24] },
-    { label: "Latency", value: "142ms", delta: "+12ms", down: true, spark: [10, 9, 11, 10, 12, 11, 13, 12, 14, 13, 15] }
+    { label: "Requests", value: "24.5k", delta: "+8.2%", spark: [4, 8, 6, 12, 10, 16, 14, 18] }
   ]}
 />
 ```
@@ -101,8 +71,7 @@ sparkline, so it fills the tile with something true rather than with padding.
 ```tsx
 <Stats
   items={[
-    { label: "Verified identities", value: "81.3%", delta: "1,502 of 1,847 verified", steady: true, share: [{ label: "Verified", value: 1502 }, { label: "Unverified", value: 345 }] },
-    { label: "Courier queue", value: "0", delta: "None waiting", steady: true, share: [{ label: "Sent", value: 0 }, { label: "Queued", value: 0 }] }
+    { label: "Verified identities", value: "81.3%", delta: "1,502 of 1,847 verified", steady: true, share: [{ label: "Verified", value: 1502 }, { label: "Unverified", value: 345 }] }
   ]}
 />
 ```
@@ -119,9 +88,8 @@ that varies.
 <Stats
   framed
   items={[
-    { label: "Requests", value: "24.5k", delta: "+8.2%", spark: [4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24] },
-    { label: "Errors", value: "0", delta: "None in the last hour", steady: true, spark: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
-    { label: "Cache hit rate", value: "94.1%", delta: "23.5k of 25k served warm", steady: true, share: [{ label: "Hit", value: 23525 }, { label: "Miss", value: 1475 }] }
+    { label: "Requests", value: "24.5k", delta: "+8.2%", spark: [4, 8, 6, 12, 10, 16, 14, 18] },
+    { label: "Errors", value: "0", delta: "None in the last hour", steady: true, spark: [0, 0, 0, 0, 0, 0, 0, 0] }
   ]}
 />
 ```
@@ -132,10 +100,20 @@ that varies.
 <Stats
   framed
   items={[
-    { label: "Total identities", value: "1,847", delta: "+4.2% on the previous week", spark: [1790, 1802, 1811, 1824, 1831, 1840, 1847] },
-    { label: "Active sessions", value: "489", delta: "31 sign-ins in the last hour", steady: true, spark: [12, 18, 9, 22, 31, 27, 19, 31], sparkLabel: "Sign-ins per hour, last 24 hours" },
-    { label: "Verified identities", value: "81.3%", delta: "1,502 of 1,847 verified", steady: true, share: [{ label: "Verified", value: 1502 }, { label: "Unverified", value: 345 }] },
-    { label: "Locked accounts", value: "3", delta: "2 in the last 24h", down: true, share: [{ label: "Last 24 hours", value: 2 }, { label: "Earlier", value: 1 }] }
+    { label: "Requests", value: "24.5k", delta: "+8.2%", spark: [4, 8, 6, 12, 10, 16, 14, 18] },
+    { label: "Verified identities", value: "81.3%", delta: "1,502 of 1,847 verified", steady: true, share: [{ label: "Verified", value: 1502 }, { label: "Unverified", value: 345 }] }
+  ]}
+/>
+```
+
+### Tappable
+
+```tsx
+<Stats
+  onPressItem={() => {}}
+  items={[
+    { label: "Active users", value: "71,897" },
+    { label: "Revenue", value: "$48.2k" }
   ]}
 />
 ```

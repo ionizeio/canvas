@@ -6,16 +6,10 @@ export default function Example(scope: ExampleScope) {
   const { DescriptionList } = scope;
   return (
 <DescriptionList
-  card
-  twoColumn
-  divided
-  title="Application details"
-  subtitle="Personal information and credentials."
   items={[
     { term: "Full name", value: "Rachel Chen" },
     { term: "Email", value: "rachel.chen@example.com" },
-    { term: "Role", value: "admin", badge: true },
-    { term: "Status", value: "Active", status: true }
+    { term: "Role", value: "Admin" }
   ]}
 />
   );

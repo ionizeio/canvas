@@ -6,11 +6,11 @@ export default function Example(scope: ExampleScope) {
   const { EmptyState, Icon } = scope;
   return (
 <EmptyState
+  bordered
+  compact
   icon={<Icon chartLine />}
   title="No activity"
   description="Events will appear as they happen."
-  actionLabel="Refresh"
-  bordered
 />
   );
 }

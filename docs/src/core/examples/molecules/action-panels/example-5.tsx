@@ -3,28 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, ActionPanel, AlertDialog, Column } = scope;
+  const { ActionPanel, Input } = scope;
   return (
-<Stateful initial={false}>
-  {(open, setOpen) => (
-    <Column snug>
-      <ActionPanel
-        title="Delete this project"
-        description="Once you delete a project, there is no going back. Please be certain."
-        actionLabel="Delete project"
-        destructive
-        onAction={() => setOpen(true)}
-      />
-      <AlertDialog
-        open={open}
-        onOpenChange={setOpen}
-        destructive
-        title="Delete this project?"
-        description="This permanently removes the project and all of its data. This action cannot be undone."
-        confirmLabel="Delete"
-      />
-    </Column>
-  )}
-</Stateful>
+<ActionPanel
+  title="Two-factor authentication"
+  description="Require a verification code on every login."
+  toggle
+>
+  <Input label="Recovery phone" defaultValue="+1 555 0148" />
+</ActionPanel>
   );
 }

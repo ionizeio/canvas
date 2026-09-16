@@ -3,16 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Button, Card, MediaObject } = scope;
+  const { Card } = scope;
   return (
-<Card>
-  <MediaObject
-    src="/rachel-chen.jpg"
-    title="Rachel Chen"
-    description="Platform engineering, San Francisco"
-    action={<Button outline small>View</Button>}
-    center
-  />
-</Card>
+<Card title="Recent activity" body="Two events today." />
   );
 }

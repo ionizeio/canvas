@@ -5,11 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Collapsible } = scope;
   return (
-<Collapsible
-  title="Notifications"
-  description="Email, push, and digest frequency."
-  defaultOpen
->
+<Collapsible title="Notifications" description="Email, push, and digest frequency.">
   Choose which events reach your inbox and which stay in the app.
 </Collapsible>
   );

@@ -3,10 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Field, Input } = scope;
+  const { Field, Switch } = scope;
   return (
-<Field label="Email" error="Enter a valid email address." required>
-  <Input value="rachel.chen" />
+<Field label="Notifications">
+  <Switch>Release activity</Switch>
 </Field>
   );
 }

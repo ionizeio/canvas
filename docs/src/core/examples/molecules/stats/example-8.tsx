@@ -6,11 +6,10 @@ export default function Example(scope: ExampleScope) {
   const { Stats } = scope;
   return (
 <Stats
-  framed
+  onPressItem={() => {}}
   items={[
-    { label: "Requests", value: "24.5k", delta: "+8.2%", spark: [4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24] },
-    { label: "Errors", value: "0", delta: "None in the last hour", steady: true, spark: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
-    { label: "Cache hit rate", value: "94.1%", delta: "23.5k of 25k served warm", steady: true, share: [{ label: "Hit", value: 23525 }, { label: "Miss", value: 1475 }] }
+    { label: "Active users", value: "71,897" },
+    { label: "Revenue", value: "$48.2k" }
   ]}
 />
   );

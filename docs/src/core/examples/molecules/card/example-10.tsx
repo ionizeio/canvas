@@ -3,13 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { shadow, Card, Typography, Column } = scope;
+  const { Button, Card, CardContent, CardFooter, CardSeparator, Typography } = scope;
   return (
-<Card raised>
-  <Column tight>
-    <Typography lead semibold>Lifted above the page</Typography>
-    <Typography small muted>Raised deepens the shadow for the moments a card needs emphasis: a drag preview, a featured module.</Typography>
-  </Column>
+<Card flush>
+  <CardContent>
+    <Typography small>Rename the workspace. The URL updates everywhere.</Typography>
+  </CardContent>
+  <CardSeparator />
+  <CardFooter>
+    <Button ghost small>Cancel</Button>
+    <Button primary small>Save</Button>
+  </CardFooter>
 </Card>
   );
 }

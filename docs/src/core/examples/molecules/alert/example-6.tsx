@@ -3,13 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Alert, Icon, Typography } = scope;
+  const { Alert, Button, Icon } = scope;
   return (
-<Alert icon={<Icon info size={16} />} title="Design token renamed">
-  <Typography small muted>
-    The field underline now reads from <Typography code>--p-field-underline</Typography> instead
-    of a raw hex value; update any local overrides before upgrading.
-  </Typography>
-</Alert>
+<Alert
+  warning
+  icon={<Icon alertTriangle size={16} />}
+  title="Action required"
+  description="Your trial expires in 3 days."
+  actions={<Button primary small>Upgrade plan</Button>}
+/>
   );
 }

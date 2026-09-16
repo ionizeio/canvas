@@ -6,14 +6,12 @@ export default function Example(scope: ExampleScope) {
   const { GridList } = scope;
   return (
 <GridList
+  onPressItem={() => {}}
   items={[
-    { title: "hero-banner.png", subtitle: "1.2 MB", color: "primary" },
-    { title: "icon-set.svg", subtitle: "340 KB", color: "blue-500" },
-    { title: "product-shot.jpg", subtitle: "2.8 MB", color: "emerald-500" },
-    { title: "avatar-default.png", subtitle: "96 KB", color: "amber-500" }
+    { title: "Rachel Chen", subtitle: "Engineering Lead", avatar: "RC" },
+    { title: "Ada Lovelace", subtitle: "Staff Engineer", avatar: "AL" },
+    { title: "Kevin Turner", subtitle: "Product Designer", avatar: "KT" }
   ]}
-  gallery
-  cols3
 />
   );
 }

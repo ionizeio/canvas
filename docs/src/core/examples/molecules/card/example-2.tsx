@@ -3,15 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Card, DescriptionList } = scope;
+  const { Card, Typography } = scope;
   return (
-<Card title="Identity" description="Core attributes" actions={<Button ghost small>Edit</Button>}>
-  <DescriptionList
-    items={[
-      { term: "ID", value: "6f1c2a", mono: true },
-      { term: "State", value: "Active", status: true },
-    ]}
-  />
+<Card>
+  <Typography lead semibold>The surface owns the rhythm</Typography>
+  <Typography small muted>Each line lands a steady step below the last.</Typography>
+  <Typography small muted>No layout wrapper between them.</Typography>
 </Card>
   );
 }

@@ -10,7 +10,6 @@ export default function Example(scope: ExampleScope) {
   title="No files"
   description="Upload or drag files here."
   actionLabel="Upload files"
-  bordered
 />
   );
 }

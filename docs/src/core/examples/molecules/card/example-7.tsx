@@ -3,22 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardSeparator, CardTitle, Input } = scope;
+  const { Card, DescriptionList } = scope;
   return (
-<Card flush>
-  <CardHeader>
-    <CardTitle>Workspace settings</CardTitle>
-    <CardDescription>Rename the workspace. The URL updates everywhere.</CardDescription>
-  </CardHeader>
-  <CardSeparator />
-  <CardContent>
-    <Input label="Workspace name" placeholder="Acme Inc." />
-  </CardContent>
-  <CardSeparator />
-  <CardFooter>
-    <Button ghost small>Cancel</Button>
-    <Button primary small>Save changes</Button>
-  </CardFooter>
+<Card title="Identity">
+  <DescriptionList
+    items={[
+      { term: "ID", value: "6f1c2a" },
+      { term: "State", value: "Active" },
+    ]}
+  />
 </Card>
   );
 }

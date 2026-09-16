@@ -3,11 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { MediaObject, Column } = scope;
+  const { Button, MediaObject } = scope;
   return (
-<Column cozy>
-  <MediaObject avatar="RC" title="Rachel Chen" description="rachel.chen@example.com" />
-  <MediaObject compact avatar="RC" title="Rachel Chen" description="rachel.chen@example.com" />
-</Column>
+<MediaObject bordered src="/ada-lovelace.jpg" title="Ada Lovelace" description="ada@example.com" action={<Button outline small>Invite</Button>} />
   );
 }

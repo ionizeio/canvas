@@ -6,12 +6,12 @@ export default function Example(scope: ExampleScope) {
   const { ActionPanel, Input } = scope;
   return (
 <ActionPanel
-  title="Two-factor authentication"
-  description="Add an extra layer of security to your account by requiring a verification code on login."
-  toggle
-  defaultChecked
+  title="Workspace profile"
+  description="These details appear on every invoice."
+  actionLabel="Save changes"
 >
-  <Input label="Recovery phone" defaultValue="+1 555 0148" />
+  <Input label="Workspace name" defaultValue="Northwind" />
+  <Input label="Billing email" defaultValue="billing@northwind.com" />
 </ActionPanel>
   );
 }

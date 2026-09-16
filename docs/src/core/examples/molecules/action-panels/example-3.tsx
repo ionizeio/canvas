@@ -3,16 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { ActionPanel, Input } = scope;
+  const { ActionPanel } = scope;
   return (
 <ActionPanel
-  title="Workspace profile"
-  description="These details appear on every invoice this workspace sends out."
-  actionLabel="Save changes"
->
-  <Input label="Workspace name" defaultValue="Northwind" />
-  <Input label="Billing email" defaultValue="billing@northwind.com" />
-  <Input label="VAT number" defaultValue="GB123456789" />
-</ActionPanel>
+  title="Two-factor authentication"
+  description="Require a verification code on every login."
+  toggle
+/>
   );
 }

@@ -3,12 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { CodeBlock } = scope;
+  const { tokens, CodeBlock } = scope;
   return (
 <CodeBlock
-  wrap
+  collapsible
+  collapsedLines={3}
   language="ts"
-  code={`const message = "This is a very long line that would normally scroll horizontally, but wrap lets it soft-wrap onto the next line instead.";`}
+  code={`export const tokens = {
+  primary: "#6366f1",
+  radius: 8,
+  border: "#e4e4e7",
+  muted: "#f4f4f5",
+};`}
 />
   );
 }

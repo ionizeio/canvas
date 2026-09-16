@@ -43,11 +43,7 @@ inset-grouped card, so `card` changes nothing there (a documented no-op).
 ### With descriptions
 
 ```tsx
-<Collapsible
-  title="Notifications"
-  description="Email, push, and digest frequency."
-  defaultOpen
->
+<Collapsible title="Notifications" description="Email, push, and digest frequency.">
   Choose which events reach your inbox and which stay in the app.
 </Collapsible>
 ```
@@ -55,10 +51,7 @@ inset-grouped card, so `card` changes nothing there (a documented no-op).
 ### Custom trigger
 
 ```tsx
-<Collapsible
-  trigger={<Typography medium>Order #1024, 3 items</Typography>}
-  defaultOpen
->
+<Collapsible trigger={<Typography medium>Order #1024, 3 items</Typography>}>
   Wireless mouse, USB-C cable, laptop stand. Estimated total $84.00.
 </Collapsible>
 ```

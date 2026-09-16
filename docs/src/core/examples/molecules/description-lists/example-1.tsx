@@ -7,13 +7,12 @@ export default function Example(scope: ExampleScope) {
   return (
 <DescriptionList
   card
-  twoColumn
-  divided
-  title="Profile"
+  title="Application details"
+  subtitle="Personal information and credentials."
   items={[
-    { term: "Name", value: "Rachel Chen", update: true },
-    { term: "Email", value: "rachel.chen@example.com", update: true },
-    { term: "Title", value: "Senior Engineer", update: true }
+    { term: "Full name", value: "Rachel Chen" },
+    { term: "Email", value: "rachel.chen@example.com" },
+    { term: "Role", value: "Admin" }
   ]}
 />
   );

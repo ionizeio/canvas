@@ -5,8 +5,8 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Field, Input } = scope;
   return (
-<Field label="Workspace URL" helper="Lowercase letters, numbers and hyphens.">
-  <Input placeholder="acme-inc" />
+<Field label="Email" error="Enter a valid email address.">
+  <Input defaultValue="rachel.chen" />
 </Field>
   );
 }

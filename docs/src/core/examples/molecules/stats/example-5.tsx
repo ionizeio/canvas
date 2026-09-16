@@ -6,13 +6,8 @@ export default function Example(scope: ExampleScope) {
   const { Stats } = scope;
   return (
 <Stats
-  plain
-  title="Key metrics"
   items={[
-    { label: "Revenue", value: "$48.2k" },
-    { label: "Orders", value: "842" },
-    { label: "Avg. value", value: "$57.24" },
-    { label: "Conversion", value: "3.6%" }
+    { label: "Verified identities", value: "81.3%", delta: "1,502 of 1,847 verified", steady: true, share: [{ label: "Verified", value: 1502 }, { label: "Unverified", value: 345 }] }
   ]}
 />
   );

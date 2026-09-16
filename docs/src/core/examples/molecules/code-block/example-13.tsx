@@ -6,14 +6,11 @@ export default function Example(scope: ExampleScope) {
   const { CodeBlock } = scope;
   return (
 <CodeBlock
-  compact
-  filename="canvas.config.json"
-  language="json"
-  code={`{
-  "theme": "system",
-  "surface": "glass",
-  "primary": "#6366f1"
-}`}
+  tabs={[
+    { label: "npm", code: "npm install @nannier-com/canvas" },
+    { label: "yarn", code: "yarn add @nannier-com/canvas" },
+    { label: "bun", code: "bun add @nannier-com/canvas" },
+  ]}
 />
   );
 }

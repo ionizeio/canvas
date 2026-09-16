@@ -6,20 +6,13 @@ Stitch your own fields; Form adds the rhythm, the sections, the actions row, and
 
 On the web, Enter confirms an active Autocomplete suggestion before it can submit the form. A subsequent Enter submits after the list closes. Enter used to confirm an input-method candidate never submits, and holding Enter does not repeat submission. Multiline fields retain Enter for newlines. On native platforms, each field's `onSubmitEditing` owns the return-key action.
 
-Form is a composition surface: you stitch the field atoms as children and keep their state; Form supplies the vertical rhythm, the actions row, and `onSubmit`, which fires from the submit button or from Enter in a single-line field on the web. (`Stateful` is a docs-only helper that holds the example's state — in your app that state is your own.)
+Form is a composition surface: you stitch the field atoms as children and keep their state; Form supplies the vertical rhythm, the actions row, and `onSubmit`, which fires from the submit button or from Enter in a single-line field on the web. 
 
 ```tsx
-<Stateful initial={0}>
-  {(saves, setSaves) => (
-    <Column snug>
-      <Form submitLabel="Sign in" onSubmit={() => setSaves(saves + 1)}>
-        <Input label="Email" placeholder="you@example.com" />
-        <Input label="Password" />
-      </Form>
-      <Typography muted>{saves === 0 ? "Not submitted yet" : `Submitted ${saves} ${saves === 1 ? "time" : "times"}`}</Typography>
-    </Column>
-  )}
-</Stateful>
+<Form submitLabel="Sign in">
+  <Input label="Email" placeholder="you@example.com" />
+  <Input label="Password" />
+</Form>
 ```
 
 ## Variants
@@ -27,7 +20,7 @@ Form is a composition surface: you stitch the field atoms as children and keep t
 ### Two-column
 
 ```tsx
-<Form twoColumn submitLabel="Create" cancelLabel="Cancel">
+<Form twoColumn submitLabel="Create">
   <Input label="First name" placeholder="Ada" />
   <Input label="Last name" placeholder="King" />
   <Input label="Email" placeholder="ada@example.com" />
@@ -49,22 +42,12 @@ Form is a composition surface: you stitch the field atoms as children and keep t
 </Form>
 ```
 
-### Required fields
-
-```tsx
-<Form submitLabel="Create account">
-  <Input label="Email" required placeholder="you@example.com" />
-  <Input label="Password" required />
-  <Input label="Referral code" placeholder="Optional" />
-</Form>
-```
-
 ### Select and switch controls
 
 ```tsx
-<Form twoColumn submitLabel="Save" cancelLabel="Cancel">
+<Form submitLabel="Save">
   <Select label="Role" options={["Admin", "Editor", "Viewer"]} defaultValue="Editor" />
-  <Switch defaultChecked description="Email me when someone mentions me.">Notifications</Switch>
+  <Switch defaultChecked>Notifications</Switch>
 </Form>
 ```
 
