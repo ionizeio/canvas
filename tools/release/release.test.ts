@@ -133,6 +133,38 @@ describe("frozen release transaction", () => {
     expect(() => assertReleaseVersion("2.3.4", "2.3.4")).toThrow("increase");
   });
 
+  test("a human-typed exact next major authorizes the major; anything else still blocks", () => {
+    const withMajor = (value: string, run: () => void) => {
+      const previous = process.env.RELEASE_MAJOR;
+      process.env.RELEASE_MAJOR = value;
+      try { run(); } finally {
+        if (previous === undefined) delete process.env.RELEASE_MAJOR; else process.env.RELEASE_MAJOR = previous;
+      }
+    };
+    // The wrong version (a skipped major, a minor, a typo) authorizes nothing.
+    for (const wrong of ["4.0.0", "3.1.0", "3.0.1", "3", "next"]) {
+      withMajor(wrong, () => {
+        const f = fixture("major");
+        expect(prepare(f.repo, f.candidateDir, f.source, true).status).toBe("blocked-major");
+        expect(() => assertReleaseVersion("2.3.4", "3.0.0")).toThrow("Major");
+      });
+    }
+    // The exact next major, typed by a human on the dispatch, versions and readies the candidate.
+    withMajor("3.0.0", () => {
+      expect(() => assertReleaseVersion("2.3.4", "3.0.0")).not.toThrow();
+      expect(() => assertReleaseVersion("2.3.4", "4.0.0")).toThrow("Major");
+      const f = fixture("major");
+      const c = prepare(f.repo, f.candidateDir, f.source, true);
+      expect(c.status).toBe("ready");
+      expect(c.version).toBe("3.0.0");
+      expect(c.release).toBe(true);
+      // Restoring the candidate re-runs the version assertion with the same authorization.
+      const validation = path.join(f.dir, "validation");
+      git(f.dir, "clone", f.remote, validation);
+      expect(restore(validation, f.candidateDir, f.source).version).toBe("3.0.0");
+    });
+  });
+
   test("a test-only main advance publishes nothing and pushes no tag", () => {
     const f = fixture();
     const c = prepare(f.repo, f.candidateDir, f.source, true);

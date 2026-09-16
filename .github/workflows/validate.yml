@@ -7,12 +7,20 @@ on:
         description: Restore and validate the release candidate artifact
         type: boolean
         default: false
+      major_version:
+        description: The exact major a human authorized on the calling dispatch (empty for every automatic run)
+        type: string
+        default: ''
 
 permissions:
   contents: read
 
 env:
   HUSKY: '0'
+  # Lets a human-authorized major candidate pass the version assertion when the
+  # candidate is restored; empty otherwise, so a major candidate can only ever exist
+  # on an explicit dispatch of the deploy workflow.
+  RELEASE_MAJOR: ${{ inputs.major_version }}
 
 jobs:
   check:

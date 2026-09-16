@@ -40,11 +40,29 @@ const output = (key, value) => {
   if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, `${key}=${value}\n`);
 };
 
-export function assertReleaseVersion(before, after) {
+// The one way a major ships: a human dispatches the deploy workflow with the
+// `major` box ticked AND the exact next major version typed into `major_version`
+// (RELEASE_MAJOR here). Nothing automatic, and no generic checkbox, ever bumps a
+// major; a typed version that is not exactly `<current major + 1>.0.0` authorizes
+// nothing.
+export function authorizedMajor() {
+  const v = process.env.RELEASE_MAJOR ?? "";
+  return VERSION.test(v) ? v : "";
+}
+
+/** The only major `before` may move to: the next major at .0.0. */
+export function nextMajor(before) {
+  return `${Number(before.split(".")[0]) + 1}.0.0`;
+}
+
+export function assertReleaseVersion(before, after, authorized = authorizedMajor()) {
   if (!VERSION.test(before) || !VERSION.test(after)) throw new Error("Releases require stable semantic versions");
   const a = before.split(".").map(Number);
   const b = after.split(".").map(Number);
-  if (a[0] !== b[0]) throw new Error("Major releases require separate explicit authorization and are blocked in this workflow");
+  if (a[0] !== b[0]) {
+    if (after === nextMajor(before) && authorized === after) return;
+    throw new Error("Major releases require separate explicit authorization and are blocked in this workflow");
+  }
   if (b[1] < a[1] || (b[1] === a[1] && b[2] <= a[2])) throw new Error("Release version must increase");
 }
 
@@ -84,7 +102,8 @@ export function prepare(cwd, dir, source, publish) {
     const planFile = path.join(dir, "changeset-plan.json");
     run(cwd, "bun", ["run", "changeset", "status", "--output", planFile]);
     const plan = read(planFile);
-    if (plan.releases.some((r) => r.type === "major")) {
+    const major = plan.releases.some((r) => r.type === "major");
+    if (major && authorizedMajor() !== nextMajor(before.version)) {
       status = "blocked-major";
     } else if (plan.releases.some((r) => r.name === before.name && r.type !== "none")) {
       run(cwd, "bun", ["run", "version-packages"]);

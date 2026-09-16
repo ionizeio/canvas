@@ -15,6 +15,14 @@ on:
         description: Publish a validated patch or minor release with pending changesets
         type: boolean
         default: false
+      major:
+        description: Authorize the pending MAJOR release (a human decision; also requires major_version)
+        type: boolean
+        default: false
+      major_version:
+        description: The exact major to release, e.g. 3.0.0 (must equal the next major, or nothing is authorized)
+        type: string
+        default: ''
       ios:
         description: EAS-build the iOS docs app
         type: boolean
@@ -58,7 +66,10 @@ jobs:
         run: node scripts/release.mjs prepare "$RUNNER_TEMP/candidate"
         env:
           SOURCE_SHA: ${{ github.sha }}
-          RELEASE_NPM: ${{ github.event_name == 'push' || inputs.npm }}
+          RELEASE_NPM: ${{ github.event_name == 'push' || inputs.npm || inputs.major }}
+          # Only a manual dispatch with BOTH the major box and the typed version authorizes
+          # a major; a push, or the generic npm box, never does.
+          RELEASE_MAJOR: ${{ github.event_name == 'workflow_dispatch' && inputs.major && inputs.major_version || '' }}
       - uses: actions/upload-artifact@v7
         with:
           name: release-candidate
@@ -71,6 +82,7 @@ jobs:
     uses: ./.github/workflows/validate.yml
     with:
       candidate: true
+      major_version: ${{ github.event_name == 'workflow_dispatch' && inputs.major && inputs.major_version || '' }}
 
   publish:
     needs: validate
@@ -103,11 +115,13 @@ jobs:
         run: node scripts/release.mjs restore "$RUNNER_TEMP/candidate"
         env:
           SOURCE_SHA: ${{ github.sha }}
+          RELEASE_MAJOR: ${{ github.event_name == 'workflow_dispatch' && inputs.major && inputs.major_version || '' }}
       - name: Accept candidate and publish tested tarball
         id: publish
         run: node scripts/release.mjs publish "$RUNNER_TEMP/candidate" "$RUNNER_TEMP/artifacts"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          RELEASE_MAJOR: ${{ github.event_name == 'workflow_dispatch' && inputs.major && inputs.major_version || '' }}
       - name: npm outcome
         if: always()
         env:
@@ -120,7 +134,7 @@ jobs:
             case "$STATUS" in
               published) echo 'The validated tarball was published and its candidate tag was pushed.' ;;
               stale) echo 'Main advanced. No artifact was published and no tag was pushed; the newer main run owns release preparation.' ;;
-              blocked-major) echo 'Major releases are blocked for automatic and manual runs. The generic npm checkbox does not authorize a major.' ;;
+              blocked-major) echo 'A major is pending and nothing authorized it. Dispatch this workflow with the major box ticked and the exact next major typed into major_version; the generic npm checkbox never authorizes a major.' ;;
               no-changesets|not-requested) echo 'No npm publication was requested by this candidate.' ;;
               *) echo 'Publication did not complete. Inspect the failed stage. After a partial release, fix the cause and add a new changeset for the next version.' ;;
             esac
