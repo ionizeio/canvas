@@ -119,6 +119,36 @@ export const segmentedContainer: ViewStyle = {
 // of how long their labels are.
 export const blockSegment: ViewStyle = { flex: 1 };
 
+// Glass is a theme material, shared across skins. Native controls retain their
+// platform feedback and glyphs; GlassSurface resolves the platform's material.
+export const glassCorners: ViewStyle = { borderRadius: 9999 };
+export const glassStartCorners: ViewStyle = { borderTopStartRadius: 9999, borderBottomStartRadius: 9999 };
+export const glassEndCorners: ViewStyle = { borderTopEndRadius: 9999, borderBottomEndRadius: 9999 };
+export const glassSegmentedContainer: ViewStyle = {
+  ...segmentedContainer,
+  padding: 3,
+  ...glassCorners,
+};
+export const glassSelectionPosition: ViewStyle = { position: "absolute", pointerEvents: "none" };
+export const glassSelectionShadow: ViewStyle = customShadow({ offsetY: 1, radius: 3, opacity: 0.12, elevation: 2 });
+export const glassCell: ViewStyle = {
+  backgroundColor: "transparent",
+  borderWidth: 0,
+  borderTopWidth: 0,
+  borderBottomWidth: 0,
+  borderStartWidth: 0,
+  marginStart: 0,
+};
+export const glassSegmentLabel = (t: ColorTokens, selected: boolean): TextStyle => ({
+  color: selected ? primaryText(t) : t.foreground,
+  fontWeight: selected ? "600" : "500",
+});
+export const glassDivider = (t: ColorTokens, height: number): ViewStyle => ({
+  width: 1,
+  height: height / 2,
+  backgroundColor: t.border,
+});
+
 // =============================================================================
 // Web: the Riskora control (the 12px corner on a run's outer edges, the sky fill on
 // the selected segment, the `card` fill with the 3:1 `input` boundary otherwise).

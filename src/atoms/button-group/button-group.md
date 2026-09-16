@@ -2,6 +2,15 @@
 
 Segmented controls, split buttons, attached groups.
 
+All four kinds follow the theme's surface mode. Toggle Liquid Glass in the docs,
+or use `<ThemeProvider glass>` in an app: segmented groups get a moving glass
+selection pill, split and stepper groups share a glass capsule, and spaced peers
+get individual glass surfaces. Solid mode keeps each platform's existing skin.
+The material uses native Liquid Glass on supported iOS versions, the native
+blur or tint fallback on Android and older iOS, and Canvas's lens on Chromium.
+Reduce Motion stops the selection animation; Reduce Transparency and Increase
+Contrast use the shared material's opaque fallbacks.
+
 ## Usage
 
 ```tsx

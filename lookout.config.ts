@@ -70,6 +70,7 @@ const componentRoutes: RouteDef[] = sidebar.flatMap((group) =>
 
 /** Functional-layer components: the ones that render the glass material. */
 const FUNCTIONAL_LAYER = [
+  "button-group",
   "dialog",
   "alert-dialog",
   "dropdown",
