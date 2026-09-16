@@ -21,7 +21,7 @@ test("docs and native routes consume one maintained public-API fixture body", ()
           const bindings = statement.importClause?.namedBindings;
           expect(bindings && ts.isNamedImports(bindings) ? bindings.elements.map((entry) => entry.name.text) : [])
             .toEqual(["Dimensions", "I18nManager", "PixelRatio", "Platform", "View"]);
-        } else expect(["react", "@ionizeio/canvas"]).toContain(statement.moduleSpecifier.text);
+        } else expect(["react", "@nannier-com/canvas"]).toContain(statement.moduleSpecifier.text);
       }
     }
     const native = readFileSync(resolve(root, `examples/starter/smoke/routes/${fixture}.tsx`), "utf8");

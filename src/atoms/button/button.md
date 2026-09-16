@@ -222,7 +222,7 @@ A button that NAVIGATES should be a real link, not a press handler that sets `lo
 ```tsx
 <Row alignCenter cozy>
   <Button link href="https://canvas.nannier.com">Read the docs</Button>
-  <Button outline href="https://www.npmjs.com/package/@nannier-com/canvas" hrefAttrs={{ target: "_blank", rel: "noreferrer" }}>
+  <Button outline href="https://www.npmjs.com/package/@ionizeio/canvas" hrefAttrs={{ target: "_blank", rel: "noreferrer" }}>
     npm package
   </Button>
 </Row>

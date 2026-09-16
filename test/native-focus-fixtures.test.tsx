@@ -40,7 +40,7 @@ function fixture<Props extends object>(name: string, exported: string) {
   const modules: Record<string, unknown> = {
     react: React,
     "react/jsx-runtime": JSX,
-    "@ionizeio/canvas": {
+    "@nannier-com/canvas": {
       ActionSheet, AlertDialog, Autocomplete, Button, Checkbox, Column, Command, DataTable,
       DescriptionList, Dialog, Drawer, Dropdown, Listbox, Radio, RadioGroup,
       Row, Select, Slider, Switch, Tabs, ThemeProvider, Typography, useTheme,
