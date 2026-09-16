@@ -148,13 +148,13 @@ export function CartesianFrame(props: CartesianFrameProps) {
               <Svg width={plotW} height={plotH}>
                 {!hideGrid
                   ? ticks.map((t, i) => (
-                      <Line key={`g${i}`} x1={0} y1={y(t)} x2={plotW} y2={y(t)} stroke={tokens.border} strokeWidth={1} />
+                      <Line key={`g${i}`} x1={0} y1={y(t)} x2={plotW} y2={y(t)} stroke={tokens.border} strokeWidth={1} strokeDasharray="4,4" />
                     ))
                   : null}
                 {/* Vertical gridlines only on a numeric x axis (scatter). */}
                 {!hideGrid && xTicksInfo
                   ? xTicksInfo.ticks.map((t, i) => (
-                      <Line key={`gv${i}`} x1={x(t)} y1={0} x2={x(t)} y2={plotH} stroke={tokens.border} strokeWidth={1} />
+                      <Line key={`gv${i}`} x1={x(t)} y1={0} x2={x(t)} y2={plotH} stroke={tokens.border} strokeWidth={1} strokeDasharray="4,4" />
                     ))
                   : null}
                 {/* Baseline hairline, kept even when the grid is hidden. */}

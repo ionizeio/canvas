@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, palette, shadow } from "../../style/index.js";
+import { type ColorTokens, palette, shadow, shape } from "../../style/index.js";
 import { type ChartSeries, type ChartSkin } from "./types.js";
 
 // Co-located Chart styles. Layout-only fragments are static objects; anything
@@ -213,9 +213,9 @@ export function verticalLabel(tokens: ColorTokens): TextStyle {
 // Chart is a "Shared" treatment: data visualization is platform-neutral. The iOS HIG
 // Charts page (Swift Charts) and the shadcn web chart are the same plotted-bar idiom,
 // and Material 3 ships no charts component at all, so there is no native shape to match
-// and the look is identical on every platform. `webSkin` carries the established Canvas
-// look verbatim (a rounded-lg (8) card surface and rounded (4) bar corners); the iOS
-// and Android skins reference it directly so the three columns stay byte-identical.
+// and the look is identical on every platform. `webSkin` carries the Riskora chart
+// (the 20px card surface, 8px bar corners, dashed gridlines drawn by the frame); the
+// iOS and Android skins reference it directly so the three columns stay byte-identical.
 
 /**
  * The zoom control bar, laid OVER a zoomable chart's plot at its bottom-right, the
@@ -235,8 +235,8 @@ export function verticalLabel(tokens: ColorTokens): TextStyle {
 export const zoomBar: ViewStyle = { position: "absolute", right: 0, bottom: 0, flexDirection: "row" };
 
 export const webSkin: ChartSkin = {
-  surfaceRadius: 8,
-  barRadius: 4,
+  surfaceRadius: shape.web.card,
+  barRadius: 8,
 };
 
 // Shared treatment: no per-OS divergence, so the native skins are the web skin.

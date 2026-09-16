@@ -69,7 +69,7 @@ export function ChartValueFlag({ title, rows, x, plotW }: ChartValueFlagProps) {
           top: 4,
           left,
           width: w,
-          borderRadius: 6,
+          borderRadius: 12,
           borderWidth: 1,
           borderColor: tokens.border,
           backgroundColor: tokens.card,

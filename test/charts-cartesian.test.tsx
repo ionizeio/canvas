@@ -165,10 +165,10 @@ describe("Chart (stacked columns)", () => {
     const [bottom, top, loneSegment, empty] = barStyles(container);
     // Only the column's cap is rounded, so the stack reads as one column.
     expect(bottom).toContain("border-top-left-radius: 0px");
-    expect(top).toContain("border-top-left-radius: 4px");
+    expect(top).toContain("border-top-left-radius: 8px");
     // globex's second grant type is 0: the surviving segment takes the cap and
     // the empty one has no height at all (a 2px floor would inflate the total).
-    expect(loneSegment).toContain("border-top-left-radius: 4px");
+    expect(loneSegment).toContain("border-top-left-radius: 8px");
     expect(heightOf(empty)).toBe(0);
   });
 
