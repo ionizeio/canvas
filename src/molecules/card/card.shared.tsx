@@ -189,16 +189,20 @@ export function createCard(skin: CardSkin) {
       // paints it in).
       selected ? { borderColor: tokens.primary, backgroundColor: alpha(tokens.primary, 0.05) } : null,
     ];
+    // A card told to GROW fills the box its parent hands it, at every level of its own
+    // anatomy: the outermost node grows into the parent's box, a pressable card's Pressable
+    // (the node that draws the surface) fills the RippleClip wrapper around it, and the
+    // BODY takes up the slack inside the surface. Without the last the sections stack from
+    // the top and every extra pixel piles up under the last one, so a card stretched to
+    // match a taller neighbour shows its content in a box it does not fill and floats its
+    // footer in the middle of the surface; without the middle one the wrapper grows while
+    // the visible card stays content-height. Each is inert on a card that is already exactly
+    // as tall as its sections, which is every card that was not asked to grow.
+    const fill: ViewStyle | null = grow ? { flexGrow: 1 } : null;
     // Outer layout composition, carried on the outermost node (the plain View, or the
     // RippleClip wrapper on a pressable card).
-    const outer: StyleProp<ViewStyle> = [grow ? { flexGrow: 1 } : null, style];
-    // A card told to GROW fills the box its parent hands it, and the BODY is what takes up
-    // the slack. Without this the sections stack from the top and every extra pixel piles up
-    // under the last one, so a card stretched to match a taller neighbour shows its content
-    // in a box it does not fill and floats its footer in the middle of the surface. Growing
-    // the content section is inert on a card that is already exactly as tall as its sections,
-    // which is every card that was not asked to grow in the first place.
-    const bodyFill: StyleProp<ViewStyle> = grow ? { flexGrow: 1 } : null;
+    const outer: StyleProp<ViewStyle> = [fill, style];
+    const bodyFill: StyleProp<ViewStyle> = fill;
 
     // The header and footer are the same nodes on both paths, so they are built once
     // here rather than inside the string-body branch. That is the whole fix: a card
@@ -277,7 +281,7 @@ export function createCard(skin: CardSkin) {
             onPress={onPress}
             testID={testID}
             android_ripple={surfaceRipple(tokens)}
-            style={({ pressed }) => [surface, elevChild, pressDim(pressed)]}
+            style={({ pressed }) => [surface, elevChild, fill, pressDim(pressed)]}
           >
             {inner}
           </Pressable>

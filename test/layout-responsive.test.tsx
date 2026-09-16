@@ -159,6 +159,25 @@ describe("Grid rendering", () => {
     expect(rootOf("badge").style.flexGrow).toBe("");
   });
 
+  // A pressable Card draws its surface on the Pressable inside a RippleClip
+  // wrapper. Both must fill the cell: growing only the wrapper leaves the visible
+  // card content-height with the cell's slack showing below it.
+  it("a pressable Card in a cell fills the cell through its wrapper", () => {
+    ui(
+      <Grid testID="g">
+        <Card testID="pressable" onPress={() => {}}>
+          <Typography>one</Typography>
+        </Card>
+        <Card>
+          <Typography>two</Typography>
+        </Card>
+      </Grid>,
+    );
+    const surface = rootOf("pressable");
+    expect(surface.style.flexGrow).toBe("1");
+    expect((surface.parentElement as HTMLElement).style.flexGrow).toBe("1");
+  });
+
   it("a Card outside a grid cell stays as tall as its sections unless asked to grow", () => {
     ui(
       <Container>
