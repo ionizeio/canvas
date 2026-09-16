@@ -1,0 +1,118 @@
+// Sizing: how a Canvas component takes its width. A component never dictates its
+// own width. It declares a sizing NATURE and the parent layout container provides
+// the bounds (the Bootstrap contract: `.container` > `.row` > `.col-*` size the
+// box, `.form-control` is `width: 100%`). Two natures exist:
+//
+//   FILL: take the bounds the parent provides. `width:"100%"` fills a Column;
+//         with `flexShrink:1` + `minWidth:0` the same style shares a Row with
+//         hugging siblings (a field beside a button takes the remainder), splits
+//         a Row equally with other FILL siblings, and takes its own line in a
+//         wrap Row. Fields, cards, alerts, lists, tables, charts, feeds, forms.
+//   HUG:  the content's own width. Button, Badge, Chip, Kbd, Switch, Checkbox,
+//         Radio, Avatar, Spinner, Emblem, Swatch, Pagination, Breadcrumb.
+//
+// Why HUG is a hook and not a style: React Native's flexbox has no inline-block.
+// Yoga IGNORES `width:"fit-content"` / `"max-content"` against a stretching
+// parent (verified on iOS with RN 0.86: the child still stretched to the column),
+// and a bare `alignSelf:"flex-start"` hugs in a Column but pins a Row child to
+// the top of a centered Row (verified on iOS and the web). So HUG resolves
+// against the nearest kit layout container: `alignSelf:"flex-start"` only inside
+// a STRETCHING Column, nothing in a Row (its children are content-sized already)
+// and nothing in a non-stretch Column (same). Row, Column, Grid cells, and
+// Container publish that context; in a raw stretch View a hug component still
+// stretches like any React Native child, so put it in a kit container.
+//
+// The context also names the one layout that still collapses a FILL child: a
+// bare Column inside a Row (Bootstrap `.col-auto`) is content-sized, so
+// `width:"100%"` resolves to the child's own content and a text field would
+// resize on every keystroke (the `field-width.ts` post-mortem). Such a Column
+// publishes `hugging: true` and `useFillStyle` warns in development.
+
+import { createContext, createElement, useContext, type ReactNode } from "react";
+import type { StyleProp, ViewStyle } from "react-native";
+import { devWarn } from "./dev-warn.js";
+
+/** The FILL nature: fill the parent's bounds in a Column, share a Row. */
+export const FILL: ViewStyle = { width: "100%", flexShrink: 1, minWidth: 0 };
+
+/** What a HUG component appends inside a stretching Column (and nowhere else). */
+export const HUG_IN_STRETCH_COLUMN: ViewStyle = { alignSelf: "flex-start" };
+
+/** The layout facts a kit layout container publishes to its children. */
+export interface LayoutAxis {
+  /** The container's main axis: children of a Row are content-sized on it. */
+  axis: "row" | "column";
+  /** Column only: children stretch across it (React Native's default `alignItems`). */
+  stretch: boolean;
+  /** A content-sized cell (a bare Column inside a Row): a FILL child collapses here. */
+  hugging: boolean;
+}
+
+const LayoutAxisContext = createContext<LayoutAxis | null>(null);
+
+/** Publish the layout facts of a kit layout container to its subtree. */
+export function LayoutAxisProvider({ value, children }: { value: LayoutAxis; children?: ReactNode }) {
+  return createElement(LayoutAxisContext.Provider, { value }, children);
+}
+
+/** The nearest kit layout container's facts, or null outside every kit container. */
+export function useLayoutAxis(): LayoutAxis | null {
+  return useContext(LayoutAxisContext);
+}
+
+/** Row cell for a hugging Column child: the value a bare Column inside a Row publishes. */
+export function columnAxis(stretch: boolean, parent: LayoutAxis | null, sized: boolean): LayoutAxis {
+  return { axis: "column", stretch, hugging: parent?.axis === "row" && !sized };
+}
+
+/** The value a Row publishes: children are content-sized on the row axis. */
+export const ROW_AXIS: LayoutAxis = { axis: "row", stretch: false, hugging: false };
+
+/** The value a definite-width column cell publishes (Grid cells, Container). */
+export const CELL_AXIS: LayoutAxis = { axis: "column", stretch: true, hugging: false };
+
+/**
+ * The HUG nature, resolved against the nearest kit layout container: the
+ * `alignSelf:"flex-start"` that stops a stretching Column from widening the
+ * component, and nothing anywhere else. Append it after the component's skin
+ * styles on the outermost node.
+ */
+export function useHugStyle(): ViewStyle | null {
+  const ctx = useContext(LayoutAxisContext);
+  return ctx !== null && ctx.axis === "column" && ctx.stretch ? HUG_IN_STRETCH_COLUMN : null;
+}
+
+/**
+ * The sizing style for a HUG component that also offers `block`: `block` turns
+ * it into FILL (a full-width button in a Column, an equal share in a Row), and
+ * without it the component hugs.
+ */
+export function useSizing(p: { block?: boolean }): ViewStyle | null {
+  const hug = useHugStyle();
+  return p.block ? FILL : hug;
+}
+
+/**
+ * The FILL nature for a component root, plus the development warning for the
+ * one layout that collapses it: a bare Column inside a Row. Give that Column a
+ * `span` or `fill` so the field has bounds.
+ */
+export function useFillStyle(component: string): ViewStyle {
+  const ctx = useContext(LayoutAxisContext);
+  devWarn(
+    ctx !== null && ctx.hugging,
+    `[canvas] <${component} />: rendered inside a bare <Column> that sits in a <Row>. That Column hugs its content, so the ${component} collapses to its own text (and a text field resizes on every keystroke). Give the Column a span={n} or fill so it has bounds.`,
+  );
+  return FILL;
+}
+
+/** The style keys a layout container owns; a non-layout component never takes them. */
+export type SizingKey = "width" | "minWidth" | "maxWidth" | "flex" | "flexBasis" | "flexGrow" | "flexShrink" | "alignSelf";
+
+/**
+ * The `style` a non-layout component accepts: `ViewStyle` without the sizing
+ * keys. Width, min/max width, flex, and `alignSelf` belong to the parent layout
+ * container (a Column `span`, `fill`, a Container step); passing them here is a
+ * type error, not a runtime warning.
+ */
+export type LayoutStyle = StyleProp<Omit<ViewStyle, SizingKey>>;

@@ -13,6 +13,11 @@
 
   --field-narrow:240px;--field-base:320px;--field-wide:480px;
 
+  /* The width scale (Tailwind's max-w-xs..7xl values, copied by hand): the steps a
+     bounds-providing container (Container, the dialog panels, overlays) caps at. */
+  --width-xs:320px;--width-sm:384px;--width-md:448px;--width-lg:512px;--width-xl:576px;--width-xxl:672px;
+  --width-xxxl:768px;--width-wide:896px;--width-wider:1024px;--width-widest:1152px;--width-page:1280px;
+
   --bp-sm:640px;--bp-md:768px;--bp-lg:1024px;--bp-xl:1280px;--bp-2xl:1536px;
 
   /* Platform minimum touch targets: HIG 44pt, Material 3 48dp. */

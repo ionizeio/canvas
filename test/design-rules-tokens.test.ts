@@ -7,6 +7,7 @@ import {
   lightColors,
   radius,
   spacing,
+  widths,
   type ColorTokens,
 } from "../src/style/tokens.ts";
 import { customShadow, shadow, type ShadowLevel } from "../src/style/shadow.ts";
@@ -154,5 +155,14 @@ describe("the scales the hand-off transcribes", () => {
   it("the breakpoints ascend", () => {
     const values = Object.values(breakpoints);
     for (let i = 1; i < values.length; i++) expect(values[i]).toBeGreaterThan(values[i - 1]);
+  });
+
+  it("the width scale ascends from xs to page and is Tailwind's max-w ladder, copied not depended on", () => {
+    const values = Object.values(widths);
+    for (let i = 1; i < values.length; i++) expect(values[i]).toBeGreaterThan(values[i - 1]);
+    // max-w-xs .. max-w-2xl step by 64px (20rem .. 42rem); the strides then widen.
+    expect([widths.xs, widths.sm, widths.md, widths.lg, widths.xl, widths.xxl]).toEqual([320, 384, 448, 512, 576, 672]);
+    expect([widths.xxxl, widths.wide, widths.wider, widths.widest, widths.page]).toEqual([768, 896, 1024, 1152, 1280]);
+    expect(Object.keys(widths)).toHaveLength(11);
   });
 });

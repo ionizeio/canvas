@@ -614,6 +614,33 @@ export const breakpoints: Record<BreakpointKey, number> = {
   "2xl": 1536,
 };
 
+/** The width-scale steps, narrowest first. */
+export type WidthKey = "xs" | "sm" | "md" | "lg" | "xl" | "xxl" | "xxxl" | "wide" | "wider" | "widest" | "page";
+
+/**
+ * The one width scale every bounds-providing container draws from: Container's
+ * measure axis, the Dialog and AlertDialog panels, the floating overlays, and any
+ * call site that used to pin a `maxWidth` by hand. The values are Tailwind's
+ * `max-w-xs` .. `max-w-7xl` steps copied verbatim (no dependency on Tailwind;
+ * the numbers only), 64px apart from xs to xxl and then doubling strides, so the
+ * kit and the design mirror name widths instead of inventing them. A component
+ * never carries one of these on its own root: it is FILL or HUG (see
+ * `sizing.ts`), and the parent layout container picks the step.
+ */
+export const widths: Record<WidthKey, number> = {
+  xs: 320,
+  sm: 384,
+  md: 448,
+  lg: 512,
+  xl: 576,
+  xxl: 672,
+  xxxl: 768,
+  wide: 896,
+  wider: 1024,
+  widest: 1152,
+  page: 1280,
+};
+
 /**
  * Standard field widths in px: the widths the input-like controls (Input,
  * Textarea, Select, Autocomplete, Field) render at, on every form factor. Every
