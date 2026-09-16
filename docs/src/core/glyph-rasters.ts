@@ -54,6 +54,7 @@ export const GLYPH_RASTERS: Record<string, number> = {
   listOrdered: require("../../assets/images/menu-glyphs/listOrdered.png"),
   loader: require("../../assets/images/menu-glyphs/loader.png"),
   lock: require("../../assets/images/menu-glyphs/lock.png"),
+  maximize: require("../../assets/images/menu-glyphs/maximize.png"),
   messageCircle: require("../../assets/images/menu-glyphs/messageCircle.png"),
   messageSquareWarning: require("../../assets/images/menu-glyphs/messageSquareWarning.png"),
   minus: require("../../assets/images/menu-glyphs/minus.png"),
