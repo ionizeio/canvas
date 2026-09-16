@@ -1,6 +1,6 @@
 import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, alpha, FOCUS_RESET } from "../../style/index.js";
+import { type ColorTokens, alpha, FOCUS_RESET, shape } from "../../style/index.js";
 import { type SidebarSkin } from "./sidebar.shared.js";
 
 // Co-located Sidebar skins, one per platform. The shell resolves the density,
@@ -52,12 +52,15 @@ function makeColumn(radius: number, collapsedWidth: number, pad: ViewStyle) {
 // Web: the established Canvas look (lifted verbatim from the original file).
 // =============================================================================
 
+// The Riskora settings rail: a 20px-cornered column, 12px-cornered rows that are
+// 48px tall (the active one on the soft `accent` panel), a 16px section eyebrow at
+// the medium weight, 20px glyphs.
 export const webSkin: SidebarSkin = {
   pressedFill: true,
   pressedOpacity: null,
   ripple: null,
 
-  column: makeColumn(8, 56, { gap: 16, padding: 8 }),
+  column: makeColumn(shape.web.card, 64, { gap: 16, padding: 12 }),
 
   group: { gap: 4 },
 
@@ -69,7 +72,7 @@ export const webSkin: SidebarSkin = {
       lineHeight: 16,
       fontWeight: "500",
       textTransform: "uppercase",
-      letterSpacing: 0.8,
+      letterSpacing: 0.48,
       color: tokens["muted-foreground"],
     };
   },
@@ -80,9 +83,9 @@ export const webSkin: SidebarSkin = {
       alignItems: "center",
       justifyContent: collapsed ? "center" : "flex-start",
       gap: collapsed ? 0 : 12,
-      borderRadius: 6,
+      borderRadius: shape.web.control,
       paddingHorizontal: collapsed ? 0 : 12,
-      paddingVertical: density === "compact" ? 6 : 8,
+      paddingVertical: density === "compact" ? 8 : 14,
     };
   },
 
@@ -103,37 +106,37 @@ export const webSkin: SidebarSkin = {
   iconTint(active) {
     return active ? {} : { muted: true };
   },
-  iconSize: 16,
+  iconSize: 20,
 
   // --- collapse ---
-  collapsedWidth: 56,
-  collapseToggle: () => ({ padding: 4, borderRadius: 6 }),
+  collapsedWidth: 64,
+  collapseToggle: () => ({ padding: 6, borderRadius: 8 }),
   collapseIconSize: 14,
 
   // --- shell slots ---
   header(tokens, collapsed) {
     return {
-      height: 56,
+      height: 72,
       flexDirection: "row",
       alignItems: "center",
       gap: collapsed ? 0 : 10,
       justifyContent: collapsed ? "center" : "flex-start",
-      paddingHorizontal: collapsed ? 0 : 14,
+      paddingHorizontal: collapsed ? 0 : 16,
       borderBottomWidth: 1,
       borderColor: tokens.border,
     };
   },
   footer(tokens) {
-    return { padding: 8, borderTopWidth: 1, borderColor: tokens.border };
+    return { padding: 12, borderTopWidth: 1, borderColor: tokens.border };
   },
   scroll: { flex: 1 },
   scrollContent(_tokens, collapsed) {
-    return { padding: 8, paddingBottom: 16, gap: collapsed ? 8 : 16 };
+    return { padding: 12, paddingBottom: 16, gap: collapsed ? 8 : 16 };
   },
 
   // --- collapsible section header ---
   sectionHeaderRow() {
-    return { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6 };
+    return { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 };
   },
   sectionHeaderTitle(tokens) {
     return {
@@ -144,7 +147,7 @@ export const webSkin: SidebarSkin = {
       lineHeight: 16,
       fontWeight: "500",
       textTransform: "uppercase",
-      letterSpacing: 0.8,
+      letterSpacing: 0.48,
       color: tokens["muted-foreground"],
     };
   },
@@ -158,7 +161,7 @@ export const webSkin: SidebarSkin = {
     return { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 10, borderBottomWidth: 1, borderColor: tokens.border, marginBottom: 4 };
   },
   drillBackTitle(tokens) {
-    return { fontSize: 15, lineHeight: 20, fontWeight: "600", color: tokens.foreground };
+    return { fontSize: 16, lineHeight: 24, fontWeight: "500", color: tokens.foreground };
   },
 };
 

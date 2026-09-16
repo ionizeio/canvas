@@ -1,6 +1,6 @@
 import { type ComponentType } from "react";
 import { type ViewStyle, type TextStyle } from "react-native";
-import { surfaceRipple, type ColorTokens } from "../../style/index.js";
+import { surfaceRipple, type ColorTokens, shape } from "../../style/index.js";
 import { type CheckboxIndicatorProps } from "../../atoms/checkbox/indicator/shared.js";
 import { type BadgeProps } from "../../atoms/badge/badge.shared.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
@@ -158,11 +158,11 @@ function androidTitleText(tokens: ColorTokens): TextStyle {
 // ---------- Web: the established Canvas look ----------
 export const webSkin: FilterPanelSkin = {
   panelBase: PANEL_BASE,
-  // `bordered` wraps the panel as a rounded card: an 8px-radius border on the card
+  // `bordered` wraps the panel as a rounded card: the 20px card corner on the card
   // fill. The card token follows light/dark (and stays solid under glass), so read it
   // from tokens rather than hardcoding its hex.
   borderedSurface: (tokens) => ({
-    borderRadius: 8,
+    borderRadius: shape.web.card,
     borderWidth: 1,
     borderColor: tokens.border,
     backgroundColor: tokens.card,

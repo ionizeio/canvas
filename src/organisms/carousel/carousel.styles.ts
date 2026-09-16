@@ -1,4 +1,4 @@
-import { type ColorTokens, alpha, shadow, controlRipple } from "../../style/index.js";
+import { type ColorTokens, alpha, shadow, controlRipple, shape } from "../../style/index.js";
 import { type CarouselSkin } from "./carousel.shared.js";
 
 // Co-located Carousel skins, one per platform. The shell resolves the paging,
@@ -43,7 +43,7 @@ export const webSkin: CarouselSkin = {
 
   slide(tokens) {
     return {
-      borderRadius: 8,
+      borderRadius: shape.web.card,
       overflow: "hidden",
       backgroundColor: tokens.card,
     };
@@ -53,8 +53,8 @@ export const webSkin: CarouselSkin = {
   // (32px), rounded-full, a 1px border over the `card` fill, with a small lift.
   arrow(tokens) {
     return {
-      width: 32,
-      height: 32,
+      width: 40,
+      height: 40,
       borderRadius: 9999,
       alignItems: "center",
       justifyContent: "center",

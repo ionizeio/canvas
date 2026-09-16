@@ -1,6 +1,6 @@
 import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow, customShadow, alpha, FOCUS_RESET } from "../../style/index.js";
+import { type ColorTokens, shadow, customShadow, alpha, FOCUS_RESET, shape } from "../../style/index.js";
 import { type TabsSkin } from "./tabs.shared.js";
 
 // Co-located Tabs skins, one per platform. The shell resolves the look axis
@@ -72,9 +72,9 @@ export const webSkin: TabsSkin = {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      gap: 6,
+      gap: 8,
       paddingHorizontal: 16,
-      paddingVertical: 10,
+      paddingVertical: 12,
     };
   },
   // A 2px primary rule drawn as an explicit sliver pinned to the trigger's
@@ -95,15 +95,20 @@ export const webSkin: TabsSkin = {
   },
 
   // --- pills ---
+  // The Riskora section tabs: a white 16px-cornered bar holding 12px-cornered
+  // segments with a hairline each; the selected segment drops its hairline for a
+  // sky tint (the "Employees" tab on the company profile).
   pillsRow(tokens) {
     return {
       flexDirection: "row",
       alignItems: "center",
-      gap: 4,
+      gap: 8,
       alignSelf: "flex-start",
-      borderRadius: 8,
-      backgroundColor: tokens.muted,
-      padding: 4,
+      borderRadius: shape.web.menu,
+      borderWidth: 1,
+      borderColor: tokens.border,
+      backgroundColor: tokens.card,
+      padding: 8,
     };
   },
   pillsTrigger() {
@@ -111,16 +116,17 @@ export const webSkin: TabsSkin = {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      gap: 6,
-      borderRadius: 6,
-      paddingHorizontal: 12,
-      paddingVertical: 6,
+      gap: 8,
+      borderRadius: shape.web.control,
+      borderWidth: 1,
+      paddingHorizontal: 16,
+      paddingVertical: 10,
     };
   },
   pillsFill(tokens, selected) {
     return selected
-      ? { backgroundColor: tokens.background, ...shadow("sm") }
-      : { backgroundColor: "transparent" };
+      ? { backgroundColor: alpha(tokens.primary, 0.14), borderColor: "transparent" }
+      : { backgroundColor: "transparent", borderColor: tokens.border };
   },
   pillsLabel(tokens, selected) {
     return { fontSize: 14, lineHeight: 20, fontWeight: "500", color: selected ? tokens.foreground : tokens["muted-foreground"] };
@@ -132,10 +138,10 @@ export const webSkin: TabsSkin = {
       width: "100%",
       flexDirection: "row",
       alignItems: "center",
-      gap: 6,
-      borderRadius: 6,
+      gap: 10,
+      borderRadius: shape.web.control,
       paddingHorizontal: 12,
-      paddingVertical: 8,
+      paddingVertical: 12,
     };
   },
   verticalFill(tokens, selected) {

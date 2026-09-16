@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, alpha, surfaceRipple } from "../../style/index.js";
+import { type ColorTokens, alpha, surfaceRipple, shape } from "../../style/index.js";
 
 // Co-located DataTable skins, one per platform. The table is laid out as flex
 // rows of equal-width flex-1 cells (there is no CSS table primitive). Layout-only
@@ -148,23 +148,25 @@ const SELECT_COL: ViewStyle = {
 const DATA_CELL: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%" };
 
 // ---------- Web: the established Canvas look (lifted VERBATIM) ----------
+// The Riskora table: the header is a soft 10px-cornered band with sentence-case
+// medium labels, rows are 56px tall and separated by DASHED hairlines, status
+// reads as pills, the row kebab is a 36px square with the control corner, and a
+// bordered table takes the 20px card corner.
 export const webSkin: DataTableSkin = {
   wrap: WRAP,
-  borderedOutline: (t) => ({ borderRadius: 8, borderWidth: 1, borderColor: t.border }),
-  headerRow: (t) => ({ flexDirection: "row", backgroundColor: t.muted }),
+  borderedOutline: (t) => ({ borderRadius: shape.web.card, borderWidth: 1, borderColor: t.border }),
+  headerRow: (t) => ({ flexDirection: "row", backgroundColor: t.muted, borderRadius: 10 }),
   headerPad: {
-    compact: { paddingVertical: 6 },
-    regular: { paddingVertical: 8 },
-    comfortable: { paddingVertical: 10 },
+    compact: { paddingVertical: 8 },
+    regular: { paddingVertical: 12 },
+    comfortable: { paddingVertical: 14 },
   },
   // Type only; the shell's header cell box carries the flex share and the px-16
-  // horizontal padding (shadcn th px-2 class) so headings sit over their columns.
+  // horizontal padding so headings sit over their columns. Sentence case, Label/Small.
   headerCell: (t) => ({
-    fontSize: 12,
-    lineHeight: 16,
+    fontSize: 14,
+    lineHeight: 20,
     fontWeight: "500",
-    textTransform: "uppercase",
-    letterSpacing: 0.4,
     color: t["muted-foreground"],
   }),
   sortIconSize: 14,
@@ -175,33 +177,34 @@ export const webSkin: DataTableSkin = {
     flexDirection: "row",
     alignItems: "center",
     borderBottomWidth: 1,
+    borderStyle: "dashed",
     borderColor: t.border,
   }),
   stripeTint: (t) => ({ backgroundColor: alpha(t.muted, 0.3) }),
   pressTint: (t) => ({ backgroundColor: t.accent }),
   cellPad: {
-    compact: { paddingHorizontal: 16, paddingVertical: 8 },
-    regular: { paddingHorizontal: 16, paddingVertical: 12 },
-    comfortable: { paddingHorizontal: 16, paddingVertical: 16 },
+    compact: { paddingHorizontal: 16, paddingVertical: 10 },
+    regular: { paddingHorizontal: 16, paddingVertical: 18 },
+    comfortable: { paddingHorizontal: 16, paddingVertical: 22 },
   },
   dataCell: DATA_CELL,
   cellText: (t) => ({ fontSize: 14, lineHeight: 20, color: t.foreground }),
   separator: null,
-  // Row actions: 28px icon buttons (the pointer web needs no touch minimum);
-  // two of them plus the gap and px-12 cell padding set the 92px column.
-  actionsColWidth: 92,
-  actionButton: { width: 28, height: 28, borderRadius: 6, alignItems: "center", justifyContent: "center" },
-  actionIconSize: 15,
-  // The inline editor: the 14/20 cell type inside a primary-ringed 28px field.
+  // Row actions: 36px icon buttons (the pointer web needs no touch minimum);
+  // two of them plus the gap and px-12 cell padding set the 108px column.
+  actionsColWidth: 108,
+  actionButton: { width: 36, height: 36, borderRadius: shape.web.control, alignItems: "center", justifyContent: "center" },
+  actionIconSize: 16,
+  // The inline editor: the 14/20 cell type inside a primary-ringed 36px field.
   editInput: (t) => ({
     alignSelf: "stretch",
-    height: 28,
-    borderRadius: 4,
+    height: 36,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: t.primary,
-    backgroundColor: t.background,
+    backgroundColor: t.card,
     color: t.foreground,
-    paddingHorizontal: 6,
+    paddingHorizontal: 10,
     paddingVertical: 0,
     fontSize: 14,
     lineHeight: 20,

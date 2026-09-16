@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, surfaceRipple } from "../../style/index.js";
+import { type ColorTokens, surfaceRipple, shape } from "../../style/index.js";
 
 // Co-located Board skins, one per platform. Board is a "Light" treatment: the structure (the
 // horizontal lanes ScrollView, the DropZone columns, the Draggable cards and their anatomy)
@@ -68,9 +68,9 @@ const CHIPS: ViewStyle = { flexDirection: "row", flexWrap: "wrap", alignItems: "
 // ---------- Web: the established Canvas look ----------
 export const webSkin: BoardSkin = {
   lanes: (compact) => ({ flexDirection: "row", alignItems: "flex-start", gap: compact ? 12 : 16 }),
-  column: (t, compact) => ({ backgroundColor: t.muted, borderRadius: 10, padding: compact ? 8 : 12, gap: compact ? 8 : 10 }),
+  column: (t, compact) => ({ backgroundColor: t.muted, borderRadius: shape.web.card, padding: compact ? 8 : 12, gap: compact ? 8 : 10 }),
   columnHeader: HEADER,
-  columnLabel: (t) => ({ fontSize: 13, lineHeight: 18, fontWeight: "600", color: t.foreground }),
+  columnLabel: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t.foreground }),
   cardList: (compact) => ({ gap: compact ? 6 : 8, minHeight: 48 }),
   cardRow: CARD_ROW,
   bodyColumn: (compact) => ({ gap: compact ? 2 : 4 }),
@@ -80,7 +80,7 @@ export const webSkin: BoardSkin = {
   trailingColumn: TRAILING,
   trailingCluster: CLUSTER,
   emptyLabel: (t) => ({ fontSize: 12, lineHeight: 16, color: t["muted-foreground"] }),
-  pressableBody: { borderRadius: 6 },
+  pressableBody: { borderRadius: shape.web.control },
   pressedSurface: (t) => ({ backgroundColor: t.accent }),
   pressedOpacity: null,
   ripple: null,

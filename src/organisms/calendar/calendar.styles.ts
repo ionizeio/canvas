@@ -1,6 +1,6 @@
 import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, alpha, shadow, FOCUS_RESET } from "../../style/index.js";
+import { type ColorTokens, alpha, shadow, FOCUS_RESET, shape } from "../../style/index.js";
 
 // Co-located Calendar skins, one per platform. The shell resolves the density
 // metrics (compact vs default cell sizing), the leading-blank padding, and the
@@ -183,12 +183,12 @@ export const webSkin: CalendarSkin = {
   pressedOpacity: 0.9,
   ripple: null,
 
-  // `self-start rounded-lg border p-3`.
+  // The Riskora date card: the 20px card corner, a hairline, a 16px inset.
   containerBase: {
     alignSelf: "flex-start",
-    borderRadius: 8,
+    borderRadius: shape.web.card,
     borderWidth: 1,
-    padding: 12,
+    padding: 16,
   },
   containerSurface: (t) => ({ borderColor: t.border, backgroundColor: t.card }),
 
@@ -199,13 +199,13 @@ export const webSkin: CalendarSkin = {
     alignItems: "center",
     justifyContent: "space-between",
   },
-  // `h-7 w-7 items-center justify-center rounded-md bg-transparent`.
+  // A 32px month-step tile with the control corner.
   chevron: {
-    height: 28,
-    width: 28,
+    height: 32,
+    width: 32,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 6,
+    borderRadius: shape.web.control,
     backgroundColor: "transparent",
   },
   chevronText: (t) => ({ fontSize: 14, lineHeight: 20, color: t.foreground }),
@@ -247,7 +247,7 @@ export const webSkin: CalendarSkin = {
   slotLine: (t) => ({ borderTopWidth: 1, borderTopColor: t.border }),
   colDivider: (t) => ({ borderLeftWidth: 1, borderLeftColor: t.border }),
   eventBlock: {
-    borderRadius: 6,
+    borderRadius: 8,
     borderLeftWidth: 3,
     paddingHorizontal: 6,
     paddingVertical: 3,
@@ -258,10 +258,10 @@ export const webSkin: CalendarSkin = {
   eventTitle: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: primaryText(t) }),
   eventTime: (t) => ({ fontSize: 10, lineHeight: 14, color: t["muted-foreground"] }),
 
-  // Mirrors the web Popover card (radius 8, hairline border, lg shadow) with the
-  // tighter padding a timeline slice wants.
+  // Mirrors the web Popover card (the 16px menu corner, hairline border, lg
+  // shadow) with the tighter padding a timeline slice wants.
   peekCard: (t) => ({
-    borderRadius: 8,
+    borderRadius: shape.web.menu,
     borderWidth: 1,
     borderColor: t.border,
     backgroundColor: t.popover,

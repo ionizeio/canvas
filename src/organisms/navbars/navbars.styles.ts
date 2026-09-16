@@ -1,6 +1,6 @@
 import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow, alpha, FOCUS_RESET } from "../../style/index.js";
+import { type ColorTokens, shadow, alpha, FOCUS_RESET, shape } from "../../style/index.js";
 import { type NavbarSkin } from "./navbars.shared.js";
 
 // Co-located Navbar skins, one per platform. The shell resolves the surface axis
@@ -34,14 +34,15 @@ export const webSkin: NavbarSkin = {
   pressedOpacity: 0.9,
   ripple: null,
 
-  // flex-row items-center justify-between h-14 px-4
+  // The Riskora top bar: 72px tall with a 24px gutter, the brand at left, the
+  // link pills in the middle, the search field and the 44px icon tiles at right.
   bar() {
     return {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      height: 56,
-      paddingHorizontal: 16,
+      height: 72,
+      paddingHorizontal: 24,
     };
   },
   // bg-background fill (token-driven, follows the scheme/glass surface).
@@ -55,30 +56,31 @@ export const webSkin: NavbarSkin = {
       case "default":
         return { borderBottomWidth: 1, borderColor: tokens.border };
       case "bordered":
-        return { borderRadius: 8, borderWidth: 1, borderColor: tokens.border };
+        return { borderRadius: shape.web.card, borderWidth: 1, borderColor: tokens.border };
       case "floating":
-        return { borderRadius: 8, borderWidth: 1, borderColor: tokens.border, ...shadow("md") };
+        return { borderRadius: shape.web.card, borderWidth: 1, borderColor: tokens.border, ...shadow("md") };
     }
   },
 
-  // flex-row items-center gap-4
+  // flex-row items-center gap-6
   leftGroup() {
-    return { flexDirection: "row", alignItems: "center", gap: 16 };
+    return { flexDirection: "row", alignItems: "center", gap: 24 };
   },
-  // text-base font-semibold text-foreground
+  // The wordmark: Label/Large at the medium weight.
   brand(tokens) {
-    return { fontSize: 16, lineHeight: 24, fontWeight: "600", color: tokens.foreground };
+    return { fontSize: 18, lineHeight: 28, fontWeight: "500", color: tokens.foreground };
   },
   // flex-row items-center gap-1
   linksRow() {
     return { flexDirection: "row", alignItems: "center", gap: 4 };
   },
-  // rounded-md px-3 py-1.5; the active tile fills bg-accent.
+  // A 40px link pill with the control corner; the active pill fills the soft
+  // `accent` panel (Riskora's "Dashboard" pill).
   linkTile(tokens, active) {
     return {
-      borderRadius: 6,
-      paddingHorizontal: 12,
-      paddingVertical: 6,
+      borderRadius: shape.web.control,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
       backgroundColor: active ? tokens.accent : "transparent",
     };
   },
@@ -92,9 +94,9 @@ export const webSkin: NavbarSkin = {
     };
   },
 
-  // flex-row items-center gap-2
+  // flex-row items-center gap-3
   rightGroup() {
-    return { flexDirection: "row", alignItems: "center", gap: 8 };
+    return { flexDirection: "row", alignItems: "center", gap: 12 };
   },
 };
 

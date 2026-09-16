@@ -62,24 +62,24 @@
   --p-spinner-arc-display:inline-block /* @kind other */;--p-spinner-spokes-display:none /* @kind other */;
   /* Tabs — underline rule, 2px brand indicator */
   --p-tab-track-bg:transparent;--p-tab-track-radius:0px;--p-tab-track-pad:0px;--p-tab-rule:1px;
-  --p-tab-item-radius:0px;--p-tab-item-pad-x:16px;--p-tab-item-pad-y:10px;
+  --p-tab-item-radius:0px;--p-tab-item-pad-x:16px;--p-tab-item-pad-y:12px;
   --p-tab-selected-bg:transparent;--p-tab-selected-shadow:none;
   --p-tab-indicator-h:2px;--p-tab-font:14px;--p-tab-lh:20px;
   --p-tab-label-selected:var(--foreground);
   /* Tabs pills + vertical (tabs.styles.ts webSkin: muted radius-8 track with a raised white thumb; accent-filled rail) */
-  --p-tab-pill-track-radius:8px;--p-tab-pill-track-pad:4px;--p-tab-pill-gap:4px;
-  --p-tab-pill-radius:6px;--p-tab-pill-pad-x:12px;--p-tab-pill-pad-y:6px;
-  --p-tab-pill-selected-bg:var(--background);--p-tab-pill-selected-shadow:0px 1px 2px rgba(13,18,27,0.04);
+  --p-tab-pill-track-radius:16px;--p-tab-pill-track-pad:8px;--p-tab-pill-gap:8px;
+  --p-tab-pill-radius:12px;--p-tab-pill-pad-x:16px;--p-tab-pill-pad-y:10px;
+  --p-tab-pill-selected-bg:color-mix(in oklab, var(--primary) 14%, transparent);--p-tab-pill-selected-shadow:none;
   --p-tab-pill-label:var(--muted-foreground);--p-tab-pill-selected-weight:500;
-  --p-tab-v-radius:6px;--p-tab-v-pad-x:12px;--p-tab-v-pad-y:8px;--p-tab-v-font:14px;--p-tab-v-lh:20px;
+  --p-tab-v-radius:12px;--p-tab-v-pad-x:12px;--p-tab-v-pad-y:12px;--p-tab-v-font:14px;--p-tab-v-lh:20px;
   --p-tab-v-weight:500;--p-tab-v-selected-weight:500;
   --p-tab-v-selected-fill:var(--accent);--p-tab-v-selected-label:var(--accent-foreground);--p-tab-v-label:var(--muted-foreground);
   /* Sidebar (sidebar.styles.ts webSkin) */
-  --p-side-w:240px;--p-side-w-collapsed:56px;--p-side-fill:var(--background) /* @kind other */;
-  --p-side-header-h:56px;--p-side-header-pad:14px;--p-side-body-pad:8px;--p-side-body-gap:16px;
-  --p-side-row-radius:6px;--p-side-row-pad-x:12px;--p-side-row-pad-y:8px;--p-side-row-gap:12px;
-  --p-side-label:14px;--p-side-label-lh:20px;--p-side-icon:16px;
-  --p-side-title:12px;--p-side-title-lh:16px;--p-side-title-weight:500;--p-side-title-transform:uppercase /* @kind other */;--p-side-title-tracking:0.8px;
+  --p-side-w:240px;--p-side-w-collapsed:64px;--p-side-fill:var(--background) /* @kind other */;
+  --p-side-header-h:72px;--p-side-header-pad:16px;--p-side-body-pad:12px;--p-side-body-gap:16px;
+  --p-side-row-radius:12px;--p-side-row-pad-x:12px;--p-side-row-pad-y:14px;--p-side-row-gap:12px;
+  --p-side-label:14px;--p-side-label-lh:20px;--p-side-icon:20px;
+  --p-side-title:12px;--p-side-title-lh:16px;--p-side-title-weight:500;--p-side-title-transform:uppercase /* @kind other */;--p-side-title-tracking:0.48px;
   /* Sidebar sections + collapse chrome (sidebar.styles.ts webSkin: group gap 4, 12/4 title inset,
      11px Radix right caret spinning 0 to 90deg, 4px active dot, 14px chevron-left toggle).
      One disclosure glyph (chevron-right) rotated per platform: web/iOS rest at 0deg (the right
@@ -88,11 +88,11 @@
   --p-side-group-gap:4px;--p-side-title-pad-x:12px;--p-side-title-pad-y:4px;
   --p-side-sechdr-gap:4px;--p-side-sechdr-pad-y:6px;--p-side-chevron:11px;--p-side-dot:4px;
   --p-side-chevron-rest:0deg /* @kind other */;--p-side-chevron-open:90deg /* @kind other */;
-  --p-side-toggle:14px;--p-side-toggle-pad:4px;--p-side-toggle-radius:6px;
+  --p-side-toggle:14px;--p-side-toggle-pad:6px;--p-side-toggle-radius:8px;
   /* Navbar (navbars.styles.ts webSkin) */
-  --p-nav-h:56px;--p-nav-pad-x:16px;--p-nav-fill:var(--background) /* @kind other */;--p-nav-rule:1px;
-  --p-nav-brand:16px;--p-nav-brand-lh:24px;--p-nav-brand-weight:600;
-  --p-nav-links-gap:4px;--p-nav-link-radius:6px;--p-nav-link-pad-x:12px;--p-nav-link-pad-y:6px;
+  --p-nav-h:72px;--p-nav-pad-x:24px;--p-nav-fill:var(--background) /* @kind other */;--p-nav-rule:1px;
+  --p-nav-brand:18px;--p-nav-brand-lh:28px;--p-nav-brand-weight:500;
+  --p-nav-links-gap:4px;--p-nav-link-radius:12px;--p-nav-link-pad-x:14px;--p-nav-link-pad-y:10px;
   --p-nav-link-font:14px;--p-nav-link-lh:20px;
   /* Stats (stats.styles.ts webSkin) */
   --p-stat-radius:20px;--p-stat-pad:24px;--p-stat-shadow:0px 0px 20px rgba(13,18,27,0.06);--p-stat-gap:16px;
@@ -100,9 +100,9 @@
   --p-stat-value:36px;--p-stat-value-lh:44px;--p-stat-value-weight:400;--p-stat-value-tracking:0px;
   --p-stat-delta-tracking:0px;
   /* DataTable (data-table.styles.ts webSkin) */
-  --p-table-radius:8px;
-  --p-table-head-font:12px;--p-table-head-lh:16px;--p-table-head-weight:500;--p-table-head-transform:uppercase /* @kind other */;--p-table-head-tracking:0.4px;--p-table-head-pad-y:8px;
-  --p-table-cell-font:14px;--p-table-cell-lh:20px;--p-table-cell-tracking:0px;--p-table-cell-pad-x:16px;--p-table-cell-pad-y:12px;--p-table-cell-pad-y-compact:8px;
+  --p-table-radius:20px;
+  --p-table-head-font:14px;--p-table-head-lh:20px;--p-table-head-weight:500;--p-table-head-transform:none /* @kind other */;--p-table-head-tracking:0px;--p-table-head-pad-y:12px;
+  --p-table-cell-font:14px;--p-table-cell-lh:20px;--p-table-cell-tracking:0px;--p-table-cell-pad-x:16px;--p-table-cell-pad-y:18px;--p-table-cell-pad-y-compact:10px;
   --p-min-target:0px;
   /* Breadcrumb (breadcrumb.styles.ts webSkin: no tracking, font-medium current page) */
   --p-crumb-tracking:0px;--p-crumb-sep-tracking:0px;--p-crumb-current-weight:500;
@@ -125,9 +125,9 @@
   --p-seg-selected-label:var(--primary-foreground);--p-seg-selected-weight:500;--p-seg-selected-shadow:none;
   --p-seg-check-display:none /* @kind other */;
   /* Calendar (calendar.styles.ts webSkin) */
-  --p-cal-radius:8px;--p-cal-cell-default:36px;--p-cal-cell-compact:32px;--p-cal-head-h:32px;
+  --p-cal-radius:20px;--p-cal-cell-default:36px;--p-cal-cell-compact:32px;--p-cal-head-h:32px;
   --p-cal-label-default:14px;--p-cal-label-compact:12px;
-  --p-cal-chevron:28px;--p-cal-chevron-radius:6px;--p-cal-chevron-font:14px;--p-cal-chevron-weight:400;--p-cal-chevron-color:var(--foreground);
+  --p-cal-chevron:32px;--p-cal-chevron-radius:12px;--p-cal-chevron-font:14px;--p-cal-chevron-weight:400;--p-cal-chevron-color:var(--foreground);
   --p-cal-month-font:14px;--p-cal-month-lh:20px;--p-cal-month-weight:500;
   --p-cal-weekdays:"two" /* @kind other */;--p-cal-weekday-font:12px;--p-cal-weekday-weight:500;
   --p-cal-today-fill:color-mix(in oklab, var(--primary) 12%, transparent);--p-cal-today-ring:0px;--p-cal-day-weight:500;
@@ -258,11 +258,11 @@
   --p-steps-current-fill:transparent;--p-steps-connector-radius:0px;--p-steps-desc:12px;--p-steps-desc-lh:16px;
   --p-steps-track-h:6px;--p-steps-caption-weight:500;
   /* Pagination (pagination.styles.ts webSkin) */
-  --p-page-h-small:32px;--p-page-h-default:36px;--p-page-h-large:40px;
-  --p-page-pad-small:8px;--p-page-pad-default:10px;--p-page-pad-large:12px;
+  --p-page-h-small:36px;--p-page-h-default:40px;--p-page-h-large:44px;
+  --p-page-pad-small:10px;--p-page-pad-default:12px;--p-page-pad-large:14px;
   --p-page-font-small:12px;--p-page-font-default:14px;--p-page-font-large:14px;
   --p-page-lh-small:16px;--p-page-lh-default:20px;--p-page-lh-large:20px;
-  --p-page-radius:6px;--p-page-border:1px;--p-page-weight:500;--p-page-rest-fill:var(--background);
+  --p-page-radius:12px;--p-page-border:1px;--p-page-weight:500;--p-page-rest-fill:var(--card);
   --p-page-selected-fill:var(--primary);--p-page-selected-border:var(--primary);--p-page-selected-label:var(--primary-foreground);
   /* Slider (slider.styles.ts webSkin — shadcn-matched) */
   --p-slider-track-h-small:6px;--p-slider-track-h-base:8px;--p-slider-track-h-large:10px;
@@ -313,8 +313,8 @@
   --p-panel-title-weight:600;--p-panel-title-tracking:0px;--p-panel-desc-tracking:0px;
   --p-panel-inline-gap:24px;--p-panel-inline-align:flex-start /* @kind other */;
   /* Carousel (carousel.styles.ts webSkin — Embla/shadcn) */
-  --p-carousel-slide-radius:8px;--p-carousel-arrows:1 /* @kind other */;--p-carousel-dots:1 /* @kind other */;
-  --p-carousel-arrow-size:32px;--p-carousel-arrow-border:1px;--p-carousel-arrow-fill:var(--card);--p-carousel-arrow-shadow:0px 1px 2px rgba(13,18,27,0.04);
+  --p-carousel-slide-radius:20px;--p-carousel-arrows:1 /* @kind other */;--p-carousel-dots:1 /* @kind other */;
+  --p-carousel-arrow-size:40px;--p-carousel-arrow-border:1px;--p-carousel-arrow-fill:var(--card);--p-carousel-arrow-shadow:0px 1px 2px rgba(13,18,27,0.04);
   --p-carousel-dot:8px;--p-carousel-dot-active-w:18px;--p-carousel-dot-gap:6px;--p-carousel-dot-alpha:40%;
   --p-carousel-text-font:16px;--p-carousel-text-lh:24px;--p-carousel-text-weight:500;--p-carousel-text-tracking:0px;
   /* Stats (stats.styles.ts webSkin) */
@@ -322,11 +322,11 @@
 
   /* Board (board.styles.ts webSkin) */
   --p-board-lane-gap:16px;--p-board-lane-gap-compact:12px;
-  --p-board-col-radius:10px;--p-board-col-pad:12px;--p-board-col-pad-compact:8px;
+  --p-board-col-radius:20px;--p-board-col-pad:12px;--p-board-col-pad-compact:8px;
   --p-board-col-gap:10px;--p-board-col-gap-compact:8px;
-  --p-board-col-label-font:13px;--p-board-col-label-lh:18px;--p-board-col-label-weight:600;--p-board-col-label-tracking:0px;
+  --p-board-col-label-font:14px;--p-board-col-label-lh:20px;--p-board-col-label-weight:500;--p-board-col-label-tracking:0px;
   --p-board-cardlist-gap:8px;--p-board-cardlist-gap-compact:6px;--p-board-cardlist-min-h:48px;
-  --p-board-card-radius:6px;
+  --p-board-card-radius:12px;
   --p-board-card-title-font:14px;--p-board-card-title-lh:20px;--p-board-card-title-weight:500;
   --p-board-card-desc-font:12px;--p-board-card-desc-lh:16px;
 

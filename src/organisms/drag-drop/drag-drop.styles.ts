@@ -47,7 +47,7 @@ const CENTER: ViewStyle = { alignItems: "center", justifyContent: "center" };
 
 // Web: a compact 28px grip.
 export const webSkin: DragDropSkin = {
-  handle: { ...CENTER, width: 28, height: 28, borderRadius: 6 },
+  handle: { ...CENTER, width: 32, height: 32, borderRadius: 8 },
   handleIconSize: 16,
   handlePressedOpacity: 0.6,
   zoneActive,

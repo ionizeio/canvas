@@ -1,6 +1,6 @@
 import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, alpha, FOCUS_RESET } from "../../style/index.js";
+import { type ColorTokens, alpha, FOCUS_RESET, shape } from "../../style/index.js";
 
 // Co-located Pagination skins, one per platform. The page buttons, Prev/Next
 // controls, and the size selector are square-ish boxes whose footprint scales
@@ -57,9 +57,9 @@ export interface PaginationSkin {
 // Square-ish button footprint per size: height + matching min width + the
 // horizontal pad (`h-8 min-w-8 px-2` / `h-9 min-w-9 px-2.5` / `h-10 min-w-10 px-3`).
 export const itemSize: Record<Size, ViewStyle> = {
-  small: { height: 32, minWidth: 32, paddingHorizontal: 8 },
-  default: { height: 36, minWidth: 36, paddingHorizontal: 10 },
-  large: { height: 40, minWidth: 40, paddingHorizontal: 12 },
+  small: { height: 36, minWidth: 36, paddingHorizontal: 10 },
+  default: { height: 40, minWidth: 40, paddingHorizontal: 12 },
+  large: { height: 44, minWidth: 44, paddingHorizontal: 14 },
 };
 
 // Label type per size (`text-xs` for small, `text-sm` otherwise).
@@ -90,44 +90,43 @@ export const controlPair: ViewStyle = { flexDirection: "row", alignItems: "cente
 const CELL_ROW: ViewStyle = { flexDirection: "row", alignItems: "center", justifyContent: "center" };
 
 // =============================================================================
-// Web: the established Canvas look (lifted verbatim from the original file).
+// Web: the Riskora pager (12px-cornered 40px tiles on the card fill, the current
+// page on the sky primary).
 // =============================================================================
 
 export const webSkin: PaginationSkin = {
-  // A Prev/Next chevron control: a square bordered box on the background fill
-  // (`rounded-md border border-input bg-background`).
+  // A Prev/Next chevron control: a square bordered tile on the card fill.
   controlBox(t) {
     return {
       ...CELL_ROW,
-      borderRadius: 6,
+      borderRadius: shape.web.control,
       borderWidth: 1,
       borderColor: t.input,
-      backgroundColor: t.background,
+      backgroundColor: t.card,
     };
   },
-  // A numbered page button. Selected uses the primary fill/border; the rest match
-  // the bordered background box (`border-primary bg-primary` vs `border-input bg-background`).
+  // A numbered page tile. Selected uses the primary fill/border; the rest match
+  // the bordered card tile.
   pageBox(t, selected) {
     return {
       ...CELL_ROW,
-      borderRadius: 6,
+      borderRadius: shape.web.control,
       borderWidth: 1,
       borderColor: selected ? t.primary : t.input,
-      backgroundColor: selected ? t.primary : t.background,
+      backgroundColor: selected ? t.primary : t.card,
     };
   },
-  // The size selector trigger: value + caret pushed apart in a bordered box
-  // (`flex-row items-center justify-between gap-1 rounded-md border border-input bg-background`).
+  // The size selector trigger: value + caret pushed apart in a bordered tile.
   selectorBox(t) {
     return {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      gap: 4,
-      borderRadius: 6,
+      gap: 6,
+      borderRadius: shape.web.control,
       borderWidth: 1,
       borderColor: t.input,
-      backgroundColor: t.background,
+      backgroundColor: t.card,
     };
   },
   // Control glyph / selector value color (`font-medium text-foreground`).
