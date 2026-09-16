@@ -1,5 +1,5 @@
 import { Children, isValidElement, type ReactNode } from "react";
-import { CELL_AXIS, LayoutAxisProvider, View, useContainerWidth, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { GRID_CELL_AXIS, LayoutAxisProvider, View, useContainerWidth, useFillStyle, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { type FlexSkin } from "../layout/layout.styles.js";
 import { gapOf, type Gap } from "../layout/layout.shared.js";
 
@@ -21,6 +21,17 @@ import { gapOf, type Gap } from "../layout/layout.shared.js";
 // Grid uses NO breakpoints: tiles respond to available space (pure container
 // math), while page-level stacking responds to form factor (Row `stacks`).
 // This split is deliberate.
+//
+// The grid itself is a FILL component: its root spans the parent's bounds
+// (`width:"100%"`, sharing a Row with hugging siblings). The column math needs
+// a definite width to fit tiles into, and a content-sized grid is circular: in
+// a centering parent it measured whatever width its own cells happened to
+// produce from the pre-measurement window guess, so it never reached the
+// parent's edges. The cells are equal-HEIGHT as well as equal-width: the root
+// stretches every cell to the height of the row it wrapped onto, and a cell
+// publishes GRID_CELL_AXIS so a Card in it grows to that height, the way CSS
+// Grid's default `align-items: stretch` fills every track. A hug component or
+// a field keeps its own height.
 
 export interface GridProps {
   children?: ReactNode;
@@ -56,10 +67,22 @@ export interface GridItemProps {
   testID?: string;
 }
 
+// The root wraps its cells and STRETCHES each to the height of the row it
+// wrapped onto (React Native's default `alignItems`, spelled out because the
+// equal-height contract depends on it), so every cell is a definite box for
+// its tile to grow into.
+const GRID: ViewStyle = { flexDirection: "row", flexWrap: "wrap", alignItems: "stretch" };
+
+// The item fills its cell's height (`flexGrow:1` in the stretched cell column),
+// so a Card inside a wide tile grows to the row's height exactly as a bare Card
+// child does; without it the item would hug its content and the Card would have
+// no box to grow into.
+const ITEM: ViewStyle = { flexGrow: 1 };
+
 /** A grid child with cell options (`wide` spans two cells). Plain children need
  *  no wrapper: Grid assigns every child a cell. */
 export function GridItem({ children, testID }: GridItemProps) {
-  return <View testID={testID}>{children}</View>;
+  return <View style={ITEM} testID={testID}>{children}</View>;
 }
 
 /** How many tiles of at least `minTileWidth` fit `width` with `gap` between
@@ -87,18 +110,22 @@ export function createGrid(skin: FlexSkin) {
     const { width, onLayout } = useContainerWidth();
     const cols = gridColumns(width, minTileWidth, gapPx, columns);
     const cellWidth = width > 0 ? gridCellWidth(width, cols, gapPx) : undefined;
+    // The root spans its parent (FILL), so the measured width is the parent's
+    // and not the cells' own; `style` stays last so a `maxWidth` still bounds it.
+    const fill = useFillStyle("Grid");
     return (
-      <View onLayout={onLayout} style={[{ flexDirection: "row", flexWrap: "wrap", gap: gapPx }, style]} testID={testID}>
+      <View onLayout={onLayout} style={[GRID, { gap: gapPx }, fill, style]} testID={testID}>
         {Children.toArray(children).map((child, i) => {
           const wide =
             cols > 1 && isValidElement(child) && child.type === GridItem && !!(child.props as GridItemProps).wide;
           const cell =
             cellWidth == null ? null : { width: wide ? cellWidth * 2 + gapPx : cellWidth };
-          // A cell is a definite-width column: hug components hug inside it and
-          // fill components fill it (the layout-axis context from sizing.ts).
+          // A cell is a definite-width column stretched to its row's height: hug
+          // components hug inside it, fill components fill it, and a Card grows
+          // to the row's height (the layout-axis context from sizing.ts).
           return (
             <View key={i} style={cell}>
-              <LayoutAxisProvider value={CELL_AXIS}>{child}</LayoutAxisProvider>
+              <LayoutAxisProvider value={GRID_CELL_AXIS}>{child}</LayoutAxisProvider>
             </View>
           );
         })}

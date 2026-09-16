@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Pressable, Text, StyleSheet, useTheme, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, devWarn, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, StyleSheet, useTheme, useLayoutAxis, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, devWarn, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Image } from "../../atoms/image/image.shared.js";
 import * as s from "./card.styles.js";
 import { type CardSkin, type Elevation, type Density } from "./card.styles.js";
@@ -92,7 +92,9 @@ export interface CardProps {
    * Grow to fill the main axis of a parent Row/Column (flexGrow: 1). On a card
    * that renders sections, the BODY takes up whatever slack the growth won, so
    * the content region fills the taller surface and a footer stays on its floor
-   * rather than floating up under the content.
+   * rather than floating up under the content. Implied inside a Grid cell: the
+   * grid stretches its cells to the row's height and the card fills that box,
+   * so the tiles of one row are equal-height without being asked.
    */
   grow?: boolean;
   // Density (pick one; default is the standard inset). Scales the card's own
@@ -121,10 +123,16 @@ function densityOf(p: CardProps): Density {
 
 export function createCard(skin: CardSkin) {
   return function Card(props: CardProps) {
-    const { children, title, icon, actions, description, body, footer, flush, onPress, selected, grow, testID, style } = props;
+    const { children, title, icon, actions, description, body, footer, flush, onPress, selected, testID, style } = props;
     const { tokens } = useTheme();
     const elev = elevationOf(props);
     const dens = densityOf(props);
+    // A tile-grid cell is a definite box on both axes (the grid stretches it to
+    // its row's height), so a card in one grows to fill it without `grow`: the
+    // tiles of a row share a flush bottom edge, CSS Grid's default. Anywhere
+    // else the card is as tall as its sections unless asked to grow.
+    const cell = useLayoutAxis();
+    const grow = !!props.grow || cell?.bounded === true;
 
     // Empty strings count as "no content", so a cleared field never renders an empty
     // header, footer, or a stray separator: guard on truthiness rather than null for

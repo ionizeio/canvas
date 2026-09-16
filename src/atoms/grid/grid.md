@@ -7,8 +7,14 @@ the same grid renders three-up on a desktop, two-up on a tablet, and a single
 column on a phone with no breakpoint at the call site. `columns` caps the count
 at the desktop number, the gap scale is Row and Column's own
 (`flush` / `tight` / `snug` / `cozy` / `relaxed` / `loose`), and a `GridItem`
-child with `wide` spans two cells. Equal-width tiles belong here; content-sized
-rows that should stack at narrow widths belong to `Row stacks`.
+child with `wide` spans two cells. The grid spans its parent's full width (it is
+a FILL component, so it needs no wrapper to reach the edges), and its tiles are
+equal-height as well as equal-width: every cell stretches to the height of the
+row it wrapped onto, and a `Card` in a cell grows to fill it, so a row of cards
+shares a flush bottom edge however unevenly their content runs (CSS Grid's
+`align-items: stretch`). A field or a hug component keeps its own height.
+Equal-width tiles belong here; content-sized rows that should stack at narrow
+widths belong to `Row stacks`.
 
 ## Usage
 
@@ -75,6 +81,30 @@ rows that should stack at narrow widths belong to `Row stacks`.
   <Card padded>
     <Typography medium>Saturation</Typography>
     <Typography small muted>41%</Typography>
+  </Card>
+</Grid>
+```
+
+### Equal heights
+
+Uneven content, one bottom edge: each card fills the height of its row.
+
+```tsx
+<Grid minTileWidth={200} columns={3}>
+  <Card padded>
+    <Typography medium>Uptime</Typography>
+    <Typography small muted>99.98% over the last 30 days.</Typography>
+  </Card>
+  <Card padded>
+    <Typography medium>Incidents</Typography>
+    <Typography small muted>
+      One partial outage on the EU edge, resolved in 14 minutes; a postmortem is
+      scheduled for Thursday.
+    </Typography>
+  </Card>
+  <Card padded>
+    <Typography medium>On call</Typography>
+    <Typography small muted>Priya, until 09:00.</Typography>
   </Card>
 </Grid>
 ```

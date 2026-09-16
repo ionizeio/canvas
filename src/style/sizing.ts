@@ -46,6 +46,15 @@ export interface LayoutAxis {
   stretch: boolean;
   /** A content-sized cell (a bare Column inside a Row): a FILL child collapses here. */
   hugging: boolean;
+  /**
+   * Column only, and only a tile-grid cell sets it: the cell is definite on its
+   * main axis too, because the grid stretches every cell to the height of the
+   * row it wrapped onto. A surface child (a Card) grows to fill that height, so
+   * the tiles of one row share a flush bottom edge (CSS Grid's `align-items:
+   * stretch`, the default every tile grid is expected to have); a field or a
+   * hug component keeps its own height, the cell's slack stays below it.
+   */
+  bounded?: boolean;
 }
 
 const LayoutAxisContext = createContext<LayoutAxis | null>(null);
@@ -77,8 +86,15 @@ export function columnAxis(stretch: boolean, parent: LayoutAxis | null, sized: b
 /** The value a definite Row publishes: children are content-sized on the row axis. */
 export const ROW_AXIS: LayoutAxis = { axis: "row", stretch: false, hugging: false };
 
-/** The value a definite-width column cell publishes (Grid cells, Container). */
+/** The value a definite-width column cell publishes (Container). */
 export const CELL_AXIS: LayoutAxis = { axis: "column", stretch: true, hugging: false };
+
+/**
+ * The value a tile-grid cell publishes (Grid, DashboardGrid): a definite-width
+ * column that is also `bounded`, since the grid stretches it to its row's
+ * height. A Card in it grows to that height without being asked.
+ */
+export const GRID_CELL_AXIS: LayoutAxis = { axis: "column", stretch: true, hugging: false, bounded: true };
 
 /** The twelve-column grid that Row spans and the DashboardGrid share. */
 export const GRID_COLUMNS = 12;
