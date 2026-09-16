@@ -51,6 +51,10 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Row & Column",
     description: "The layout primitives. Row lays children out horizontally, Column vertically, with a semantic gap scale (flush / tight / snug / cozy / relaxed / loose), main-axis distribution (center, between), cross-axis alignment (alignCenter, baseline), and wrap / fill / grow, so a call site never hand-rolls flexDirection, gap, or alignItems.",
     category: "Atoms",
+    // A Row or Column is a layout container, so its examples show how children share
+    // a width. The stretched stage IS that width: in center mode a bare Row shrink-wraps
+    // its children and center / between / wrap / span have nothing to distribute over.
+    stageAlign: "start",
   },
 
   {
@@ -58,6 +62,10 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Container",
     description: "The bounds provider. A component never dictates its own width; Container conforms to its parent (full width, no cap) by default, and a named step of the shared width scale (xxxs 192 through page 1280) caps and centers it, so a form, an article, or a card stack has a measure you can name instead of a width invented at the call site. start pins a capped box to the leading edge, and the pad scale adds horizontal gutters.",
     category: "Atoms",
+    // Container caps and centers itself inside its parent, so its examples need the
+    // stage's full width as that parent: in center mode a Column of Containers
+    // shrink-wraps and every step collapses to its own content.
+    stageAlign: "start",
   },
 
   {
@@ -93,6 +101,11 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Autocomplete",
     description: "Text input + dropdown: searchable single-select.",
     category: "Atoms",
+    // A field fills its parent either way; the stretched stage makes the parent the
+    // stage itself, so the "Widths come from the parent" Column of Container steps
+    // has a definite width to hand down (in center mode it shrink-wraps and every
+    // step collapses to the field's own content).
+    stageAlign: "start",
   },
 
   {
@@ -167,6 +180,11 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Input",
     description: "The Input component is a React Native text field with semantic boolean props (<code>error</code>, <code>small</code>, <code>large</code>, <code>disabled</code>), plus prefix/suffix addons and overlaid icons. Input is single-line; for multi-line entry use the dedicated Textarea. A field fills the parent it is given; a Container step or a Row span sets its measure. Select and the search field share its look, and Form stitches labeled inputs into a full form.",
     category: "Atoms",
+    // A field fills its parent either way; the stretched stage makes the parent the
+    // stage itself, so the "Widths come from the parent" Column of Container steps
+    // has a definite width to hand down (in center mode it shrink-wraps and every
+    // step collapses to the field's own content).
+    stageAlign: "start",
   },
 
   {
@@ -195,6 +213,11 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Select",
     description: "Native select restyled to match Canvas inputs.",
     category: "Atoms",
+    // A field fills its parent either way; the stretched stage makes the parent the
+    // stage itself, so the "Widths come from the parent" Column of Container steps
+    // has a definite width to hand down (in center mode it shrink-wraps and every
+    // step collapses to the field's own content).
+    stageAlign: "start",
   },
 
   {
@@ -214,6 +237,11 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Textarea",
     description: "Multi-line input, with character count, with toolbar.",
     category: "Atoms",
+    // A field fills its parent either way; the stretched stage makes the parent the
+    // stage itself, so the "Widths come from the parent" Column of Container steps
+    // has a definite width to hand down (in center mode it shrink-wraps and every
+    // step collapses to the field's own content).
+    stageAlign: "start",
   },
 
   {

@@ -5,10 +5,52 @@ Segmented controls, split buttons, attached groups.
 ## Usage
 
 ```tsx
-<ButtonGroup segmented defaultActive={0} items={["Day", "Week", "Month"]} small />
+<ButtonGroup items={["Day", "Week", "Month"]} />
 ```
 
 ## Variants
+
+### Small
+
+```tsx
+<ButtonGroup items={["Day", "Week", "Month"]} small />
+```
+
+### Large
+
+```tsx
+<ButtonGroup items={["Day", "Week", "Month"]} large />
+```
+
+### Disabled
+
+```tsx
+<ButtonGroup items={["Day", "Week", "Month"]} disabled />
+```
+
+### Block
+
+```tsx
+<ButtonGroup items={["Day", "Week", "Month"]} block />
+```
+
+### Block spaced
+
+```tsx
+<ButtonGroup spaced items={["Edit", "Duplicate", "Archive"]} block />
+```
+
+### Stepper
+
+```tsx
+<ButtonGroup stepper items={["Yesterday", "Today", "Tomorrow"]} />
+```
+
+### Split
+
+```tsx
+<ButtonGroup split items={["Save"]} menu={["Save as draft", "Save and close", "Save a copy"]} />
+```
 
 ### Icon segments
 
@@ -19,76 +61,13 @@ form-factor switcher.
 
 ```tsx
 <ButtonGroup
-  segmented
-  small
   iconsOnly
-  defaultActive={2}
   items={[
     { label: "Phone width", icon: "smartphone" },
     { label: "Tablet width", icon: "tablet" },
     { label: "Desktop width", icon: "monitor" }
   ]}
 />
-```
-
-### Stepper
-
-```tsx
-<ButtonGroup
-  stepper
-  items={[
-    "May 21",
-    "May 22",
-    "May 23",
-    "Today",
-    "May 25",
-    "May 26",
-    "May 27"
-  ]}
-  active={3}
-  small
-/>
-```
-
-### Split
-
-```tsx
-<ButtonGroup
-  split
-  items={["Save"]}
-  menu={["Save as draft", "Save and close", "Save a copy"]}
-  small
-/>
-```
-
-### Medium
-
-```tsx
-<ButtonGroup segmented defaultActive={0} items={["Day", "Week", "Month"]} />
-```
-
-### Large
-
-```tsx
-<ButtonGroup segmented defaultActive={0} items={["Day", "Week", "Month"]} large />
-```
-
-### Disabled
-
-```tsx
-<ButtonGroup segmented defaultActive={0} items={["Day", "Week", "Month"]} disabled small />
-```
-
-### Block
-
-```tsx
-<ButtonGroup segmented defaultActive={0} items={["Day", "Week", "Month"]} block />
-```
-
-### Block spaced
-
-```tsx
-<ButtonGroup spaced items={["Edit", "Duplicate", "Archive"]} block />
 ```
 
 ## Do & Don't

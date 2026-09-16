@@ -5,12 +5,7 @@ Displays a local or remote image. Set the `source` (`{ uri }`) and a size, then 
 ## Usage
 
 ```tsx
-<Image
-  source={{ uri: "/kira-tanaka.jpg" }}
-  width={120}
-  height={120}
-  radius="xl"
-/>
+<Image source={{ uri: "/kira-tanaka.jpg" }} width={120} height={120} />
 ```
 
 ## Variants
@@ -18,24 +13,11 @@ Displays a local or remote image. Set the `source` (`{ uri }`) and a size, then 
 ### Contain
 
 ```tsx
-<Image
-  source={{ uri: "/liang-bao.jpg" }}
-  contain
-  width={160}
-  height={120}
-  radius="xl"
-  style={{ backgroundColor: tokens.muted }}
-/>
+<Image source={{ uri: "/liang-bao.jpg" }} contain width={160} height={120} />
 ```
 
 ### Cover
 
 ```tsx
-<Image
-  source={{ uri: "/ada-lovelace.jpg" }}
-  cover
-  width={240}
-  height={96}
-  radius="xl"
-/>
+<Image source={{ uri: "/ada-lovelace.jpg" }} cover width={240} height={96} />
 ```

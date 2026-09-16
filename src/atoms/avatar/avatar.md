@@ -10,17 +10,45 @@ A photo when the account has one, falling back to one or two initials in white o
 
 ## Variants
 
+### Photo
+
+```tsx
+<Avatar src="/rachel-chen.jpg" name="RC" />
+```
+
+### Sizes
+
+Four steps: `tiny` (24px), `small` (28px), the default 40px row avatar, and `large` (48px). Initials scale with the circle at about 40% of the diameter, except at `tiny`, which keeps `small`'s 12px glyph rather than shrinking to a 10px pair that stops reading. `tiny` is the disc `AvatarMenu` builds its capsule around, so a standalone tiny avatar and the one inside a pill are the same circle. Precedence when several are passed: `tiny` beats `small` beats `large`.
+
+```tsx
+<Row relaxed alignCenter>
+  <Avatar tiny name="NP" />
+  <Avatar small name="AL" />
+  <Avatar name="MA" />
+  <Avatar large name="RC" />
+</Row>
+```
+
+### Rounded
+
+```tsx
+<Avatar rounded name="LB" />
+```
+
+### Ring outline
+
+```tsx
+<Avatar ring name="AO" />
+```
+
 ### Stacked
 
 ```tsx
-<AvatarGroup small max={4}>
-  <Avatar src="/rachel-chen.jpg" name="RC" />
-  <Avatar src="/liang-bao.jpg" name="LB" />
-  <Avatar src="/marcus-allen.jpg" name="MA" />
-  <Avatar src="/kira-tanaka.jpg" name="KT" />
-  <Avatar src="/ada-lovelace.jpg" name="AL" />
-  <Avatar src="/grace-hopper.jpg" name="GH" />
-  <Avatar src="/noor-park.jpg" name="NP" />
+<AvatarGroup max={3}>
+  <Avatar name="RC" />
+  <Avatar name="LB" />
+  <Avatar name="MA" />
+  <Avatar name="KT" />
 </AvatarGroup>
 ```
 
@@ -29,11 +57,7 @@ A photo when the account has one, falling back to one or two initials in white o
 A lone avatar as the account trigger: on iOS the circle is interactive Liquid Glass, so it reads as a control and tapping it opens the account menu, no email or chevron needed.
 
 ```tsx
-<Dropdown items={[
-    { label: "Your profile", icon: "user" },
-    { label: "Settings", icon: "settings" },
-    { label: "Sign out", icon: "logOut", separatorBefore: true }
-  ]}>
+<Dropdown items={[{ label: "Your profile" }, { label: "Sign out" }]}>
   <Avatar small name="MA" />
 </Dropdown>
 ```
@@ -49,8 +73,7 @@ The whole account control in one component. `AvatarMenu` renders a single capsul
   src="/rachel-chen.jpg"
   items={[
     { label: "Profile", icon: "user" },
-    { label: "Billing", icon: "creditCard" },
-    { label: "Settings", icon: "settings", shortcut: "⌘," },
+    { label: "Settings", icon: "settings" },
     { label: "Sign out", icon: "logOut", destructive: true, separatorBefore: true }
   ]}
 />
@@ -68,7 +91,7 @@ The whole account control in one component. `AvatarMenu` renders a single capsul
   src="/marcus-allen.jpg"
   items={[
     { label: "Profile", icon: "user" },
-    { label: "Settings", icon: "settings", shortcut: "⌘," },
+    { label: "Settings", icon: "settings" },
     { label: "Sign out", icon: "logOut", destructive: true, separatorBefore: true }
   ]}
 />
@@ -88,7 +111,7 @@ The menu hangs from the pill's trailing edge by default, the edge a topbar parks
     src="/liang-bao.jpg"
     items={[
       { label: "Profile", icon: "user" },
-      { label: "Settings", icon: "settings", shortcut: "⌘," },
+      { label: "Settings", icon: "settings" },
       { label: "Sign out", icon: "logOut", destructive: true, separatorBefore: true }
     ]}
   />
@@ -100,7 +123,7 @@ The menu hangs from the pill's trailing edge by default, the edge a topbar parks
     src="/kira-tanaka.jpg"
     items={[
       { label: "Profile", icon: "user" },
-      { label: "Settings", icon: "settings", shortcut: "⌘," },
+      { label: "Settings", icon: "settings" },
       { label: "Sign out", icon: "logOut", destructive: true, separatorBefore: true }
     ]}
   />
@@ -119,41 +142,10 @@ The menu hangs from the pill's trailing edge by default, the edge a topbar parks
   src="/ada-lovelace.jpg"
   items={[
     { label: "Profile", icon: "user" },
-    { label: "Settings", icon: "settings", shortcut: "⌘," },
+    { label: "Settings", icon: "settings" },
     { label: "Sign out", icon: "logOut", destructive: true, separatorBefore: true }
   ]}
 />
-```
-
-### Photo
-
-```tsx
-<Avatar src="/rachel-chen.jpg" name="RC" />
-```
-
-### Sizes
-
-Four steps: `tiny` (24px), `small` (28px), the default 40px row avatar, and `large` (48px). Initials scale with the circle at about 40% of the diameter, except at `tiny`, which keeps `small`'s 12px glyph rather than shrinking to a 10px pair that stops reading. `tiny` is the disc `AvatarMenu` builds its capsule around, so a standalone tiny avatar and the one inside a pill are the same circle. Precedence when several are passed: `tiny` beats `small` beats `large`.
-
-```tsx
-<Row relaxed alignCenter>
-  <Avatar tiny src="/noor-park.jpg" name="NP" />
-  <Avatar small src="/ada-lovelace.jpg" name="AL" />
-  <Avatar src="/marcus-allen.jpg" name="MA" />
-  <Avatar large src="/rachel-chen.jpg" name="RC" />
-</Row>
-```
-
-### Rounded
-
-```tsx
-<Avatar rounded src="/liang-bao.jpg" name="LB" />
-```
-
-### Ring outline
-
-```tsx
-<Avatar ring name="AO" />
 ```
 
 ## Do & Don't

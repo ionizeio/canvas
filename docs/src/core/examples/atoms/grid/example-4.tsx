@@ -3,21 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Typography, Grid } = scope;
+  const { Card, Grid } = scope;
   return (
 <Grid minTileWidth={160} tight>
-  <Card padded>
-    <Typography small>CPU</Typography>
-  </Card>
-  <Card padded>
-    <Typography small>Memory</Typography>
-  </Card>
-  <Card padded>
-    <Typography small>Disk</Typography>
-  </Card>
-  <Card padded>
-    <Typography small>Network</Typography>
-  </Card>
+  <Card title="CPU" />
+  <Card title="Memory" />
+  <Card title="Disk" />
 </Grid>
   );
 }

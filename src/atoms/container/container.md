@@ -17,9 +17,8 @@ gutters from Row and Column's own padding scale.
 
 ```tsx
 <Container sm>
-  <Card padded>
+  <Card>
     <Typography medium>Sign in</Typography>
-    <Typography small muted>The card fills the container; the container caps at the sm step (384).</Typography>
   </Card>
 </Container>
 ```
@@ -29,10 +28,10 @@ gutters from Row and Column's own padding scale.
 ### Steps
 
 ```tsx
-<Column snug>
-  <Container xs><Card padded><Typography small>xs, 320</Typography></Card></Container>
-  <Container md><Card padded><Typography small>md, 448</Typography></Card></Container>
-  <Container xl><Card padded><Typography small>xl, 576</Typography></Card></Container>
+<Column>
+  <Container xs><Card><Typography small>xs, 320</Typography></Card></Container>
+  <Container md><Card><Typography small>md, 448</Typography></Card></Container>
+  <Container xl><Card><Typography small>xl, 576</Typography></Card></Container>
 </Column>
 ```
 
@@ -40,8 +39,8 @@ gutters from Row and Column's own padding scale.
 
 ```tsx
 <Container sm start>
-  <Card padded>
-    <Typography small>A leading-edge measure for a settings row.</Typography>
+  <Card>
+    <Typography small>Settings</Typography>
   </Card>
 </Container>
 ```

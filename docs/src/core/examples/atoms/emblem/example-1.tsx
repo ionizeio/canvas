@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Icon, Row, Emblem } = scope;
   return (
-<Row snug alignCenter>
+<Row snug>
   <Emblem primary><Icon shield /></Emblem>
   <Emblem success><Icon check /></Emblem>
   <Emblem warning><Icon circleAlert /></Emblem>

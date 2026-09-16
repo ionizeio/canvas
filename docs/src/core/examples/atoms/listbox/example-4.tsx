@@ -3,12 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Listbox, Column, Container } = scope;
+  const { Listbox } = scope;
   return (
-<Column snug>
-  <Container xs start><Listbox bordered items={[{ label: "In an xs Container (320)", selected: true }, { label: "Frontend" }]} /></Container>
-  <Container lg start><Listbox bordered items={[{ label: "In an lg Container (512)", selected: true }, { label: "Frontend" }]} /></Container>
-  <Listbox bordered items={[{ label: "Bare: fills the parent", selected: true }, { label: "Frontend" }]} />
-</Column>
+<Listbox
+  accessibilityLabel="Teams"
+  items={[
+    { label: "Backend", selected: true },
+    { label: "Frontend" },
+    { label: "Design" }
+  ]}
+  disabled
+/>
   );
 }

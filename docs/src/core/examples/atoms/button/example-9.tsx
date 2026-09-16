@@ -3,15 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, Button, Typography, Column } = scope;
+  const { Button } = scope;
   return (
-<Stateful initial={0}>
-  {(saves, setSaves) => (
-    <Column snug alignCenter>
-      <Button primary disabled onPress={() => setSaves(saves + 1)}>Save changes</Button>
-      <Typography muted>{saves === 0 ? "Nothing happens - the button is disabled" : `Saved ${saves} ${saves === 1 ? "time" : "times"}`}</Typography>
-    </Column>
-  )}
-</Stateful>
+<Button disabled>Save changes</Button>
   );
 }

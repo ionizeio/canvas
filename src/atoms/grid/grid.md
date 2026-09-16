@@ -20,18 +20,9 @@ widths belong to `Row stacks`.
 
 ```tsx
 <Grid minTileWidth={220}>
-  <Card padded>
-    <Typography medium>Overview</Typography>
-    <Typography small muted>Traffic is up 12% this week.</Typography>
-  </Card>
-  <Card padded>
-    <Typography medium>Deploys</Typography>
-    <Typography small muted>14 releases shipped to production.</Typography>
-  </Card>
-  <Card padded>
-    <Typography medium>Alerts</Typography>
-    <Typography small muted>2 open, both acknowledged.</Typography>
-  </Card>
+  <Card title="Overview" />
+  <Card title="Deploys" />
+  <Card title="Alerts" />
 </Grid>
 ```
 
@@ -41,22 +32,9 @@ widths belong to `Row stacks`.
 
 ```tsx
 <Grid minTileWidth={200} columns={2}>
-  <Card padded>
-    <Typography medium>Production</Typography>
-    <Typography small muted>All systems normal.</Typography>
-  </Card>
-  <Card padded>
-    <Typography medium>Staging</Typography>
-    <Typography small muted>Deploy in progress.</Typography>
-  </Card>
-  <Card padded>
-    <Typography medium>Preview</Typography>
-    <Typography small muted>Idle.</Typography>
-  </Card>
-  <Card padded>
-    <Typography medium>Development</Typography>
-    <Typography small muted>3 branches active.</Typography>
-  </Card>
+  <Card title="Production" />
+  <Card title="Staging" />
+  <Card title="Preview" />
 </Grid>
 ```
 
@@ -65,23 +43,10 @@ widths belong to `Row stacks`.
 ```tsx
 <Grid minTileWidth={200} columns={3}>
   <GridItem wide>
-    <Card padded>
-      <Typography medium>Latency</Typography>
-      <Typography small muted>The hero tile spans two cells.</Typography>
-    </Card>
+    <Card title="Latency" />
   </GridItem>
-  <Card padded>
-    <Typography medium>Errors</Typography>
-    <Typography small muted>0.02%</Typography>
-  </Card>
-  <Card padded>
-    <Typography medium>Throughput</Typography>
-    <Typography small muted>1.2k rps</Typography>
-  </Card>
-  <Card padded>
-    <Typography medium>Saturation</Typography>
-    <Typography small muted>41%</Typography>
-  </Card>
+  <Card title="Errors" />
+  <Card title="Throughput" />
 </Grid>
 ```
 
@@ -91,21 +56,9 @@ Uneven content, one bottom edge: each card fills the height of its row.
 
 ```tsx
 <Grid minTileWidth={200} columns={3}>
-  <Card padded>
-    <Typography medium>Uptime</Typography>
-    <Typography small muted>99.98% over the last 30 days.</Typography>
-  </Card>
-  <Card padded>
-    <Typography medium>Incidents</Typography>
-    <Typography small muted>
-      One partial outage on the EU edge, resolved in 14 minutes; a postmortem is
-      scheduled for Thursday.
-    </Typography>
-  </Card>
-  <Card padded>
-    <Typography medium>On call</Typography>
-    <Typography small muted>Priya, until 09:00.</Typography>
-  </Card>
+  <Card title="Uptime" description="99.98% over the last 30 days." />
+  <Card title="Incidents" description="One partial outage on the EU edge, resolved in 14 minutes; a postmortem is scheduled for Thursday." />
+  <Card title="On call" description="Priya, until 09:00." />
 </Grid>
 ```
 
@@ -113,18 +66,9 @@ Uneven content, one bottom edge: each card fills the height of its row.
 
 ```tsx
 <Grid minTileWidth={160} tight>
-  <Card padded>
-    <Typography small>CPU</Typography>
-  </Card>
-  <Card padded>
-    <Typography small>Memory</Typography>
-  </Card>
-  <Card padded>
-    <Typography small>Disk</Typography>
-  </Card>
-  <Card padded>
-    <Typography small>Network</Typography>
-  </Card>
+  <Card title="CPU" />
+  <Card title="Memory" />
+  <Card title="Disk" />
 </Grid>
 ```
 

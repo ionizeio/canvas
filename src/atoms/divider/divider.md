@@ -7,10 +7,10 @@ Horizontal, vertical, with label, with action.
 A divider spans the width of its parent, so give it a bounded container.
 
 ```tsx
-<Column snug>
-  <Typography small>Profile</Typography>
+<Column>
+  <Typography>Profile</Typography>
   <Divider />
-  <Typography small>Account</Typography>
+  <Typography>Account</Typography>
 </Column>
 ```
 
@@ -19,10 +19,10 @@ A divider spans the width of its parent, so give it a bounded container.
 ### Vertical
 
 ```tsx
-<Row alignCenter cozy>
-  <Typography small>Edit</Typography>
-  <Divider vertical style={{ height: 16 }} />
-  <Typography small>Delete</Typography>
+<Row>
+  <Typography>Edit</Typography>
+  <Divider vertical />
+  <Typography>Delete</Typography>
 </Row>
 ```
 
@@ -35,19 +35,9 @@ A divider spans the width of its parent, so give it a bounded container.
 ### Action
 
 ```tsx
-<Column cozy>
-  <Column snug>
-    <Card padded>
-      <Typography small>Ada commented on the draft</Typography>
-    </Card>
-    <Card padded>
-      <Typography small>Grace approved the request</Typography>
-    </Card>
-  </Column>
-  <Divider>
-    <Button ghost small>Show more</Button>
-  </Divider>
-</Column>
+<Divider>
+  <Button ghost small>Show more</Button>
+</Divider>
 ```
 
 ## Do & Don't

@@ -5,10 +5,10 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Divider, Typography, Column } = scope;
   return (
-<Column snug>
-  <Typography small>Profile</Typography>
+<Column>
+  <Typography>Profile</Typography>
   <Divider />
-  <Typography small>Account</Typography>
+  <Typography>Account</Typography>
 </Column>
   );
 }

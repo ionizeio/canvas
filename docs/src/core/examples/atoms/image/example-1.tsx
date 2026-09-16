@@ -3,15 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, Image } = scope;
+  const { Image } = scope;
   return (
-<Image
-  source={{ uri: "/liang-bao.jpg" }}
-  contain
-  width={160}
-  height={120}
-  radius="xl"
-  style={{ backgroundColor: tokens.muted }}
-/>
+<Image source={{ uri: "/liang-bao.jpg" }} contain width={160} height={120} />
   );
 }

@@ -3,10 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Icon, Kbd } = scope;
+  const { Kbd, Typography, Row } = scope;
   return (
-<Button outline iconLeft={<Icon search muted size={13} />} iconRight={<Kbd keys="⌘ K" />}>
-  Search…
-</Button>
+<Row alignCenter tight>
+  <Typography small>Press </Typography>
+  <Kbd keys="⌘ K" />
+  <Typography small> to search.</Typography>
+</Row>
   );
 }

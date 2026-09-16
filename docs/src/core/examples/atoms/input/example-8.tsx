@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Input } = scope;
   return (
-<Input readOnly placeholder="rachel.chen@example.com" />
+<Input readOnly defaultValue="rachel.chen@example.com" />
   );
 }

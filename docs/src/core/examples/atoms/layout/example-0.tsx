@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Button, Row } = scope;
   return (
-<Row alignCenter snug>
+<Row>
   <Button primary>Save</Button>
   <Button ghost>Cancel</Button>
 </Row>

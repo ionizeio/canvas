@@ -3,14 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Avatar, Dropdown } = scope;
+  const { Avatar, Row } = scope;
   return (
-<Dropdown items={[
-    { label: "Your profile", icon: "user" },
-    { label: "Settings", icon: "settings" },
-    { label: "Sign out", icon: "logOut", separatorBefore: true }
-  ]}>
-  <Avatar small name="MA" />
-</Dropdown>
+<Row relaxed alignCenter>
+  <Avatar tiny name="NP" />
+  <Avatar small name="AL" />
+  <Avatar name="MA" />
+  <Avatar large name="RC" />
+</Row>
   );
 }

@@ -5,19 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { ButtonGroup } = scope;
   return (
-<ButtonGroup
-  stepper
-  items={[
-    "May 21",
-    "May 22",
-    "May 23",
-    "Today",
-    "May 25",
-    "May 26",
-    "May 27"
-  ]}
-  active={3}
-  small
-/>
+<ButtonGroup items={["Day", "Week", "Month"]} large />
   );
 }

@@ -11,96 +11,37 @@ The disclosure button has a real target of at least 24px on web, 44pt on iOS, an
 ## Usage
 
 ```tsx
-<Autocomplete
-  options={[
-    "Ada Lovelace",
-    "Grace Hopper",
-    "Kira Tanaka",
-    "Liang Bao",
-    "Marcus Allen",
-    "Noor Park",
-    "Rachel Chen"
-  ]}
-  label="Assigned to"
-  placeholder="Search a person…"
-/>
+<Autocomplete label="Assigned to" placeholder="Search a person…" options={["Ada Lovelace", "Grace Hopper", "Kira Tanaka", "Liang Bao", "Noor Park"]} />
 ```
 
 ## Variants
+
+### Required field
+
+```tsx
+<Autocomplete label="Assigned to" required placeholder="Search a person…" options={["Ada Lovelace", "Grace Hopper", "Kira Tanaka"]} />
+```
+
+### With helper text
+
+```tsx
+<Autocomplete label="Assigned to" helperText="The person responsible for this account." placeholder="Search a person…" options={["Ada Lovelace", "Grace Hopper", "Kira Tanaka"]} />
+```
+
+### Disabled
+
+```tsx
+<Autocomplete label="Assigned to" placeholder="Search a person…" disabled options={["Ada Lovelace", "Grace Hopper", "Kira Tanaka"]} />
+```
 
 ### Controlled selection
 
 ```tsx
 <Stateful initial="Grace Hopper">
   {(value, setValue) => (
-    <Column snug>
-      <Autocomplete
-        label="Assigned to"
-        options={["Ada Lovelace", "Grace Hopper", "Kira Tanaka"]}
-        value={value}
-        onValueChange={setValue}
-      />
-      <Typography muted>{value === "" ? "No assignee" : `Selected: ${value}`}</Typography>
-    </Column>
+    <Autocomplete label="Assigned to" options={["Ada Lovelace", "Grace Hopper", "Kira Tanaka"]} value={value} onValueChange={setValue} />
   )}
 </Stateful>
-```
-
-### Required field
-
-```tsx
-<Autocomplete
-  options={[
-    "Ada Lovelace",
-    "Grace Hopper",
-    "Kira Tanaka",
-    "Liang Bao",
-    "Marcus Allen",
-    "Noor Park",
-    "Rachel Chen"
-  ]}
-  label="Assigned to"
-  required
-  placeholder="Search a person…"
-/>
-```
-
-### With helper text
-
-```tsx
-<Autocomplete
-  options={[
-    "Ada Lovelace",
-    "Grace Hopper",
-    "Kira Tanaka",
-    "Liang Bao",
-    "Marcus Allen",
-    "Noor Park",
-    "Rachel Chen"
-  ]}
-  label="Assigned to"
-  helperText="The person responsible for this account."
-  placeholder="Search a person…"
-/>
-```
-
-### Disabled
-
-```tsx
-<Autocomplete
-  options={[
-    "Ada Lovelace",
-    "Grace Hopper",
-    "Kira Tanaka",
-    "Liang Bao",
-    "Marcus Allen",
-    "Noor Park",
-    "Rachel Chen"
-  ]}
-  label="Assigned to"
-  placeholder="Search a person…"
-  disabled
-/>
 ```
 
 ### Widths come from the parent

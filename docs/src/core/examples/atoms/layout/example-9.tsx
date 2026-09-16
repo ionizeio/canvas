@@ -5,14 +5,14 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Card, Typography, Row, Column } = scope;
   return (
-<Row snug stacks>
+<Row stacks>
   <Column span={6}>
-    <Card padded>
+    <Card>
       <Typography medium>Left</Typography>
     </Card>
   </Column>
   <Column span={6}>
-    <Card padded>
+    <Card>
       <Typography medium>Right</Typography>
     </Card>
   </Column>

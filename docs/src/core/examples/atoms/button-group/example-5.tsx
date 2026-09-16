@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { ButtonGroup } = scope;
   return (
-<ButtonGroup segmented defaultActive={0} items={["Day", "Week", "Month"]} large />
+<ButtonGroup spaced items={["Edit", "Duplicate", "Archive"]} block />
   );
 }

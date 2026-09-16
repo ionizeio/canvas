@@ -9,12 +9,40 @@ On the web, Space activates the focused control on key release, and Enter also a
 ## Usage
 
 ```tsx
+<Checkbox defaultChecked>Email notifications</Checkbox>
+```
+
+## Variants
+
+### Unchecked
+
+```tsx
+<Checkbox>Email notifications</Checkbox>
+```
+
+### Disabled
+
+```tsx
+<Checkbox disabled>Email notifications</Checkbox>
+```
+
+### Sizes
+
+```tsx
+<Column>
+  <Checkbox small defaultChecked>Small</Checkbox>
+  <Checkbox defaultChecked>Default</Checkbox>
+  <Checkbox large defaultChecked>Large</Checkbox>
+</Column>
+```
+
+### With description
+
+```tsx
 <Checkbox defaultChecked description="Get notified when activity happens on your account.">
   Email notifications
 </Checkbox>
 ```
-
-## Variants
 
 ### Nested group
 
@@ -31,7 +59,7 @@ controlled wiring; in an app that state lives in your own component.)
     const all = perms.every((p) => selected.includes(p));
     const some = selected.length > 0 && !all;
     return (
-      <Column snug>
+      <Column>
         <Checkbox
           checked={all}
           indeterminate={some}
@@ -39,7 +67,7 @@ controlled wiring; in an app that state lives in your own component.)
         >
           Select all
         </Checkbox>
-        <Column snug indent>
+        <Column indent>
           {perms.map((p) => (
             <Checkbox
               key={p}
@@ -56,32 +84,6 @@ controlled wiring; in an app that state lives in your own component.)
     );
   }}
 </Stateful>
-```
-
-### Unchecked
-
-```tsx
-<Checkbox description="Get notified when activity happens on your account.">
-  Email notifications
-</Checkbox>
-```
-
-### Disabled
-
-```tsx
-<Checkbox disabled description="Get notified when activity happens on your account.">
-  Email notifications
-</Checkbox>
-```
-
-### Sizes
-
-```tsx
-<Column snug>
-  <Checkbox small defaultChecked>Small</Checkbox>
-  <Checkbox defaultChecked>Default</Checkbox>
-  <Checkbox large defaultChecked>Large</Checkbox>
-</Column>
 ```
 
 ## Do & Don't

@@ -6,9 +6,8 @@ export default function Example(scope: ExampleScope) {
   const { Card, Typography, Container } = scope;
   return (
 <Container sm>
-  <Card padded>
+  <Card>
     <Typography medium>Sign in</Typography>
-    <Typography small muted>The card fills the container; the container caps at the sm step (384).</Typography>
   </Card>
 </Container>
   );

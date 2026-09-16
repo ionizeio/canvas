@@ -13,25 +13,19 @@ A segmented one-time-code field: `length` cells display the typed characters whi
 ### Length
 
 ```tsx
-<Column relaxed>
-  <InputOTP length={6} />
-  <InputOTP length={4} />
-</Column>
+<InputOTP length={4} />
 ```
 
 ### Grouped
 
 ```tsx
-<Column relaxed>
-  <InputOTP length={6} groups={3} />
-  <InputOTP length={6} groups={2} small />
-</Column>
+<InputOTP groups={3} />
 ```
 
 ### Alphanumeric
 
 ```tsx
-<InputOTP length={6} alphanumeric defaultValue="G" />
+<InputOTP alphanumeric defaultValue="G" />
 ```
 
 ### Masked
@@ -54,19 +48,6 @@ A segmented one-time-code field: `length` cells display the typed characters whi
 
 ```tsx
 <InputOTP disabled defaultValue="1234" />
-```
-
-### Completion
-
-```tsx
-<Stateful initial="">
-  {(code, setCode) => (
-    <Column snug>
-      <InputOTP length={4} onComplete={setCode} />
-      <Typography muted>{code === "" ? "Waiting for the 4-digit code" : `Code ${code} received`}</Typography>
-    </Column>
-  )}
-</Stateful>
 ```
 
 ## Do & Don't

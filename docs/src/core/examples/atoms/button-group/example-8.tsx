@@ -5,6 +5,13 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { ButtonGroup } = scope;
   return (
-<ButtonGroup spaced items={["Edit", "Duplicate", "Archive"]} block />
+<ButtonGroup
+  iconsOnly
+  items={[
+    { label: "Phone width", icon: "smartphone" },
+    { label: "Tablet width", icon: "tablet" },
+    { label: "Desktop width", icon: "monitor" }
+  ]}
+/>
   );
 }

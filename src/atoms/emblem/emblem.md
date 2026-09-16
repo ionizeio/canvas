@@ -9,7 +9,7 @@ hand-composes `borderRadius` + `backgroundColor` to build an icon background.
 ## Usage
 
 ```tsx
-<Emblem primary>
+<Emblem>
   <Icon shield />
 </Emblem>
 ```
@@ -19,7 +19,7 @@ hand-composes `borderRadius` + `backgroundColor` to build an icon background.
 ### Tones
 
 ```tsx
-<Row snug alignCenter>
+<Row snug>
   <Emblem primary><Icon shield /></Emblem>
   <Emblem success><Icon check /></Emblem>
   <Emblem warning><Icon circleAlert /></Emblem>
@@ -32,25 +32,22 @@ hand-composes `borderRadius` + `backgroundColor` to build an icon background.
 
 ```tsx
 <Row snug alignCenter>
-  <Emblem small primary><Icon bell /></Emblem>
-  <Emblem primary><Icon bell /></Emblem>
-  <Emblem large primary><Icon bell /></Emblem>
+  <Emblem small><Icon bell /></Emblem>
+  <Emblem><Icon bell /></Emblem>
+  <Emblem large><Icon bell /></Emblem>
 </Row>
 ```
 
 ### Monogram
 
 ```tsx
-<Row snug alignCenter>
-  <Emblem primary label="U" />
-  <Emblem success label="S" />
-</Row>
+<Emblem label="U" />
 ```
 
 ### Circle
 
 ```tsx
-<Emblem circle success>
+<Emblem circle>
   <Icon check />
 </Emblem>
 ```

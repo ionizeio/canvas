@@ -7,7 +7,6 @@ export default function Example(scope: ExampleScope) {
   return (
 <Column snug>
   <Container xs start><Input placeholder="In an xs Container (320)" /></Container>
-  <Container lg start><Input placeholder="In an lg Container (512)" /></Container>
   <Input placeholder="Bare: fills the parent" />
 </Column>
   );

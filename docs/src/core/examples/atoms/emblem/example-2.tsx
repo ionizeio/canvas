@@ -6,9 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { Icon, Row, Emblem } = scope;
   return (
 <Row snug alignCenter>
-  <Emblem small primary><Icon bell /></Emblem>
-  <Emblem primary><Icon bell /></Emblem>
-  <Emblem large primary><Icon bell /></Emblem>
+  <Emblem small><Icon bell /></Emblem>
+  <Emblem><Icon bell /></Emblem>
+  <Emblem large><Icon bell /></Emblem>
 </Row>
   );
 }

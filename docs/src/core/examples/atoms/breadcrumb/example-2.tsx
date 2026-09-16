@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Breadcrumb } = scope;
   return (
-<Breadcrumb items={["Projects", "Identity Platform", "Settings", "Profile"]} dot />
+<Breadcrumb items={["Projects", "Identity Platform", "Settings"]} dot />
   );
 }

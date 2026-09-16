@@ -5,45 +5,45 @@ Lucide-style outline. 1.75 stroke width, rounded caps. The stroke defaults to th
 ## Usage
 
 ```tsx
-<Icon shield size={24} />
+<Icon shield />
 ```
 
 ## Variants
 
-### Gallery
-
-```tsx
-<IconGallery />
-```
-
 ### Primary
 
 ```tsx
-<Icon shield size={24} primary />
+<Icon shield primary />
 ```
 
 ### Destructive
 
 ```tsx
-<Icon shield size={24} destructive />
+<Icon shield destructive />
 ```
 
 ### Success
 
 ```tsx
-<Icon circleCheck size={24} success />
+<Icon circleCheck success />
 ```
 
 ### Warning
 
 ```tsx
-<Icon alertTriangle size={24} warning />
+<Icon alertTriangle warning />
 ```
 
 ### Muted
 
 ```tsx
-<Icon shield size={24} muted />
+<Icon shield muted />
+```
+
+### Gallery
+
+```tsx
+<IconGallery />
 ```
 
 ## Do & Don't

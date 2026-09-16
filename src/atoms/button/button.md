@@ -6,165 +6,88 @@ Pass `ref` to access the interactive Pressable, including link buttons. Use `use
 
 ## Usage
 
-A button's whole job is to fire `onPress`. Wire it to your own handler and every press runs it; here each press commits a save, and the line underneath reports the result. (`Stateful` is a docs-only helper that holds the example's state — in your app that state is your own.)
+A button's whole job is to fire `onPress`. Wire it to your own handler and every press runs it.
 
 ```tsx
-<Stateful initial={0}>
-  {(saves, setSaves) => (
-    <Column snug alignCenter>
-      <Button primary onPress={() => setSaves(saves + 1)}>Save changes</Button>
-      <Typography muted>{saves === 0 ? "Not saved yet" : `Saved ${saves} ${saves === 1 ? "time" : "times"}`}</Typography>
-    </Column>
-  )}
-</Stateful>
+<Button>Save changes</Button>
 ```
 
 ## Variants
 
-The variant only changes how a button looks; every one of them fires `onPress` the same way. Press any of them below.
+The variant only changes how a button looks; every one of them fires `onPress` the same way.
 
 ### Outline
 
 ```tsx
-<Stateful initial={0}>
-  {(saves, setSaves) => (
-    <Column snug alignCenter>
-      <Button outline onPress={() => setSaves(saves + 1)}>Save changes</Button>
-      <Typography muted>{saves === 0 ? "Not saved yet" : `Saved ${saves} ${saves === 1 ? "time" : "times"}`}</Typography>
-    </Column>
-  )}
-</Stateful>
+<Button outline>Save changes</Button>
 ```
 
 ### Secondary
 
 ```tsx
-<Stateful initial={0}>
-  {(saves, setSaves) => (
-    <Column snug alignCenter>
-      <Button secondary onPress={() => setSaves(saves + 1)}>Save changes</Button>
-      <Typography muted>{saves === 0 ? "Not saved yet" : `Saved ${saves} ${saves === 1 ? "time" : "times"}`}</Typography>
-    </Column>
-  )}
-</Stateful>
+<Button secondary>Save changes</Button>
 ```
 
 ### Ghost
 
 ```tsx
-<Stateful initial={0}>
-  {(saves, setSaves) => (
-    <Column snug alignCenter>
-      <Button ghost onPress={() => setSaves(saves + 1)}>Save changes</Button>
-      <Typography muted>{saves === 0 ? "Not saved yet" : `Saved ${saves} ${saves === 1 ? "time" : "times"}`}</Typography>
-    </Column>
-  )}
-</Stateful>
+<Button ghost>Save changes</Button>
 ```
 
 ### Destructive
 
 ```tsx
-<Stateful initial={0}>
-  {(saves, setSaves) => (
-    <Column snug alignCenter>
-      <Button destructive onPress={() => setSaves(saves + 1)}>Save changes</Button>
-      <Typography muted>{saves === 0 ? "Not saved yet" : `Saved ${saves} ${saves === 1 ? "time" : "times"}`}</Typography>
-    </Column>
-  )}
-</Stateful>
+<Button destructive>Save changes</Button>
 ```
 
 ### Link
 
 ```tsx
-<Stateful initial={0}>
-  {(saves, setSaves) => (
-    <Column snug alignCenter>
-      <Button link onPress={() => setSaves(saves + 1)}>Save changes</Button>
-      <Typography muted>{saves === 0 ? "Not saved yet" : `Saved ${saves} ${saves === 1 ? "time" : "times"}`}</Typography>
-    </Column>
-  )}
-</Stateful>
+<Button link>Save changes</Button>
 ```
 
 ### Small
 
 ```tsx
-<Stateful initial={0}>
-  {(saves, setSaves) => (
-    <Column snug alignCenter>
-      <Button primary small onPress={() => setSaves(saves + 1)}>Save changes</Button>
-      <Typography muted>{saves === 0 ? "Not saved yet" : `Saved ${saves} ${saves === 1 ? "time" : "times"}`}</Typography>
-    </Column>
-  )}
-</Stateful>
+<Button small>Save changes</Button>
 ```
 
 ### Large
 
 ```tsx
-<Stateful initial={0}>
-  {(saves, setSaves) => (
-    <Column snug alignCenter>
-      <Button primary large onPress={() => setSaves(saves + 1)}>Save changes</Button>
-      <Typography muted>{saves === 0 ? "Not saved yet" : `Saved ${saves} ${saves === 1 ? "time" : "times"}`}</Typography>
-    </Column>
-  )}
-</Stateful>
+<Button large>Save changes</Button>
 ```
 
 ### Icon only
 
 ```tsx
-<Stateful initial={0}>
-  {(added, setAdded) => (
-    <Column snug alignCenter>
-      <Button primary icon accessibilityLabel="Add item" iconLeft={<Icon plus primaryForeground size={16} />} onPress={() => setAdded(added + 1)} />
-      <Typography muted>{added === 0 ? "Nothing added yet" : `Added ${added} ${added === 1 ? "item" : "items"}`}</Typography>
-    </Column>
-  )}
-</Stateful>
+<Button icon accessibilityLabel="Add item" iconLeft={<Icon plus primaryForeground size={16} />} />
 ```
 
 ### Disabled
 
-A disabled button ignores presses: `onPress` is wired exactly as above, but it never runs, so the line underneath never moves.
+A disabled button ignores presses: `onPress` never runs.
 
 ```tsx
-<Stateful initial={0}>
-  {(saves, setSaves) => (
-    <Column snug alignCenter>
-      <Button primary disabled onPress={() => setSaves(saves + 1)}>Save changes</Button>
-      <Typography muted>{saves === 0 ? "Nothing happens - the button is disabled" : `Saved ${saves} ${saves === 1 ? "time" : "times"}`}</Typography>
-    </Column>
-  )}
-</Stateful>
+<Button disabled>Save changes</Button>
 ```
 
 ### Loading
 
 ```tsx
-<Button primary loading>Saving</Button>
+<Button loading>Saving</Button>
 ```
 
 ### Block
 
 ```tsx
-<Button primary block>Create account</Button>
+<Button block>Create account</Button>
 ```
 
 ### With icon
 
 ```tsx
-<Stateful initial={0}>
-  {(saves, setSaves) => (
-    <Column snug alignCenter>
-      <Button primary iconLeft={<Icon plus primaryForeground size={16} />} onPress={() => setSaves(saves + 1)}>Save changes</Button>
-      <Typography muted>{saves === 0 ? "Not saved yet" : `Saved ${saves} ${saves === 1 ? "time" : "times"}`}</Typography>
-    </Column>
-  )}
-</Stateful>
+<Button iconLeft={<Icon plus primaryForeground size={16} />}>Save changes</Button>
 ```
 
 ## Do & Don't

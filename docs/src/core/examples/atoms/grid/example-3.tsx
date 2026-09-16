@@ -3,24 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Typography, Grid } = scope;
+  const { Card, Grid } = scope;
   return (
 <Grid minTileWidth={200} columns={3}>
-  <Card padded>
-    <Typography medium>Uptime</Typography>
-    <Typography small muted>99.98% over the last 30 days.</Typography>
-  </Card>
-  <Card padded>
-    <Typography medium>Incidents</Typography>
-    <Typography small muted>
-      One partial outage on the EU edge, resolved in 14 minutes; a postmortem is
-      scheduled for Thursday.
-    </Typography>
-  </Card>
-  <Card padded>
-    <Typography medium>On call</Typography>
-    <Typography small muted>Priya, until 09:00.</Typography>
-  </Card>
+  <Card title="Uptime" description="99.98% over the last 30 days." />
+  <Card title="Incidents" description="One partial outage on the EU edge, resolved in 14 minutes; a postmortem is scheduled for Thursday." />
+  <Card title="On call" description="Priya, until 09:00." />
 </Grid>
   );
 }

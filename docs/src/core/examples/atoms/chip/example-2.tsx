@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Row, Chip } = scope;
   return (
-<Row snug wrap alignCenter>
+<Row wrap>
   <Chip success>Passing</Chip>
   <Chip warning>Flaky</Chip>
   <Chip destructive>Failing</Chip>

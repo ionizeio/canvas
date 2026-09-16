@@ -5,9 +5,9 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Button, Column } = scope;
   return (
-<Column relaxed>
-  <Button primary block>Save</Button>
-  <Button ghost block>Cancel</Button>
+<Column>
+  <Button primary>Save</Button>
+  <Button ghost>Cancel</Button>
 </Column>
   );
 }

@@ -9,11 +9,9 @@ export default function Example(scope: ExampleScope) {
   accessibilityLabel="People"
   items={[
     { label: "Rachel Chen", detail: "rachel@acme.io", selected: true },
-    { label: "Ada Lovelace", detail: "ada@acme.io", selected: false },
-    { label: "Kevin Turner", detail: "kevin@acme.io", selected: false },
-    { label: "Linus Berg", detail: "linus@acme.io", selected: false }
+    { label: "Ada Lovelace", detail: "ada@acme.io" },
+    { label: "Kevin Turner", detail: "kevin@acme.io" }
   ]}
-  bordered
 />
   );
 }

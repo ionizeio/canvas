@@ -9,51 +9,10 @@ Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (
 ## Usage
 
 ```tsx
-<Badge secondary>admin</Badge>
+<Badge>admin</Badge>
 ```
 
 ## Variants
-
-### Status
-
-```tsx
-<Badge status success>admin</Badge>
-```
-
-### Status tones
-
-```tsx
-<BadgeGroup>
-  <Badge status success>active</Badge>
-  <Badge status warning>degraded</Badge>
-  <Badge status error>failed</Badge>
-  <Badge status info>syncing</Badge>
-  <Badge status neutral>archived</Badge>
-</BadgeGroup>
-```
-
-### Group
-
-```tsx
-<BadgeGroup>
-  <Badge secondary>employee</Badge>
-  <Badge secondary>engineering</Badge>
-  <Badge status success>active</Badge>
-</BadgeGroup>
-```
-
-### Identity
-
-```tsx
-<Row wrap alignCenter snug>
-  <Typography lead semibold>Rachel Chen</Typography>
-  <BadgeGroup>
-    <Badge status success>active</Badge>
-    <Badge status info>Verified</Badge>
-    <Badge secondary>employee</Badge>
-  </BadgeGroup>
-</Row>
-```
 
 ### Solid
 
@@ -76,7 +35,35 @@ Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (
 ### Mono (token / event names)
 
 ```tsx
-<Badge secondary mono>admin</Badge>
+<Badge mono>refresh_token</Badge>
+```
+
+### Status
+
+```tsx
+<Badge status>pending</Badge>
+```
+
+### Status tones
+
+```tsx
+<BadgeGroup>
+  <Badge status success>active</Badge>
+  <Badge status warning>degraded</Badge>
+  <Badge status error>failed</Badge>
+  <Badge status info>syncing</Badge>
+  <Badge status neutral>archived</Badge>
+</BadgeGroup>
+```
+
+### Group
+
+```tsx
+<BadgeGroup>
+  <Badge>employee</Badge>
+  <Badge>engineering</Badge>
+  <Badge status success>active</Badge>
+</BadgeGroup>
 ```
 
 ## Do & Don't

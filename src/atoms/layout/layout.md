@@ -10,7 +10,7 @@ hand-rolls `flexDirection`, `gap`, or `alignItems`.
 ## Usage
 
 ```tsx
-<Row alignCenter snug>
+<Row>
   <Button primary>Save</Button>
   <Button ghost>Cancel</Button>
 </Row>
@@ -21,26 +21,25 @@ hand-rolls `flexDirection`, `gap`, or `alignItems`.
 ### Vertical stack
 
 ```tsx
-<Column relaxed>
-  <Button primary block>Save</Button>
-  <Button ghost block>Cancel</Button>
+<Column>
+  <Button primary>Save</Button>
+  <Button ghost>Cancel</Button>
 </Column>
 ```
 
 ### Centered row
 
 ```tsx
-<Row center alignCenter snug>
+<Row center>
   <Badge>schema</Badge>
-  <Badge secondary>role</Badge>
-  <Badge outline>tag</Badge>
+  <Badge>role</Badge>
 </Row>
 ```
 
 ### Space between
 
 ```tsx
-<Row between alignCenter>
+<Row between>
   <Typography small>Request ID</Typography>
   <Typography mono>req_8f2c10ab</Typography>
 </Row>
@@ -49,7 +48,7 @@ hand-rolls `flexDirection`, `gap`, or `alignItems`.
 ### Wrap
 
 ```tsx
-<Row wrap snug>
+<Row wrap>
   <Badge>alpha</Badge>
   <Badge>beta</Badge>
   <Badge>gamma</Badge>
@@ -72,26 +71,23 @@ basis, so in a `wrap` row every child then fits on one line and the actions stop
 wrapping below the copy.
 
 ```tsx
-<Row between alignEnd wrap snug>
+<Row between alignEnd wrap>
   <Column tight shrink>
     <Typography h3>Dashboard</Typography>
-    <Typography small muted>
-      Identity platform overview. Each widget reports its own window, not one shared period.
-    </Typography>
+    <Typography small muted>Identity platform overview. Each widget reports its own window.</Typography>
   </Column>
-  <Row snug alignCenter>
-    <Button outline small>Customize</Button>
-    <Button outline small>Export</Button>
-  </Row>
+  <Button outline small>Export</Button>
 </Row>
 ```
 
 ### Padded surround
 
 ```tsx
-<Row relaxed pad>
-  <MediaObject avatar="RC" title="Rachel Chen" description="rachel.chen@example.com" />
-</Row>
+<Card flush>
+  <Row pad>
+    <Typography>Padded surround</Typography>
+  </Row>
+</Card>
 ```
 
 ### Stacks at narrow widths
@@ -106,12 +102,9 @@ Column never needs the inverse: a Column that must become a Row is a Row that
 stacks.
 
 ```tsx
-<Row stacks between alignCenter relaxed>
-  <Input placeholder="Search runs…" />
-  <Row snug>
-    <Button outline>Filter</Button>
-    <Button primary>New run</Button>
-  </Row>
+<Row stacks>
+  <Input placeholder="Search runs" />
+  <Button primary>New run</Button>
 </Row>
 ```
 
@@ -125,17 +118,15 @@ exactly, and spans past twelve wrap onto the next line. Fill components inside a
 span (a field, a card) fill the cell.
 
 ```tsx
-<Row snug>
+<Row>
   <Column span={8}>
-    <Card padded>
-      <Typography medium>Content</Typography>
-      <Typography small muted>Eight of twelve columns.</Typography>
+    <Card>
+      <Typography medium>Eight of twelve</Typography>
     </Card>
   </Column>
   <Column span={4}>
-    <Card padded>
-      <Typography medium>Aside</Typography>
-      <Typography small muted>Four of twelve.</Typography>
+    <Card>
+      <Typography medium>Four</Typography>
     </Card>
   </Column>
 </Row>
@@ -147,14 +138,14 @@ span (a field, a card) fill the cell.
 every child is full width, the `col-12 col-md-6` idiom without a second prop.
 
 ```tsx
-<Row snug stacks>
+<Row stacks>
   <Column span={6}>
-    <Card padded>
+    <Card>
       <Typography medium>Left</Typography>
     </Card>
   </Column>
   <Column span={6}>
-    <Card padded>
+    <Card>
       <Typography medium>Right</Typography>
     </Card>
   </Column>

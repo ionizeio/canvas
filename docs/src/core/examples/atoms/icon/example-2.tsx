@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Icon } = scope;
   return (
-<Icon shield size={24} primary />
+<Icon shield destructive />
   );
 }

@@ -8,14 +8,54 @@ Floating menus triggered by a button: actions, options, navigation.
 <Dropdown
   trigger="Actions"
   items={[
-    { label: "Edit profile", icon: "pencil" },
-    { label: "Duplicate", icon: "copy" },
-    { label: "Settings", icon: "settings" }
+    { label: "Edit profile" },
+    { label: "Duplicate" },
+    { label: "Settings" }
   ]}
 />
 ```
 
 ## Variants
+
+### Disabled trigger
+
+```tsx
+<Dropdown
+  trigger="Actions"
+  disabled
+  items={[
+    { label: "Edit profile" },
+    { label: "Duplicate" },
+    { label: "Settings" }
+  ]}
+/>
+```
+
+### Disabled item
+
+```tsx
+<Dropdown
+  trigger="Actions"
+  items={[
+    { label: "Edit profile" },
+    { label: "Duplicate" },
+    { label: "Archive", disabled: true }
+  ]}
+/>
+```
+
+### Destructive item
+
+```tsx
+<Dropdown
+  trigger="Actions"
+  items={[
+    { label: "Edit profile" },
+    { label: "Duplicate" },
+    { label: "Delete…", destructive: true, separatorBefore: true }
+  ]}
+/>
+```
 
 ### Section label
 
@@ -24,9 +64,9 @@ Floating menus triggered by a button: actions, options, navigation.
   trigger="Actions"
   label="Actions"
   items={[
-    { label: "Edit profile", icon: "pencil" },
-    { label: "Duplicate", icon: "copy" },
-    { label: "Settings", icon: "settings" }
+    { label: "Edit profile" },
+    { label: "Duplicate" },
+    { label: "Settings" }
   ]}
 />
 ```
@@ -39,9 +79,9 @@ Floating menus triggered by a button: actions, options, navigation.
   title="Rachel Chen"
   description="rachel@nannier.com"
   items={[
-    { label: "Profile", icon: "user" },
-    { label: "Settings", icon: "settings" },
-    { label: "Log out", icon: "logOut", separatorBefore: true }
+    { label: "Profile" },
+    { label: "Settings" },
+    { label: "Log out" }
   ]}
 />
 ```
@@ -52,37 +92,9 @@ Floating menus triggered by a button: actions, options, navigation.
 <Dropdown
   trigger="Actions"
   items={[
-    { label: "Edit profile", icon: "pencil", shortcut: "⌘E" },
-    { label: "Duplicate", icon: "copy", shortcut: "⌘D" },
-    { label: "Settings", icon: "settings", shortcut: "⌘," }
-  ]}
-/>
-```
-
-### Disabled item
-
-```tsx
-<Dropdown
-  trigger="Actions"
-  items={[
-    { label: "Edit profile", icon: "pencil" },
-    { label: "Duplicate", icon: "copy" },
-    { label: "Settings", icon: "settings" },
-    { label: "Archive", icon: "archive", disabled: true }
-  ]}
-/>
-```
-
-### Destructive item
-
-```tsx
-<Dropdown
-  trigger="Actions"
-  items={[
-    { label: "Edit profile", icon: "pencil" },
-    { label: "Duplicate", icon: "copy" },
-    { label: "Settings", icon: "settings" },
-    { label: "Delete…", icon: "trash", destructive: true, separatorBefore: true }
+    { label: "Edit profile", shortcut: "⌘E" },
+    { label: "Duplicate", shortcut: "⌘D" },
+    { label: "Settings", shortcut: "⌘," }
   ]}
 />
 ```
@@ -92,9 +104,9 @@ Floating menus triggered by a button: actions, options, navigation.
 ```tsx
 <Dropdown
   items={[
-    { label: "Profile", icon: "user" },
-    { label: "Settings", icon: "settings" },
-    { label: "Log out", icon: "logOut", separatorBefore: true }
+    { label: "Profile" },
+    { label: "Settings" },
+    { label: "Log out" }
   ]}
 >
   <Avatar name="Rachel Chen" />
@@ -104,31 +116,13 @@ Floating menus triggered by a button: actions, options, navigation.
 ### End alignment
 
 ```tsx
-<Row end>
-  <Dropdown
-    trigger="Account"
-    alignEnd
-    title="Rachel Chen"
-    description="rachel@nannier.com"
-    items={[
-      { label: "Profile", icon: "user" },
-      { label: "Settings", icon: "settings" },
-      { label: "Log out", icon: "logOut", separatorBefore: true }
-    ]}
-  />
-</Row>
-```
-
-### Disabled trigger
-
-```tsx
 <Dropdown
-  trigger="Actions"
-  disabled
+  trigger="Account"
+  alignEnd
   items={[
-    { label: "Edit profile", icon: "pencil" },
-    { label: "Duplicate", icon: "copy" },
-    { label: "Settings", icon: "settings" }
+    { label: "Profile" },
+    { label: "Settings" },
+    { label: "Log out" }
   ]}
 />
 ```

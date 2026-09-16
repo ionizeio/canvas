@@ -24,7 +24,7 @@ Two orthogonal axes drive the look:
 ## Usage
 
 ```tsx
-<Chip blue onRemove={() => {}}>Status: Active</Chip>
+<Chip>Design</Chip>
 ```
 
 ## Variants
@@ -32,7 +32,7 @@ Two orthogonal axes drive the look:
 ### Colors
 
 ```tsx
-<Row snug wrap alignCenter>
+<Row wrap>
   <Chip red>Bug</Chip>
   <Chip orange>Chore</Chip>
   <Chip amber>Docs</Chip>
@@ -50,7 +50,7 @@ Two orthogonal axes drive the look:
 ### Status
 
 ```tsx
-<Row snug wrap alignCenter>
+<Row wrap>
   <Chip success>Passing</Chip>
   <Chip warning>Flaky</Chip>
   <Chip destructive>Failing</Chip>
@@ -62,11 +62,10 @@ Two orthogonal axes drive the look:
 ### Emphasis
 
 ```tsx
-<Row snug wrap alignCenter>
+<Row>
   <Chip>Neutral</Chip>
   <Chip primary>Accent</Chip>
   <Chip outline>Outline</Chip>
-  <Chip blue outline>Outline blue</Chip>
 </Row>
 ```
 
@@ -81,24 +80,10 @@ matches without threading the color through.
 
 ### Removable filters
 
-Wire `onRemove` and `onPress` to your own state: the "×" drops that filter and
-"Add filter" appends a new one.
+`onRemove` grows the trailing "×"; wire it to your own state to drop the filter.
 
 ```tsx
-<Stateful initial={{ items: ["Role: Admin", "Status: Active"], seq: 1 }}>
-  {(state, setState) => (
-    <Row snug wrap alignCenter>
-      {state.items.map((f) => (
-        <Chip key={f} blue onRemove={() => setState({ ...state, items: state.items.filter((x) => x !== f) })}>
-          {f}
-        </Chip>
-      ))}
-      <Chip outline icon={<Icon plus size={14} />} onPress={() => setState({ items: [...state.items, "Filter " + state.seq], seq: state.seq + 1 })}>
-        Add filter
-      </Chip>
-    </Row>
-  )}
-</Stateful>
+<Chip onRemove={() => {}}>Role: Admin</Chip>
 ```
 
 ### Selectable
@@ -107,11 +92,9 @@ Give a selectable chip an `outline` base so its unselected (border-only) and
 selected (filled tint) states read apart.
 
 ```tsx
-<Row snug wrap alignCenter>
+<Row>
   <Chip selectable outline defaultSelected>Design</Chip>
   <Chip selectable outline>Engineering</Chip>
-  <Chip selectable outline>Product</Chip>
-  <Chip selectable outline>Marketing</Chip>
 </Row>
 ```
 

@@ -3,11 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Row, Emblem } = scope;
+  const { Emblem } = scope;
   return (
-<Row snug alignCenter>
-  <Emblem primary label="U" />
-  <Emblem success label="S" />
-</Row>
+<Emblem label="U" />
   );
 }

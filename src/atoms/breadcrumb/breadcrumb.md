@@ -5,10 +5,7 @@ Hierarchical navigation showing where you are.
 ## Usage
 
 ```tsx
-<Breadcrumb
-  items={["Projects", "Identity Platform", "Settings", "Profile"]}
-  chevron
-/>
+<Breadcrumb items={["Projects", "Identity Platform", "Settings"]} />
 ```
 
 ## Variants
@@ -16,41 +13,19 @@ Hierarchical navigation showing where you are.
 ### Slash
 
 ```tsx
-<Breadcrumb
-  items={["Projects", "Identity Platform", "Settings", "Profile"]}
-  slash
-/>
+<Breadcrumb items={["Projects", "Identity Platform", "Settings"]} slash />
 ```
 
 ### Dot
 
 ```tsx
-<Breadcrumb items={["Projects", "Identity Platform", "Settings", "Profile"]} dot />
+<Breadcrumb items={["Projects", "Identity Platform", "Settings"]} dot />
 ```
 
 ### Home icon
 
 ```tsx
-<Breadcrumb
-  items={["Projects", "Identity Platform", "Settings", "Profile"]}
-  chevron
-  homeIcon
-/>
-```
-
-### In a page header
-
-```tsx
-<Row wrap alignStart between relaxed>
-  <Column snug>
-    <Breadcrumb items={["Users", "Rachel Chen"]} />
-    <Typography h3 semibold>Rachel Chen</Typography>
-  </Column>
-  <Row alignCenter snug>
-    <Button outline small>Edit</Button>
-    <Button primary small>Save</Button>
-  </Row>
-</Row>
+<Breadcrumb items={["Projects", "Identity Platform", "Settings"]} homeIcon />
 ```
 
 ## Do & Don't

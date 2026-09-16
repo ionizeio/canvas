@@ -3,12 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Checkbox, Column } = scope;
+  const { Checkbox } = scope;
   return (
-<Column snug>
-  <Checkbox small defaultChecked>Small</Checkbox>
-  <Checkbox defaultChecked>Default</Checkbox>
-  <Checkbox large defaultChecked>Large</Checkbox>
-</Column>
+<Checkbox defaultChecked description="Get notified when activity happens on your account.">
+  Email notifications
+</Checkbox>
   );
 }

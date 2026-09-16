@@ -6,12 +6,12 @@ export default function Example(scope: ExampleScope) {
   const { Dropdown } = scope;
   return (
 <Dropdown
-  trigger="Actions"
-  disabled
+  trigger="Account"
+  alignEnd
   items={[
-    { label: "Edit profile", icon: "pencil" },
-    { label: "Duplicate", icon: "copy" },
-    { label: "Settings", icon: "settings" }
+    { label: "Profile" },
+    { label: "Settings" },
+    { label: "Log out" }
   ]}
 />
   );

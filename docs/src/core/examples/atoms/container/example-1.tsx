@@ -5,10 +5,10 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Card, Typography, Column, Container } = scope;
   return (
-<Column snug>
-  <Container xs><Card padded><Typography small>xs, 320</Typography></Card></Container>
-  <Container md><Card padded><Typography small>md, 448</Typography></Card></Container>
-  <Container xl><Card padded><Typography small>xl, 576</Typography></Card></Container>
+<Column>
+  <Container xs><Card><Typography small>xs, 320</Typography></Card></Container>
+  <Container md><Card><Typography small>md, 448</Typography></Card></Container>
+  <Container xl><Card><Typography small>xl, 576</Typography></Card></Container>
 </Column>
   );
 }

@@ -6,8 +6,8 @@ export default function Example(scope: ExampleScope) {
   const { Card, Typography, Container } = scope;
   return (
 <Container sm start>
-  <Card padded>
-    <Typography small>A leading-edge measure for a settings row.</Typography>
+  <Card>
+    <Typography small>Settings</Typography>
   </Card>
 </Container>
   );

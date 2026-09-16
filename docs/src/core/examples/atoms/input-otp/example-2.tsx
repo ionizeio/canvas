@@ -3,11 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { InputOTP, Column } = scope;
+  const { InputOTP } = scope;
   return (
-<Column relaxed>
-  <InputOTP length={6} groups={3} />
-  <InputOTP length={6} groups={2} small />
-</Column>
+<InputOTP groups={3} />
   );
 }

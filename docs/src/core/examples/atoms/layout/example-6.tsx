@@ -3,10 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { MediaObject, Row } = scope;
+  const { Card, Typography, Row } = scope;
   return (
-<Row relaxed pad>
-  <MediaObject avatar="RC" title="Rachel Chen" description="rachel.chen@example.com" />
-</Row>
+<Card flush>
+  <Row pad>
+    <Typography>Padded surround</Typography>
+  </Row>
+</Card>
   );
 }

@@ -3,27 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Typography, Grid, GridItem } = scope;
+  const { Card, Grid, GridItem } = scope;
   return (
 <Grid minTileWidth={200} columns={3}>
   <GridItem wide>
-    <Card padded>
-      <Typography medium>Latency</Typography>
-      <Typography small muted>The hero tile spans two cells.</Typography>
-    </Card>
+    <Card title="Latency" />
   </GridItem>
-  <Card padded>
-    <Typography medium>Errors</Typography>
-    <Typography small muted>0.02%</Typography>
-  </Card>
-  <Card padded>
-    <Typography medium>Throughput</Typography>
-    <Typography small muted>1.2k rps</Typography>
-  </Card>
-  <Card padded>
-    <Typography medium>Saturation</Typography>
-    <Typography small muted>41%</Typography>
-  </Card>
+  <Card title="Errors" />
+  <Card title="Throughput" />
 </Grid>
   );
 }

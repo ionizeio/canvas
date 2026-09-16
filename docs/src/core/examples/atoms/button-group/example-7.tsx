@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { ButtonGroup } = scope;
   return (
-<ButtonGroup segmented defaultActive={0} items={["Day", "Week", "Month"]} block />
+<ButtonGroup split items={["Save"]} menu={["Save as draft", "Save and close", "Save a copy"]} />
   );
 }

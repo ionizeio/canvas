@@ -5,16 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { ButtonGroup } = scope;
   return (
-<ButtonGroup
-  segmented
-  small
-  iconsOnly
-  defaultActive={2}
-  items={[
-    { label: "Phone width", icon: "smartphone" },
-    { label: "Tablet width", icon: "tablet" },
-    { label: "Desktop width", icon: "monitor" }
-  ]}
-/>
+<ButtonGroup items={["Day", "Week", "Month"]} small />
   );
 }

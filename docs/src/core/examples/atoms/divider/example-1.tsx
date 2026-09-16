@@ -5,10 +5,10 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Divider, Typography, Row } = scope;
   return (
-<Row alignCenter cozy>
-  <Typography small>Edit</Typography>
-  <Divider vertical style={{ height: 16 }} />
-  <Typography small>Delete</Typography>
+<Row>
+  <Typography>Edit</Typography>
+  <Divider vertical />
+  <Typography>Delete</Typography>
 </Row>
   );
 }

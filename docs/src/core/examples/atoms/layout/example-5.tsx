@@ -5,17 +5,12 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Button, Typography, Row, Column } = scope;
   return (
-<Row between alignEnd wrap snug>
+<Row between alignEnd wrap>
   <Column tight shrink>
     <Typography h3>Dashboard</Typography>
-    <Typography small muted>
-      Identity platform overview. Each widget reports its own window, not one shared period.
-    </Typography>
+    <Typography small muted>Identity platform overview. Each widget reports its own window.</Typography>
   </Column>
-  <Row snug alignCenter>
-    <Button outline small>Customize</Button>
-    <Button outline small>Export</Button>
-  </Row>
+  <Button outline small>Export</Button>
 </Row>
   );
 }

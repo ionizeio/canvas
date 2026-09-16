@@ -8,9 +8,9 @@ export default function Example(scope: ExampleScope) {
 <Dropdown
   trigger="Actions"
   items={[
-    { label: "Edit profile", icon: "pencil", shortcut: "⌘E" },
-    { label: "Duplicate", icon: "copy", shortcut: "⌘D" },
-    { label: "Settings", icon: "settings", shortcut: "⌘," }
+    { label: "Edit profile" },
+    { label: "Duplicate" },
+    { label: "Delete…", destructive: true, separatorBefore: true }
   ]}
 />
   );

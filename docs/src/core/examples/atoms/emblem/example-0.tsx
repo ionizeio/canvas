@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Icon, Emblem } = scope;
   return (
-<Emblem primary>
+<Emblem>
   <Icon shield />
 </Emblem>
   );

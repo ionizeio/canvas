@@ -3,20 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Card, Divider, Typography, Column } = scope;
+  const { Button, Divider } = scope;
   return (
-<Column cozy>
-  <Column snug>
-    <Card padded>
-      <Typography small>Ada commented on the draft</Typography>
-    </Card>
-    <Card padded>
-      <Typography small>Grace approved the request</Typography>
-    </Card>
-  </Column>
-  <Divider>
-    <Button ghost small>Show more</Button>
-  </Divider>
-</Column>
+<Divider>
+  <Button ghost small>Show more</Button>
+</Divider>
   );
 }

@@ -11,12 +11,9 @@ Single-select exposes a list of selectable options. With `multi`, it exposes a c
   accessibilityLabel="Teams"
   items={[
     { label: "Backend", selected: true },
-    { label: "Frontend", selected: false },
-    { label: "Design", selected: false },
-    { label: "Platform", selected: false },
-    { label: "Security", selected: false }
+    { label: "Frontend" },
+    { label: "Design" }
   ]}
-  bordered
 />
 ```
 
@@ -29,13 +26,10 @@ Single-select exposes a list of selectable options. With `multi`, it exposes a c
   accessibilityLabel="Teams"
   items={[
     { label: "Backend", selected: true },
-    { label: "Frontend", selected: false },
-    { label: "Design", selected: true },
-    { label: "Platform", selected: false },
-    { label: "Security", selected: false }
+    { label: "Frontend" },
+    { label: "Design", selected: true }
   ]}
   multi
-  bordered
 />
 ```
 
@@ -46,12 +40,9 @@ Single-select exposes a list of selectable options. With `multi`, it exposes a c
   accessibilityLabel="Teams"
   items={[
     { label: "Backend", selected: true },
-    { label: "Frontend", selected: false },
-    { label: "Design", selected: false },
-    { label: "Platform", selected: false },
-    { label: "Security", selected: false }
+    { label: "Frontend" },
+    { label: "Design" }
   ]}
-  bordered
   small
 />
 ```
@@ -63,38 +54,10 @@ Single-select exposes a list of selectable options. With `multi`, it exposes a c
   accessibilityLabel="Teams"
   items={[
     { label: "Backend", selected: true },
-    { label: "Frontend", selected: false },
-    { label: "Design", selected: false },
-    { label: "Platform", selected: false },
-    { label: "Security", selected: false }
+    { label: "Frontend" },
+    { label: "Design" }
   ]}
-  bordered
   large
-/>
-```
-
-### Widths come from the parent
-
-```tsx
-<Column snug>
-  <Container xs start><Listbox bordered items={[{ label: "In an xs Container (320)", selected: true }, { label: "Frontend" }]} /></Container>
-  <Container lg start><Listbox bordered items={[{ label: "In an lg Container (512)", selected: true }, { label: "Frontend" }]} /></Container>
-  <Listbox bordered items={[{ label: "Bare: fills the parent", selected: true }, { label: "Frontend" }]} />
-</Column>
-```
-
-### Detail line
-
-```tsx
-<Listbox
-  accessibilityLabel="People"
-  items={[
-    { label: "Rachel Chen", detail: "rachel@acme.io", selected: true },
-    { label: "Ada Lovelace", detail: "ada@acme.io", selected: false },
-    { label: "Kevin Turner", detail: "kevin@acme.io", selected: false },
-    { label: "Linus Berg", detail: "linus@acme.io", selected: false }
-  ]}
-  bordered
 />
 ```
 
@@ -105,14 +68,33 @@ Single-select exposes a list of selectable options. With `multi`, it exposes a c
   accessibilityLabel="Teams"
   items={[
     { label: "Backend", selected: true },
-    { label: "Frontend", selected: false },
-    { label: "Design", selected: false },
-    { label: "Platform", selected: false },
-    { label: "Security", selected: false }
+    { label: "Frontend" },
+    { label: "Design" }
   ]}
-  bordered
   disabled
 />
+```
+
+### Detail line
+
+```tsx
+<Listbox
+  accessibilityLabel="People"
+  items={[
+    { label: "Rachel Chen", detail: "rachel@acme.io", selected: true },
+    { label: "Ada Lovelace", detail: "ada@acme.io" },
+    { label: "Kevin Turner", detail: "kevin@acme.io" }
+  ]}
+/>
+```
+
+### Widths come from the parent
+
+```tsx
+<Column snug>
+  <Container xs start><Listbox bordered items={[{ label: "In an xs Container (320)", selected: true }, { label: "Frontend" }]} /></Container>
+  <Listbox bordered items={[{ label: "Bare: fills the parent", selected: true }, { label: "Frontend" }]} />
+</Column>
 ```
 
 ## Do & Don't

@@ -5,9 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Breadcrumb } = scope;
   return (
-<Breadcrumb
-  items={["Projects", "Identity Platform", "Settings", "Profile"]}
-  slash
-/>
+<Breadcrumb items={["Projects", "Identity Platform", "Settings"]} slash />
   );
 }

@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { alpha, Badge, Row } = scope;
   return (
-<Row wrap snug>
+<Row wrap>
   <Badge>alpha</Badge>
   <Badge>beta</Badge>
   <Badge>gamma</Badge>

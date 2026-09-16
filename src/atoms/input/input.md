@@ -35,7 +35,7 @@ Cancelling an IME candidate keeps the overlay open.
 ### Action
 
 ```tsx
-<Input suffix="Copy" action value="cnv_3f9a21b8e7" />
+<Input suffix="Copy" action defaultValue="cnv_3f9a21b8e7" />
 ```
 
 ### Icon
@@ -59,7 +59,7 @@ Cancelling an IME candidate keeps the overlay open.
 ### Read only
 
 ```tsx
-<Input readOnly placeholder="rachel.chen@example.com" />
+<Input readOnly defaultValue="rachel.chen@example.com" />
 ```
 
 ### Widths come from the parent
@@ -67,7 +67,6 @@ Cancelling an IME candidate keeps the overlay open.
 ```tsx
 <Column snug>
   <Container xs start><Input placeholder="In an xs Container (320)" /></Container>
-  <Container lg start><Input placeholder="In an lg Container (512)" /></Container>
   <Input placeholder="Bare: fills the parent" />
 </Column>
 ```

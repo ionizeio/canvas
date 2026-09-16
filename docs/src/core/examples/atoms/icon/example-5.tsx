@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Icon } = scope;
   return (
-<Icon alertTriangle size={24} warning />
+<Icon shield muted />
   );
 }

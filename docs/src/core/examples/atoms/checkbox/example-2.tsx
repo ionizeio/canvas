@@ -5,8 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Checkbox } = scope;
   return (
-<Checkbox description="Get notified when activity happens on your account.">
-  Email notifications
-</Checkbox>
+<Checkbox disabled>Email notifications</Checkbox>
   );
 }

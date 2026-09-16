@@ -3,20 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, Autocomplete, Typography, Column } = scope;
+  const { Autocomplete } = scope;
   return (
-<Stateful initial="Grace Hopper">
-  {(value, setValue) => (
-    <Column snug>
-      <Autocomplete
-        label="Assigned to"
-        options={["Ada Lovelace", "Grace Hopper", "Kira Tanaka"]}
-        value={value}
-        onValueChange={setValue}
-      />
-      <Typography muted>{value === "" ? "No assignee" : `Selected: ${value}`}</Typography>
-    </Column>
-  )}
-</Stateful>
+<Autocomplete label="Assigned to" required placeholder="Search a person…" options={["Ada Lovelace", "Grace Hopper", "Kira Tanaka"]} />
   );
 }

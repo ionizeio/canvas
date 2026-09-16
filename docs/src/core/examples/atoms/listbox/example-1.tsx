@@ -9,13 +9,10 @@ export default function Example(scope: ExampleScope) {
   accessibilityLabel="Teams"
   items={[
     { label: "Backend", selected: true },
-    { label: "Frontend", selected: false },
-    { label: "Design", selected: true },
-    { label: "Platform", selected: false },
-    { label: "Security", selected: false }
+    { label: "Frontend" },
+    { label: "Design", selected: true }
   ]}
   multi
-  bordered
 />
   );
 }

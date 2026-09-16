@@ -55,7 +55,6 @@ import e_atoms_badge_example_4 from "./examples/atoms/badge/example-4";
 import e_atoms_badge_example_5 from "./examples/atoms/badge/example-5";
 import e_atoms_badge_example_6 from "./examples/atoms/badge/example-6";
 import e_atoms_badge_example_7 from "./examples/atoms/badge/example-7";
-import e_atoms_badge_example_8 from "./examples/atoms/badge/example-8";
 import e_atoms_badge_dont_0_do from "./examples/atoms/badge/dont-0-do";
 import e_atoms_badge_dont_0_dont from "./examples/atoms/badge/dont-0-dont";
 import e_atoms_badge_dont_1_do from "./examples/atoms/badge/dont-1-do";
@@ -78,7 +77,6 @@ import e_atoms_breadcrumb_example_0 from "./examples/atoms/breadcrumb/example-0"
 import e_atoms_breadcrumb_example_1 from "./examples/atoms/breadcrumb/example-1";
 import e_atoms_breadcrumb_example_2 from "./examples/atoms/breadcrumb/example-2";
 import e_atoms_breadcrumb_example_3 from "./examples/atoms/breadcrumb/example-3";
-import e_atoms_breadcrumb_example_4 from "./examples/atoms/breadcrumb/example-4";
 import e_atoms_breadcrumb_dont_0_do from "./examples/atoms/breadcrumb/dont-0-do";
 import e_atoms_breadcrumb_dont_0_dont from "./examples/atoms/breadcrumb/dont-0-dont";
 import e_atoms_breadcrumb_dont_1_do from "./examples/atoms/breadcrumb/dont-1-do";
@@ -138,6 +136,7 @@ import e_atoms_checkbox_example_1 from "./examples/atoms/checkbox/example-1";
 import e_atoms_checkbox_example_2 from "./examples/atoms/checkbox/example-2";
 import e_atoms_checkbox_example_3 from "./examples/atoms/checkbox/example-3";
 import e_atoms_checkbox_example_4 from "./examples/atoms/checkbox/example-4";
+import e_atoms_checkbox_example_5 from "./examples/atoms/checkbox/example-5";
 import e_atoms_checkbox_dont_0_do from "./examples/atoms/checkbox/dont-0-do";
 import e_atoms_checkbox_dont_0_dont from "./examples/atoms/checkbox/dont-0-dont";
 import e_atoms_checkbox_dont_1_do from "./examples/atoms/checkbox/dont-1-do";
@@ -251,7 +250,6 @@ import e_atoms_input_otp_example_3 from "./examples/atoms/input-otp/example-3";
 import e_atoms_input_otp_example_4 from "./examples/atoms/input-otp/example-4";
 import e_atoms_input_otp_example_5 from "./examples/atoms/input-otp/example-5";
 import e_atoms_input_otp_example_6 from "./examples/atoms/input-otp/example-6";
-import e_atoms_input_otp_example_7 from "./examples/atoms/input-otp/example-7";
 import e_atoms_input_otp_dont_0_do from "./examples/atoms/input-otp/dont-0-do";
 import e_atoms_input_otp_dont_0_dont from "./examples/atoms/input-otp/dont-0-dont";
 import e_atoms_kbd_example_0 from "./examples/atoms/kbd/example-0";
@@ -259,7 +257,6 @@ import e_atoms_kbd_example_1 from "./examples/atoms/kbd/example-1";
 import e_atoms_kbd_example_2 from "./examples/atoms/kbd/example-2";
 import e_atoms_kbd_example_3 from "./examples/atoms/kbd/example-3";
 import e_atoms_kbd_example_4 from "./examples/atoms/kbd/example-4";
-import e_atoms_kbd_example_5 from "./examples/atoms/kbd/example-5";
 import e_atoms_kbd_dont_0_do from "./examples/atoms/kbd/dont-0-do";
 import e_atoms_kbd_dont_0_dont from "./examples/atoms/kbd/dont-0-dont";
 import e_atoms_kbd_dont_1_do from "./examples/atoms/kbd/dont-1-do";
@@ -1120,11 +1117,11 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "autocomplete",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Autocomplete\n  options={[\n    \"Ada Lovelace\",\n    \"Grace Hopper\",\n    \"Kira Tanaka\",\n    \"Liang Bao\",\n    \"Marcus Allen\",\n    \"Noor Park\",\n    \"Rachel Chen\"\n  ]}\n  label=\"Assigned to\"\n  placeholder=\"Search a person…\"\n/>", render: e_atoms_autocomplete_example_0 },
-      { label: "Controlled selection", code: "<Stateful initial=\"Grace Hopper\">\n  {(value, setValue) => (\n    <Column snug>\n      <Autocomplete\n        label=\"Assigned to\"\n        options={[\"Ada Lovelace\", \"Grace Hopper\", \"Kira Tanaka\"]}\n        value={value}\n        onValueChange={setValue}\n      />\n      <Typography muted>{value === \"\" ? \"No assignee\" : `Selected: ${value}`}</Typography>\n    </Column>\n  )}\n</Stateful>", render: e_atoms_autocomplete_example_1 },
-      { label: "Required field", code: "<Autocomplete\n  options={[\n    \"Ada Lovelace\",\n    \"Grace Hopper\",\n    \"Kira Tanaka\",\n    \"Liang Bao\",\n    \"Marcus Allen\",\n    \"Noor Park\",\n    \"Rachel Chen\"\n  ]}\n  label=\"Assigned to\"\n  required\n  placeholder=\"Search a person…\"\n/>", render: e_atoms_autocomplete_example_2 },
-      { label: "With helper text", code: "<Autocomplete\n  options={[\n    \"Ada Lovelace\",\n    \"Grace Hopper\",\n    \"Kira Tanaka\",\n    \"Liang Bao\",\n    \"Marcus Allen\",\n    \"Noor Park\",\n    \"Rachel Chen\"\n  ]}\n  label=\"Assigned to\"\n  helperText=\"The person responsible for this account.\"\n  placeholder=\"Search a person…\"\n/>", render: e_atoms_autocomplete_example_3 },
-      { label: "Disabled", code: "<Autocomplete\n  options={[\n    \"Ada Lovelace\",\n    \"Grace Hopper\",\n    \"Kira Tanaka\",\n    \"Liang Bao\",\n    \"Marcus Allen\",\n    \"Noor Park\",\n    \"Rachel Chen\"\n  ]}\n  label=\"Assigned to\"\n  placeholder=\"Search a person…\"\n  disabled\n/>", render: e_atoms_autocomplete_example_4 },
+      { label: "Default", code: "<Autocomplete label=\"Assigned to\" placeholder=\"Search a person…\" options={[\"Ada Lovelace\", \"Grace Hopper\", \"Kira Tanaka\", \"Liang Bao\", \"Noor Park\"]} />", render: e_atoms_autocomplete_example_0 },
+      { label: "Required field", code: "<Autocomplete label=\"Assigned to\" required placeholder=\"Search a person…\" options={[\"Ada Lovelace\", \"Grace Hopper\", \"Kira Tanaka\"]} />", render: e_atoms_autocomplete_example_1 },
+      { label: "With helper text", code: "<Autocomplete label=\"Assigned to\" helperText=\"The person responsible for this account.\" placeholder=\"Search a person…\" options={[\"Ada Lovelace\", \"Grace Hopper\", \"Kira Tanaka\"]} />", render: e_atoms_autocomplete_example_2 },
+      { label: "Disabled", code: "<Autocomplete label=\"Assigned to\" placeholder=\"Search a person…\" disabled options={[\"Ada Lovelace\", \"Grace Hopper\", \"Kira Tanaka\"]} />", render: e_atoms_autocomplete_example_3 },
+      { label: "Controlled selection", code: "<Stateful initial=\"Grace Hopper\">\n  {(value, setValue) => (\n    <Autocomplete label=\"Assigned to\" options={[\"Ada Lovelace\", \"Grace Hopper\", \"Kira Tanaka\"]} value={value} onValueChange={setValue} />\n  )}\n</Stateful>", render: e_atoms_autocomplete_example_4 },
       { label: "Widths come from the parent", code: "<Column snug>\n  <Container xs start><Autocomplete options={[\"Ada Lovelace\", \"Grace Hopper\"]} placeholder=\"In an xs Container (320)\" /></Container>\n  <Container lg start><Autocomplete options={[\"Ada Lovelace\", \"Grace Hopper\"]} placeholder=\"In an lg Container (512)\" /></Container>\n  <Autocomplete options={[\"Ada Lovelace\", \"Grace Hopper\"]} placeholder=\"Bare: fills the parent\" />\n</Column>", render: e_atoms_autocomplete_example_5 },
     ],
     donts: [
@@ -1141,16 +1138,16 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     category: "atoms",
     examples: [
       { label: "Default", code: "<Avatar name=\"AO\" />", render: e_atoms_avatar_example_0 },
-      { label: "Stacked", code: "<AvatarGroup small max={4}>\n  <Avatar src=\"/rachel-chen.jpg\" name=\"RC\" />\n  <Avatar src=\"/liang-bao.jpg\" name=\"LB\" />\n  <Avatar src=\"/marcus-allen.jpg\" name=\"MA\" />\n  <Avatar src=\"/kira-tanaka.jpg\" name=\"KT\" />\n  <Avatar src=\"/ada-lovelace.jpg\" name=\"AL\" />\n  <Avatar src=\"/grace-hopper.jpg\" name=\"GH\" />\n  <Avatar src=\"/noor-park.jpg\" name=\"NP\" />\n</AvatarGroup>", render: e_atoms_avatar_example_1 },
-      { label: "Topbar", code: "<Dropdown items={[\n    { label: \"Your profile\", icon: \"user\" },\n    { label: \"Settings\", icon: \"settings\" },\n    { label: \"Sign out\", icon: \"logOut\", separatorBefore: true }\n  ]}>\n  <Avatar small name=\"MA\" />\n</Dropdown>", render: e_atoms_avatar_example_2 },
-      { label: "Account menu", code: "<AvatarMenu\n  name=\"Rachel Chen\"\n  email=\"rachel.chen@example.com\"\n  src=\"/rachel-chen.jpg\"\n  items={[\n    { label: \"Profile\", icon: \"user\" },\n    { label: \"Billing\", icon: \"creditCard\" },\n    { label: \"Settings\", icon: \"settings\", shortcut: \"⌘,\" },\n    { label: \"Sign out\", icon: \"logOut\", destructive: true, separatorBefore: true }\n  ]}\n/>", render: e_atoms_avatar_example_3 },
-      { label: "Compact menu", code: "<AvatarMenu\n  compact\n  name=\"Marcus Allen\"\n  email=\"admin@example.com\"\n  src=\"/marcus-allen.jpg\"\n  items={[\n    { label: \"Profile\", icon: \"user\" },\n    { label: \"Settings\", icon: \"settings\", shortcut: \"⌘,\" },\n    { label: \"Sign out\", icon: \"logOut\", destructive: true, separatorBefore: true }\n  ]}\n/>", render: e_atoms_avatar_example_4 },
-      { label: "Menu alignment", code: "<Row between>\n  <AvatarMenu\n    compact\n    alignStart\n    name=\"Liang Bao\"\n    email=\"liang.bao@example.com\"\n    src=\"/liang-bao.jpg\"\n    items={[\n      { label: \"Profile\", icon: \"user\" },\n      { label: \"Settings\", icon: \"settings\", shortcut: \"⌘,\" },\n      { label: \"Sign out\", icon: \"logOut\", destructive: true, separatorBefore: true }\n    ]}\n  />\n  <AvatarMenu\n    compact\n    alignEnd\n    name=\"Kira Tanaka\"\n    email=\"kira.tanaka@example.com\"\n    src=\"/kira-tanaka.jpg\"\n    items={[\n      { label: \"Profile\", icon: \"user\" },\n      { label: \"Settings\", icon: \"settings\", shortcut: \"⌘,\" },\n      { label: \"Sign out\", icon: \"logOut\", destructive: true, separatorBefore: true }\n    ]}\n  />\n</Row>", render: e_atoms_avatar_example_5 },
-      { label: "Disabled menu", code: "<AvatarMenu\n  disabled\n  name=\"Ada Lovelace\"\n  email=\"ada.lovelace@example.com\"\n  src=\"/ada-lovelace.jpg\"\n  items={[\n    { label: \"Profile\", icon: \"user\" },\n    { label: \"Settings\", icon: \"settings\", shortcut: \"⌘,\" },\n    { label: \"Sign out\", icon: \"logOut\", destructive: true, separatorBefore: true }\n  ]}\n/>", render: e_atoms_avatar_example_6 },
-      { label: "Photo", code: "<Avatar src=\"/rachel-chen.jpg\" name=\"RC\" />", render: e_atoms_avatar_example_7 },
-      { label: "Sizes", code: "<Row relaxed alignCenter>\n  <Avatar tiny src=\"/noor-park.jpg\" name=\"NP\" />\n  <Avatar small src=\"/ada-lovelace.jpg\" name=\"AL\" />\n  <Avatar src=\"/marcus-allen.jpg\" name=\"MA\" />\n  <Avatar large src=\"/rachel-chen.jpg\" name=\"RC\" />\n</Row>", render: e_atoms_avatar_example_8 },
-      { label: "Rounded", code: "<Avatar rounded src=\"/liang-bao.jpg\" name=\"LB\" />", render: e_atoms_avatar_example_9 },
-      { label: "Ring outline", code: "<Avatar ring name=\"AO\" />", render: e_atoms_avatar_example_10 },
+      { label: "Photo", code: "<Avatar src=\"/rachel-chen.jpg\" name=\"RC\" />", render: e_atoms_avatar_example_1 },
+      { label: "Sizes", code: "<Row relaxed alignCenter>\n  <Avatar tiny name=\"NP\" />\n  <Avatar small name=\"AL\" />\n  <Avatar name=\"MA\" />\n  <Avatar large name=\"RC\" />\n</Row>", render: e_atoms_avatar_example_2 },
+      { label: "Rounded", code: "<Avatar rounded name=\"LB\" />", render: e_atoms_avatar_example_3 },
+      { label: "Ring outline", code: "<Avatar ring name=\"AO\" />", render: e_atoms_avatar_example_4 },
+      { label: "Stacked", code: "<AvatarGroup max={3}>\n  <Avatar name=\"RC\" />\n  <Avatar name=\"LB\" />\n  <Avatar name=\"MA\" />\n  <Avatar name=\"KT\" />\n</AvatarGroup>", render: e_atoms_avatar_example_5 },
+      { label: "Topbar", code: "<Dropdown items={[{ label: \"Your profile\" }, { label: \"Sign out\" }]}>\n  <Avatar small name=\"MA\" />\n</Dropdown>", render: e_atoms_avatar_example_6 },
+      { label: "Account menu", code: "<AvatarMenu\n  name=\"Rachel Chen\"\n  email=\"rachel.chen@example.com\"\n  src=\"/rachel-chen.jpg\"\n  items={[\n    { label: \"Profile\", icon: \"user\" },\n    { label: \"Settings\", icon: \"settings\" },\n    { label: \"Sign out\", icon: \"logOut\", destructive: true, separatorBefore: true }\n  ]}\n/>", render: e_atoms_avatar_example_7 },
+      { label: "Compact menu", code: "<AvatarMenu\n  compact\n  name=\"Marcus Allen\"\n  email=\"admin@example.com\"\n  src=\"/marcus-allen.jpg\"\n  items={[\n    { label: \"Profile\", icon: \"user\" },\n    { label: \"Settings\", icon: \"settings\" },\n    { label: \"Sign out\", icon: \"logOut\", destructive: true, separatorBefore: true }\n  ]}\n/>", render: e_atoms_avatar_example_8 },
+      { label: "Menu alignment", code: "<Row between>\n  <AvatarMenu\n    compact\n    alignStart\n    name=\"Liang Bao\"\n    email=\"liang.bao@example.com\"\n    src=\"/liang-bao.jpg\"\n    items={[\n      { label: \"Profile\", icon: \"user\" },\n      { label: \"Settings\", icon: \"settings\" },\n      { label: \"Sign out\", icon: \"logOut\", destructive: true, separatorBefore: true }\n    ]}\n  />\n  <AvatarMenu\n    compact\n    alignEnd\n    name=\"Kira Tanaka\"\n    email=\"kira.tanaka@example.com\"\n    src=\"/kira-tanaka.jpg\"\n    items={[\n      { label: \"Profile\", icon: \"user\" },\n      { label: \"Settings\", icon: \"settings\" },\n      { label: \"Sign out\", icon: \"logOut\", destructive: true, separatorBefore: true }\n    ]}\n  />\n</Row>", render: e_atoms_avatar_example_9 },
+      { label: "Disabled menu", code: "<AvatarMenu\n  disabled\n  name=\"Ada Lovelace\"\n  email=\"ada.lovelace@example.com\"\n  src=\"/ada-lovelace.jpg\"\n  items={[\n    { label: \"Profile\", icon: \"user\" },\n    { label: \"Settings\", icon: \"settings\" },\n    { label: \"Sign out\", icon: \"logOut\", destructive: true, separatorBefore: true }\n  ]}\n/>", render: e_atoms_avatar_example_10 },
     ],
     donts: [
       { title: "Single", do: { caption: "One or two initials, sized about 40% of the diameter.", code: "<Avatar name=\"AO\" />", render: e_atoms_avatar_dont_0_do }, dont: { caption: "Cramming in a full set of initials shrinks the type and crowds the circle.", code: "<View style={{ flexShrink: 0, alignItems: \"center\", justifyContent: \"center\", overflow: \"hidden\", backgroundColor: tokens.muted, width: 40, height: 40, borderRadius: 9999 }}>\n  <Text style={{ fontWeight: \"500\", color: tokens[\"muted-foreground\"], fontSize: 12 }}>ABCD</Text>\n</View>", render: e_atoms_avatar_dont_0_dont } },
@@ -1168,15 +1165,14 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "badge",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Badge secondary>admin</Badge>", render: e_atoms_badge_example_0 },
-      { label: "Status", code: "<Badge status success>admin</Badge>", render: e_atoms_badge_example_1 },
-      { label: "Status tones", code: "<BadgeGroup>\n  <Badge status success>active</Badge>\n  <Badge status warning>degraded</Badge>\n  <Badge status error>failed</Badge>\n  <Badge status info>syncing</Badge>\n  <Badge status neutral>archived</Badge>\n</BadgeGroup>", render: e_atoms_badge_example_2 },
-      { label: "Group", code: "<BadgeGroup>\n  <Badge secondary>employee</Badge>\n  <Badge secondary>engineering</Badge>\n  <Badge status success>active</Badge>\n</BadgeGroup>", render: e_atoms_badge_example_3 },
-      { label: "Identity", code: "<Row wrap alignCenter snug>\n  <Typography lead semibold>Rachel Chen</Typography>\n  <BadgeGroup>\n    <Badge status success>active</Badge>\n    <Badge status info>Verified</Badge>\n    <Badge secondary>employee</Badge>\n  </BadgeGroup>\n</Row>", render: e_atoms_badge_example_4 },
-      { label: "Solid", code: "<Badge default>admin</Badge>", render: e_atoms_badge_example_5 },
-      { label: "Outline", code: "<Badge outline>admin</Badge>", render: e_atoms_badge_example_6 },
-      { label: "Destructive", code: "<Badge destructive>admin</Badge>", render: e_atoms_badge_example_7 },
-      { label: "Mono (token / event names)", code: "<Badge secondary mono>admin</Badge>", render: e_atoms_badge_example_8 },
+      { label: "Default", code: "<Badge>admin</Badge>", render: e_atoms_badge_example_0 },
+      { label: "Solid", code: "<Badge default>admin</Badge>", render: e_atoms_badge_example_1 },
+      { label: "Outline", code: "<Badge outline>admin</Badge>", render: e_atoms_badge_example_2 },
+      { label: "Destructive", code: "<Badge destructive>admin</Badge>", render: e_atoms_badge_example_3 },
+      { label: "Mono (token / event names)", code: "<Badge mono>refresh_token</Badge>", render: e_atoms_badge_example_4 },
+      { label: "Status", code: "<Badge status>pending</Badge>", render: e_atoms_badge_example_5 },
+      { label: "Status tones", code: "<BadgeGroup>\n  <Badge status success>active</Badge>\n  <Badge status warning>degraded</Badge>\n  <Badge status error>failed</Badge>\n  <Badge status info>syncing</Badge>\n  <Badge status neutral>archived</Badge>\n</BadgeGroup>", render: e_atoms_badge_example_6 },
+      { label: "Group", code: "<BadgeGroup>\n  <Badge>employee</Badge>\n  <Badge>engineering</Badge>\n  <Badge status success>active</Badge>\n</BadgeGroup>", render: e_atoms_badge_example_7 },
     ],
     donts: [
       { title: "Grouping", do: { caption: "Reach for `BadgeGroup` to lay out a series of badges; it owns the wrap, the gap, and the vertical centering.", code: "<BadgeGroup>\n  <Badge secondary>employee</Badge>\n  <Badge secondary>engineering</Badge>\n  <Badge secondary>remote</Badge>\n</BadgeGroup>", render: e_atoms_badge_dont_0_do }, dont: { caption: "Hand-rolling a flex row for a badge series re-invents the gap and wrap and drifts from the kit's spacing scale.", code: "<View style={{ flexDirection: \"row\", flexWrap: \"wrap\", alignItems: \"center\", gap: 8 }}>\n  <Badge secondary>employee</Badge>\n  <Badge secondary>engineering</Badge>\n  <Badge secondary>remote</Badge>\n</View>", render: e_atoms_badge_dont_0_dont } },
@@ -1194,11 +1190,10 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "breadcrumb",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Breadcrumb\n  items={[\"Projects\", \"Identity Platform\", \"Settings\", \"Profile\"]}\n  chevron\n/>", render: e_atoms_breadcrumb_example_0 },
-      { label: "Slash", code: "<Breadcrumb\n  items={[\"Projects\", \"Identity Platform\", \"Settings\", \"Profile\"]}\n  slash\n/>", render: e_atoms_breadcrumb_example_1 },
-      { label: "Dot", code: "<Breadcrumb items={[\"Projects\", \"Identity Platform\", \"Settings\", \"Profile\"]} dot />", render: e_atoms_breadcrumb_example_2 },
-      { label: "Home icon", code: "<Breadcrumb\n  items={[\"Projects\", \"Identity Platform\", \"Settings\", \"Profile\"]}\n  chevron\n  homeIcon\n/>", render: e_atoms_breadcrumb_example_3 },
-      { label: "In a page header", code: "<Row wrap alignStart between relaxed>\n  <Column snug>\n    <Breadcrumb items={[\"Users\", \"Rachel Chen\"]} />\n    <Typography h3 semibold>Rachel Chen</Typography>\n  </Column>\n  <Row alignCenter snug>\n    <Button outline small>Edit</Button>\n    <Button primary small>Save</Button>\n  </Row>\n</Row>", render: e_atoms_breadcrumb_example_4 },
+      { label: "Default", code: "<Breadcrumb items={[\"Projects\", \"Identity Platform\", \"Settings\"]} />", render: e_atoms_breadcrumb_example_0 },
+      { label: "Slash", code: "<Breadcrumb items={[\"Projects\", \"Identity Platform\", \"Settings\"]} slash />", render: e_atoms_breadcrumb_example_1 },
+      { label: "Dot", code: "<Breadcrumb items={[\"Projects\", \"Identity Platform\", \"Settings\"]} dot />", render: e_atoms_breadcrumb_example_2 },
+      { label: "Home icon", code: "<Breadcrumb items={[\"Projects\", \"Identity Platform\", \"Settings\"]} homeIcon />", render: e_atoms_breadcrumb_example_3 },
     ],
     donts: [
       { title: "Current page", do: { caption: "Ancestors are links; the page you're on is plain text at the end of the trail.", code: "<Breadcrumb items={[\"Projects\", \"Identity Platform\", \"Settings\"]} />", render: e_atoms_breadcrumb_dont_0_do }, dont: { caption: "Linking the current page implies there's somewhere to go; it's a dead link to itself.", code: "<View style={{ flexDirection: \"row\", flexWrap: \"wrap\", alignItems: \"center\", gap: 6 }}>\n  <Pressable accessibilityRole=\"link\" style={({ pressed }) => (pressed ? { opacity: 0.7 } : null)}>\n    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens[\"muted-foreground\"] }}>Projects</Text>\n  </Pressable>\n  <Text style={{ fontSize: 14, lineHeight: 20, color: alpha(tokens[\"muted-foreground\"], 0.6) }}>/</Text>\n  <Pressable accessibilityRole=\"link\" style={({ pressed }) => (pressed ? { opacity: 0.7 } : null)}>\n    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens[\"muted-foreground\"] }}>Identity Platform</Text>\n  </Pressable>\n  <Text style={{ fontSize: 14, lineHeight: 20, color: alpha(tokens[\"muted-foreground\"], 0.6) }}>/</Text>\n  <Pressable accessibilityRole=\"link\" style={({ pressed }) => (pressed ? { opacity: 0.7 } : null)}>\n    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens[\"muted-foreground\"] }}>Settings</Text>\n  </Pressable>\n</View>", render: e_atoms_breadcrumb_dont_0_dont } },
@@ -1214,19 +1209,19 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "button",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Stateful initial={0}>\n  {(saves, setSaves) => (\n    <Column snug alignCenter>\n      <Button primary onPress={() => setSaves(saves + 1)}>Save changes</Button>\n      <Typography muted>{saves === 0 ? \"Not saved yet\" : `Saved ${saves} ${saves === 1 ? \"time\" : \"times\"}`}</Typography>\n    </Column>\n  )}\n</Stateful>", render: e_atoms_button_example_0 },
-      { label: "Outline", code: "<Stateful initial={0}>\n  {(saves, setSaves) => (\n    <Column snug alignCenter>\n      <Button outline onPress={() => setSaves(saves + 1)}>Save changes</Button>\n      <Typography muted>{saves === 0 ? \"Not saved yet\" : `Saved ${saves} ${saves === 1 ? \"time\" : \"times\"}`}</Typography>\n    </Column>\n  )}\n</Stateful>", render: e_atoms_button_example_1 },
-      { label: "Secondary", code: "<Stateful initial={0}>\n  {(saves, setSaves) => (\n    <Column snug alignCenter>\n      <Button secondary onPress={() => setSaves(saves + 1)}>Save changes</Button>\n      <Typography muted>{saves === 0 ? \"Not saved yet\" : `Saved ${saves} ${saves === 1 ? \"time\" : \"times\"}`}</Typography>\n    </Column>\n  )}\n</Stateful>", render: e_atoms_button_example_2 },
-      { label: "Ghost", code: "<Stateful initial={0}>\n  {(saves, setSaves) => (\n    <Column snug alignCenter>\n      <Button ghost onPress={() => setSaves(saves + 1)}>Save changes</Button>\n      <Typography muted>{saves === 0 ? \"Not saved yet\" : `Saved ${saves} ${saves === 1 ? \"time\" : \"times\"}`}</Typography>\n    </Column>\n  )}\n</Stateful>", render: e_atoms_button_example_3 },
-      { label: "Destructive", code: "<Stateful initial={0}>\n  {(saves, setSaves) => (\n    <Column snug alignCenter>\n      <Button destructive onPress={() => setSaves(saves + 1)}>Save changes</Button>\n      <Typography muted>{saves === 0 ? \"Not saved yet\" : `Saved ${saves} ${saves === 1 ? \"time\" : \"times\"}`}</Typography>\n    </Column>\n  )}\n</Stateful>", render: e_atoms_button_example_4 },
-      { label: "Link", code: "<Stateful initial={0}>\n  {(saves, setSaves) => (\n    <Column snug alignCenter>\n      <Button link onPress={() => setSaves(saves + 1)}>Save changes</Button>\n      <Typography muted>{saves === 0 ? \"Not saved yet\" : `Saved ${saves} ${saves === 1 ? \"time\" : \"times\"}`}</Typography>\n    </Column>\n  )}\n</Stateful>", render: e_atoms_button_example_5 },
-      { label: "Small", code: "<Stateful initial={0}>\n  {(saves, setSaves) => (\n    <Column snug alignCenter>\n      <Button primary small onPress={() => setSaves(saves + 1)}>Save changes</Button>\n      <Typography muted>{saves === 0 ? \"Not saved yet\" : `Saved ${saves} ${saves === 1 ? \"time\" : \"times\"}`}</Typography>\n    </Column>\n  )}\n</Stateful>", render: e_atoms_button_example_6 },
-      { label: "Large", code: "<Stateful initial={0}>\n  {(saves, setSaves) => (\n    <Column snug alignCenter>\n      <Button primary large onPress={() => setSaves(saves + 1)}>Save changes</Button>\n      <Typography muted>{saves === 0 ? \"Not saved yet\" : `Saved ${saves} ${saves === 1 ? \"time\" : \"times\"}`}</Typography>\n    </Column>\n  )}\n</Stateful>", render: e_atoms_button_example_7 },
-      { label: "Icon only", code: "<Stateful initial={0}>\n  {(added, setAdded) => (\n    <Column snug alignCenter>\n      <Button primary icon accessibilityLabel=\"Add item\" iconLeft={<Icon plus primaryForeground size={16} />} onPress={() => setAdded(added + 1)} />\n      <Typography muted>{added === 0 ? \"Nothing added yet\" : `Added ${added} ${added === 1 ? \"item\" : \"items\"}`}</Typography>\n    </Column>\n  )}\n</Stateful>", render: e_atoms_button_example_8 },
-      { label: "Disabled", code: "<Stateful initial={0}>\n  {(saves, setSaves) => (\n    <Column snug alignCenter>\n      <Button primary disabled onPress={() => setSaves(saves + 1)}>Save changes</Button>\n      <Typography muted>{saves === 0 ? \"Nothing happens - the button is disabled\" : `Saved ${saves} ${saves === 1 ? \"time\" : \"times\"}`}</Typography>\n    </Column>\n  )}\n</Stateful>", render: e_atoms_button_example_9 },
-      { label: "Loading", code: "<Button primary loading>Saving</Button>", render: e_atoms_button_example_10 },
-      { label: "Block", code: "<Button primary block>Create account</Button>", render: e_atoms_button_example_11 },
-      { label: "With icon", code: "<Stateful initial={0}>\n  {(saves, setSaves) => (\n    <Column snug alignCenter>\n      <Button primary iconLeft={<Icon plus primaryForeground size={16} />} onPress={() => setSaves(saves + 1)}>Save changes</Button>\n      <Typography muted>{saves === 0 ? \"Not saved yet\" : `Saved ${saves} ${saves === 1 ? \"time\" : \"times\"}`}</Typography>\n    </Column>\n  )}\n</Stateful>", render: e_atoms_button_example_12 },
+      { label: "Default", code: "<Button>Save changes</Button>", render: e_atoms_button_example_0 },
+      { label: "Outline", code: "<Button outline>Save changes</Button>", render: e_atoms_button_example_1 },
+      { label: "Secondary", code: "<Button secondary>Save changes</Button>", render: e_atoms_button_example_2 },
+      { label: "Ghost", code: "<Button ghost>Save changes</Button>", render: e_atoms_button_example_3 },
+      { label: "Destructive", code: "<Button destructive>Save changes</Button>", render: e_atoms_button_example_4 },
+      { label: "Link", code: "<Button link>Save changes</Button>", render: e_atoms_button_example_5 },
+      { label: "Small", code: "<Button small>Save changes</Button>", render: e_atoms_button_example_6 },
+      { label: "Large", code: "<Button large>Save changes</Button>", render: e_atoms_button_example_7 },
+      { label: "Icon only", code: "<Button icon accessibilityLabel=\"Add item\" iconLeft={<Icon plus primaryForeground size={16} />} />", render: e_atoms_button_example_8 },
+      { label: "Disabled", code: "<Button disabled>Save changes</Button>", render: e_atoms_button_example_9 },
+      { label: "Loading", code: "<Button loading>Saving</Button>", render: e_atoms_button_example_10 },
+      { label: "Block", code: "<Button block>Create account</Button>", render: e_atoms_button_example_11 },
+      { label: "With icon", code: "<Button iconLeft={<Icon plus primaryForeground size={16} />}>Save changes</Button>", render: e_atoms_button_example_12 },
     ],
     donts: [
       { title: "Default (primary)", do: { caption: "One clear primary action; everything else is supporting.", code: "<Row alignCenter snug>\n  <Button primary>Save</Button>\n  <Button outline>Cancel</Button>\n</Row>", render: e_atoms_button_dont_0_do }, dont: { caption: "Multiple primaries compete; nothing stands out.", code: "<View style={{ flexDirection: \"row\", alignItems: \"center\", gap: 8 }}>\n  <Button primary>Save</Button>\n  <Button primary>Apply</Button>\n  <Button primary>Continue</Button>\n</View>", render: e_atoms_button_dont_0_dont } },
@@ -1241,15 +1236,15 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "button-group",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<ButtonGroup segmented defaultActive={0} items={[\"Day\", \"Week\", \"Month\"]} small />", render: e_atoms_button_group_example_0 },
-      { label: "Icon segments", code: "<ButtonGroup\n  segmented\n  small\n  iconsOnly\n  defaultActive={2}\n  items={[\n    { label: \"Phone width\", icon: \"smartphone\" },\n    { label: \"Tablet width\", icon: \"tablet\" },\n    { label: \"Desktop width\", icon: \"monitor\" }\n  ]}\n/>", render: e_atoms_button_group_example_1 },
-      { label: "Stepper", code: "<ButtonGroup\n  stepper\n  items={[\n    \"May 21\",\n    \"May 22\",\n    \"May 23\",\n    \"Today\",\n    \"May 25\",\n    \"May 26\",\n    \"May 27\"\n  ]}\n  active={3}\n  small\n/>", render: e_atoms_button_group_example_2 },
-      { label: "Split", code: "<ButtonGroup\n  split\n  items={[\"Save\"]}\n  menu={[\"Save as draft\", \"Save and close\", \"Save a copy\"]}\n  small\n/>", render: e_atoms_button_group_example_3 },
-      { label: "Medium", code: "<ButtonGroup segmented defaultActive={0} items={[\"Day\", \"Week\", \"Month\"]} />", render: e_atoms_button_group_example_4 },
-      { label: "Large", code: "<ButtonGroup segmented defaultActive={0} items={[\"Day\", \"Week\", \"Month\"]} large />", render: e_atoms_button_group_example_5 },
-      { label: "Disabled", code: "<ButtonGroup segmented defaultActive={0} items={[\"Day\", \"Week\", \"Month\"]} disabled small />", render: e_atoms_button_group_example_6 },
-      { label: "Block", code: "<ButtonGroup segmented defaultActive={0} items={[\"Day\", \"Week\", \"Month\"]} block />", render: e_atoms_button_group_example_7 },
-      { label: "Block spaced", code: "<ButtonGroup spaced items={[\"Edit\", \"Duplicate\", \"Archive\"]} block />", render: e_atoms_button_group_example_8 },
+      { label: "Default", code: "<ButtonGroup items={[\"Day\", \"Week\", \"Month\"]} />", render: e_atoms_button_group_example_0 },
+      { label: "Small", code: "<ButtonGroup items={[\"Day\", \"Week\", \"Month\"]} small />", render: e_atoms_button_group_example_1 },
+      { label: "Large", code: "<ButtonGroup items={[\"Day\", \"Week\", \"Month\"]} large />", render: e_atoms_button_group_example_2 },
+      { label: "Disabled", code: "<ButtonGroup items={[\"Day\", \"Week\", \"Month\"]} disabled />", render: e_atoms_button_group_example_3 },
+      { label: "Block", code: "<ButtonGroup items={[\"Day\", \"Week\", \"Month\"]} block />", render: e_atoms_button_group_example_4 },
+      { label: "Block spaced", code: "<ButtonGroup spaced items={[\"Edit\", \"Duplicate\", \"Archive\"]} block />", render: e_atoms_button_group_example_5 },
+      { label: "Stepper", code: "<ButtonGroup stepper items={[\"Yesterday\", \"Today\", \"Tomorrow\"]} />", render: e_atoms_button_group_example_6 },
+      { label: "Split", code: "<ButtonGroup split items={[\"Save\"]} menu={[\"Save as draft\", \"Save and close\", \"Save a copy\"]} />", render: e_atoms_button_group_example_7 },
+      { label: "Icon segments", code: "<ButtonGroup\n  iconsOnly\n  items={[\n    { label: \"Phone width\", icon: \"smartphone\" },\n    { label: \"Tablet width\", icon: \"tablet\" },\n    { label: \"Desktop width\", icon: \"monitor\" }\n  ]}\n/>", render: e_atoms_button_group_example_8 },
     ],
     donts: [
       { title: "Segmented", do: { caption: "Keep a segmented control to a few mutually-exclusive views.", code: "<ButtonGroup segmented defaultActive={0} items={[\"Day\", \"Week\", \"Month\"]} />", render: e_atoms_button_group_dont_0_do }, dont: { caption: "Past ~4 options a segmented control gets cramped and hard to scan; reach for a select.", code: "<ButtonGroup segmented defaultActive={0} items={[\"Day\", \"Week\", \"Month\", \"Quarter\", \"Year\", \"5Y\", \"All\"]} />", render: e_atoms_button_group_dont_0_dont } },
@@ -1261,11 +1256,12 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "checkbox",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Checkbox defaultChecked description=\"Get notified when activity happens on your account.\">\n  Email notifications\n</Checkbox>", render: e_atoms_checkbox_example_0 },
-      { label: "Nested group", code: "<Stateful initial={[\"Read\"]}>\n  {(selected, setSelected) => {\n    const perms = [\"Read\", \"Write\", \"Delete\"];\n    const all = perms.every((p) => selected.includes(p));\n    const some = selected.length > 0 && !all;\n    return (\n      <Column snug>\n        <Checkbox\n          checked={all}\n          indeterminate={some}\n          onChange={(next) => setSelected(next ? perms : [])}\n        >\n          Select all\n        </Checkbox>\n        <Column snug indent>\n          {perms.map((p) => (\n            <Checkbox\n              key={p}\n              checked={selected.includes(p)}\n              onChange={(next) =>\n                setSelected(next ? [...selected, p] : selected.filter((x) => x !== p))\n              }\n            >\n              {p}\n            </Checkbox>\n          ))}\n        </Column>\n      </Column>\n    );\n  }}\n</Stateful>", render: e_atoms_checkbox_example_1 },
-      { label: "Unchecked", code: "<Checkbox description=\"Get notified when activity happens on your account.\">\n  Email notifications\n</Checkbox>", render: e_atoms_checkbox_example_2 },
-      { label: "Disabled", code: "<Checkbox disabled description=\"Get notified when activity happens on your account.\">\n  Email notifications\n</Checkbox>", render: e_atoms_checkbox_example_3 },
-      { label: "Sizes", code: "<Column snug>\n  <Checkbox small defaultChecked>Small</Checkbox>\n  <Checkbox defaultChecked>Default</Checkbox>\n  <Checkbox large defaultChecked>Large</Checkbox>\n</Column>", render: e_atoms_checkbox_example_4 },
+      { label: "Default", code: "<Checkbox defaultChecked>Email notifications</Checkbox>", render: e_atoms_checkbox_example_0 },
+      { label: "Unchecked", code: "<Checkbox>Email notifications</Checkbox>", render: e_atoms_checkbox_example_1 },
+      { label: "Disabled", code: "<Checkbox disabled>Email notifications</Checkbox>", render: e_atoms_checkbox_example_2 },
+      { label: "Sizes", code: "<Column>\n  <Checkbox small defaultChecked>Small</Checkbox>\n  <Checkbox defaultChecked>Default</Checkbox>\n  <Checkbox large defaultChecked>Large</Checkbox>\n</Column>", render: e_atoms_checkbox_example_3 },
+      { label: "With description", code: "<Checkbox defaultChecked description=\"Get notified when activity happens on your account.\">\n  Email notifications\n</Checkbox>", render: e_atoms_checkbox_example_4 },
+      { label: "Nested group", code: "<Stateful initial={[\"Read\"]}>\n  {(selected, setSelected) => {\n    const perms = [\"Read\", \"Write\", \"Delete\"];\n    const all = perms.every((p) => selected.includes(p));\n    const some = selected.length > 0 && !all;\n    return (\n      <Column>\n        <Checkbox\n          checked={all}\n          indeterminate={some}\n          onChange={(next) => setSelected(next ? perms : [])}\n        >\n          Select all\n        </Checkbox>\n        <Column indent>\n          {perms.map((p) => (\n            <Checkbox\n              key={p}\n              checked={selected.includes(p)}\n              onChange={(next) =>\n                setSelected(next ? [...selected, p] : selected.filter((x) => x !== p))\n              }\n            >\n              {p}\n            </Checkbox>\n          ))}\n        </Column>\n      </Column>\n    );\n  }}\n</Stateful>", render: e_atoms_checkbox_example_5 },
     ],
     donts: [
       { title: "Unchecked", do: { caption: "Leave opt-in consent unchecked so agreeing is a deliberate act the user takes.", code: "<Checkbox>Email me product news, offers, and survey invitations.</Checkbox>", render: e_atoms_checkbox_dont_0_do }, dont: { caption: "A consent box that starts checked opts users in by default; under GDPR pre-ticked consent is not consent.", code: "<Checkbox defaultChecked>Email me product news, offers, and survey invitations.</Checkbox>", render: e_atoms_checkbox_dont_0_dont } },
@@ -1279,13 +1275,13 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "chip",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Chip blue onRemove={() => {}}>Status: Active</Chip>", render: e_atoms_chip_example_0 },
-      { label: "Colors", code: "<Row snug wrap alignCenter>\n  <Chip red>Bug</Chip>\n  <Chip orange>Chore</Chip>\n  <Chip amber>Docs</Chip>\n  <Chip green>Feature</Chip>\n  <Chip teal>Design</Chip>\n  <Chip blue>Backend</Chip>\n  <Chip indigo>Frontend</Chip>\n  <Chip violet>Research</Chip>\n  <Chip purple>Infra</Chip>\n  <Chip pink>Growth</Chip>\n  <Chip gray>Archived</Chip>\n</Row>", render: e_atoms_chip_example_1 },
-      { label: "Status", code: "<Row snug wrap alignCenter>\n  <Chip success>Passing</Chip>\n  <Chip warning>Flaky</Chip>\n  <Chip destructive>Failing</Chip>\n  <Chip info>Queued</Chip>\n  <Chip neutral>Skipped</Chip>\n</Row>", render: e_atoms_chip_example_2 },
-      { label: "Emphasis", code: "<Row snug wrap alignCenter>\n  <Chip>Neutral</Chip>\n  <Chip primary>Accent</Chip>\n  <Chip outline>Outline</Chip>\n  <Chip blue outline>Outline blue</Chip>\n</Row>", render: e_atoms_chip_example_3 },
+      { label: "Default", code: "<Chip>Design</Chip>", render: e_atoms_chip_example_0 },
+      { label: "Colors", code: "<Row wrap>\n  <Chip red>Bug</Chip>\n  <Chip orange>Chore</Chip>\n  <Chip amber>Docs</Chip>\n  <Chip green>Feature</Chip>\n  <Chip teal>Design</Chip>\n  <Chip blue>Backend</Chip>\n  <Chip indigo>Frontend</Chip>\n  <Chip violet>Research</Chip>\n  <Chip purple>Infra</Chip>\n  <Chip pink>Growth</Chip>\n  <Chip gray>Archived</Chip>\n</Row>", render: e_atoms_chip_example_1 },
+      { label: "Status", code: "<Row wrap>\n  <Chip success>Passing</Chip>\n  <Chip warning>Flaky</Chip>\n  <Chip destructive>Failing</Chip>\n  <Chip info>Queued</Chip>\n  <Chip neutral>Skipped</Chip>\n</Row>", render: e_atoms_chip_example_2 },
+      { label: "Emphasis", code: "<Row>\n  <Chip>Neutral</Chip>\n  <Chip primary>Accent</Chip>\n  <Chip outline>Outline</Chip>\n</Row>", render: e_atoms_chip_example_3 },
       { label: "With leading icon", code: "<Chip success icon={<Icon check size={14} />}>Verified</Chip>", render: e_atoms_chip_example_4 },
-      { label: "Removable filters", code: "<Stateful initial={{ items: [\"Role: Admin\", \"Status: Active\"], seq: 1 }}>\n  {(state, setState) => (\n    <Row snug wrap alignCenter>\n      {state.items.map((f) => (\n        <Chip key={f} blue onRemove={() => setState({ ...state, items: state.items.filter((x) => x !== f) })}>\n          {f}\n        </Chip>\n      ))}\n      <Chip outline icon={<Icon plus size={14} />} onPress={() => setState({ items: [...state.items, \"Filter \" + state.seq], seq: state.seq + 1 })}>\n        Add filter\n      </Chip>\n    </Row>\n  )}\n</Stateful>", render: e_atoms_chip_example_5 },
-      { label: "Selectable", code: "<Row snug wrap alignCenter>\n  <Chip selectable outline defaultSelected>Design</Chip>\n  <Chip selectable outline>Engineering</Chip>\n  <Chip selectable outline>Product</Chip>\n  <Chip selectable outline>Marketing</Chip>\n</Row>", render: e_atoms_chip_example_6 },
+      { label: "Removable filters", code: "<Chip onRemove={() => {}}>Role: Admin</Chip>", render: e_atoms_chip_example_5 },
+      { label: "Selectable", code: "<Row>\n  <Chip selectable outline defaultSelected>Design</Chip>\n  <Chip selectable outline>Engineering</Chip>\n</Row>", render: e_atoms_chip_example_6 },
     ],
     donts: [
       { title: "Removable filter", do: { caption: "Use a Chip with `onRemove` so the pill and its \"×\" stay consistent and accessible.", code: "<Chip blue onRemove={() => {}}>Status: Active</Chip>", render: e_atoms_chip_dont_0_do }, dont: { caption: "Hand-build the pill from a raw Pressable with border-radius, padding, and a text \"×\".", code: "<Pressable style={{ flexDirection: \"row\", alignItems: \"center\", gap: 4, alignSelf: \"flex-start\", borderRadius: 9999, backgroundColor: \"#4f46e5\", paddingHorizontal: 10, paddingVertical: 4 }}>\n  <Text style={{ color: \"#ffffff\", fontSize: 13 }}>Status: Active</Text>\n  <Text style={{ color: \"#ffffff\", fontSize: 13 }}>×</Text>\n</Pressable>", render: e_atoms_chip_dont_0_dont } },
@@ -1295,9 +1291,9 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "container",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Container sm>\n  <Card padded>\n    <Typography medium>Sign in</Typography>\n    <Typography small muted>The card fills the container; the container caps at the sm step (384).</Typography>\n  </Card>\n</Container>", render: e_atoms_container_example_0 },
-      { label: "Steps", code: "<Column snug>\n  <Container xs><Card padded><Typography small>xs, 320</Typography></Card></Container>\n  <Container md><Card padded><Typography small>md, 448</Typography></Card></Container>\n  <Container xl><Card padded><Typography small>xl, 576</Typography></Card></Container>\n</Column>", render: e_atoms_container_example_1 },
-      { label: "Pinned to the start", code: "<Container sm start>\n  <Card padded>\n    <Typography small>A leading-edge measure for a settings row.</Typography>\n  </Card>\n</Container>", render: e_atoms_container_example_2 },
+      { label: "Default", code: "<Container sm>\n  <Card>\n    <Typography medium>Sign in</Typography>\n  </Card>\n</Container>", render: e_atoms_container_example_0 },
+      { label: "Steps", code: "<Column>\n  <Container xs><Card><Typography small>xs, 320</Typography></Card></Container>\n  <Container md><Card><Typography small>md, 448</Typography></Card></Container>\n  <Container xl><Card><Typography small>xl, 576</Typography></Card></Container>\n</Column>", render: e_atoms_container_example_1 },
+      { label: "Pinned to the start", code: "<Container sm start>\n  <Card>\n    <Typography small>Settings</Typography>\n  </Card>\n</Container>", render: e_atoms_container_example_2 },
       { label: "Full width with gutters", code: "<Container pad>\n  <Card padded>\n    <Typography small>The default measure is the parent's own width; pad adds 16px gutters on both sides.</Typography>\n  </Card>\n</Container>", render: e_atoms_container_example_3 },
     ],
     donts: [
@@ -1308,10 +1304,10 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "divider",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Column snug>\n  <Typography small>Profile</Typography>\n  <Divider />\n  <Typography small>Account</Typography>\n</Column>", render: e_atoms_divider_example_0 },
-      { label: "Vertical", code: "<Row alignCenter cozy>\n  <Typography small>Edit</Typography>\n  <Divider vertical style={{ height: 16 }} />\n  <Typography small>Delete</Typography>\n</Row>", render: e_atoms_divider_example_1 },
+      { label: "Default", code: "<Column>\n  <Typography>Profile</Typography>\n  <Divider />\n  <Typography>Account</Typography>\n</Column>", render: e_atoms_divider_example_0 },
+      { label: "Vertical", code: "<Row>\n  <Typography>Edit</Typography>\n  <Divider vertical />\n  <Typography>Delete</Typography>\n</Row>", render: e_atoms_divider_example_1 },
       { label: "Label", code: "<Divider>Or continue with</Divider>", render: e_atoms_divider_example_2 },
-      { label: "Action", code: "<Column cozy>\n  <Column snug>\n    <Card padded>\n      <Typography small>Ada commented on the draft</Typography>\n    </Card>\n    <Card padded>\n      <Typography small>Grace approved the request</Typography>\n    </Card>\n  </Column>\n  <Divider>\n    <Button ghost small>Show more</Button>\n  </Divider>\n</Column>", render: e_atoms_divider_example_3 },
+      { label: "Action", code: "<Divider>\n  <Button ghost small>Show more</Button>\n</Divider>", render: e_atoms_divider_example_3 },
     ],
     donts: [
       { title: "Plain", do: { caption: "Click a row: group with spacing and reserve a divider for a real break like Sign out.", code: "<Column tight>\n  <Typography small>Profile</Typography>\n  <Typography small>Account</Typography>\n  <Typography small>Notifications</Typography>\n  <Divider />\n  <Typography small>Sign out</Typography>\n</Column>", render: e_atoms_divider_dont_0_do }, dont: { caption: "Click a row: a divider between every one is noise that competes with the content.", code: "<View>\n  <Text style={{ borderRadius: 6, paddingHorizontal: 8, paddingVertical: 6, fontSize: 14, lineHeight: 20 }}>Profile</Text>\n  <Divider />\n  <Text style={{ borderRadius: 6, paddingHorizontal: 8, paddingVertical: 6, fontSize: 14, lineHeight: 20 }}>Account</Text>\n  <Divider />\n  <Text style={{ borderRadius: 6, paddingHorizontal: 8, paddingVertical: 6, fontSize: 14, lineHeight: 20 }}>Notifications</Text>\n  <Divider />\n  <Text style={{ borderRadius: 6, paddingHorizontal: 8, paddingVertical: 6, fontSize: 14, lineHeight: 20 }}>Billing</Text>\n</View>", render: e_atoms_divider_dont_0_dont } },
@@ -1324,15 +1320,15 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "dropdown",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Dropdown\n  trigger=\"Actions\"\n  items={[\n    { label: \"Edit profile\", icon: \"pencil\" },\n    { label: \"Duplicate\", icon: \"copy\" },\n    { label: \"Settings\", icon: \"settings\" }\n  ]}\n/>", render: e_atoms_dropdown_example_0 },
-      { label: "Section label", code: "<Dropdown\n  trigger=\"Actions\"\n  label=\"Actions\"\n  items={[\n    { label: \"Edit profile\", icon: \"pencil\" },\n    { label: \"Duplicate\", icon: \"copy\" },\n    { label: \"Settings\", icon: \"settings\" }\n  ]}\n/>", render: e_atoms_dropdown_example_1 },
-      { label: "Identity header", code: "<Dropdown\n  trigger=\"Account\"\n  title=\"Rachel Chen\"\n  description=\"rachel@nannier.com\"\n  items={[\n    { label: \"Profile\", icon: \"user\" },\n    { label: \"Settings\", icon: \"settings\" },\n    { label: \"Log out\", icon: \"logOut\", separatorBefore: true }\n  ]}\n/>", render: e_atoms_dropdown_example_2 },
-      { label: "Keyboard shortcuts", code: "<Dropdown\n  trigger=\"Actions\"\n  items={[\n    { label: \"Edit profile\", icon: \"pencil\", shortcut: \"⌘E\" },\n    { label: \"Duplicate\", icon: \"copy\", shortcut: \"⌘D\" },\n    { label: \"Settings\", icon: \"settings\", shortcut: \"⌘,\" }\n  ]}\n/>", render: e_atoms_dropdown_example_3 },
-      { label: "Disabled item", code: "<Dropdown\n  trigger=\"Actions\"\n  items={[\n    { label: \"Edit profile\", icon: \"pencil\" },\n    { label: \"Duplicate\", icon: \"copy\" },\n    { label: \"Settings\", icon: \"settings\" },\n    { label: \"Archive\", icon: \"archive\", disabled: true }\n  ]}\n/>", render: e_atoms_dropdown_example_4 },
-      { label: "Destructive item", code: "<Dropdown\n  trigger=\"Actions\"\n  items={[\n    { label: \"Edit profile\", icon: \"pencil\" },\n    { label: \"Duplicate\", icon: \"copy\" },\n    { label: \"Settings\", icon: \"settings\" },\n    { label: \"Delete…\", icon: \"trash\", destructive: true, separatorBefore: true }\n  ]}\n/>", render: e_atoms_dropdown_example_5 },
-      { label: "Custom trigger", code: "<Dropdown\n  items={[\n    { label: \"Profile\", icon: \"user\" },\n    { label: \"Settings\", icon: \"settings\" },\n    { label: \"Log out\", icon: \"logOut\", separatorBefore: true }\n  ]}\n>\n  <Avatar name=\"Rachel Chen\" />\n</Dropdown>", render: e_atoms_dropdown_example_6 },
-      { label: "End alignment", code: "<Row end>\n  <Dropdown\n    trigger=\"Account\"\n    alignEnd\n    title=\"Rachel Chen\"\n    description=\"rachel@nannier.com\"\n    items={[\n      { label: \"Profile\", icon: \"user\" },\n      { label: \"Settings\", icon: \"settings\" },\n      { label: \"Log out\", icon: \"logOut\", separatorBefore: true }\n    ]}\n  />\n</Row>", render: e_atoms_dropdown_example_7 },
-      { label: "Disabled trigger", code: "<Dropdown\n  trigger=\"Actions\"\n  disabled\n  items={[\n    { label: \"Edit profile\", icon: \"pencil\" },\n    { label: \"Duplicate\", icon: \"copy\" },\n    { label: \"Settings\", icon: \"settings\" }\n  ]}\n/>", render: e_atoms_dropdown_example_8 },
+      { label: "Default", code: "<Dropdown\n  trigger=\"Actions\"\n  items={[\n    { label: \"Edit profile\" },\n    { label: \"Duplicate\" },\n    { label: \"Settings\" }\n  ]}\n/>", render: e_atoms_dropdown_example_0 },
+      { label: "Disabled trigger", code: "<Dropdown\n  trigger=\"Actions\"\n  disabled\n  items={[\n    { label: \"Edit profile\" },\n    { label: \"Duplicate\" },\n    { label: \"Settings\" }\n  ]}\n/>", render: e_atoms_dropdown_example_1 },
+      { label: "Disabled item", code: "<Dropdown\n  trigger=\"Actions\"\n  items={[\n    { label: \"Edit profile\" },\n    { label: \"Duplicate\" },\n    { label: \"Archive\", disabled: true }\n  ]}\n/>", render: e_atoms_dropdown_example_2 },
+      { label: "Destructive item", code: "<Dropdown\n  trigger=\"Actions\"\n  items={[\n    { label: \"Edit profile\" },\n    { label: \"Duplicate\" },\n    { label: \"Delete…\", destructive: true, separatorBefore: true }\n  ]}\n/>", render: e_atoms_dropdown_example_3 },
+      { label: "Section label", code: "<Dropdown\n  trigger=\"Actions\"\n  label=\"Actions\"\n  items={[\n    { label: \"Edit profile\" },\n    { label: \"Duplicate\" },\n    { label: \"Settings\" }\n  ]}\n/>", render: e_atoms_dropdown_example_4 },
+      { label: "Identity header", code: "<Dropdown\n  trigger=\"Account\"\n  title=\"Rachel Chen\"\n  description=\"rachel@nannier.com\"\n  items={[\n    { label: \"Profile\" },\n    { label: \"Settings\" },\n    { label: \"Log out\" }\n  ]}\n/>", render: e_atoms_dropdown_example_5 },
+      { label: "Keyboard shortcuts", code: "<Dropdown\n  trigger=\"Actions\"\n  items={[\n    { label: \"Edit profile\", shortcut: \"⌘E\" },\n    { label: \"Duplicate\", shortcut: \"⌘D\" },\n    { label: \"Settings\", shortcut: \"⌘,\" }\n  ]}\n/>", render: e_atoms_dropdown_example_6 },
+      { label: "Custom trigger", code: "<Dropdown\n  items={[\n    { label: \"Profile\" },\n    { label: \"Settings\" },\n    { label: \"Log out\" }\n  ]}\n>\n  <Avatar name=\"Rachel Chen\" />\n</Dropdown>", render: e_atoms_dropdown_example_7 },
+      { label: "End alignment", code: "<Dropdown\n  trigger=\"Account\"\n  alignEnd\n  items={[\n    { label: \"Profile\" },\n    { label: \"Settings\" },\n    { label: \"Log out\" }\n  ]}\n/>", render: e_atoms_dropdown_example_8 },
     ],
     donts: [
       { title: "Trigger", do: { caption: "Click Actions to open; click outside to dismiss.", code: "<Dropdown trigger=\"Actions\" items={[\n    { label: \"Edit profile\" },\n    { label: \"Duplicate\" },\n    { label: \"Settings\" }\n  ]} />", render: e_atoms_dropdown_dont_0_do }, dont: { caption: "Always open: it clutters the page and there's no way to dismiss it.", code: "<Column style={{ minHeight: 190 }}>\n  <Dropdown trigger=\"Actions\" open items={[\n      { label: \"Edit profile\" },\n      { label: \"Duplicate\" },\n      { label: \"Settings\" }\n    ]} />\n</Column>", render: e_atoms_dropdown_dont_0_dont } },
@@ -1347,11 +1343,11 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "emblem",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Emblem primary>\n  <Icon shield />\n</Emblem>", render: e_atoms_emblem_example_0 },
-      { label: "Tones", code: "<Row snug alignCenter>\n  <Emblem primary><Icon shield /></Emblem>\n  <Emblem success><Icon check /></Emblem>\n  <Emblem warning><Icon circleAlert /></Emblem>\n  <Emblem destructive><Icon trash /></Emblem>\n  <Emblem muted><Icon bell /></Emblem>\n</Row>", render: e_atoms_emblem_example_1 },
-      { label: "Sizes", code: "<Row snug alignCenter>\n  <Emblem small primary><Icon bell /></Emblem>\n  <Emblem primary><Icon bell /></Emblem>\n  <Emblem large primary><Icon bell /></Emblem>\n</Row>", render: e_atoms_emblem_example_2 },
-      { label: "Monogram", code: "<Row snug alignCenter>\n  <Emblem primary label=\"U\" />\n  <Emblem success label=\"S\" />\n</Row>", render: e_atoms_emblem_example_3 },
-      { label: "Circle", code: "<Emblem circle success>\n  <Icon check />\n</Emblem>", render: e_atoms_emblem_example_4 },
+      { label: "Default", code: "<Emblem>\n  <Icon shield />\n</Emblem>", render: e_atoms_emblem_example_0 },
+      { label: "Tones", code: "<Row snug>\n  <Emblem primary><Icon shield /></Emblem>\n  <Emblem success><Icon check /></Emblem>\n  <Emblem warning><Icon circleAlert /></Emblem>\n  <Emblem destructive><Icon trash /></Emblem>\n  <Emblem muted><Icon bell /></Emblem>\n</Row>", render: e_atoms_emblem_example_1 },
+      { label: "Sizes", code: "<Row snug alignCenter>\n  <Emblem small><Icon bell /></Emblem>\n  <Emblem><Icon bell /></Emblem>\n  <Emblem large><Icon bell /></Emblem>\n</Row>", render: e_atoms_emblem_example_2 },
+      { label: "Monogram", code: "<Emblem label=\"U\" />", render: e_atoms_emblem_example_3 },
+      { label: "Circle", code: "<Emblem circle>\n  <Icon check />\n</Emblem>", render: e_atoms_emblem_example_4 },
     ],
     donts: [
       { title: "Surface", do: { caption: "Use Emblem so the tint and icon color stay in sync from one tone prop.", code: "<Emblem primary>\n  <Icon shield />\n</Emblem>", render: e_atoms_emblem_dont_0_do }, dont: { caption: "Hand-compose the tinted square with raw `borderRadius`, `backgroundColor`, and padding.", code: "<View style={{ height: 40, width: 40, alignItems: \"center\", justifyContent: \"center\", borderRadius: 8, backgroundColor: \"rgba(79,70,229,0.1)\" }}>\n  <Icon shield primary />\n</View>", render: e_atoms_emblem_dont_0_dont } },
@@ -1361,11 +1357,11 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "grid",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Grid minTileWidth={220}>\n  <Card padded>\n    <Typography medium>Overview</Typography>\n    <Typography small muted>Traffic is up 12% this week.</Typography>\n  </Card>\n  <Card padded>\n    <Typography medium>Deploys</Typography>\n    <Typography small muted>14 releases shipped to production.</Typography>\n  </Card>\n  <Card padded>\n    <Typography medium>Alerts</Typography>\n    <Typography small muted>2 open, both acknowledged.</Typography>\n  </Card>\n</Grid>", render: e_atoms_grid_example_0 },
-      { label: "Capped columns", code: "<Grid minTileWidth={200} columns={2}>\n  <Card padded>\n    <Typography medium>Production</Typography>\n    <Typography small muted>All systems normal.</Typography>\n  </Card>\n  <Card padded>\n    <Typography medium>Staging</Typography>\n    <Typography small muted>Deploy in progress.</Typography>\n  </Card>\n  <Card padded>\n    <Typography medium>Preview</Typography>\n    <Typography small muted>Idle.</Typography>\n  </Card>\n  <Card padded>\n    <Typography medium>Development</Typography>\n    <Typography small muted>3 branches active.</Typography>\n  </Card>\n</Grid>", render: e_atoms_grid_example_1 },
-      { label: "Wide tile", code: "<Grid minTileWidth={200} columns={3}>\n  <GridItem wide>\n    <Card padded>\n      <Typography medium>Latency</Typography>\n      <Typography small muted>The hero tile spans two cells.</Typography>\n    </Card>\n  </GridItem>\n  <Card padded>\n    <Typography medium>Errors</Typography>\n    <Typography small muted>0.02%</Typography>\n  </Card>\n  <Card padded>\n    <Typography medium>Throughput</Typography>\n    <Typography small muted>1.2k rps</Typography>\n  </Card>\n  <Card padded>\n    <Typography medium>Saturation</Typography>\n    <Typography small muted>41%</Typography>\n  </Card>\n</Grid>", render: e_atoms_grid_example_2 },
-      { label: "Equal heights", code: "<Grid minTileWidth={200} columns={3}>\n  <Card padded>\n    <Typography medium>Uptime</Typography>\n    <Typography small muted>99.98% over the last 30 days.</Typography>\n  </Card>\n  <Card padded>\n    <Typography medium>Incidents</Typography>\n    <Typography small muted>\n      One partial outage on the EU edge, resolved in 14 minutes; a postmortem is\n      scheduled for Thursday.\n    </Typography>\n  </Card>\n  <Card padded>\n    <Typography medium>On call</Typography>\n    <Typography small muted>Priya, until 09:00.</Typography>\n  </Card>\n</Grid>", render: e_atoms_grid_example_3 },
-      { label: "Tight gap", code: "<Grid minTileWidth={160} tight>\n  <Card padded>\n    <Typography small>CPU</Typography>\n  </Card>\n  <Card padded>\n    <Typography small>Memory</Typography>\n  </Card>\n  <Card padded>\n    <Typography small>Disk</Typography>\n  </Card>\n  <Card padded>\n    <Typography small>Network</Typography>\n  </Card>\n</Grid>", render: e_atoms_grid_example_4 },
+      { label: "Default", code: "<Grid minTileWidth={220}>\n  <Card title=\"Overview\" />\n  <Card title=\"Deploys\" />\n  <Card title=\"Alerts\" />\n</Grid>", render: e_atoms_grid_example_0 },
+      { label: "Capped columns", code: "<Grid minTileWidth={200} columns={2}>\n  <Card title=\"Production\" />\n  <Card title=\"Staging\" />\n  <Card title=\"Preview\" />\n</Grid>", render: e_atoms_grid_example_1 },
+      { label: "Wide tile", code: "<Grid minTileWidth={200} columns={3}>\n  <GridItem wide>\n    <Card title=\"Latency\" />\n  </GridItem>\n  <Card title=\"Errors\" />\n  <Card title=\"Throughput\" />\n</Grid>", render: e_atoms_grid_example_2 },
+      { label: "Equal heights", code: "<Grid minTileWidth={200} columns={3}>\n  <Card title=\"Uptime\" description=\"99.98% over the last 30 days.\" />\n  <Card title=\"Incidents\" description=\"One partial outage on the EU edge, resolved in 14 minutes; a postmortem is scheduled for Thursday.\" />\n  <Card title=\"On call\" description=\"Priya, until 09:00.\" />\n</Grid>", render: e_atoms_grid_example_3 },
+      { label: "Tight gap", code: "<Grid minTileWidth={160} tight>\n  <Card title=\"CPU\" />\n  <Card title=\"Memory\" />\n  <Card title=\"Disk\" />\n</Grid>", render: e_atoms_grid_example_4 },
     ],
     donts: [
       { title: "Column math", do: { caption: "Give the grid a tile floor (and optionally a desktop cap) and let it", code: "<Grid minTileWidth={220} columns={3}>\n  <Card padded>\n    <Typography medium>Overview</Typography>\n  </Card>\n  <Card padded>\n    <Typography medium>Deploys</Typography>\n  </Card>\n  <Card padded>\n    <Typography medium>Alerts</Typography>\n  </Card>\n</Grid>", render: e_atoms_grid_dont_0_do }, dont: { caption: "Hand-roll percent tile widths on a wrapping Row; the column count", code: "<Row wrap snug>\n  <View style={{ width: \"31%\" }}>\n    <Card padded>\n      <Typography medium>Overview</Typography>\n    </Card>\n  </View>\n  <View style={{ width: \"31%\" }}>\n    <Card padded>\n      <Typography medium>Deploys</Typography>\n    </Card>\n  </View>\n  <View style={{ width: \"31%\" }}>\n    <Card padded>\n      <Typography medium>Alerts</Typography>\n    </Card>\n  </View>\n</Row>", render: e_atoms_grid_dont_0_dont } },
@@ -1375,13 +1371,13 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "icon",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Icon shield size={24} />", render: e_atoms_icon_example_0 },
-      { label: "Gallery", code: "<IconGallery />", render: e_atoms_icon_example_1 },
-      { label: "Primary", code: "<Icon shield size={24} primary />", render: e_atoms_icon_example_2 },
-      { label: "Destructive", code: "<Icon shield size={24} destructive />", render: e_atoms_icon_example_3 },
-      { label: "Success", code: "<Icon circleCheck size={24} success />", render: e_atoms_icon_example_4 },
-      { label: "Warning", code: "<Icon alertTriangle size={24} warning />", render: e_atoms_icon_example_5 },
-      { label: "Muted", code: "<Icon shield size={24} muted />", render: e_atoms_icon_example_6 },
+      { label: "Default", code: "<Icon shield />", render: e_atoms_icon_example_0 },
+      { label: "Primary", code: "<Icon shield primary />", render: e_atoms_icon_example_1 },
+      { label: "Destructive", code: "<Icon shield destructive />", render: e_atoms_icon_example_2 },
+      { label: "Success", code: "<Icon circleCheck success />", render: e_atoms_icon_example_3 },
+      { label: "Warning", code: "<Icon alertTriangle warning />", render: e_atoms_icon_example_4 },
+      { label: "Muted", code: "<Icon shield muted />", render: e_atoms_icon_example_5 },
+      { label: "Gallery", code: "<IconGallery />", render: e_atoms_icon_example_6 },
     ],
     donts: [
       { title: "Stroke coherence", do: { caption: "One outline style at 1.75 stroke across the whole set.", code: "<Row alignCenter relaxed>\n  <Icon home size={28} />\n  <Icon search size={28} />\n  <Icon bell size={28} />\n</Row>", render: e_atoms_icon_dont_0_do }, dont: { caption: "Mixed stroke weights and a stray filled glyph make a set look incoherent.", code: "<View style={{ flexDirection: \"row\", alignItems: \"center\", gap: 20 }}>\n  <Icon home muted size={20} />\n  <Icon search destructive size={34} />\n  <Icon bell primary size={28} />\n</View>", render: e_atoms_icon_dont_0_dont } },
@@ -1395,9 +1391,9 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "image",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Image\n  source={{ uri: \"/kira-tanaka.jpg\" }}\n  width={120}\n  height={120}\n  radius=\"xl\"\n/>", render: e_atoms_image_example_0 },
-      { label: "Contain", code: "<Image\n  source={{ uri: \"/liang-bao.jpg\" }}\n  contain\n  width={160}\n  height={120}\n  radius=\"xl\"\n  style={{ backgroundColor: tokens.muted }}\n/>", render: e_atoms_image_example_1 },
-      { label: "Cover", code: "<Image\n  source={{ uri: \"/ada-lovelace.jpg\" }}\n  cover\n  width={240}\n  height={96}\n  radius=\"xl\"\n/>", render: e_atoms_image_example_2 },
+      { label: "Default", code: "<Image source={{ uri: \"/kira-tanaka.jpg\" }} width={120} height={120} />", render: e_atoms_image_example_0 },
+      { label: "Contain", code: "<Image source={{ uri: \"/liang-bao.jpg\" }} contain width={160} height={120} />", render: e_atoms_image_example_1 },
+      { label: "Cover", code: "<Image source={{ uri: \"/ada-lovelace.jpg\" }} cover width={240} height={96} />", render: e_atoms_image_example_2 },
     ],
     donts: [
 
@@ -1411,12 +1407,12 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Label", code: "<Input label=\"Email\" placeholder=\"rachel.chen@example.com\" />", render: e_atoms_input_example_1 },
       { label: "Required", code: "<Input label=\"Full name\" required placeholder=\"Rachel Chen\" />", render: e_atoms_input_example_2 },
       { label: "Prefix", code: "<Input prefix=\"https://\" placeholder=\"canvas.dev\" />", render: e_atoms_input_example_3 },
-      { label: "Action", code: "<Input suffix=\"Copy\" action value=\"cnv_3f9a21b8e7\" />", render: e_atoms_input_example_4 },
+      { label: "Action", code: "<Input suffix=\"Copy\" action defaultValue=\"cnv_3f9a21b8e7\" />", render: e_atoms_input_example_4 },
       { label: "Icon", code: "<Input leadingIcon icon=\"search\" placeholder=\"Search\" />", render: e_atoms_input_example_5 },
       { label: "Error", code: "<Input error placeholder=\"rachel.chen@example.com\" />", render: e_atoms_input_example_6 },
       { label: "Disabled", code: "<Input disabled placeholder=\"rachel.chen@example.com\" />", render: e_atoms_input_example_7 },
-      { label: "Read only", code: "<Input readOnly placeholder=\"rachel.chen@example.com\" />", render: e_atoms_input_example_8 },
-      { label: "Widths come from the parent", code: "<Column snug>\n  <Container xs start><Input placeholder=\"In an xs Container (320)\" /></Container>\n  <Container lg start><Input placeholder=\"In an lg Container (512)\" /></Container>\n  <Input placeholder=\"Bare: fills the parent\" />\n</Column>", render: e_atoms_input_example_9 },
+      { label: "Read only", code: "<Input readOnly defaultValue=\"rachel.chen@example.com\" />", render: e_atoms_input_example_8 },
+      { label: "Widths come from the parent", code: "<Column snug>\n  <Container xs start><Input placeholder=\"In an xs Container (320)\" /></Container>\n  <Input placeholder=\"Bare: fills the parent\" />\n</Column>", render: e_atoms_input_example_9 },
     ],
     donts: [
       { title: "text", do: { caption: "Pass `label` so every field carries a persistent, programmatically-linked name.", code: "<Input label=\"Email\" placeholder=\"ada@acme.dev\" />", render: e_atoms_input_dont_0_do }, dont: { caption: "A placeholder is not a label; it vanishes the moment the user types and screen readers may skip it.", code: "<Input placeholder=\"Email\" />", render: e_atoms_input_dont_0_dont } },
@@ -1428,13 +1424,12 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     category: "atoms",
     examples: [
       { label: "Default", code: "<InputOTP />", render: e_atoms_input_otp_example_0 },
-      { label: "Length", code: "<Column relaxed>\n  <InputOTP length={6} />\n  <InputOTP length={4} />\n</Column>", render: e_atoms_input_otp_example_1 },
-      { label: "Grouped", code: "<Column relaxed>\n  <InputOTP length={6} groups={3} />\n  <InputOTP length={6} groups={2} small />\n</Column>", render: e_atoms_input_otp_example_2 },
-      { label: "Alphanumeric", code: "<InputOTP length={6} alphanumeric defaultValue=\"G\" />", render: e_atoms_input_otp_example_3 },
+      { label: "Length", code: "<InputOTP length={4} />", render: e_atoms_input_otp_example_1 },
+      { label: "Grouped", code: "<InputOTP groups={3} />", render: e_atoms_input_otp_example_2 },
+      { label: "Alphanumeric", code: "<InputOTP alphanumeric defaultValue=\"G\" />", render: e_atoms_input_otp_example_3 },
       { label: "Masked", code: "<InputOTP masked defaultValue=\"1234\" />", render: e_atoms_input_otp_example_4 },
       { label: "Sizes", code: "<Column relaxed>\n  <InputOTP small />\n  <InputOTP />\n  <InputOTP large />\n</Column>", render: e_atoms_input_otp_example_5 },
       { label: "Disabled", code: "<InputOTP disabled defaultValue=\"1234\" />", render: e_atoms_input_otp_example_6 },
-      { label: "Completion", code: "<Stateful initial=\"\">\n  {(code, setCode) => (\n    <Column snug>\n      <InputOTP length={4} onComplete={setCode} />\n      <Typography muted>{code === \"\" ? \"Waiting for the 4-digit code\" : `Code ${code} received`}</Typography>\n    </Column>\n  )}\n</Stateful>", render: e_atoms_input_otp_example_7 },
     ],
     donts: [
       { do: { caption: "Size the field to the real code length with `length`, and split a long code with `groups` so the eye can chunk it the way the sender wrote it.", code: "<InputOTP length={6} groups={3} />", render: e_atoms_input_otp_dont_0_do }, dont: { caption: "Use `masked` for a code the user is meant to read back from an SMS; the bullets hide whether they typed it correctly.", code: "<InputOTP masked defaultValue=\"123456\" />", render: e_atoms_input_otp_dont_0_dont } },
@@ -1446,10 +1441,9 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     examples: [
       { label: "Default", code: "<Kbd keys=\"⌘ K\" />", render: e_atoms_kbd_example_0 },
       { label: "Single", code: "<Kbd>Esc</Kbd>", render: e_atoms_kbd_example_1 },
-      { label: "Combo", code: "<Kbd keys=\"⌘ ⇧ P\" />", render: e_atoms_kbd_example_2 },
-      { label: "Sequence", code: "<Kbd keys=\"⌘K ⌘S\" sequence />", render: e_atoms_kbd_example_3 },
-      { label: "In a button", code: "<Button outline iconLeft={<Icon search muted size={13} />} iconRight={<Kbd keys=\"⌘ K\" />}>\n  Search…\n</Button>", render: e_atoms_kbd_example_4 },
-      { label: "In a sentence", code: "<Row wrap alignCenter tight>\n  <Typography small>Press </Typography>\n  <Kbd keys=\"⌘ K\" />\n  <Typography small> to search.</Typography>\n</Row>", render: e_atoms_kbd_example_5 },
+      { label: "Sequence", code: "<Kbd keys=\"⌘K ⌘S\" sequence />", render: e_atoms_kbd_example_2 },
+      { label: "In a button", code: "<Button outline iconRight={<Kbd keys=\"⌘ K\" />}>Search…</Button>", render: e_atoms_kbd_example_3 },
+      { label: "In a sentence", code: "<Row alignCenter tight>\n  <Typography small>Press </Typography>\n  <Kbd keys=\"⌘ K\" />\n  <Typography small> to search.</Typography>\n</Row>", render: e_atoms_kbd_example_4 },
     ],
     donts: [
       { title: "Single", do: { caption: "Use `children` for one real key; give each cap exactly one key.", code: "<Kbd>Esc</Kbd>", render: e_atoms_kbd_dont_0_do }, dont: { caption: "Packing a whole shortcut into one key cap reads as a single keystroke that does not exist.", code: "<Kbd>⌘K</Kbd>", render: e_atoms_kbd_dont_0_dont } },
@@ -1461,16 +1455,16 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "layout",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Row alignCenter snug>\n  <Button primary>Save</Button>\n  <Button ghost>Cancel</Button>\n</Row>", render: e_atoms_layout_example_0 },
-      { label: "Vertical stack", code: "<Column relaxed>\n  <Button primary block>Save</Button>\n  <Button ghost block>Cancel</Button>\n</Column>", render: e_atoms_layout_example_1 },
-      { label: "Centered row", code: "<Row center alignCenter snug>\n  <Badge>schema</Badge>\n  <Badge secondary>role</Badge>\n  <Badge outline>tag</Badge>\n</Row>", render: e_atoms_layout_example_2 },
-      { label: "Space between", code: "<Row between alignCenter>\n  <Typography small>Request ID</Typography>\n  <Typography mono>req_8f2c10ab</Typography>\n</Row>", render: e_atoms_layout_example_3 },
-      { label: "Wrap", code: "<Row wrap snug>\n  <Badge>alpha</Badge>\n  <Badge>beta</Badge>\n  <Badge>gamma</Badge>\n  <Badge>delta</Badge>\n  <Badge>epsilon</Badge>\n  <Badge>zeta</Badge>\n</Row>", render: e_atoms_layout_example_4 },
-      { label: "Shrink a child to the row", code: "<Row between alignEnd wrap snug>\n  <Column tight shrink>\n    <Typography h3>Dashboard</Typography>\n    <Typography small muted>\n      Identity platform overview. Each widget reports its own window, not one shared period.\n    </Typography>\n  </Column>\n  <Row snug alignCenter>\n    <Button outline small>Customize</Button>\n    <Button outline small>Export</Button>\n  </Row>\n</Row>", render: e_atoms_layout_example_5 },
-      { label: "Padded surround", code: "<Row relaxed pad>\n  <MediaObject avatar=\"RC\" title=\"Rachel Chen\" description=\"rachel.chen@example.com\" />\n</Row>", render: e_atoms_layout_example_6 },
-      { label: "Stacks at narrow widths", code: "<Row stacks between alignCenter relaxed>\n  <Input placeholder=\"Search runs…\" />\n  <Row snug>\n    <Button outline>Filter</Button>\n    <Button primary>New run</Button>\n  </Row>\n</Row>", render: e_atoms_layout_example_7 },
-      { label: "Spans (twelfths of the Row)", code: "<Row snug>\n  <Column span={8}>\n    <Card padded>\n      <Typography medium>Content</Typography>\n      <Typography small muted>Eight of twelve columns.</Typography>\n    </Card>\n  </Column>\n  <Column span={4}>\n    <Card padded>\n      <Typography medium>Aside</Typography>\n      <Typography small muted>Four of twelve.</Typography>\n    </Card>\n  </Column>\n</Row>", render: e_atoms_layout_example_8 },
-      { label: "Spans that stack", code: "<Row snug stacks>\n  <Column span={6}>\n    <Card padded>\n      <Typography medium>Left</Typography>\n    </Card>\n  </Column>\n  <Column span={6}>\n    <Card padded>\n      <Typography medium>Right</Typography>\n    </Card>\n  </Column>\n</Row>", render: e_atoms_layout_example_9 },
+      { label: "Default", code: "<Row>\n  <Button primary>Save</Button>\n  <Button ghost>Cancel</Button>\n</Row>", render: e_atoms_layout_example_0 },
+      { label: "Vertical stack", code: "<Column>\n  <Button primary>Save</Button>\n  <Button ghost>Cancel</Button>\n</Column>", render: e_atoms_layout_example_1 },
+      { label: "Centered row", code: "<Row center>\n  <Badge>schema</Badge>\n  <Badge>role</Badge>\n</Row>", render: e_atoms_layout_example_2 },
+      { label: "Space between", code: "<Row between>\n  <Typography small>Request ID</Typography>\n  <Typography mono>req_8f2c10ab</Typography>\n</Row>", render: e_atoms_layout_example_3 },
+      { label: "Wrap", code: "<Row wrap>\n  <Badge>alpha</Badge>\n  <Badge>beta</Badge>\n  <Badge>gamma</Badge>\n  <Badge>delta</Badge>\n  <Badge>epsilon</Badge>\n  <Badge>zeta</Badge>\n</Row>", render: e_atoms_layout_example_4 },
+      { label: "Shrink a child to the row", code: "<Row between alignEnd wrap>\n  <Column tight shrink>\n    <Typography h3>Dashboard</Typography>\n    <Typography small muted>Identity platform overview. Each widget reports its own window.</Typography>\n  </Column>\n  <Button outline small>Export</Button>\n</Row>", render: e_atoms_layout_example_5 },
+      { label: "Padded surround", code: "<Card flush>\n  <Row pad>\n    <Typography>Padded surround</Typography>\n  </Row>\n</Card>", render: e_atoms_layout_example_6 },
+      { label: "Stacks at narrow widths", code: "<Row stacks>\n  <Input placeholder=\"Search runs\" />\n  <Button primary>New run</Button>\n</Row>", render: e_atoms_layout_example_7 },
+      { label: "Spans (twelfths of the Row)", code: "<Row>\n  <Column span={8}>\n    <Card>\n      <Typography medium>Eight of twelve</Typography>\n    </Card>\n  </Column>\n  <Column span={4}>\n    <Card>\n      <Typography medium>Four</Typography>\n    </Card>\n  </Column>\n</Row>", render: e_atoms_layout_example_8 },
+      { label: "Spans that stack", code: "<Row stacks>\n  <Column span={6}>\n    <Card>\n      <Typography medium>Left</Typography>\n    </Card>\n  </Column>\n  <Column span={6}>\n    <Card>\n      <Typography medium>Right</Typography>\n    </Card>\n  </Column>\n</Row>", render: e_atoms_layout_example_9 },
     ],
     donts: [
       { title: "Gap", do: { caption: "Use the gap scale so spacing tracks the kit's spacing tokens.", code: "<Row alignCenter snug>\n  <Button primary>Save</Button>\n  <Button ghost>Cancel</Button>\n</Row>", render: e_atoms_layout_dont_0_do }, dont: { caption: "Hand-roll `flexDirection` and a raw `gap`; that is a styling escape hatch.", code: "<View style={{ flexDirection: \"row\", alignItems: \"center\", gap: 8 }}>\n  <Button primary>Save</Button>\n  <Button ghost>Cancel</Button>\n</View>", render: e_atoms_layout_dont_0_dont } },
@@ -1482,13 +1476,13 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "listbox",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Listbox\n  accessibilityLabel=\"Teams\"\n  items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\", selected: false },\n    { label: \"Design\", selected: false },\n    { label: \"Platform\", selected: false },\n    { label: \"Security\", selected: false }\n  ]}\n  bordered\n/>", render: e_atoms_listbox_example_0 },
-      { label: "Multi", code: "<Listbox\n  accessibilityLabel=\"Teams\"\n  items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\", selected: false },\n    { label: \"Design\", selected: true },\n    { label: \"Platform\", selected: false },\n    { label: \"Security\", selected: false }\n  ]}\n  multi\n  bordered\n/>", render: e_atoms_listbox_example_1 },
-      { label: "Small", code: "<Listbox\n  accessibilityLabel=\"Teams\"\n  items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\", selected: false },\n    { label: \"Design\", selected: false },\n    { label: \"Platform\", selected: false },\n    { label: \"Security\", selected: false }\n  ]}\n  bordered\n  small\n/>", render: e_atoms_listbox_example_2 },
-      { label: "Large", code: "<Listbox\n  accessibilityLabel=\"Teams\"\n  items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\", selected: false },\n    { label: \"Design\", selected: false },\n    { label: \"Platform\", selected: false },\n    { label: \"Security\", selected: false }\n  ]}\n  bordered\n  large\n/>", render: e_atoms_listbox_example_3 },
-      { label: "Widths come from the parent", code: "<Column snug>\n  <Container xs start><Listbox bordered items={[{ label: \"In an xs Container (320)\", selected: true }, { label: \"Frontend\" }]} /></Container>\n  <Container lg start><Listbox bordered items={[{ label: \"In an lg Container (512)\", selected: true }, { label: \"Frontend\" }]} /></Container>\n  <Listbox bordered items={[{ label: \"Bare: fills the parent\", selected: true }, { label: \"Frontend\" }]} />\n</Column>", render: e_atoms_listbox_example_4 },
-      { label: "Detail line", code: "<Listbox\n  accessibilityLabel=\"People\"\n  items={[\n    { label: \"Rachel Chen\", detail: \"rachel@acme.io\", selected: true },\n    { label: \"Ada Lovelace\", detail: \"ada@acme.io\", selected: false },\n    { label: \"Kevin Turner\", detail: \"kevin@acme.io\", selected: false },\n    { label: \"Linus Berg\", detail: \"linus@acme.io\", selected: false }\n  ]}\n  bordered\n/>", render: e_atoms_listbox_example_5 },
-      { label: "Disabled", code: "<Listbox\n  accessibilityLabel=\"Teams\"\n  items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\", selected: false },\n    { label: \"Design\", selected: false },\n    { label: \"Platform\", selected: false },\n    { label: \"Security\", selected: false }\n  ]}\n  bordered\n  disabled\n/>", render: e_atoms_listbox_example_6 },
+      { label: "Default", code: "<Listbox\n  accessibilityLabel=\"Teams\"\n  items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\" },\n    { label: \"Design\" }\n  ]}\n/>", render: e_atoms_listbox_example_0 },
+      { label: "Multi", code: "<Listbox\n  accessibilityLabel=\"Teams\"\n  items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\" },\n    { label: \"Design\", selected: true }\n  ]}\n  multi\n/>", render: e_atoms_listbox_example_1 },
+      { label: "Small", code: "<Listbox\n  accessibilityLabel=\"Teams\"\n  items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\" },\n    { label: \"Design\" }\n  ]}\n  small\n/>", render: e_atoms_listbox_example_2 },
+      { label: "Large", code: "<Listbox\n  accessibilityLabel=\"Teams\"\n  items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\" },\n    { label: \"Design\" }\n  ]}\n  large\n/>", render: e_atoms_listbox_example_3 },
+      { label: "Disabled", code: "<Listbox\n  accessibilityLabel=\"Teams\"\n  items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\" },\n    { label: \"Design\" }\n  ]}\n  disabled\n/>", render: e_atoms_listbox_example_4 },
+      { label: "Detail line", code: "<Listbox\n  accessibilityLabel=\"People\"\n  items={[\n    { label: \"Rachel Chen\", detail: \"rachel@acme.io\", selected: true },\n    { label: \"Ada Lovelace\", detail: \"ada@acme.io\" },\n    { label: \"Kevin Turner\", detail: \"kevin@acme.io\" }\n  ]}\n/>", render: e_atoms_listbox_example_5 },
+      { label: "Widths come from the parent", code: "<Column snug>\n  <Container xs start><Listbox bordered items={[{ label: \"In an xs Container (320)\", selected: true }, { label: \"Frontend\" }]} /></Container>\n  <Listbox bordered items={[{ label: \"Bare: fills the parent\", selected: true }, { label: \"Frontend\" }]} />\n</Column>", render: e_atoms_listbox_example_6 },
     ],
     donts: [
       { title: "Prefer a native select for simple lists", do: { caption: "For short, plain lists a native select is lighter, accessible, and uses the platform picker on mobile.", code: "<Select defaultValue=\"Yes\" options={[\"Yes\", \"No\"]} />", render: e_atoms_listbox_dont_0_do }, dont: { caption: "A custom listbox for two short options is heavier than it needs to be and worse on mobile.", code: "<Listbox bordered items={[\n    { label: \"Yes\", selected: true },\n    { label: \"No\" }\n  ]} />", render: e_atoms_listbox_dont_0_dont } },

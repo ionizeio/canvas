@@ -5,18 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Autocomplete } = scope;
   return (
-<Autocomplete
-  options={[
-    "Ada Lovelace",
-    "Grace Hopper",
-    "Kira Tanaka",
-    "Liang Bao",
-    "Marcus Allen",
-    "Noor Park",
-    "Rachel Chen"
-  ]}
-  label="Assigned to"
-  placeholder="Search a person…"
-/>
+<Autocomplete label="Assigned to" placeholder="Search a person…" options={["Ada Lovelace", "Grace Hopper", "Kira Tanaka", "Liang Bao", "Noor Park"]} />
   );
 }

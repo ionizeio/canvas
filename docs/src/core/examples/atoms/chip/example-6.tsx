@@ -5,11 +5,9 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Row, Chip } = scope;
   return (
-<Row snug wrap alignCenter>
+<Row>
   <Chip selectable outline defaultSelected>Design</Chip>
   <Chip selectable outline>Engineering</Chip>
-  <Chip selectable outline>Product</Chip>
-  <Chip selectable outline>Marketing</Chip>
 </Row>
   );
 }

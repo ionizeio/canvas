@@ -16,12 +16,6 @@ Keyboard shortcut indicator badge.
 <Kbd>Esc</Kbd>
 ```
 
-### Combo
-
-```tsx
-<Kbd keys="⌘ ⇧ P" />
-```
-
 ### Sequence
 
 ```tsx
@@ -31,15 +25,13 @@ Keyboard shortcut indicator badge.
 ### In a button
 
 ```tsx
-<Button outline iconLeft={<Icon search muted size={13} />} iconRight={<Kbd keys="⌘ K" />}>
-  Search…
-</Button>
+<Button outline iconRight={<Kbd keys="⌘ K" />}>Search…</Button>
 ```
 
 ### In a sentence
 
 ```tsx
-<Row wrap alignCenter tight>
+<Row alignCenter tight>
   <Typography small>Press </Typography>
   <Kbd keys="⌘ K" />
   <Typography small> to search.</Typography>

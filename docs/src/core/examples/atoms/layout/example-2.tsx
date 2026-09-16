@@ -5,10 +5,9 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Badge, Row } = scope;
   return (
-<Row center alignCenter snug>
+<Row center>
   <Badge>schema</Badge>
-  <Badge secondary>role</Badge>
-  <Badge outline>tag</Badge>
+  <Badge>role</Badge>
 </Row>
   );
 }
