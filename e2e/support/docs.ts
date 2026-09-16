@@ -24,7 +24,7 @@ import { expect, type Locator, type Page } from "@playwright/test";
 
 export type Scheme = "dark" | "light";
 export type Surface = "solid" | "glass";
-export type FormFactor = "phone" | "tablet" | "desktop";
+export type FormFactor = "phone" | "largePhone" | "tablet" | "laptop" | "desktop" | "full";
 
 /** The prefix an EXPO_BASE_URL build is mounted under; empty for a root-served export. */
 export const BASE_PATH = (process.env.E2E_BASE_PATH ?? "").replace(/\/+$/, "");
@@ -121,8 +121,11 @@ export function platformRow(page: Page, platform: "ios" | "android" | "web"): Lo
 
 const FORM_FACTOR_LABEL: Record<FormFactor, string> = {
   phone: "Phone width (375px)",
+  largePhone: "Large phone width (640px)",
   tablet: "Tablet width (768px)",
-  desktop: "Desktop width (full)",
+  laptop: "Laptop width (1024px)",
+  desktop: "Desktop width (1280px)",
+  full: "Full width",
 };
 
 /**

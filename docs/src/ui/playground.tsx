@@ -26,13 +26,19 @@ const SEARCHABLE_EXAMPLES: Record<string, string> = { IconGallery: "Search icons
 //     FilterPanel drawers, DescriptionList) resolve as the simulated tier. The
 //     override wraps the stage's OverlayProvider, so portaled overlay content
 //     (menus, dialogs, the calendar peek) simulates too.
-// Desktop is the resting state: no width constraint, no override. In a stage
-// narrower than the tier (tablet in a mid-width window) the card clamps to the
+// The tiers walk the kit's own breakpoint scale (src/style/tokens.ts
+// `breakpoints`: sm 640, md 768, lg 1024, xl 1280), one preview per bucket a
+// component can switch on, plus a phone that sits well inside `sm`. Full width
+// is the resting state: no width constraint, no override. In a stage narrower
+// than the tier (a laptop tier in a mid-width window) the card clamps to the
 // stage and the readout shows the MEASURED width, so it never overstates.
 const FORM_FACTORS: readonly { label: string; icon: IconName; width: number | null; bucket: BreakpointKey | "base" | null }[] = [
   { label: "Phone width (375px)", icon: "smartphone", width: 375, bucket: "sm" },
+  { label: "Large phone width (640px)", icon: "phone", width: 640, bucket: "sm" },
   { label: "Tablet width (768px)", icon: "tablet", width: 768, bucket: "md" },
-  { label: "Desktop width (full)", icon: "monitor", width: null, bucket: null },
+  { label: "Laptop width (1024px)", icon: "laptop", width: 1024, bucket: "lg" },
+  { label: "Desktop width (1280px)", icon: "monitor", width: 1280, bucket: "xl" },
+  { label: "Full width", icon: "maximize", width: null, bucket: null },
 ];
 
 export class ExampleErrorBoundary extends Component<{ children: ReactNode }, { error: string | null }> {
@@ -158,7 +164,7 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
   // three previews. Reset when the selected example changes so a stale query never carries over.
   const [query, setQuery] = useState("");
   useEffect(() => { setQuery(""); }, [selected]);
-  // The simulated form factor (see FORM_FACTORS). Desktop (the last entry) is
+  // The simulated form factor (see FORM_FACTORS). Full width (the last entry) is
   // the resting state; the choice survives example switches on purpose, so a
   // breakpoint sweep can walk every variant at one tier.
   const [factorIndex, setFactorIndex] = useState(FORM_FACTORS.length - 1);
