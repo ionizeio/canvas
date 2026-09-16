@@ -11,7 +11,7 @@ import { Donts } from "./dont";
 import { PageNav } from "./page-nav";
 import { stripHtml } from "../lib/html";
 import { variantSlug } from "../lib/variant";
-import { geist } from "./fonts";
+import { sans } from "./fonts";
 
 // The generic component reference page, shared by the default route
 // (components/[slug]/index) and the deep-linked variant route
@@ -55,7 +55,7 @@ export function ComponentReference() {
     <Page>
       {/* Component pages use a larger title (28/700) than the generic page header. */}
       <View style={{ gap: 6 }}>
-        <Text accessibilityRole="header" aria-level={1} style={{ fontFamily: geist("700"), fontSize: 28, letterSpacing: -0.42, color: tokens.foreground }}>{comp.name}</Text>
+        <Text accessibilityRole="header" aria-level={1} style={{ fontFamily: sans("700"), fontSize: 28, letterSpacing: -0.42, color: tokens.foreground }}>{comp.name}</Text>
         <Lead>{stripHtml(comp.description)}</Lead>
       </View>
       {examples.length > 0 ? (

@@ -4,7 +4,7 @@ import { CONTENT_TOP_INSET } from "../../../shell/topbar";
 import { ScreenFrame } from "../../../shell/native-header";
 import { PageNav } from "../../../ui/page-nav";
 import { H1 } from "../../../ui/prose";
-import { geist } from "../../../ui/fonts";
+import { sans } from "../../../ui/fonts";
 import { CatSubBar, CatGroup } from "../../../catalog/tile";
 import { TOKENS_TILES } from "../../../catalog/tokens";
 import { ATOMS_TILES } from "../../../catalog/atoms";
@@ -44,7 +44,7 @@ export default function ComponentsIndex() {
       <H1>Components</H1>
       <CatSubBar categories={CATEGORY_IDS} total={total} />
 
-      <Text style={{ fontFamily: geist("400"), fontSize: 13, lineHeight: 20.8, maxWidth: 672, color: tokens["muted-foreground"], marginTop: -12 }}>
+      <Text style={{ fontFamily: sans("400"), fontSize: 13, lineHeight: 20.8, maxWidth: 672, color: tokens["muted-foreground"], marginTop: -12 }}>
         A live catalog of every component in the Canvas design system. Each tile is the real component
         rendered with the current theme. Open a tile for its full reference.
       </Text>

@@ -6,7 +6,7 @@ import { IconSearchContext } from "../core/live-state";
 import type { DocExample, ExampleScope } from "../core/scope";
 import { CodeBlock } from "./code-block";
 import { DocsSurface } from "./surface";
-import { geist } from "./fonts";
+import { sans } from "./fonts";
 
 // Docs-only: example helpers whose fence renders a searchable catalog. When the selected
 // example's code uses one, the Playground draws a SINGLE search field above the 3-up stage and
@@ -56,7 +56,7 @@ function ErrorNote({ message }: { message: string }) {
   const { tokens } = useTheme();
   return (
     <Column tight style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.destructive, padding: 10 }}>
-      <Text style={{ fontFamily: geist("600"), fontSize: 12, color: tokens.destructive }}>Example failed to render</Text>
+      <Text style={{ fontFamily: sans("600"), fontSize: 12, color: tokens.destructive }}>Example failed to render</Text>
       <Text style={{ fontSize: 11, color: tokens["muted-foreground"] }}>{message}</Text>
     </Column>
   );
@@ -132,7 +132,7 @@ function PlatformRow({ label, scope, render, resetKey, first, showLabel, stageAl
       </Column>
       {showLabel ? (
         <View pointerEvents="none" style={{ position: "absolute", top: 8, left: 12 }}>
-          <Text style={{ fontFamily: geist("600"), fontSize: 10, letterSpacing: 0.6, textTransform: "uppercase", color: tokens["muted-foreground"], opacity: 0.55 }}>
+          <Text style={{ fontFamily: sans("600"), fontSize: 10, letterSpacing: 0.6, textTransform: "uppercase", color: tokens["muted-foreground"], opacity: 0.55 }}>
             {label}
           </Text>
         </View>
@@ -235,7 +235,7 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
           <View style={{ marginBottom: 8 }}>
             <Row tight end alignCenter>
               {simulating ? (
-                <Text style={{ fontFamily: geist("500"), fontSize: 11, color: tokens["muted-foreground"] }}>
+                <Text style={{ fontFamily: sans("500"), fontSize: 11, color: tokens["muted-foreground"] }}>
                   {`${cardWidth || simulated.width}px`}
                 </Text>
               ) : null}

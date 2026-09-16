@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { Text, Pressable, Row, Column, Icon, GlassSurface, useTheme, alpha } from "@nannier-com/canvas";
-import { geist } from "../ui/fonts";
+import { sans } from "../ui/fonts";
 
 // The mobile-web top bar, built to match the iOS UINavigationBar: a centered title flanked by
 // circular Liquid-Glass-style buttons — a back chevron on the left (on pushed pages) and the
@@ -56,7 +56,7 @@ export function MobileNavBar({
         <Column flush alignStart style={{ width: SIDE }}>
           {showBack ? <CircleButton label="Back" onPress={onBack} icon={<Icon chevronLeft size={20} />} /> : null}
         </Column>
-        <Text numberOfLines={1} style={{ flex: 1, textAlign: "center", fontFamily: geist("600"), fontSize: 17, color: tokens.foreground }}>
+        <Text numberOfLines={1} style={{ flex: 1, textAlign: "center", fontFamily: sans("600"), fontSize: 17, color: tokens.foreground }}>
           {title}
         </Text>
         <Row snug end alignCenter style={{ width: SIDE }}>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { View, Text, useTheme } from "@nannier-com/canvas";
-import { geist } from "../ui/fonts";
+import { sans } from "../ui/fonts";
 
 // The hardware around each landing-hero capture. The screenshots are pure screen grabs
 // (status bar, app bar, tab bar and all), so the bezel, the corner radii and the camera
@@ -142,7 +142,7 @@ function ChromeBar({ height }: { height: number }) {
       >
         <Text
           numberOfLines={1}
-          style={{ fontFamily: geist("400"), fontSize: Math.max(5, height * 0.34), color: tokens["muted-foreground"] }}
+          style={{ fontFamily: sans("400"), fontSize: Math.max(5, height * 0.34), color: tokens["muted-foreground"] }}
         >
           canvas.nannier.com
         </Text>

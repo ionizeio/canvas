@@ -6,7 +6,7 @@ import type { DocDontPair } from "../core/scope";
 import { CodeBlock } from "./code-block";
 import { ExampleErrorBoundary } from "./playground";
 import { DocsSurface } from "./surface";
-import { geist } from "./fonts";
+import { sans } from "./fonts";
 
 export interface DoDontCardProps {
   // Treatment axis: `dont` is the red card, and everything else is the green Do card.
@@ -55,7 +55,7 @@ export function DoDontCard(props: DoDontCardProps) {
       <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: bg, pointerEvents: "none" }} />
       <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
         {isDont ? <Icon circleX destructive size={14} /> : <Icon circleCheck success size={14} />}
-        <Text style={{ fontFamily: geist("600"), fontSize: 13, color: labelColor }}>{isDont ? "Don’t" : "Do"}</Text>
+        <Text style={{ fontFamily: sans("600"), fontSize: 13, color: labelColor }}>{isDont ? "Don’t" : "Do"}</Text>
       </View>
       {children === undefined ? null : (
         <View
@@ -68,7 +68,7 @@ export function DoDontCard(props: DoDontCardProps) {
         </View>
       )}
       {code === undefined ? null : <CodeBlock code={code} wrap />}
-      <Text style={{ fontFamily: geist("400"), fontSize: 12, lineHeight: 18, color: tokens["muted-foreground"] }}>{caption}</Text>
+      <Text style={{ fontFamily: sans("400"), fontSize: 12, lineHeight: 18, color: tokens["muted-foreground"] }}>{caption}</Text>
     </DocsSurface>
   );
 }
@@ -92,11 +92,11 @@ export function Donts({ donts }: { donts: DocDontPair[] }) {
 
   return (
     <Column relaxed>
-      <Text accessibilityRole="header" aria-level={2} style={{ fontFamily: geist("600"), fontSize: 20, letterSpacing: -0.3, color: tokens.foreground }}>Don’ts</Text>
+      <Text accessibilityRole="header" aria-level={2} style={{ fontFamily: sans("600"), fontSize: 20, letterSpacing: -0.3, color: tokens.foreground }}>Don’ts</Text>
       {donts.map((d, i) => (
         <Column key={i} snug>
           {d.title ? (
-            <Text accessibilityRole="header" aria-level={3} style={{ fontFamily: geist("600"), fontSize: 13, color: tokens.foreground }}>{d.title}</Text>
+            <Text accessibilityRole="header" aria-level={3} style={{ fontFamily: sans("600"), fontSize: 13, color: tokens.foreground }}>{d.title}</Text>
           ) : null}
           <View style={{ flexDirection: wide ? "row" : "column", gap: 16 }}>
             <DoDontCard dont caption={d.dont.caption} style={wide ? { flex: 1 } : null}>{d.dont.render(scope)}</DoDontCard>

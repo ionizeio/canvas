@@ -2,7 +2,7 @@ import { useWindowDimensions } from "react-native";
 import { View, Text, Row, Column, Typography, useTheme } from "@nannier-com/canvas";
 import { Page } from "../../../ui/page";
 import { PageNav } from "../../../ui/page-nav";
-import { geist, geistMono, urbanist } from "../../../ui/fonts";
+import { sans, geistMono } from "../../../ui/fonts";
 import { TokenH1, TokenLede, TokenSection, Surface, Grid } from "../../../ui/tokens-kit";
 
 // The Canvas type scale is the Typography component's roles: the Riskora ladder in
@@ -45,7 +45,7 @@ const WEIGHTS = [
 function Eyebrow({ children }: { children: string }) {
   const { tokens } = useTheme();
   return (
-    <Text style={{ fontFamily: geist("500"), fontSize: 11, letterSpacing: 0.88, textTransform: "uppercase", color: tokens["muted-foreground"], marginBottom: 8 }}>
+    <Text style={{ fontFamily: sans("500"), fontSize: 11, letterSpacing: 0.88, textTransform: "uppercase", color: tokens["muted-foreground"], marginBottom: 8 }}>
       {children}
     </Text>
   );
@@ -70,10 +70,10 @@ function FontCard({ varName, sample, sampleFamily, sampleTracking, caption, spec
       <Text style={{ marginTop: 8, fontSize: 12.5, lineHeight: 17.5, fontFamily: geistMono("400"), color: tokens["muted-foreground"] }}>
         {caption}
       </Text>
-      <Text style={{ marginTop: 16, fontSize: 14, lineHeight: 22.4, fontFamily: specimenMono ? geistMono("400") : geist("400"), color: tokens.foreground }}>
+      <Text style={{ marginTop: 16, fontSize: 14, lineHeight: 22.4, fontFamily: specimenMono ? geistMono("400") : sans("400"), color: tokens.foreground }}>
         {specimen}
       </Text>
-      <Text style={{ marginTop: 12, fontSize: 12, lineHeight: 16.8, fontFamily: geist("400"), color: tokens["muted-foreground"] }}>
+      <Text style={{ marginTop: 12, fontSize: 12, lineHeight: 16.8, fontFamily: sans("400"), color: tokens["muted-foreground"] }}>
         Self-hosted by the consumer · weight axis 100-900.
       </Text>
     </Surface>
@@ -90,7 +90,7 @@ function ScaleRow({ s, i }: { s: typeof SCALE[number]; i: number }) {
       borderTopColor: tokens.border,
     }}>
       <View style={{ width: 140, flexShrink: 0 }}>
-        <Text style={{ fontFamily: geist("500"), fontSize: 12.5, color: tokens.foreground }}>{s.name}</Text>
+        <Text style={{ fontFamily: sans("500"), fontSize: 12.5, color: tokens.foreground }}>{s.name}</Text>
         <Text style={{ fontFamily: geistMono("400"), fontSize: 11, color: tokens["muted-foreground"] }}>{s.role}</Text>
       </View>
       {/* The real role, so the specimen IS the package value (face, size, leading, weight). */}
@@ -114,7 +114,7 @@ function HelperRow({ h, i }: { h: typeof HELPERS[number]; i: number }) {
       borderTopColor: tokens.border,
     }}>
       <View style={{ width: 140, flexShrink: 0 }}>
-        <Text style={{ fontFamily: geist("500"), fontSize: 12.5, color: tokens.foreground }}>{h.name}</Text>
+        <Text style={{ fontFamily: sans("500"), fontSize: 12.5, color: tokens.foreground }}>{h.name}</Text>
         <Text style={{ fontFamily: geistMono("400"), fontSize: 11, color: tokens["muted-foreground"] }}>{h.role}</Text>
       </View>
       <View style={{ flex: 1 }}>
@@ -139,7 +139,7 @@ function WeightRow({ row, i }: { row: typeof WEIGHTS[number]; i: number }) {
       <Text style={{ width: 100, flexShrink: 0, fontSize: 12.5, fontFamily: geistMono("400"), color: tokens["muted-foreground"] }}>
         {row.w}
       </Text>
-      <Text style={{ flex: 1, fontSize: 20, fontFamily: urbanist(row.w), color: tokens.foreground }}>{row.name}</Text>
+      <Text style={{ flex: 1, fontSize: 20, fontFamily: sans(row.w), color: tokens.foreground }}>{row.name}</Text>
       <Text style={{ fontSize: 12, color: tokens["muted-foreground"] }}>{row.use}</Text>
     </Row>
   );
@@ -176,7 +176,7 @@ export default function TypographyScreen() {
                 key="sans"
                 varName="--font-sans"
                 sample="Urbanist"
-                sampleFamily={urbanist("500")}
+                sampleFamily={sans("500")}
                 sampleTracking={0}
                 caption={'"Urbanist", ui-sans-serif, system-ui, ...'}
                 specimen="The quick brown fox jumps over the lazy dog 0123456789"
@@ -233,25 +233,25 @@ export default function TypographyScreen() {
             {[
               <Surface key="header" padding={20}>
                 <Eyebrow>Page header</Eyebrow>
-                <Text style={{ fontSize: 22, fontFamily: geist("600"), letterSpacing: -0.44, color: tokens.foreground }}>Identities</Text>
+                <Text style={{ fontSize: 22, fontFamily: sans("600"), letterSpacing: -0.44, color: tokens.foreground }}>Identities</Text>
                 <Text style={{ marginTop: 4, fontSize: 14, color: tokens["muted-foreground"] }}>
                   Manage user identities in your identity service
                 </Text>
               </Surface>,
               <Surface key="stat" padding={20}>
                 <Eyebrow>Stat card</Eyebrow>
-                <Text style={{ fontSize: 13, fontFamily: geist("500"), color: tokens["muted-foreground"] }}>Active sessions</Text>
-                <Text style={{ fontSize: 28, fontFamily: geist("600"), letterSpacing: -0.56, marginTop: 4, color: tokens.foreground }}>1,204</Text>
+                <Text style={{ fontSize: 13, fontFamily: sans("500"), color: tokens["muted-foreground"] }}>Active sessions</Text>
+                <Text style={{ fontSize: 28, fontFamily: sans("600"), letterSpacing: -0.56, marginTop: 4, color: tokens.foreground }}>1,204</Text>
               </Surface>,
               <Surface key="field" padding={20}>
                 <Eyebrow>Field display</Eyebrow>
                 <Column cozy>
                   <Row cozy baseline>
-                    <Text style={{ width: 120, fontSize: 13, fontFamily: geist("500"), color: tokens["muted-foreground"] }}>Identifier</Text>
+                    <Text style={{ width: 120, fontSize: 13, fontFamily: sans("500"), color: tokens["muted-foreground"] }}>Identifier</Text>
                     <Text style={{ flex: 1, fontSize: 13, color: tokens.foreground }}>rachel.chen@example.com</Text>
                   </Row>
                   <Row cozy baseline>
-                    <Text style={{ width: 120, fontSize: 13, fontFamily: geist("500"), color: tokens["muted-foreground"] }}>ID</Text>
+                    <Text style={{ width: 120, fontSize: 13, fontFamily: sans("500"), color: tokens["muted-foreground"] }}>ID</Text>
                     <Text style={{ flex: 1, fontSize: 13, fontFamily: geistMono("400"), color: tokens.foreground }}>01HZK7M8N9P0Q1R2S3T4U5V6W7</Text>
                   </Row>
                 </Column>

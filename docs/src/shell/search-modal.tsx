@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { search } from "../core/data/search";
 import type { SearchEntry } from "../core/data/types";
-import { geist } from "../ui/fonts";
+import { sans } from "../ui/fonts";
 
 // The docs search modal. On desktop it is a centered command palette near the top of the
 // screen (the cmd-K pattern: input on top, results below). On mobile web it opens from the
@@ -130,7 +130,7 @@ export function SearchModal({ visible, onClose }: { visible: boolean; onClose: (
         accessibilityLabel="Search components"
         style={{
           flex: 1,
-          fontFamily: geist("400"),
+          fontFamily: sans("400"),
           fontSize: 14.5,
           color: tokens.foreground,
           // Strip the RN-Web default input outline; the panel border frames it.
@@ -151,13 +151,13 @@ export function SearchModal({ visible, onClose }: { visible: boolean; onClose: (
     >
       {!query ? (
         <Column flush alignCenter padLoose>
-          <Text style={{ fontFamily: geist("400"), fontSize: 13, color: tokens["muted-foreground"], textAlign: "center" }}>
+          <Text style={{ fontFamily: sans("400"), fontSize: 13, color: tokens["muted-foreground"], textAlign: "center" }}>
             Type to search components, tokens, and guides.
           </Text>
         </Column>
       ) : results.length === 0 ? (
         <Column flush alignCenter padLoose>
-          <Text style={{ fontFamily: geist("400"), fontSize: 13, color: tokens["muted-foreground"] }}>No results found.</Text>
+          <Text style={{ fontFamily: sans("400"), fontSize: 13, color: tokens["muted-foreground"] }}>No results found.</Text>
         </Column>
       ) : (
         <View style={{ paddingVertical: 6 }}>
@@ -165,7 +165,7 @@ export function SearchModal({ visible, onClose }: { visible: boolean; onClose: (
             <View key={category} style={{ paddingBottom: 4 }}>
               <Text
                 style={{
-                  fontFamily: geist("600"),
+                  fontFamily: sans("600"),
                   fontSize: 10.5,
                   letterSpacing: 0.6,
                   textTransform: "uppercase",
@@ -193,11 +193,11 @@ export function SearchModal({ visible, onClose }: { visible: boolean; onClose: (
                       backgroundColor: active ? alpha(tokens.muted, 0.6) : "transparent",
                     }}
                   >
-                    <Text style={{ fontFamily: geist("500"), fontSize: 13.5, color: tokens.foreground }} numberOfLines={1}>
+                    <Text style={{ fontFamily: sans("500"), fontSize: 13.5, color: tokens.foreground }} numberOfLines={1}>
                       {item.title}
                     </Text>
                     <Text
-                      style={{ fontFamily: geist("400"), fontSize: 12, color: tokens["muted-foreground"], marginTop: 1 }}
+                      style={{ fontFamily: sans("400"), fontSize: 12, color: tokens["muted-foreground"], marginTop: 1 }}
                       numberOfLines={1}
                     >
                       {item.description}

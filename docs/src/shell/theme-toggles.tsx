@@ -1,6 +1,6 @@
 import { View, Text, Row, Icon, Button, ButtonGroup, useTheme, liquidGlassAvailable } from "@nannier-com/canvas";
 import { useDocsTheme } from "../theme/docs-theme";
-import { geist } from "../ui/fonts";
+import { sans } from "../ui/fonts";
 
 // The scheme + surface toggles, shown always-visible in the native Android AND iOS top bars
 // (`compact`, placed beside the hamburger) and in the mobile web drill-down sheet's footer
@@ -47,7 +47,7 @@ export function ThemeToggles({ compact = false }: { compact?: boolean }) {
 
   return (
     <>
-      <Text style={{ fontFamily: geist("500"), fontSize: 13, color: tokens["muted-foreground"] }}>Appearance</Text>
+      <Text style={{ fontFamily: sans("500"), fontSize: 13, color: tokens["muted-foreground"] }}>Appearance</Text>
       <Row snug alignCenter>
         {glassAvailable ? (
           <ButtonGroup

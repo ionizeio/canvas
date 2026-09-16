@@ -1,7 +1,7 @@
 import { View, Text, Column, Row, Typography, Badge, DataTable, useTheme } from "@nannier-com/canvas";
 import type { PropGroup } from "../core/props";
 import { DocsSurface } from "./surface";
-import { geist } from "./fonts";
+import { sans } from "./fonts";
 
 // The generated prop tables for a component page. Data comes from
 // docs/src/core/props.ts (extracted from each component's `*Props` interface by
@@ -58,7 +58,7 @@ export function PropTables({ groups }: { groups: PropGroup[] }) {
   const multi = groups.length > 1;
   return (
     <View style={{ gap: 16 }}>
-      <Text accessibilityRole="header" aria-level={2} style={{ fontFamily: geist("600"), fontSize: 20, letterSpacing: -0.3, color: tokens.foreground }}>Props</Text>
+      <Text accessibilityRole="header" aria-level={2} style={{ fontFamily: sans("600"), fontSize: 20, letterSpacing: -0.3, color: tokens.foreground }}>Props</Text>
       {groups.map((g) => (
         <View key={g.name} style={{ gap: 8 }}>
           {/* Only label each table when a component has more than one prop group

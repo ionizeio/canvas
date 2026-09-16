@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Animated, AccessibilityInfo } from "react-native";
 import { View, Text, Row, Column, useTheme, alpha, Container } from "@nannier-com/canvas";
 import Svg, { Defs, RadialGradient, Stop, Rect } from "react-native-svg";
-import { geist, geistMono } from "../ui/fonts";
+import { sans, geistMono } from "../ui/fonts";
 import { MiniBtn, type CatTile } from "./tile";
 
 // ── Patterns previews ─────────────────────────────────────────────────────────
@@ -60,7 +60,7 @@ function MiniKbd({ children }: { children: string }) {
         height: 18,
         minWidth: 18,
         paddingHorizontal: 5,
-        borderRadius: 4,
+        borderRadius: 6,
         borderWidth: 1,
         borderColor: tokens.border,
         backgroundColor: tokens.muted,
@@ -78,7 +78,7 @@ function AccessibilityPreview() {
     <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
       <View
         style={{
-          borderRadius: 8,
+          borderRadius: 14,
           borderWidth: 2,
           borderColor: tokens.ring,
           padding: 2,
@@ -107,13 +107,13 @@ function DensityPreview() {
             backgroundColor: tokens.card,
             borderWidth: 1,
             borderColor: tokens.border,
-            borderRadius: 4,
+            borderRadius: 6,
             // The 4 / 8 / 12 padding ramp is the subject of this tile, so all three stay
             // literal here rather than one of them becoming the `padTight` boolean.
             padding: 4,
           }}
         >
-          <Text style={{ fontFamily: geist("400"), fontSize: 8, color: tokens.foreground }}>Compact</Text>
+          <Text style={{ fontFamily: sans("400"), fontSize: 8, color: tokens.foreground }}>Compact</Text>
         </Column>
         <Column
           flush
@@ -124,11 +124,11 @@ function DensityPreview() {
             backgroundColor: tokens.primary,
             borderWidth: 1,
             borderColor: tokens.primary,
-            borderRadius: 4,
+            borderRadius: 6,
             padding: 8,
           }}
         >
-          <Text style={{ fontFamily: geist("400"), fontSize: 8, color: tokens["primary-foreground"] }}>Regular</Text>
+          <Text style={{ fontFamily: sans("400"), fontSize: 8, color: tokens["primary-foreground"] }}>Regular</Text>
         </Column>
         <Column
           flush
@@ -139,11 +139,11 @@ function DensityPreview() {
             backgroundColor: tokens.card,
             borderWidth: 1,
             borderColor: tokens.border,
-            borderRadius: 4,
+            borderRadius: 6,
             padding: 12,
           }}
         >
-          <Text style={{ fontFamily: geist("400"), fontSize: 8, color: tokens.foreground }}>Comfy</Text>
+          <Text style={{ fontFamily: sans("400"), fontSize: 8, color: tokens.foreground }}>Comfy</Text>
         </Column>
       </Row>
     </Container>
@@ -162,18 +162,18 @@ function FormValidationPreview() {
           height: 28,
           // A destructive border paired with a 1px destructive ring reads as an emphasized error
           // outline; a 2px destructive border conveys that at tile size.
-          borderRadius: 6,
+          borderRadius: 10,
           borderWidth: 2,
           borderColor: tokens.destructive,
           backgroundColor: tokens.background,
           paddingHorizontal: 10,
         }}
       >
-        <Text style={{ fontFamily: geist("400"), fontSize: 10, color: tokens.foreground }} numberOfLines={1}>
+        <Text style={{ fontFamily: sans("400"), fontSize: 10, color: tokens.foreground }} numberOfLines={1}>
           not-an-email
         </Text>
       </Column>
-      <Text style={{ fontFamily: geist("400"), fontSize: 9, color: tokens.destructive }}>Not a valid email</Text>
+      <Text style={{ fontFamily: sans("400"), fontSize: 9, color: tokens.destructive }}>Not a valid email</Text>
     </View>
   );
 }
@@ -186,7 +186,7 @@ function GlassSurfacePreview() {
         width: 220,
         maxWidth: "100%",
         height: 80,
-        borderRadius: 8,
+        borderRadius: 14,
         overflow: "hidden",
         position: "relative",
         backgroundColor: "hsl(220, 30%, 96%)",
@@ -216,13 +216,13 @@ function GlassSurfacePreview() {
           left: 12,
           right: 12,
           bottom: 12,
-          borderRadius: 6,
+          borderRadius: 10,
           borderWidth: 1,
           borderColor: "rgba(255, 255, 255, 0.5)",
           backgroundColor: "rgba(255, 255, 255, 0.55)",
         }}
       >
-        <Text style={{ fontFamily: geist("500"), fontSize: 10, color: "hsl(220, 30%, 20%)" }}>Glass</Text>
+        <Text style={{ fontFamily: sans("500"), fontSize: 10, color: "hsl(220, 30%, 20%)" }}>Glass</Text>
       </Column>
     </View>
   );
@@ -238,8 +238,8 @@ function LoadingPreview() {
       <Row snug alignCenter>
         <Animated.View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: fill, opacity }} />
         <View style={{ flex: 1, gap: 6 }}>
-          <Animated.View style={{ height: 8, borderRadius: 4, backgroundColor: fill, opacity }} />
-          <Animated.View style={{ height: 8, width: "75%", borderRadius: 4, backgroundColor: fill, opacity }} />
+          <Animated.View style={{ height: 8, borderRadius: 6, backgroundColor: fill, opacity }} />
+          <Animated.View style={{ height: 8, width: "75%", borderRadius: 6, backgroundColor: fill, opacity }} />
         </View>
       </Row>
     </Container>

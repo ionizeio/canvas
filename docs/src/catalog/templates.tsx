@@ -1,6 +1,6 @@
 import { View, Text, Row, Column, useTheme, alpha } from "@nannier-com/canvas";
 import Svg, { Polyline, LinearGradient, Stop, Defs, Rect } from "react-native-svg";
-import { geist } from "../ui/fonts";
+import { sans } from "../ui/fonts";
 import { CanvasMark } from "../brand/canvas-mark";
 import { type CatTile } from "./tile";
 
@@ -43,15 +43,15 @@ function DashboardPreview() {
             style={{
               flex: 1,
               height: 28,
-              borderRadius: 4,
+              borderRadius: 6,
               backgroundColor: tokens.card,
               borderWidth: 1,
               borderColor: tokens.border,
               padding: 4,
             }}
           >
-            <Text style={{ fontFamily: geist("400"), fontSize: 7, color: tokens["muted-foreground"] }}>Stat</Text>
-            <Text style={{ fontFamily: geist("600"), fontSize: 8, color: tokens.foreground }}>12k</Text>
+            <Text style={{ fontFamily: sans("400"), fontSize: 7, color: tokens["muted-foreground"] }}>Stat</Text>
+            <Text style={{ fontFamily: sans("600"), fontSize: 8, color: tokens.foreground }}>12k</Text>
           </View>
         ))}
       </Row>
@@ -69,20 +69,20 @@ function DetailSidebarPreview() {
     backgroundColor: tokens.card,
     borderWidth: 1,
     borderColor: tokens.border,
-    borderRadius: 8,
+    borderRadius: 14,
     padding: 6,
     gap: 2,
   } as const;
   return (
     <View style={{ width: "100%", maxWidth: 220, flexDirection: "row", gap: 6 }}>
       <View style={[sectionCard, { flex: 1 }]}>
-        <View style={{ height: 6, width: 48, borderRadius: 4, backgroundColor: alpha(tokens.foreground, 0.8) }} />
-        <View style={{ height: 6, width: 64, borderRadius: 4, backgroundColor: tokens.muted }} />
-        <View style={{ height: 6, width: 56, borderRadius: 4, backgroundColor: tokens.muted }} />
+        <View style={{ height: 6, width: 48, borderRadius: 6, backgroundColor: alpha(tokens.foreground, 0.8) }} />
+        <View style={{ height: 6, width: 64, borderRadius: 6, backgroundColor: tokens.muted }} />
+        <View style={{ height: 6, width: 56, borderRadius: 6, backgroundColor: tokens.muted }} />
       </View>
       <View style={[sectionCard, { width: 60 }]}>
-        <View style={{ height: 6, borderRadius: 4, backgroundColor: tokens.muted }} />
-        <View style={{ height: 6, borderRadius: 4, backgroundColor: tokens.muted }} />
+        <View style={{ height: 6, borderRadius: 6, backgroundColor: tokens.muted }} />
+        <View style={{ height: 6, borderRadius: 6, backgroundColor: tokens.muted }} />
       </View>
     </View>
   );
@@ -94,9 +94,9 @@ function IdentitiesPreview() {
     <View style={{ width: "100%", maxWidth: 200, gap: 2 }}>
       {[1, 2, 3, 4].map((i) => (
         <Row key={i} tight alignCenter style={{ height: 12 }}>
-          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: alpha(tokens.primary, 0.3) }} />
-          <View style={{ flex: 1, height: 6, borderRadius: 4, backgroundColor: tokens.muted }} />
-          <View style={{ width: 24, height: 6, borderRadius: 4, backgroundColor: alpha(tokens.muted, 0.6) }} />
+          <View style={{ width: 6, height: 6, borderRadius: 5, backgroundColor: alpha(tokens.primary, 0.3) }} />
+          <View style={{ flex: 1, height: 6, borderRadius: 6, backgroundColor: tokens.muted }} />
+          <View style={{ width: 24, height: 6, borderRadius: 6, backgroundColor: alpha(tokens.muted, 0.6) }} />
         </Row>
       ))}
     </View>
@@ -108,8 +108,8 @@ function OnboardingPreview() {
   return (
     <View style={{ width: "100%", maxWidth: 200, gap: 6 }}>
       <Row flush between>
-        <Text style={{ fontFamily: geist("400"), fontSize: 8, color: tokens["muted-foreground"] }}>Step 2 of 4</Text>
-        <Text style={{ fontFamily: geist("400"), fontSize: 8, color: tokens["muted-foreground"] }}>50%</Text>
+        <Text style={{ fontFamily: sans("400"), fontSize: 8, color: tokens["muted-foreground"] }}>Step 2 of 4</Text>
+        <Text style={{ fontFamily: sans("400"), fontSize: 8, color: tokens["muted-foreground"] }}>50%</Text>
       </Row>
       <View style={{ height: 4, backgroundColor: tokens.muted, borderRadius: 9999, overflow: "hidden" }}>
         <View style={{ height: "100%", width: "50%", backgroundColor: tokens.primary }} />
@@ -119,14 +119,14 @@ function OnboardingPreview() {
           backgroundColor: tokens.card,
           borderWidth: 1,
           borderColor: tokens.border,
-          borderRadius: 8,
+          borderRadius: 14,
           padding: 8,
           marginTop: 4,
           gap: 2,
         }}
       >
-        <Text style={{ fontFamily: geist("600"), fontSize: 10, color: tokens.foreground }}>Profile</Text>
-        <Text style={{ fontFamily: geist("400"), fontSize: 8, color: tokens["muted-foreground"] }}>Tell us about yourself.</Text>
+        <Text style={{ fontFamily: sans("600"), fontSize: 10, color: tokens.foreground }}>Profile</Text>
+        <Text style={{ fontFamily: sans("400"), fontSize: 8, color: tokens["muted-foreground"] }}>Tell us about yourself.</Text>
       </View>
     </View>
   );
@@ -148,15 +148,15 @@ function ProfilePreview() {
           <Rect x={0} y={0} width={32} height={32} rx={16} fill="url(#profile-avatar)" />
         </Svg>
         <Column tight fill>
-          <View style={{ height: 8, width: 64, borderRadius: 4, backgroundColor: alpha(tokens.foreground, 0.8) }} />
-          <View style={{ height: 6, width: 48, borderRadius: 4, backgroundColor: tokens.muted }} />
+          <View style={{ height: 8, width: 64, borderRadius: 6, backgroundColor: alpha(tokens.foreground, 0.8) }} />
+          <View style={{ height: 6, width: 48, borderRadius: 6, backgroundColor: tokens.muted }} />
         </Column>
       </View>
       <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 6, borderBottomWidth: 1, borderColor: tokens.border, paddingBottom: 2 }}>
         <View style={{ borderBottomWidth: 1, borderColor: tokens.foreground, paddingBottom: 2, marginBottom: -3 }}>
-          <Text style={{ fontFamily: geist("500"), fontSize: 8, color: tokens.foreground }}>Overview</Text>
+          <Text style={{ fontFamily: sans("500"), fontSize: 8, color: tokens.foreground }}>Overview</Text>
         </View>
-        <Text style={{ fontFamily: geist("400"), fontSize: 8, color: tokens["muted-foreground"] }}>Credentials</Text>
+        <Text style={{ fontFamily: sans("400"), fontSize: 8, color: tokens["muted-foreground"] }}>Credentials</Text>
       </View>
     </View>
   );
@@ -167,14 +167,14 @@ function SettingsPreview() {
   return (
     <View style={{ width: "100%", maxWidth: 220, flexDirection: "row", gap: 6 }}>
       <View style={{ width: 60, gap: 2 }}>
-        <View style={{ paddingVertical: 2, paddingHorizontal: 4, borderRadius: 4, backgroundColor: tokens.accent }}>
-          <Text style={{ fontFamily: geist("400"), fontSize: 9, color: tokens["accent-foreground"] }}>Profile</Text>
+        <View style={{ paddingVertical: 2, paddingHorizontal: 4, borderRadius: 6, backgroundColor: tokens.accent }}>
+          <Text style={{ fontFamily: sans("400"), fontSize: 9, color: tokens["accent-foreground"] }}>Profile</Text>
         </View>
         <View style={{ paddingVertical: 2, paddingHorizontal: 4 }}>
-          <Text style={{ fontFamily: geist("400"), fontSize: 9, color: tokens["muted-foreground"] }}>Security</Text>
+          <Text style={{ fontFamily: sans("400"), fontSize: 9, color: tokens["muted-foreground"] }}>Security</Text>
         </View>
         <View style={{ paddingVertical: 2, paddingHorizontal: 4 }}>
-          <Text style={{ fontFamily: geist("400"), fontSize: 9, color: tokens["muted-foreground"] }}>Billing</Text>
+          <Text style={{ fontFamily: sans("400"), fontSize: 9, color: tokens["muted-foreground"] }}>Billing</Text>
         </View>
       </View>
       <Column
@@ -185,12 +185,12 @@ function SettingsPreview() {
           backgroundColor: tokens.card,
           borderWidth: 1,
           borderColor: tokens.border,
-          borderRadius: 8,
+          borderRadius: 14,
         }}
       >
-        <View style={{ height: 6, width: 48, borderRadius: 4, backgroundColor: alpha(tokens.foreground, 0.8) }} />
-        <View style={{ height: 16, borderRadius: 4, borderWidth: 1, borderColor: tokens.border }} />
-        <View style={{ height: 16, borderRadius: 4, borderWidth: 1, borderColor: tokens.border }} />
+        <View style={{ height: 6, width: 48, borderRadius: 6, backgroundColor: alpha(tokens.foreground, 0.8) }} />
+        <View style={{ height: 16, borderRadius: 6, borderWidth: 1, borderColor: tokens.border }} />
+        <View style={{ height: 16, borderRadius: 6, borderWidth: 1, borderColor: tokens.border }} />
       </Column>
     </View>
   );
@@ -208,21 +208,21 @@ function SigninPreview() {
         backgroundColor: tokens.card,
         borderWidth: 1,
         borderColor: tokens.border,
-        borderRadius: 8,
+        borderRadius: 14,
         padding: 12,
       }}
     >
       <CanvasMark size={18} />
-      <Text style={{ fontFamily: geist("600"), fontSize: 10, color: tokens.foreground, marginTop: 4 }}>Sign in</Text>
+      <Text style={{ fontFamily: sans("600"), fontSize: 10, color: tokens.foreground, marginTop: 4 }}>Sign in</Text>
       <Column tight style={{ width: "100%", marginTop: 8 }}>
-        <Column flush center style={{ height: 24, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12 }}>
-          <Text style={{ fontFamily: geist("400"), fontSize: 9, color: tokens["muted-foreground"] }}>Email</Text>
+        <Column flush center style={{ height: 24, borderRadius: 10, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12 }}>
+          <Text style={{ fontFamily: sans("400"), fontSize: 9, color: tokens["muted-foreground"] }}>Email</Text>
         </Column>
-        <Column flush center style={{ height: 24, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12 }}>
-          <Text style={{ fontFamily: geist("400"), fontSize: 9, color: tokens["muted-foreground"] }}>Password</Text>
+        <Column flush center style={{ height: 24, borderRadius: 10, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12 }}>
+          <Text style={{ fontFamily: sans("400"), fontSize: 9, color: tokens["muted-foreground"] }}>Password</Text>
         </Column>
-        <Column flush center alignCenter style={{ height: 24, borderRadius: 6, backgroundColor: tokens.primary }}>
-          <Text style={{ fontFamily: geist("500"), fontSize: 9, color: tokens["primary-foreground"] }}>Sign in</Text>
+        <Column flush center alignCenter style={{ height: 24, borderRadius: 10, backgroundColor: tokens.primary }}>
+          <Text style={{ fontFamily: sans("500"), fontSize: 9, color: tokens["primary-foreground"] }}>Sign in</Text>
         </Column>
       </Column>
     </Column>

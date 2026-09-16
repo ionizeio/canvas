@@ -1,6 +1,6 @@
 import { View, Text, Row, Column, useTheme, alpha, Container } from "@nannier-com/canvas";
 import Svg, { Path, Circle, Line, Polyline } from "react-native-svg";
-import { geist } from "../ui/fonts";
+import { sans } from "../ui/fonts";
 import { CanvasMark } from "../brand/canvas-mark";
 import type { CatTile } from "./tile";
 
@@ -27,13 +27,13 @@ function CalendarsPreview() {
             style={{
               width: (160 - 2 * 6) / 7,
               aspectRatio: 1,
-              borderRadius: 4,
+              borderRadius: 6,
               backgroundColor: selected ? tokens.primary : accent ? tokens.accent : "transparent",
             }}
           >
             <Text
               style={{
-                fontFamily: geist(selected ? "600" : "400"),
+                fontFamily: sans(selected ? "600" : "400"),
                 fontSize: 8,
                 color: selected ? tokens["primary-foreground"] : tokens["muted-foreground"],
               }}
@@ -57,7 +57,7 @@ function CommandPalettePreview() {
         backgroundColor: tokens.card,
         borderWidth: 1,
         borderColor: tokens.border,
-        borderRadius: 6,
+        borderRadius: 10,
       }}
     >
       <View
@@ -75,18 +75,18 @@ function CommandPalettePreview() {
           <Circle cx={11} cy={11} r={8} />
           <Line x1={21} y1={21} x2={16.65} y2={16.65} />
         </Svg>
-        <Text style={{ fontFamily: geist("400"), fontSize: 10, color: tokens["muted-foreground"] }}>Search...</Text>
+        <Text style={{ fontFamily: sans("400"), fontSize: 10, color: tokens["muted-foreground"] }}>Search...</Text>
         <View style={{ flex: 1 }} />
-        <View style={{ borderRadius: 4, borderWidth: 1, borderColor: tokens.border, backgroundColor: alpha(tokens.muted, 0.5), paddingHorizontal: 4, paddingVertical: 1 }}>
-          <Text style={{ fontFamily: geist("500"), fontSize: 9, color: tokens["muted-foreground"] }}>{"⌘K"}</Text>
+        <View style={{ borderRadius: 6, borderWidth: 1, borderColor: tokens.border, backgroundColor: alpha(tokens.muted, 0.5), paddingHorizontal: 4, paddingVertical: 1 }}>
+          <Text style={{ fontFamily: sans("500"), fontSize: 9, color: tokens["muted-foreground"] }}>{"⌘K"}</Text>
         </View>
       </View>
       <View style={{ padding: 4, gap: 2 }}>
-        <View style={{ paddingVertical: 2, paddingHorizontal: 6, borderRadius: 4, backgroundColor: tokens.accent }}>
-          <Text style={{ fontFamily: geist("400"), fontSize: 10, color: tokens["accent-foreground"] }}>Go to Dashboard</Text>
+        <View style={{ paddingVertical: 2, paddingHorizontal: 6, borderRadius: 6, backgroundColor: tokens.accent }}>
+          <Text style={{ fontFamily: sans("400"), fontSize: 10, color: tokens["accent-foreground"] }}>Go to Dashboard</Text>
         </View>
         <View style={{ paddingVertical: 2, paddingHorizontal: 6 }}>
-          <Text style={{ fontFamily: geist("400"), fontSize: 10, color: tokens.foreground }}>Identities</Text>
+          <Text style={{ fontFamily: sans("400"), fontSize: 10, color: tokens.foreground }}>Identities</Text>
         </View>
       </View>
     </View>
@@ -108,7 +108,7 @@ function StatusBadge({ label }: { label: string }) {
       }}
     >
       <View style={{ width: 5, height: 5, borderRadius: 9999, backgroundColor: STATUS_SUCCESS }} />
-      <Text style={{ fontFamily: geist("500"), fontSize: 9, color: STATUS_SUCCESS }}>{label}</Text>
+      <Text style={{ fontFamily: sans("500"), fontSize: 9, color: STATUS_SUCCESS }}>{label}</Text>
     </Row>
   );
 }
@@ -122,12 +122,12 @@ function DataTablesPreview() {
   return (
     <View style={{ width: 380, maxWidth: "100%", borderWidth: 1, borderColor: tokens.border, borderRadius: 10, overflow: "hidden" }}>
       <Row flush style={{ backgroundColor: alpha(tokens.muted, 0.4), borderBottomWidth: 1, borderColor: tokens.border }}>
-        <Text style={{ flex: 1, fontFamily: geist("500"), fontSize: 9, letterSpacing: 0.4, textTransform: "uppercase", color: tokens["muted-foreground"], paddingVertical: 6, paddingHorizontal: 10 }}>Name</Text>
-        <Text style={{ flex: 1, fontFamily: geist("500"), fontSize: 9, letterSpacing: 0.4, textTransform: "uppercase", color: tokens["muted-foreground"], paddingVertical: 6, paddingHorizontal: 10 }}>Status</Text>
+        <Text style={{ flex: 1, fontFamily: sans("500"), fontSize: 9, letterSpacing: 0.4, textTransform: "uppercase", color: tokens["muted-foreground"], paddingVertical: 6, paddingHorizontal: 10 }}>Name</Text>
+        <Text style={{ flex: 1, fontFamily: sans("500"), fontSize: 9, letterSpacing: 0.4, textTransform: "uppercase", color: tokens["muted-foreground"], paddingVertical: 6, paddingHorizontal: 10 }}>Status</Text>
       </Row>
       {rows.map(([name, status], i) => (
         <Row key={name} flush alignCenter style={{ borderBottomWidth: i < rows.length - 1 ? 1 : 0, borderColor: tokens.border }}>
-          <Text style={{ flex: 1, fontFamily: geist("400"), fontSize: 10, color: tokens.foreground, paddingVertical: 6, paddingHorizontal: 10 }}>{name}</Text>
+          <Text style={{ flex: 1, fontFamily: sans("400"), fontSize: 10, color: tokens.foreground, paddingVertical: 6, paddingHorizontal: 10 }}>{name}</Text>
           <View style={{ flex: 1, paddingVertical: 6, paddingHorizontal: 10 }}>
             <StatusBadge label={status} />
           </View>
@@ -148,7 +148,7 @@ function CheckRow({ label, checked }: { label: string; checked: boolean }) {
         style={{
           width: 12,
           height: 12,
-          borderRadius: 3,
+          borderRadius: 5,
           borderWidth: 1,
           borderColor: checked ? tokens.primary : tokens.input,
           backgroundColor: checked ? tokens.primary : tokens.background,
@@ -160,7 +160,7 @@ function CheckRow({ label, checked }: { label: string; checked: boolean }) {
           </Svg>
         ) : null}
       </Column>
-      <Text style={{ fontFamily: geist("400"), fontSize: 10, color: tokens.foreground }}>{label}</Text>
+      <Text style={{ fontFamily: sans("400"), fontSize: 10, color: tokens.foreground }}>{label}</Text>
     </View>
   );
 }
@@ -169,7 +169,7 @@ function FilterPanelsPreview() {
   const { tokens } = useTheme();
   return (
     <Column tight padTight style={{ width: 180, maxWidth: "100%", backgroundColor: tokens.card, borderWidth: 1, borderColor: tokens.border, borderRadius: 10 }}>
-      <Text style={{ fontFamily: geist("500"), fontSize: 8, letterSpacing: 0.4, textTransform: "uppercase", color: tokens["muted-foreground"], marginBottom: 2 }}>Status</Text>
+      <Text style={{ fontFamily: sans("500"), fontSize: 8, letterSpacing: 0.4, textTransform: "uppercase", color: tokens["muted-foreground"], marginBottom: 2 }}>Status</Text>
       <CheckRow label="Active" checked />
       <CheckRow label="Inactive" checked={false} />
     </Column>
@@ -179,7 +179,7 @@ function FilterPanelsPreview() {
 function NavbarsPreview() {
   const { tokens } = useTheme();
   return (
-    <View style={{ width: 260, maxWidth: "100%", borderWidth: 1, borderColor: tokens.border, borderRadius: 6, overflow: "hidden" }}>
+    <View style={{ width: 260, maxWidth: "100%", borderWidth: 1, borderColor: tokens.border, borderRadius: 10, overflow: "hidden" }}>
       <Row
         snug
         alignCenter
@@ -192,10 +192,10 @@ function NavbarsPreview() {
         }}
       >
         <CanvasMark size={16} />
-        <Text style={{ fontFamily: geist("600"), fontSize: 10, color: tokens.foreground }}>Canvas</Text>
+        <Text style={{ fontFamily: sans("600"), fontSize: 10, color: tokens.foreground }}>Canvas</Text>
         <View style={{ flex: 1 }} />
         <Column flush center alignCenter style={{ width: 24, height: 24, borderRadius: 9999, backgroundColor: tokens.muted }}>
-          <Text style={{ fontFamily: geist("500"), fontSize: 9, color: tokens["muted-foreground"] }}>AL</Text>
+          <Text style={{ fontFamily: sans("500"), fontSize: 9, color: tokens["muted-foreground"] }}>AL</Text>
         </Column>
       </Row>
     </View>
@@ -205,20 +205,20 @@ function NavbarsPreview() {
 function SidebarPreview() {
   const { tokens } = useTheme();
   return (
-    <View style={{ width: 160, maxWidth: "100%", backgroundColor: tokens.card, borderWidth: 1, borderColor: tokens.border, borderRadius: 6, padding: 6 }}>
-      <Text style={{ fontFamily: geist("400"), fontSize: 9, textTransform: "uppercase", color: tokens["muted-foreground"], paddingHorizontal: 4, marginBottom: 2 }}>Identity</Text>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 6, padding: 4, borderRadius: 4, backgroundColor: tokens.accent }}>
+    <View style={{ width: 160, maxWidth: "100%", backgroundColor: tokens.card, borderWidth: 1, borderColor: tokens.border, borderRadius: 10, padding: 6 }}>
+      <Text style={{ fontFamily: sans("400"), fontSize: 9, textTransform: "uppercase", color: tokens["muted-foreground"], paddingHorizontal: 4, marginBottom: 2 }}>Identity</Text>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 6, padding: 4, borderRadius: 6, backgroundColor: tokens.accent }}>
         <Svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke={tokens["accent-foreground"]} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
           <Path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4-4v2" />
           <Circle cx={9} cy={7} r={4} />
         </Svg>
-        <Text style={{ fontFamily: geist("400"), fontSize: 10, color: tokens["accent-foreground"] }}>Identities</Text>
+        <Text style={{ fontFamily: sans("400"), fontSize: 10, color: tokens["accent-foreground"] }}>Identities</Text>
       </View>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 6, padding: 4, borderRadius: 4 }}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 6, padding: 4, borderRadius: 6 }}>
         <Svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke={tokens["muted-foreground"]} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
           <Polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
         </Svg>
-        <Text style={{ fontFamily: geist("400"), fontSize: 10, color: tokens["muted-foreground"] }}>Sessions</Text>
+        <Text style={{ fontFamily: sans("400"), fontSize: 10, color: tokens["muted-foreground"] }}>Sessions</Text>
       </View>
     </View>
   );
@@ -228,12 +228,12 @@ function DialogPreview() {
   const { tokens } = useTheme();
   return (
     <Column flush center alignCenter style={{ width: 200, maxWidth: "100%", height: 64 }}>
-      <View style={{ width: 130, backgroundColor: tokens.card, borderWidth: 1, borderColor: tokens.border, borderRadius: 6, padding: 8 }}>
-        <View style={{ height: 6, width: 56, borderRadius: 3, backgroundColor: alpha(tokens.foreground, 0.8), marginBottom: 6 }} />
+      <View style={{ width: 130, backgroundColor: tokens.card, borderWidth: 1, borderColor: tokens.border, borderRadius: 10, padding: 8 }}>
+        <View style={{ height: 6, width: 56, borderRadius: 5, backgroundColor: alpha(tokens.foreground, 0.8), marginBottom: 6 }} />
         <View style={{ height: 4, width: "100%", borderRadius: 2, backgroundColor: alpha(tokens["muted-foreground"], 0.4), marginBottom: 8 }} />
         <Row tight end>
-          <View style={{ height: 12, width: 28, borderRadius: 3, borderWidth: 1, borderColor: tokens.border }} />
-          <View style={{ height: 12, width: 28, borderRadius: 3, backgroundColor: tokens.primary }} />
+          <View style={{ height: 12, width: 28, borderRadius: 5, borderWidth: 1, borderColor: tokens.border }} />
+          <View style={{ height: 12, width: 28, borderRadius: 5, backgroundColor: tokens.primary }} />
         </Row>
       </View>
     </Column>
@@ -269,7 +269,7 @@ function StepsPreview() {
                     <Polyline points="20 6 9 17 4 12" />
                   </Svg>
                 ) : (
-                  <Text style={{ fontFamily: geist("600"), fontSize: 9, color: current ? tokens.primary : tokens["muted-foreground"] }}>{i + 1}</Text>
+                  <Text style={{ fontFamily: sans("600"), fontSize: 9, color: current ? tokens.primary : tokens["muted-foreground"] }}>{i + 1}</Text>
                 )}
               </Column>
               {!last ? (
@@ -301,7 +301,7 @@ function TabsPreview() {
               borderColor: tokens.foreground,
             }}
           >
-            <Text style={{ fontFamily: geist(active ? "600" : "400"), fontSize: 10, color: active ? tokens.foreground : tokens["muted-foreground"] }}>{t}</Text>
+            <Text style={{ fontFamily: sans(active ? "600" : "400"), fontSize: 10, color: active ? tokens.foreground : tokens["muted-foreground"] }}>{t}</Text>
           </View>
         );
       })}

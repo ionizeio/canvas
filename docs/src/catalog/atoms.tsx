@@ -1,6 +1,6 @@
 import { View, Text, useTheme, alpha, Row } from "@nannier-com/canvas";
 import Svg, { Path, Circle, Polygon } from "react-native-svg";
-import { geist } from "../ui/fonts";
+import { sans } from "../ui/fonts";
 import { MiniBtn, MiniInput, type CatTile } from "./tile";
 
 // ── Atoms previews ───────────────────────────────────────────────────────────
@@ -13,11 +13,11 @@ const avatarColors = ["hsl(258 70% 55%)", "hsl(290 70% 55%)", "hsl(186 70% 50%)"
 function ViewPreview() {
   const { tokens } = useTheme();
   return (
-    <View style={{ flexDirection: "row", gap: 6, padding: 8, borderRadius: 6, borderWidth: 1, borderStyle: "dashed", borderColor: tokens.border }}>
+    <View style={{ flexDirection: "row", gap: 6, padding: 8, borderRadius: 10, borderWidth: 1, borderStyle: "dashed", borderColor: tokens.border }}>
       {[0, 1].map((i) => (
         <View
           key={i}
-          style={{ width: 28, height: 28, borderRadius: 4, backgroundColor: alpha(tokens.primary, 0.22), borderWidth: 1, borderColor: alpha(tokens.primary, 0.45) }}
+          style={{ width: 28, height: 28, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.22), borderWidth: 1, borderColor: alpha(tokens.primary, 0.45) }}
         />
       ))}
     </View>
@@ -28,8 +28,8 @@ function TextPreview() {
   const { tokens } = useTheme();
   return (
     <View style={{ alignItems: "center", gap: 2 }}>
-      <Text style={{ fontFamily: geist("700"), fontSize: 22, letterSpacing: -0.44, color: tokens.foreground }}>Aa</Text>
-      <Text style={{ fontFamily: geist("400"), fontSize: 11, color: tokens["muted-foreground"] }}>The quick brown fox</Text>
+      <Text style={{ fontFamily: sans("700"), fontSize: 22, letterSpacing: -0.44, color: tokens.foreground }}>Aa</Text>
+      <Text style={{ fontFamily: sans("400"), fontSize: 11, color: tokens["muted-foreground"] }}>The quick brown fox</Text>
     </View>
   );
 }
@@ -42,7 +42,7 @@ function PressablePreview() {
         style={{
           width: 88,
           height: 36,
-          borderRadius: 6,
+          borderRadius: 10,
           alignItems: "center",
           justifyContent: "center",
           backgroundColor: alpha(tokens.primary, 0.16),
@@ -50,9 +50,9 @@ function PressablePreview() {
           borderColor: alpha(tokens.primary, 0.38),
         }}
       >
-        <Text style={{ fontFamily: geist("500"), fontSize: 11, color: tokens.foreground }}>Press me</Text>
+        <Text style={{ fontFamily: sans("500"), fontSize: 11, color: tokens.foreground }}>Press me</Text>
       </View>
-      <Text style={{ fontFamily: geist("400"), fontSize: 10, color: tokens["muted-foreground"] }}>onPress · pressed state</Text>
+      <Text style={{ fontFamily: sans("400"), fontSize: 10, color: tokens["muted-foreground"] }}>onPress · pressed state</Text>
     </View>
   );
 }
@@ -64,7 +64,7 @@ function ImagePreview() {
       style={{
         width: 64,
         height: 48,
-        borderRadius: 6,
+        borderRadius: 10,
         borderWidth: 1,
         borderColor: tokens.border,
         backgroundColor: alpha(tokens.muted, 0.5),
@@ -90,14 +90,14 @@ function TextInputPreview() {
         maxWidth: 170,
         flexDirection: "row",
         alignItems: "center",
-        borderRadius: 6,
+        borderRadius: 10,
         borderWidth: 1,
         borderColor: tokens.input,
         backgroundColor: tokens.background,
         paddingHorizontal: 12,
       }}
     >
-      <Text style={{ fontFamily: geist("400"), fontSize: 12, color: tokens.foreground }}>Jane Doe</Text>
+      <Text style={{ fontFamily: sans("400"), fontSize: 12, color: tokens.foreground }}>Jane Doe</Text>
       <View style={{ width: 1, height: 14, backgroundColor: tokens.primary, marginLeft: 1 }} />
     </View>
   );
@@ -106,14 +106,14 @@ function TextInputPreview() {
 function ScrollViewPreview() {
   const { tokens } = useTheme();
   return (
-    <View style={{ width: 120, height: 56, borderRadius: 6, borderWidth: 1, borderColor: tokens.border, overflow: "hidden", backgroundColor: tokens.card }}>
+    <View style={{ width: 120, height: 56, borderRadius: 10, borderWidth: 1, borderColor: tokens.border, overflow: "hidden", backgroundColor: tokens.card }}>
       <View style={{ gap: 4, padding: 6 }}>
         {[0, 1, 2, 3].map((i) => (
-          <View key={i} style={{ height: 10, borderRadius: 3, backgroundColor: alpha(tokens.muted, 0.7) }} />
+          <View key={i} style={{ height: 10, borderRadius: 5, backgroundColor: alpha(tokens.muted, 0.7) }} />
         ))}
       </View>
-      <View style={{ position: "absolute", right: 3, top: 6, bottom: 6, width: 3, borderRadius: 3, backgroundColor: alpha(tokens["muted-foreground"], 0.25) }}>
-        <View style={{ position: "absolute", top: 0, height: "45%", width: "100%", borderRadius: 3, backgroundColor: alpha(tokens["muted-foreground"], 0.6) }} />
+      <View style={{ position: "absolute", right: 3, top: 6, bottom: 6, width: 3, borderRadius: 5, backgroundColor: alpha(tokens["muted-foreground"], 0.25) }}>
+        <View style={{ position: "absolute", top: 0, height: "45%", width: "100%", borderRadius: 5, backgroundColor: alpha(tokens["muted-foreground"], 0.6) }} />
       </View>
     </View>
   );
@@ -139,7 +139,7 @@ function AvatarsPreview() {
             zIndex: 10 - i,
           }}
         >
-          <Text style={{ fontFamily: geist("600"), fontSize: 10, color: "#ffffff" }}>{s}</Text>
+          <Text style={{ fontFamily: sans("600"), fontSize: 10, color: "#ffffff" }}>{s}</Text>
         </View>
       ))}
     </Row>
@@ -151,11 +151,11 @@ function BadgesPreview() {
   return (
     <View style={{ alignItems: "center", gap: 6 }}>
       <Row tight>
-        <View style={{ paddingVertical: 2, paddingHorizontal: 8, borderRadius: 6, backgroundColor: tokens.primary }}>
-          <Text style={{ fontFamily: geist("500"), fontSize: 12, color: tokens["primary-foreground"] }}>Default</Text>
+        <View style={{ paddingVertical: 2, paddingHorizontal: 8, borderRadius: 10, backgroundColor: tokens.primary }}>
+          <Text style={{ fontFamily: sans("500"), fontSize: 12, color: tokens["primary-foreground"] }}>Default</Text>
         </View>
-        <View style={{ paddingVertical: 2, paddingHorizontal: 8, borderRadius: 6, backgroundColor: tokens.secondary }}>
-          <Text style={{ fontFamily: geist("500"), fontSize: 12, color: tokens["secondary-foreground"] }}>Tag</Text>
+        <View style={{ paddingVertical: 2, paddingHorizontal: 8, borderRadius: 10, backgroundColor: tokens.secondary }}>
+          <Text style={{ fontFamily: sans("500"), fontSize: 12, color: tokens["secondary-foreground"] }}>Tag</Text>
         </View>
       </Row>
       <Row tight>
@@ -178,8 +178,8 @@ function StatusBadge({ label, status }: { label: string; status: "success" | "wa
   }[status];
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 2, paddingHorizontal: 8, borderRadius: 9999, borderWidth: 1, borderColor: palette.border }}>
-      <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: palette.dot }} />
-      <Text style={{ fontFamily: geist("500"), fontSize: 12, color: palette.text }}>{label}</Text>
+      <View style={{ width: 6, height: 6, borderRadius: 5, backgroundColor: palette.dot }} />
+      <Text style={{ fontFamily: sans("500"), fontSize: 12, color: palette.text }}>{label}</Text>
     </View>
   );
 }
@@ -193,11 +193,11 @@ function BreadcrumbsPreview() {
   );
   return (
     <Row tight alignCenter>
-      <Text style={{ fontFamily: geist("400"), fontSize: 11, color: tokens["muted-foreground"] }}>Projects</Text>
+      <Text style={{ fontFamily: sans("400"), fontSize: 11, color: tokens["muted-foreground"] }}>Projects</Text>
       {chevron}
-      <Text style={{ fontFamily: geist("400"), fontSize: 11, color: tokens["muted-foreground"] }}>Identity</Text>
+      <Text style={{ fontFamily: sans("400"), fontSize: 11, color: tokens["muted-foreground"] }}>Identity</Text>
       {chevron}
-      <Text style={{ fontFamily: geist("500"), fontSize: 11, color: tokens.foreground }}>Profile</Text>
+      <Text style={{ fontFamily: sans("500"), fontSize: 11, color: tokens.foreground }}>Profile</Text>
     </Row>
   );
 }
@@ -205,15 +205,15 @@ function BreadcrumbsPreview() {
 function ButtonGroupsPreview() {
   const { tokens } = useTheme();
   return (
-    <Row flush style={{ borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.card, padding: 2 }}>
-      <View style={{ paddingVertical: 2, paddingHorizontal: 8, backgroundColor: tokens.primary, borderRadius: 4, justifyContent: "center" }}>
-        <Text style={{ fontFamily: geist("400"), fontSize: 11, color: tokens["primary-foreground"] }}>Day</Text>
+    <Row flush style={{ borderRadius: 10, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.card, padding: 2 }}>
+      <View style={{ paddingVertical: 2, paddingHorizontal: 8, backgroundColor: tokens.primary, borderRadius: 6, justifyContent: "center" }}>
+        <Text style={{ fontFamily: sans("400"), fontSize: 11, color: tokens["primary-foreground"] }}>Day</Text>
       </View>
       <View style={{ paddingVertical: 2, paddingHorizontal: 8, justifyContent: "center" }}>
-        <Text style={{ fontFamily: geist("400"), fontSize: 11, color: tokens["muted-foreground"] }}>Week</Text>
+        <Text style={{ fontFamily: sans("400"), fontSize: 11, color: tokens["muted-foreground"] }}>Week</Text>
       </View>
       <View style={{ paddingVertical: 2, paddingHorizontal: 8, justifyContent: "center" }}>
-        <Text style={{ fontFamily: geist("400"), fontSize: 11, color: tokens["muted-foreground"] }}>Month</Text>
+        <Text style={{ fontFamily: sans("400"), fontSize: 11, color: tokens["muted-foreground"] }}>Month</Text>
       </View>
     </Row>
   );
@@ -237,7 +237,7 @@ function CheckRow({ label, checked }: { label: string; checked?: boolean }) {
         style={{
           width: 14,
           height: 14,
-          borderRadius: 3,
+          borderRadius: 5,
           alignItems: "center",
           justifyContent: "center",
           backgroundColor: checked ? tokens.primary : tokens.background,
@@ -251,7 +251,7 @@ function CheckRow({ label, checked }: { label: string; checked?: boolean }) {
           </Svg>
         ) : null}
       </View>
-      <Text style={{ fontFamily: geist("400"), fontSize: 11, color: tokens.foreground }}>{label}</Text>
+      <Text style={{ fontFamily: sans("400"), fontSize: 11, color: tokens.foreground }}>{label}</Text>
     </Row>
   );
 }
@@ -274,7 +274,7 @@ function AutocompletePreview() {
           height: 32,
           flexDirection: "row",
           alignItems: "center",
-          borderRadius: 6,
+          borderRadius: 10,
           borderWidth: 1,
           borderColor: tokens.input,
           backgroundColor: tokens.background,
@@ -282,7 +282,7 @@ function AutocompletePreview() {
           paddingRight: 8,
         }}
       >
-        <Text style={{ flex: 1, fontFamily: geist("400"), fontSize: 12, color: tokens["muted-foreground"] }}>Search…</Text>
+        <Text style={{ flex: 1, fontFamily: sans("400"), fontSize: 12, color: tokens["muted-foreground"] }}>Search…</Text>
         <Svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke={tokens["muted-foreground"]} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
           <Path d="m6 9 6 6 6-6" />
         </Svg>
@@ -295,9 +295,9 @@ function DividersPreview() {
   const { tokens } = useTheme();
   return (
     <View style={{ width: "100%", maxWidth: 180 }}>
-      <Text style={{ fontFamily: geist("400"), fontSize: 10, color: tokens["muted-foreground"], marginBottom: 8 }}>Above</Text>
+      <Text style={{ fontFamily: sans("400"), fontSize: 10, color: tokens["muted-foreground"], marginBottom: 8 }}>Above</Text>
       <View style={{ height: 1, backgroundColor: tokens.border }} />
-      <Text style={{ fontFamily: geist("400"), fontSize: 10, color: tokens["muted-foreground"], marginTop: 8 }}>Below</Text>
+      <Text style={{ fontFamily: sans("400"), fontSize: 10, color: tokens["muted-foreground"], marginTop: 8 }}>Below</Text>
     </View>
   );
 }
@@ -305,15 +305,15 @@ function DividersPreview() {
 function DropdownsPreview() {
   const { tokens } = useTheme();
   return (
-    <View style={{ minWidth: 120, backgroundColor: tokens.card, borderWidth: 1, borderColor: tokens.border, borderRadius: 6, padding: 4 }}>
-      <View style={{ paddingVertical: 4, paddingHorizontal: 8, borderRadius: 4 }}>
-        <Text style={{ fontFamily: geist("400"), fontSize: 11, color: tokens.foreground }}>Edit</Text>
+    <View style={{ minWidth: 120, backgroundColor: tokens.card, borderWidth: 1, borderColor: tokens.border, borderRadius: 10, padding: 4 }}>
+      <View style={{ paddingVertical: 4, paddingHorizontal: 8, borderRadius: 6 }}>
+        <Text style={{ fontFamily: sans("400"), fontSize: 11, color: tokens.foreground }}>Edit</Text>
       </View>
-      <View style={{ paddingVertical: 4, paddingHorizontal: 8, borderRadius: 4 }}>
-        <Text style={{ fontFamily: geist("400"), fontSize: 11, color: tokens.foreground }}>Copy</Text>
+      <View style={{ paddingVertical: 4, paddingHorizontal: 8, borderRadius: 6 }}>
+        <Text style={{ fontFamily: sans("400"), fontSize: 11, color: tokens.foreground }}>Copy</Text>
       </View>
-      <View style={{ paddingVertical: 4, paddingHorizontal: 8, borderRadius: 4 }}>
-        <Text style={{ fontFamily: geist("400"), fontSize: 11, color: tokens.destructive }}>Delete</Text>
+      <View style={{ paddingVertical: 4, paddingHorizontal: 8, borderRadius: 6 }}>
+        <Text style={{ fontFamily: sans("400"), fontSize: 11, color: tokens.destructive }}>Delete</Text>
       </View>
     </View>
   );
@@ -355,7 +355,7 @@ function InputsFormsPreview() {
 // A square ghost icon button used in the pagination row.
 function PageIconBtn({ children }: { children: React.ReactNode }) {
   return (
-    <View style={{ width: 28, height: 28, borderRadius: 6, alignItems: "center", justifyContent: "center" }}>{children}</View>
+    <View style={{ width: 28, height: 28, borderRadius: 10, alignItems: "center", justifyContent: "center" }}>{children}</View>
   );
 }
 
@@ -369,13 +369,13 @@ function PaginationPreview() {
         </Svg>
       </PageIconBtn>
       <PageIconBtn>
-        <Text style={{ fontFamily: geist("500"), fontSize: 11, color: tokens.foreground }}>1</Text>
+        <Text style={{ fontFamily: sans("500"), fontSize: 11, color: tokens.foreground }}>1</Text>
       </PageIconBtn>
-      <View style={{ width: 28, height: 28, borderRadius: 6, alignItems: "center", justifyContent: "center", backgroundColor: tokens.primary }}>
-        <Text style={{ fontFamily: geist("500"), fontSize: 11, color: tokens["primary-foreground"] }}>2</Text>
+      <View style={{ width: 28, height: 28, borderRadius: 10, alignItems: "center", justifyContent: "center", backgroundColor: tokens.primary }}>
+        <Text style={{ fontFamily: sans("500"), fontSize: 11, color: tokens["primary-foreground"] }}>2</Text>
       </View>
       <PageIconBtn>
-        <Text style={{ fontFamily: geist("500"), fontSize: 11, color: tokens.foreground }}>3</Text>
+        <Text style={{ fontFamily: sans("500"), fontSize: 11, color: tokens.foreground }}>3</Text>
       </PageIconBtn>
       <PageIconBtn>
         <Svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke={tokens.foreground} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
@@ -403,7 +403,7 @@ function RadioRow({ label, checked }: { label: string; checked?: boolean }) {
           backgroundColor: tokens.background,
         }}
       />
-      <Text style={{ fontFamily: geist("400"), fontSize: 11, color: tokens.foreground }}>{label}</Text>
+      <Text style={{ fontFamily: sans("400"), fontSize: 11, color: tokens.foreground }}>{label}</Text>
     </Row>
   );
 }
@@ -426,7 +426,7 @@ function SelectsPreview() {
           height: 32,
           flexDirection: "row",
           alignItems: "center",
-          borderRadius: 6,
+          borderRadius: 10,
           borderWidth: 1,
           borderColor: tokens.input,
           backgroundColor: tokens.background,
@@ -434,7 +434,7 @@ function SelectsPreview() {
           paddingRight: 8,
         }}
       >
-        <Text style={{ flex: 1, fontFamily: geist("400"), fontSize: 12, color: tokens.foreground }} numberOfLines={1}>
+        <Text style={{ flex: 1, fontFamily: sans("400"), fontSize: 12, color: tokens.foreground }} numberOfLines={1}>
           United States
         </Text>
         <Svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke={tokens["muted-foreground"]} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
@@ -452,8 +452,8 @@ function SkeletonsPreview() {
     <Row snug alignCenter style={{ width: "100%", maxWidth: 180 }}>
       <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: bar }} />
       <View style={{ flex: 1, gap: 6 }}>
-        <View style={{ height: 8, borderRadius: 4, backgroundColor: bar }} />
-        <View style={{ height: 8, width: "75%", borderRadius: 4, backgroundColor: bar }} />
+        <View style={{ height: 8, borderRadius: 6, backgroundColor: bar }} />
+        <View style={{ height: 8, width: "75%", borderRadius: 6, backgroundColor: bar }} />
       </View>
     </Row>
   );
@@ -462,8 +462,8 @@ function SkeletonsPreview() {
 function TextareasPreview() {
   const { tokens } = useTheme();
   return (
-    <View style={{ width: "100%", maxWidth: 180, minHeight: 40, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, padding: 8 }}>
-      <Text style={{ fontFamily: geist("400"), fontSize: 12, color: tokens["muted-foreground"] }}>Description…</Text>
+    <View style={{ width: "100%", maxWidth: 180, minHeight: 40, borderRadius: 10, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, padding: 8 }}>
+      <Text style={{ fontFamily: sans("400"), fontSize: 12, color: tokens["muted-foreground"] }}>Description…</Text>
     </View>
   );
 }
@@ -477,7 +477,7 @@ function MiniToggle({ on }: { on: boolean }) {
         style={{
           height: 16,
           width: 16,
-          borderRadius: 8,
+          borderRadius: 14,
           backgroundColor: tokens.background,
           marginLeft: on ? 18 : 2,
         }}
@@ -499,8 +499,8 @@ function TooltipsPreview() {
   const { tokens } = useTheme();
   return (
     <View style={{ alignItems: "center", gap: 4 }}>
-      <View style={{ paddingVertical: 4, paddingHorizontal: 8, borderRadius: 4, backgroundColor: tokens.foreground }}>
-        <Text style={{ fontFamily: geist("400"), fontSize: 10, color: tokens.background }}>Tooltip</Text>
+      <View style={{ paddingVertical: 4, paddingHorizontal: 8, borderRadius: 6, backgroundColor: tokens.foreground }}>
+        <Text style={{ fontFamily: sans("400"), fontSize: 10, color: tokens.background }}>Tooltip</Text>
       </View>
       <Svg width={10} height={6} viewBox="0 0 10 6">
         <Polygon points="0,0 10,0 5,6" fill={tokens.foreground} />

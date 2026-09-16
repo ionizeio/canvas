@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import { View, Text, Column, useTheme } from "@nannier-com/canvas";
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
-import { geist, geistMono } from "./fonts";
+import { sans, geistMono } from "./fonts";
 import { alpha } from "./color";
 import { useFluidType } from "../lib/fluid-type";
 
@@ -16,7 +16,7 @@ export function TokenH1({ children }: { children: ReactNode }) {
   const { tokens } = useTheme();
   const size = useFluidType(32, 40, 0.05);
   return (
-    <Text accessibilityRole="header" aria-level={1} style={{ fontFamily: geist("700"), fontSize: size, letterSpacing: size * -0.025, color: tokens.foreground }}>
+    <Text accessibilityRole="header" aria-level={1} style={{ fontFamily: sans("700"), fontSize: size, letterSpacing: size * -0.025, color: tokens.foreground }}>
       {children}
     </Text>
   );
@@ -26,7 +26,7 @@ export function TokenH1({ children }: { children: ReactNode }) {
 export function TokenLede({ children }: { children: ReactNode }) {
   const { tokens } = useTheme();
   return (
-    <Text style={{ fontFamily: geist("400"), fontSize: 14.5, lineHeight: 23.2, color: tokens["muted-foreground"], maxWidth: 672 }}>
+    <Text style={{ fontFamily: sans("400"), fontSize: 14.5, lineHeight: 23.2, color: tokens["muted-foreground"], maxWidth: 672 }}>
       {children}
     </Text>
   );
@@ -37,8 +37,8 @@ export function Callout({ label, children }: { label: string; children: ReactNod
   const { tokens } = useTheme();
   return (
     <View style={{ padding: 14, paddingHorizontal: 16, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: alpha(tokens.muted, 0.4) }}>
-      <Text style={{ fontFamily: geist("400"), fontSize: 12.5, lineHeight: 19, color: tokens["muted-foreground"] }}>
-        <Text style={{ fontFamily: geist("600"), color: tokens.foreground }}>{label} </Text>
+      <Text style={{ fontFamily: sans("400"), fontSize: 12.5, lineHeight: 19, color: tokens["muted-foreground"] }}>
+        <Text style={{ fontFamily: sans("600"), color: tokens.foreground }}>{label} </Text>
         {children}
       </Text>
     </View>
@@ -57,9 +57,9 @@ export function TokenSection({ title, description, anatomy, children }: {
   return (
     <Column relaxed>
       <Column tight>
-        <Text accessibilityRole="header" aria-level={2} style={{ fontFamily: geist("600"), fontSize: 20, letterSpacing: -0.3, color: tokens.foreground }}>{title}</Text>
+        <Text accessibilityRole="header" aria-level={2} style={{ fontFamily: sans("600"), fontSize: 20, letterSpacing: -0.3, color: tokens.foreground }}>{title}</Text>
         {description ? (
-          <Text style={{ fontFamily: geist("400"), fontSize: 13.5, lineHeight: 21.6, color: tokens["muted-foreground"], maxWidth: 640 }}>{description}</Text>
+          <Text style={{ fontFamily: sans("400"), fontSize: 13.5, lineHeight: 21.6, color: tokens["muted-foreground"], maxWidth: 640 }}>{description}</Text>
         ) : null}
       </Column>
       {anatomy ? <Callout label="Anatomy.">{anatomy}</Callout> : null}

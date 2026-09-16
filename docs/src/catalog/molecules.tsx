@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { View, Text, Row, Column, useTheme, alpha } from "@nannier-com/canvas";
 import Svg, { Path, Circle, Line, Polyline } from "react-native-svg";
-import { geist, geistMono } from "../ui/fonts";
+import { sans, geistMono } from "../ui/fonts";
 import type { CatTile } from "./tile";
 
 // ── Molecules previews ───────────────────────────────────────────────────────
@@ -27,14 +27,14 @@ function ActionPanelsPreview() {
         padding: 12,
         borderWidth: 1,
         borderColor: tokens.border,
-        borderRadius: 8,
+        borderRadius: 14,
         backgroundColor: tokens.card,
       }}
     >
-      <Text style={{ fontFamily: geist("600"), fontSize: 11, color: tokens["card-foreground"], marginBottom: 4 }}>
+      <Text style={{ fontFamily: sans("600"), fontSize: 11, color: tokens["card-foreground"], marginBottom: 4 }}>
         Delete account
       </Text>
-      <Text style={{ fontFamily: geist("400"), fontSize: 10, color: tokens["muted-foreground"], marginBottom: 8 }}>
+      <Text style={{ fontFamily: sans("400"), fontSize: 10, color: tokens["muted-foreground"], marginBottom: 8 }}>
         Permanent and irreversible.
       </Text>
       <View style={{ alignSelf: "flex-start" }}>
@@ -45,13 +45,13 @@ function ActionPanelsPreview() {
           style={{
             height: 24,
             paddingHorizontal: 8,
-            borderRadius: 6,
+            borderRadius: 10,
             borderWidth: 1,
             borderColor: tokens.destructive,
             backgroundColor: tokens.destructive,
           }}
         >
-          <Text style={{ fontFamily: geist("500"), fontSize: 10, color: "#fff" }}>Delete</Text>
+          <Text style={{ fontFamily: sans("500"), fontSize: 10, color: "#fff" }}>Delete</Text>
         </Column>
       </View>
     </View>
@@ -64,7 +64,7 @@ function AlertsPreview() {
     <View style={{ width: "100%", maxWidth: 220, gap: 6 }}>
       <View
         style={{
-          borderRadius: 4,
+          borderRadius: 6,
           borderWidth: 1,
           borderColor: alpha(AMBER, 0.3),
           backgroundColor: alpha(AMBER, 0.1),
@@ -80,11 +80,11 @@ function AlertsPreview() {
           <Line x1="12" y1="9" x2="12" y2="13" />
           <Line x1="12" y1="17" x2="12.01" y2="17" />
         </Svg>
-        <Text style={{ fontFamily: geist("400"), fontSize: 10, color: AMBER_TEXT }}>Warning</Text>
+        <Text style={{ fontFamily: sans("400"), fontSize: 10, color: AMBER_TEXT }}>Warning</Text>
       </View>
       <View
         style={{
-          borderRadius: 4,
+          borderRadius: 6,
           borderWidth: 1,
           borderColor: alpha(GREEN, 0.3),
           backgroundColor: alpha(GREEN, 0.08),
@@ -99,7 +99,7 @@ function AlertsPreview() {
           <Path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
           <Polyline points="22 4 12 14.01 9 11.01" />
         </Svg>
-        <Text style={{ fontFamily: geist("400"), fontSize: 10, color: GREEN_TEXT }}>All set</Text>
+        <Text style={{ fontFamily: sans("400"), fontSize: 10, color: GREEN_TEXT }}>All set</Text>
       </View>
     </View>
   );
@@ -115,14 +115,14 @@ function CardsPreview() {
           padding: 12,
           borderWidth: 1,
           borderColor: tokens.border,
-          borderRadius: 8,
+          borderRadius: 14,
           backgroundColor: tokens.card,
         }}
       >
         <Row flush alignCenter between style={{ marginBottom: 8 }}>
           <Text
             style={{
-              fontFamily: geist("500"),
+              fontFamily: sans("500"),
               fontSize: 10,
               letterSpacing: 0.4,
               textTransform: "uppercase",
@@ -138,8 +138,8 @@ function CardsPreview() {
             <Path d="M16 3.13a4 4 0 0 1 0 7.75" />
           </Svg>
         </Row>
-        <Text style={{ fontFamily: geist("600"), fontSize: 22, letterSpacing: -0.44, color: tokens.foreground }}>12.3k</Text>
-        <Text style={{ fontFamily: geist("500"), fontSize: 10, marginTop: 4, color: GREEN_TEXT }}>+8%</Text>
+        <Text style={{ fontFamily: sans("600"), fontSize: 22, letterSpacing: -0.44, color: tokens.foreground }}>12.3k</Text>
+        <Text style={{ fontFamily: sans("500"), fontSize: 10, marginTop: 4, color: GREEN_TEXT }}>+8%</Text>
       </View>
     </View>
   );
@@ -151,12 +151,12 @@ function DescriptionListsPreview() {
   return (
     <View style={{ width: "100%", maxWidth: 220 }}>
       <Row flush style={{ paddingVertical: 4 }}>
-        <Text style={{ flex: 1, fontFamily: geist("400"), fontSize: 11, color: tokens["muted-foreground"] }}>Name</Text>
-        <Text style={{ flex: 2, fontFamily: geist("400"), fontSize: 11, color: tokens.foreground }}>Ada Lovelace</Text>
+        <Text style={{ flex: 1, fontFamily: sans("400"), fontSize: 11, color: tokens["muted-foreground"] }}>Name</Text>
+        <Text style={{ flex: 2, fontFamily: sans("400"), fontSize: 11, color: tokens.foreground }}>Ada Lovelace</Text>
       </Row>
       <Row flush style={{ paddingVertical: 4, borderTopWidth: 1, borderColor: tokens.border }}>
-        <Text style={{ flex: 1, fontFamily: geist("400"), fontSize: 11, color: tokens["muted-foreground"] }}>Email</Text>
-        <Text style={{ flex: 2, fontFamily: geist("400"), fontSize: 11, color: tokens.foreground }}>ada@...</Text>
+        <Text style={{ flex: 1, fontFamily: sans("400"), fontSize: 11, color: tokens["muted-foreground"] }}>Email</Text>
+        <Text style={{ flex: 2, fontFamily: sans("400"), fontSize: 11, color: tokens.foreground }}>ada@...</Text>
       </Row>
     </View>
   );
@@ -173,7 +173,7 @@ function FieldPreview() {
           height: 30,
           borderWidth: 1,
           borderColor: tokens.destructive,
-          borderRadius: 8,
+          borderRadius: 14,
           backgroundColor: tokens.background,
         }}
       />
@@ -203,8 +203,8 @@ function EmptyStatesPreview() {
         <Path d="M22 21v-2a4 4 0 0 0-3-3.87" />
         <Path d="M16 3.13a4 4 0 0 1 0 7.75" />
       </Svg>
-      <Text style={{ fontFamily: geist("600"), fontSize: 12, color: tokens.foreground }}>No items</Text>
-      <Text style={{ fontFamily: geist("400"), fontSize: 10, color: tokens["muted-foreground"] }}>Create one to start.</Text>
+      <Text style={{ fontFamily: sans("600"), fontSize: 12, color: tokens.foreground }}>No items</Text>
+      <Text style={{ fontFamily: sans("400"), fontSize: 10, color: tokens["muted-foreground"] }}>Create one to start.</Text>
     </Column>
   );
 }
@@ -246,8 +246,8 @@ function FeedsPreview() {
             </Svg>
           </Column>
           <Text style={{ flex: 1, fontSize: 10 }}>
-            <Text style={{ fontFamily: geist("600"), fontSize: 10, color: tokens.foreground }}>Ada</Text>
-            <Text style={{ fontFamily: geist("400"), fontSize: 10, color: tokens["muted-foreground"] }}>{" " + item.label}</Text>
+            <Text style={{ fontFamily: sans("600"), fontSize: 10, color: tokens.foreground }}>Ada</Text>
+            <Text style={{ fontFamily: sans("400"), fontSize: 10, color: tokens["muted-foreground"] }}>{" " + item.label}</Text>
           </Text>
         </Row>
       ))}
@@ -265,14 +265,14 @@ function FormLayoutsPreview() {
       fill
       style={{
         height: 28,
-        borderRadius: 6,
+        borderRadius: 10,
         borderWidth: 1,
         borderColor: tokens.input,
         backgroundColor: tokens.background,
         paddingHorizontal: 10,
       }}
     >
-      <Text style={{ fontFamily: geist("400"), fontSize: 12, color: tokens["muted-foreground"] }} numberOfLines={1}>
+      <Text style={{ fontFamily: sans("400"), fontSize: 12, color: tokens["muted-foreground"] }} numberOfLines={1}>
         {placeholder}
       </Text>
     </Column>
@@ -299,7 +299,7 @@ function GridListsPreview() {
           style={{
             width: "31%",
             aspectRatio: 1,
-            borderRadius: 4,
+            borderRadius: 6,
             backgroundColor: alpha(tokens.muted, 0.6),
           }}
         />
@@ -324,11 +324,11 @@ function MediaObjectsPreview() {
           backgroundColor: tokens.muted,
         }}
       >
-        <Text style={{ fontFamily: geist("500"), fontSize: 10, color: tokens["muted-foreground"] }}>AL</Text>
+        <Text style={{ fontFamily: sans("500"), fontSize: 10, color: tokens["muted-foreground"] }}>AL</Text>
       </Column>
       <View style={{ flex: 1 }}>
-        <Text style={{ fontFamily: geist("600"), fontSize: 11, color: tokens.foreground }}>Ada Lovelace</Text>
-        <Text style={{ fontFamily: geist("400"), fontSize: 10, color: tokens["muted-foreground"] }}>Principal eng.</Text>
+        <Text style={{ fontFamily: sans("600"), fontSize: 11, color: tokens.foreground }}>Ada Lovelace</Text>
+        <Text style={{ fontFamily: sans("400"), fontSize: 10, color: tokens["muted-foreground"] }}>Principal eng.</Text>
       </View>
     </Row>
   );
@@ -349,7 +349,7 @@ function StackedListsPreview() {
         maxWidth: 220,
         borderWidth: 1,
         borderColor: tokens.border,
-        borderRadius: 8,
+        borderRadius: 14,
         backgroundColor: tokens.card,
         overflow: "hidden",
       }}
@@ -377,9 +377,9 @@ function StackedListsPreview() {
               backgroundColor: tokens.muted,
             }}
           >
-            <Text style={{ fontFamily: geist("500"), fontSize: 10, color: tokens["muted-foreground"] }}>{row.initials}</Text>
+            <Text style={{ fontFamily: sans("500"), fontSize: 10, color: tokens["muted-foreground"] }}>{row.initials}</Text>
           </Column>
-          <Text style={{ flex: 1, fontFamily: geist("400"), fontSize: 10, color: tokens.foreground }} numberOfLines={1}>
+          <Text style={{ flex: 1, fontFamily: sans("400"), fontSize: 10, color: tokens.foreground }} numberOfLines={1}>
             {row.name}
           </Text>
         </Row>
@@ -393,8 +393,8 @@ function StatsPreview() {
   const { tokens } = useTheme();
   const cell = (label: string, value: string) => (
     <Column flush fill alignCenter>
-      <Text style={{ fontFamily: geist("400"), fontSize: 10, color: tokens["muted-foreground"] }}>{label}</Text>
-      <Text style={{ fontFamily: geist("600"), fontSize: 14, color: tokens.foreground }}>{value}</Text>
+      <Text style={{ fontFamily: sans("400"), fontSize: 10, color: tokens["muted-foreground"] }}>{label}</Text>
+      <Text style={{ fontFamily: sans("600"), fontSize: 14, color: tokens.foreground }}>{value}</Text>
     </Column>
   );
   return (

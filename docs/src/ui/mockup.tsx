@@ -1,7 +1,7 @@
 import { type ReactNode, useMemo } from "react";
 import { View, Text, ScrollView, useTheme, useResponsive, type ColorTokens } from "@nannier-com/canvas";
 import Svg, { Path, Circle, Rect, Line } from "react-native-svg";
-import { geist, geistMono } from "./fonts";
+import { sans, geistMono } from "./fonts";
 import { alpha } from "./color";
 
 // A focused HTML-to-React-Native renderer for the docs' pattern/template mockups. The
@@ -193,7 +193,7 @@ function parseStyle(styleStr: string, tokens: ColorTokens) {
       case "border-radius": view.borderRadius = radius(val); break;
       case "font-size": { const n = len(val); if (typeof n === "number") { fontSize = n; text.fontSize = n; } break; }
       case "font-weight": text.fontWeight = val; break;
-      case "font-family": text.fontFamily = val.includes("mono") ? geistMono("400") : geist("400"); break;
+      case "font-family": text.fontFamily = val.includes("mono") ? geistMono("400") : sans("400"); break;
       case "font-style": text.fontStyle = val; break;
       case "line-height": { const n = parseFloat(val); if (val.endsWith("px")) lineH = { px: n }; else if (Number.isFinite(n)) lineH = { ratio: n }; break; }
       case "text-align": text.textAlign = val; break;
@@ -261,59 +261,59 @@ function classStyle(cls: string, t: ColorTokens, dark: boolean): Frag {
     case "section-card":
     case "card":
     case "stat-card":
-      return { view: { borderWidth: 1, borderColor: t.border, borderRadius: 12, backgroundColor: t.card, ...(cls === "stat-card" ? { padding: 20 } : {}) } };
+      return { view: { borderWidth: 1, borderColor: t.border, borderRadius: 20, backgroundColor: t.card, ...(cls === "stat-card" ? { padding: 24 } : {}) } };
     case "card-header": return { view: { padding: 20, paddingBottom: 12, gap: 4 } };
     case "card-content": return { view: { padding: 20, paddingTop: 12 } };
     case "card-footer": return { view: { padding: 20, paddingTop: 12 } };
     case "section-card-header": return { view: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 16, paddingHorizontal: 20 } };
-    case "section-card-title": return { text: { fontFamily: geist("600"), fontSize: 15, color: t.foreground } };
+    case "section-card-title": return { text: { fontFamily: sans("600"), fontSize: 15, color: t.foreground } };
     case "section-card-body": return { view: { padding: 20 } };
     case "stat-card-header": return { view: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 } };
-    case "stat-card-label": return { text: { fontFamily: geist("500"), fontSize: 12, textTransform: "uppercase", letterSpacing: 0.48, color: t["muted-foreground"] } };
-    case "stat-card-value": return { text: { fontFamily: geist("600"), fontSize: 24, letterSpacing: -0.48, color: t.foreground } };
-    case "stat-card-delta": return { view: { marginTop: 4 }, text: { fontFamily: geist("500"), fontSize: 12, color: t["muted-foreground"] } };
+    case "stat-card-label": return { text: { fontFamily: sans("500"), fontSize: 12, textTransform: "uppercase", letterSpacing: 0.48, color: t["muted-foreground"] } };
+    case "stat-card-value": return { text: { fontFamily: sans("600"), fontSize: 24, letterSpacing: -0.48, color: t.foreground } };
+    case "stat-card-delta": return { view: { marginTop: 4 }, text: { fontFamily: sans("500"), fontSize: 12, color: t["muted-foreground"] } };
     case "positive": return { text: { color: dark ? "#4ade80" : "#16a34a" } };
     case "negative": return { text: { color: dark ? "#f87171" : "#dc2626" } };
     case "page-header": return { view: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: 24 } };
     case "page-header-title": return {};
     case "page-header-text": return {};
-    case "page-header-sub": return { text: { fontFamily: geist("400"), fontSize: 13, color: t["muted-foreground"] } };
+    case "page-header-sub": return { text: { fontFamily: sans("400"), fontSize: 13, color: t["muted-foreground"] } };
     case "page-header-actions": return { view: { flexDirection: "row", alignItems: "center", gap: 8, flexShrink: 0 } };
     case "field-label": return { text: { color: t["muted-foreground"] } };
     case "field-value": return { text: { color: t.foreground } };
     case "mono": return { text: { fontFamily: geistMono("400"), fontSize: 13 } };
     case "dt-wrap": return {};
-    case "label": return { view: { marginBottom: 6 }, text: { fontFamily: geist("500"), fontSize: 13, color: t.foreground } };
+    case "label": return { view: { marginBottom: 6 }, text: { fontFamily: sans("500"), fontSize: 13, color: t.foreground } };
     case "input":
-      return { view: { borderWidth: 1, borderColor: t.input, borderRadius: 8, paddingVertical: 9, paddingHorizontal: 12, backgroundColor: t.background, minHeight: 38, justifyContent: "center" }, text: { fontSize: 13, color: t["muted-foreground"] } };
-    case "checkbox": return { view: { width: 16, height: 16, borderRadius: 4, borderWidth: 1, borderColor: t.border, backgroundColor: t.background } };
+      return { view: { borderWidth: 1, borderColor: t.input, borderRadius: 12, paddingVertical: 12, paddingHorizontal: 16, backgroundColor: t.card, minHeight: 48, justifyContent: "center" }, text: { fontSize: 14, color: t["muted-foreground"] } };
+    case "checkbox": return { view: { width: 20, height: 20, borderRadius: 6, borderWidth: 1, borderColor: t.input, backgroundColor: t.card } };
     case "btn":
-      return { view: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 9, paddingHorizontal: 14, borderRadius: 8, borderWidth: 1, borderColor: t.border, backgroundColor: t.background }, text: { fontFamily: geist("500"), fontSize: 13, color: t.foreground } };
+      return { view: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 11, paddingHorizontal: 18, borderRadius: 12, borderWidth: 1, borderColor: t.input, backgroundColor: t.card }, text: { fontFamily: sans("500"), fontSize: 14, color: t.foreground } };
     case "btn-primary": return { view: { backgroundColor: t.primary, borderColor: "transparent" }, text: { color: t["primary-foreground"] } };
     case "btn-outline": return { view: { backgroundColor: t.background, borderColor: t.border }, text: { color: t.foreground } };
     case "btn-ghost": return { view: { backgroundColor: "transparent", borderColor: "transparent" }, text: { color: t.foreground } };
     case "btn-destructive": return { view: { backgroundColor: t.destructive, borderColor: "transparent" }, text: { color: "#ffffff" } };
     case "btn-sm": return { view: { paddingVertical: 6, paddingHorizontal: 10, gap: 4 }, text: { fontSize: 12 } };
-    case "btn-icon": return { view: { paddingVertical: 7, paddingHorizontal: 7, width: 32, height: 32 } };
+    case "btn-icon": return { view: { paddingVertical: 0, paddingHorizontal: 0, width: 44, height: 44 } };
     case "badge":
-      return { view: { flexDirection: "row", alignItems: "center", alignSelf: "flex-start", paddingVertical: 2, paddingHorizontal: 8, borderRadius: 6, backgroundColor: t.secondary }, text: { fontFamily: geist("500"), fontSize: 12, color: t["secondary-foreground"] } };
+      return { view: { flexDirection: "row", alignItems: "center", alignSelf: "flex-start", paddingVertical: 4, paddingHorizontal: 10, borderRadius: 9999, backgroundColor: t.secondary }, text: { fontFamily: sans("500"), fontSize: 12, color: t["secondary-foreground"] } };
     case "badge-secondary": return { view: { backgroundColor: t.secondary }, text: { color: t["secondary-foreground"] } };
     case "badge-outline": return { view: { backgroundColor: "transparent", borderWidth: 1, borderColor: t.border }, text: { color: t.foreground } };
     case "status-badge":
-      return { view: { flexDirection: "row", alignItems: "center", alignSelf: "flex-start", gap: 6, paddingVertical: 3, paddingHorizontal: 9, borderRadius: 9999, backgroundColor: alpha(t["muted-foreground"], 0.12) }, text: { fontFamily: geist("500"), fontSize: 12, color: t["muted-foreground"] } };
+      return { view: { flexDirection: "row", alignItems: "center", alignSelf: "flex-start", gap: 6, paddingVertical: 4, paddingHorizontal: 10, borderRadius: 9999, backgroundColor: alpha(t["muted-foreground"], 0.12) }, text: { fontFamily: sans("500"), fontSize: 12, color: t["muted-foreground"] } };
     case "sb-success": return { view: { backgroundColor: dark ? "rgba(20,83,45,0.3)" : "#dcfce7" }, text: { color: dark ? "#4ade80" : "#166534" } };
     case "sb-warning": return { view: { backgroundColor: dark ? "rgba(113,63,18,0.3)" : "#fef9c3" }, text: { color: dark ? "#facc15" : "#854d0e" } };
     case "sb-error": return { view: { backgroundColor: dark ? "rgba(127,29,29,0.3)" : "#fee2e2" }, text: { color: dark ? "#f87171" : "#991b1b" } };
     case "sb-info": return { view: { backgroundColor: dark ? "rgba(30,58,138,0.3)" : "#dbeafe" }, text: { color: dark ? "#60a5fa" : "#1e40af" } };
     case "dot": return { view: { width: 6, height: 6, borderRadius: 9999, backgroundColor: "currentColor" } };
     case "avatar":
-      return { view: { width: 32, height: 32, borderRadius: 9999, backgroundColor: t.muted, alignItems: "center", justifyContent: "center", overflow: "hidden" }, text: { fontFamily: geist("600"), fontSize: 12, color: t["muted-foreground"] } };
+      return { view: { width: 32, height: 32, borderRadius: 9999, backgroundColor: t.muted, alignItems: "center", justifyContent: "center", overflow: "hidden" }, text: { fontFamily: sans("600"), fontSize: 12, color: t["muted-foreground"] } };
     case "avatar-sm": return { view: { width: 24, height: 24 }, text: { fontSize: 10 } };
     case "badge-default": return { view: { backgroundColor: t.primary }, text: { color: t["primary-foreground"] } };
     case "kbd":
-      return { view: { borderWidth: 1, borderColor: t.border, borderRadius: 4, backgroundColor: t.muted, paddingHorizontal: 6, paddingVertical: 2, minWidth: 20, alignItems: "center" }, text: { fontFamily: geistMono("400"), fontSize: 11, color: t["muted-foreground"] } };
+      return { view: { borderWidth: 1, borderColor: t.border, borderRadius: 6, backgroundColor: t.muted, paddingHorizontal: 6, paddingVertical: 2, minWidth: 24, alignItems: "center" }, text: { fontFamily: geistMono("400"), fontSize: 11, color: t["muted-foreground"] } };
     case "code":
-      return { view: { backgroundColor: alpha(t["muted-foreground"], 0.12), borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2, alignSelf: "flex-start" }, text: { fontFamily: geistMono("400"), fontSize: 12, color: t.foreground } };
+      return { view: { backgroundColor: alpha(t["muted-foreground"], 0.12), borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2, alignSelf: "flex-start" }, text: { fontFamily: geistMono("400"), fontSize: 12, color: t.foreground } };
     case "sep": return { view: { height: 1, backgroundColor: t.border, marginVertical: 8 } };
     default: return {};
   }
@@ -321,12 +321,12 @@ function classStyle(cls: string, t: ColorTokens, dark: boolean): Frag {
 
 // ── Render ───────────────────────────────────────────────
 const HEADING: Record<string, Record<string, unknown>> = {
-  h1: { fontSize: 22, fontFamily: geist("600") },
-  h2: { fontSize: 24, fontFamily: geist("700") },
-  h3: { fontSize: 18, fontFamily: geist("600") },
-  h4: { fontSize: 16, fontFamily: geist("600") },
-  strong: { fontFamily: geist("700") },
-  b: { fontFamily: geist("700") },
+  h1: { fontSize: 22, fontFamily: sans("600") },
+  h2: { fontSize: 24, fontFamily: sans("700") },
+  h3: { fontSize: 18, fontFamily: sans("600") },
+  h4: { fontSize: 16, fontFamily: sans("600") },
+  strong: { fontFamily: sans("700") },
+  b: { fontFamily: sans("700") },
   code: { fontFamily: geistMono("400"), fontSize: 12 },
 };
 const BOX_KEYS = ["backgroundColor", "borderWidth", "borderTopWidth", "borderBottomWidth", "borderLeftWidth", "borderRightWidth", "padding", "paddingTop", "paddingBottom", "paddingLeft", "paddingRight", "width", "height", "borderRadius", "minHeight", "minWidth"];
@@ -356,9 +356,9 @@ function finalizeText(text: Record<string, unknown>, inheritColor?: string): Rec
   const mono = fam.startsWith("GeistMono");
   if (out.fontWeight) {
     const w = out.fontWeight === "bold" ? "700" : String(out.fontWeight);
-    out.fontFamily = mono ? geistMono(["400", "500", "600"].includes(w) ? (w as "400") : "400") : geist(["400", "500", "600", "700", "800"].includes(w) ? (w as "400") : "600");
+    out.fontFamily = mono ? geistMono(["400", "500", "600"].includes(w) ? (w as "400") : "400") : sans(["400", "500", "600", "700", "800"].includes(w) ? (w as "400") : "600");
   } else if (!out.fontFamily) {
-    out.fontFamily = geist("400");
+    out.fontFamily = sans("400");
   }
   delete out.fontWeight;
   if (out.color === "currentColor") out.color = inheritColor;
@@ -415,7 +415,7 @@ function renderNode(node: Node, key: string, inherited: Record<string, unknown>,
 
   // Form controls.
   if (tag === "input") {
-    if (attrs.type === "checkbox" || attrs.type === "radio") return <View key={key} style={{ ...classStyle("checkbox", t, dark).view, ...parsed.view, borderRadius: attrs.type === "radio" ? 9999 : 4 } as object} />;
+    if (attrs.type === "checkbox" || attrs.type === "radio") return <View key={key} style={{ ...classStyle("checkbox", t, dark).view, ...parsed.view, borderRadius: attrs.type === "radio" ? 9999 : 6 } as object} />;
     const ph = attrs.placeholder || attrs.value || "";
     return (
       <View key={key} style={{ ...classStyle("input", t, dark).view, ...parsed.view } as object}>
@@ -433,7 +433,7 @@ function renderNode(node: Node, key: string, inherited: Record<string, unknown>,
       </View>
     );
   }
-  if (tag === "img") return <View key={key} style={{ backgroundColor: t.muted, borderRadius: (view.borderRadius as number) ?? 6, width: (view.width as number) ?? 40, height: (view.height as number) ?? 40, ...parsed.view } as object} />;
+  if (tag === "img") return <View key={key} style={{ backgroundColor: t.muted, borderRadius: (view.borderRadius as number) ?? 12, width: (view.width as number) ?? 40, height: (view.height as number) ?? 40, ...parsed.view } as object} />;
   // A toggle switch (a span.switch with a .switch-slider): render the track + knob, on by default.
   if (classes.includes("switch")) {
     const findInput = (n: Extract<Node, { type: "el" }>): Extract<Node, { type: "el" }> | null => {
@@ -445,8 +445,8 @@ function renderNode(node: Node, key: string, inherited: Record<string, unknown>,
     const input = findInput(node);
     const on = input ? "checked" in input.attrs : true;
     return (
-      <View key={key} style={{ width: 36, height: 20, borderRadius: 9999, backgroundColor: on ? t.primary : t.input, padding: 2, justifyContent: "center" }}>
-        <View style={{ width: 16, height: 16, borderRadius: 9999, backgroundColor: "#ffffff", alignSelf: on ? "flex-end" : "flex-start" }} />
+      <View key={key} style={{ width: 44, height: 24, borderRadius: 9999, backgroundColor: on ? t.primary : t.input, padding: 2, justifyContent: "center" }}>
+        <View style={{ width: 20, height: 20, borderRadius: 9999, backgroundColor: "#ffffff", alignSelf: on ? "flex-end" : "flex-start" }} />
       </View>
     );
   }
@@ -466,7 +466,7 @@ function renderNode(node: Node, key: string, inherited: Record<string, unknown>,
     return (
       <View key={key} style={{ flexDirection: "row", alignItems: "center", gap: 10, marginVertical: 8 }}>
         <View style={{ flex: 1, height: 1, backgroundColor: t.border }} />
-        <Text style={{ fontFamily: geist("400"), fontSize: 11, color: t["muted-foreground"] }}>{attrs["data-content"]}</Text>
+        <Text style={{ fontFamily: sans("400"), fontSize: 11, color: t["muted-foreground"] }}>{attrs["data-content"]}</Text>
         <View style={{ flex: 1, height: 1, backgroundColor: t.border }} />
       </View>
     );
@@ -516,7 +516,7 @@ function TableEl({ node, t, dark, narrow, inherited }: { node: Extract<Node, { t
   const headCells = rows[0]?.children.filter((c): c is Extract<Node, { type: "el" }> => c.type === "el" && (c.tag === "td" || c.tag === "th")) ?? [];
   const colWidths = headCells.map((c) => { const w = parseStyle(c.attrs.style || "", t).view.width; return typeof w === "number" ? w : undefined; });
   const table = (
-    <View style={{ borderWidth: 1, borderColor: t.border, borderRadius: 10, overflow: "hidden", ...(narrow ? { minWidth: Math.max(headCells.length, 1) * 110, flexGrow: 1 } : {}) }}>
+    <View style={{ borderWidth: 1, borderColor: t.border, borderRadius: 20, overflow: "hidden", ...(narrow ? { minWidth: Math.max(headCells.length, 1) * 110, flexGrow: 1 } : {}) }}>
       {rows.map((tr, r) => {
         const cells = tr.children.filter((c): c is Extract<Node, { type: "el" }> => c.type === "el" && (c.tag === "td" || c.tag === "th"));
         const head = cells.some((c) => c.tag === "th");
@@ -525,7 +525,7 @@ function TableEl({ node, t, dark, narrow, inherited }: { node: Extract<Node, { t
             {cells.map((cell, i) => (
               <View key={i} style={{ ...(colWidths[i] !== undefined ? { width: colWidths[i], flexShrink: 0 } : { flex: 1 }), paddingHorizontal: 12, paddingVertical: 9 }}>
                 {isTextOnly(cell)
-                  ? <Text style={finalizeText({ ...inherited, fontSize: head ? 11 : 12, fontFamily: head ? geist("600") : geist("400"), color: head ? t.foreground : (i === 0 ? t.foreground : t["muted-foreground"]) }) as object}>{joinText(cell)}</Text>
+                  ? <Text style={finalizeText({ ...inherited, fontSize: head ? 11 : 12, fontFamily: head ? sans("600") : sans("400"), color: head ? t.foreground : (i === 0 ? t.foreground : t["muted-foreground"]) }) as object}>{joinText(cell)}</Text>
                   : renderNode(cell, `${r}.${i}`, { ...inherited, fontSize: 12 }, t, dark, narrow)}
               </View>
             ))}
@@ -551,6 +551,6 @@ export function Mockup({ html }: { html: string }) {
   // applies at the sm breakpoint and below).
   const narrow = useResponsive({ base: false, sm: true });
   const nodes = useMemo(() => parseHtml(html), [html]);
-  const inherited = { fontSize: 13, color: tokens.foreground, fontFamily: geist("400") };
+  const inherited = { fontSize: 13, color: tokens.foreground, fontFamily: sans("400") };
   return <View style={{ gap: 0 }}>{nodes.map((n, i) => renderNode(n, String(i), inherited, tokens, dark, narrow))}</View>;
 }

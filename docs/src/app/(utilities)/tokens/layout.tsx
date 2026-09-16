@@ -5,7 +5,7 @@ import { Page } from "../../../ui/page";
 import { PageNav } from "../../../ui/page-nav";
 import { CodeBlock } from "../../../ui/code-block";
 import { Playground } from "../../../ui/playground";
-import { geist } from "../../../ui/fonts";
+import { sans } from "../../../ui/fonts";
 import { alpha } from "../../../ui/color";
 import { TokenH1, TokenLede, TokenSection, Chip } from "../../../ui/tokens-kit";
 
@@ -212,7 +212,7 @@ function Tile({ children }: { children: React.ReactNode }) {
         paddingHorizontal: 14,
       }}
     >
-      <Text style={{ fontFamily: geist("600"), fontSize: 12, color: tokens.primary, textAlign: "center" }}>{children}</Text>
+      <Text style={{ fontFamily: sans("600"), fontSize: 12, color: tokens.primary, textAlign: "center" }}>{children}</Text>
     </View>
   );
 }
@@ -257,9 +257,9 @@ export default function LayoutScreen() {
           <TokenLede>
             Canvas lays out with plain React Native style objects on the raw View primitive, so the same code runs on iOS, Android, and the web. Layout is flexbox: React Native has no CSS grid. The spacing scale is the kit's own 4px grid expressed as numbers (gap: 16 is four steps on the grid), and the useResponsive hook handles breakpoints, so a value can change with the viewport.
           </TokenLede>
-          <Text style={{ fontFamily: geist("400"), fontSize: 13, lineHeight: 20.8, color: tokens["muted-foreground"] }}>
+          <Text style={{ fontFamily: sans("400"), fontSize: 13, lineHeight: 20.8, color: tokens["muted-foreground"] }}>
             New to the building blocks? See{" "}
-            <Text style={{ fontFamily: geist("500"), color: tokens.primary }} onPress={() => router.push("/rn-primitives")}>
+            <Text style={{ fontFamily: sans("500"), color: tokens.primary }} onPress={() => router.push("/rn-primitives")}>
               React Native primitives
             </Text>{" "}
             for View, Text, and the rest of the primitives this guide composes.

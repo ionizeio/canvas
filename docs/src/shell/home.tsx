@@ -9,7 +9,7 @@ import { Github } from "../brand/brand-logos";
 import { HeroOrbit } from "../brand/hero-orbit";
 import { ThreeLooksRotator, LOOKS_AVAILABLE } from "./three-looks-rotator";
 import { CodeBlock } from "../ui/code-block";
-import { geist, geistMono } from "../ui/fonts";
+import { sans, geistMono } from "../ui/fonts";
 import { alpha } from "../ui/color";
 import { useLatestVersion } from "../ui/use-latest-version";
 import { useFluidType } from "../lib/fluid-type";
@@ -133,13 +133,13 @@ function SectionHead({ eyebrow, title, desc, titleSize }: { eyebrow: string; tit
   const { tokens } = useTheme();
   return (
     <View style={{ marginBottom: 28 }}>
-      <Text style={{ fontFamily: geist("700"), fontSize: 12, letterSpacing: 1.68, textTransform: "uppercase", color: tokens.primary, marginBottom: 12 }}>
+      <Text style={{ fontFamily: sans("700"), fontSize: 12, letterSpacing: 1.68, textTransform: "uppercase", color: tokens.primary, marginBottom: 12 }}>
         {eyebrow}
       </Text>
-      <Text accessibilityRole="header" aria-level={2} style={{ fontFamily: geist("600"), fontSize: titleSize, letterSpacing: titleSize * -0.025, lineHeight: titleSize * 1.1, color: tokens.foreground }}>
+      <Text accessibilityRole="header" aria-level={2} style={{ fontFamily: sans("600"), fontSize: titleSize, letterSpacing: titleSize * -0.025, lineHeight: titleSize * 1.1, color: tokens.foreground }}>
         {title}
       </Text>
-      <Text style={{ fontFamily: geist("400"), fontSize: 15.5, lineHeight: 24.8, color: tokens["muted-foreground"], maxWidth: 672, marginTop: 12 }}>
+      <Text style={{ fontFamily: sans("400"), fontSize: 15.5, lineHeight: 24.8, color: tokens["muted-foreground"], maxWidth: 672, marginTop: 12 }}>
         {desc}
       </Text>
     </View>
@@ -221,11 +221,11 @@ export function Home() {
                   a Typography h1 because the size here is fluid (h1Size tracks the
                   viewport) where the role's type scale is fixed; the semantics are what
                   matter, and React Native Web turns this pair into a real <h1>. */}
-              <Text accessibilityRole="header" aria-level={1} style={{ fontFamily: geist("600"), fontSize: h1Size, letterSpacing: h1Size * -0.032, lineHeight: h1Size * 1.04, color: tokens.foreground }}>
+              <Text accessibilityRole="header" aria-level={1} style={{ fontFamily: sans("600"), fontSize: h1Size, letterSpacing: h1Size * -0.032, lineHeight: h1Size * 1.04, color: tokens.foreground }}>
                 One codebase. <Text style={{ color: tokens.primary }}>Every platform.</Text> One component API.
               </Text>
 
-              <Text style={{ fontFamily: geist("400"), fontSize: 16.5, lineHeight: 26.4, color: tokens["muted-foreground"], maxWidth: 576, marginTop: 22 }}>
+              <Text style={{ fontFamily: sans("400"), fontSize: 16.5, lineHeight: 26.4, color: tokens["muted-foreground"], maxWidth: 576, marginTop: 22 }}>
                 Canvas is a universal React Native UI kit. The same components render natively on iOS and Android and on the web through React Native Web, styled with flat, semantic boolean props that read like a sentence.
               </Text>
 
@@ -237,7 +237,7 @@ export function Home() {
                     <View style={{ paddingVertical: 2, paddingHorizontal: 8, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.12), borderWidth: 1, borderColor: alpha(tokens.primary, 0.26) }}>
                       <Text style={{ fontFamily: geistMono("400"), fontSize: 12.5, color: tokens.primary }}>{"<Button primary large block>"}</Text>
                     </View>
-                    <Text style={{ fontFamily: geist("400"), fontSize: 13.5, color: tokens["muted-foreground"] }}>the prop name is the value.</Text>
+                    <Text style={{ fontFamily: sans("400"), fontSize: 13.5, color: tokens["muted-foreground"] }}>the prop name is the value.</Text>
                   </Row>
 
                   <Row cozy wrap style={{ marginTop: 30 }}>
@@ -249,7 +249,7 @@ export function Home() {
                     {PLATFORMS.map((p) => (
                       <View key={p} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                         <Icon check primary size={13} />
-                        <Text style={{ fontFamily: geist("500"), fontSize: 13.5, color: tokens["muted-foreground"] }}>{p}</Text>
+                        <Text style={{ fontFamily: sans("500"), fontSize: 13.5, color: tokens["muted-foreground"] }}>{p}</Text>
                       </View>
                     ))}
                   </View>
@@ -260,7 +260,7 @@ export function Home() {
             {/* Orbit showcase */}
             <View style={{ flex: wide ? 0.95 : undefined, width: "100%", minWidth: 0 }}>
               <HeroOrbit />
-              <Text style={{ fontFamily: geist("400"), fontSize: 13, lineHeight: 20, color: tokens["muted-foreground"], marginTop: 14, paddingHorizontal: 2 }}>
+              <Text style={{ fontFamily: sans("400"), fontSize: 13, lineHeight: 20, color: tokens["muted-foreground"], marginTop: 14, paddingHorizontal: 2 }}>
                 Canvas at the core; iOS, Android, and the web as targets. One component API, rendered natively on every platform.
               </Text>
             </View>
@@ -313,8 +313,8 @@ export function Home() {
         <CardGrid cols={wide ? 2 : 1}>
           {PRINCIPLES.map((p) => (
             <View key={p.title} style={{ flex: 1, borderRadius: 14, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 22 }}>
-              <Text accessibilityRole="header" aria-level={3} style={{ fontFamily: geist("600"), fontSize: 16, letterSpacing: -0.16, color: tokens.foreground, marginBottom: 8 }}>{p.title}</Text>
-              <Text style={{ fontFamily: geist("400"), fontSize: 14, lineHeight: 22.7, color: tokens["muted-foreground"] }}>{p.body}</Text>
+              <Text accessibilityRole="header" aria-level={3} style={{ fontFamily: sans("600"), fontSize: 16, letterSpacing: -0.16, color: tokens.foreground, marginBottom: 8 }}>{p.title}</Text>
+              <Text style={{ fontFamily: sans("400"), fontSize: 14, lineHeight: 22.7, color: tokens["muted-foreground"] }}>{p.body}</Text>
             </View>
           ))}
         </CardGrid>
@@ -324,13 +324,13 @@ export function Home() {
       <Wrap style={{ paddingTop: 56, paddingBottom: 8 }}>
         <View style={{ flexDirection: wide ? "row" : "column", gap: wide ? 48 : 32, alignItems: "center" }}>
           <View style={{ flex: wide ? 0.9 : undefined, width: "100%" }}>
-            <Text style={{ fontFamily: geist("700"), fontSize: 12, letterSpacing: 1.68, textTransform: "uppercase", color: tokens.primary, marginBottom: 12 }}>Get started</Text>
-            <Text accessibilityRole="header" aria-level={2} style={{ fontFamily: geist("600"), fontSize: sectionTitle, letterSpacing: sectionTitle * -0.025, lineHeight: sectionTitle * 1.1, color: tokens.foreground }}>Three props to a styled button.</Text>
-            <Text style={{ fontFamily: geist("400"), fontSize: 15.5, lineHeight: 24.8, color: tokens["muted-foreground"], maxWidth: 672, marginTop: 12 }}>
+            <Text style={{ fontFamily: sans("700"), fontSize: 12, letterSpacing: 1.68, textTransform: "uppercase", color: tokens.primary, marginBottom: 12 }}>Get started</Text>
+            <Text accessibilityRole="header" aria-level={2} style={{ fontFamily: sans("600"), fontSize: sectionTitle, letterSpacing: sectionTitle * -0.025, lineHeight: sectionTitle * 1.1, color: tokens.foreground }}>Three props to a styled button.</Text>
+            <Text style={{ fontFamily: sans("400"), fontSize: 15.5, lineHeight: 24.8, color: tokens["muted-foreground"], maxWidth: 672, marginTop: 12 }}>
               Install the package, import the stylesheet once, and compose. No enum strings, no className soup, no platform forks. Style props group into orthogonal axes (intent, size, density): pass at most one per axis, stack the rest freely.
             </Text>
             <Pressable onPress={() => go("/integration")} style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 22 }}>
-              <Text style={{ fontFamily: geist("500"), fontSize: 14.5, color: tokens.primary }}>Read the integration guide</Text>
+              <Text style={{ fontFamily: sans("500"), fontSize: 14.5, color: tokens.primary }}>Read the integration guide</Text>
               <Icon arrowRight primary size={15} />
             </Pressable>
           </View>
@@ -378,15 +378,15 @@ export function Home() {
                   <Text style={{ fontFamily: geistMono("600"), fontSize: levelStack ? 22 : 30, color: alpha(tokens["muted-foreground"], 0.6) }}>0{i + 1}</Text>
                   <Row snug alignCenter>
                     {lvl.icon}
-                    <Text accessibilityRole="header" aria-level={3} style={{ fontFamily: geist("600"), fontSize: 15, color: tokens.foreground }}>{lvl.label}</Text>
+                    <Text accessibilityRole="header" aria-level={3} style={{ fontFamily: sans("600"), fontSize: 15, color: tokens.foreground }}>{lvl.label}</Text>
                   </Row>
                 </View>
                 <View style={{ flex: 1, paddingVertical: 20, paddingHorizontal: 22, gap: 14 }}>
-                  <Text style={{ fontFamily: geist("400"), fontSize: 14, lineHeight: 22.4, color: tokens["muted-foreground"], maxWidth: 704 }}>{lvl.blurb}</Text>
+                  <Text style={{ fontFamily: sans("400"), fontSize: 14, lineHeight: 22.4, color: tokens["muted-foreground"], maxWidth: 704 }}>{lvl.blurb}</Text>
                   <Row snug wrap>
                     {lvl.pages.map((pg) => (
                       <Pressable key={pg.to} onPress={() => go(pg.to)} style={{ flexDirection: "row", alignItems: "center", gap: 4, paddingVertical: 5, paddingHorizontal: 11, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.background }}>
-                        <Text style={{ fontFamily: geist("500"), fontSize: 12.5, color: tokens.foreground }}>{pg.label}</Text>
+                        <Text style={{ fontFamily: sans("500"), fontSize: 12.5, color: tokens.foreground }}>{pg.label}</Text>
                         <Icon chevronRight size={11} muted />
                       </Pressable>
                     ))}
@@ -402,8 +402,8 @@ export function Home() {
       <View style={{ marginTop: 72, paddingVertical: 72, borderTopWidth: 1, borderColor: tokens.border, backgroundColor: alpha(tokens.muted, 0.22) }}>
         <Wrap>
           <Column flush alignCenter>
-            <Text accessibilityRole="header" aria-level={2} style={{ fontFamily: geist("600"), fontSize: ctaTitle, letterSpacing: ctaTitle * -0.028, color: tokens.foreground, textAlign: "center" }}>Build your first screen.</Text>
-            <Text style={{ fontFamily: geist("400"), fontSize: 16, lineHeight: 25.6, color: tokens["muted-foreground"], maxWidth: 544, textAlign: "center", marginTop: 14, marginBottom: 28 }}>
+            <Text accessibilityRole="header" aria-level={2} style={{ fontFamily: sans("600"), fontSize: ctaTitle, letterSpacing: ctaTitle * -0.028, color: tokens.foreground, textAlign: "center" }}>Build your first screen.</Text>
+            <Text style={{ fontFamily: sans("400"), fontSize: 16, lineHeight: 25.6, color: tokens["muted-foreground"], maxWidth: 544, textAlign: "center", marginTop: 14, marginBottom: 28 }}>
               Browse every component live, copy the JSX, and ship it to iOS, Android, and web.
             </Text>
             <Row cozy wrap center>
@@ -422,21 +422,21 @@ export function Home() {
               <Pressable onPress={() => go("/")} style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
                 <CanvasMark size={26} />
                 <View>
-                  <Text style={{ fontFamily: geist("600"), fontSize: 15, letterSpacing: -0.15, color: tokens.foreground }}>Canvas</Text>
-                  <Text style={{ fontFamily: geist("500"), fontSize: 11, letterSpacing: 0.22, color: tokens["muted-foreground"] }}>design system</Text>
+                  <Text style={{ fontFamily: sans("600"), fontSize: 15, letterSpacing: -0.15, color: tokens.foreground }}>Canvas</Text>
+                  <Text style={{ fontFamily: sans("500"), fontSize: 11, letterSpacing: 0.22, color: tokens["muted-foreground"] }}>design system</Text>
                 </View>
               </Pressable>
-              <Text style={{ fontFamily: geist("400"), fontSize: 13.5, lineHeight: 21.6, color: tokens["muted-foreground"], maxWidth: 352, marginTop: 16 }}>
+              <Text style={{ fontFamily: sans("400"), fontSize: 13.5, lineHeight: 21.6, color: tokens["muted-foreground"], maxWidth: 352, marginTop: 16 }}>
                 A universal React Native UI kit. Native iOS and Android, plus web.
               </Text>
             </View>
             <View style={{ flex: wide ? 2 : undefined, flexDirection: "row", flexWrap: "wrap", gap: 28 }}>
               {FOOTER_COLS.map((col) => (
                 <View key={col.head} style={{ flex: 1, minWidth: 130, gap: 11 }}>
-                  <Text style={{ fontFamily: geist("700"), fontSize: 12, letterSpacing: 0.96, textTransform: "uppercase", color: tokens.foreground, marginBottom: 3 }}>{col.head}</Text>
+                  <Text style={{ fontFamily: sans("700"), fontSize: 12, letterSpacing: 0.96, textTransform: "uppercase", color: tokens.foreground, marginBottom: 3 }}>{col.head}</Text>
                   {col.links.map((l) => (
                     <Pressable key={l.label} onPress={() => (l.url ? Linking.openURL(l.url) : go(l.to!))}>
-                      <Text style={{ fontFamily: geist("400"), fontSize: 14, color: tokens["muted-foreground"] }}>{l.label}</Text>
+                      <Text style={{ fontFamily: sans("400"), fontSize: 14, color: tokens["muted-foreground"] }}>{l.label}</Text>
                     </Pressable>
                   ))}
                 </View>
@@ -444,8 +444,8 @@ export function Home() {
             </View>
           </View>
           <Row snug wrap between style={{ paddingTop: 22, borderTopWidth: 1, borderColor: tokens.border }}>
-            <Text style={{ fontFamily: geist("400"), fontSize: 12.5, color: tokens["muted-foreground"] }}>© 2026 Canvas · @nannier-com/canvas {version}</Text>
-            <Text style={{ fontFamily: geist("400"), fontSize: 12.5, color: tokens["muted-foreground"] }}>Universal React Native, native iOS and Android plus web.</Text>
+            <Text style={{ fontFamily: sans("400"), fontSize: 12.5, color: tokens["muted-foreground"] }}>© 2026 Canvas · @nannier-com/canvas {version}</Text>
+            <Text style={{ fontFamily: sans("400"), fontSize: 12.5, color: tokens["muted-foreground"] }}>Universal React Native, native iOS and Android plus web.</Text>
           </Row>
         </Wrap>
       </View>

@@ -3,7 +3,7 @@ import { Platform, type StyleProp, type ViewStyle } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { View, Text, Pressable, useTheme, alpha, ScrollView } from "@nannier-com/canvas";
 import type { SearchEntry } from "../core/data/types";
-import { geist } from "../ui/fonts";
+import { sans } from "../ui/fonts";
 
 // The grouped search results list, shared by the web cmd-K modal and the native
 // search tab. Presentational: the caller owns the query state and the search() call,
@@ -50,7 +50,7 @@ export function SearchResults({
           the prompt/empty states only show when there is nothing to list. */}
       {results.length === 0 ? (
         <View style={{ padding: 24, alignItems: "center" }}>
-          <Text style={{ fontFamily: geist("400"), fontSize: 13, color: tokens["muted-foreground"], textAlign: "center" }}>
+          <Text style={{ fontFamily: sans("400"), fontSize: 13, color: tokens["muted-foreground"], textAlign: "center" }}>
             {query ? "No results found." : "Type to search components, tokens, and guides."}
           </Text>
         </View>
@@ -60,7 +60,7 @@ export function SearchResults({
             <View key={category} style={{ paddingBottom: 4 }}>
               <Text
                 style={{
-                  fontFamily: geist("600"),
+                  fontFamily: sans("600"),
                   fontSize: 10.5,
                   letterSpacing: 0.6,
                   textTransform: "uppercase",
@@ -88,11 +88,11 @@ export function SearchResults({
                       backgroundColor: active ? alpha(tokens.muted, 0.6) : "transparent",
                     }}
                   >
-                    <Text style={{ fontFamily: geist("500"), fontSize: 13.5, color: tokens.foreground }} numberOfLines={1}>
+                    <Text style={{ fontFamily: sans("500"), fontSize: 13.5, color: tokens.foreground }} numberOfLines={1}>
                       {item.title}
                     </Text>
                     <Text
-                      style={{ fontFamily: geist("400"), fontSize: 12, color: tokens["muted-foreground"], marginTop: 1 }}
+                      style={{ fontFamily: sans("400"), fontSize: 12, color: tokens["muted-foreground"], marginTop: 1 }}
                       numberOfLines={1}
                     >
                       {item.description}

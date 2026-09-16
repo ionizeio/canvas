@@ -4,7 +4,7 @@ import { H2 } from "./prose";
 import { PageNav } from "./page-nav";
 import { Callout } from "./tokens-kit";
 import { Mockup } from "./mockup";
-import { geist } from "./fonts";
+import { sans } from "./fonts";
 
 import { type ReactNode } from "react";
 
@@ -23,15 +23,15 @@ export function MockupDocPage({ name, description, sections }: { name: string; d
     <Page>
       <View style={{ gap: 28, maxWidth: 960 }}>
         <View style={{ gap: 6 }}>
-          <Text accessibilityRole="header" aria-level={1} style={{ fontFamily: geist("600"), fontSize: 24, letterSpacing: -0.48, color: tokens.foreground }}>{name}</Text>
-          <Text style={{ fontFamily: geist("400"), fontSize: 14, lineHeight: 22.4, color: tokens["muted-foreground"], maxWidth: 640 }}>{description}</Text>
+          <Text accessibilityRole="header" aria-level={1} style={{ fontFamily: sans("600"), fontSize: 24, letterSpacing: -0.48, color: tokens.foreground }}>{name}</Text>
+          <Text style={{ fontFamily: sans("400"), fontSize: 14, lineHeight: 22.4, color: tokens["muted-foreground"], maxWidth: 640 }}>{description}</Text>
         </View>
 
         {sections.map((s, i) => (
           <View key={i} style={{ gap: 12 }}>
             <H2>{s.title}</H2>
             {s.description ? (
-              <Text style={{ fontFamily: geist("400"), fontSize: 13, lineHeight: 20, color: tokens["muted-foreground"], maxWidth: 640 }}>{s.description}</Text>
+              <Text style={{ fontFamily: sans("400"), fontSize: 13, lineHeight: 20, color: tokens["muted-foreground"], maxWidth: 640 }}>{s.description}</Text>
             ) : null}
             {s.anatomy ? <Callout label="Anatomy.">{s.anatomy}</Callout> : null}
             <View style={{ borderWidth: 1, borderColor: tokens.border, borderRadius: 12, backgroundColor: tokens.card, padding: stagePadding }}>

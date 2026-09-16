@@ -6,7 +6,7 @@ import { getTemplate } from "../core/data/templates";
 import { getPattern } from "../core/data/patterns";
 import { useDocsTheme } from "../theme/docs-theme";
 import { Github } from "../brand/brand-logos";
-import { geist } from "../ui/fonts";
+import { sans } from "../ui/fonts";
 
 // The public repository the GitHub button in the bar links back to (mirrors the home page's link).
 const REPO_URL = "https://github.com/nannier-com/canvas";
@@ -101,11 +101,11 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
       ) : null}
 
       <View style={{ minWidth: 0, flexShrink: 1 }}>
-        <Text style={{ fontFamily: geist("600"), fontSize: 14.5, color: tokens.foreground }} numberOfLines={1}>
+        <Text style={{ fontFamily: sans("600"), fontSize: 14.5, color: tokens.foreground }} numberOfLines={1}>
           {title}
         </Text>
         {subtitle && wideEnough ? (
-          <Text style={{ fontFamily: geist("400"), fontSize: 11, color: tokens["muted-foreground"] }} numberOfLines={1}>
+          <Text style={{ fontFamily: sans("400"), fontSize: 11, color: tokens["muted-foreground"] }} numberOfLines={1}>
             {subtitle}
           </Text>
         ) : null}
@@ -135,7 +135,7 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
           }}
         >
           <Icon search size={13} muted />
-          <Text style={{ flex: 1, fontFamily: geist("400"), fontSize: 12.5, color: tokens["muted-foreground"] }}>
+          <Text style={{ flex: 1, fontFamily: sans("400"), fontSize: 12.5, color: tokens["muted-foreground"] }}>
             Search components...
           </Text>
           <Kbd>⌘K</Kbd>

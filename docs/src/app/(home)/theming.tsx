@@ -5,7 +5,7 @@ import { H3, P, Rule, InlineCode } from "../../ui/prose";
 import { PageNav } from "../../ui/page-nav";
 import { CodeBlock } from "../../ui/code-block";
 import { Callout } from "../../ui/tokens-kit";
-import { geist } from "../../ui/fonts";
+import { sans } from "../../ui/fonts";
 import { useDocsTheme } from "../../theme/docs-theme";
 
 // The page's teaching snippets. The helper ones mirror src/theme.ts behavior
@@ -90,8 +90,8 @@ function Bullet({ children }: { children: React.ReactNode }) {
   const { tokens } = useTheme();
   return (
     <Row snug>
-      <Text style={{ fontFamily: geist("400"), fontSize: 14, lineHeight: 24, color: tokens["muted-foreground"] }}>•</Text>
-      <Text style={{ flex: 1, fontFamily: geist("400"), fontSize: 14, lineHeight: 24, color: tokens["muted-foreground"] }}>{children}</Text>
+      <Text style={{ fontFamily: sans("400"), fontSize: 14, lineHeight: 24, color: tokens["muted-foreground"] }}>•</Text>
+      <Text style={{ flex: 1, fontFamily: sans("400"), fontSize: 14, lineHeight: 24, color: tokens["muted-foreground"] }}>{children}</Text>
     </Row>
   );
 }

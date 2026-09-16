@@ -11,7 +11,7 @@ import { SearchModal } from "./search-modal";
 import { CanvasUniverse } from "../brand/canvas-universe";
 import { WebScrollbarTheme, SCROLLBAR_W } from "../ui/web-scrollbar";
 import { useDocsTheme } from "../theme/docs-theme";
-import { geist } from "../ui/fonts";
+import { sans } from "../ui/fonts";
 import { MOBILE_TABS, sectionFor } from "../data/nav";
 
 // The one adaptive navigation component. On the web it is the sidebar + topbar shell at

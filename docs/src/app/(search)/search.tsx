@@ -6,7 +6,7 @@ import type { SearchBarCommands } from "react-native-screens";
 import { View, Text, Pressable, GlassSurface, useTheme, alpha } from "@nannier-com/canvas";
 import { search } from "../../core/data/search";
 import type { SearchEntry } from "../../core/data/types";
-import { geist } from "../../ui/fonts";
+import { sans } from "../../ui/fonts";
 import { CanvasUniverse } from "../../brand/canvas-universe";
 
 // The Search tab's screen. On native (iOS/Android) the rightmost bottom tab opens this and the
@@ -159,10 +159,10 @@ function NativeSearch() {
                         backgroundColor: pressed ? alpha(tokens.foreground, 0.06) : "transparent",
                       })}
                     >
-                      <Text numberOfLines={1} style={{ fontFamily: geist(closest ? "600" : "500"), fontSize: 14, color: tokens.foreground }}>
+                      <Text numberOfLines={1} style={{ fontFamily: sans(closest ? "600" : "500"), fontSize: 14, color: tokens.foreground }}>
                         {item.title}
                       </Text>
-                      <Text numberOfLines={1} style={{ fontFamily: geist("400"), fontSize: 12, color: tokens["muted-foreground"], marginTop: 1 }}>
+                      <Text numberOfLines={1} style={{ fontFamily: sans("400"), fontSize: 12, color: tokens["muted-foreground"], marginTop: 1 }}>
                         {item.description}
                       </Text>
                     </Pressable>

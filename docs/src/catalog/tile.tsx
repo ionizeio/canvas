@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import { View, Text, Pressable, Icon, Row, Column, Grid, GridItem, useTheme, alpha } from "@nannier-com/canvas";
 import { useRouter } from "expo-router";
-import { geist } from "../ui/fonts";
+import { sans } from "../ui/fonts";
 
 // One entry in the component catalog: a title, the route it links to, an optional double-width
 // flag, and a Preview component (a small hand-authored mockup of the component, rendered in the
@@ -19,7 +19,7 @@ export function Tile({ tile }: { tile: CatTile }) {
       onPress={() => router.push(tile.href as never)}
       style={{
         width: "100%",
-        borderRadius: 12,
+        borderRadius: 20,
         borderWidth: 1,
         borderColor: tokens.border,
         backgroundColor: tokens.card,
@@ -42,7 +42,7 @@ export function Tile({ tile }: { tile: CatTile }) {
         <Preview />
       </Column>
       <Row flush between alignCenter style={{ paddingVertical: 10, paddingHorizontal: 12 }}>
-        <Text style={{ fontFamily: geist("500"), fontSize: 12.5, color: tokens.foreground }}>{tile.title}</Text>
+        <Text style={{ fontFamily: sans("500"), fontSize: 12.5, color: tokens.foreground }}>{tile.title}</Text>
         <Icon chevronRight size={12} muted />
       </Row>
     </Pressable>
@@ -74,8 +74,8 @@ export function CatGroup({ label, count, tiles }: { label: string; count: number
   return (
     <Column cozy>
       <Row flush between baseline>
-        <Text accessibilityRole="header" aria-level={2} style={{ fontFamily: geist("600"), fontSize: 18, letterSpacing: -0.18, color: tokens.foreground }}>{label}</Text>
-        <Text style={{ fontFamily: geist("500"), fontSize: 11, letterSpacing: 0.88, textTransform: "uppercase", color: tokens["muted-foreground"] }}>
+        <Text accessibilityRole="header" aria-level={2} style={{ fontFamily: sans("600"), fontSize: 18, letterSpacing: -0.18, color: tokens.foreground }}>{label}</Text>
+        <Text style={{ fontFamily: sans("500"), fontSize: 11, letterSpacing: 0.88, textTransform: "uppercase", color: tokens["muted-foreground"] }}>
           {count} components
         </Text>
       </Row>
@@ -114,11 +114,11 @@ export function CatSubBar({ categories, total }: { categories: string[]; total: 
             backgroundColor: tokens.card,
           }}
         >
-          <Text style={{ fontFamily: geist("500"), fontSize: 12, color: tokens.foreground }}>{c}</Text>
+          <Text style={{ fontFamily: sans("500"), fontSize: 12, color: tokens.foreground }}>{c}</Text>
         </View>
       ))}
       <View style={{ flex: 1, minWidth: 12 }} />
-      <Text style={{ fontFamily: geist("400"), fontSize: 11, color: tokens["muted-foreground"] }}>{total} components</Text>
+      <Text style={{ fontFamily: sans("400"), fontSize: 11, color: tokens["muted-foreground"] }}>{total} components</Text>
     </View>
   );
 }
@@ -131,8 +131,8 @@ export function MiniBtn({ label, variant = "default" }: { label: string; variant
   const fg = variant === "default" ? tokens["primary-foreground"] : tokens.foreground;
   const border = variant === "outline" ? tokens.input : "transparent";
   return (
-    <View style={{ height: 28, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: border, backgroundColor: bg, alignItems: "center", justifyContent: "center" }}>
-      <Text style={{ fontFamily: geist("500"), fontSize: 11, color: fg }}>{label}</Text>
+    <View style={{ height: 28, paddingHorizontal: 10, borderRadius: 10, borderWidth: 1, borderColor: border, backgroundColor: bg, alignItems: "center", justifyContent: "center" }}>
+      <Text style={{ fontFamily: sans("500"), fontSize: 11, color: fg }}>{label}</Text>
     </View>
   );
 }
@@ -140,8 +140,8 @@ export function MiniBtn({ label, variant = "default" }: { label: string; variant
 export function MiniInput({ placeholder, value, width = 170 }: { placeholder?: string; value?: string; width?: number }) {
   const { tokens } = useTheme();
   return (
-    <View style={{ height: 32, width, maxWidth: "100%", borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 10, justifyContent: "center" }}>
-      <Text style={{ fontFamily: geist("400"), fontSize: 12, color: value ? tokens.foreground : tokens["muted-foreground"] }} numberOfLines={1}>
+    <View style={{ height: 32, width, maxWidth: "100%", borderRadius: 10, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 10, justifyContent: "center" }}>
+      <Text style={{ fontFamily: sans("400"), fontSize: 12, color: value ? tokens.foreground : tokens["muted-foreground"] }} numberOfLines={1}>
         {value ?? placeholder}
       </Text>
     </View>
@@ -165,7 +165,7 @@ export function MiniAvatar({ initials, size = 32, color, ring }: { initials: str
         borderColor: tokens.background,
       }}
     >
-      <Text style={{ fontFamily: geist("600"), fontSize: size * 0.34, color: "#ffffff" }}>{initials}</Text>
+      <Text style={{ fontFamily: sans("600"), fontSize: size * 0.34, color: "#ffffff" }}>{initials}</Text>
     </View>
   );
 }

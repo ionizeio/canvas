@@ -6,7 +6,7 @@ import { COMPONENTS } from "../core/data/components";
 import { COMPONENT_DOCS } from "../core/registry";
 import { LOOKS_SHOTS, LOOKS_ASPECT } from "./looks-shots";
 import { DeviceFrame } from "./device-frames";
-import { geist, geistMono } from "../ui/fonts";
+import { sans, geistMono } from "../ui/fonts";
 import { alpha } from "../ui/color";
 
 // The landing page's comparison hero: full device-screen captures of each atom's docs
@@ -107,7 +107,7 @@ function Rotator() {
         <Row snug center baseline style={{ width: LABEL_W }}>
           <Text
             numberOfLines={1}
-            style={{ fontFamily: geist("600"), fontSize: 17, letterSpacing: -0.17, color: tokens.foreground, flexShrink: 1 }}
+            style={{ fontFamily: sans("600"), fontSize: 17, letterSpacing: -0.17, color: tokens.foreground, flexShrink: 1 }}
           >
             {atom.name}
           </Text>
@@ -124,10 +124,10 @@ function Rotator() {
       <Animated.View style={{ opacity: fade, flexDirection: columns ? "row" : "column", gap: 16, width: "100%", maxWidth: 1040, alignSelf: "center" }}>
         {PLATFORMS.map((p) => (
           <View key={p.key} style={{ flex: columns ? 1 : undefined, width: columns ? undefined : "100%", minWidth: 0 }}>
-            <Text style={{ fontFamily: geist("600"), fontSize: 11, letterSpacing: 0.55, textTransform: "uppercase", color: tokens["muted-foreground"], textAlign: "center" }}>
+            <Text style={{ fontFamily: sans("600"), fontSize: 11, letterSpacing: 0.55, textTransform: "uppercase", color: tokens["muted-foreground"], textAlign: "center" }}>
               {p.label}
             </Text>
-            <Text style={{ fontFamily: geist("400"), fontSize: 11, color: tokens["muted-foreground"], textAlign: "center", marginBottom: 8, opacity: 0.7 }}>
+            <Text style={{ fontFamily: sans("400"), fontSize: 11, color: tokens["muted-foreground"], textAlign: "center", marginBottom: 8, opacity: 0.7 }}>
               {p.device}
             </Text>
             <DeviceFrame variant={p.key} aspect={LOOKS_ASPECT} label={p.device}>
