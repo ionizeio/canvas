@@ -6,11 +6,11 @@ export default function Example(scope: ExampleScope) {
   const { Column, Container, Sparkline } = scope;
   return (
 <Container xxxs>
-  <Column relaxed>
-    <Sparkline primary values={[29, 31, 36, 40, 40, 45, 48, 48, 45, 49, 47, 51, 53, 57, 60, 66, 64, 64, 63, 63, 65, 64, 64, 65, 65, 67, 72, 77, 82, 89]} />
-    <Sparkline success values={[29, 31, 36, 40, 40, 45, 48, 48, 45, 49, 47, 51, 53, 57, 60, 66, 64, 64, 63, 63, 65, 64, 64, 65, 65, 67, 72, 77, 82, 89]} />
-    <Sparkline destructive values={[89, 82, 77, 72, 67, 65, 65, 64, 64, 65, 63, 63, 64, 64, 66, 60, 57, 53, 51, 47, 49, 45, 48, 48, 45, 40, 40, 36, 31, 29]} />
-    <Sparkline muted values={[18, 19, 20, 23, 19, 21, 17, 16, 16, 19, 20, 20, 21, 22, 26, 25, 24, 23, 24, 22, 20, 23, 20, 20, 20, 17, 16, 17, 19, 20]} />
+  <Column>
+    <Sparkline primary values={[4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24]} />
+    <Sparkline success values={[4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24]} />
+    <Sparkline destructive values={[24, 20, 16, 18, 14, 16, 10, 12, 6, 8, 4]} />
+    <Sparkline muted values={[4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24]} />
   </Column>
 </Container>
   );

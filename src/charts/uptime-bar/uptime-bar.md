@@ -6,13 +6,11 @@ The statuspage strip: a single row of per-period status pills, oldest on the lef
 
 ```tsx
 <UptimeBar
-label="API uptime"
-caption="99.98% uptime"
-startLabel="90 days ago"
-endLabel="Today"
-periods={Array.from({ length: 90 }, (_, i) =>
-  i === 61 ? { down: true } : i === 62 || i === 78 ? { degraded: true } : {},
-)}
+  label="API uptime"
+  caption="99.98% uptime"
+  startLabel="90 days ago"
+  endLabel="Today"
+  periods={Array.from({ length: 90 }, (_, i) => (i === 61 ? { down: true } : i === 78 ? { degraded: true } : {}))}
 />
 ```
 
@@ -32,11 +30,8 @@ periods={Array.from({ length: 60 }, (_, i) => (i === 40 ? { degraded: true } : {
 
 ```tsx
 <UptimeBar
-label="Worker uptime"
-caption="Monitoring began mid-window"
-startLabel="30 days ago"
-endLabel="Today"
-periods={Array.from({ length: 30 }, (_, i) => (i < 6 ? { unknown: true } : i === 21 ? { down: true } : {}))}
+  label="Worker uptime"
+  periods={Array.from({ length: 30 }, (_, i) => (i < 6 ? { unknown: true } : {}))}
 />
 ```
 

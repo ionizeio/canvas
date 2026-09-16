@@ -6,12 +6,12 @@ export default function Example(scope: ExampleScope) {
   const { BulletChart } = scope;
   return (
 <BulletChart
-title="Q3 targets"
-data={[
-  { label: "Revenue", value: 275, target: 300, ranges: [200, 350, 500] },
-  { label: "Profit", value: 42, target: 35, ranges: [30, 50, 70] },
-  { label: "NPS", value: 61, target: 70, ranges: [40, 60, 80] },
-]}
+  title="Q3 targets"
+  data={[
+    { label: "Revenue", value: 275, target: 300, ranges: [200, 350, 500] },
+    { label: "Profit", value: 42, target: 35, ranges: [30, 50, 70] },
+    { label: "NPS", value: 61, target: 70, ranges: [40, 60, 80] },
+  ]}
 />
   );
 }

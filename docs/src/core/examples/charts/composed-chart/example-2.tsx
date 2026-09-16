@@ -6,14 +6,14 @@ export default function Example(scope: ExampleScope) {
   const { ComposedChart } = scope;
   return (
 <ComposedChart
-title="Deploys and incidents"
-labels={["W1", "W2", "W3", "W4", "W5", "W6"]}
-dots
-defaultSelected={3}
-series={[
-  { label: "Deploys", values: [12, 18, 15, 22, 19, 24] },
-  { label: "Incidents", values: [2, 1, 3, 1, 2, 1], line: true },
-]}
+  title="Deploys and incidents"
+  labels={["W1", "W2", "W3", "W4", "W5", "W6"]}
+  dots
+  defaultSelected={3}
+  series={[
+    { label: "Deploys", values: [12, 18, 15, 22, 19, 24] },
+    { label: "Incidents", values: [2, 1, 3, 1, 2, 1], line: true }
+  ]}
 />
   );
 }

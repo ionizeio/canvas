@@ -6,13 +6,12 @@ export default function Example(scope: ExampleScope) {
   const { ServiceHealthList } = scope;
   return (
 <ServiceHealthList
-title="System status"
-onPressItem={() => {}}
-items={[
-  { label: "API", detail: "99.98%" },
-  { label: "Search", detail: "99.95%" },
-  { label: "Exports", detail: "99.80%", degraded: true },
-]}
+  onPressItem={() => {}}
+  items={[
+    { label: "API", detail: "99.98%" },
+    { label: "Search", detail: "99.95%" },
+    { label: "Exports", detail: "99.80%", degraded: true }
+  ]}
 />
   );
 }

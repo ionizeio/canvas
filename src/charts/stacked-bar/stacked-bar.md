@@ -5,16 +5,13 @@ One proportional horizontal bar split into colored segments (the `chart-1`..`cha
 ## Usage
 
 ```tsx
-<Card padded>
-  <StackedBar
-    segments={[
-      { label: "Direct", value: 42 },
-      { label: "Organic search", value: 28 },
-      { label: "Social", value: 18 },
-      { label: "Referral", value: 12 }
-    ]}
-  />
-</Card>
+<StackedBar
+  segments={[
+    { label: "Direct", value: 42 },
+    { label: "Organic search", value: 28 },
+    { label: "Social", value: 18 }
+  ]}
+/>
 ```
 
 ## Variants
@@ -27,17 +24,14 @@ composition of nothing still reads as a bar. Use it wherever the strip has to
 hold its space, such as inside a `Stats` tile.
 
 ```tsx
-<Card padded>
-  <StackedBar
-    track
-    hideLegend
-    label="Courier queue"
-    segments={[
-      { label: "Sent", value: 0 },
-      { label: "Queued", value: 0 }
-    ]}
-  />
-</Card>
+<StackedBar
+  track
+  label="Courier queue"
+  segments={[
+    { label: "Sent", value: 0 },
+    { label: "Queued", value: 0 }
+  ]}
+/>
 ```
 
 ### Strip size and wash
@@ -48,19 +42,15 @@ the segments for a bar that supports a headline rather than being one, where a
 solid bar would outweigh everything around it.
 
 ```tsx
-<Card padded>
-  <StackedBar
-    tall
-    subtle
-    track
-    hideLegend
-    label="Verified identities"
-    segments={[
-      { label: "Verified", value: 1502 },
-      { label: "Unverified", value: 345 }
-    ]}
-  />
-</Card>
+<StackedBar
+  tall
+  subtle
+  label="Verified identities"
+  segments={[
+    { label: "Verified", value: 1502 },
+    { label: "Unverified", value: 345 }
+  ]}
+/>
 ```
 
 ## Do & Don't

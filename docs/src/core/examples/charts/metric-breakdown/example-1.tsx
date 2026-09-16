@@ -6,14 +6,13 @@ export default function Example(scope: ExampleScope) {
   const { MetricBreakdown } = scope;
   return (
 <MetricBreakdown
-value="960"
-label="New sign-ups today"
-breakdown={[
-  { label: "google", value: 412, delta: "+18%" },
-  { label: "email", value: 318, delta: "+3%" },
-  { label: "github", value: 142, delta: "-6%", down: true },
-  { label: "passkey", value: 88, delta: "+41%" },
-]}
+  value="25,874"
+  label="Requests"
+  rate="0.74%"
+  rateLabel="4xx + 5xx rate"
+  rateSuccess
+  spark={[180, 196, 188, 204, 210, 202, 214, 220]}
+  sparkUnit="req/s"
 />
   );
 }

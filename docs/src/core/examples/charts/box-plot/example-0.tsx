@@ -6,12 +6,12 @@ export default function Example(scope: ExampleScope) {
   const { BoxPlot } = scope;
   return (
 <BoxPlot
-title="Latency by region"
-data={[
-  { label: "us-east", values: [42, 38, 51, 44, 47, 39, 58, 44, 41, 49, 96] },
-  { label: "eu-west", values: [55, 61, 58, 64, 57, 63, 59, 66, 60, 62] },
-  { label: "ap-south", values: [71, 78, 74, 83, 76, 80, 75, 88, 79, 124] },
-]}
+  title="Latency by region"
+  data={[
+    { label: "us-east", values: [42, 38, 51, 44, 47, 39, 96] },
+    { label: "eu-west", values: [55, 61, 58, 64, 57, 63] },
+    { label: "ap-south", values: [71, 78, 74, 83, 76, 124] },
+  ]}
 />
   );
 }

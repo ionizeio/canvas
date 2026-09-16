@@ -5,17 +5,15 @@ Concentric arc rings, one per category, innermost first: each pairs a muted full
 ## Usage
 
 ```tsx
-<Card padded>
-  <RadialBarChart
-    label="Platform activation"
-    data={[
-      { label: "iOS", value: 64 },
-      { label: "Android", value: 48 },
-      { label: "Web", value: 82 },
-    ]}
-    max={100}
-  />
-</Card>
+<RadialBarChart
+  label="Platform activation"
+  max={100}
+  data={[
+    { label: "iOS", value: 64 },
+    { label: "Android", value: 48 },
+    { label: "Web", value: 82 }
+  ]}
+/>
 ```
 
 ## Variants
@@ -23,34 +21,27 @@ Concentric arc rings, one per category, innermost first: each pairs a muted full
 ### Compact, no legend
 
 ```tsx
-<Card padded>
-  <RadialBarChart
-    label="Quota"
-    compact
-    hideLegend
-    data={[
-      { label: "Q1", value: 92 },
-      { label: "Q2", value: 71 },
-    ]}
-    max={100}
-  />
-</Card>
+<RadialBarChart
+  compact
+  hideLegend
+  data={[
+    { label: "Q1", value: 92 },
+    { label: "Q2", value: 71 }
+  ]}
+/>
 ```
 
 ### Inspected
 
 ```tsx
-<Card padded>
-  <RadialBarChart
-    label="Storage by tier"
-    defaultSelected={1}
-    data={[
-      { label: "Hot", value: 420 },
-      { label: "Warm", value: 260 },
-      { label: "Cold", value: 890 },
-    ]}
-  />
-</Card>
+<RadialBarChart
+  defaultSelected={1}
+  data={[
+    { label: "Hot", value: 420 },
+    { label: "Warm", value: 260 },
+    { label: "Cold", value: 890 }
+  ]}
+/>
 ```
 
 ## Do & Don't

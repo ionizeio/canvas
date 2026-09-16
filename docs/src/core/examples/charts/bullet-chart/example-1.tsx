@@ -6,13 +6,12 @@ export default function Example(scope: ExampleScope) {
   const { BulletChart } = scope;
   return (
 <BulletChart
-title="Deploys per week"
-success
-data={[
-  { label: "Web", value: 34, target: 30 },
-  { label: "iOS", value: 18, target: 24 },
-  { label: "Android", value: 21, target: 24 },
-]}
+  success
+  data={[
+    { label: "Web", value: 34, target: 30 },
+    { label: "iOS", value: 18, target: 24 },
+    { label: "Android", value: 21, target: 24 },
+  ]}
 />
   );
 }

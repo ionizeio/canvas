@@ -6,13 +6,10 @@ export default function Example(scope: ExampleScope) {
   const { LineChart } = scope;
   return (
 <LineChart
-title="Sign-ins"
-labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
-series={[
-  { label: "Granted", values: [812, 905, 874, 961, 1024, 640, 588], success: true },
-  { label: "Denied", values: [41, 38, 56, 47, 62, 29, 24], destructive: true }
-]}
-curved
+  compact
+  title="Signups"
+  labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
+  series={[{ label: "Signups", values: [24, 31, 28, 42, 39, 47, 51] }]}
 />
   );
 }

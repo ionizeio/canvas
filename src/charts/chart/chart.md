@@ -26,13 +26,12 @@ A single- or multi-series bar chart: vertical columns (or horizontal rows) sized
 
 ```tsx
 <Chart
-title="Revenue, costs, profit"
-labels={["Q1 '23", "Q2 '23", "Q3 '23", "Q4 '23", "Q1 '24", "Q2 '24", "Q3 '24", "Q4 '24"]}
-series={[
-  { label: "Revenue", values: [49, 51, 61, 61, 62, 70, 84, 89] },
-  { label: "Costs", values: [32, 32, 33, 38, 41, 48, 55, 59] },
-  { label: "Profit", values: [17, 19, 28, 23, 21, 22, 29, 30] }
-]}
+  labels={["Q1", "Q2", "Q3", "Q4"]}
+  series={[
+    { label: "Revenue", values: [62, 70, 84, 89] },
+    { label: "Costs", values: [41, 48, 55, 59] },
+    { label: "Profit", values: [21, 22, 29, 30] }
+  ]}
 />
 ```
 
@@ -40,15 +39,13 @@ series={[
 
 ```tsx
 <Chart
-title="Token issuance by client"
-stacked
-labels={["acme", "globex", "initech", "umbrella", "soylent"]}
-series={[
-  { label: "Authorization code", values: [1840, 1210, 960, 640, 410] },
-  { label: "Client credentials", values: [920, 1480, 340, 1120, 260] },
-  { label: "Refresh token", values: [610, 380, 720, 290, 180] },
-  { label: "Device code", values: [140, 90, 260, 70, 55] }
-]}
+  stacked
+  labels={["acme", "globex", "initech", "umbrella"]}
+  series={[
+    { label: "Authorization code", values: [1840, 1210, 960, 640] },
+    { label: "Client credentials", values: [920, 1480, 340, 1120] },
+    { label: "Refresh token", values: [610, 380, 720, 290] }
+  ]}
 />
 ```
 
@@ -56,12 +53,11 @@ series={[
 
 ```tsx
 <Chart
-title="Sign-ins"
-labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
-series={[
-  { label: "Granted", values: [812, 905, 874, 961, 1024, 640, 588], success: true },
-  { label: "Denied", values: [41, 38, 56, 47, 62, 29, 24], destructive: true }
-]}
+  labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
+  series={[
+    { label: "Granted", values: [812, 905, 874, 961, 1024, 640, 588], success: true },
+    { label: "Denied", values: [41, 38, 56, 47, 62, 29, 24], destructive: true }
+  ]}
 />
 ```
 
@@ -69,15 +65,13 @@ series={[
 
 ```tsx
 <Chart
-title="Coverage"
-horizontal
-data={[
-  { label: "Atoms", value: 92 },
-  { label: "Molecules", value: 78 },
-  { label: "Organisms", value: 64 },
-  { label: "Charts", value: 85 }
-]}
-max={100}
+  horizontal
+  data={[
+    { label: "Atoms", value: 92 },
+    { label: "Molecules", value: 78 },
+    { label: "Organisms", value: 64 },
+    { label: "Charts", value: 85 }
+  ]}
 />
 ```
 
@@ -86,28 +80,24 @@ max={100}
 ```tsx
 <Column loose>
   <Chart
-  title="Checks passing"
-  success
-  data={[
-    { label: "Mon", value: 82 },
-    { label: "Tue", value: 88 },
-    { label: "Wed", value: 91 },
-    { label: "Thu", value: 86 },
-    { label: "Fri", value: 94 }
-  ]}
-  max={100}
+    success
+    data={[
+      { label: "Mon", value: 82 },
+      { label: "Tue", value: 88 },
+      { label: "Wed", value: 91 },
+      { label: "Thu", value: 86 },
+      { label: "Fri", value: 94 }
+    ]}
   />
   <Chart
-  title="Error rate"
-  destructive
-  data={[
-    { label: "Mon", value: 14 },
-    { label: "Tue", value: 9 },
-    { label: "Wed", value: 22 },
-    { label: "Thu", value: 12 },
-    { label: "Fri", value: 7 }
-  ]}
-  max={25}
+    destructive
+    data={[
+      { label: "Mon", value: 14 },
+      { label: "Tue", value: 9 },
+      { label: "Wed", value: 22 },
+      { label: "Thu", value: 12 },
+      { label: "Fri", value: 7 }
+    ]}
   />
 </Column>
 ```

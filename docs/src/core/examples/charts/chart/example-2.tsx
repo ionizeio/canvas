@@ -6,15 +6,13 @@ export default function Example(scope: ExampleScope) {
   const { Chart } = scope;
   return (
 <Chart
-title="Token issuance by client"
-stacked
-labels={["acme", "globex", "initech", "umbrella", "soylent"]}
-series={[
-  { label: "Authorization code", values: [1840, 1210, 960, 640, 410] },
-  { label: "Client credentials", values: [920, 1480, 340, 1120, 260] },
-  { label: "Refresh token", values: [610, 380, 720, 290, 180] },
-  { label: "Device code", values: [140, 90, 260, 70, 55] }
-]}
+  stacked
+  labels={["acme", "globex", "initech", "umbrella"]}
+  series={[
+    { label: "Authorization code", values: [1840, 1210, 960, 640] },
+    { label: "Client credentials", values: [920, 1480, 340, 1120] },
+    { label: "Refresh token", values: [610, 380, 720, 290] }
+  ]}
 />
   );
 }

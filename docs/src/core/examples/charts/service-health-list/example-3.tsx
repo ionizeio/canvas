@@ -5,13 +5,12 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Card, ServiceHealthList } = scope;
   return (
-<Card padded>
+<Card>
   <ServiceHealthList
     plain
-    compact
     items={[
       { label: "API", detail: "operational" },
-      { label: "Dashboard", detail: "degraded", degraded: true },
+      { label: "Dashboard", detail: "degraded", degraded: true }
     ]}
   />
 </Card>

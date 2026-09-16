@@ -6,14 +6,14 @@ export default function Example(scope: ExampleScope) {
   const { WaterfallChart } = scope;
   return (
 <WaterfallChart
-compact
-defaultSelected={2}
-steps={[
-  { label: "Start", value: 100, total: true },
-  { label: "Wins", value: 30 },
-  { label: "Losses", value: -12 },
-  { label: "End", total: true },
-]}
+  compact
+  defaultSelected={2}
+  steps={[
+    { label: "Start", value: 100, total: true },
+    { label: "Wins", value: 30 },
+    { label: "Losses", value: -12 },
+    { label: "End", total: true },
+  ]}
 />
   );
 }

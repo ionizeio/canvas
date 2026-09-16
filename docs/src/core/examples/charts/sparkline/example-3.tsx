@@ -3,13 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Column, Container, Sparkline } = scope;
+  const { Container, Sparkline } = scope;
   return (
 <Container xxxs>
-  <Column relaxed>
-    <Sparkline line success values={[185.3, 184.0, 183.5, 185.0, 185.8, 186.2, 187.2, 188.7, 189.1, 187.8, 187.7, 187.0, 186.9, 187.0, 188.1, 187.5, 188.9, 188.8, 189.8, 190.6, 189.4, 188.1, 189.0, 190.1, 191.6, 192.6, 193.6, 194.4, 195.8, 194.7, 193.4, 192.8, 191.7, 191.0]} />
-    <Sparkline line destructive values={[191.0, 191.7, 192.8, 193.4, 194.7, 195.8, 194.4, 193.6, 192.6, 191.6, 190.1, 189.0, 188.1, 189.4, 190.6, 189.8, 188.8, 188.9, 187.5, 188.1, 187.0, 186.9, 187.0, 187.7, 187.8, 189.1, 188.7, 187.2, 186.2, 185.8, 185.0, 183.5, 184.0, 185.3]} />
-  </Column>
+  <Sparkline line values={[4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24]} />
 </Container>
   );
 }

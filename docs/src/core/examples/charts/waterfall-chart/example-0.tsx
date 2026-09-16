@@ -6,15 +6,15 @@ export default function Example(scope: ExampleScope) {
   const { WaterfallChart } = scope;
   return (
 <WaterfallChart
-title="Q3 revenue bridge"
-steps={[
-  { label: "Q2", value: 4200, total: true },
-  { label: "New", value: 980 },
-  { label: "Expansion", value: 460 },
-  { label: "Churn", value: -540 },
-  { label: "FX", value: -120 },
-  { label: "Q3", total: true },
-]}
+  title="Q3 revenue bridge"
+  steps={[
+    { label: "Q2", value: 4200, total: true },
+    { label: "New", value: 980 },
+    { label: "Expansion", value: 460 },
+    { label: "Churn", value: -540 },
+    { label: "FX", value: -120 },
+    { label: "Q3", total: true },
+  ]}
 />
   );
 }

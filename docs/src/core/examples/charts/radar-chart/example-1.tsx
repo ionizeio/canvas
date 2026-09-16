@@ -6,11 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { RadarChart } = scope;
   return (
 <RadarChart
-title="Service posture"
-success
-axes={["Latency", "Uptime", "Errors", "Cost", "Coverage"]}
-series={[{ label: "API", values: [7, 9, 8, 6, 7] }]}
-max={10}
+  success
+  axes={["Latency", "Uptime", "Errors", "Cost", "Coverage"]}
+  series={[{ label: "API", values: [7, 9, 8, 6, 7] }]}
 />
   );
 }

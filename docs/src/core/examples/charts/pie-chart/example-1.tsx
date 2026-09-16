@@ -6,6 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { PieChart } = scope;
   return (
 <PieChart
+  donut
   label="Traffic"
   slices={[
     { label: "Direct", value: 42 },

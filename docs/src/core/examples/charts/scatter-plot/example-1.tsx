@@ -6,11 +6,10 @@ export default function Example(scope: ExampleScope) {
   const { ScatterPlot } = scope;
   return (
 <ScatterPlot
-title="Spend vs reach"
-compact
-series={[
-  { label: "Campaigns", points: [{ x: 1.2, y: 14 }, { x: 2.1, y: 21 }, { x: 2.8, y: 26 }, { x: 3.5, y: 24 }, { x: 4.2, y: 38 }, { x: 5.0, y: 41 }, { x: 5.9, y: 46 }, { x: 6.4, y: 44 }, { x: 7.3, y: 58 }, { x: 8.1, y: 63 }] }
-]}
+  compact
+  series={[
+    { label: "Campaigns", points: [{ x: 1.2, y: 14 }, { x: 2.8, y: 26 }, { x: 4.2, y: 38 }, { x: 5.9, y: 46 }, { x: 7.3, y: 58 }, { x: 8.1, y: 63 }] }
+  ]}
 />
   );
 }

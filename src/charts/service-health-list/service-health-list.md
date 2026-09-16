@@ -6,12 +6,12 @@ Per-service status rows: a status dot (down > degraded > operational), the servi
 
 ```tsx
 <ServiceHealthList
-title="System status"
-items={[
-  { label: "API", detail: "99.98%", periods: Array.from({ length: 45 }, () => ({})) },
-  { label: "Dashboard", detail: "99.92%", periods: Array.from({ length: 45 }, (_, i) => (i === 30 ? { degraded: true } : {})), degraded: true },
-  { label: "Webhooks", detail: "97.10%", periods: Array.from({ length: 45 }, (_, i) => (i > 40 ? { down: true } : {})), down: true },
-]}
+  title="System status"
+  items={[
+    { label: "API", detail: "99.98%", periods: Array.from({ length: 45 }, () => ({})) },
+    { label: "Dashboard", detail: "99.92%", periods: Array.from({ length: 45 }, (_, i) => (i === 30 ? { degraded: true } : {})), degraded: true },
+    { label: "Webhooks", detail: "97.10%", periods: Array.from({ length: 45 }, (_, i) => (i > 40 ? { down: true } : {})), down: true }
+  ]}
 />
 ```
 
@@ -21,13 +21,12 @@ items={[
 
 ```tsx
 <ServiceHealthList
-title="System status"
-compact
-items={[
-  { label: "API", detail: "99.98%" },
-  { label: "Dashboard", detail: "99.92%", degraded: true },
-  { label: "Webhooks", detail: "97.10%", down: true },
-]}
+  compact
+  items={[
+    { label: "API", detail: "99.98%" },
+    { label: "Dashboard", detail: "99.92%", degraded: true },
+    { label: "Webhooks", detail: "97.10%", down: true }
+  ]}
 />
 ```
 
@@ -35,26 +34,24 @@ items={[
 
 ```tsx
 <ServiceHealthList
-title="System status"
-onPressItem={() => {}}
-items={[
-  { label: "API", detail: "99.98%" },
-  { label: "Search", detail: "99.95%" },
-  { label: "Exports", detail: "99.80%", degraded: true },
-]}
+  onPressItem={() => {}}
+  items={[
+    { label: "API", detail: "99.98%" },
+    { label: "Search", detail: "99.95%" },
+    { label: "Exports", detail: "99.80%", degraded: true }
+  ]}
 />
 ```
 
 ### Plain, inside a card
 
 ```tsx
-<Card padded>
+<Card>
   <ServiceHealthList
     plain
-    compact
     items={[
       { label: "API", detail: "operational" },
-      { label: "Dashboard", detail: "degraded", degraded: true },
+      { label: "Dashboard", detail: "degraded", degraded: true }
     ]}
   />
 </Card>

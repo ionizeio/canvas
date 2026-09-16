@@ -6,12 +6,13 @@ export default function Example(scope: ExampleScope) {
   const { AreaChart } = scope;
   return (
 <AreaChart
-title="Signups"
-labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]}
-series={[
-  { label: "Total", values: [120, 138, 151, 149, 168, 184, 197, 212, 208, 231, 252, 266] },
-  { label: "Paid", values: [42, 51, 58, 63, 71, 84, 92, 104, 101, 118, 131, 142] }
-]}
+  stacked
+  labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug"]}
+  series={[
+    { label: "Direct", values: [37, 46, 49, 61, 53, 49, 54, 56] },
+    { label: "Search", values: [77, 90, 83, 82, 82, 85, 85, 92] },
+    { label: "Social", values: [18, 28, 34, 41, 48, 55, 50, 57] }
+  ]}
 />
   );
 }

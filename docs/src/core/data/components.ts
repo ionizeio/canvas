@@ -678,7 +678,6 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Gauge",
     description: "A radial dial: muted track, tone-colored fill arc, and the value centered inside.",
     category: "Charts",
-    stageAlign: "start",
   },
   {
     slug: "heatmap",
@@ -727,7 +726,6 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "ProgressRing",
     description: "A full-circle completion ring: muted track, tone-colored arc from 12 o'clock, and the percent readout centered inside.",
     category: "Charts",
-    stageAlign: "start",
   },
   {
     slug: "composed-chart",

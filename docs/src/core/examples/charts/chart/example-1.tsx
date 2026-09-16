@@ -6,13 +6,12 @@ export default function Example(scope: ExampleScope) {
   const { Chart } = scope;
   return (
 <Chart
-title="Revenue, costs, profit"
-labels={["Q1 '23", "Q2 '23", "Q3 '23", "Q4 '23", "Q1 '24", "Q2 '24", "Q3 '24", "Q4 '24"]}
-series={[
-  { label: "Revenue", values: [49, 51, 61, 61, 62, 70, 84, 89] },
-  { label: "Costs", values: [32, 32, 33, 38, 41, 48, 55, 59] },
-  { label: "Profit", values: [17, 19, 28, 23, 21, 22, 29, 30] }
-]}
+  labels={["Q1", "Q2", "Q3", "Q4"]}
+  series={[
+    { label: "Revenue", values: [62, 70, 84, 89] },
+    { label: "Costs", values: [41, 48, 55, 59] },
+    { label: "Profit", values: [21, 22, 29, 30] }
+  ]}
 />
   );
 }

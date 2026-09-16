@@ -6,13 +6,12 @@ export default function Example(scope: ExampleScope) {
   const { BarList } = scope;
   return (
 <BarList
-title="Top referrers"
-onPressItem={() => {}}
-items={[
-  { label: "news.ycombinator.com", value: 4210, delta: "+18%" },
-  { label: "reddit.com", value: 2380, delta: "-6%", down: true },
-  { label: "linkedin.com", value: 1240, delta: "+2%" },
-]}
+  onPressItem={() => {}}
+  items={[
+    { label: "news.ycombinator.com", value: 4210 },
+    { label: "reddit.com", value: 2380 },
+    { label: "linkedin.com", value: 1240 },
+  ]}
 />
   );
 }

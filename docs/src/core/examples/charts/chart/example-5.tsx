@@ -7,28 +7,24 @@ export default function Example(scope: ExampleScope) {
   return (
 <Column loose>
   <Chart
-  title="Checks passing"
-  success
-  data={[
-    { label: "Mon", value: 82 },
-    { label: "Tue", value: 88 },
-    { label: "Wed", value: 91 },
-    { label: "Thu", value: 86 },
-    { label: "Fri", value: 94 }
-  ]}
-  max={100}
+    success
+    data={[
+      { label: "Mon", value: 82 },
+      { label: "Tue", value: 88 },
+      { label: "Wed", value: 91 },
+      { label: "Thu", value: 86 },
+      { label: "Fri", value: 94 }
+    ]}
   />
   <Chart
-  title="Error rate"
-  destructive
-  data={[
-    { label: "Mon", value: 14 },
-    { label: "Tue", value: 9 },
-    { label: "Wed", value: 22 },
-    { label: "Thu", value: 12 },
-    { label: "Fri", value: 7 }
-  ]}
-  max={25}
+    destructive
+    data={[
+      { label: "Mon", value: 14 },
+      { label: "Tue", value: 9 },
+      { label: "Wed", value: 22 },
+      { label: "Thu", value: 12 },
+      { label: "Fri", value: 7 }
+    ]}
   />
 </Column>
   );

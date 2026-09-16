@@ -6,16 +6,16 @@ Squarified value tiles: each datum becomes a ramp-colored rectangle whose area i
 
 ```tsx
 <Treemap
-title="Storage by service"
-data={[
-  { label: "Media", value: 620 },
-  { label: "Backups", value: 340 },
-  { label: "Logs", value: 180 },
-  { label: "Search index", value: 120 },
-  { label: "Thumbnails", value: 90 },
-  { label: "Exports", value: 45 },
-  { label: "Other", value: 25 },
-]}
+  title="Storage by service"
+  data={[
+    { label: "Media", value: 620 },
+    { label: "Backups", value: 340 },
+    { label: "Logs", value: 180 },
+    { label: "Search index", value: 120 },
+    { label: "Thumbnails", value: 90 },
+    { label: "Exports", value: 45 },
+    { label: "Other", value: 25 }
+  ]}
 />
 ```
 
@@ -25,14 +25,14 @@ data={[
 
 ```tsx
 <Treemap
-compact
-data={[
-  { label: "Chrome", value: 61 },
-  { label: "Safari", value: 24 },
-  { label: "Edge", value: 8 },
-  { label: "Firefox", value: 5 },
-  { label: "Other", value: 2 },
-]}
+  compact
+  data={[
+    { label: "Chrome", value: 61 },
+    { label: "Safari", value: 24 },
+    { label: "Edge", value: 8 },
+    { label: "Firefox", value: 5 },
+    { label: "Other", value: 2 }
+  ]}
 />
 ```
 
@@ -40,14 +40,13 @@ data={[
 
 ```tsx
 <Treemap
-title="Revenue by product"
-defaultSelected={0}
-data={[
-  { label: "Platform", value: 4200 },
-  { label: "Add-ons", value: 1400 },
-  { label: "Services", value: 900 },
-  { label: "Training", value: 300 },
-]}
+  defaultSelected={0}
+  data={[
+    { label: "Platform", value: 4200 },
+    { label: "Add-ons", value: 1400 },
+    { label: "Services", value: 900 },
+    { label: "Training", value: 300 }
+  ]}
 />
 ```
 

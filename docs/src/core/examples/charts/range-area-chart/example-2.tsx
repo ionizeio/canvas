@@ -6,17 +6,16 @@ export default function Example(scope: ExampleScope) {
   const { RangeAreaChart } = scope;
   return (
 <RangeAreaChart
-title="Forecast"
-label="Confidence band"
-success
-defaultSelected={2}
-labels={["W1", "W2", "W3", "W4"]}
-data={[
-  { low: 90, high: 110, mid: 100 },
-  { low: 95, high: 125, mid: 108 },
-  { low: 100, high: 140, mid: 118 },
-  { low: 104, high: 158, mid: 129 },
-]}
+  label="Confidence band"
+  success
+  defaultSelected={2}
+  labels={["W1", "W2", "W3", "W4"]}
+  data={[
+    { low: 90, high: 110, mid: 100 },
+    { low: 95, high: 125, mid: 108 },
+    { low: 100, high: 140, mid: 118 },
+    { low: 104, high: 158, mid: 129 },
+  ]}
 />
   );
 }

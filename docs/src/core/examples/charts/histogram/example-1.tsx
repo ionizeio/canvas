@@ -6,10 +6,8 @@ export default function Example(scope: ExampleScope) {
   const { Histogram } = scope;
   return (
 <Histogram
-title="Order sizes"
-label="Items per order"
-bins={5}
-values={[1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 5, 5, 6, 7, 8, 9, 12, 2, 3, 1, 4, 2, 3, 5]}
+  bins={5}
+  values={[1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 5, 5, 6, 7, 8, 9, 12, 2, 3, 1, 4, 2, 3, 5]}
 />
   );
 }

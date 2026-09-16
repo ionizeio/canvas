@@ -6,14 +6,14 @@ export default function Example(scope: ExampleScope) {
   const { GeoMap } = scope;
   return (
 <GeoMap
-title="Support tickets"
-defaultSelected={1}
-points={[
-  { label: "Toronto", lat: 43.6532, lng: -79.3832, count: 310 },
-  { label: "Dublin", lat: 53.3498, lng: -6.2603, count: 940 },
-  { label: "Cape Town", lat: -33.9249, lng: 18.4241, count: 220 },
-  { label: "Seoul", lat: 37.5665, lng: 126.978, count: 470 },
-]}
+  title="Support tickets"
+  defaultSelected={1}
+  points={[
+    { label: "Toronto", lat: 43.6532, lng: -79.3832, count: 310 },
+    { label: "Dublin", lat: 53.3498, lng: -6.2603, count: 940 },
+    { label: "Cape Town", lat: -33.9249, lng: 18.4241, count: 220 },
+    { label: "Seoul", lat: 37.5665, lng: 126.978, count: 470 }
+  ]}
 />
   );
 }

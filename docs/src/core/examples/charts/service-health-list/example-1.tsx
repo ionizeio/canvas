@@ -6,13 +6,12 @@ export default function Example(scope: ExampleScope) {
   const { ServiceHealthList } = scope;
   return (
 <ServiceHealthList
-title="System status"
-compact
-items={[
-  { label: "API", detail: "99.98%" },
-  { label: "Dashboard", detail: "99.92%", degraded: true },
-  { label: "Webhooks", detail: "97.10%", down: true },
-]}
+  compact
+  items={[
+    { label: "API", detail: "99.98%" },
+    { label: "Dashboard", detail: "99.92%", degraded: true },
+    { label: "Webhooks", detail: "97.10%", down: true }
+  ]}
 />
   );
 }

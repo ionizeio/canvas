@@ -6,38 +6,23 @@ export default function Example(scope: ExampleScope) {
   const { CandlestickChart } = scope;
   return (
 <CandlestickChart
-title="OLY · 24 sessions"
-labels={["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "D12", "D13", "D14", "D15", "D16", "D17", "D18", "D19", "D20", "D21", "D22", "D23", "D24"]}
-candles={[
-  { open: 96.0, high: 96.1, low: 94.9, close: 95.7 },
-  { open: 95.7, high: 96.2, low: 95.4, close: 95.4 },
-  { open: 95.4, high: 95.6, low: 94.2, close: 95.4 },
-  { open: 95.4, high: 97.5, low: 94.7, close: 96.3 },
-  { open: 96.3, high: 97.9, low: 95.5, close: 96.7 },
-  { open: 96.7, high: 96.9, low: 94.9, close: 96.2 },
-  { open: 96.2, high: 98.2, low: 95.4, close: 97.0 },
-  { open: 97.0, high: 97.8, low: 96.2, close: 96.6 },
-  { open: 96.6, high: 98.6, low: 96.4, close: 97.4 },
-  { open: 97.4, high: 98.8, low: 97.3, close: 98.1 },
-  { open: 98.1, high: 98.9, low: 96.3, close: 97.5 },
-  { open: 97.5, high: 99.2, low: 97.0, close: 98.2 },
-  { open: 98.2, high: 99.5, low: 97.2, close: 98.5 },
-  { open: 98.5, high: 100.4, low: 97.9, close: 99.0 },
-  { open: 99.0, high: 99.3, low: 97.9, close: 98.5 },
-  { open: 98.5, high: 99.6, low: 97.2, close: 98.0 },
-  { open: 98.0, high: 99.1, low: 97.7, close: 98.6 },
-  { open: 98.6, high: 98.6, low: 98.0, close: 98.4 },
-  { open: 98.4, high: 99.6, low: 97.0, close: 98.3 },
-  { open: 98.3, high: 99.5, low: 97.1, close: 97.9 },
-  { open: 97.9, high: 98.3, low: 97.6, close: 97.8 },
-  { open: 97.8, high: 98.8, low: 96.5, close: 98.7 },
-  { open: 98.7, high: 99.9, low: 97.7, close: 99.3 },
-  { open: 99.3, high: 99.5, low: 98.4, close: 99.1 }
-]}
-overlays={[
-  { label: "7-day average", values: [95.7, 95.6, 95.5, 95.7, 95.9, 96.0, 96.1, 96.2, 96.5, 96.9, 97.1, 97.3, 97.6, 97.9, 98.2, 98.3, 98.3, 98.5, 98.5, 98.4, 98.2, 98.2, 98.4, 98.5] },
-  { label: "21-day average", values: [95.7, 95.6, 95.5, 95.7, 95.9, 96.0, 96.1, 96.2, 96.3, 96.5, 96.6, 96.7, 96.8, 97.0, 97.1, 97.2, 97.2, 97.3, 97.4, 97.4, 97.4, 97.5, 97.7, 97.9] }
-]}
+  labels={["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10"]}
+  candles={[
+    { open: 99.0, high: 99.3, low: 97.9, close: 98.5 },
+    { open: 98.5, high: 99.6, low: 97.2, close: 98.0 },
+    { open: 98.0, high: 99.1, low: 97.7, close: 98.6 },
+    { open: 98.6, high: 98.6, low: 98.0, close: 98.4 },
+    { open: 98.4, high: 99.6, low: 97.0, close: 98.3 },
+    { open: 98.3, high: 99.5, low: 97.1, close: 97.9 },
+    { open: 97.9, high: 98.3, low: 97.6, close: 97.8 },
+    { open: 97.8, high: 98.8, low: 96.5, close: 98.7 },
+    { open: 98.7, high: 99.9, low: 97.7, close: 99.3 },
+    { open: 99.3, high: 99.5, low: 98.4, close: 99.1 }
+  ]}
+  overlays={[
+    { label: "7-day average", values: [98.2, 98.3, 98.3, 98.5, 98.5, 98.4, 98.2, 98.2, 98.4, 98.5] },
+    { label: "21-day average", values: [97.1, 97.2, 97.2, 97.3, 97.4, 97.4, 97.4, 97.5, 97.7, 97.9] }
+  ]}
 />
   );
 }

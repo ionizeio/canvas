@@ -6,15 +6,15 @@ The running-total bridge: each step floats from the running total by its signed 
 
 ```tsx
 <WaterfallChart
-title="Q3 revenue bridge"
-steps={[
-  { label: "Q2", value: 4200, total: true },
-  { label: "New", value: 980 },
-  { label: "Expansion", value: 460 },
-  { label: "Churn", value: -540 },
-  { label: "FX", value: -120 },
-  { label: "Q3", total: true },
-]}
+  title="Q3 revenue bridge"
+  steps={[
+    { label: "Q2", value: 4200, total: true },
+    { label: "New", value: 980 },
+    { label: "Expansion", value: 460 },
+    { label: "Churn", value: -540 },
+    { label: "FX", value: -120 },
+    { label: "Q3", total: true },
+  ]}
 />
 ```
 
@@ -24,14 +24,13 @@ steps={[
 
 ```tsx
 <WaterfallChart
-title="Headcount"
-steps={[
-  { label: "Hired", value: 24 },
-  { label: "Backfill", value: 8 },
-  { label: "Attrition", value: -11 },
-  { label: "Transfers", value: -3 },
-  { label: "Net", total: true },
-]}
+  steps={[
+    { label: "Hired", value: 24 },
+    { label: "Backfill", value: 8 },
+    { label: "Attrition", value: -11 },
+    { label: "Transfers", value: -3 },
+    { label: "Net", total: true },
+  ]}
 />
 ```
 
@@ -39,14 +38,14 @@ steps={[
 
 ```tsx
 <WaterfallChart
-compact
-defaultSelected={2}
-steps={[
-  { label: "Start", value: 100, total: true },
-  { label: "Wins", value: 30 },
-  { label: "Losses", value: -12 },
-  { label: "End", total: true },
-]}
+  compact
+  defaultSelected={2}
+  steps={[
+    { label: "Start", value: 100, total: true },
+    { label: "Wins", value: 30 },
+    { label: "Losses", value: -12 },
+    { label: "End", total: true },
+  ]}
 />
 ```
 

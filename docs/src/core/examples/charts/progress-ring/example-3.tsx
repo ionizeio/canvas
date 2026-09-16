@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { ProgressRing } = scope;
   return (
-<ProgressRing value={81} warning />
+<ProgressRing value={72} compact />
   );
 }

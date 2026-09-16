@@ -6,11 +6,11 @@ export default function Example(scope: ExampleScope) {
   const { BoxPlot } = scope;
   return (
 <BoxPlot
-compact
-data={[
-  { label: "A", values: [3.1, 3.4, 3.2, 3.8, 3.5, 3.3, 3.9, 3.6] },
-  { label: "B", values: [4.2, 4.6, 4.4, 5.1, 4.8, 4.5, 5.4, 4.9] },
-]}
+  compact
+  data={[
+    { label: "A", values: [3.1, 3.4, 3.2, 3.8, 3.5, 3.3, 3.9, 3.6] },
+    { label: "B", values: [4.2, 4.6, 4.4, 5.1, 4.8, 4.5, 5.4, 4.9] },
+  ]}
 />
   );
 }

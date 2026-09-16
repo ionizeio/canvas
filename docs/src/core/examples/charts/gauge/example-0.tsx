@@ -3,12 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Column, Gauge } = scope;
+  const { Gauge } = scope;
   return (
-<Card padded>
-  <Column alignCenter>
-    <Gauge value={72} label="Uptime" />
-  </Column>
-</Card>
+<Gauge value={72} label="Uptime" />
   );
 }

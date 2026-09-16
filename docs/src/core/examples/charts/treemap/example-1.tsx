@@ -6,14 +6,14 @@ export default function Example(scope: ExampleScope) {
   const { Treemap } = scope;
   return (
 <Treemap
-compact
-data={[
-  { label: "Chrome", value: 61 },
-  { label: "Safari", value: 24 },
-  { label: "Edge", value: 8 },
-  { label: "Firefox", value: 5 },
-  { label: "Other", value: 2 },
-]}
+  compact
+  data={[
+    { label: "Chrome", value: 61 },
+    { label: "Safari", value: 24 },
+    { label: "Edge", value: 8 },
+    { label: "Firefox", value: 5 },
+    { label: "Other", value: 2 }
+  ]}
 />
   );
 }

@@ -5,11 +5,7 @@ A semicircular dial: a 180 degree top arc (muted track plus a tone-colored value
 ## Usage
 
 ```tsx
-<Card padded>
-  <Column alignCenter>
-    <Gauge value={72} label="Uptime" />
-  </Column>
-</Card>
+<Gauge value={72} label="Uptime" />
 ```
 
 ## Variants
@@ -17,21 +13,13 @@ A semicircular dial: a 180 degree top arc (muted track plus a tone-colored value
 ### Success tone
 
 ```tsx
-<Card padded>
-  <Column alignCenter>
-    <Gauge value={92} success label="Checks passing" />
-  </Column>
-</Card>
+<Gauge value={92} success />
 ```
 
 ### Warning tone
 
 ```tsx
-<Card padded>
-  <Column alignCenter>
-    <Gauge value={81} warning label="Budget used" />
-  </Column>
-</Card>
+<Gauge value={81} warning />
 ```
 
 ## Do & Don't

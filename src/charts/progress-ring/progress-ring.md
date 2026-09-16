@@ -5,11 +5,7 @@ A full-circle completion ring, the Gauge's sibling: a muted track ring, a tone-c
 ## Usage
 
 ```tsx
-<Card padded>
-  <Column alignCenter>
-    <ProgressRing value={72} label="Complete" />
-  </Column>
-</Card>
+<ProgressRing value={72} label="Complete" />
 ```
 
 ## Variants
@@ -17,21 +13,19 @@ A full-circle completion ring, the Gauge's sibling: a muted track ring, a tone-c
 ### Success tone
 
 ```tsx
-<Card padded>
-  <Column alignCenter>
-    <ProgressRing value={92} success label="Tests passing" />
-  </Column>
-</Card>
+<ProgressRing value={92} success />
 ```
 
-### Warning tone, compact
+### Warning tone
 
 ```tsx
-<Card padded>
-  <Column alignCenter>
-    <ProgressRing value={81} warning compact label="Budget used" />
-  </Column>
-</Card>
+<ProgressRing value={81} warning />
+```
+
+### Compact
+
+```tsx
+<ProgressRing value={72} compact />
 ```
 
 ## Do & Don't

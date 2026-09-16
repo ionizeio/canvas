@@ -6,13 +6,12 @@ export default function Example(scope: ExampleScope) {
   const { BarList } = scope;
   return (
 <BarList
-title="Top pages"
-items={[
-  { label: "/pricing", value: 18400, delta: "+12%" },
-  { label: "/docs", value: 12100, delta: "+4%" },
-  { label: "/blog/launch", value: 8700, delta: "-2%", down: true },
-  { label: "/changelog", value: 5300, delta: "+1%" },
-]}
+  title="Top pages"
+  items={[
+    { label: "/pricing", value: 18400, delta: "+12%" },
+    { label: "/docs", value: 12100, delta: "+4%" },
+    { label: "/blog/launch", value: 8700, delta: "-2%", down: true },
+  ]}
 />
   );
 }

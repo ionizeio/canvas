@@ -6,13 +6,12 @@ export default function Example(scope: ExampleScope) {
   const { ComposedChart } = scope;
   return (
 <ComposedChart
-title="Traffic and conversions"
-labels={["Mon", "Tue", "Wed", "Thu", "Fri"]}
-curved
-series={[
-  { label: "Sessions", values: [1200, 1420, 1310, 1680, 1540], area: true },
-  { label: "Sign-ups", values: [240, 310, 280, 420, 380] },
-]}
+  title="Traffic and conversions"
+  labels={["Mon", "Tue", "Wed", "Thu", "Fri"]}
+  series={[
+    { label: "Sessions", values: [1200, 1420, 1310, 1680, 1540], area: true },
+    { label: "Sign-ups", values: [240, 310, 280, 420, 380] }
+  ]}
 />
   );
 }

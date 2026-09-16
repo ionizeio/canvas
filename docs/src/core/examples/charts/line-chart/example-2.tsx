@@ -6,15 +6,10 @@ export default function Example(scope: ExampleScope) {
   const { LineChart } = scope;
   return (
 <LineChart
-title="Sessions by platform"
-labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
-series={[
-  { label: "Web", values: [42, 48, 45, 61, 58, 71, 84] },
-  { label: "iOS", values: [28, 31, 36, 34, 41, 49, 56] },
-  { label: "Android", values: [19, 22, 21, 27, 30, 33, 41] }
-]}
-fade
-curved
+  title="Signups"
+  labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
+  series={[{ label: "Signups", values: [24, 31, 28, 42, 39, 47, 51] }]}
+  dots
 />
   );
 }

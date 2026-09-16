@@ -6,13 +6,12 @@ Ranked label and value rows, each with a color swatch, a truncating label, a rig
 
 ```tsx
 <BarList
-title="Top pages"
-items={[
-  { label: "/pricing", value: 18400, delta: "+12%" },
-  { label: "/docs", value: 12100, delta: "+4%" },
-  { label: "/blog/launch", value: 8700, delta: "-2%", down: true },
-  { label: "/changelog", value: 5300, delta: "+1%" },
-]}
+  title="Top pages"
+  items={[
+    { label: "/pricing", value: 18400, delta: "+12%" },
+    { label: "/docs", value: 12100, delta: "+4%" },
+    { label: "/blog/launch", value: 8700, delta: "-2%", down: true },
+  ]}
 />
 ```
 
@@ -22,14 +21,12 @@ items={[
 
 ```tsx
 <BarList
-title="Sign-up sources"
-share
-items={[
-  { label: "google", value: 412 },
-  { label: "email", value: 318 },
-  { label: "github", value: 142 },
-  { label: "passkey", value: 88 },
-]}
+  share
+  items={[
+    { label: "google", value: 412 },
+    { label: "email", value: 318 },
+    { label: "github", value: 142 },
+  ]}
 />
 ```
 
@@ -37,32 +34,27 @@ items={[
 
 ```tsx
 <BarList
-title="Top referrers"
-onPressItem={() => {}}
-items={[
-  { label: "news.ycombinator.com", value: 4210, delta: "+18%" },
-  { label: "reddit.com", value: 2380, delta: "-6%", down: true },
-  { label: "linkedin.com", value: 1240, delta: "+2%" },
-]}
+  onPressItem={() => {}}
+  items={[
+    { label: "news.ycombinator.com", value: 4210 },
+    { label: "reddit.com", value: 2380 },
+    { label: "linkedin.com", value: 1240 },
+  ]}
 />
 ```
 
 ### Plain, inside a card
 
 ```tsx
-<Card padded>
-  <Column>
-    <Typography h4>This week</Typography>
-    <BarList
-      plain
-      compact
-      items={[
-        { label: "Deploys", value: 42 },
-        { label: "Rollbacks", value: 3, chart4: true },
-        { label: "Incidents", value: 1, chart8: true },
-      ]}
-    />
-  </Column>
+<Card>
+  <BarList
+    plain
+    items={[
+      { label: "Deploys", value: 42 },
+      { label: "Rollbacks", value: 3 },
+      { label: "Incidents", value: 1 },
+    ]}
+  />
 </Card>
 ```
 

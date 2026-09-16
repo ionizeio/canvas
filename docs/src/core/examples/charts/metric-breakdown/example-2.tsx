@@ -3,16 +3,19 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { MetricBreakdown } = scope;
+  const { Card, MetricBreakdown } = scope;
   return (
-<MetricBreakdown
-value="25,874"
-label="Requests"
-rate="0.74%"
-rateLabel="4xx + 5xx rate"
-rateSuccess
-spark={[180, 196, 188, 204, 210, 202, 214, 220, 208, 216]}
-sparkUnit="req/s"
-/>
+<Card>
+  <MetricBreakdown
+    plain
+    value="25,874"
+    label="Requests"
+    breakdown={[
+      { label: "GET", value: 18248, delta: "+8%" },
+      { label: "POST", value: 6104, delta: "+21%" },
+      { label: "PATCH", value: 1212, delta: "-2%", down: true },
+    ]}
+  />
+</Card>
   );
 }

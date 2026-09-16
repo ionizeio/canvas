@@ -6,18 +6,15 @@ export default function Example(scope: ExampleScope) {
   const { RangeAreaChart } = scope;
   return (
 <RangeAreaChart
-title="Daily temperature"
-label="Range"
-labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
-curved
-data={[
-  { low: -4, high: 6 },
-  { low: -2, high: 9 },
-  { low: 2, high: 14 },
-  { low: 7, high: 19 },
-  { low: 11, high: 24 },
-  { low: 15, high: 28 },
-]}
+  labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
+  data={[
+    { low: -4, high: 6 },
+    { low: -2, high: 9 },
+    { low: 2, high: 14 },
+    { low: 7, high: 19 },
+    { low: 11, high: 24 },
+    { low: 15, high: 28 },
+  ]}
 />
   );
 }

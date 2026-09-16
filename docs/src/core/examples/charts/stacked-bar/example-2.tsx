@@ -3,20 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, StackedBar } = scope;
+  const { StackedBar } = scope;
   return (
-<Card padded>
-  <StackedBar
-    tall
-    subtle
-    track
-    hideLegend
-    label="Verified identities"
-    segments={[
-      { label: "Verified", value: 1502 },
-      { label: "Unverified", value: 345 }
-    ]}
-  />
-</Card>
+<StackedBar
+  tall
+  subtle
+  label="Verified identities"
+  segments={[
+    { label: "Verified", value: 1502 },
+    { label: "Unverified", value: 345 }
+  ]}
+/>
   );
 }

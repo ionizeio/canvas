@@ -6,13 +6,12 @@ Stage-by-stage conversion: a column of centered trapezoids, each stage's top wid
 
 ```tsx
 <FunnelChart
-title="Signup funnel"
-stages={[
-  { label: "Visits", value: 12400 },
-  { label: "Signups", value: 4200 },
-  { label: "Activated", value: 1850 },
-  { label: "Paid", value: 480 },
-]}
+  stages={[
+    { label: "Visits", value: 12400 },
+    { label: "Signups", value: 4200 },
+    { label: "Activated", value: 1850 },
+    { label: "Paid", value: 480 },
+  ]}
 />
 ```
 
@@ -22,14 +21,13 @@ stages={[
 
 ```tsx
 <FunnelChart
-title="Checkout"
-share
-stages={[
-  { label: "Cart", value: 8600 },
-  { label: "Address", value: 5200 },
-  { label: "Payment", value: 3900 },
-  { label: "Placed", value: 3400 },
-]}
+  share
+  stages={[
+    { label: "Cart", value: 8600 },
+    { label: "Address", value: 5200 },
+    { label: "Payment", value: 3900 },
+    { label: "Placed", value: 3400 },
+  ]}
 />
 ```
 

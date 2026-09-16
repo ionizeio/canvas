@@ -6,14 +6,13 @@ export default function Example(scope: ExampleScope) {
   const { FunnelChart } = scope;
   return (
 <FunnelChart
-title="Checkout"
-share
-stages={[
-  { label: "Cart", value: 8600 },
-  { label: "Address", value: 5200 },
-  { label: "Payment", value: 3900 },
-  { label: "Placed", value: 3400 },
-]}
+  share
+  stages={[
+    { label: "Cart", value: 8600 },
+    { label: "Address", value: 5200 },
+    { label: "Payment", value: 3900 },
+    { label: "Placed", value: 3400 },
+  ]}
 />
   );
 }

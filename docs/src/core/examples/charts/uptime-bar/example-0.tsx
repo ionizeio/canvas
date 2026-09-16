@@ -6,13 +6,11 @@ export default function Example(scope: ExampleScope) {
   const { UptimeBar } = scope;
   return (
 <UptimeBar
-label="API uptime"
-caption="99.98% uptime"
-startLabel="90 days ago"
-endLabel="Today"
-periods={Array.from({ length: 90 }, (_, i) =>
-  i === 61 ? { down: true } : i === 62 || i === 78 ? { degraded: true } : {},
-)}
+  label="API uptime"
+  caption="99.98% uptime"
+  startLabel="90 days ago"
+  endLabel="Today"
+  periods={Array.from({ length: 90 }, (_, i) => (i === 61 ? { down: true } : i === 78 ? { degraded: true } : {}))}
 />
   );
 }

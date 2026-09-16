@@ -6,11 +6,8 @@ export default function Example(scope: ExampleScope) {
   const { UptimeBar } = scope;
   return (
 <UptimeBar
-label="Worker uptime"
-caption="Monitoring began mid-window"
-startLabel="30 days ago"
-endLabel="Today"
-periods={Array.from({ length: 30 }, (_, i) => (i < 6 ? { unknown: true } : i === 21 ? { down: true } : {}))}
+  label="Worker uptime"
+  periods={Array.from({ length: 30 }, (_, i) => (i < 6 ? { unknown: true } : {}))}
 />
   );
 }

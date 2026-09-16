@@ -3,12 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Column, ProgressRing } = scope;
+  const { ProgressRing } = scope;
   return (
-<Card padded>
-  <Column alignCenter>
-    <ProgressRing value={72} label="Complete" />
-  </Column>
-</Card>
+<ProgressRing value={72} label="Complete" />
   );
 }

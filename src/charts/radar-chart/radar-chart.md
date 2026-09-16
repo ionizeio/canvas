@@ -6,13 +6,12 @@ A polygonal multi-axis comparison: concentric rings at nice tick fractions, a sp
 
 ```tsx
 <RadarChart
-title="Candidate comparison"
-axes={["Coding", "Design", "Comms", "Ops", "Product"]}
-series={[
-  { label: "Casey", values: [8, 6, 9, 5, 7] },
-  { label: "Jordan", values: [6, 9, 7, 8, 5] },
-]}
-max={10}
+  title="Candidate comparison"
+  axes={["Coding", "Design", "Comms", "Ops", "Product"]}
+  series={[
+    { label: "Casey", values: [8, 6, 9, 5, 7] },
+    { label: "Jordan", values: [6, 9, 7, 8, 5] },
+  ]}
 />
 ```
 
@@ -22,11 +21,9 @@ max={10}
 
 ```tsx
 <RadarChart
-title="Service posture"
-success
-axes={["Latency", "Uptime", "Errors", "Cost", "Coverage"]}
-series={[{ label: "API", values: [7, 9, 8, 6, 7] }]}
-max={10}
+  success
+  axes={["Latency", "Uptime", "Errors", "Cost", "Coverage"]}
+  series={[{ label: "API", values: [7, 9, 8, 6, 7] }]}
 />
 ```
 

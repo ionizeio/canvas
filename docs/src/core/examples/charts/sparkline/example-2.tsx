@@ -6,10 +6,10 @@ export default function Example(scope: ExampleScope) {
   const { Column, Container, Sparkline } = scope;
   return (
 <Container xxxs>
-  <Column relaxed>
-    <Sparkline compact values={[28, 33, 39, 45, 45, 42, 48, 45, 47, 53, 55, 60, 61, 63, 63, 62, 64, 65, 62, 69, 72, 78, 78, 82, 85, 92, 94, 92, 91, 96]} />
-    <Sparkline values={[28, 33, 39, 45, 45, 42, 48, 45, 47, 53, 55, 60, 61, 63, 63, 62, 64, 65, 62, 69, 72, 78, 78, 82, 85, 92, 94, 92, 91, 96]} />
-    <Sparkline tall values={[28, 33, 39, 45, 45, 42, 48, 45, 47, 53, 55, 60, 61, 63, 63, 62, 64, 65, 62, 69, 72, 78, 78, 82, 85, 92, 94, 92, 91, 96]} />
+  <Column>
+    <Sparkline compact values={[4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24]} />
+    <Sparkline values={[4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24]} />
+    <Sparkline tall values={[4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24]} />
   </Column>
 </Container>
   );

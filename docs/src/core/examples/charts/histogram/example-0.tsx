@@ -6,9 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { Histogram } = scope;
   return (
 <Histogram
-title="Response times"
-label="Latency ms"
-values={[42, 38, 51, 44, 47, 39, 58, 62, 44, 41, 49, 53, 46, 43, 71, 48, 45, 55, 40, 66, 50, 47, 52, 84, 43, 46, 59, 49, 44, 51]}
+  title="Response times"
+  label="Latency ms"
+  values={[42, 38, 51, 44, 47, 39, 58, 62, 44, 41, 49, 53, 46, 43, 71, 48]}
 />
   );
 }

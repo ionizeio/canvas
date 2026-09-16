@@ -6,19 +6,13 @@ export default function Example(scope: ExampleScope) {
   const { GeoMap } = scope;
   return (
 <GeoMap
-title="Active installs"
-points={[
-  { label: "San Francisco", lat: 37.7749, lng: -122.4194, count: 4820 },
-  { label: "New York", lat: 40.7128, lng: -74.006, count: 6310 },
-  { label: "Sao Paulo", lat: -23.5505, lng: -46.6333, count: 2140 },
-  { label: "London", lat: 51.5072, lng: -0.1276, count: 5170 },
-  { label: "Lagos", lat: 6.5244, lng: 3.3792, count: 980 },
-  { label: "Berlin", lat: 52.52, lng: 13.405, count: 2650 },
-  { label: "Bengaluru", lat: 12.9716, lng: 77.5946, count: 3890 },
-  { label: "Singapore", lat: 1.3521, lng: 103.8198, count: 1420 },
-  { label: "Tokyo", lat: 35.6895, lng: 139.6917, count: 3110 },
-  { label: "Sydney", lat: -33.8688, lng: 151.2093, count: 1260 },
-]}
+  title="Active installs"
+  points={[
+    { label: "New York", lat: 40.7128, lng: -74.006, count: 6310 },
+    { label: "London", lat: 51.5072, lng: -0.1276, count: 5170 },
+    { label: "Bengaluru", lat: 12.9716, lng: 77.5946, count: 3890 },
+    { label: "Sydney", lat: -33.8688, lng: 151.2093, count: 1260 }
+  ]}
 />
   );
 }

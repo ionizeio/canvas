@@ -6,13 +6,10 @@ export default function Example(scope: ExampleScope) {
   const { LineChart } = scope;
   return (
 <LineChart
-  title="Sessions by platform"
-  labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
-  series={[
-    { label: "Web", values: [42, 48, 45, 61, 58, 71, 84] },
-    { label: "iOS", values: [28, 31, 36, 34, 41, 49, 56] }
-  ]}
-  fade
+  title="Monthly recurring revenue"
+  labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
+  series={[{ label: "MRR", values: [112, 118, 127, 125, 138, 151] }]}
+  formatValue={(v) => `$${v}k`}
 />
   );
 }
