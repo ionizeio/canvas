@@ -746,6 +746,19 @@ import e_molecules_media_objects_dont_1_do from "./examples/molecules/media-obje
 import e_molecules_media_objects_dont_1_dont from "./examples/molecules/media-objects/dont-1-dont";
 import e_molecules_media_objects_dont_2_do from "./examples/molecules/media-objects/dont-2-do";
 import e_molecules_media_objects_dont_2_dont from "./examples/molecules/media-objects/dont-2-dont";
+import e_molecules_phone_input_example_0 from "./examples/molecules/phone-input/example-0";
+import e_molecules_phone_input_example_1 from "./examples/molecules/phone-input/example-1";
+import e_molecules_phone_input_example_2 from "./examples/molecules/phone-input/example-2";
+import e_molecules_phone_input_example_3 from "./examples/molecules/phone-input/example-3";
+import e_molecules_phone_input_example_4 from "./examples/molecules/phone-input/example-4";
+import e_molecules_phone_input_example_5 from "./examples/molecules/phone-input/example-5";
+import e_molecules_phone_input_example_6 from "./examples/molecules/phone-input/example-6";
+import e_molecules_phone_input_example_7 from "./examples/molecules/phone-input/example-7";
+import e_molecules_phone_input_example_8 from "./examples/molecules/phone-input/example-8";
+import e_molecules_phone_input_dont_0_do from "./examples/molecules/phone-input/dont-0-do";
+import e_molecules_phone_input_dont_0_dont from "./examples/molecules/phone-input/dont-0-dont";
+import e_molecules_phone_input_dont_1_do from "./examples/molecules/phone-input/dont-1-do";
+import e_molecules_phone_input_dont_1_dont from "./examples/molecules/phone-input/dont-1-dont";
 import e_molecules_stacked_lists_example_0 from "./examples/molecules/stacked-lists/example-0";
 import e_molecules_stacked_lists_example_1 from "./examples/molecules/stacked-lists/example-1";
 import e_molecules_stacked_lists_example_2 from "./examples/molecules/stacked-lists/example-2";
@@ -2117,6 +2130,25 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { title: "Avatar", do: { caption: "Top-align with `start` so the avatar anchors to the first line of the title.", code: "<MediaObject bordered start src=\"/rachel-chen.jpg\" title=\"Rachel Chen\" description=\"Engineering Lead\" body=\"Reviewed the latest pull request and left comments on the auth middleware changes. Need to discuss the token rotation approach before merging.\" />", render: e_molecules_media_objects_dont_0_do }, dont: { caption: "Centering the avatar against a multi-line body leaves it floating beside the middle of the text.", code: "<MediaObject bordered center src=\"/rachel-chen.jpg\" title=\"Rachel Chen\" description=\"Engineering Lead\" body=\"Reviewed the latest pull request and left comments on the auth middleware changes. Need to discuss the token rotation approach before merging.\" />", render: e_molecules_media_objects_dont_0_dont } },
       { title: "Icon", do: { caption: "Keep the lead icon box compact with an 18px glyph so it reads as a tidy lead affordance.", code: "<MediaObject bordered start title=\"Security first\" description=\"End-to-end encryption with automatic key rotation.\" icon={<Icon shield primary size={18} />} />", render: e_molecules_media_objects_dont_1_do }, dont: { caption: "An oversized icon box throws off the optical balance with the two-line text.", code: "<View style={{ flexDirection: \"row\", alignItems: \"flex-start\", gap: 12, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 16, maxWidth: 480 }}>\n  <View style={{ flexShrink: 0, alignItems: \"center\", justifyContent: \"center\", borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15), padding: 8 }}>\n    <Icon shield primary size={32} />\n  </View>\n  <View style={{ minWidth: 0, flexGrow: 1, flexShrink: 1, flexBasis: \"0%\", gap: 2 }}>\n    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: \"600\", color: tokens.foreground }}>Security first</Text>\n    <Text style={{ fontSize: 12, lineHeight: 18, color: tokens[\"muted-foreground\"] }}>End-to-end encryption with automatic key rotation.</Text>\n  </View>\n</View>", render: e_molecules_media_objects_dont_1_dont } },
       { title: "Action", do: { caption: "Pass `truncate` so long text clips in place and the trailing action stays pinned right.", code: "<MediaObject bordered center truncate src=\"/ada-lovelace.jpg\" title=\"Ada Lovelace\" description=\"ada.lovelace@analytical-engine.example.com\" action={<Button outline small>Invite</Button>} />", render: e_molecules_media_objects_dont_2_do }, dont: { caption: "Without truncation a long email wraps and pushes the trailing button out of alignment.", code: "<MediaObject bordered center src=\"/ada-lovelace.jpg\" title=\"Ada Lovelace\" description=\"ada.lovelace@analytical-engine.example.com\" action={<Button outline small>Invite</Button>} />", render: e_molecules_media_objects_dont_2_dont } },
+    ],
+  },
+  "phone-input": {
+    dir: "phone-input",
+    category: "molecules",
+    examples: [
+      { label: "Default", code: "<PhoneInput label=\"Phone number\" placeholder=\"Add your phone number\" />", render: e_molecules_phone_input_example_0 },
+      { label: "Pre-filled", code: "<PhoneInput label=\"Phone number\" defaultCountry=\"US\" defaultValue=\"(415) 728-3046\" />", render: e_molecules_phone_input_example_1 },
+      { label: "Another country", code: "<PhoneInput label=\"Phone number\" defaultCountry=\"GB\" placeholder=\"Add your phone number\" />", render: e_molecules_phone_input_example_2 },
+      { label: "Error", code: "<Field label=\"Phone number\" error=\"Invalid phone number.\">\n  <PhoneInput defaultCountry=\"US\" defaultValue=\"(415) 72\" />\n</Field>", render: e_molecules_phone_input_example_3 },
+      { label: "Required", code: "<PhoneInput label=\"Phone number\" required placeholder=\"Add your phone number\" />", render: e_molecules_phone_input_example_4 },
+      { label: "Controlled country", code: "<Stateful initial=\"CA\">\n  {(country, setCountry) => (\n    <Column snug>\n      <PhoneInput label=\"Phone number\" country={country} onCountryChange={setCountry} placeholder=\"Add your phone number\" />\n      <Typography small muted>Selected: {country}</Typography>\n    </Column>\n  )}\n</Stateful>", render: e_molecules_phone_input_example_5 },
+      { label: "Custom country list", code: "<PhoneInput\n  label=\"Phone number\"\n  countries={[\n    { code: \"FR\", name: \"France\", dialCode: \"+33\" },\n    { code: \"DE\", name: \"Germany\", dialCode: \"+49\" },\n    { code: \"ES\", name: \"Spain\", dialCode: \"+34\" },\n  ]}\n  defaultCountry=\"DE\"\n  placeholder=\"Add your phone number\"\n/>", render: e_molecules_phone_input_example_6 },
+      { label: "Disabled", code: "<PhoneInput label=\"Phone number\" disabled defaultValue=\"(415) 728-3046\" />", render: e_molecules_phone_input_example_7 },
+      { label: "Sizes", code: "<Column relaxed>\n  <PhoneInput small label=\"Small\" placeholder=\"Add your phone number\" />\n  <PhoneInput label=\"Default\" placeholder=\"Add your phone number\" />\n  <PhoneInput large label=\"Large\" placeholder=\"Add your phone number\" />\n</Column>", render: e_molecules_phone_input_example_8 },
+    ],
+    donts: [
+      { title: "The country segment", do: { caption: "Let the segment carry the country so the number stays national and the dial code is never typed twice.", code: "<PhoneInput label=\"Phone number\" defaultCountry=\"US\" defaultValue=\"(415) 728-3046\" />", render: e_molecules_phone_input_dont_0_do }, dont: { caption: "A plain Input makes the user type the prefix, and nothing tells the app which country the digits belong to.", code: "<Input label=\"Phone number\" defaultValue=\"+1 (415) 728-3046\" />", render: e_molecules_phone_input_dont_0_dont } },
+      { title: "Errors", do: { caption: "Wrap the field in a Field so the message sits under the box and the box, segment included, paints the error border.", code: "<Field label=\"Phone number\" error=\"Invalid phone number.\">\n  <PhoneInput defaultCountry=\"US\" defaultValue=\"(415) 72\" />\n</Field>", render: e_molecules_phone_input_dont_1_do }, dont: { caption: "A loose red caption beside a neutral box reads as unfinished, and a screen reader never hears it with the field.", code: "<Column tight>\n  <PhoneInput label=\"Phone number\" defaultCountry=\"US\" defaultValue=\"(415) 72\" />\n  <Typography tiny destructive>Invalid phone number.</Typography>\n</Column>", render: e_molecules_phone_input_dont_1_dont } },
     ],
   },
   "stacked-lists": {

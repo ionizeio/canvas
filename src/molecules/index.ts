@@ -13,5 +13,6 @@ export * from "./field/field.js";
 export * from "./form/form.js";
 export * from "./grid-lists/grid-lists.js";
 export * from "./media-objects/media-objects.js";
+export * from "./phone-input/phone-input.js";
 export * from "./stacked-lists/stacked-lists.js";
 export * from "./stats/stats.js";

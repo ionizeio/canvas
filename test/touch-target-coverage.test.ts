@@ -33,6 +33,7 @@ const COVERED_ANOTHER_WAY: Record<string, string> = {
   "atoms/pagination": "hitSlop on the page numbers and the arrows",
   "atoms/radio": "hitSlop around the ring when there is no label to press",
   "atoms/select": "the trigger is a field; its rows are 44/48 by skin",
+  "molecules/phone-input": "the country segment stretches to the 44/56 field box; its rows are Select's 44/48 by skin",
   "atoms/stepper": "hitSlop on both halves; the iOS 32pt group is UIStepper's own size",
   "atoms/tooltip": "wraps the caller's node and adds hitSlop; the target is theirs",
   "molecules/alert": "hitSlop on the dismiss glyph (24 + 2 * 12 = 48 on Android)",

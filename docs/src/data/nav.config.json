@@ -389,6 +389,11 @@
             "icon": "users"
           },
           {
+            "slug": "phone-input",
+            "label": "PhoneInput",
+            "icon": "phone"
+          },
+          {
             "slug": "stacked-lists",
             "label": "StackedList",
             "icon": "layers"

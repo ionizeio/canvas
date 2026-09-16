@@ -93,6 +93,8 @@ import { GridList as GridListIOS } from "../../../src/molecules/grid-lists/grid-
 import { GridList as GridListAndroid } from "../../../src/molecules/grid-lists/grid-lists.android.js";
 import { MediaObject as MediaObjectIOS } from "../../../src/molecules/media-objects/media-objects.ios.js";
 import { MediaObject as MediaObjectAndroid } from "../../../src/molecules/media-objects/media-objects.android.js";
+import { PhoneInput as PhoneInputIOS } from "../../../src/molecules/phone-input/phone-input.ios.js";
+import { PhoneInput as PhoneInputAndroid } from "../../../src/molecules/phone-input/phone-input.android.js";
 import { StackedList as StackedListIOS } from "../../../src/molecules/stacked-lists/stacked-lists.ios.js";
 import { StackedList as StackedListAndroid } from "../../../src/molecules/stacked-lists/stacked-lists.android.js";
 import { Stats as StatsIOS } from "../../../src/molecules/stats/stats.ios.js";
@@ -133,7 +135,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Accordion: AccordionIOS, ActionSheet: ActionSheetIOS,
     ActionPanel: ActionPanelIOS, Alert: AlertIOS, Card: CardIOS, CardMedia: CardMediaIOS, DescriptionList: DescriptionListIOS,
     EmptyState: EmptyStateIOS, Field: FieldIOS, Feed: FeedIOS, Form: FormIOS, FormSection: FormSectionIOS,
-    GridList: GridListIOS, MediaObject: MediaObjectIOS, StackedList: StackedListIOS, Stats: StatsIOS,
+    GridList: GridListIOS, MediaObject: MediaObjectIOS, PhoneInput: PhoneInputIOS, StackedList: StackedListIOS, Stats: StatsIOS,
     Command: CommandIOS, DataTable: DataTableIOS, Drawer: DrawerIOS, FilterPanel: FilterPanelIOS,
     Stepper: StepperIOS, InputOTP: InputOTPIOS, Collapsible: CollapsibleIOS,
     Carousel: CarouselIOS, Toast: ToastIOS, ToastProvider: ToastProviderIOS, useToast: useToastIOS,
@@ -152,7 +154,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Accordion: AccordionAndroid, ActionSheet: ActionSheetAndroid,
     ActionPanel: ActionPanelAndroid, Alert: AlertAndroid, Card: CardAndroid, CardMedia: CardMediaAndroid, DescriptionList: DescriptionListAndroid,
     EmptyState: EmptyStateAndroid, Field: FieldAndroid, Feed: FeedAndroid, Form: FormAndroid, FormSection: FormSectionAndroid,
-    GridList: GridListAndroid, MediaObject: MediaObjectAndroid, StackedList: StackedListAndroid, Stats: StatsAndroid,
+    GridList: GridListAndroid, MediaObject: MediaObjectAndroid, PhoneInput: PhoneInputAndroid, StackedList: StackedListAndroid, Stats: StatsAndroid,
     Command: CommandAndroid, DataTable: DataTableAndroid, Drawer: DrawerAndroid, FilterPanel: FilterPanelAndroid,
     Stepper: StepperAndroid, InputOTP: InputOTPAndroid, Collapsible: CollapsibleAndroid,
     Carousel: CarouselAndroid, Toast: ToastAndroid, ToastProvider: ToastProviderAndroid, useToast: useToastAndroid,

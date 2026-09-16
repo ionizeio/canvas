@@ -599,6 +599,14 @@ export const COMPONENTS: ComponentDoc[] = [
   },
 
   {
+    slug: "phone-input",
+    name: "PhoneInput",
+    description: "A phone number field: the Input's box with a country segment at its start (the chosen country's flag and a caret that open a list of countries with their dial codes) and that country's dial code inline before the number. Controlled or uncontrolled for both the country and the number; Field delegates its label and error into it.",
+    category: "Molecules",
+    stageAlign: "start",
+  },
+
+  {
     slug: "stacked-lists",
     name: "StackedList",
     description: "Vertical lists with avatar, two-line items, and trailing metadata. Used for contacts, activity feeds, and data previews.",
