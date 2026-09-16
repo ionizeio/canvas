@@ -7,10 +7,10 @@ export default function Example(scope: ExampleScope) {
   return (
 <Form submitLabel="Save" style={{ width: 560, maxWidth: "100%" }}>
   <FormSection title="Personal info" description="Displayed on your public profile.">
-    <Input block label="Full name" defaultValue="Rachel Chen" />
+    <Input label="Full name" defaultValue="Rachel Chen" />
   </FormSection>
   <FormSection title="Billing" description="Used for invoices and receipts.">
-    <Input block label="Card number" defaultValue="•••• 4242" />
+    <Input label="Card number" defaultValue="•••• 4242" />
   </FormSection>
 </Form>
   );

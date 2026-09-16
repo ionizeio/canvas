@@ -1,6 +1,6 @@
 # Progress
 
-A rounded bar that reports how far a task has gotten, or that work is underway. The bar renders at the standard field width (320px) and shrinks inside narrower parents; `narrow`, `wide`, and `block` adjust its measure.
+A rounded bar that reports how far a task has gotten, or that work is underway. The bar fills the parent it is given; a Container step or a Row span sets its measure.
 
 Name the task with string `children`, or pass `accessibilityLabel` when the visible title is omitted or contains rich content.
 
@@ -67,14 +67,13 @@ the state with copy, since the tone carries no new accessible value on its own.
 <Progress danger showValue value={1}>Over the WIP limit</Progress>
 ```
 
-### Widths
+### Widths come from the parent
 
 ```tsx
 <Column snug>
-  <Progress narrow value={0.6}>Narrow (240px)</Progress>
-  <Progress value={0.6}>Standard (320px)</Progress>
-  <Progress wide value={0.6}>Wide (480px)</Progress>
-  <Progress block value={0.6}>Block (fills the container)</Progress>
+  <Container xs start><Progress value={0.6}>In an xs Container (320)</Progress></Container>
+  <Container lg start><Progress value={0.6}>In an lg Container (512)</Progress></Container>
+  <Progress value={0.6}>Bare: fills the parent</Progress>
 </Column>
 ```
 
@@ -116,7 +115,7 @@ the state with copy, since the tone carries no new accessible value on its own.
 
 ### Context
 
-**Do** — Give the bar a label through its own `children`; it already renders at the standard field width, and `narrow`, `wide`, or `block` adjust its measure when the layout calls for it.
+**Do** — Give the bar a label through its own `children`; it fills the parent it is given, and a Container step sets its measure when the layout calls for it.
 
 ```tsx
 <Progress value={0.35}>Importing contacts</Progress>

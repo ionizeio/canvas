@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Button, DataTable, Input } = scope;
+  const { tokens, View, Button, DataTable, Input, Container } = scope;
   return (
 <View style={{ overflow: "hidden", borderRadius: 8, borderWidth: 1, borderColor: tokens.border, maxWidth: 520 }}>
   <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderBottomWidth: 1, borderColor: tokens.border, padding: 12 }}>
-    <Input small placeholder="Search users..." style={{ maxWidth: 240 }} />
+    <Container xs start><Input small placeholder="Search users..." /></Container>
     <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%" }} />
     <Button outline small>Export</Button>
   </View>

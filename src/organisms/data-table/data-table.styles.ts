@@ -126,8 +126,8 @@ export interface DataTableSkin {
 // --- shared layout fragments (identical structure across platforms) ---------
 
 // The table clips its rounded corners so the header tint and bottom hairlines
-// stay inside the bordered outline. A 320px width floor (the field-width base)
-// keeps the table usable in content-sized contexts (a centered stage, a
+// stay inside the bordered outline. A 320px width floor (the `xs` step of the
+// width scale) keeps the table usable in content-sized contexts (a
 // shrink-to-fit Card): without it the flex-1 columns collapse to the header
 // labels' min-content and jam together. In a bounded parent the table still
 // stretches to fill — minWidth only sets the floor, it does not cap growth.

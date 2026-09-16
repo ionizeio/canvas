@@ -67,8 +67,8 @@ function WizardLive() {
                   <Typography h4>Tell us about yourself</Typography>
                   <Typography small>Your name and work email create your account.</Typography>
                 </Column>
-                <Input label="Full name" placeholder="Rachel Chen" value={name} onChangeText={setName} block />
-                <Input label="Work email" placeholder="you@company.com" value={email} onChangeText={setEmail} block />
+                <Input label="Full name" placeholder="Rachel Chen" value={name} onChangeText={setName} />
+                <Input label="Work email" placeholder="you@company.com" value={email} onChangeText={setEmail} />
               </Column>
             )}
             {step === 1 && (
@@ -77,9 +77,9 @@ function WizardLive() {
                   <Typography h4>Set up your workspace</Typography>
                   <Typography small>Configure the basics for your team's environment.</Typography>
                 </Column>
-                <Input label="Workspace name" value={wsName} onChangeText={setWsName} block />
-                <Input label="Workspace URL" prefix="app.canvas.dev/" value={wsUrl} onChangeText={setWsUrl} block />
-                <Select label="Default timezone" value={timezone} onSelect={setTimezone} options={TIMEZONES} block />
+                <Input label="Workspace name" value={wsName} onChangeText={setWsName} />
+                <Input label="Workspace URL" prefix="app.canvas.dev/" value={wsUrl} onChangeText={setWsUrl} />
+                <Select label="Default timezone" value={timezone} onSelect={setTimezone} options={TIMEZONES} />
               </Column>
             )}
             {step === 2 && (

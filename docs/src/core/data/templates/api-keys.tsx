@@ -94,7 +94,7 @@ function CreateKeyLive() {
       <Card>
         <Row snug wrap alignEnd>
           <Column fill style={{ minWidth: 220 }}>
-            <Input label="Key name" placeholder="production-backend" block value={name} onChangeText={setName} />
+            <Input label="Key name" placeholder="production-backend" value={name} onChangeText={setName} />
           </Column>
           <Button primary onPress={create}>Create key</Button>
         </Row>
@@ -113,7 +113,6 @@ function CreateKeyLive() {
             action
             readOnly
             value={reveal.secret}
-            block
             accessibilityLabel="New API key"
             onActionPress={() => toast({ success: true, message: "Key copied", description: `Paste the ${reveal.name} secret into your secrets manager.` })}
           />

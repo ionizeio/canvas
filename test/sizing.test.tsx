@@ -113,3 +113,108 @@ describe("the layout axis context", () => {
     expect((container.firstElementChild as HTMLElement).getAttribute("data-testid")).toBe("only");
   });
 });
+
+// The input-like controls are FILL: their outermost node carries width:100% plus
+// the row-sharing pair and no cap of its own (the parent layout container provides
+// the bounds; the docs stage is definite). This replaces the field-width axis tests:
+// the fixed 320 / 240 / 480 widths and the block / narrow / wide / fit props are gone.
+import { ThemeProvider } from "../src/style/theme.tsx";
+import { Input } from "../src/atoms/input/input.tsx";
+import { Textarea } from "../src/atoms/textarea/textarea.tsx";
+import { Select } from "../src/atoms/select/select.tsx";
+import { Autocomplete } from "../src/atoms/autocomplete/autocomplete.tsx";
+import { Listbox } from "../src/atoms/listbox/listbox.tsx";
+import { Slider } from "../src/atoms/slider/slider.tsx";
+import { Progress } from "../src/atoms/progress/progress.tsx";
+import { Row, Column } from "../src/atoms/layout/layout.tsx";
+
+const ui = (n: ReactNode) => render(<ThemeProvider>{n}</ThemeProvider>);
+const at = (c: HTMLElement, id: string) => c.querySelector(`[data-testid="${id}"]`) as HTMLElement;
+const expectFill = (el: HTMLElement | null) => {
+  expect(el).not.toBeNull();
+  expect(el!.style.width).toBe("100%");
+  expect(el!.style.flexShrink).toBe("1");
+  expect(el!.style.minWidth).toBe("0px");
+  expect(el!.style.maxWidth).toBe("");
+};
+/** The nearest ancestor (or self) carrying the fill nature (its minWidth:0 marks it). */
+const fillAncestor = (el: HTMLElement | null) => {
+  let node: HTMLElement | null = el;
+  while (node && !(node.style.minWidth === "0px" && node.style.width === "100%")) node = node.parentElement;
+  return node;
+};
+
+describe("the fields are FILL", () => {
+  it("Input: the bare field, the labeled wrapper, and the grouped (addon) container", () => {
+    const bare = ui(<Input placeholder="Email" />);
+    expectFill(bare.container.querySelector("input"));
+    cleanup();
+    const labeled = ui(<Input label="Email" placeholder="ada@acme.dev" />);
+    expectFill(fillAncestor(labeled.container.querySelector("input")));
+    cleanup();
+    const grouped = ui(<Input prefix="$" placeholder="0.00" />);
+    const inner = grouped.container.querySelector("input") as HTMLElement;
+    // The group container, not the inner field, is the FILL node.
+    expect(inner.style.minWidth).not.toBe("0px");
+    expectFill(fillAncestor(inner.parentElement));
+  });
+
+  it("Textarea, Select, and Autocomplete on their outermost node", () => {
+    const t = ui(<Textarea placeholder="Notes" />);
+    expectFill(fillAncestor(t.container.querySelector("textarea")));
+    cleanup();
+    const s = ui(<Select label="Region" options={["EU", "US"]} />);
+    expectFill(s.container.firstElementChild as HTMLElement);
+    cleanup();
+    const a = ui(<Autocomplete label="City" options={["Paris", "Oslo"]} />);
+    expectFill(a.container.firstElementChild as HTMLElement);
+  });
+
+  it("Listbox, Progress, and Slider roots", () => {
+    const l = ui(<Listbox testID="lb" items={[{ label: "Backend" }, { label: "Frontend" }]} />);
+    expectFill(at(l.container, "lb"));
+    cleanup();
+    const p = ui(<Progress testID="p" value={0.5} />);
+    expectFill(at(p.container, "p"));
+    cleanup();
+    const sl = ui(<Slider testID="s" defaultValue={40} />);
+    expectFill(at(sl.container, "s"));
+  });
+
+  it("the width is the same at every viewport: there is no width to drop", () => {
+    const { container } = ui(<Input placeholder="Email" />);
+    expectFill(container.querySelector("input"));
+  });
+
+  it("warns once when a field lands in a bare Column inside a Row, and not inside a span", () => {
+    const seen: string[] = [];
+    const original = console.warn;
+    console.warn = (m: string) => { seen.push(m); };
+    try {
+      ui(
+        <Row>
+          <Column>
+            <Input placeholder="collapses" />
+          </Column>
+          <Column span={6}>
+            <Input placeholder="fine" />
+          </Column>
+        </Row>,
+      );
+      const hits = seen.filter((m) => m.includes("<Input />") && m.includes("bare <Column>"));
+      expect(hits).toHaveLength(1);
+      // A Select's content is its value, so the bare Column is the toolbar cell
+      // (Bootstrap .col-auto), not a defect: no warning.
+      ui(
+        <Row>
+          <Column>
+            <Select options={["All", "Active"]} defaultValue="All" />
+          </Column>
+        </Row>,
+      );
+      expect(seen.filter((m) => m.includes("<Select />"))).toHaveLength(0);
+    } finally {
+      console.warn = original;
+    }
+  });
+});

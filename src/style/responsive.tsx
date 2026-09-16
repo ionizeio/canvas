@@ -10,11 +10,14 @@
 //
 // CHOOSING A RESPONSIVENESS MECHANISM (in order of preference):
 //
-// 1. Intrinsic sizing: can layout alone solve it? A fixed desktop width plus
-//    maxWidth:"100%" (fields, dialogs, chart roots), or minWidth floors plus
-//    flexWrap (Stats). Zero JS, zero re-renders, correct in any container,
-//    correct on frame one and on the server. Do NOT swap a fixed width for
-//    width:"100%" below a threshold; see the field-width.ts post-mortem.
+// 1. Intrinsic sizing: can layout alone solve it? A component is FILL or HUG
+//    (src/style/sizing.ts) and the parent layout container provides its bounds:
+//    a Container step, a Row span, a Grid cell; floating containers (dialogs,
+//    palettes) carry `width:"100%"` plus a scale step as `maxWidth`, and Stats use
+//    minWidth floors plus flexWrap. Zero JS, zero re-renders, correct in any
+//    DEFINITE container, correct on frame one and on the server. The one parent
+//    that still collapses `width:"100%"` is a content-sized cell (a bare Column
+//    inside a Row); `useFillStyle` warns there in development.
 //
 // 2. Container measurement: does the component need a discrete layout switch?
 //    Measure your OWN width (useContainerBreakpoint / useMeasuredWidth in

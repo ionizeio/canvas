@@ -340,13 +340,12 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
                         Type {confirmText} to confirm
                       </Text>
                       <Input
-                        value={confirmInput}
-                        onChangeText={setConfirmInput}
-                        placeholder={confirmText}
-                        block
-                        accessibilityLabel={`Type ${confirmText} to confirm`}
-                        aria-labelledby={inputLabelId}
-                      />
+ value={confirmInput}
+ onChangeText={setConfirmInput}
+ placeholder={confirmText}
+ accessibilityLabel={`Type ${confirmText} to confirm`}
+ aria-labelledby={inputLabelId}
+/>
                     </View>
                   ) : null}
                   {actionRow}

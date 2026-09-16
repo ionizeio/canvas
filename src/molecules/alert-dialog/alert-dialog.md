@@ -170,15 +170,15 @@ docs-only state holder; in an app you would hold `open` with `useState`.)
     <View style={{ marginTop: 16, gap: 16 }}>
       <View>
         <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6 }}>New owner email</Text>
-        <Input block placeholder="owner@example.com" />
+        <Input placeholder="owner@example.com" />
       </View>
       <View>
         <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6 }}>Reason</Text>
-        <Input block placeholder="Optional note" />
+        <Input placeholder="Optional note" />
       </View>
       <View>
         <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6 }}>Type TRANSFER to confirm</Text>
-        <Input block placeholder="TRANSFER" />
+        <Input placeholder="TRANSFER" />
       </View>
     </View>
     <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8, marginTop: 24 }}>

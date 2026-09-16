@@ -3,13 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Slider, Column } = scope;
+  const { Slider, Column, Container } = scope;
   return (
 <Column snug>
-  <Slider narrow defaultValue={40}>Narrow (240px)</Slider>
-  <Slider defaultValue={40}>Standard (320px)</Slider>
-  <Slider wide defaultValue={40}>Wide (480px)</Slider>
-  <Slider block defaultValue={40}>Block (fills the container)</Slider>
+  <Container xs start><Slider defaultValue={40}>In an xs Container (320)</Slider></Container>
+  <Container lg start><Slider defaultValue={40}>In an lg Container (512)</Slider></Container>
+  <Slider defaultValue={40}>Bare: fills the parent</Slider>
 </Column>
   );
 }

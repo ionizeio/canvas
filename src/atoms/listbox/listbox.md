@@ -1,6 +1,6 @@
 # Listbox
 
-A custom (non-native) select: single or multi-select, an optional detail line under each option, and a checkmark on the chosen items. Reach for it when a native select can't show rich options; prefer a native select for simple short lists. The list renders at the standard field width by default (`narrow` and `wide` pick the other modes, `block` fills the container).
+A custom (non-native) select: single or multi-select, an optional detail line under each option, and a checkmark on the chosen items. Reach for it when a native select can't show rich options; prefer a native select for simple short lists. The list fills the parent it is given; a Container step or a Row span sets its measure.
 
 Single-select exposes a list of selectable options. With `multi`, it exposes a checkbox group: each row owns its label, checked state, and tap target. Give either mode a meaningful `accessibilityLabel`; the fallback is "Options". Arrow keys and Home/End move focus within one tab stop. Single-select follows focus, while multi-select keeps the current selection until Enter or Space toggles the focused row.
 
@@ -73,14 +73,13 @@ Single-select exposes a list of selectable options. With `multi`, it exposes a c
 />
 ```
 
-### Widths
+### Widths come from the parent
 
 ```tsx
 <Column snug>
-  <Listbox narrow bordered items={[{ label: "Narrow (240px)", selected: true }, { label: "Frontend" }]} />
-  <Listbox bordered items={[{ label: "Standard (320px)", selected: true }, { label: "Frontend" }]} />
-  <Listbox wide bordered items={[{ label: "Wide (480px)", selected: true }, { label: "Frontend" }]} />
-  <Listbox block bordered items={[{ label: "Block (fills the container)", selected: true }, { label: "Frontend" }]} />
+  <Container xs start><Listbox bordered items={[{ label: "In an xs Container (320)", selected: true }, { label: "Frontend" }]} /></Container>
+  <Container lg start><Listbox bordered items={[{ label: "In an lg Container (512)", selected: true }, { label: "Frontend" }]} /></Container>
+  <Listbox bordered items={[{ label: "Bare: fills the parent", selected: true }, { label: "Frontend" }]} />
 </Column>
 ```
 
@@ -123,13 +122,13 @@ Single-select exposes a list of selectable options. With `multi`, it exposes a c
 **Do** — For short, plain lists a native select is lighter, accessible, and uses the platform picker on mobile.
 
 ```tsx
-<Select narrow defaultValue="Yes" options={["Yes", "No"]} />
+<Select defaultValue="Yes" options={["Yes", "No"]} />
 ```
 
 **Don't** — A custom listbox for two short options is heavier than it needs to be and worse on mobile.
 
 ```tsx
-<Listbox narrow bordered items={[
+<Listbox bordered items={[
     { label: "Yes", selected: true },
     { label: "No" }
   ]} />
@@ -140,7 +139,7 @@ Single-select exposes a list of selectable options. With `multi`, it exposes a c
 **Do** — Show exactly one checkmark, mirror it in the trigger value, and close the panel on pick.
 
 ```tsx
-<Listbox narrow bordered items={[
+<Listbox bordered items={[
     { label: "Backend", selected: true },
     { label: "Frontend" },
     { label: "Design" },
@@ -151,7 +150,7 @@ Single-select exposes a list of selectable options. With `multi`, it exposes a c
 **Don't** — Single-select with two checkmarks lies about state: only one option can be the value.
 
 ```tsx
-<Listbox narrow bordered items={[
+<Listbox bordered items={[
     { label: "Backend", selected: true },
     { label: "Frontend", selected: true },
     { label: "Design" },
@@ -165,8 +164,8 @@ Single-select exposes a list of selectable options. With `multi`, it exposes a c
 
 ```tsx
 <Column tight>
-  <Select narrow defaultValue="3 selected" />
-  <Listbox narrow multi bordered items={[
+  <Select defaultValue="3 selected" />
+  <Listbox multi bordered items={[
     { label: "Backend", selected: true },
     { label: "Frontend", selected: true },
     { label: "Design" },

@@ -7,7 +7,7 @@ import {
   type GestureResponderEvent,
   type AccessibilityActionEvent,
 } from "react-native";
-import { View, Text, GlassSurface, useTheme, useControllableState, useFieldWidth, useReducedMotion, isRTL, FOCUS_RESET, type ColorTokens, type FieldWidthProps, type ViewProps, type ViewStyle, type TextStyle, type StyleProp } from "../../style/index.js";
+import { View, Text, GlassSurface, useTheme, useControllableState, useFillStyle, useReducedMotion, isRTL, FOCUS_RESET, type ColorTokens, type ViewProps, type ViewStyle, type TextStyle, type StyleProp } from "../../style/index.js";
 import { clamp } from "../../style/math.js";
 
 // Shared Slider shell. Uses React Native's primitives DIRECTLY (no engine className
@@ -20,10 +20,10 @@ import { clamp } from "../../style/math.js";
 // Android, and react-native-web alike, so the drag is one cross-platform code path
 // (no Platform.OS branch).
 
-export interface SliderProps extends FieldWidthProps {
+export interface SliderProps {
   /** Controlled value; omit for uncontrolled use. The thumb sits at this value (clamped to [min, max]). */
   value?: number;
-  /** Initial value for uncontrolled use (a bare <Slider /> drags out of the box). Default `min`. */
+  /** Initial value for uncontrolled use (a bare <Slider/> drags out of the box). Default `min`. */
   defaultValue?: number;
   /** Lower bound of the range. Default 0. */
   min?: number;
@@ -54,10 +54,8 @@ export interface SliderProps extends FieldWidthProps {
   // Size (pick one; default is the standard track + thumb).
   small?: boolean;
   large?: boolean;
-  // Width axis (block/narrow/wide) comes from FieldWidthProps: like the other
-  // input-like controls, a bare slider renders AT the standard field width
-  // (320px, shrinking via maxWidth:"100%") so it never collapses in a
-  // content-sized context; `block` fills the container instead.
+  // Width: a slider is FILL (src/style/sizing.ts) like the other input-like
+  // controls; the parent layout container provides the bounds.
   // State.
   disabled?: boolean;
   /** Accessible name for the slider (e.g. "Volume"). */
@@ -168,7 +166,7 @@ const GLASS_THUMB_PRESS_SCALE = 1.12;
 // optional trailing live-value readout) over a muted description line. `OUTER` is the
 // column that wraps the header and the interactive rail; its snug 8px gap reproduces
 // the `<Column snug>` a caller used to hand-compose above a bare slider, and it now
-// carries the field-width cap so the label aligns to the track's width. `HEADER`
+// carries the FILL nature so the label aligns to the track's width. `HEADER`
 // tightly pairs the description under its title (4px). `TITLE_ROW` lays the title and
 // readout on one line; the shell picks the justification (label + readout split ends,
 // a lone readout trails to the end). The component owns this column, its gaps, and the
@@ -196,7 +194,7 @@ export function createSlider(skin: SliderSkin) {
     const reducedMotion = useReducedMotion();
     const size = sizeOf(props);
     // Whether the component-owned header (title / description / value readout) renders
-    // at all. A bare <Slider /> passes none of these and renders exactly as before —
+    // at all. A bare <Slider/> passes none of these and renders exactly as before —
     // no header, no wrapper node.
     const hasHeader = children != null || description != null || !!showValue;
     // The visible title names the control for assistive tech: when no explicit
@@ -209,13 +207,12 @@ export function createSlider(skin: SliderSkin) {
     // the fill/thumb grow leftward, the physical tap maps flipped, and the horizontal
     // arrows reverse (the drawer's isRTL() physical-computation pattern).
     const rtl = isRTL();
-    // The standard field width axis (block/narrow/wide), appended after the base
-    // width:"100%" so a bare slider renders AT 320px (shrinking via maxWidth:"100%")
-    // instead of collapsing in content-sized contexts; `block` restores width:"100%".
-    const widthCap = useFieldWidth(props);
+    // FILL, appended after the base width:"100%": the row-sharing pair lets a slider
+    // beside a button take the remainder of a Row.
+    const widthCap = useFillStyle("Slider");
 
     // Controlled when `value` is provided, self-managed otherwise, so a bare
-    // <Slider /> drags out of the box (the standard library contract).
+    // <Slider/> drags out of the box (the standard library contract).
     const [value, setValue] = useControllableState<number>(
       props.value,
       props.defaultValue ?? min,
@@ -420,7 +417,7 @@ export function createSlider(skin: SliderSkin) {
 
     // The interactive rail: the pressable/adjustable track + thumb. Rendered
     // identically whether or not a header sits above it. When a header IS present the
-    // field-width cap and the caller's `style` move up to the wrapping column (so the
+    // FILL nature and the caller's `style` move up to the wrapping column (so the
     // label aligns to the track width and the caller sizes the whole labeled group),
     // and the rail simply fills that column; with no header this View is the root and
     // renders byte-for-byte as before.
@@ -464,11 +461,8 @@ export function createSlider(skin: SliderSkin) {
           // The thumb paints the focus ring, so suppress RNW's default outline on the
           // focused container (no-op on native).
           FOCUS_RESET,
-          // The standard field width (width 320 + maxWidth:"100%", or narrow/wide);
-          // null under `block`, where the base width:"100%" above fills the container.
-          // With a header these move up to the wrapping column (below) so the label
-          // aligns to the track width; a bare slider keeps them here and renders
-          // byte-for-byte as before.
+          // FILL. With a header these move up to the wrapping column (below) so the
+          // label aligns to the track width; a bare slider keeps them here.
           hasHeader ? null : widthCap,
           hasHeader ? null : style,
         ]}

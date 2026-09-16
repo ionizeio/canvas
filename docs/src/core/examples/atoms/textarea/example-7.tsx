@@ -3,13 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Textarea, Column } = scope;
+  const { Textarea, Column, Container } = scope;
   return (
 <Column snug>
-  <Textarea narrow rows={2} placeholder="Narrow (240px)" />
-  <Textarea rows={2} placeholder="Standard (320px)" />
-  <Textarea wide rows={2} placeholder="Wide (480px)" />
-  <Textarea block rows={2} placeholder="Block (fills the container)" />
+  <Container xs start><Textarea rows={2} placeholder="In an xs Container (320)" /></Container>
+  <Container lg start><Textarea rows={2} placeholder="In an lg Container (512)" /></Container>
+  <Textarea rows={2} placeholder="Bare: fills the parent" />
 </Column>
   );
 }

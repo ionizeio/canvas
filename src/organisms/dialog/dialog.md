@@ -122,8 +122,8 @@ A controlled owner may keep it open; that request never confirms an action.
       <Typography>Update how your name and email appear to teammates.</Typography>
     </Column>
     <Column relaxed>
-      <Input block label="Name" defaultValue="Ada Lovelace" />
-      <Input block label="Email" defaultValue="ada@example.com" />
+      <Input label="Name" defaultValue="Ada Lovelace" />
+      <Input label="Email" defaultValue="ada@example.com" />
     </Column>
     <Row end snug alignCenter>
       <Button outline small>Cancel</Button>
@@ -162,8 +162,8 @@ A controlled owner may keep it open; that request never confirms an action.
   <Column relaxed>
     <Typography lead semibold>Create project</Typography>
     <Column relaxed>
-      <Input block label="Name" placeholder="Acme website" />
-      <Input block label="Key" placeholder="ACME" />
+      <Input label="Name" placeholder="Acme website" />
+      <Input label="Key" placeholder="ACME" />
     </Column>
     <Row end snug alignCenter>
       <Button outline small>Cancel</Button>
@@ -180,19 +180,19 @@ A controlled owner may keep it open; that request never confirms an action.
   <Text style={{ fontSize: 16, lineHeight: 24, fontWeight: "600", color: tokens["popover-foreground"] }}>Create project</Text>
   <View style={{ marginTop: 20 }}>
     <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6 }}>Name</Text>
-    <Input block accessibilityLabel="Name" />
+    <Input accessibilityLabel="Name" />
     <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6, marginTop: 12 }}>Key</Text>
-    <Input block accessibilityLabel="Key" />
+    <Input accessibilityLabel="Key" />
     <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6, marginTop: 12 }}>Description</Text>
-    <Input block accessibilityLabel="Description" />
+    <Input accessibilityLabel="Description" />
     <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6, marginTop: 12 }}>Lead</Text>
-    <Input block accessibilityLabel="Lead" />
+    <Input accessibilityLabel="Lead" />
     <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6, marginTop: 12 }}>Team</Text>
-    <Input block accessibilityLabel="Team" />
+    <Input accessibilityLabel="Team" />
     <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6, marginTop: 12 }}>Visibility</Text>
-    <Input block accessibilityLabel="Visibility" />
+    <Input accessibilityLabel="Visibility" />
     <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6, marginTop: 12 }}>Template</Text>
-    <Input block accessibilityLabel="Template" />
+    <Input accessibilityLabel="Template" />
   </View>
   <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8, marginTop: 24 }}>
     <Button outline small>Cancel</Button>
@@ -257,7 +257,7 @@ A controlled owner may keep it open; that request never confirms an action.
 <Dialog open small>
   <Column relaxed>
     <Typography lead semibold>Rename</Typography>
-    <Input block label="Name" defaultValue="Untitled" />
+    <Input label="Name" defaultValue="Untitled" />
     <Row end snug alignCenter>
       <Button outline small>Cancel</Button>
       <Button primary small>Save</Button>
@@ -273,7 +273,7 @@ A controlled owner may keep it open; that request never confirms an action.
   <Text style={{ fontSize: 16, lineHeight: 24, fontWeight: "600", color: tokens["popover-foreground"] }}>Rename</Text>
   <View style={{ marginTop: 20 }}>
     <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6 }}>Name</Text>
-    <Input block accessibilityLabel="Name" value="Untitled" />
+    <Input accessibilityLabel="Name" value="Untitled" />
   </View>
   <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8, marginTop: 24 }}>
     <Button outline small>Cancel</Button>

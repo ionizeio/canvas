@@ -640,17 +640,3 @@ export const widths: Record<WidthKey, number> = {
   widest: 1152,
   page: 1280,
 };
-
-/**
- * Standard field widths in px: the widths the input-like controls (Input,
- * Textarea, Select, Autocomplete, Field) render at, on every form factor. Every
- * field defaults to `base` so stacked fields share one edge; `narrow`/`wide`
- * are the other two modes of the width axis. A `maxWidth:"100%"` rides along
- * so fields shrink inside narrower parents (which is all a phone screen is);
- * `block` opts a field out entirely to fill its container.
- */
-export const fieldWidths: Record<string, number> = {
-  narrow: 240,
-  base: 320,
-  wide: 480,
-};

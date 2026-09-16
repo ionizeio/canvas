@@ -1,7 +1,7 @@
 import { consumeEscapeKey, EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { forwardRef, useEffect, useId, useRef, useState } from "react";
 import { Platform, type Role, type TextInput as RNTextInput } from "react-native";
-import { View, Pressable, Text, TextInput, useTheme, useControllableState, useFieldWidth, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, type FieldWidthProps, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useTheme, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useActiveOptionScroll } from "../../style/use-active-option-scroll.js";
 import { AccessibilityReturnBoundary, accessibilitySelectionProps, useAccessibilityReturn } from "../../style/use-accessibility-return.js";
@@ -36,7 +36,7 @@ import { type AutocompleteSkin, type Size } from "./autocomplete.styles.js";
 // select closes it. The selected option carries a leading "✓" and an accent
 // surface; an empty filtered list shows a muted "No results" row.
 
-export interface AutocompleteProps extends FieldWidthProps {
+export interface AutocompleteProps {
   /**
    * The text typed into the field (controlled). Filters the option list. Omit
    * and use `defaultQuery` for uncontrolled use: a bare Autocomplete is typeable
@@ -95,8 +95,8 @@ export interface AutocompleteProps extends FieldWidthProps {
   // Size (pick one; default is the medium field, matching Input's h-9).
   small?: boolean;
   large?: boolean;
-  /** Outer flex composition within a parent only, never a restyle hook; width comes from the width axis (block/narrow/wide). */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 // First match wins when more than one size flag is passed.
@@ -146,13 +146,13 @@ export function createAutocomplete(skin: AutocompleteSkin) {
     } = props;
     const size = sizeOf(props);
     const { tokens } = useTheme();
-    const widthCap = useFieldWidth(props);
+    const widthCap = useFillStyle("Autocomplete");
     // One collision-free id for the label so the floated label carries a nativeID.
     const labelId = useId();
     const listboxId = useId();
 
     // Controlled when `query` is provided, self-managed otherwise, so a bare
-    // <Autocomplete /> filters as you type (the standard library contract).
+    // <Autocomplete/> filters as you type (the standard library contract).
     const [query, setQuery] = useControllableState<string>(
       props.query,
       props.defaultQuery ?? "",

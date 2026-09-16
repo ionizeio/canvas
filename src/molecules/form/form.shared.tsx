@@ -1,6 +1,6 @@
 import { Children, useEffect, useId, useRef, type ComponentType, type ElementRef, type ReactNode } from "react";
 import { type Role } from "react-native";
-import { View, Text, useTheme, useContainerWidth, fieldWidths, type ColorTokens, type StyleProp, type TextStyle, type ViewStyle } from "../../style/index.js";
+import { View, Text, useTheme, useContainerWidth, widths, type ColorTokens, type StyleProp, type TextStyle, type ViewStyle } from "../../style/index.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
 import * as s from "./form.styles.js";
@@ -133,11 +133,12 @@ export function createForm(skin: FormSkin, Button: ButtonComponent = WebButton) 
     // collapse to a single full-width column in narrow ones (desktop-first). The
     // form measures its own row wrapper rather than the window (the DataTable
     // precedent): a form inside a narrow desktop column stacks too, instead of
-    // crushing two-up. The threshold is one `wide` field (480), not a viewport
-    // breakpoint: a two-up split narrower than that cannot give each column a
-    // usable field, while the kit's canonical 560-wide forms stay two-up.
+    // crushing two-up. The threshold is the `lg` step of the width scale (512),
+    // not a viewport breakpoint: a two-up split narrower than that cannot give
+    // each column a usable field, while a form in an `xl` (576) Container stays
+    // two-up.
     const { width: rowsWidth, onLayout: onRowsLayout } = useContainerWidth();
-    const twoUp = rowsWidth <= 0 || rowsWidth > fieldWidths.wide;
+    const twoUp = rowsWidth <= 0 || rowsWidth > widths.lg;
 
     const rows = twoColumn ? (
       <View

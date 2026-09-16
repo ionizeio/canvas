@@ -2,7 +2,7 @@ import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js
 import { forwardRef, useId, useRef } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { type Role } from "react-native";
-import { View, Pressable, Text, useTheme, useControllableState, useFieldWidth, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, RippleClip, cornerRadii, type FieldWidthProps, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, RippleClip, cornerRadii, type LayoutStyle, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the option-list
@@ -49,14 +49,14 @@ export interface SelectOption {
   label: string;
 }
 
-export interface SelectProps extends FieldWidthProps {
+export interface SelectProps {
   /**
    * Controlled selection; omit for uncontrolled use. Empty shows the placeholder.
    * With plain string options this is the option itself; with `SelectOption`
    * objects it is the option's `value`, and the trigger shows its `label`.
    */
   value?: string;
-  /** Initial selection for uncontrolled use (a bare <Select options /> picks on its own). */
+  /** Initial selection for uncontrolled use (a bare <Select options/> picks on its own). */
   defaultValue?: string;
   /**
    * The selectable options: bare strings, or `{ value, label }` objects when the
@@ -105,8 +105,8 @@ export interface SelectProps extends FieldWidthProps {
   // Size (pick one; default is the medium field, matching Input's h-9).
   small?: boolean;
   large?: boolean;
-  /** Outer flex composition within a parent only, never a restyle hook; width comes from the width axis (block/narrow/wide). */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 // Size precedence when more than one is passed: first match wins.
@@ -141,12 +141,14 @@ export function createSelect(skin: SelectSkin) {
       typeof o === "string" ? { value: o, label: o } : o,
     );
     const { tokens } = useTheme();
-    const widthCap = useFieldWidth(props);
+    // A Select's content is its value, so a bare Column in a Row (the `.col-auto`
+    // toolbar cell) hugs it legitimately: no hugging-cell warning.
+    const widthCap = useFillStyle("Select", { hugsInCell: true });
     // One collision-free id for the label so the floated label carries a nativeID.
     const labelId = useId();
     const listId = `${labelId}-options`;
     // Controlled when `open`/`value` are provided, self-managed otherwise, so a
-    // bare <Select options /> opens and picks out of the box (the standard
+    // bare <Select options/> opens and picks out of the box (the standard
     // library contract): the trigger opens/closes the list, a select stores the
     // choice and closes it, and the callbacks fire in both modes.
     const [storedOpen, setStoredOpen] = useControllableState<boolean>(

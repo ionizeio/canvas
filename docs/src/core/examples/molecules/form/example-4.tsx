@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { Form, Select, Switch } = scope;
   return (
 <Form twoColumn submitLabel="Save" cancelLabel="Cancel" style={{ width: 560, maxWidth: "100%" }}>
-  <Select block label="Role" options={["Admin", "Editor", "Viewer"]} defaultValue="Editor" />
+  <Select label="Role" options={["Admin", "Editor", "Viewer"]} defaultValue="Editor" />
   <Switch defaultChecked description="Email me when someone mentions me.">Notifications</Switch>
 </Form>
   );

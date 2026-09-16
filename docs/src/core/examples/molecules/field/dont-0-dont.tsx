@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { Text, Input, Column } = scope;
   return (
 <Column tight>
-  <Input block label="Email" required value="rachel.chen" />
+  <Input label="Email" required value="rachel.chen" />
   <Text style={{ fontSize: 12, color: "#e7000b" }}>Enter a valid email address.</Text>
 </Column>
   );

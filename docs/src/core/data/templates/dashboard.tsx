@@ -119,7 +119,7 @@ function SecondaryWidgetsLive() {
                 <Typography small medium>{m.label}</Typography>
                 <Typography small>{Math.round(m.share * 100)}%</Typography>
               </Row>
-              <Progress block value={m.share} accessibilityLabel={`${m.label} share of sign-ins`} />
+              <Progress value={m.share} accessibilityLabel={`${m.label} share of sign-ins`} />
             </Column>
           ))}
         </Column>
@@ -161,7 +161,7 @@ function SecondaryWidgetsLive() {
               <Typography small medium>Used</Typography>
               <Typography small>68 GB of 100 GB</Typography>
             </Row>
-            <Progress block value={0.68} accessibilityLabel="Storage used" />
+            <Progress value={0.68} accessibilityLabel="Storage used" />
           </Column>
           <Typography tiny>Session recordings and audit exports count toward storage.</Typography>
           <Row>

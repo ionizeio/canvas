@@ -60,14 +60,13 @@ function CenteredCardLive() {
               <Typography h3>Sign in to Acme Corp</Typography>
               <Typography small>Demo form. Enter anything to see the result.</Typography>
             </Column>
-            <Input label="Email" placeholder="you@example.com" value={email} onChangeText={setEmail} block />
+            <Input label="Email" placeholder="you@example.com" value={email} onChangeText={setEmail} />
             <Input
               label="Password"
               placeholder="••••••••"
               secureTextEntry
               value={password}
               onChangeText={setPassword}
-              block
             />
             <Row between alignCenter>
               <Checkbox checked={remember} onChange={setRemember}>
@@ -156,14 +155,13 @@ function SplitScreenLive() {
           <Typography h3>Sign in to Acme Corp</Typography>
           <Typography small>Demo form. Enter anything to see the result.</Typography>
         </Column>
-        <Input label="Email" placeholder="you@example.com" value={email} onChangeText={setEmail} block />
+        <Input label="Email" placeholder="you@example.com" value={email} onChangeText={setEmail} />
         <Input
           label="Password"
           placeholder="••••••••"
           secureTextEntry
           value={password}
           onChangeText={setPassword}
-          block
         />
         <Button block primary onPress={() => submitCredentials(toast, email, password)}>
           Sign in
@@ -233,7 +231,7 @@ function MagicLinkLive() {
                 <Typography h3>Sign in to Acme Corp</Typography>
                 <Typography small>Demo form. No email is actually sent.</Typography>
               </Column>
-              <Input label="Email address" placeholder="you@example.com" value={email} onChangeText={setEmail} block />
+              <Input label="Email address" placeholder="you@example.com" value={email} onChangeText={setEmail} />
               <Button block primary onPress={send}>
                 Send magic link
               </Button>

@@ -1,6 +1,6 @@
 # Input
 
-The Input component is a React Native text field with semantic boolean props (`error`, `small`, `large`, `block`, `disabled`), plus prefix/suffix addons and overlaid icons. Input is single-line; for multi-line entry use the dedicated Textarea. Pass `label` (and `required`) to name the field: iOS and web render the label above the control, while Android floats the Material 3 in-container label. Select and the search field share its look, and Field and Form compose that label with helper and error text.
+The Input component is a React Native text field with semantic boolean props (`error`, `small`, `large`, `disabled`), plus prefix/suffix addons and overlaid icons. Input is single-line; for multi-line entry use the dedicated Textarea. Pass `label` (and `required`) to name the field: iOS and web render the label above the control, while Android floats the Material 3 in-container label. Select and the search field share its look, and Field and Form compose that label with helper and error text.
 
 Inside an overlay, Escape follows the overlay's cancellation policy. A supplied
 `onKeyPress` runs first and can call `preventDefault()` to handle Escape locally.
@@ -62,14 +62,13 @@ Cancelling an IME candidate keeps the overlay open.
 <Input readOnly placeholder="rachel.chen@example.com" />
 ```
 
-### Widths
+### Widths come from the parent
 
 ```tsx
 <Column snug>
-  <Input narrow placeholder="Narrow (240px)" />
-  <Input placeholder="Standard (320px)" />
-  <Input wide placeholder="Wide (480px)" />
-  <Input block placeholder="Block (fills the container)" />
+  <Container xs start><Input placeholder="In an xs Container (320)" /></Container>
+  <Container lg start><Input placeholder="In an lg Container (512)" /></Container>
+  <Input placeholder="Bare: fills the parent" />
 </Column>
 ```
 
@@ -86,7 +85,7 @@ Cancelling an IME candidate keeps the overlay open.
 **Don't** — A placeholder is not a label; it vanishes the moment the user types and screen readers may skip it.
 
 ```tsx
-<Input placeholder="Email" style={{ maxWidth: 320 }} />
+<Input placeholder="Email" />
 ```
 
 ### number
@@ -100,5 +99,5 @@ Cancelling an IME candidate keeps the overlay open.
 **Don't** — A plain text field lets users type the unit into the value, breaking parsing and validation.
 
 ```tsx
-<Input label="Storage" defaultValue="1024 GB" style={{ maxWidth: 320 }} />
+<Input label="Storage" defaultValue="1024 GB" />
 ```

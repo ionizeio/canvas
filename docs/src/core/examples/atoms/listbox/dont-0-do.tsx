@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Select } = scope;
   return (
-<Select narrow defaultValue="Yes" options={["Yes", "No"]} />
+<Select defaultValue="Yes" options={["Yes", "No"]} />
   );
 }

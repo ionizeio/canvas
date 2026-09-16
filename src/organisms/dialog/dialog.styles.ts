@@ -95,10 +95,8 @@ export interface DialogSkin {
   fieldLabelGap: ViewStyle;
   /** The Amount row (currency glyph + input). */
   amountRow: ViewStyle;
-  /** The leading currency glyph. */
+  /** The leading currency glyph; the Amount input beside it is FILL and takes the rest of the row. */
   currency: (t: ColorTokens) => TextStyle;
-  /** The Amount input grows to fill the row. */
-  amountInput: ViewStyle;
 }
 
 // --- outer shell (identical across platforms) -------------------------------
@@ -192,7 +190,6 @@ export const webSkin: DialogSkin = {
   fieldLabelGap: { marginTop: 16 },
   amountRow: { flexDirection: "row", alignItems: "center" },
   currency: (t) => ({ fontSize: 14, lineHeight: 20, color: t["muted-foreground"], marginEnd: 8 }),
-  amountInput: { flexGrow: 1, flexShrink: 1, flexBasis: "0%" },
 };
 
 // ---------- iOS (iOS 27 alert): rounded card, no border, side-by-side capsules ----------
@@ -263,7 +260,6 @@ export const iosSkin: DialogSkin = {
   fieldLabelGap: { marginTop: 14 },
   amountRow: { flexDirection: "row", alignItems: "center" },
   currency: (t) => ({ fontSize: 15, lineHeight: 20, color: t["muted-foreground"], marginEnd: 8 }),
-  amountInput: { flexGrow: 1, flexShrink: 1, flexBasis: "0%" },
 };
 
 // ---------- Android (Material 3 basic dialog): 28 radius, left title, text-button row ----------
@@ -310,5 +306,4 @@ export const androidSkin: DialogSkin = {
   fieldLabelGap: { marginTop: 16 },
   amountRow: { flexDirection: "row", alignItems: "center" },
   currency: (t) => ({ fontSize: 14, lineHeight: 20, color: t["muted-foreground"], marginEnd: 8 }),
-  amountInput: { flexGrow: 1, flexShrink: 1, flexBasis: "0%" },
 };

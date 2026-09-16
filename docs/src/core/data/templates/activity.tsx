@@ -94,7 +94,6 @@ function ActivityLive() {
                 leadingIcon
                 icon="search"
                 placeholder="Search events"
-                block
                 value={query}
                 onChangeText={setQuery}
               />

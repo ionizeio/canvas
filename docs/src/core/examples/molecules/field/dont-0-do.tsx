@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { Field, Input } = scope;
   return (
 <Field label="Email" error="Enter a valid email address." required>
-  <Input block value="rachel.chen" />
+  <Input value="rachel.chen" />
 </Field>
   );
 }

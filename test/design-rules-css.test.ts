@@ -13,7 +13,7 @@ import {
   shadowLayers,
   type PlatformKey,
 } from "../tools/tokens/css-tokens.ts";
-import { breakpoints, fieldWidths, radius, spacing, widths } from "../src/style/tokens.ts";
+import { breakpoints, radius, spacing, widths } from "../src/style/tokens.ts";
 
 // Design rules, CSS side: the web hand-off under styles/tokens.
 //
@@ -261,12 +261,6 @@ describe("the scales agree with src/style/tokens.ts", () => {
     for (const [name, value] of Object.entries(radius)) {
       const token = name === "DEFAULT" ? "radius" : `radius-${name}`;
       expect(pxValue(radiusDecls[token]), `--${token}`).toBe(value);
-    }
-  });
-
-  it("the field widths match", () => {
-    for (const [name, value] of Object.entries(fieldWidths)) {
-      expect(pxValue(spacingDecls[`field-${name}`]), `--field-${name}`).toBe(value);
     }
   });
 

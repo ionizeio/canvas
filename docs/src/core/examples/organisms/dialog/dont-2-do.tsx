@@ -9,8 +9,8 @@ export default function Example(scope: ExampleScope) {
   <Column relaxed>
     <Typography lead semibold>Create project</Typography>
     <Column relaxed>
-      <Input block label="Name" placeholder="Acme website" />
-      <Input block label="Key" placeholder="ACME" />
+      <Input label="Name" placeholder="Acme website" />
+      <Input label="Key" placeholder="ACME" />
     </Column>
     <Row end snug alignCenter>
       <Button outline small>Cancel</Button>

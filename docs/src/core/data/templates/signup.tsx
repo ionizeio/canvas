@@ -43,11 +43,11 @@ function SignupLive() {
               <Typography h3>Create your Acme Corp account</Typography>
               <Typography small>Demo form. Enter anything to see the result.</Typography>
             </Column>
-            <Input label="Full name" placeholder="Rachel Chen" value={name} onChangeText={setName} block />
-            <Input label="Work email" placeholder="you@company.com" value={email} onChangeText={setEmail} block />
-            <Input label="Password" placeholder="8+ characters" secureTextEntry value={password} onChangeText={setPassword} block />
+            <Input label="Full name" placeholder="Rachel Chen" value={name} onChangeText={setName} />
+            <Input label="Work email" placeholder="you@company.com" value={email} onChangeText={setEmail} />
+            <Input label="Password" placeholder="8+ characters" secureTextEntry value={password} onChangeText={setPassword} />
             <Column tight>
-              <Progress block value={strength} accessibilityLabel="Password strength" />
+              <Progress value={strength} accessibilityLabel="Password strength" />
               <Typography tiny>Use 8 or more characters with a number and a symbol.</Typography>
             </Column>
             <Checkbox>I agree to the Terms of Service and the Privacy Policy.</Checkbox>

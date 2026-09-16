@@ -13,7 +13,7 @@ export default function Example(scope: ExampleScope) {
     </Column>
     <Row alignCenter snug>
       <Column fill>
-        <Input block placeholder="you@example.com" />
+        <Input placeholder="you@example.com" />
       </Column>
       <Button primary>Subscribe</Button>
     </Row>

@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { View, Select } = scope;
   return (
 <View style={{ minHeight: 260 }}>
-  <Select open label="Country" defaultValue="Choose a country…" options={["Choose a country…", "United States", "Canada", "Mexico"]} style={{ maxWidth: 280 }} />
+  <Select open label="Country" defaultValue="Choose a country…" options={["Choose a country…", "United States", "Canada", "Mexico"]} />
 </View>
   );
 }

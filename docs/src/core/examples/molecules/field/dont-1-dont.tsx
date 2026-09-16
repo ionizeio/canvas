@@ -7,7 +7,7 @@ export default function Example(scope: ExampleScope) {
   return (
 <Column tight>
   <Text style={{ fontSize: 14, fontWeight: "500" }}>Email</Text>
-  <Input block placeholder="you@example.com" />
+  <Input placeholder="you@example.com" />
 </Column>
   );
 }

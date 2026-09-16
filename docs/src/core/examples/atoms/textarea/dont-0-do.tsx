@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Textarea } = scope;
   return (
-<Textarea label="Description" rows={3} wide value="This is a longer description that runs past one line and stays readable." />
+<Textarea label="Description" rows={3} value="This is a longer description that runs past one line and stays readable." />
   );
 }

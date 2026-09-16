@@ -70,9 +70,10 @@ export interface CommandSkin {
 // ---------- card shell (shared across platforms) ----------
 // The floating palette card: the standard 420px width, rounded, bordered,
 // raised, clipping its rounded corners. (w-[420px] rounded-lg border
-// border-border bg-popover shadow-xl overflow-hidden.) `maxWidth:"100%"` is the
-// documented Canvas field-width pattern (src/style/field-width.ts): it keeps the
-// 420px desktop palette but shrinks the card inside a narrower parent, so it
+// border-border bg-popover shadow-xl overflow-hidden.) `maxWidth:"100%"` beside the
+// width is the floating-container pattern (a palette is a bounds provider for its
+// own content): it keeps the 420px desktop palette but shrinks the card inside a
+// narrower parent, so it
 // never overflows a 390/393pt iPhone or a 360dp Android phone. GlassSurface
 // strips the fill and supplies the material when the surface is glass; the shape
 // (radius/border/clip) is the skin's, with the per-OS radius/curve layered on via

@@ -264,12 +264,13 @@ export function bareWidthViolations(code: string): string[] {
   return [...found];
 }
 
-// The input-like controls carrying the standard field width axis
-// (block/narrow/wide, src/style/field-width.ts). Width on these is a semantic
-// choice, so a `maxWidth`/`minWidth` in a `style` placed DIRECTLY on one of
-// these tags is the exact shim the axis replaced and is banned in example/"Do"
-// fences. Explicit `width` stays allowed (deliberate side-by-side comparisons),
-// as do width bounds on wrapper Views/Cards (page-layout composition). The
+// The input-like controls are FILL (src/style/sizing.ts): the parent layout
+// container provides their bounds, so a `maxWidth`/`minWidth` in a `style`
+// placed DIRECTLY on one of these tags is the shim the layout tier replaced
+// (a Container step or a Row span is the fix) and is banned in example/"Do"
+// fences; the `LayoutStyle` type rejects it at compile time as well. Explicit
+// `width` stays allowed here (deliberate side-by-side comparisons), as do width
+// bounds on wrapper Views/Cards (page-layout composition). The
 // `// docgen-allow-style` line opt-out applies here too.
 const FIELD_WIDTH_TAGS = ["Input", "Textarea", "Select", "Autocomplete", "Listbox", "Field"] as const;
 const FIELD_WIDTH_BANNED = ["maxWidth", "minWidth"] as const;

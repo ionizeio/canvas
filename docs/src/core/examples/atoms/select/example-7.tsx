@@ -3,13 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Select, Column } = scope;
+  const { Select, Column, Container } = scope;
   return (
 <Column snug>
-  <Select narrow options={["Small", "Medium", "Large"]} placeholder="Narrow (240px)" />
-  <Select options={["Small", "Medium", "Large"]} placeholder="Standard (320px)" />
-  <Select wide options={["Small", "Medium", "Large"]} placeholder="Wide (480px)" />
-  <Select block options={["Small", "Medium", "Large"]} placeholder="Block (fills the container)" />
+  <Container xs start><Select options={["Small", "Medium", "Large"]} placeholder="In an xs Container (320)" /></Container>
+  <Container lg start><Select options={["Small", "Medium", "Large"]} placeholder="In an lg Container (512)" /></Container>
+  <Select options={["Small", "Medium", "Large"]} placeholder="Bare: fills the parent" />
 </Column>
   );
 }

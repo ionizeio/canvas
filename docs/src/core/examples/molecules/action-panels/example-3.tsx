@@ -10,9 +10,9 @@ export default function Example(scope: ExampleScope) {
   description="These details appear on every invoice this workspace sends out."
   actionLabel="Save changes"
 >
-  <Input label="Workspace name" defaultValue="Northwind" block />
-  <Input label="Billing email" defaultValue="billing@northwind.com" block />
-  <Input label="VAT number" defaultValue="GB123456789" block />
+  <Input label="Workspace name" defaultValue="Northwind" />
+  <Input label="Billing email" defaultValue="billing@northwind.com" />
+  <Input label="VAT number" defaultValue="GB123456789" />
 </ActionPanel>
   );
 }

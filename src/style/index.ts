@@ -18,7 +18,6 @@ export * from "./color.js";
 export * from "./rtl.js";
 export * from "./mono.js";
 export * from "./dev-warn.js";
-export * from "./field-width.js";
 export * from "./sizing.js";
 export * from "./focus-reset.js";
 export * from "./active-indicator.js";

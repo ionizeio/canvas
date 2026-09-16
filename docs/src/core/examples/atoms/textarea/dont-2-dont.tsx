@@ -11,7 +11,7 @@ export default function Example(scope: ExampleScope) {
     <Text style={{ paddingHorizontal: 8, fontSize: 14, lineHeight: 20, fontStyle: "italic" }}>I</Text>
     <Text style={{ paddingHorizontal: 8, fontFamily: "monospace", fontSize: 11 }}>{"</>"}</Text>
   </View>
-  <Textarea rows={4} block placeholder="Leave a comment" style={{ borderRadius: 0, borderWidth: 0, ...shadow("none") }} />
+  <Textarea rows={4} placeholder="Leave a comment" style={{ borderRadius: 0, borderWidth: 0, ...shadow("none") }} />
 </View>
   );
 }

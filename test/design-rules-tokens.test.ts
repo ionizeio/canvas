@@ -2,7 +2,6 @@ import { describe, it, expect } from "bun:test";
 import {
   breakpoints,
   darkColors,
-  fieldWidths,
   fontWeight,
   lightColors,
   radius,
@@ -145,11 +144,6 @@ describe("the scales the hand-off transcribes", () => {
       expect(Number.isFinite(value), `spacing.${name}`).toBe(true);
       expect(value, `spacing.${name}`).toBeGreaterThanOrEqual(0);
     }
-  });
-
-  it("the field widths are ordered narrow to wide", () => {
-    expect(fieldWidths.narrow).toBeLessThan(fieldWidths.base);
-    expect(fieldWidths.base).toBeLessThan(fieldWidths.wide);
   });
 
   it("the breakpoints ascend", () => {

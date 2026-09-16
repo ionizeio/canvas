@@ -153,7 +153,6 @@ const PATTERNS: PatternDoc[] = [
                   <Row alignCenter between>
                     <Row alignCenter snug>
                       <Input
-                        narrow
                         placeholder="Search..."
                         small={d.size === "small"}
                         large={d.size === "large"}

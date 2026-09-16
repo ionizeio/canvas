@@ -9,7 +9,7 @@ export default function Example(scope: ExampleScope) {
   <Text style={{ fontSize: 16, lineHeight: 24, fontWeight: "600", color: tokens["popover-foreground"] }}>Rename</Text>
   <View style={{ marginTop: 20 }}>
     <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6 }}>Name</Text>
-    <Input block accessibilityLabel="Name" value="Untitled" />
+    <Input accessibilityLabel="Name" value="Untitled" />
   </View>
   <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8, marginTop: 24 }}>
     <Button outline small>Cancel</Button>

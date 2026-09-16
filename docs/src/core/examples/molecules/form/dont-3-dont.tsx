@@ -10,7 +10,7 @@ export default function Example(scope: ExampleScope) {
     <Text style={{ fontSize: 15, fontWeight: "600", color: tokens["card-foreground"] }}>Subscribe to updates</Text>
     <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>We'll send you a weekly digest of what changed.</Text>
   </View>
-  <Input block placeholder="you@example.com" />
+  <Input placeholder="you@example.com" />
   <View style={{ alignItems: "flex-start" }}>
     <Button primary>Subscribe</Button>
   </View>

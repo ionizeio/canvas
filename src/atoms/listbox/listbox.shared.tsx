@@ -1,6 +1,6 @@
 import { useState, type ComponentType } from "react";
 import { type Role } from "react-native";
-import { View, Pressable, Text, useTheme, useControllableState, useFieldWidth, useRovingFocus, isRTL, type FieldWidthProps, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useControllableState, useFillStyle, useRovingFocus, isRTL, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 
 // Shared Listbox shell. An inline, selectable list of options rendered directly
 // (not a popover). Each row is a Pressable. Two selection modes, mutually
@@ -37,16 +37,15 @@ export interface ListboxItem {
   selected?: boolean;
 }
 
-// Listbox is an input-like control, so it carries the standard field width axis
-// (`block` / `narrow` / `wide`, defaulting to the 320px base) shared by Input,
-// Select, Autocomplete and the rest via FieldWidthProps. This is not cosmetic: the
-// axis gives the list a DEFINITE width, without which the rows collapse. Each
-// row is `checkmark(16) + a flexBasis:"0%" label stack`; in a content-sized or
-// centered parent (a phone screen, a centered stage) with no definite width,
-// Yoga resolves the percentage basis against an indefinite width to 0 and there
-// is no free space to grow into, so on iOS/Android every label collapses to zero
-// and only the checkmark gutter shows. The width axis fixes that on all platforms.
-export interface ListboxProps extends FieldWidthProps {
+// Listbox is an input-like control, so it is FILL (src/style/sizing.ts) like Input,
+// Select, Autocomplete and the rest: the parent layout container provides the
+// bounds. That parent must be definite, and this is not cosmetic: each row is
+// `checkmark(16) + a flexBasis:"0%" label stack`, and in a content-sized parent
+// (a bare Column inside a Row) Yoga resolves the percentage basis against an
+// indefinite width to 0 with no free space to grow into, so on iOS/Android every
+// label collapses to zero and only the checkmark gutter shows. `useFillStyle`
+// warns in development when the list lands in such a cell.
+export interface ListboxProps {
   /** The options to render, top to bottom. */
   items: ListboxItem[];
   /** Accessible name of the option list or multi-select checkbox group. Defaults to "Options". */
@@ -78,8 +77,8 @@ export interface ListboxProps extends FieldWidthProps {
   onSelect?: (index: number) => void;
   /** E2E hook forwarded to the root list view. */
   testID?: string;
-  /** Outer flex composition within a parent only; width comes from the width axis (block/narrow/wide). Never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 // The per-OS-varying style pieces a platform skin owns. For the Shared treatment
@@ -136,10 +135,8 @@ export function createListbox(skin: ListboxSkin, CheckboxIndicator: ComponentTyp
     const size = sizeOf(props);
     const accessibleName = props.accessibilityLabel?.trim() || "Options";
     const { tokens } = useTheme();
-    // The standard field width axis: `{ width, maxWidth:"100%" }` (or null for
-    // `block`, where the list fills its parent). Applied to the root list View so
-    // it has a definite width on every platform (see the interface note above).
-    const widthCap = useFieldWidth(props);
+    // FILL, applied to the root list View (see the note above the interface).
+    const widthCap = useFillStyle("Listbox");
 
     // Normalize the single|multi selection to an index array so one code path
     // drives both modes. Controlled via `selected`; uncontrolled seeds from
@@ -184,11 +181,9 @@ export function createListbox(skin: ListboxSkin, CheckboxIndicator: ComponentTyp
     });
 
     const container: StyleProp<ViewStyle> = [
-      // Base: fill the parent's content width. The width axis (widthCap) overrides
-      // this with the explicit 320 / 240 / 480 for the default / narrow / wide
-      // modes; under `block` widthCap is null, so this `width:"100%"` is what makes
-      // the list fill its parent (and, being explicit, fill even a centered parent
-      // rather than collapsing to content the way a width-less View would).
+      // Base: fill the parent's width (explicit, so the list fills even a centered
+      // parent rather than collapsing to content the way a width-less View would);
+      // FILL below adds the row-sharing pair.
       { width: "100%" },
       bordered ? skin.containerBordered(tokens) : null,
       disabled ? { opacity: 0.5 } : null,

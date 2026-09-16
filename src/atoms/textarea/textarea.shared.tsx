@@ -1,7 +1,7 @@
 import { useInputEscapeBridge } from "../../style/escape-layer.js";
 import { forwardRef, useId, useState } from "react";
 import { type TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from "react-native";
-import { View, Text, TextInput, useTheme, useFieldWidth, FloatingLabel, LabelContent, FOCUS_RESET, type FieldWidthProps, type StyleProp, type TextStyle, type ViewStyle } from "../../style/index.js";
+import { View, Text, TextInput, useTheme, useFillStyle, FloatingLabel, LabelContent, FOCUS_RESET, type SizingKey, type StyleProp, type TextStyle, type ViewStyle } from "../../style/index.js";
 import { type TextEntryProps } from "../input/input.shared.js";
 import { type TextareaSkin, type Size, sizeText, minHeight } from "./textarea.styles.js";
 
@@ -32,7 +32,7 @@ const ANDROID_TEXTAREA_INSET = 12;
 // file supplies only its skin (fill, shape, border/underline, focus feedback)
 // and calls createTextarea.
 
-export interface TextareaProps extends TextEntryProps, FieldWidthProps {
+export interface TextareaProps extends TextEntryProps {
   /** Controlled text value. Omit and use `defaultValue` for uncontrolled use. */
   value?: string;
   /** Fired with the next text value on each edit. */
@@ -84,8 +84,8 @@ export interface TextareaProps extends TextEntryProps, FieldWidthProps {
    * framed container (e.g. a Card with a formatting toolbar above it).
    */
   flush?: boolean;
-  /** Outer flex composition within a parent only, never a restyle hook; width comes from the width axis (block/narrow/wide). */
-  style?: StyleProp<TextStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: StyleProp<Omit<TextStyle, SizingKey>>;
 }
 
 // Size precedence when more than one is passed: first match wins.
@@ -103,10 +103,9 @@ export function createTextarea(skin: TextareaSkin) {
     const [focused, setFocused] = useState(false);
     const { tokens } = useTheme();
     const onKeyPress = useInputEscapeBridge(props.onKeyPress);
-    // Flush implies block: a flush textarea sits inside a framed container (a
-    // toolbar Card) whose frame IS the field edge, so the container governs width
-    // and a standard cap would leave a dead gutter inside the frame.
-    const widthCap = useFieldWidth(flush ? { ...props, block: true } : props);
+    // FILL: the field takes the bounds its parent provides; a flush textarea sits
+    // inside a framed container (a toolbar Card) whose frame IS the field edge.
+    const widthCap = useFillStyle("Textarea");
     // One collision-free id linking the field to its label (aria-labelledby).
     const labelId = useId();
 

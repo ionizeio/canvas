@@ -89,7 +89,7 @@ function PlanUsageLive() {
                 <Typography small medium>{u.label}</Typography>
                 <Typography small>{u.detail}</Typography>
               </Row>
-              <Progress block value={u.value} accessibilityLabel={`${u.label} usage`} />
+              <Progress value={u.value} accessibilityLabel={`${u.label} usage`} />
             </Column>
           ))}
           <Typography tiny>Usage resets at the start of each billing cycle.</Typography>

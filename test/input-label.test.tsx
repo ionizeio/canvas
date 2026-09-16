@@ -2,7 +2,6 @@ import { describe, it, expect, afterEach } from "bun:test";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
-import { fieldWidths } from "../src/style/tokens.ts";
 import { Input as InputWeb } from "../src/atoms/input/input.tsx";
 import { Input as InputIOS } from "../src/atoms/input/input.ios.tsx";
 import { Input as InputAndroid } from "../src/atoms/input/input.android.tsx";
@@ -89,15 +88,16 @@ describe("Input label: above-rendering (iOS / web) shows the label as static tex
     });
   }
 
-  it("web: a bare labeled field still carries the standard width on its wrapper", () => {
+  it("web: a labeled field's wrapper is FILL (the parent provides the bounds)", () => {
     const { container } = ui(<InputWeb label="Email" placeholder="ada@acme.dev" />);
     const input = container.querySelector("input") as HTMLElement;
-    // The field fills the wrapper; the wrapper carries the width cap.
+    // The field fills the wrapper; the wrapper carries the fill nature.
     expect(input.style.width).toBe("100%");
     let wrap: HTMLElement | null = input.parentElement;
-    while (wrap && wrap.style.width !== `${fieldWidths.base}px`) wrap = wrap.parentElement;
-    expect(wrap?.style.width).toBe(`${fieldWidths.base}px`);
-    expect(wrap?.style.maxWidth).toBe("100%");
+    while (wrap && wrap.style.flexShrink !== "1") wrap = wrap.parentElement;
+    expect(wrap?.style.width).toBe("100%");
+    expect(wrap?.style.minWidth).toBe("0px");
+    expect(wrap?.style.maxWidth).toBe("");
   });
 });
 
@@ -124,7 +124,8 @@ describe("Input: the no-label path is unchanged (bare root)", () => {
     const { container } = ui(<InputWeb placeholder="Email" />);
     const input = container.querySelector("input") as HTMLElement;
     expect(input.getAttribute("aria-labelledby")).toBeNull();
-    // Still the standard-width bare field the width axis guarantees.
-    expect(input.style.width).toBe(`${fieldWidths.base}px`);
+    // Still a bare FILL field: width 100% of the parent, no cap of its own.
+    expect(input.style.width).toBe("100%");
+    expect(input.style.maxWidth).toBe("");
   });
 });

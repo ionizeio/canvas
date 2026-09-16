@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Textarea } = scope;
   return (
-<Textarea label="Description" rows={3} wide disabled value="Read-only content the user must not change." />
+<Textarea label="Description" rows={3} disabled value="Read-only content the user must not change." />
   );
 }

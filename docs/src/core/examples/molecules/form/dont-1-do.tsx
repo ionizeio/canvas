@@ -6,13 +6,13 @@ export default function Example(scope: ExampleScope) {
   const { Form, Input, Row, Column } = scope;
   return (
 <Form submitLabel="Save" style={{ width: 560, maxWidth: "100%" }}>
-  <Input block label="Street address" placeholder="123 Market St" />
+  <Input label="Street address" placeholder="123 Market St" />
   <Row cozy>
     <Column fill>
-      <Input block label="City" placeholder="San Francisco" />
+      <Input label="City" placeholder="San Francisco" />
     </Column>
     <Column fill>
-      <Input block label="ZIP" placeholder="94103" />
+      <Input label="ZIP" placeholder="94103" />
     </Column>
   </Row>
 </Form>

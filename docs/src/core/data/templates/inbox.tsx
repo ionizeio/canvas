@@ -187,7 +187,6 @@ function InboxLive() {
         <Column fill>
           <Input
             placeholder={`Reply to ${firstName}…`}
-            block
             value={draft}
             onChangeText={setDraft}
             onSubmitEditing={sendReply}

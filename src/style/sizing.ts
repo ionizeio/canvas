@@ -123,15 +123,24 @@ export function useSizing(p: { block?: boolean }): ViewStyle | null {
   return p.block ? FILL : hug;
 }
 
+export interface FillOptions {
+  /**
+   * The component's content is a stable label (a Select shows its value), so
+   * collapsing to it inside a bare Column in a Row is the toolbar idiom
+   * (Bootstrap `.col-auto`), not a defect: no warning there.
+   */
+  hugsInCell?: boolean;
+}
+
 /**
  * The FILL nature for a component root, plus the development warning for the
  * one layout that collapses it: a bare Column inside a Row. Give that Column a
  * `span` or `fill` so the field has bounds.
  */
-export function useFillStyle(component: string): ViewStyle {
+export function useFillStyle(component: string, options?: FillOptions): ViewStyle {
   const ctx = useContext(LayoutAxisContext);
   devWarn(
-    ctx !== null && ctx.hugging,
+    ctx !== null && ctx.hugging && !options?.hugsInCell,
     `[canvas] <${component} />: rendered inside a bare <Column> that sits in a <Row>. That Column hugs its content, so the ${component} collapses to its own text (and a text field resizes on every keystroke). Give the Column a span={n} or fill so it has bounds.`,
   );
   return FILL;

@@ -1,6 +1,6 @@
 # Select
 
-Native select restyled to match Canvas inputs. Pass `label` (and `required`) to name the field: iOS and web render the label above the trigger, while Android floats the Material 3 in-container label once the menu opens or a value is selected. The trigger renders at the standard width by default (`narrow` and `wide` pick the other modes, `block` fills the container, `fit` hugs its own value).
+Native select restyled to match Canvas inputs. Pass `label` (and `required`) to name the field: iOS and web render the label above the trigger, while Android floats the Material 3 in-container label once the menu opens or a value is selected. The trigger fills the parent it is given; a Container step or a Row span sets its measure.
 
 The label also names the option list. Use `accessibilityLabel` to provide an explicit purpose when the visible label or placeholder is insufficient; it overrides both accessible names. A required field announces "required" with the button name and marks the option list as required. The selected value never replaces the field's purpose.
 
@@ -22,7 +22,9 @@ Pass `ref` to access the interactive trigger, preserving overlay measurement. Us
 ### Inline label
 
 ```tsx
-<Select fit inline label="Rows" defaultValue="10" options={["10", "25", "50"]} />
+<Container xs>
+  <Select inline label="Rows" defaultValue="10" options={["10", "25", "50"]} />
+</Container>
 ```
 
 ### Required field
@@ -85,14 +87,13 @@ Pass `ref` to access the interactive trigger, preserving overlay measurement. Us
 />
 ```
 
-### Widths
+### Widths come from the parent
 
 ```tsx
 <Column snug>
-  <Select narrow options={["Small", "Medium", "Large"]} placeholder="Narrow (240px)" />
-  <Select options={["Small", "Medium", "Large"]} placeholder="Standard (320px)" />
-  <Select wide options={["Small", "Medium", "Large"]} placeholder="Wide (480px)" />
-  <Select block options={["Small", "Medium", "Large"]} placeholder="Block (fills the container)" />
+  <Container xs start><Select options={["Small", "Medium", "Large"]} placeholder="In an xs Container (320)" /></Container>
+  <Container lg start><Select options={["Small", "Medium", "Large"]} placeholder="In an lg Container (512)" /></Container>
+  <Select options={["Small", "Medium", "Large"]} placeholder="Bare: fills the parent" />
 </Column>
 ```
 
@@ -110,7 +111,7 @@ Pass `ref` to access the interactive trigger, preserving overlay measurement. Us
 
 ```tsx
 <View style={{ minHeight: 260 }}>
-  <Select open label="Country" defaultValue="Choose a country…" options={["Choose a country…", "United States", "Canada", "Mexico"]} style={{ maxWidth: 280 }} />
+  <Select open label="Country" defaultValue="Choose a country…" options={["Choose a country…", "United States", "Canada", "Mexico"]} />
 </View>
 ```
 
@@ -133,13 +134,13 @@ Pass `ref` to access the interactive trigger, preserving overlay measurement. Us
 **Do** — Keep the small select inline with a short label so it stays compact inside toolbars and table footers.
 
 ```tsx
-<Select small fit inline label="Rows" defaultValue="10" options={["10", "25", "50"]} />
+<Select small inline label="Rows" defaultValue="10" options={["10", "25", "50"]} />
 ```
 
 **Don't** — A stacked block label towers over the small control and breaks the dense row it belongs in.
 
 ```tsx
-<Select small narrow label="Rows per page" defaultValue="10" options={["10", "25", "50"]} />
+<Select small label="Rows per page" defaultValue="10" options={["10", "25", "50"]} />
 ```
 
 ### Default size

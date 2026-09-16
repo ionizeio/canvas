@@ -11,7 +11,7 @@ export default function Example(scope: ExampleScope) {
   toggle
   defaultChecked
 >
-  <Input label="Recovery phone" defaultValue="+1 555 0148" block />
+  <Input label="Recovery phone" defaultValue="+1 555 0148" />
 </ActionPanel>
   );
 }

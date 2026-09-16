@@ -7,9 +7,9 @@ export default function Example(scope: ExampleScope) {
   return (
 <View style={{ width: 560, maxWidth: "100%", gap: 16 }}>
   <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Personal info</Text>
-  <Input block label="Full name" defaultValue="Rachel Chen" />
+  <Input label="Full name" defaultValue="Rachel Chen" />
   <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Billing</Text>
-  <Input block label="Card number" defaultValue="•••• 4242" />
+  <Input label="Card number" defaultValue="•••• 4242" />
 </View>
   );
 }

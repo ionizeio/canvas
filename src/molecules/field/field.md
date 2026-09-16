@@ -12,7 +12,7 @@ same slot, so the row never changes height and nothing below it jumps.
 
 ```tsx
 <Field label="Email" helper="We'll never share your email." required>
-  <Input block placeholder="you@example.com" />
+  <Input placeholder="you@example.com" />
 </Field>
 ```
 
@@ -22,7 +22,7 @@ same slot, so the row never changes height and nothing below it jumps.
 
 ```tsx
 <Field label="Workspace URL" helper="Lowercase letters, numbers and hyphens.">
-  <Input block placeholder="acme-inc" />
+  <Input placeholder="acme-inc" />
 </Field>
 ```
 
@@ -30,7 +30,7 @@ same slot, so the row never changes height and nothing below it jumps.
 
 ```tsx
 <Field label="Email" error="Enter a valid email address." required>
-  <Input block value="rachel.chen" />
+  <Input value="rachel.chen" />
 </Field>
 ```
 
@@ -47,13 +47,13 @@ same slot, so the row never changes height and nothing below it jumps.
 ```tsx
 <Column snug>
   <Field label="Full name" required>
-    <Input block placeholder="Rachel Chen" />
+    <Input placeholder="Rachel Chen" />
   </Field>
   <Field label="Role" helper="Controls what this person can see.">
-    <Select block options={["Admin", "Editor", "Viewer"]} placeholder="Pick a role" />
+    <Select options={["Admin", "Editor", "Viewer"]} placeholder="Pick a role" />
   </Field>
   <Field label="Notes">
-    <Textarea block rows={3} placeholder="Anything worth remembering" />
+    <Textarea rows={3} placeholder="Anything worth remembering" />
   </Field>
 </Column>
 ```
@@ -67,7 +67,7 @@ color stay right in both states.
 
 ```tsx
 <Field label="Email" error="Enter a valid email address." required>
-  <Input block value="rachel.chen" />
+  <Input value="rachel.chen" />
 </Field>
 ```
 
@@ -76,7 +76,7 @@ destructive tone, and is never announced as an error.
 
 ```tsx
 <Column tight>
-  <Input block label="Email" required value="rachel.chen" />
+  <Input label="Email" required value="rachel.chen" />
   <Text style={{ fontSize: 12, color: "#e7000b" }}>Enter a valid email address.</Text>
 </Column>
 ```
@@ -87,7 +87,7 @@ destructive tone, and is never announced as an error.
 
 ```tsx
 <Field label="Email">
-  <Input block placeholder="you@example.com" />
+  <Input placeholder="you@example.com" />
 </Field>
 ```
 
@@ -97,6 +97,6 @@ tap target no longer includes it.
 ```tsx
 <Column tight>
   <Text style={{ fontSize: 14, fontWeight: "500" }}>Email</Text>
-  <Input block placeholder="you@example.com" />
+  <Input placeholder="you@example.com" />
 </Column>
 ```

@@ -7,7 +7,7 @@ export default function Example(scope: ExampleScope) {
   return (
 <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, padding: 12, maxWidth: 520 }}>
   <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Status:</Text>
-  <Select value="All" options={["All", "Active", "Inactive"]} small style={{ width: 120 }} />
+  <Select value="All" options={["All", "Active", "Inactive"]} small />
 </View>
   );
 }

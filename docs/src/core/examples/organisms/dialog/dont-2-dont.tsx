@@ -9,19 +9,19 @@ export default function Example(scope: ExampleScope) {
   <Text style={{ fontSize: 16, lineHeight: 24, fontWeight: "600", color: tokens["popover-foreground"] }}>Create project</Text>
   <View style={{ marginTop: 20 }}>
     <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6 }}>Name</Text>
-    <Input block accessibilityLabel="Name" />
+    <Input accessibilityLabel="Name" />
     <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6, marginTop: 12 }}>Key</Text>
-    <Input block accessibilityLabel="Key" />
+    <Input accessibilityLabel="Key" />
     <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6, marginTop: 12 }}>Description</Text>
-    <Input block accessibilityLabel="Description" />
+    <Input accessibilityLabel="Description" />
     <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6, marginTop: 12 }}>Lead</Text>
-    <Input block accessibilityLabel="Lead" />
+    <Input accessibilityLabel="Lead" />
     <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6, marginTop: 12 }}>Team</Text>
-    <Input block accessibilityLabel="Team" />
+    <Input accessibilityLabel="Team" />
     <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6, marginTop: 12 }}>Visibility</Text>
-    <Input block accessibilityLabel="Visibility" />
+    <Input accessibilityLabel="Visibility" />
     <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6, marginTop: 12 }}>Template</Text>
-    <Input block accessibilityLabel="Template" />
+    <Input accessibilityLabel="Template" />
   </View>
   <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8, marginTop: 24 }}>
     <Button outline small>Cancel</Button>

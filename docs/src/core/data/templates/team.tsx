@@ -105,7 +105,6 @@ function InviteLive() {
             <Input
               label="Email address"
               placeholder="teammate@company.com"
-              block
               value={email}
               error={emailError}
               onChangeText={(text) => {

@@ -7,8 +7,8 @@ export default function Example(scope: ExampleScope) {
   return (
 <Form submitLabel="Save" style={{ width: 560, maxWidth: "100%" }}>
   <FormSection title="Personal info" description="This information will be displayed on your public profile.">
-    <Input block label="Full name" defaultValue="Rachel Chen" />
-    <Input block label="Email" defaultValue="rachel@example.com" />
+    <Input label="Full name" defaultValue="Rachel Chen" />
+    <Input label="Email" defaultValue="rachel@example.com" />
   </FormSection>
   <FormSection title="Notifications" description="Choose how you'd like to be notified.">
     <Checkbox defaultChecked>Email notifications</Checkbox>

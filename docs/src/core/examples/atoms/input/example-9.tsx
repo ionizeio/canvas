@@ -3,13 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Input, Column } = scope;
+  const { Input, Column, Container } = scope;
   return (
 <Column snug>
-  <Input narrow placeholder="Narrow (240px)" />
-  <Input placeholder="Standard (320px)" />
-  <Input wide placeholder="Wide (480px)" />
-  <Input block placeholder="Block (fills the container)" />
+  <Container xs start><Input placeholder="In an xs Container (320)" /></Container>
+  <Container lg start><Input placeholder="In an lg Container (512)" /></Container>
+  <Input placeholder="Bare: fills the parent" />
 </Column>
   );
 }

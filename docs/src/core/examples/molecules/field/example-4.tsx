@@ -7,13 +7,13 @@ export default function Example(scope: ExampleScope) {
   return (
 <Column snug>
   <Field label="Full name" required>
-    <Input block placeholder="Rachel Chen" />
+    <Input placeholder="Rachel Chen" />
   </Field>
   <Field label="Role" helper="Controls what this person can see.">
-    <Select block options={["Admin", "Editor", "Viewer"]} placeholder="Pick a role" />
+    <Select options={["Admin", "Editor", "Viewer"]} placeholder="Pick a role" />
   </Field>
   <Field label="Notes">
-    <Textarea block rows={3} placeholder="Anything worth remembering" />
+    <Textarea rows={3} placeholder="Anything worth remembering" />
   </Field>
 </Column>
   );

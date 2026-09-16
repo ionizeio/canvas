@@ -12,8 +12,8 @@ export default function Example(scope: ExampleScope) {
       <Typography>Update how your name and email appear to teammates.</Typography>
     </Column>
     <Column relaxed>
-      <Input block label="Name" defaultValue="Ada Lovelace" />
-      <Input block label="Email" defaultValue="ada@example.com" />
+      <Input label="Name" defaultValue="Ada Lovelace" />
+      <Input label="Email" defaultValue="ada@example.com" />
     </Column>
     <Row end snug alignCenter>
       <Button outline small>Cancel</Button>

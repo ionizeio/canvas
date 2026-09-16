@@ -275,7 +275,7 @@ no scrolling tab stop. The iOS compact primary-column layout is unchanged.
 ```tsx
 <Card flat flush style={{ overflow: "hidden", maxWidth: 520 }}>
   <Row snug alignCenter between pad>
-    <Input small narrow placeholder="Search users..." />
+    <Input small placeholder="Search users..." />
     <Button outline small>Export</Button>
   </Row>
   <Divider />
@@ -294,7 +294,7 @@ no scrolling tab stop. The iOS compact primary-column layout is unchanged.
 ```tsx
 <View style={{ overflow: "hidden", borderRadius: 8, borderWidth: 1, borderColor: tokens.border, maxWidth: 520 }}>
   <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderBottomWidth: 1, borderColor: tokens.border, padding: 12 }}>
-    <Input small placeholder="Search users..." style={{ maxWidth: 240 }} />
+    <Container xs start><Input small placeholder="Search users..." /></Container>
     <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%" }} />
     <Button outline small>Export</Button>
   </View>
@@ -347,7 +347,7 @@ no scrolling tab stop. The iOS compact primary-column layout is unchanged.
   <Row snug alignCenter between>
     <Row snug alignCenter>
       <Typography tiny muted>Status:</Typography>
-      <Select value="All" options={["All", "Active", "Inactive"]} small style={{ width: 120 }} />
+      <Column><Select value="All" options={["All", "Active", "Inactive"]} small /></Column>
     </Row>
     <Typography tiny muted>142 results</Typography>
   </Row>
@@ -359,7 +359,7 @@ no scrolling tab stop. The iOS compact primary-column layout is unchanged.
 ```tsx
 <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, padding: 12, maxWidth: 520 }}>
   <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Status:</Text>
-  <Select value="All" options={["All", "Active", "Inactive"]} small style={{ width: 120 }} />
+  <Select value="All" options={["All", "Active", "Inactive"]} small />
 </View>
 ```
 

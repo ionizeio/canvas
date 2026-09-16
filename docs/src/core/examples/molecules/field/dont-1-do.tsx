@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { Field, Input } = scope;
   return (
 <Field label="Email">
-  <Input block placeholder="you@example.com" />
+  <Input placeholder="you@example.com" />
 </Field>
   );
 }

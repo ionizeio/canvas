@@ -6,8 +6,8 @@ export default function Example(scope: ExampleScope) {
   const { Listbox, Select, Column } = scope;
   return (
 <Column tight>
-  <Select narrow defaultValue="3 selected" />
-  <Listbox narrow multi bordered items={[
+  <Select defaultValue="3 selected" />
+  <Listbox multi bordered items={[
     { label: "Backend", selected: true },
     { label: "Frontend", selected: true },
     { label: "Design" },

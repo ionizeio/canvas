@@ -18,7 +18,7 @@ export default function FormAutocompleteFixture() {
           {PLATFORMS.map(([platform, Component]) => (
             <Column snug key={platform}>
               {(["small", "default", "large"] as const).map((size) => (
-                <Component key={size} label={`${platform} ${size}`} narrow
+                <Component key={size} label={`${platform} ${size}`}
                   small={size === "small"} large={size === "large"} options={FRUIT} />
               ))}
             </Column>

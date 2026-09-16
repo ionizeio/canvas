@@ -212,7 +212,6 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
         {searchPlaceholder ? (
           <View style={{ marginBottom: 12 }}>
             <Input
-              block
               leadingIcon
               icon="search"
               placeholder={searchPlaceholder}

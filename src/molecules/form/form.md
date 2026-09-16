@@ -13,8 +13,8 @@ Form is a composition surface: you stitch the field atoms as children and keep t
   {(saves, setSaves) => (
     <Column snug>
       <Form submitLabel="Sign in" onSubmit={() => setSaves(saves + 1)} style={{ width: 360, maxWidth: "100%" }}>
-        <Input block label="Email" placeholder="you@example.com" />
-        <Input block label="Password" />
+        <Input label="Email" placeholder="you@example.com" />
+        <Input label="Password" />
       </Form>
       <Typography muted>{saves === 0 ? "Not submitted yet" : `Submitted ${saves} ${saves === 1 ? "time" : "times"}`}</Typography>
     </Column>
@@ -28,9 +28,9 @@ Form is a composition surface: you stitch the field atoms as children and keep t
 
 ```tsx
 <Form twoColumn submitLabel="Create" cancelLabel="Cancel" style={{ width: 560, maxWidth: "100%" }}>
-  <Input block label="First name" placeholder="Ada" />
-  <Input block label="Last name" placeholder="King" />
-  <Input block label="Email" placeholder="ada@example.com" />
+  <Input label="First name" placeholder="Ada" />
+  <Input label="Last name" placeholder="King" />
+  <Input label="Email" placeholder="ada@example.com" />
 </Form>
 ```
 
@@ -39,8 +39,8 @@ Form is a composition surface: you stitch the field atoms as children and keep t
 ```tsx
 <Form submitLabel="Save" style={{ width: 560, maxWidth: "100%" }}>
   <FormSection title="Personal info" description="This information will be displayed on your public profile.">
-    <Input block label="Full name" defaultValue="Rachel Chen" />
-    <Input block label="Email" defaultValue="rachel@example.com" />
+    <Input label="Full name" defaultValue="Rachel Chen" />
+    <Input label="Email" defaultValue="rachel@example.com" />
   </FormSection>
   <FormSection title="Notifications" description="Choose how you'd like to be notified.">
     <Checkbox defaultChecked>Email notifications</Checkbox>
@@ -53,9 +53,9 @@ Form is a composition surface: you stitch the field atoms as children and keep t
 
 ```tsx
 <Form submitLabel="Create account" style={{ width: 360, maxWidth: "100%" }}>
-  <Input block label="Email" required placeholder="you@example.com" />
-  <Input block label="Password" required />
-  <Input block label="Referral code" placeholder="Optional" />
+  <Input label="Email" required placeholder="you@example.com" />
+  <Input label="Password" required />
+  <Input label="Referral code" placeholder="Optional" />
 </Form>
 ```
 
@@ -63,7 +63,7 @@ Form is a composition surface: you stitch the field atoms as children and keep t
 
 ```tsx
 <Form twoColumn submitLabel="Save" cancelLabel="Cancel" style={{ width: 560, maxWidth: "100%" }}>
-  <Select block label="Role" options={["Admin", "Editor", "Viewer"]} defaultValue="Editor" />
+  <Select label="Role" options={["Admin", "Editor", "Viewer"]} defaultValue="Editor" />
   <Switch defaultChecked description="Email me when someone mentions me.">Notifications</Switch>
 </Form>
 ```
@@ -76,8 +76,8 @@ Form is a composition surface: you stitch the field atoms as children and keep t
 
 ```tsx
 <Form submitLabel="Sign in" style={{ width: 360, maxWidth: "100%" }}>
-  <Input block label="Email" placeholder="you@example.com" />
-  <Input block label="Password" />
+  <Input label="Email" placeholder="you@example.com" />
+  <Input label="Password" />
 </Form>
 ```
 
@@ -85,8 +85,8 @@ Form is a composition surface: you stitch the field atoms as children and keep t
 
 ```tsx
 <Form twoColumn submitLabel="Sign in" style={{ width: 360, maxWidth: "100%" }}>
-  <Input block label="Email" placeholder="you@example.com" />
-  <Input block label="Password" />
+  <Input label="Email" placeholder="you@example.com" />
+  <Input label="Password" />
 </Form>
 ```
 
@@ -96,13 +96,13 @@ Form is a composition surface: you stitch the field atoms as children and keep t
 
 ```tsx
 <Form submitLabel="Save" style={{ width: 560, maxWidth: "100%" }}>
-  <Input block label="Street address" placeholder="123 Market St" />
+  <Input label="Street address" placeholder="123 Market St" />
   <Row cozy>
     <Column fill>
-      <Input block label="City" placeholder="San Francisco" />
+      <Input label="City" placeholder="San Francisco" />
     </Column>
     <Column fill>
-      <Input block label="ZIP" placeholder="94103" />
+      <Input label="ZIP" placeholder="94103" />
     </Column>
   </Row>
 </Form>
@@ -112,8 +112,8 @@ Form is a composition surface: you stitch the field atoms as children and keep t
 
 ```tsx
 <Form twoColumn submitLabel="Save" style={{ width: 560, maxWidth: "100%" }}>
-  <Input block label="Street address" placeholder="123 Market St" />
-  <Input block label="ZIP" placeholder="94103" />
+  <Input label="Street address" placeholder="123 Market St" />
+  <Input label="ZIP" placeholder="94103" />
 </Form>
 ```
 
@@ -124,10 +124,10 @@ Form is a composition surface: you stitch the field atoms as children and keep t
 ```tsx
 <Form submitLabel="Save" style={{ width: 560, maxWidth: "100%" }}>
   <FormSection title="Personal info" description="Displayed on your public profile.">
-    <Input block label="Full name" defaultValue="Rachel Chen" />
+    <Input label="Full name" defaultValue="Rachel Chen" />
   </FormSection>
   <FormSection title="Billing" description="Used for invoices and receipts.">
-    <Input block label="Card number" defaultValue="•••• 4242" />
+    <Input label="Card number" defaultValue="•••• 4242" />
   </FormSection>
 </Form>
 ```
@@ -137,9 +137,9 @@ Form is a composition surface: you stitch the field atoms as children and keep t
 ```tsx
 <View style={{ width: 560, maxWidth: "100%", gap: 16 }}>
   <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Personal info</Text>
-  <Input block label="Full name" defaultValue="Rachel Chen" />
+  <Input label="Full name" defaultValue="Rachel Chen" />
   <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Billing</Text>
-  <Input block label="Card number" defaultValue="•••• 4242" />
+  <Input label="Card number" defaultValue="•••• 4242" />
 </View>
 ```
 
@@ -156,7 +156,7 @@ Form is a composition surface: you stitch the field atoms as children and keep t
     </Column>
     <Row alignCenter snug>
       <Column fill>
-        <Input block placeholder="you@example.com" />
+        <Input placeholder="you@example.com" />
       </Column>
       <Button primary>Subscribe</Button>
     </Row>
@@ -172,7 +172,7 @@ Form is a composition surface: you stitch the field atoms as children and keep t
     <Text style={{ fontSize: 15, fontWeight: "600", color: tokens["card-foreground"] }}>Subscribe to updates</Text>
     <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>We'll send you a weekly digest of what changed.</Text>
   </View>
-  <Input block placeholder="you@example.com" />
+  <Input placeholder="you@example.com" />
   <View style={{ alignItems: "flex-start" }}>
     <Button primary>Subscribe</Button>
   </View>

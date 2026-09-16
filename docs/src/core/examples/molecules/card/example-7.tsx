@@ -12,7 +12,7 @@ export default function Example(scope: ExampleScope) {
   </CardHeader>
   <CardSeparator />
   <CardContent>
-    <Input label="Workspace name" placeholder="Acme Inc." block />
+    <Input label="Workspace name" placeholder="Acme Inc." />
   </CardContent>
   <CardSeparator />
   <CardFooter>

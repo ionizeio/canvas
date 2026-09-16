@@ -107,7 +107,7 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
   </CardHeader>
   <CardSeparator />
   <CardContent>
-    <Input label="Workspace name" placeholder="Acme Inc." block />
+    <Input label="Workspace name" placeholder="Acme Inc." />
   </CardContent>
   <CardSeparator />
   <CardFooter>

@@ -86,20 +86,17 @@ function SettingsLive() {
           label="Workspace name"
           value={draft.name}
           onChangeText={(text) => set("name", text)}
-          block
         />
         <Input
           label="Workspace URL"
           value={draft.url}
           onChangeText={(text) => set("url", text)}
-          block
         />
         <Select
           label="Default timezone"
           value={draft.timezone}
           onSelect={(option) => set("timezone", option)}
           options={TIMEZONES}
-          block
         />
       </Column>
     </Card>

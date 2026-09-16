@@ -59,7 +59,7 @@ import type { TemplateDoc } from "../types";
 // delete-from-detail swaps the overlay rather than stacking dialogs. Columns and
 // tasks carry stable IDS (names are editable), so all references are by id.
 // `useFormFactor` is used in ONE place: the filter toolbar. The board pans and
-// the dialogs cap their own width, but the field-width Select and search Input
+// the dialogs cap their own width, but the bounded Select and search Input
 // don't shrink, so at phone width the toolbar stacks (chips + Reset on one row,
 // then the assignee Select and the search Input each full width) instead of
 // overflowing off-screen.
@@ -254,8 +254,8 @@ function TaskDetailDialog({ columns, taskId, onMove, onEdit, onComment, onDelete
         {editing ? (
           <Column relaxed>
             <Typography lead semibold>Edit task</Typography>
-            <Input block label="Title" required value={draftTitle} onChangeText={setDraftTitle} />
-            <Textarea block label="Detail" value={draftDetail} onChangeText={setDraftDetail} />
+            <Input label="Title" required value={draftTitle} onChangeText={setDraftTitle} />
+            <Textarea label="Detail" value={draftDetail} onChangeText={setDraftDetail} />
             <Row relaxed wrap>
               <Select label="Tag" options={[...TAGS]} value={draftTag} onSelect={(o) => setDraftTag(o as Tag)} />
               <Select label="Priority" options={[...PRIORITIES]} value={draftPriority} onSelect={(o) => setDraftPriority(o as Priority)} />
@@ -303,7 +303,7 @@ function TaskDetailDialog({ columns, taskId, onMove, onEdit, onComment, onDelete
               )}
               <Row snug alignCenter>
                 <Column fill>
-                  <Input block placeholder="Add a comment…" value={comment} onChangeText={setComment} onSubmitEditing={() => { if (comment.trim()) { onComment(task.id, comment.trim()); setComment(""); } }} />
+                  <Input placeholder="Add a comment…" value={comment} onChangeText={setComment} onSubmitEditing={() => { if (comment.trim()) { onComment(task.id, comment.trim()); setComment(""); } }} />
                 </Column>
                 <Button outline small disabled={!comment.trim()} onPress={() => { onComment(task.id, comment.trim()); setComment(""); }}>Post</Button>
               </Row>
@@ -335,7 +335,7 @@ function AddTaskDialog({ columnName, onCreate, onClose }: { columnName: string; 
     <Dialog open onOpenChange={(next) => { if (!next) onClose(); }} small>
       <Column relaxed>
         <Typography lead semibold>{`Add task to ${columnName}`}</Typography>
-        <Input block label="Title" required value={title} onChangeText={setTitle} placeholder="What needs doing?" />
+        <Input label="Title" required value={title} onChangeText={setTitle} placeholder="What needs doing?" />
         <Row relaxed wrap>
           <Select label="Tag" options={[...TAGS]} value={tag} onSelect={(o) => setTag(o as Tag)} />
           <Select label="Priority" options={[...PRIORITIES]} value={priority} onSelect={(o) => setPriority(o as Priority)} />
@@ -359,7 +359,7 @@ function ColumnNameDialog({ title, initial, confirmLabel, onSubmit, onClose }: {
     <Dialog open onOpenChange={(next) => { if (!next) onClose(); }} small>
       <Column relaxed>
         <Typography lead semibold>{title}</Typography>
-        <Input block label="Column name" required value={name} onChangeText={setName} placeholder="e.g. In review" />
+        <Input label="Column name" required value={name} onChangeText={setName} placeholder="e.g. In review" />
         <Row end snug alignCenter>
           <Button outline small onPress={onClose}>Cancel</Button>
           <Button primary small disabled={!name.trim()} onPress={() => onSubmit(name.trim())}>{confirmLabel}</Button>
@@ -416,7 +416,7 @@ function BoardColumnView({ column, columns, tagFilter, assigneeFilter, query, dn
       </Row>
       {column.wipLimit ? (
         <Column tight>
-          <Progress small block warning={atLimit} danger={over} value={Math.min(column.tasks.length / column.wipLimit, 1)} accessibilityLabel="Work-in-progress limit" />
+          <Progress small warning={atLimit} danger={over} value={Math.min(column.tasks.length / column.wipLimit, 1)} accessibilityLabel="Work-in-progress limit" />
           <Typography tiny>{`${column.tasks.length} of ${column.wipLimit} WIP`}</Typography>
         </Column>
       ) : null}
@@ -679,8 +679,8 @@ function BoardLive() {
             </Row>
             <Button ghost small iconLeft={<Icon rotateCcw size={16} />} onPress={resetBoard}>Reset board</Button>
           </Row>
-          <Select block label="Assignee" options={["Anyone", ...PEOPLE]} value={assigneeFilter ?? "Anyone"} onSelect={(o) => setAssigneeFilter(o === "Anyone" ? null : o)} />
-          <Input block leadingIcon icon="search" placeholder="Search tasks…" value={query} onChangeText={setQuery} />
+          <Select label="Assignee" options={["Anyone", ...PEOPLE]} value={assigneeFilter ?? "Anyone"} onSelect={(o) => setAssigneeFilter(o === "Anyone" ? null : o)} />
+          <Input leadingIcon icon="search" placeholder="Search tasks…" value={query} onChangeText={setQuery} />
         </Column>
       ) : (
         <Row between wrap alignCenter>

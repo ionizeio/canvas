@@ -6,8 +6,8 @@ export default function Example(scope: ExampleScope) {
   const { Form, Input } = scope;
   return (
 <Form twoColumn submitLabel="Save" style={{ width: 560, maxWidth: "100%" }}>
-  <Input block label="Street address" placeholder="123 Market St" />
-  <Input block label="ZIP" placeholder="94103" />
+  <Input label="Street address" placeholder="123 Market St" />
+  <Input label="ZIP" placeholder="94103" />
 </Form>
   );
 }

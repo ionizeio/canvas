@@ -6,9 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { Form, Input } = scope;
   return (
 <Form submitLabel="Create account" style={{ width: 360, maxWidth: "100%" }}>
-  <Input block label="Email" required placeholder="you@example.com" />
-  <Input block label="Password" required />
-  <Input block label="Referral code" placeholder="Optional" />
+  <Input label="Email" required placeholder="you@example.com" />
+  <Input label="Password" required />
+  <Input label="Referral code" placeholder="Optional" />
 </Form>
   );
 }

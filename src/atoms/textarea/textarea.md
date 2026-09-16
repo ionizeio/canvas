@@ -1,6 +1,6 @@
 # Textarea
 
-Multi-line input, with character count, with toolbar. Pass `label` (and `required`) to name the field: iOS and web render the label above the control, while Android floats the Material 3 in-container label at the top of the multiline box. The box renders at the standard width by default (`narrow` and `wide` pick the other modes, `block` fills the container).
+Multi-line input, with character count, with toolbar. Pass `label` (and `required`) to name the field: iOS and web render the label above the control, while Android floats the Material 3 in-container label at the top of the multiline box. The box fills the parent it is given; a Container step or a Row span sets its measure.
 
 Android uses the same opaque muted surface as the other filled fields. Its label
 uses `primary-text` when focused and `destructive-text` on error. The over-limit
@@ -39,7 +39,7 @@ Cancelling an IME candidate keeps the overlay open.
 ### Character counter
 
 ```tsx
-<Textarea label="Description" showCount maxLength={280} rows={4} wide placeholder="A few words about this project…" />
+<Textarea label="Description" showCount maxLength={280} rows={4} placeholder="A few words about this project…" />
 ```
 
 ### Formatting toolbar
@@ -64,14 +64,13 @@ Cancelling an IME candidate keeps the overlay open.
 <Textarea rows={4} disabled placeholder="A few words about this project" />
 ```
 
-### Widths
+### Widths come from the parent
 
 ```tsx
 <Column snug>
-  <Textarea narrow rows={2} placeholder="Narrow (240px)" />
-  <Textarea rows={2} placeholder="Standard (320px)" />
-  <Textarea wide rows={2} placeholder="Wide (480px)" />
-  <Textarea block rows={2} placeholder="Block (fills the container)" />
+  <Container xs start><Textarea rows={2} placeholder="In an xs Container (320)" /></Container>
+  <Container lg start><Textarea rows={2} placeholder="In an lg Container (512)" /></Container>
+  <Textarea rows={2} placeholder="Bare: fills the parent" />
 </Column>
 ```
 
@@ -82,7 +81,7 @@ Cancelling an IME candidate keeps the overlay open.
 **Do** — Set `rows` for a sensible starting height so users can see their text; the field grows with the content from there.
 
 ```tsx
-<Textarea label="Description" rows={3} wide value="This is a longer description that runs past one line and stays readable." />
+<Textarea label="Description" rows={3} value="This is a longer description that runs past one line and stays readable." />
 ```
 
 **Don't** — A locked, single-line textarea hides long content with no way to expand.
@@ -99,7 +98,7 @@ Cancelling an IME candidate keeps the overlay open.
 **Do** — Show the live count against the cap and turn it destructive past the limit so the overage is precise. `showCount` treats `maxLength` as a soft cap and flips the count (and the field) destructive automatically once you run over.
 
 ```tsx
-<Textarea label="Bio" showCount maxLength={120} rows={3} wide value="I have been building things on the web for fifteen years and counting, across teams large and small, shipping product end to end." />
+<Textarea label="Bio" showCount maxLength={120} rows={3} value="I have been building things on the web for fifteen years and counting, across teams large and small, shipping product end to end." />
 ```
 
 **Don't** — A vague "over limit" message gives no number, so users cannot tell how much to trim.
@@ -139,7 +138,7 @@ Cancelling an IME candidate keeps the overlay open.
     <Text style={{ paddingHorizontal: 8, fontSize: 14, lineHeight: 20, fontStyle: "italic" }}>I</Text>
     <Text style={{ paddingHorizontal: 8, fontFamily: "monospace", fontSize: 11 }}>{"</>"}</Text>
   </View>
-  <Textarea rows={4} block placeholder="Leave a comment" style={{ borderRadius: 0, borderWidth: 0, ...shadow("none") }} />
+  <Textarea rows={4} placeholder="Leave a comment" style={{ borderRadius: 0, borderWidth: 0, ...shadow("none") }} />
 </View>
 ```
 
@@ -148,7 +147,7 @@ Cancelling an IME candidate keeps the overlay open.
 **Do** — Use the disabled attribute so the field blocks editing and focus, matching its dimmed look.
 
 ```tsx
-<Textarea label="Description" rows={3} wide disabled value="Read-only content the user must not change." />
+<Textarea label="Description" rows={3} disabled value="Read-only content the user must not change." />
 ```
 
 **Don't** — Dimming a textarea while leaving it editable looks disabled but still accepts input.

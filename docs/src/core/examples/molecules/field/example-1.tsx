@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { Field, Input } = scope;
   return (
 <Field label="Workspace URL" helper="Lowercase letters, numbers and hyphens.">
-  <Input block placeholder="acme-inc" />
+  <Input placeholder="acme-inc" />
 </Field>
   );
 }

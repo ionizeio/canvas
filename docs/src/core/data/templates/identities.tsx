@@ -1,18 +1,19 @@
 import { useState, type ReactNode } from "react";
 import {
-  Row,
-  Column,
-  Card,
-  Typography,
-  Button,
-  Badge,
-  DataTable,
-  Input,
-  Select,
   Avatar,
-  Pagination,
+  Badge,
+  Button,
+  Card,
+  Column,
+  Container,
+  DataTable,
   Divider,
   Icon,
+  Input,
+  Pagination,
+  Row,
+  Select,
+  Typography,
   useToast,
 } from "@nannier-com/canvas";
 import type { TemplateDoc } from "../types";
@@ -167,40 +168,43 @@ function IdentitiesLive() {
 
       <Card flat flush>
         <Row snug alignCenter between wrap pad>
-          <Row snug alignCenter wrap>
-            <Input
-              small
-              narrow
-              leadingIcon
-              icon="search"
-              placeholder="Search identities..."
-              value={query}
-              onChangeText={(t) => {
-                setQuery(t);
-                setPage(1);
-              }}
-              accessibilityLabel="Search identities"
-            />
-            <Select
-              small
-              options={STATUS_OPTIONS}
-              value={statusFilter}
-              onSelect={(v) => {
-                setStatusFilter(v);
-                setPage(1);
-              }}
-              style={{ width: 150 }}
-            />
-            <Select
-              small
-              options={ROLE_OPTIONS}
-              value={roleFilter}
-              onSelect={(v) => {
-                setRoleFilter(v);
-                setPage(1);
-              }}
-              style={{ width: 130 }}
-            />
+          <Row snug alignCenter wrap fill>
+            <Container xs start>
+              <Input
+                small
+                leadingIcon
+                icon="search"
+                placeholder="Search identities..."
+                value={query}
+                onChangeText={(t) => {
+                  setQuery(t);
+                  setPage(1);
+                }}
+                accessibilityLabel="Search identities"
+              />
+            </Container>
+            <Column>
+              <Select
+                small
+                options={STATUS_OPTIONS}
+                value={statusFilter}
+                onSelect={(v) => {
+                  setStatusFilter(v);
+                  setPage(1);
+                }}
+              />
+            </Column>
+            <Column>
+              <Select
+                small
+                options={ROLE_OPTIONS}
+                value={roleFilter}
+                onSelect={(v) => {
+                  setRoleFilter(v);
+                  setPage(1);
+                }}
+              />
+            </Column>
           </Row>
           {selected.length === 0 ? (
             <Typography tiny>{filtered.length} {filtered.length === 1 ? "result" : "results"}</Typography>

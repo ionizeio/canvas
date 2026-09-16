@@ -317,10 +317,10 @@ export function createDialog(skin: DialogSkin) {
                           <Text nativeID={amountId} style={skin.fieldLabel(tokens)}>Amount</Text>
                           <View style={skin.amountRow}>
                             <Text style={glassMessageStyle(skin.currency(tokens), theme)}>$</Text>
-                            <Input value="90.00" block style={skin.amountInput} accessibilityLabel="Amount" aria-labelledby={amountId} />
+                            <Input value="90.00" accessibilityLabel="Amount" aria-labelledby={amountId}/>
                           </View>
                           <Text nativeID={reasonId} style={[skin.fieldLabel(tokens), skin.fieldLabelGap]}>Reason</Text>
-                          <Input placeholder="Duplicate charge" block accessibilityLabel="Reason" aria-labelledby={reasonId} />
+                          <Input placeholder="Duplicate charge" accessibilityLabel="Reason" aria-labelledby={reasonId}/>
                         </View>
                       ) : null}
                       {footer}

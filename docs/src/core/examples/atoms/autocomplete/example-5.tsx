@@ -3,13 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Autocomplete, Column } = scope;
+  const { Autocomplete, Column, Container } = scope;
   return (
 <Column snug>
-  <Autocomplete narrow options={["Ada Lovelace", "Grace Hopper"]} placeholder="Narrow (240px)" />
-  <Autocomplete options={["Ada Lovelace", "Grace Hopper"]} placeholder="Standard (320px)" />
-  <Autocomplete wide options={["Ada Lovelace", "Grace Hopper"]} placeholder="Wide (480px)" />
-  <Autocomplete block options={["Ada Lovelace", "Grace Hopper"]} placeholder="Block (fills the container)" />
+  <Container xs start><Autocomplete options={["Ada Lovelace", "Grace Hopper"]} placeholder="In an xs Container (320)" /></Container>
+  <Container lg start><Autocomplete options={["Ada Lovelace", "Grace Hopper"]} placeholder="In an lg Container (512)" /></Container>
+  <Autocomplete options={["Ada Lovelace", "Grace Hopper"]} placeholder="Bare: fills the parent" />
 </Column>
   );
 }

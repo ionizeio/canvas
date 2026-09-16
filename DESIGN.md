@@ -181,10 +181,18 @@ breakpoints:
   lg: "1024px"
   xl: "1280px"
   "2xl": "1536px"
-fieldWidths:
-  narrow: "240px"
-  base: "320px"
-  wide: "480px"
+widths:
+  xs: "320px"
+  sm: "384px"
+  md: "448px"
+  lg: "512px"
+  xl: "576px"
+  xxl: "672px"
+  xxxl: "768px"
+  wide: "896px"
+  wider: "1024px"
+  widest: "1152px"
+  page: "1280px"
 touchTargets:
   ios: "44px"
   android: "48px"

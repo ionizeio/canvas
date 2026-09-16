@@ -1,6 +1,6 @@
 # Slider
 
-Drag (or tap) along a track to pick a value in a range. Controlled by `value`, bounded by `min` / `max`, and snapped to `step`. Like the other input-like controls, a bare slider renders at the standard field width; `narrow` / `wide` pick the other widths and `block` fills the container.
+Drag (or tap) along a track to pick a value in a range. Controlled by `value`, bounded by `min` / `max`, and snapped to `step`. Like the other input-like controls, a slider fills the parent it is given; a Container step or a Row span sets its measure.
 
 Pass `ref` to access the interactive adjustable track, including when a header is shown. Use `useRef<ComponentRef<typeof Slider>>(null)` from React, or `useRef<View>(null)` with React Native's `View` type. Object and callback refs are supported and detach on unmount. Calling `ref.current?.focus()` or `.blur()` delegates to the host without activating the control. Browser focus is supported; native focus depends on the platform and React Native version, and is separate from accessibility focus.
 
@@ -52,14 +52,13 @@ On iOS 26 the handle is a real Apple Liquid Glass control: a bright knob that sp
 <Slider disabled accessibilityLabel="Volume" defaultValue={30} />
 ```
 
-### Widths
+### Widths come from the parent
 
 ```tsx
 <Column snug>
-  <Slider narrow defaultValue={40}>Narrow (240px)</Slider>
-  <Slider defaultValue={40}>Standard (320px)</Slider>
-  <Slider wide defaultValue={40}>Wide (480px)</Slider>
-  <Slider block defaultValue={40}>Block (fills the container)</Slider>
+  <Container xs start><Slider defaultValue={40}>In an xs Container (320)</Slider></Container>
+  <Container lg start><Slider defaultValue={40}>In an lg Container (512)</Slider></Container>
+  <Slider defaultValue={40}>Bare: fills the parent</Slider>
 </Column>
 ```
 
@@ -86,7 +85,7 @@ On iOS 26 the handle is a real Apple Liquid Glass control: a bright knob that sp
 **Do** — Pair the slider with its current value so the number is explicit, not just inferred from the thumb position. `showValue` renders the live readout above the track.
 
 ```tsx
-<Slider showValue narrow defaultValue={48} min={0} max={100}>Volume</Slider>
+<Slider showValue defaultValue={48} min={0} max={100}>Volume</Slider>
 ```
 
 **Don't** — A slider with no readout and no visible label leaves users guessing what the value is and what it controls.

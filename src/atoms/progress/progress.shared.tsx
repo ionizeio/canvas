@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { Animated, Easing, type LayoutChangeEvent } from "react-native";
-import { View, Text, useTheme, useFieldWidth, useReducedMotion, supportsNativeDriver, palette, type ColorTokens, type FieldWidthProps, type ViewStyle, type TextStyle, type StyleProp } from "../../style/index.js";
+import { View, Text, useTheme, useFillStyle, useReducedMotion, supportsNativeDriver, palette, type ColorTokens, type LayoutStyle, type ViewStyle, type TextStyle, type StyleProp } from "../../style/index.js";
 
 // Shared Progress shell. Uses React Native's primitives DIRECTLY (no engine className
 // layer) and reads the active brand tokens via useTheme, so the track/fill colors follow
@@ -21,13 +21,11 @@ import { View, Text, useTheme, useFieldWidth, useReducedMotion, supportsNativeDr
 //     across the track (on iOS the entry threads the kit Spinner instead: iOS has no
 //     linear indeterminate idiom, the activity indicator is the unknown-duration control).
 //
-// Width: Progress sits on the standard field width axis (src/style/field-width.ts): the
-// bar RENDERS AT 320 (240 `narrow` / 480 `wide`) and shrinks inside narrower parents via
-// maxWidth:"100%"; `block` restores the skin's fill-the-container width:"100%". The
-// explicit width is load-bearing: in a content-sized context (a centered stage, a row)
-// width:"100%" collapses to the siblings' natural width.
+// Width: Progress is FILL (src/style/sizing.ts) like the input-like controls: the bar
+// takes the bounds its parent layout container provides and shares a Row with hugging
+// siblings. It never carries a width of its own.
 
-export interface ProgressProps extends FieldWidthProps {
+export interface ProgressProps {
   /** Completion as a 0..1 fraction (clamped). Ignored when `indeterminate`. Defaults to 0. */
   value?: number;
   /** Indeterminate mode: ignore `value` and animate a sliding bar (a spinner on iOS). */
@@ -57,8 +55,8 @@ export interface ProgressProps extends FieldWidthProps {
   accessibilityLabel?: string;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer flex composition within a parent only, never a restyle hook; width comes from the width axis (block/narrow/wide). */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 export type Size = "small" | "base" | "large";
@@ -167,10 +165,8 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
     const { tokens, dark } = useTheme();
     const size = sizeOf(props);
     const tone = toneOf(props);
-    // Standard field width axis: appended after the skin's width:"100%" so the bar
-    // renders AT 320 (240 narrow / 480 wide); `block` resolves to null and the skin's
-    // fill-the-container width applies.
-    const widthStyle = useFieldWidth(props);
+    // FILL, appended after the skin's width:"100%" (the row-sharing pair).
+    const widthStyle = useFillStyle("Progress");
 
     const height = skin.height[size];
     const radius = skin.radius[size];
@@ -273,7 +269,7 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
     // stacked header, the title row with an optional right-aligned percent readout, and a
     // muted description under it, rendered ABOVE the track inside Progress's own root node.
     // `showValue` has no percent to show while indeterminate, so it is dropped then. A bare
-    // <Progress value={...} /> passes none of these, so `hasHeader` is false and every
+    // <Progress value={...}/> passes none of these, so `hasHeader` is false and every
     // render path below stays byte-identical to the header-less original.
     const showPercent = !!props.showValue && !indeterminate;
     const hasHeader = children != null || description != null || showPercent;

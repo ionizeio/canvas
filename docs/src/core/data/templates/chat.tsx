@@ -107,7 +107,6 @@ function ConversationLive() {
         <Column fill>
           <Input
             placeholder="Ask about plans, billing, or setup…"
-            block
             value={draft}
             onChangeText={setDraft}
             onSubmitEditing={send}

@@ -1,6 +1,6 @@
-/* Spacing scale in px (the Tailwind step names; rem * 16), plus the standard field
-   widths every input-like control renders at, and the desktop-first breakpoints
-   (a variant applies at this width and below). */
+/* Spacing scale in px (the Tailwind step names; rem * 16), plus the width scale a
+   bounds-providing container caps at, and the desktop-first breakpoints (a variant
+   applies at this width and below). */
 :root{
   --space-0:0px;--space-px:1px;--space-0-5:2px;--space-1:4px;--space-1-5:6px;--space-2:8px;
   --space-2-5:10px;--space-3:12px;--space-3-5:14px;--space-4:16px;--space-5:20px;--space-6:24px;
@@ -10,8 +10,6 @@
 
   /* Row/Column gap axis names used by the layout primitives. */
   --gap-tight:4px;--gap-snug:8px;--gap-cozy:12px;--gap-relaxed:16px;--gap-loose:24px;
-
-  --field-narrow:240px;--field-base:320px;--field-wide:480px;
 
   /* The width scale (Tailwind's max-w-xs..7xl values, copied by hand): the steps a
      bounds-providing container (Container, the dialog panels, overlays) caps at. */

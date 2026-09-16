@@ -1,6 +1,6 @@
 # Autocomplete
 
-Text input + dropdown: searchable single-select. Pass `label` (and `required`) to name the field: iOS and web render the label above the field, while Android floats the Material 3 in-container label once the list opens or a value fills the field. The field renders at the standard width by default (`narrow` and `wide` pick the other modes, `block` fills the container).
+Text input + dropdown: searchable single-select. Pass `label` (and `required`) to name the field: iOS and web render the label above the field, while Android floats the Material 3 in-container label once the list opens or a value fills the field. The field fills the parent it is given; a Container step or a Row span sets its measure.
 
 Arrow Down and Arrow Up open the list and highlight an option while focus stays in the text field. Navigation stops at the first and last matches. Home and End jump to those limits once an option is highlighted; otherwise they retain their text-editing behavior. Enter chooses the highlighted option, Escape closes the list without changing the query, and Tab closes it while moving focus. Typing resets the highlight. Confirming an input-method candidate does not select an option or submit a surrounding Form.
 
@@ -103,14 +103,13 @@ The disclosure button has a real target of at least 24px on web, 44pt on iOS, an
 />
 ```
 
-### Widths
+### Widths come from the parent
 
 ```tsx
 <Column snug>
-  <Autocomplete narrow options={["Ada Lovelace", "Grace Hopper"]} placeholder="Narrow (240px)" />
-  <Autocomplete options={["Ada Lovelace", "Grace Hopper"]} placeholder="Standard (320px)" />
-  <Autocomplete wide options={["Ada Lovelace", "Grace Hopper"]} placeholder="Wide (480px)" />
-  <Autocomplete block options={["Ada Lovelace", "Grace Hopper"]} placeholder="Block (fills the container)" />
+  <Container xs start><Autocomplete options={["Ada Lovelace", "Grace Hopper"]} placeholder="In an xs Container (320)" /></Container>
+  <Container lg start><Autocomplete options={["Ada Lovelace", "Grace Hopper"]} placeholder="In an lg Container (512)" /></Container>
+  <Autocomplete options={["Ada Lovelace", "Grace Hopper"]} placeholder="Bare: fills the parent" />
 </Column>
 ```
 

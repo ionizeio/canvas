@@ -5,7 +5,7 @@ import {
   type TextInput as RNTextInput,
   type TextInputProps as RNTextInputProps,
 } from "react-native";
-import { View, Pressable, Text, TextInput, useTheme, useFieldWidth, FloatingLabel, LabelContent, FOCUS_RESET, type ColorTokens, type FieldWidthProps, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useTheme, useFillStyle, FloatingLabel, LabelContent, FOCUS_RESET, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
 import { type InputSkin, type Size } from "./input.styles.js";
 
@@ -61,7 +61,7 @@ export type TextEntryProps = Pick<
   | "testID"
 >;
 
-export interface InputProps extends TextEntryProps, FieldWidthProps {
+export interface InputProps extends TextEntryProps {
   /** Current text value (controlled). Omit and use `defaultValue` for uncontrolled use. */
   value?: string;
   /** Called with the new text on each keystroke. */
@@ -93,9 +93,9 @@ export interface InputProps extends TextEntryProps, FieldWidthProps {
   // Size (pick one; default is the medium field).
   small?: boolean;
   large?: boolean;
-  // Width axis (block/narrow/wide) comes from FieldWidthProps: a bare field
-  // caps at the standard width on desktop and fills its container at the sm
-  // breakpoint and below; `block` fills the container everywhere.
+  // Width: a field is FILL (src/style/sizing.ts). It takes the bounds its parent
+  // layout container provides, a Column, a Row span, a Container step, and never
+  // carries a width of its own.
   // Multi-line entry is a separate concern: use the dedicated `Textarea` atom.
 
   // Addons. Passing any of these switches the field to the grouped layout: a
@@ -140,8 +140,8 @@ export interface InputProps extends TextEntryProps, FieldWidthProps {
    */
   "aria-describedby"?: string;
 
-  /** Outer flex composition within a parent only, never a restyle hook; width comes from the width axis (block/narrow/wide). */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 // Size precedence when more than one is passed: first match wins.
@@ -202,7 +202,7 @@ export function createInput(skin: InputSkin) {
     const [focused, setFocused] = useState(false);
     const { tokens } = useTheme();
     const onKeyPress = useInputEscapeBridge(props.onKeyPress);
-    const widthCap = useFieldWidth(props);
+    const widthCap = useFillStyle("Input");
     // One collision-free id for the label so the field can name itself via
     // aria-labelledby (unconditional hook: the id is cheap and always available).
     const labelId = useId();
