@@ -56,38 +56,34 @@ function ErrorNote({ message }: { message: string }) {
   );
 }
 
-// Holds a preview sized to the stage. The stage measures its own width and CAPS the example at
-// that width, so content that exceeds the stage WRAPS rather than overflowing or scrolling:
-//   - a responsive (width:"100%") example resolves to the stage width and wraps to fit, so it
-//     fills the stage and keeps resizing with it at every width;
-//   - a wide example (a flex-wrap row of chips/avatars, the icon gallery) is bounded to the stage
-//     width and wraps onto more lines instead of running off the edge;
-//   - a small example shrinks to its natural size and stays centered.
-// The inner wrapper is `maxWidth` (not a fixed `width`): capped at the stage but free to shrink to
-// a small example's content, so it never stretches a bare `<Button>` to full width. Its stretch
-// children (the RN column default) fill that capped width, which is what makes a wide flex-wrap
-// example actually wrap. The component is untouched: it renders within the width it is given and
-// never learns the stage exists. Recomputed on resize via the outer onLayout. No horizontal
-// scroller, so the Carousel's horizontal FlatList is never nested in a same-orientation scroller.
-// `align` (default "center") keeps the shrink-to-fit-and-center behavior above.
-// "start" instead fills the stage width and pins the example to the leading edge:
-// the outer row stretches its child and the inner wrapper takes the full width
-// (no `maxWidth` cap), so a block-level, leading-aligned component (Breadcrumb)
-// spans the row and reads from the left instead of floating in the center. The
-// component is still untouched — it renders within the width it is given.
+// Holds a preview sized to the stage. The stage is a DEFINITE-width box that centers
+// its children (`width:"100%"` + `alignItems:"center"`), which is the layout the kit's
+// sizing natures (src/style/sizing.ts) are built for:
+//   - a FILL example (a field, a card, a table, a chart) resolves `width:"100%"` against
+//     the stage's real width, so it fills the stage and keeps resizing with it;
+//   - a HUG example (a bare `<Button>`, a badge) is content-sized under `alignItems:
+//     "center"` and stays centered, never stretched to full width;
+//   - a wide example (a flex-wrap row of chips, the icon gallery) is shrink-to-fit
+//     against the stage width, so it wraps onto more lines instead of running off the
+//     edge.
+// It used to be a content-sized `maxWidth` box instead. In a content-sized parent a
+// `width:"100%"` child resolves to its own content (the `field-width.ts` post-mortem: a
+// text field then re-sized on every keystroke), which is why every fill component once
+// carried a fixed pixel width. The definite stage removes that root cause. The component
+// is untouched: it renders within the width it is given and never learns the stage exists.
+// No horizontal scroller, so the Carousel's horizontal FlatList is never nested in a
+// same-orientation scroller. `align` (default "center") keeps the centering above;
+// "start" pins the example to the leading edge and stretches it (a block-level,
+// leading-aligned component such as Breadcrumb spans the row and reads from the left).
 export function FitStage({ children, align = "center" }: { children: ReactNode; align?: "center" | "start" }) {
-  const [avail, setAvail] = useState(0);
   const fill = align === "start";
   return (
-    <View
-      style={{ width: "100%", alignItems: fill ? "stretch" : "center", justifyContent: "center" }}
-      onLayout={(e) => { const l = e.nativeEvent.layout; if (!l) return; const w = Math.round(l.width); setAvail((a) => (a !== w ? w : a)); }}
-    >
+    <View style={{ width: "100%", alignItems: fill ? "stretch" : "center", justifyContent: "center" }}>
       {/* A local BackdropHost so an example that mounts a <Backdrop> paints inside its
           own stage. A Backdrop claims the NEAREST host, so without this an example
           would publish to the app-root host and take over the whole page's backdrop.
           Costs nothing for every other example: a host with no claimant renders nothing. */}
-      <View style={fill ? { width: "100%" } : { maxWidth: avail || "100%" }}>
+      <View style={{ width: "100%", alignItems: fill ? "stretch" : "center" }}>
         <BackdropHost>{children}</BackdropHost>
       </View>
     </View>
