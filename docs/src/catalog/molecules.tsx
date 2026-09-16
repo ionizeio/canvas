@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { View, Text, Row, Column, useTheme, alpha } from "@nannier-com/canvas";
+import { View, Text, Row, Column, useTheme, alpha } from "@ionizeio/canvas";
 import Svg, { Path, Circle, Line, Polyline } from "react-native-svg";
 import { sans, geistMono } from "../ui/fonts";
 import type { CatTile } from "./tile";

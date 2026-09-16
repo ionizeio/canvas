@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useWindowDimensions, Animated, Easing, AccessibilityInfo } from "react-native";
-import { View, useTheme, alpha } from "@nannier-com/canvas";
+import { View, useTheme, alpha } from "@ionizeio/canvas";
 import Svg, { Circle, Path, Defs, RadialGradient, Stop, Mask, Rect, G, Filter, FeGaussianBlur, FeColorMatrix } from "react-native-svg";
 import { CanvasMark } from "./canvas-mark";
 import { AppleLogo, ReactLogo, TypeScriptLogo, AndroidLogo, Html5Logo, TailwindLogo } from "./brand-logos";

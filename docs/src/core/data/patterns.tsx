@@ -1,4 +1,4 @@
-import { Row, Column, Card, Typography, Input, Button, CodeBlock } from "@nannier-com/canvas";
+import { Row, Column, Card, Typography, Input, Button, CodeBlock } from "@ionizeio/canvas";
 import type { PatternDoc } from "./types";
 
 const PATTERNS: PatternDoc[] = [

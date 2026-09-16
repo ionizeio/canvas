@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Platform } from "react-native";
-import { useTheme } from "@nannier-com/canvas";
+import { useTheme } from "@ionizeio/canvas";
 
 // The classic (space-reserving) scrollbar width forced on web. The topbar is inset by
 // this on the right so the scrollbar sits in a gutter BESIDE the bar (fully visible

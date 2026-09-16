@@ -1,5 +1,5 @@
 ---
-"@nannier-com/canvas": patch
+"@ionizeio/canvas": patch
 ---
 
 Correct five resting foreground pairs while preserving their intent fills: light muted-foreground #71717b to #6d6d77, light success-foreground #ffffff to #042812, light warning-foreground #ffffff to #451a03, dark primary-foreground #fafafa to #ffffff, and dark destructive-foreground #fafafa to #460809. Validate semantic foreground pairs at 4.5:1 with a one-channel rounding margin, plus rendered Button, Badge and Alert text. Transient press opacity and ripple behavior are unchanged; these checks cover resting text.

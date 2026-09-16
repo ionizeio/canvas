@@ -20,9 +20,9 @@ const SCAN_INTERVAL_MS = 1000;
 
 interface Consumer { name: string; target: string }
 
-// Retain both scopes until every existing consumer has migrated. The .origin
+// Retain every scope until existing consumers have migrated. The .origin
 // registration, rather than the package name alone, authorizes each overlay.
-const OVERLAY_SCOPES = [["@nannier-com", "canvas"], ["@nannier", "canvas"]] as const;
+const OVERLAY_SCOPES = [["@ionizeio", "canvas"], ["@nannier-com", "canvas"], ["@nannier", "canvas"]] as const;
 
 function registered(target: string, root: string): boolean {
   try {

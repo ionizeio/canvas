@@ -14,7 +14,7 @@ import {
   useToast,
   useFormFactor,
   type ToastHandle,
-} from "@nannier-com/canvas";
+} from "@ionizeio/canvas";
 import type { TemplateDoc } from "../types";
 
 // Live sign-in flows built from real Canvas components: the centered credential

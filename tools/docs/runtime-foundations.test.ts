@@ -11,7 +11,7 @@ test("runtime identity changes with source bytes and preserves candidate versus 
   const root = mkdtempSync(join(tmpdir(), "canvas-build-info-"));
   temporary.push(root);
   mkdirSync(join(root, "src"));
-  writeFileSync(join(root, "package.json"), JSON.stringify({ name: "@nannier-com/canvas", version: "2.62.1" }));
+  writeFileSync(join(root, "package.json"), JSON.stringify({ name: "@ionizeio/canvas", version: "2.62.1" }));
   writeFileSync(join(root, "src/index.ts"), "export const value = 1;");
   const inspect = () => ({ revision: "b".repeat(40), dirty: true });
   const first = readBuildInfo(root, { SOURCE_SHA: "a".repeat(40) }, inspect);

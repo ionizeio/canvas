@@ -4,7 +4,7 @@
 //
 // Stays free of React Native so it runs in plain bun/node: the component registry is
 // a plain data module (imported), while the pattern/template data files now compose
-// real kit components (they import @nannier-com/canvas), so their slugs are read straight
+// real kit components (they import @ionizeio/canvas), so their slugs are read straight
 // from the source text instead of importing the module graph.
 import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";

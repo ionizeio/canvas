@@ -1,4 +1,4 @@
-import { Alert, Card, CodeBlock, Column, Grid, Typography } from "@nannier-com/canvas";
+import { Alert, Card, CodeBlock, Column, Grid, Typography } from "@ionizeio/canvas";
 import { Page, PageHeader } from "../../../ui/page";
 import { Section } from "../../../ui/section";
 import { H3 } from "../../../ui/prose";
@@ -53,7 +53,7 @@ export default function BoilerplateScreen() {
           <Typography>Start with src/app/index.tsx and preferences.tsx. The root layout supplies SafeAreaProvider, ThemeProvider, overlay hosting and the navigation stack; src/state/session.tsx owns immutable drafts, validation and saved values.</Typography>
           <Typography muted>The UI uses Canvas components and semantic props. Typography follows Canvas's default platform/system fonts. No custom Geist assets are loaded, and Text is not globally modified.</Typography>
           <Typography>For an existing application, install Canvas and its required peers in that app instead. The starter's SDK57 dependencies are a complete Expo application baseline, not a dependency migration recipe.</Typography>
-          <CodeBlock copy language="sh" code="npm install @nannier-com/canvas react react-native react-native-svg" />
+          <CodeBlock copy language="sh" code="npm install @ionizeio/canvas react react-native react-native-svg" />
           <Typography muted>The npm package carries its own MIT license. This repository and the starter source remain all rights reserved; the example adds no source license grant.</Typography>
         </Section>
         <PageNav />

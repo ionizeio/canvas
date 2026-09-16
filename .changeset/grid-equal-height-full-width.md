@@ -1,5 +1,5 @@
 ---
-"@nannier-com/canvas": patch
+"@ionizeio/canvas": patch
 ---
 
 Grid tiles are equal-height and the grid spans its parent.

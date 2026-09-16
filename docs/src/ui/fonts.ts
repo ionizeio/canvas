@@ -11,7 +11,7 @@ import {
   GeistMono_500Medium,
   GeistMono_600SemiBold,
 } from "@expo-google-fonts/geist-mono";
-import type { ThemeFonts } from "@nannier-com/canvas";
+import type { ThemeFonts } from "@ionizeio/canvas";
 
 // Every face is loaded as a FontResource rather than a bare module id so it can carry
 // `display: swap`. Without it the browser default is `auto`, which hides text until the

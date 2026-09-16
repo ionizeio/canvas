@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Text, Column, useTheme } from "@nannier-com/canvas";
+import { View, Text, Column, useTheme } from "@ionizeio/canvas";
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
 import { sans, geistMono } from "./fonts";
 import { alpha } from "./color";

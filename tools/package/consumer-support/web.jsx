@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import * as Canvas from "@nannier-com/canvas";
+import * as Canvas from "@ionizeio/canvas";
 
 // Retain every runtime export so a named-only bundle cannot hide broken imports.
 window.canvasExports = Canvas;

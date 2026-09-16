@@ -21,7 +21,7 @@ import {
   type ColorTokens,
   type StatusTone,
   Grid,
-} from "@nannier-com/canvas";
+} from "@ionizeio/canvas";
 import { Page } from "../../../ui/page";
 import { PageNav } from "../../../ui/page-nav";
 import { CodeBlock } from "../../../ui/code-block";
@@ -140,7 +140,7 @@ const DO_DONT: { bad: { code: string; note: string }; good: { code: string; note
     good: { code: `backgroundColor: tokens.primary,\ncolor: tokens["primary-foreground"]`, note: "Every fill token has a -foreground partner. Pair them and contrast holds in both schemes." },
   },
   {
-    bad: { code: `import { darkColors } from "@nannier-com/canvas"\nconst bg = darkColors.primary`, note: "Frozen to one scheme: this value never updates when the theme flips." },
+    bad: { code: `import { darkColors } from "@ionizeio/canvas"\nconst bg = darkColors.primary`, note: "Frozen to one scheme: this value never updates when the theme flips." },
     good: { code: `const { tokens } = useTheme()\nconst bg = tokens.primary`, note: "Reads the active scheme and re-renders when the theme changes." },
   },
   {

@@ -37,7 +37,7 @@
     "@expo/log-box",
     "@expo/metro-runtime",
     "@expo/ui",
-    "@nannier-com/canvas",
+    "@ionizeio/canvas",
     "@radix-ui/primitive",
     "@radix-ui/react-collection",
     "@radix-ui/react-compose-refs",

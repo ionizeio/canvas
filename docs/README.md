@@ -1,9 +1,9 @@
 # Canvas docs (Expo Router)
 
 The universal Canvas documentation app runs on iOS, Android, and the web from one
-Expo Router codebase. The published `@nannier-com/canvas` package contains compiled
+Expo Router codebase. The published `@ionizeio/canvas` package contains compiled
 `dist/` output. This app develops against the checkout's live `src/` instead:
-`postinstall` creates one `node_modules/@nannier-com/canvas` symlink to the repository
+`postinstall` creates one `node_modules/@ionizeio/canvas` symlink to the repository
 root, and `metro.config.js` resolves the package import to `src/index.ts` through
 that symlink. Metro also watches the source and resolves the native skin files.
 Generated documentation and examples live in-tree at `src/core`, with no second

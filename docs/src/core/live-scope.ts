@@ -124,7 +124,7 @@ import {
   CandlestickChart,
   DepthChart,
   applyBoardMove,
-} from "@nannier-com/canvas";
+} from "@ionizeio/canvas";
 
 // Style helpers an example fence can reference when it styles a raw View/Text.
 // These model how a real consumer builds RN styles: `tokens` (the active,

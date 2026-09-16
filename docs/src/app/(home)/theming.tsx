@@ -1,4 +1,4 @@
-import { View, Text, Row, Column, ButtonGroup, useTheme } from "@nannier-com/canvas";
+import { View, Text, Row, Column, ButtonGroup, useTheme } from "@ionizeio/canvas";
 import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
 import { H3, P, Rule, InlineCode } from "../../ui/prose";
@@ -11,7 +11,7 @@ import { useDocsTheme } from "../../theme/docs-theme";
 // The page's teaching snippets. The helper ones mirror src/theme.ts behavior
 // exactly: the data-* attributes persist and broadcast a choice, no shipped CSS
 // reads them, and only the .dark class restyles anything on its own.
-const NATIVE_PROVIDER = `import { ThemeProvider } from "@nannier-com/canvas";
+const NATIVE_PROVIDER = `import { ThemeProvider } from "@ionizeio/canvas";
 
 // Wrap the app once. ThemeProvider follows the OS appearance by default;
 // pass the dark / light boolean to force a scheme, and glass for the material.
@@ -22,7 +22,7 @@ export function App() {
     </ThemeProvider>
   );
 }`;
-const USE_THEME = `import { useTheme } from "@nannier-com/canvas";
+const USE_THEME = `import { useTheme } from "@ionizeio/canvas";
 
 // Read the active theme anywhere under the provider.
 const { scheme, surface, tokens, dark } = useTheme();
@@ -33,18 +33,18 @@ const DARK_TOGGLE = `<!-- Light (default) -->
 
 <!-- Dark -->
 <html class="dark">`;
-const JS_THEME = `import { getTheme, setTheme, toggleTheme } from "@nannier-com/canvas";
+const JS_THEME = `import { getTheme, setTheme, toggleTheme } from "@ionizeio/canvas";
 
 getTheme();        // "light" | "dark"
 setTheme("dark");  // applies .dark to <html>, persists to localStorage
 toggleTheme();     // switches and returns the new theme`;
-const SYSTEM_PREF = `import { setTheme } from "@nannier-com/canvas";
+const SYSTEM_PREF = `import { setTheme } from "@ionizeio/canvas";
 
 // Web only. On native, ThemeProvider already follows the OS appearance.
 const mq = window.matchMedia("(prefers-color-scheme: dark)");
 setTheme(mq.matches ? "dark" : "light");
 mq.addEventListener("change", (e) => setTheme(e.matches ? "dark" : "light"));`;
-const GLASS = `import { ThemeProvider, getSurface } from "@nannier-com/canvas";
+const GLASS = `import { ThemeProvider, getSurface } from "@ionizeio/canvas";
 
 // Web: the same provider and the same booleans. getSurface() reads the choice
 // setSurface() persisted (see the helpers below), so it survives a reload.
@@ -56,7 +56,7 @@ export function App() {
     </ThemeProvider>
   );
 }`;
-const JS_SURFACE = `import { getSurface, setSurface } from "@nannier-com/canvas";
+const JS_SURFACE = `import { getSurface, setSurface } from "@ionizeio/canvas";
 
 getSurface();            // "solid" | "glass", the persisted choice
 setSurface("glass");     // persists it, and sets data-surface="glass" on <html>
@@ -68,7 +68,7 @@ const DENSITY = `// Density is per component, on every platform; omit both for t
 <Card compact>...</Card>
 <Card comfortable>...</Card>
 <DataTable compact columns={columns} rows={rows} />`;
-const JS_DENSITY = `import { getDensity, setDensity } from "@nannier-com/canvas";
+const JS_DENSITY = `import { getDensity, setDensity } from "@ionizeio/canvas";
 
 getDensity();            // "compact" | "regular" | "comfy", the persisted preference
 setDensity("compact");   // persists it, and sets data-density="compact" on <html>
@@ -80,7 +80,7 @@ const COMBINING = `// One provider carries scheme and surface; density rides eac
 <ThemeProvider dark glass>
   <Card compact>...</Card>
 </ThemeProvider>`;
-const JS_COMBINE = `import { setTheme, setSurface, setDensity } from "@nannier-com/canvas";
+const JS_COMBINE = `import { setTheme, setSurface, setDensity } from "@ionizeio/canvas";
 
 setTheme("dark");       // flips .dark on <html>: the CSS token layer re-themes
 setSurface("glass");    // persists; sync it into <ThemeProvider glass>

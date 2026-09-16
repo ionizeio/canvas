@@ -1,6 +1,6 @@
 # Canvas
 
-Canvas is a React Native UI kit, published as `@nannier-com/canvas`. It runs
+Canvas is a React Native UI kit, published as `@ionizeio/canvas`. It runs
 universally: native on iOS and Android, and on the web through React Native Web.
 
 ## React-Native-everywhere principle
@@ -53,7 +53,7 @@ in order:
 - Need a control the kit already exports? Import and use it.
 - The kit has no such component? CREATE IT IN THE KIT (`src/atoms` | `molecules` |
   `organisms`, with its skins/styles), export it, then use it. Add a changeset, since
-  it ships in `@nannier-com/canvas`.
+  it ships in `@ionizeio/canvas`.
 - A Canvas component almost fits but lacks a capability (an icon slot, a `ReactNode`
   cell, a prop, a variant)? EXTEND that kit component (backward-compatibly) rather
   than re-implementing it in the docs. (This is how `Button` got `iconLeft`/`iconRight`
@@ -296,7 +296,7 @@ a link. When several routes are affected, list a block per route.
 ## Local consumer linking: node_modules overlay in dev, npmjs package in prod
 
 Consuming repos (dashboard, auth, site, deploy, DarkFactory) overlay their
-`node_modules/@nannier-com/canvas` with a REAL-directory copy of this checkout's
+`node_modules/@ionizeio/canvas` with a REAL-directory copy of this checkout's
 package.json, `dist/`, and `styles/`, stamped with an `.origin` file naming
 this checkout (their guarded `postinstall` does the copy). A symlink is not
 an option: Next 16 Turbopack refuses to resolve a node_modules symlink whose

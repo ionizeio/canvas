@@ -30,8 +30,8 @@ import {
   useToast,
   type RowMenuItem,
   type ToastHandle,
-} from "@nannier-com/canvas";
-import type { FeedItem } from "@nannier-com/canvas";
+} from "@ionizeio/canvas";
+import type { FeedItem } from "@ionizeio/canvas";
 import type { TemplateDoc } from "../types";
 
 // A full working kanban board built entirely from live Canvas components. Every

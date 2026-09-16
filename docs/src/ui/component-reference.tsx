@@ -1,5 +1,5 @@
 import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
-import { View, Text, useTheme } from "@nannier-com/canvas";
+import { View, Text, useTheme } from "@ionizeio/canvas";
 import { getComponent } from "../core/data/components";
 import { COMPONENT_DOCS } from "../core/registry";
 import { COMPONENT_PROPS } from "../core/props";

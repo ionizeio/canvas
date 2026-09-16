@@ -2,7 +2,7 @@ import { version as reactVersion } from "react";
 import { NativeModules, Platform } from "react-native";
 import Constants from "expo-constants";
 import * as Updates from "expo-updates";
-import { Column, Typography } from "@nannier-com/canvas";
+import { Column, Typography } from "@ionizeio/canvas";
 import { Page, PageHeader } from "../../../ui/page";
 
 // Deliberately absent from normal navigation. These are the running bundle's

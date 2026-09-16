@@ -1,5 +1,5 @@
 ---
-"@nannier-com/canvas": patch
+"@ionizeio/canvas": patch
 ---
 
 Route lookout's docs sweep through each sidebar group's own path base. The Templates

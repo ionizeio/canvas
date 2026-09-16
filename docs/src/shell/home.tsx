@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import { useWindowDimensions, Linking, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Text, Pressable, Button, ScrollView, Row, Column, Icon, useTheme } from "@nannier-com/canvas";
+import { View, Text, Pressable, Button, ScrollView, Row, Column, Icon, useTheme } from "@ionizeio/canvas";
 import { useRouter } from "expo-router";
 import { COMPONENTS } from "../core/data/components";
 import { CanvasMark } from "../brand/canvas-mark";
@@ -17,17 +17,17 @@ import { CONTENT_TOP_INSET } from "./topbar";
 import { ScreenFrame } from "./native-header";
 
 const REPO_URL = "https://github.com/ionizeio/canvas";
-const NPM_URL = "https://www.npmjs.com/package/@nannier-com/canvas";
+const NPM_URL = "https://www.npmjs.com/package/@ionizeio/canvas";
 const PLATFORMS = ["iOS", "Android", "Web", "React Native Web"];
 
 // The hosted EAS Update preview link that opens these docs in Expo Go. Set this to the
 // `exp://u.expo.dev/...` preview URL printed by `eas update`; while empty, the whole
 // "Get the app" section is hidden (there is nothing to scan until the update is published).
 
-const INSTALL_BASH = "bun add @nannier-com/canvas";
+const INSTALL_BASH = "bun add @ionizeio/canvas";
 const INSTALL_TSX = [
-  'import "@nannier-com/canvas/styles/canvas.css";',
-  'import { Button } from "@nannier-com/canvas";',
+  'import "@ionizeio/canvas/styles/canvas.css";',
+  'import { Button } from "@ionizeio/canvas";',
   "",
   "// The prop name is the value: <Button primary large />",
   "<Button primary large>Save changes</Button>",
@@ -212,7 +212,7 @@ export function Home() {
                     onPress={() => Linking.openURL(NPM_URL)}
                     style={{ color: tokens.primary }}
                   >
-                    @nannier-com/canvas
+                    @ionizeio/canvas
                   </Text>
                 </Text>
               </Row>
@@ -444,7 +444,7 @@ export function Home() {
             </View>
           </View>
           <Row snug wrap between style={{ paddingTop: 22, borderTopWidth: 1, borderColor: tokens.border }}>
-            <Text style={{ fontFamily: sans("400"), fontSize: 12.5, color: tokens["muted-foreground"] }}>© 2026 Canvas · @nannier-com/canvas {version}</Text>
+            <Text style={{ fontFamily: sans("400"), fontSize: 12.5, color: tokens["muted-foreground"] }}>© 2026 Canvas · @ionizeio/canvas {version}</Text>
             <Text style={{ fontFamily: sans("400"), fontSize: 12.5, color: tokens["muted-foreground"] }}>Universal React Native, native iOS and Android plus web.</Text>
           </Row>
         </Wrap>

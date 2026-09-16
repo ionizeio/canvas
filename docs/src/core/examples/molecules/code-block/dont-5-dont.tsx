@@ -8,7 +8,7 @@ export default function Example(scope: ExampleScope) {
 <View style={{ maxWidth: 360, flexDirection: "row", flexWrap: "wrap", alignItems: "center" }}>
   <Text style={{ fontSize: 14, lineHeight: 28, color: tokens.foreground }}>Run </Text>
   <View style={{ alignSelf: "flex-start", borderRadius: 4, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.muted, paddingHorizontal: 6, paddingVertical: 2 }}>
-    <Text style={{ fontSize: 13, color: tokens.foreground, fontFamily: "monospace" }}>npm install @nannier-com/canvas && npm run build && npm run preview</Text>
+    <Text style={{ fontSize: 13, color: tokens.foreground, fontFamily: "monospace" }}>npm install @ionizeio/canvas && npm run build && npm run preview</Text>
   </View>
   <Text style={{ fontSize: 14, lineHeight: 28, color: tokens.foreground }}> to start.</Text>
 </View>

@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { View, Text, Icon, OverlayProvider, useTheme, Row, Column, Button, Typography, Card, Avatar, Skeleton, type IconProps, type ToastHandle } from "@nannier-com/canvas";
+import { View, Text, Icon, OverlayProvider, useTheme, Row, Column, Button, Typography, Card, Avatar, Skeleton, type IconProps, type ToastHandle } from "@ionizeio/canvas";
 import { useReducedMotion, useResponsive } from "../../../src/style/index.js";
 // The kit's glyph table, read straight from source like the style helpers above (the
 // public Icon renders one glyph at a time and does not expose the catalog). Used only by

@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { CodeBlock } = scope;
   return (
-<CodeBlock terminal code="npm install @nannier-com/canvas" />
+<CodeBlock terminal code="npm install @ionizeio/canvas" />
   );
 }

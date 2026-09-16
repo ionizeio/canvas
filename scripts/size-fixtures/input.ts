@@ -1,3 +1,3 @@
-import { Input, ThemeProvider } from "@nannier-com/canvas";
+import { Input, ThemeProvider } from "@ionizeio/canvas";
 
 export { Input, ThemeProvider };

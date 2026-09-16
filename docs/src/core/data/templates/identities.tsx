@@ -15,7 +15,7 @@ import {
   Select,
   Typography,
   useToast,
-} from "@nannier-com/canvas";
+} from "@ionizeio/canvas";
 import type { TemplateDoc } from "../types";
 
 // The canonical list view built from real Canvas components: a page header with

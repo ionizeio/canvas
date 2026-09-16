@@ -1,4 +1,4 @@
-import { View, Text, Row, Column, useTheme, useResponsive } from "@nannier-com/canvas";
+import { View, Text, Row, Column, useTheme, useResponsive } from "@ionizeio/canvas";
 import { useRouter } from "expo-router";
 import type { DocExample, ExampleScope } from "../../../core/scope";
 import { Page } from "../../../ui/page";

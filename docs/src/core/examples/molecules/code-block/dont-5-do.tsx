@@ -7,7 +7,7 @@ export default function Example(scope: ExampleScope) {
   return (
 <Column snug>
   <Typography body>Run the setup command:</Typography>
-  <CodeBlock code={`npm install @nannier-com/canvas
+  <CodeBlock code={`npm install @ionizeio/canvas
 npm run build`} />
 </Column>
   );

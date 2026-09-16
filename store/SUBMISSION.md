@@ -290,7 +290,7 @@ release:
 > app is the clearest way to see that: it is built entirely from the library it documents.
 >
 > Canvas is free to use, with no account, no sign-in, no ads, and no tracking.
-> The compiled @nannier-com/canvas package on npm is MIT licensed; the source
+> The compiled @ionizeio/canvas package on npm is MIT licensed; the source
 > repository remains all rights reserved.
 
 **Keywords** (100 max, comma separated, no spaces):

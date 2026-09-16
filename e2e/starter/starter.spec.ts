@@ -4,12 +4,12 @@ import { resolve } from "node:path";
 
 const repo = resolve(__dirname, "../..");
 const starter = resolve(repo, "examples/starter");
-const packageRoot = resolve(starter, "node_modules/@nannier-com/canvas");
+const packageRoot = resolve(starter, "node_modules/@ionizeio/canvas");
 
 test.beforeAll(async ({}, testInfo) => {
   const declared = JSON.parse(readFileSync(resolve(starter, "package.json"), "utf8"));
   const installed = JSON.parse(readFileSync(resolve(packageRoot, "package.json"), "utf8"));
-  const pin = declared.dependencies["@nannier-com/canvas"];
+  const pin = declared.dependencies["@ionizeio/canvas"];
   expect(pin, "The ordinary starter must retain an exact registry version.").toMatch(/^\d+\.\d+\.\d+$/);
   expect(installed.version).toBe(pin);
   expect(realpathSync(packageRoot), "The consumer must use a real installed directory.").toBe(packageRoot);

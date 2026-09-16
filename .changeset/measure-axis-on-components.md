@@ -1,5 +1,5 @@
 ---
-"@nannier-com/canvas": minor
+"@ionizeio/canvas": minor
 ---
 
 The measure axis on components: the Container steps, on the field or button itself.

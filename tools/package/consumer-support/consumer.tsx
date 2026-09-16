@@ -1,5 +1,5 @@
 import { createRef, type ComponentRef, type RefCallback } from "react";
-import { Button, Checkbox, Radio, Select, Slider, Switch, Input, Autocomplete, Form, ThemeProvider, OverlayProvider, type ButtonProps } from "@nannier-com/canvas";
+import { Button, Checkbox, Radio, Select, Slider, Switch, Input, Autocomplete, Form, ThemeProvider, OverlayProvider, type ButtonProps } from "@ionizeio/canvas";
 import type { View, TextInput } from "react-native";
 
 const host = createRef<View>();

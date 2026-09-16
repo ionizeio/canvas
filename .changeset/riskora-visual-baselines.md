@@ -1,5 +1,5 @@
 ---
-"@nannier-com/canvas": patch
+"@ionizeio/canvas": patch
 ---
 
 Refresh the Linux visual baselines for the Riskora restyle from workflow 35048401372 at

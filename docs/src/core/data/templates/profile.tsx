@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Badge, Breadcrumb, Avatar, Divider, Stats, Tabs, DescriptionList, Switch, DataTable, Icon, useToast, Grid } from "@nannier-com/canvas";
+import { Row, Column, Card, Typography, Button, Badge, Breadcrumb, Avatar, Divider, Stats, Tabs, DescriptionList, Switch, DataTable, Icon, useToast, Grid } from "@ionizeio/canvas";
 import type { TemplateDoc } from "../types";
 
 // Single-record detail page built from real Canvas components: the canonical

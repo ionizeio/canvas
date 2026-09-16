@@ -1,5 +1,5 @@
 ---
-"@nannier-com/canvas": patch
+"@ionizeio/canvas": patch
 ---
 
 Preserve bounded passive Android CI host evidence around native smoke failures,

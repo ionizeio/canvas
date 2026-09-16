@@ -8,7 +8,7 @@ import {
   type TextInput as RNTextInput,
   type TextInputKeyPressEventData,
 } from "react-native";
-import { View, Text, Pressable, Column, TextInput, Icon, useTheme, useFormFactor, GlassSurface, alpha } from "@nannier-com/canvas";
+import { View, Text, Pressable, Column, TextInput, Icon, useTheme, useFormFactor, GlassSurface, alpha } from "@ionizeio/canvas";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { search } from "../core/data/search";

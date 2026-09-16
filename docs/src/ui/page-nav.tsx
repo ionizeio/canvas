@@ -1,4 +1,4 @@
-import { View, Row, Column, Button, useTheme } from "@nannier-com/canvas";
+import { View, Row, Column, Button, useTheme } from "@ionizeio/canvas";
 import { usePathname, useRouter } from "expo-router";
 import { FLAT_PAGES, getActiveSlug } from "../data/nav";
 

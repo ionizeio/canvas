@@ -50,7 +50,7 @@ try {
   fs.writeFileSync(path.join(fixture, "babel.config.js"), 'module.exports = { presets: ["module:@react-native/babel-preset"] };\n');
   fs.writeFileSync(path.join(fixture, "metro.config.js"), 'module.exports = require("@react-native/metro-config").getDefaultConfig(__dirname);\n');
   // Retain every public export so the graph exercises the whole installed kit.
-  fs.writeFileSync(path.join(fixture, "index.js"), 'import * as Canvas from "@nannier-com/canvas";\nglobalThis.canvasConsumer = Canvas;\n');
+  fs.writeFileSync(path.join(fixture, "index.js"), 'import * as Canvas from "@ionizeio/canvas";\nglobalThis.canvasConsumer = Canvas;\n');
   const { loadConfig, runBuild } = require("metro");
   for (const [platform, exportsEnabled] of [["ios", true], ["android", true], ["ios", false], ["android", false]]) {
     // Use Metro's normal config loader, which includes projectRoot in its file
@@ -63,7 +63,7 @@ try {
     const { code, map } = await runBuild(config, { entry: "index.js", platform, dev: false, minify: true, sourceMap: true });
     if (!code.length) throw new Error(`${platform}: bundle is empty`);
     const sources = JSON.parse(map).sources.map((source) => source.replaceAll("\\", "/"));
-    const contains = (suffix) => sources.some((source) => source.endsWith(`/@nannier-com/canvas/dist/native/${suffix}`));
+    const contains = (suffix) => sources.some((source) => source.endsWith(`/@ionizeio/canvas/dist/native/${suffix}`));
     const forks = [
       `atoms/button/button.${platform}.js`,
       `atoms/listbox/listbox.${platform}.js`,
@@ -72,7 +72,7 @@ try {
       platform === "ios" ? "style/glass-surface/glass-surface.ios.js" : "style/glass-surface/glass-surface.js",
     ];
     for (const fork of forks) if (!contains(fork)) throw new Error(`${platform}: bundle did not select ${fork}`);
-    if (sources.some((source) => /\/@nannier-com\/canvas\/dist\/(?!native\/)/.test(source))) throw new Error(`${platform}: bundle leaked into the web distribution`);
+    if (sources.some((source) => /\/@ionizeio\/canvas\/dist\/(?!native\/)/.test(source))) throw new Error(`${platform}: bundle leaked into the web distribution`);
     if (contains("atoms/button/button.js")) throw new Error(`${platform}: Button selected its web entry`);
     console.log(`${platform} (${exportsEnabled ? "exports condition" : "legacy field"}): packed package bundles successfully, native skins/material helpers selected, ${optional.length} optional peers absent (${sources.length} modules)`);
   }

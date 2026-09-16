@@ -3,7 +3,7 @@
 ## Supported versions
 
 Security fixes are released against the latest published version of
-`@nannier-com/canvas` on npm. Please upgrade to the latest release before
+`@ionizeio/canvas` on npm. Please upgrade to the latest release before
 reporting an issue.
 
 ## Reporting a vulnerability

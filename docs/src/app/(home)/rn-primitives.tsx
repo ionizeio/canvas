@@ -1,4 +1,4 @@
-import { ScrollView, View, Text, DataTable, useTheme } from "@nannier-com/canvas";
+import { ScrollView, View, Text, DataTable, useTheme } from "@ionizeio/canvas";
 import { useRouter } from "expo-router";
 import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
@@ -31,7 +31,7 @@ const NOT_WRAPPED: string[][] = [
 
 const SCROLL_ROWS = ["Ada Lovelace", "Grace Hopper", "Kira Tanaka", "Liang Bao", "Marcus Allen", "Noor Park", "Rachel Chen"];
 
-const SCROLL_CODE = `import { ScrollView, View, Text, useTheme } from "@nannier-com/canvas";
+const SCROLL_CODE = `import { ScrollView, View, Text, useTheme } from "@ionizeio/canvas";
 
 // style sizes the FRAME (give it a bounded height so it scrolls);
 // contentContainerStyle styles the inner content (padding, gap, centering).
@@ -51,7 +51,7 @@ function List({ rows }) {
   );
 }`;
 
-const TEXT_INPUT_CODE = `import { TextInput, useTheme } from "@nannier-com/canvas";
+const TEXT_INPUT_CODE = `import { TextInput, useTheme } from "@ionizeio/canvas";
 
 // Low-level primitive: no focus border and no react-native-web outline reset.
 // Prefer the Input / Textarea COMPONENTS for real form fields. RN does not take
@@ -77,7 +77,7 @@ function PinField() {
   );
 }`;
 
-const ESCAPE_CODE = `import { useTheme } from "@nannier-com/canvas";
+const ESCAPE_CODE = `import { useTheme } from "@ionizeio/canvas";
 import { FlatList } from "react-native";
 
 // For any RN component Canvas does not ship, build the style object from tokens

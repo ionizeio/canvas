@@ -1,5 +1,5 @@
 import { Link } from "expo-router";
-import { Column, Text, useTheme } from "@nannier-com/canvas";
+import { Column, Text, useTheme } from "@ionizeio/canvas";
 import { Page } from "../../ui/page";
 
 export default function NotFound() {

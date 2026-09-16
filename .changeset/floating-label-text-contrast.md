@@ -1,5 +1,5 @@
 ---
-"@nannier-com/canvas": patch
+"@ionizeio/canvas": patch
 ---
 
 Correct focused and error floating-label contrast across the Material filled field family. Focused labels use the existing primary-text role; error labels and destructive action text use a separate destructive-text role while fills, indicators, icons and destructive-foreground remain unchanged. Android Textarea now uses the same opaque muted field surface as Input, Select and Autocomplete.

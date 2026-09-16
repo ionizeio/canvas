@@ -44,7 +44,7 @@
  *      it separately via `reactNativePath`.
  *
  *   4. BAKED DATA. tools/icongen transcribes lucide-static's icon geometry into
- *      src/atoms/icon/icon.glyphs.ts (shipped inside @nannier-com/canvas and drawn by every
+ *      src/atoms/icon/icon.glyphs.ts (shipped inside @ionizeio/canvas and drawn by every
  *      <Icon>), and tools/rastergen re-bakes those glyphs into the docs' menu-glyph PNGs.
  *      No lucide JavaScript survives into any bundle, but the shipped data is a copy of
  *      lucide's icons, and its ISC licence requires the copyright and permission notice

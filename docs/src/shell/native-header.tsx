@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import { Platform } from "react-native";
 import { Stack, usePathname, useRouter, useIsFocused } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Pressable, Icon, BackdropHost, useTheme } from "@nannier-com/canvas";
+import { View, Pressable, Icon, BackdropHost, useTheme } from "@ionizeio/canvas";
 import { titleFor } from "./topbar";
 import { nativeMenuFor, sectionFor, getActiveGroup, getActiveSlug, type MenuNode } from "../data/nav";
 import { GLYPH_RASTERS } from "../core/glyph-rasters";

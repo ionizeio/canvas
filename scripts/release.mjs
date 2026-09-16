@@ -69,7 +69,7 @@ export function assertReleaseVersion(before, after, authorized = authorizedMajor
 export function readCandidate(dir) {
   const c = read(path.join(dir, "candidate.json"));
   if (!SHA.test(c.source) || !SHA.test(c.candidate) || !VERSION.test(c.version) ||
-      c.name !== "@nannier-com/canvas" || typeof c.release !== "boolean" ||
+      c.name !== "@ionizeio/canvas" || typeof c.release !== "boolean" ||
       !["ready", "no-changesets", "not-requested", "blocked-major"].includes(c.status) ||
       c.tag !== `v${c.version}` || (c.release !== (c.status === "ready")) ||
       (!c.release && c.source !== c.candidate)) throw new Error("Invalid release candidate metadata");

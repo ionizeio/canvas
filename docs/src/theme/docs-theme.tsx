@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Appearance, Platform, useColorScheme } from "react-native";
 import { useGlobalSearchParams } from "expo-router";
-import { ThemeProvider, type Surface } from "@nannier-com/canvas";
+import { ThemeProvider, type Surface } from "@ionizeio/canvas";
 import { CANVAS_FONTS } from "../ui/fonts";
 
 // The docs' theme controls. Canvas's ThemeProvider is driven by the dark/light

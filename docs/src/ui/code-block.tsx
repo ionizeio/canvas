@@ -1,4 +1,4 @@
-import { CodeBlock as KitCodeBlock } from "@nannier-com/canvas";
+import { CodeBlock as KitCodeBlock } from "@ionizeio/canvas";
 
 // The docs' code panel IS the kit CodeBlock (dogfooding). The hand-rolled
 // TSX highlighter + copy chip that used to live here were absorbed into the kit

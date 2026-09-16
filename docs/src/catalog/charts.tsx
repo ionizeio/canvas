@@ -1,5 +1,5 @@
 import Svg, { Circle, G, Line, Path, Polyline, Rect } from "react-native-svg";
-import { View, useTheme, alpha } from "@nannier-com/canvas";
+import { View, useTheme, alpha } from "@ionizeio/canvas";
 import type { CatTile } from "./tile";
 
 // Catalog tiles for the Charts tier: one small hand-authored vignette per

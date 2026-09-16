@@ -39,7 +39,7 @@ function mountFixture() {
     react: React,
     "react/jsx-runtime": JSX,
     "react-native": { ...Native, View: MeasuredHost },
-    "@nannier-com/canvas": { Button, Card, Column, Typography, Carousel: ObservedCarousel },
+    "@ionizeio/canvas": { Button, Card, Column, Typography, Carousel: ObservedCarousel },
   };
   const compiled = ts.transpileModule(source, {
     compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },

@@ -2,7 +2,7 @@ import React from "react";
 import { renderToString } from "react-dom/server";
 import {
   AlertDialog, Autocomplete, Dialog, OverlayProvider, Select, ThemeProvider, Typography,
-} from "@nannier-com/canvas";
+} from "@ionizeio/canvas";
 
 if (typeof window !== "undefined" || typeof document !== "undefined") {
   throw new Error("The SSR compatibility fixture must run without browser globals");

@@ -1,8 +1,8 @@
 // Metro config for the universal Canvas docs app (iOS / Android / web from one
-// React Native codebase). The PUBLISHED @nannier-com/canvas is a compiled dist
+// React Native codebase). The PUBLISHED @ionizeio/canvas is a compiled dist
 // package, but the docs develop against the LIVE SOURCE via a symlink (see
 // package.json postinstall):
-//   - the resolver pins the bare "@nannier-com/canvas" import to src/index.ts, so
+//   - the resolver pins the bare "@ionizeio/canvas" import to src/index.ts, so
 //     docs never load a stale dist build during development;
 //   - watchFolders sees the out-of-tree source;
 //   - nodeModulesPaths + disableHierarchicalLookup force a single react/RN/svg copy;
@@ -32,14 +32,14 @@ config.resolver.disableHierarchicalLookup = true;
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   // Live-source pin: the package's main/exports point at dist (the publish
   // artifact), but docs development must track src edits without a rebuild.
-  if (moduleName === "@nannier-com/canvas") {
-    // Resolve through the node_modules symlink path (docs/node_modules/@nannier-com/
+  if (moduleName === "@ionizeio/canvas") {
+    // Resolve through the node_modules symlink path (docs/node_modules/@ionizeio/
     // canvas -> repoRoot), NOT a raw repoRoot path: Metro's file map indexes the kit
     // under the node_modules path it crawls, so the raw out-of-tree path misses on the
     // Linux CI runner and `expo export` fails "Failed to get the SHA-1 for src/index.ts".
     return {
       type: "sourceFile",
-      filePath: path.join(projectRoot, "node_modules", "@nannier-com", "canvas", "src", "index.ts"),
+      filePath: path.join(projectRoot, "node_modules", "@ionizeio", "canvas", "src", "index.ts"),
     };
   }
   // No stub is needed for the kit's optional peers, and adding one back would hide a

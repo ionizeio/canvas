@@ -1,5 +1,5 @@
 ---
-"@nannier-com/canvas": patch
+"@ionizeio/canvas": patch
 ---
 
 Restyle every web skin to the Riskora Dashboard UI Kit (the iOS and Android skins keep their

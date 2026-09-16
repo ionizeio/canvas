@@ -1,5 +1,5 @@
 {
-  "name": "@nannier-com/canvas",
+  "name": "@ionizeio/canvas",
   "version": "2.62.3",
   "description": "Universal React Native UI kit: one component API renders natively on iOS, Android, and web.",
   "license": "MIT",

@@ -6,8 +6,8 @@ export default function Example(scope: ExampleScope) {
   const { CodeBlock } = scope;
   return (
 <CodeBlock terminal tabs={[
-  { label: "npm", code: "npm install @nannier-com/canvas" },
-  { label: "bun", code: "bun add @nannier-com/canvas" },
+  { label: "npm", code: "npm install @ionizeio/canvas" },
+  { label: "bun", code: "bun add @ionizeio/canvas" },
 ]} />
   );
 }

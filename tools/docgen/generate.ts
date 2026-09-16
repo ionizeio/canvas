@@ -67,7 +67,7 @@ const SCOPE_NAME_SET = new Set(SCOPE_NAMES);
 // generated module would destructure nothing for it and reference an unbound
 // identifier (a cryptic `tsc` "Cannot find name" / a runtime ReferenceError). The
 // scope (docs/src/core/live-scope.ts) and the type each fence is checked against (the
-// `@nannier-com/canvas` barrel) are separate sources, so a component added to the
+// `@ionizeio/canvas` barrel) are separate sources, so a component added to the
 // barrel and used in a fence — but not to the scope — would slip through. Collect
 // any such tags during generation and fail fast with a clear, source-located error.
 const tagViolations: { tag: string; source: string }[] = [];

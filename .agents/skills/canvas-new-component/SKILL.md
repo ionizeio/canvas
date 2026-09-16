@@ -88,8 +88,8 @@ fence
 
 ## 4. Changeset
 
-Anything exported from `@nannier-com/canvas` ships with a changeset:
-`.changeset/<slug>.md`, `"@nannier-com/canvas": minor` for new
+Anything exported from `@ionizeio/canvas` ships with a changeset:
+`.changeset/<slug>.md`, `"@ionizeio/canvas": minor` for new
 components/props, `patch` for fixes. Never `npm publish` locally — CI releases.
 
 ## 5. Verification battery (run all; each must be green)

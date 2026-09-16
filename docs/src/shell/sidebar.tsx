@@ -1,5 +1,5 @@
 import { Platform } from "react-native";
-import { Sidebar as KitSidebar, Pressable, Row, Column, Typography, useFormFactor, type IconName, type SidebarSection } from "@nannier-com/canvas";
+import { Sidebar as KitSidebar, Pressable, Row, Column, Typography, useFormFactor, type IconName, type SidebarSection } from "@ionizeio/canvas";
 import { usePathname, useRouter } from "expo-router";
 import { CanvasMark } from "../brand/canvas-mark";
 import { ThemeToggles } from "./theme-toggles";

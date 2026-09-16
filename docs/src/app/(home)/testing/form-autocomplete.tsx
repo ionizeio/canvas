@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from "expo-router";
-import { Autocomplete, Column } from "@nannier-com/canvas";
+import { Autocomplete, Column } from "@ionizeio/canvas";
 import { Autocomplete as IosAutocomplete } from "../../../../../src/atoms/autocomplete/autocomplete.ios";
 import { Autocomplete as AndroidAutocomplete } from "../../../../../src/atoms/autocomplete/autocomplete.android";
 import { FormAutocompleteBody, FRUIT } from "../../../../../examples/starter/smoke/fixtures/form-autocomplete";

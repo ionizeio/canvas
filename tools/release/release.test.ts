@@ -35,11 +35,11 @@ function fixture(bump = "patch") {
   git(repo, "config", "core.hooksPath", path.join(dir, "no-hooks"));
   git(repo, "remote", "add", "origin", remote);
   const { main, types, exports, peerDependencies, peerDependenciesMeta, "react-native": nativeEntry } = JSON.parse(fs.readFileSync(path.resolve("package.json"), "utf8"));
-  write(path.join(repo, "package.json"), { name: "@nannier-com/canvas", version: "2.3.4", main, types, exports, "react-native": nativeEntry, peerDependencies, peerDependenciesMeta, files: ["dist", "styles"], scripts: { changeset: "changeset", "version-packages": "changeset version" } });
+  write(path.join(repo, "package.json"), { name: "@ionizeio/canvas", version: "2.3.4", main, types, exports, "react-native": nativeEntry, peerDependencies, peerDependenciesMeta, files: ["dist", "styles"], scripts: { changeset: "changeset", "version-packages": "changeset version" } });
   fs.writeFileSync(path.join(repo, "CHANGELOG.md"), "# Changes\n");
   fs.mkdirSync(path.join(repo, ".changeset"));
   fs.copyFileSync(path.resolve(".changeset/config.json"), path.join(repo, ".changeset/config.json"));
-  if (bump) fs.writeFileSync(path.join(repo, ".changeset/fix.md"), `---\n"@nannier-com/canvas": ${bump}\n---\n\nCorrect a behavior.\n`);
+  if (bump) fs.writeFileSync(path.join(repo, ".changeset/fix.md"), `---\n"@ionizeio/canvas": ${bump}\n---\n\nCorrect a behavior.\n`);
   git(repo, "add", ".");
   git(repo, "commit", "-m", "source");
   git(repo, "push", "origin", "main");

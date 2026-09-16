@@ -1,5 +1,5 @@
 import { Linking, Platform } from "react-native";
-import { View, Text, Pressable, Button, ButtonGroup, Kbd, Icon, useTheme, useBreakpoint, GlassSurface, liquidGlassAvailable, alpha } from "@nannier-com/canvas";
+import { View, Text, Pressable, Button, ButtonGroup, Kbd, Icon, useTheme, useBreakpoint, GlassSurface, liquidGlassAvailable, alpha } from "@ionizeio/canvas";
 import { usePathname } from "expo-router";
 import { getComponent } from "../core/data/components";
 import { getTemplate } from "../core/data/templates";

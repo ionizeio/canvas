@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Animated, Platform, useWindowDimensions } from "react-native";
-import { View, Text, Button, Row, Icon, Image, useTheme, useReducedMotion } from "@nannier-com/canvas";
+import { View, Text, Button, Row, Icon, Image, useTheme, useReducedMotion } from "@ionizeio/canvas";
 import { useRouter } from "expo-router";
 import { COMPONENTS } from "../core/data/components";
 import { COMPONENT_DOCS } from "../core/registry";

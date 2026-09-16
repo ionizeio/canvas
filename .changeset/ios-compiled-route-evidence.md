@@ -1,5 +1,5 @@
 ---
-"@nannier-com/canvas": patch
+"@ionizeio/canvas": patch
 ---
 
 Preserve passive iOS native smoke build evidence that binds the embedded Hermes

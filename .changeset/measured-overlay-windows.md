@@ -1,5 +1,5 @@
 ---
-"@nannier-com/canvas": minor
+"@ionizeio/canvas": minor
 ---
 
 Add explicit `OverlayProvider viewport`, `viewportInsets`, and `separateWindow` options for bounded nested panels, measured header/footer occlusions, and custom native Modal windows. This minor adds public hosting capabilities: content-sized hosts inherit measured window bounds, while native-window hosts start a separate coordinate boundary.

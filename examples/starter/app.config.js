@@ -23,7 +23,7 @@ function readIdentity(raw) {
     candidateRevision: typeof value.candidateRevision === "string" && value.candidateRevision.length === 40 && /^[a-f0-9]{40}$/i.test(value.candidateRevision),
     packageVersion: isSemver(value.packageVersion),
     packageSha256: typeof value.packageSha256 === "string" && value.packageSha256.length === 64 && /^[a-f0-9]{64}$/i.test(value.packageSha256),
-    packageName: value.packageName === undefined || value.packageName === "@nannier-com/canvas",
+    packageName: value.packageName === undefined || value.packageName === "@ionizeio/canvas",
     sourceDirty: value.sourceDirty === undefined || value.sourceDirty === false,
   };
   for (const [field, valid] of Object.entries(checks)) {

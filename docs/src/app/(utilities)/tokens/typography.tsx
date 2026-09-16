@@ -1,5 +1,5 @@
 import { useWindowDimensions } from "react-native";
-import { View, Text, Row, Column, Typography, useTheme } from "@nannier-com/canvas";
+import { View, Text, Row, Column, Typography, useTheme } from "@ionizeio/canvas";
 import { Page } from "../../../ui/page";
 import { PageNav } from "../../../ui/page-nav";
 import { sans, geistMono } from "../../../ui/fonts";

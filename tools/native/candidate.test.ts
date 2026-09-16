@@ -7,7 +7,7 @@ import { appInventory, assertInstalledPackage, packageIdentity } from "./candida
 const temporary: string[] = [];
 afterEach(() => { for (const directory of temporary.splice(0)) rmSync(directory, { recursive: true, force: true }); });
 const manifest = {
-  name: "@nannier-com/canvas", source: "a".repeat(40), candidate: "b".repeat(40), version: "2.62.1",
+  name: "@ionizeio/canvas", source: "a".repeat(40), candidate: "b".repeat(40), version: "2.62.1",
   packageFile: "canvas.tgz", files: [{ name: "canvas.tgz", sha256: "c".repeat(64) }],
 };
 

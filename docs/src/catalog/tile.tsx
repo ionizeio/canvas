@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Text, Pressable, Icon, Row, Column, Grid, GridItem, useTheme, alpha } from "@nannier-com/canvas";
+import { View, Text, Pressable, Icon, Row, Column, Grid, GridItem, useTheme, alpha } from "@ionizeio/canvas";
 import { useRouter } from "expo-router";
 import { sans } from "../ui/fonts";
 

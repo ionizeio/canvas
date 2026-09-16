@@ -25,7 +25,7 @@ const TEXT = `MIT License
 Copyright (c) ${YEAR} ${HOLDER}
 
 This license applies to this distributed package (the compiled output published to
-npm as @nannier-com/canvas). The project's source repository is not covered by it and
+npm as @ionizeio/canvas). The project's source repository is not covered by it and
 remains all rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy

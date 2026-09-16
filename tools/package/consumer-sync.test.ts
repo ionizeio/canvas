@@ -19,7 +19,7 @@ function fixture(nativeReady = true) {
   roots.push(workspace);
   const root = join(workspace, "canvas");
   const metadata = {
-    name: "@nannier-com/canvas", version: "2.60.6",
+    name: "@ionizeio/canvas", version: "2.60.6",
     main: "./dist/index.js", module: "./dist/index.js", types: "./dist/index.d.ts",
     "react-native": "./dist/native/index.js",
     exports: {
@@ -39,7 +39,7 @@ function fixture(nativeReady = true) {
   function consumer(name = "app", origin: string | null = root, scope = "@nannier-com") {
     const app = join(workspace, name);
     const target = join(app, "node_modules", scope, "canvas");
-    write(app, "package.json", json({ name, dependencies: { "@nannier-com/canvas": "2.60.5" } }));
+    write(app, "package.json", json({ name, dependencies: { "@ionizeio/canvas": "2.60.5" } }));
     write(target, "package.json", json({ name: `${scope}/canvas`, version: "2.60.5", "react-native": "./dist/index.js" }));
     write(target, "dist/index.js", "old consumer web\n");
     if (origin !== null) write(target, ".origin", origin);

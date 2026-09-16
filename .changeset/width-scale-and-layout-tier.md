@@ -1,5 +1,5 @@
 ---
-"@nannier-com/canvas": minor
+"@ionizeio/canvas": minor
 ---
 
 Add the layout tier that gives every component its width from its parent: a shared

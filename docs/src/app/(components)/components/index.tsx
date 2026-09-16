@@ -1,4 +1,4 @@
-import { View, Text, useTheme, ScrollView } from "@nannier-com/canvas";
+import { View, Text, useTheme, ScrollView } from "@ionizeio/canvas";
 import { COMPONENTS } from "../../../core/data/components";
 import { CONTENT_TOP_INSET } from "../../../shell/topbar";
 import { ScreenFrame } from "../../../shell/native-header";

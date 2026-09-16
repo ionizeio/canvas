@@ -1,4 +1,4 @@
-import { View, Container } from "@nannier-com/canvas";
+import { View, Container } from "@ionizeio/canvas";
 import { Page } from "../../../ui/page";
 import { PageNav } from "../../../ui/page-nav";
 import { Playground } from "../../../ui/playground";

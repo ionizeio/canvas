@@ -44,7 +44,7 @@ describe("isolated support matrix", () => {
   });
 
   test.each(["ios", "android"])("%s sourcemap must prove platform entries and reject web leakage", (platform) => {
-    const prefix = "/app/node_modules/@nannier-com/canvas/dist/native/";
+    const prefix = "/app/node_modules/@ionizeio/canvas/dist/native/";
     const files = [
       `atoms/button/button.${platform}.js`, `atoms/listbox/listbox.${platform}.js`, `organisms/drawer/drawer.${platform}.js`,
       platform === "ios" ? "style/glass-surface/liquid-glass.ios.js" : "style/glass-surface/glass-blur-target.android.js",
@@ -52,7 +52,7 @@ describe("isolated support matrix", () => {
     ].map((name) => prefix + name);
     expect(() => assertNativeGraph(files, platform)).not.toThrow();
     for (const removed of files) expect(() => assertNativeGraph(files.filter((name) => name !== removed), platform)).toThrow("did not select");
-    expect(() => assertNativeGraph([...files, "/app/node_modules/@nannier-com/canvas/dist/index.js"], platform)).toThrow("web distribution");
+    expect(() => assertNativeGraph([...files, "/app/node_modules/@ionizeio/canvas/dist/index.js"], platform)).toThrow("web distribution");
     expect(() => assertNativeGraph([...files, prefix + "atoms/button/button.js"], platform)).toThrow("web Button");
   });
 });

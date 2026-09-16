@@ -6,7 +6,7 @@ export const sha256 = (file) => createHash("sha256").update(readFileSync(file)).
 
 export function packageIdentity(manifest) {
   const digest = manifest.files?.find((file) => file.name === manifest.packageFile)?.sha256;
-  if (manifest.name !== "@nannier-com/canvas" || !/^\d+\.\d+\.\d+$/.test(manifest.version)
+  if (manifest.name !== "@ionizeio/canvas" || !/^\d+\.\d+\.\d+$/.test(manifest.version)
     || !/^[a-f0-9]{40}$/.test(manifest.source) || !/^[a-f0-9]{40}$/.test(manifest.candidate)
     || !/^[a-f0-9]{64}$/.test(digest ?? "")) throw new Error("Invalid native candidate identity");
   return {

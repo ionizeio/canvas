@@ -95,7 +95,7 @@ const [value, setValue] = useControllableState<string>(props.value, props.defaul
   focus/typing side effects (Combobox, `src/atoms/combobox/combobox.shared.tsx`),
   the hook drives `query` while `open` uses the same contract hand-rolled
   (`openProp ?? internalOpen`); keep the contract identical either way.
-- New stateful component ⇒ it ships in `@nannier-com/canvas`, so add a changeset
+- New stateful component ⇒ it ships in `@ionizeio/canvas`, so add a changeset
   (see the `canvas-new-component` skill).
 
 ## Verification

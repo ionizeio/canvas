@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Carousel, Column, Input, Typography } from "@nannier-com/canvas";
+import { Button, Carousel, Column, Input, Typography } from "@ionizeio/canvas";
 import { Page } from "../../../ui/page";
 
 const items = Array.from({ length: 6 }, (_, index) => ({

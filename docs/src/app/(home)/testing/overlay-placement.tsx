@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Autocomplete, Column, Command, Dropdown, Popover, Select, Typography } from "@nannier-com/canvas";
+import { Autocomplete, Column, Command, Dropdown, Popover, Select, Typography } from "@ionizeio/canvas";
 import { Page, PageHeader } from "../../../ui/page";
 import { Popover as IOSPopover } from "../../../../../src/atoms/popover/popover.ios";
 

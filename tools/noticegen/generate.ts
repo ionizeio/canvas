@@ -45,7 +45,7 @@ const OUT = join(docs, "src/data/third-party-notices.ts");
 // Canvas itself is first-party. It is described in its own paragraph on the screen rather
 // than listed as a third-party dependency, so the walk skips it (and never follows the
 // workspace symlink into the kit's own node_modules).
-const FIRST_PARTY = new Set(["@nannier-com/canvas"]);
+const FIRST_PARTY = new Set(["@ionizeio/canvas"]);
 
 const LICENSE_FILES = [
   "LICENSE", "LICENSE.md", "LICENSE.txt", "LICENCE", "LICENCE.md", "LICENCE.txt",
@@ -340,7 +340,7 @@ export const THIRD_PARTY_INTRO =
   ${q(`Canvas is built on open source. This page lists every third-party package the app ships, with its licence and copyright notice, and reproduces the full text of each licence. It is generated from the packages actually installed, so it cannot drift from what is in the build.`)};
 
 export const THIRD_PARTY_CANVAS =
-  ${q(`Canvas itself is published to npm as @nannier-com/canvas under the MIT License. This app is its reference documentation.`)};
+  ${q(`Canvas itself is published to npm as @ionizeio/canvas under the MIT License. This app is its reference documentation.`)};
 
 export const THIRD_PARTY_FONTS =
   ${q(`The Geist and Geist Mono typefaces are licensed under the SIL Open Font License 1.1, and the Material Symbols typeface under the Apache License 2.0. Both licences require their text to travel with the bundled font, and both are reproduced in full below.`)};

@@ -1,5 +1,5 @@
 ---
-"@nannier-com/canvas": major
+"@ionizeio/canvas": major
 ---
 
 A component never dictates its own width: the input-like controls are FILL and the

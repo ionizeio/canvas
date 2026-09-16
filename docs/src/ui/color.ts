@@ -1,5 +1,5 @@
 // Keep token tinting on the kit's validated color helper, including hex alpha.
-export { alpha } from "@nannier-com/canvas";
+export { alpha } from "@ionizeio/canvas";
 
 // Convert an HSL color to a 6-digit hex string. Pure math (no DOM, RN-safe), so
 // the chart/accent palettes (authored as HSL on the colors page) can show the

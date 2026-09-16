@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Input, Select, Chip, Feed, EmptyState, Icon, useToast } from "@nannier-com/canvas";
+import { Row, Column, Card, Typography, Button, Input, Select, Chip, Feed, EmptyState, Icon, useToast } from "@ionizeio/canvas";
 import type { TemplateDoc } from "../types";
 
 // Audit log built from real Canvas components: a filter toolbar whose search

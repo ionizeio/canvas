@@ -20,7 +20,7 @@ function repoRoot(): string {
   for (let i = 0; i < 8; i++) {
     try {
       const pkg = JSON.parse(readFileSync(join(dir, "package.json"), "utf8")) as { name?: string };
-      if (pkg.name === "@nannier-com/canvas") return dir;
+      if (pkg.name === "@ionizeio/canvas") return dir;
     } catch {
       // not this level
     }

@@ -42,13 +42,13 @@ export function sealedPackage(directory) {
 
 export function assertNativeGraph(sources, platform) {
   const normalized = sources.map((source) => source.replaceAll("\\", "/"));
-  const contains = (suffix) => normalized.some((source) => source.endsWith(`/@nannier-com/canvas/dist/native/${suffix}`));
+  const contains = (suffix) => normalized.some((source) => source.endsWith(`/@ionizeio/canvas/dist/native/${suffix}`));
   for (const file of [
     `atoms/button/button.${platform}.js`, `atoms/listbox/listbox.${platform}.js`,
     `organisms/drawer/drawer.${platform}.js`,
     platform === "ios" ? "style/glass-surface/liquid-glass.ios.js" : "style/glass-surface/glass-blur-target.android.js",
     platform === "ios" ? "style/glass-surface/glass-surface.ios.js" : "style/glass-surface/glass-surface.js",
   ]) if (!contains(file)) throw new Error(`${platform}: native graph did not select ${file}`);
-  if (normalized.some((source) => /\/@nannier-com\/canvas\/dist\/(?!native\/)/.test(source))) throw new Error(`${platform}: native graph selected the web distribution`);
+  if (normalized.some((source) => /\/@ionizeio\/canvas\/dist\/(?!native\/)/.test(source))) throw new Error(`${platform}: native graph selected the web distribution`);
   if (contains("atoms/button/button.js")) throw new Error(`${platform}: native graph selected the web Button`);
 }

@@ -1,7 +1,7 @@
 import { useId } from "react";
 import { Animated, useWindowDimensions } from "react-native";
 import Svg, { Circle, Path, Rect, G, Defs, RadialGradient, LinearGradient, Stop, Mask, Filter, FeGaussianBlur, FeColorMatrix } from "react-native-svg";
-import { Backdrop, backdropClock, useTheme } from "@nannier-com/canvas";
+import { Backdrop, backdropClock, useTheme } from "@ionizeio/canvas";
 import { glowColor } from "./hero-orbit";
 import { canvasSky } from "./canvas-sky";
 

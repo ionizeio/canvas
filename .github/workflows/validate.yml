@@ -166,7 +166,7 @@ jobs:
         working-directory: docs
         run: bun run check:skins
 
-      # docs/tsconfig.json includes docs/src/core/** and maps @nannier-com/canvas to
+      # docs/tsconfig.json includes docs/src/core/** and maps @ionizeio/canvas to
       # ../src/index.ts, so this also typechecks every generated example against the
       # real component prop types.
       - name: Typecheck docs (includes generated examples)

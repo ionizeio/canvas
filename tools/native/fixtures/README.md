@@ -5,7 +5,7 @@
 measurement. No identifiers, whitespace or measurement fields were rewritten.
 
 - Source candidate: `2e1abfa75575aba994726d6d23d1ebe48a8dd1e2`.
-- Package: `@nannier-com/canvas@2.62.3`.
+- Package: `@ionizeio/canvas@2.62.3`.
 - Package SHA-256: `2fa63129118817e2ae81f28c94b079f579a91946790a1d3d00bab4c7b34b9c9e`.
 - Source log line: 122, timestamp `09:56:17.129`.
 - Full source log SHA-256: `4b222d94f163cfe473e7581bb4450ec75979645607688909279f6832ff24e8f5`.

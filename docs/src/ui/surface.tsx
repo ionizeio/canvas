@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { useTheme, View, type StyleProp, type ViewStyle } from "@nannier-com/canvas";
+import { useTheme, View, type StyleProp, type ViewStyle } from "@ionizeio/canvas";
 
 // A docs CONTENT surface: the preview stages, prop tables, do/don't cards and the
 // long-form panels. It is solid in every surface mode, because content is the layer

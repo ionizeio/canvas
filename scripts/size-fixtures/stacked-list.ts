@@ -1,3 +1,3 @@
-import { StackedList, ThemeProvider } from "@nannier-com/canvas";
+import { StackedList, ThemeProvider } from "@ionizeio/canvas";
 
 export { StackedList, ThemeProvider };

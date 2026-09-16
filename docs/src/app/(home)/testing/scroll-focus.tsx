@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, CodeBlock, Column, DataTable, Typography } from "@nannier-com/canvas";
+import { Button, CodeBlock, Column, DataTable, Typography } from "@ionizeio/canvas";
 import { Page } from "../../../ui/page";
 
 const LONG = 'const destinations = ["Montréal", "Toronto", "Vancouver", "Halifax", "Victoria", "Québec", "Winnipeg", "Calgary", "Ottawa", "Edmonton"];';

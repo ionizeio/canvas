@@ -1,5 +1,5 @@
 import { Linking } from "react-native";
-import { Column, Row, Button, DataTable, Icon } from "@nannier-com/canvas";
+import { Column, Row, Button, DataTable, Icon } from "@ionizeio/canvas";
 import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
 import { P, H3, Rule } from "../../ui/prose";

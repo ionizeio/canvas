@@ -12,7 +12,7 @@ body:
     id: version
     attributes:
       label: Canvas version
-      description: The @nannier-com/canvas version (see your package.json or lockfile).
+      description: The @ionizeio/canvas version (see your package.json or lockfile).
       placeholder: "8.1.0"
     validations:
       required: true

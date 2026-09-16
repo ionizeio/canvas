@@ -1,5 +1,5 @@
 ---
-"@nannier-com/canvas": patch
+"@ionizeio/canvas": patch
 ---
 
 Honor iOS accessibility escape on existing overlay content hosts. Dismiss the

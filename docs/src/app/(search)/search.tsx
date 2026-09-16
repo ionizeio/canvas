@@ -3,7 +3,7 @@ import { Keyboard, Platform, StyleSheet, type NativeSyntheticEvent, type TextInp
 import { Redirect, Stack, useFocusEffect, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { SearchBarCommands } from "react-native-screens";
-import { View, Text, Pressable, GlassSurface, useTheme, alpha } from "@nannier-com/canvas";
+import { View, Text, Pressable, GlassSurface, useTheme, alpha } from "@ionizeio/canvas";
 import { search } from "../../core/data/search";
 import type { SearchEntry } from "../../core/data/types";
 import { sans } from "../../ui/fonts";

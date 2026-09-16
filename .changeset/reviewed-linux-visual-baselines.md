@@ -1,5 +1,5 @@
 ---
-"@nannier-com/canvas": patch
+"@ionizeio/canvas": patch
 ---
 
 Refresh Linux visual baselines after reviewing all 150 changed before/after pairs

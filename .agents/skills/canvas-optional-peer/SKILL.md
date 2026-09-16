@@ -7,7 +7,7 @@ description: Add or consume an OPTIONAL peer dependency in the Canvas RN kit so 
 
 Read `peerDependencies` and `peerDependenciesMeta` in `package.json` for the
 current optional-peer inventory. The contract: a consumer who never installs the peer must
-still `npm install` and BUILD `@nannier-com/canvas` cleanly, and the feature that
+still `npm install` and BUILD `@ionizeio/canvas` cleanly, and the feature that
 needs it degrades to a labeled placeholder instead of crashing. A static
 `import "expo-blur"` breaks module resolution for EVERY consumer who skipped it,
 so an optional peer is NEVER statically imported. Use the guarded literal require

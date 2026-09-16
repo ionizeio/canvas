@@ -1,5 +1,5 @@
 ---
-"@nannier-com/canvas": minor
+"@ionizeio/canvas": minor
 ---
 
 Rebrand the kit's foundation to the Riskora Dashboard UI Kit (Figma file

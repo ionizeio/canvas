@@ -1,5 +1,5 @@
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { BackdropHost, OverlayProvider, ToastProvider } from "@nannier-com/canvas";
+import { BackdropHost, OverlayProvider, ToastProvider } from "@ionizeio/canvas";
 import { DocsThemeProvider } from "../theme/docs-theme";
 import { useDocsFonts } from "../ui/fonts";
 import { Navbar } from "../shell/navbar";

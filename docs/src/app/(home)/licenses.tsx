@@ -1,5 +1,5 @@
 import { Linking } from "react-native";
-import { Column, Row, Badge, DataTable, Accordion, Button, Icon, useResponsive } from "@nannier-com/canvas";
+import { Column, Row, Badge, DataTable, Accordion, Button, Icon, useResponsive } from "@ionizeio/canvas";
 import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
 import { P, H3, Rule, InlineCode } from "../../ui/prose";

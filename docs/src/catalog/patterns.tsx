@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Animated, AccessibilityInfo } from "react-native";
-import { View, Text, Row, Column, useTheme, alpha, Container } from "@nannier-com/canvas";
+import { View, Text, Row, Column, useTheme, alpha, Container } from "@ionizeio/canvas";
 import Svg, { Defs, RadialGradient, Stop, Rect } from "react-native-svg";
 import { sans, geistMono } from "../ui/fonts";
 import { MiniBtn, type CatTile } from "./tile";

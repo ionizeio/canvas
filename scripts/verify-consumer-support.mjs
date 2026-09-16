@@ -44,7 +44,7 @@ function checkTypes(app, require) {
 async function checkNative(app, require, label) {
   fs.writeFileSync(path.join(app, "babel.config.js"), 'module.exports = { presets: ["module:@react-native/babel-preset"] };\n');
   fs.writeFileSync(path.join(app, "metro.config.js"), 'module.exports = require("@react-native/metro-config").getDefaultConfig(__dirname);\n');
-  fs.writeFileSync(path.join(app, "index.js"), 'import * as Canvas from "@nannier-com/canvas";\nglobalThis.canvasConsumer = Canvas;\n');
+  fs.writeFileSync(path.join(app, "index.js"), 'import * as Canvas from "@ionizeio/canvas";\nglobalThis.canvasConsumer = Canvas;\n');
   const { loadConfig, runBuild } = require("metro");
   for (const [platform, exportsEnabled] of [["ios", true], ["android", true], ["ios", false], ["android", false]]) {
     const config = await loadConfig({ cwd: app, config: path.join(app, "metro.config.js") });
@@ -70,8 +70,8 @@ async function checkServer(app, require, expectedReact, label) {
     define: { "process.env.NODE_ENV": '"development"', __DEV__: "true" }, logLevel: "silent",
   });
   const inputs = Object.keys(result.metafile.inputs);
-  if (!inputs.some((file) => file.endsWith("@nannier-com/canvas/dist/index.js"))) throw new Error("SSR did not use the installed public package");
-  if (inputs.some((file) => file.includes("@nannier-com/canvas/dist/native/"))) throw new Error("SSR selected native Canvas output");
+  if (!inputs.some((file) => file.endsWith("@ionizeio/canvas/dist/index.js"))) throw new Error("SSR did not use the installed public package");
+  if (inputs.some((file) => file.includes("@ionizeio/canvas/dist/native/"))) throw new Error("SSR selected native Canvas output");
   const proof = JSON.parse(run(app, "node", ["ssr.cjs"]));
   if (proof.reactVersion !== require("react").version || proof.layoutWarnings !== 0 || !(proof.htmlLength > 0)) {
     throw new Error("SSR used the wrong React runtime or lost its rendered content/effect guarantee");
@@ -92,8 +92,8 @@ async function checkWeb(app, require, expectedReact, label) {
     define: { "process.env.NODE_ENV": '"production"', __DEV__: "false" }, logLevel: "silent",
   });
   const inputs = Object.keys(result.metafile.inputs);
-  if (!inputs.some((file) => file.endsWith("@nannier-com/canvas/dist/index.js"))) throw new Error("Web bundle did not use the installed public package");
-  if (inputs.some((file) => file.includes("@nannier-com/canvas/dist/native/"))) throw new Error("Web bundle selected native Canvas output");
+  if (!inputs.some((file) => file.endsWith("@ionizeio/canvas/dist/index.js"))) throw new Error("Web bundle did not use the installed public package");
+  if (inputs.some((file) => file.includes("@ionizeio/canvas/dist/native/"))) throw new Error("Web bundle selected native Canvas output");
   const script = fs.readFileSync(path.join(app, "web-dist/app.js"));
   if (!script.length) throw new Error("Empty web bundle");
   const html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Canvas consumer compatibility</title></head><body><div id="root"></div><script type="module" src="/app.js"></script></body></html>';
@@ -155,7 +155,7 @@ export async function verifyConsumerSupport(args = process.argv.slice(2)) {
     run(root, "tar", ["-xzf", tarball, "-C", unpacked]);
     const packageRoot = path.join(unpacked, "package");
     const metadata = read(path.join(packageRoot, "package.json"));
-    if (metadata.name !== "@nannier-com/canvas") throw new Error("Expected a packed @nannier-com/canvas package");
+    if (metadata.name !== "@ionizeio/canvas") throw new Error("Expected a packed @ionizeio/canvas package");
     for (const row of supportMatrix((name) => rootRequire(`${name}/package.json`).version)) {
       const optional = validatePeerCoverage(metadata, row.dependencies);
       const app = path.join(root, row.name);

@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "@nannier-com/canvas",
+      "name": "@ionizeio/canvas",
       "devDependencies": {
         "@axe-core/playwright": "^4.13.0",
         "@changesets/cli": "^2.31.0",

@@ -1,10 +1,10 @@
-# @nannier-com/canvas
+# @ionizeio/canvas
 
 **One universal React Native UI kit that renders natively on iOS and Android, and on the web through React Native Web, from a single component API.**
 
 ![The same Canvas component rendered as native iOS, Material 3 Android, and web, side by side](https://raw.githubusercontent.com/ionizeio/canvas/main/.github/assets/hero.gif)
 
-[![npm](https://img.shields.io/npm/v/@nannier-com/canvas.svg)](https://www.npmjs.com/package/@nannier-com/canvas) [![CI](https://github.com/ionizeio/canvas/actions/workflows/ci.yml/badge.svg)](https://github.com/ionizeio/canvas/actions/workflows/ci.yml) [Documentation](https://canvas.nannier.com/)
+[![npm](https://img.shields.io/npm/v/@ionizeio/canvas.svg)](https://www.npmjs.com/package/@ionizeio/canvas) [![CI](https://github.com/ionizeio/canvas/actions/workflows/ci.yml/badge.svg)](https://github.com/ionizeio/canvas/actions/workflows/ci.yml) [Documentation](https://canvas.nannier.com/)
 
 **Try it live:** the [component catalog](https://canvas.nannier.com/components) renders the full library (atoms, molecules, organisms, and charts) in the browser, with dark mode, the glass surface, and density switchable site-wide.
 
@@ -13,7 +13,7 @@ Write your screen once and it runs everywhere. Canvas is built from React Native
 ## Install
 
 ```bash
-npm install @nannier-com/canvas
+npm install @ionizeio/canvas
 ```
 
 Canvas ships compiled (no build step in your app) and declares three **required** peer dependencies you install alongside it:
@@ -42,10 +42,10 @@ npm install react-native-qrcode-svg expo-glass-effect expo-blur expo-clipboard r
 
 ## Quick start
 
-Wrap your app once in `ThemeProvider`, then compose components imported from `@nannier-com/canvas`. The provider supplies the active color scheme, surface, and token map to every component below it.
+Wrap your app once in `ThemeProvider`, then compose components imported from `@ionizeio/canvas`. The provider supplies the active color scheme, surface, and token map to every component below it.
 
 ```jsx
-import { ThemeProvider, Card, CardHeader, CardTitle, CardContent, Button } from "@nannier-com/canvas";
+import { ThemeProvider, Card, CardHeader, CardTitle, CardContent, Button } from "@ionizeio/canvas";
 
 export default function App() {
   return (
@@ -188,7 +188,7 @@ the shape and elevation scales, and the four API rules that are easy to break by
 accident. It is written to be read by an agent building on the kit as much as by a
 person, and its numbers are generated from the kit's own sources.
 
-The kit exports components across atoms, molecules, organisms, and charts, all from `@nannier-com/canvas`:
+The kit exports components across atoms, molecules, organisms, and charts, all from `@ionizeio/canvas`:
 
 - **Forms and inputs**: Button, Button Group, Input, Textarea, Checkbox, Radio, Switch, Slider, Stepper, Input OTP, Select, Autocomplete, Listbox.
 - **Overlays**: Dialog, Alert Dialog, Drawer, Popover, Tooltip, Dropdown, Action Sheet, Toast, Command palette.
@@ -212,7 +212,7 @@ public issues for security problems.
 
 ## License
 
-The compiled package distributed on npm as `@nannier-com/canvas` is licensed under
+The compiled package distributed on npm as `@ionizeio/canvas` is licensed under
 MIT. Its tarball includes the license and copyright notice.
 
 The source repository is not covered by that grant and remains all rights reserved.

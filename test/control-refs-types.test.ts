@@ -21,7 +21,7 @@ describe.skipIf(!fs.existsSync(declaration))("public control ref declarations", 
         module, moduleResolution, strict: true, skipLibCheck: true, noEmit: true,
         types: ["react"],
       };
-      const resolved = ts.resolveModuleName("@nannier-com/canvas", fixture, options, ts.sys).resolvedModule;
+      const resolved = ts.resolveModuleName("@ionizeio/canvas", fixture, options, ts.sys).resolvedModule;
       expect(resolved?.resolvedFileName).toBe(declaration);
       const program = ts.createProgram({ rootNames: [fixture], options });
       const diagnostics = ts.getPreEmitDiagnostics(program);

@@ -1,7 +1,7 @@
 // The Board organism's public data shapes, split into a React-free module so the pure move
 // logic (board.logic.ts) can import them without pulling in the component shell. The shell
 // (board.shared.tsx) re-exports them, and the platform entries re-export from there, so the
-// public import surface is unchanged: `import { type BoardItem } from "@nannier-com/canvas"`.
+// public import surface is unchanged: `import { type BoardItem } from "@ionizeio/canvas"`.
 
 import { type ReactNode } from "react";
 import { type RowMenuItem } from "../row-menu/row-menu.styles.js";

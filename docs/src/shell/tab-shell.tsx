@@ -1,6 +1,6 @@
 import { Platform } from "react-native";
 import { Slot, Stack } from "expo-router";
-import { useTheme } from "@nannier-com/canvas";
+import { useTheme } from "@ionizeio/canvas";
 
 // The one adaptive per-tab layout. On the web it returns a bare <Slot/> so the root
 // WebNav shell owns the chrome. On native it is a native Stack whose header is the real

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { ColorTokens, ToastHandle } from "@nannier-com/canvas";
+import type { ColorTokens, ToastHandle } from "@ionizeio/canvas";
 
 // The scope an example fence renders against: every Canvas export (components,
 // primitives, the alpha/shadow/palette style helpers) plus the live, theme-aware
@@ -72,7 +72,7 @@ type AppShellHelper = (props: {
   }) => ReactNode;
 }) => ReactNode;
 
-export type ExampleScope = typeof import("@nannier-com/canvas") & {
+export type ExampleScope = typeof import("@ionizeio/canvas") & {
   tokens: ColorTokens;
   Stateful: StatefulHelper;
   Ticker: TickerHelper;

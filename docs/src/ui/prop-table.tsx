@@ -1,4 +1,4 @@
-import { View, Text, Column, Row, Typography, Badge, DataTable, useTheme } from "@nannier-com/canvas";
+import { View, Text, Column, Row, Typography, Badge, DataTable, useTheme } from "@ionizeio/canvas";
 import type { PropGroup } from "../core/props";
 import { DocsSurface } from "./surface";
 import { sans } from "./fonts";

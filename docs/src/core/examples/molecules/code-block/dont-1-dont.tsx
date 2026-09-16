@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { palette, View, Text } = scope;
   return (
 <View style={{ width: "100%", alignSelf: "flex-start", borderRadius: 8, backgroundColor: palette["zinc-900"], padding: 16 }}>
-  <Text style={{ fontSize: 13, color: palette["zinc-100"], fontFamily: "monospace" }}>$ npm install @nannier-com/canvas</Text>
+  <Text style={{ fontSize: 13, color: palette["zinc-100"], fontFamily: "monospace" }}>$ npm install @ionizeio/canvas</Text>
 </View>
   );
 }

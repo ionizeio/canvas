@@ -10,7 +10,7 @@ One file per template, exporting a single `TemplateDoc`:
 
 ```tsx
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button /* ... */ } from "@nannier-com/canvas";
+import { Row, Column, Card, Typography, Button /* ... */ } from "@ionizeio/canvas";
 import type { TemplateDoc } from "../types";
 
 function SectionLive() {
@@ -43,7 +43,7 @@ A template is a working product surface, not a picture of one:
   the page (Export, Contact sales, Update card), fire a toast instead:
 
   ```tsx
-  import { useToast } from "@nannier-com/canvas";
+  import { useToast } from "@ionizeio/canvas";
   const { toast } = useToast(); // inside a component; ToastProvider is mounted in the docs root
   toast({ success: true, message: "Invite sent", description: "ada@acme.com will get an email." });
   ```

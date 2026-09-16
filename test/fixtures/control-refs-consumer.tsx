@@ -4,7 +4,7 @@ import { createRef, type ComponentRef, type ComponentPropsWithRef, type RefCallb
 import {
   Button, Checkbox, Radio, Select, Slider, Switch,
   type ButtonProps, type CheckboxProps, type RadioProps, type SelectProps, type SliderProps, type SwitchProps,
-} from "@nannier-com/canvas";
+} from "@ionizeio/canvas";
 import type { View } from "react-native";
 
 const host = createRef<View>();

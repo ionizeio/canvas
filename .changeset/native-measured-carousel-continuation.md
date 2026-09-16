@@ -1,5 +1,5 @@
 ---
-"@nannier-com/canvas": patch
+"@ionizeio/canvas": patch
 ---
 
 Verify native Carousel paging with a measured, strictly in-card drag. Preserve

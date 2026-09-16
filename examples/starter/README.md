@@ -1,6 +1,6 @@
 # Canvas starter
 
-A small Expo application using the published `@nannier-com/canvas` package. It runs on web, iOS, and Android with one component tree and Expo's default Metro resolution. It has its own dependency manifest and lockfile and does not import the Canvas checkout or docs app.
+A small Expo application using the published `@ionizeio/canvas` package. It runs on web, iOS, and Android with one component tree and Expo's default Metro resolution. It has its own dependency manifest and lockfile and does not import the Canvas checkout or docs app.
 
 ## Run
 
@@ -57,7 +57,7 @@ Controls, typography and layouts are Canvas components using semantic props. The
 
 ## Published dependency and candidate checks
 
-`package.json` pins the registry package to `@nannier-com/canvas@2.62.1` and pins the SDK57 React19.2.3 / React Native0.86.2 pair. Run installation inside this directory. There are no source aliases, custom Canvas Metro resolvers, package links or development overlays. To use Canvas in an existing app, install the package and its required peers there instead of copying this starter's SDK dependency versions into an unrelated project.
+`package.json` pins the registry package to `@ionizeio/canvas@2.62.1` and pins the SDK57 React19.2.3 / React Native0.86.2 pair. Run installation inside this directory. There are no source aliases, custom Canvas Metro resolvers, package links or development overlays. To use Canvas in an existing app, install the package and its required peers there instead of copying this starter's SDK dependency versions into an unrelated project.
 
 Maintainer candidate checks use a temporary copy of this app and install the sealed package tarball in that copy. They do not replace the dependency committed here. Preparation copies only the reviewed files in `smoke/manifest.json` into the temporary app before typechecking against the candidate. The shared fixture bodies and route templates stay outside ordinary `src`, so unreleased APIs never enter its registry typecheck or route graph.
 

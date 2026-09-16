@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
-import { View, Text, useTheme } from "@nannier-com/canvas";
+import { View, Text, useTheme } from "@ionizeio/canvas";
 import { sans } from "../ui/fonts";
 
 // The hardware around each landing-hero capture. The screenshots are pure screen grabs

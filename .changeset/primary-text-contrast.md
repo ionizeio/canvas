@@ -1,5 +1,5 @@
 ---
-"@nannier-com/canvas": minor
+"@ionizeio/canvas": minor
 ---
 
 Add the optional `primary-text` color token so consumers can customize brand text separately from primary fills and their foreground labels. This new theme customization capability justifies the minor release. Built-in primary text now stays readable on the kit's neutral and layered tonal surfaces in both schemes, including Android selected tab pills and today's date within a Web Calendar range. Primary fills, standalone icon accents and filled-control foregrounds retain their colors.
