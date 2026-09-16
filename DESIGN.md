@@ -168,7 +168,7 @@ rounded:
   full: "9999px"
 shadows:
   none: none
-  sm: "0px 1px 2px rgba(13,18,27,0.04)"
+  sm: "0px 1px 3px rgba(13,18,27,0.08)"
   base: "0px 0px 20px rgba(13,18,27,0.06)"
   md: "0px 0px 24px rgba(13,18,27,0.1)"
   lg: "0px 0px 40px rgba(13,18,27,0.14)"
@@ -244,7 +244,7 @@ platformSkins:
     card:
       card-radius: "12px"
       card-shadow: none
-      card-shadow-raised: "0px 1px 2px rgba(13,18,27,0.04)"
+      card-shadow-raised: "0px 1px 3px rgba(13,18,27,0.08)"
   android:
     stats:
       stat-radius: "12px"
@@ -258,7 +258,7 @@ platformSkins:
       empty-radius: "12px"
     card:
       card-radius: "12px"
-      card-shadow: "0px 1px 2px rgba(13,18,27,0.04)"
+      card-shadow: "0px 1px 3px rgba(13,18,27,0.08)"
       card-shadow-raised: "0px 4px 6px rgba(0,0,0,0.1)"
 ---
 
@@ -442,7 +442,7 @@ than as a border.
 | Level | Value |
 | --- | --- |
 | `none` | `none` |
-| `sm` | `0px 1px 2px rgba(13,18,27,0.04)` |
+| `sm` | `0px 1px 3px rgba(13,18,27,0.08)` |
 | `base` | `0px 0px 20px rgba(13,18,27,0.06)` |
 | `md` | `0px 0px 24px rgba(13,18,27,0.1)` |
 | `lg` | `0px 0px 40px rgba(13,18,27,0.14)` |

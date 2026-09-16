@@ -13,7 +13,7 @@ describe("shadow", () => {
 
   it("scales the shadow with the level (web boxShadow)", () => {
     expect(shadow("none")).toEqual({ boxShadow: "none" });
-    expect(shadow("sm").boxShadow).toBe("0px 1px 2px rgba(13, 18, 27, 0.04)");
+    expect(shadow("sm").boxShadow).toBe("0px 1px 3px rgba(13, 18, 27, 0.08)");
     expect(shadow("DEFAULT").boxShadow).toBe("0px 0px 20px rgba(13, 18, 27, 0.06)");
     expect(shadow("md").boxShadow).toBe("0px 0px 24px rgba(13, 18, 27, 0.1)");
     expect(shadow("lg").boxShadow).toBe("0px 0px 40px rgba(13, 18, 27, 0.14)");

@@ -19,7 +19,7 @@ const INK = "#0d121b";
 
 const NATIVE_SHADOWS: Record<ShadowLevel, ViewStyle> = {
   none: { shadowOpacity: 0, elevation: 0 },
-  sm: { shadowColor: INK, shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 1, elevation: 1 },
+  sm: { shadowColor: INK, shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.08, shadowRadius: 1.5, elevation: 1 },
   DEFAULT: { shadowColor: INK, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.06, shadowRadius: 10, elevation: 2 },
   md: { shadowColor: INK, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.1, shadowRadius: 12, elevation: 4 },
   lg: { shadowColor: INK, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.14, shadowRadius: 20, elevation: 8 },
@@ -29,7 +29,7 @@ const NATIVE_SHADOWS: Record<ShadowLevel, ViewStyle> = {
 // The same shades as a `boxShadow` string (offsetX offsetY blur color) for web; the
 // CSS hand-off (styles/tokens/shadows.css) carries these verbatim.
 const WEB_SHADOWS: Record<Exclude<ShadowLevel, "none">, string> = {
-  sm: "0px 1px 2px rgba(13, 18, 27, 0.04)",
+  sm: "0px 1px 3px rgba(13, 18, 27, 0.08)",
   DEFAULT: "0px 0px 20px rgba(13, 18, 27, 0.06)",
   md: "0px 0px 24px rgba(13, 18, 27, 0.1)",
   lg: "0px 0px 40px rgba(13, 18, 27, 0.14)",

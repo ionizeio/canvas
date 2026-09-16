@@ -314,7 +314,7 @@
   --p-panel-inline-gap:24px;--p-panel-inline-align:flex-start /* @kind other */;
   /* Carousel (carousel.styles.ts webSkin — Embla/shadcn) */
   --p-carousel-slide-radius:20px;--p-carousel-arrows:1 /* @kind other */;--p-carousel-dots:1 /* @kind other */;
-  --p-carousel-arrow-size:40px;--p-carousel-arrow-border:1px;--p-carousel-arrow-fill:var(--card);--p-carousel-arrow-shadow:0px 1px 2px rgba(13,18,27,0.04);
+  --p-carousel-arrow-size:40px;--p-carousel-arrow-border:1px;--p-carousel-arrow-fill:var(--card);--p-carousel-arrow-shadow:0px 1px 3px rgba(13,18,27,0.08);
   --p-carousel-dot:8px;--p-carousel-dot-active-w:18px;--p-carousel-dot-gap:6px;--p-carousel-dot-alpha:40%;
   --p-carousel-text-font:16px;--p-carousel-text-lh:24px;--p-carousel-text-weight:500;--p-carousel-text-tracking:0px;
   /* Stats (stats.styles.ts webSkin) */
@@ -350,7 +350,7 @@
   --p-btn-square:44px;--p-btn-square-sm:36px;--p-btn-square-lg:52px;
   --p-press:0.8 /* @kind other */;--p-disabled:0.4 /* @kind other */;
   --p-min-target:44px;
-  --p-card-radius:12px;--p-card-shadow:none;--p-card-shadow-raised:0px 1px 2px rgba(13,18,27,0.04);
+  --p-card-radius:12px;--p-card-shadow:none;--p-card-shadow-raised:0px 1px 3px rgba(13,18,27,0.08);
   --p-field-radius:10px;--p-field-height:44px;--p-field-height-sm:36px;--p-field-height-lg:50px;
   --p-field-fill:var(--secondary);--p-field-radius-bottom:10px;--p-field-pad-x:16px;
   --p-label-weight:600;--p-label-tracking:-0.15px;
@@ -583,7 +583,7 @@
   --p-btn-pad-x-lg:24px;--p-btn-pad-y-lg:13px;--p-btn-font-lg:14px;--p-btn-lh-lg:20px;
   --p-btn-square:40px;--p-btn-square-sm:32px;--p-btn-square-lg:48px;
   --p-press:1 /* @kind other */;--p-disabled:0.38 /* @kind other */;
-  --p-card-radius:12px;--p-card-shadow:0px 1px 2px rgba(13,18,27,0.04);--p-card-shadow-raised:0px 4px 6px rgba(0,0,0,0.1);
+  --p-card-radius:12px;--p-card-shadow:0px 1px 3px rgba(13,18,27,0.08);--p-card-shadow-raised:0px 4px 6px rgba(0,0,0,0.1);
   --p-card-pad:16px;--p-card-gap:12px;--p-card-pad-compact:12px;--p-card-gap-compact:8px;
   --p-card-pad-comfortable:24px;--p-card-gap-comfortable:20px;--p-card-border:transparent /* @kind other */;
   --p-field-radius:4px;--p-field-radius-bottom:0px;--p-field-height:56px;--p-field-height-sm:48px;--p-field-height-lg:60px;
@@ -668,7 +668,7 @@
   --p-dl-term-tracking:0.1px;--p-dl-value-tracking:0.1px;--p-dl-stacked-tracking:0.5px;
   --p-dl-header-weight:500;--p-dl-header-tracking:0.15px;
   /* MediaObject — M3: 16dp gap, ELEVATED 12dp card (transparent outline), M3 roles */
-  --p-media-gap:16px;--p-media-gap-compact:12px;--p-media-radius:12px;--p-media-border-color:transparent /* @kind other */;--p-media-shadow:0px 1px 2px rgba(13,18,27,0.04);
+  --p-media-gap:16px;--p-media-gap-compact:12px;--p-media-radius:12px;--p-media-border-color:transparent /* @kind other */;--p-media-shadow:0px 1px 3px rgba(13,18,27,0.08);
   --p-media-icon-radius:12px;--p-media-title-weight:500;--p-media-title-tracking:0.1px;
   --p-media-desc-tracking:0.4px;--p-media-body-lh:20px;--p-media-body-tracking:0.25px;
   /* GridList — M3: 12dp thumbnail, roomier gap, M3 type roles */
@@ -737,7 +737,7 @@
   --p-ad-confirm-fill:transparent;--p-ad-confirm-label:var(--primary-text);
   --p-ad-confirm-destructive-fill:transparent;--p-ad-confirm-destructive-label:var(--destructive-text);
   /* Drawer — M3 sheets: lineless, side 16dp / bottom 28dp, level-1 elevation, 32x4 handle */
-  --p-drawer-scrim:rgba(0,0,0,0.32);--p-drawer-border:0px;--p-drawer-shadow:0px 1px 2px rgba(13,18,27,0.04);
+  --p-drawer-scrim:rgba(0,0,0,0.32);--p-drawer-border:0px;--p-drawer-shadow:0px 1px 3px rgba(13,18,27,0.08);
   --p-drawer-side-radius:16px;--p-drawer-sheet-radius:28px;--p-drawer-sheet-max:640px /* @kind other */;
   --p-drawer-handle-w:32px;--p-drawer-handle-h:4px;--p-drawer-handle-top:16px;
   /* AvatarMenu — M3: a 40dp tonal pill (12% primary), M3 label tracking */
