@@ -5,7 +5,7 @@ import {
   type TextInput as RNTextInput,
   type TextInputProps as RNTextInputProps,
 } from "react-native";
-import { View, Pressable, Text, TextInput, useTheme, useFillStyle, FloatingLabel, LabelContent, FOCUS_RESET, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useTheme, useFillStyle, FloatingLabel, LabelContent, FOCUS_RESET, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
 import { type InputSkin, type Size } from "./input.styles.js";
 
@@ -61,7 +61,7 @@ export type TextEntryProps = Pick<
   | "testID"
 >;
 
-export interface InputProps extends TextEntryProps {
+export interface InputProps extends TextEntryProps, MeasureProps {
   /** Current text value (controlled). Omit and use `defaultValue` for uncontrolled use. */
   value?: string;
   /** Called with the new text on each keystroke. */
@@ -202,7 +202,7 @@ export function createInput(skin: InputSkin) {
     const [focused, setFocused] = useState(false);
     const { tokens } = useTheme();
     const onKeyPress = useInputEscapeBridge(props.onKeyPress);
-    const widthCap = useFillStyle("Input");
+    const widthCap = useFillStyle("Input", props);
     // One collision-free id for the label so the field can name itself via
     // aria-labelledby (unconditional hook: the id is cheap and always available).
     const labelId = useId();

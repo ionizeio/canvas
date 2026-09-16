@@ -1,7 +1,7 @@
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useRef, useState } from "react";
 import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, RippleClip, cornerRadii, useHugStyle, useSizing, useTheme, useControllableState, AnchoredOverlay, useOverlayHost, useMeasuredWidth, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useHugStyle, useSizing, useTheme, useControllableState, AnchoredOverlay, useOverlayHost, useMeasuredWidth, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, type MeasureProps, stepOf } from "../../style/index.js";
 import { Icon, type IconName } from "../icon/icon.js";
 import { primaryText } from "../../style/primary-text.js";
 import * as s from "./button-group.styles.js";
@@ -113,7 +113,7 @@ export interface ButtonGroupSkin {
   ripple?: (t: ColorTokens) => { color: string; borderless: boolean };
 }
 
-export interface ButtonGroupProps {
+export interface ButtonGroupProps extends MeasureProps {
   /** Segments for segmented/spaced: a label string, or `{ label, icon }` for a
    *  leading kit glyph. The stepper cycles the labels (icons ignored there). */
   items?: ButtonGroupItem[];
@@ -154,7 +154,8 @@ export interface ButtonGroupProps {
    * Stretch the group to the container width, the segments sharing the space
    * equally. An orthogonal layout modifier for the segmented and spaced kinds;
    * split and stepper ignore it (their cells are fixed-width chrome) with a
-   * dev-only warning.
+   * dev-only warning. A measure step (`sm`, `lg`, …) does the same up to that
+   * width of the scale.
    */
   block?: boolean;
 
@@ -486,15 +487,17 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     const { tokens } = useTheme();
     const kind = kindOf(props);
     const size = sizeOf(props);
-    // HUG, or FILL under `block` (the segmented/spaced kinds only; see below).
-    const sizing = useSizing({ block: !!props.block });
-    // `block` is a segmented/spaced layout modifier. The split and stepper kinds
-    // are fixed-width chrome (a chevron trigger, prev/next arrow cells) whose
-    // cells cannot meaningfully share a stretched row, so they ignore it, with a
-    // dev-only warning surfacing the call-site mistake.
+    // HUG, or FILL under `block` or a measure step (the segmented/spaced kinds
+    // only; see below). Under either the segments flex to equal shares of the row.
+    const sizing = useSizing(props);
+    const fills = !!props.block || stepOf(props) !== null;
+    // `block` and the measure steps are segmented/spaced layout modifiers. The
+    // split and stepper kinds are fixed-width chrome (a chevron trigger, prev/next
+    // arrow cells) whose cells cannot meaningfully share a stretched row, so they
+    // ignore both, with a dev-only warning surfacing the call-site mistake.
     devWarn(
-      !!props.block && (kind === "split" || kind === "stepper"),
-      `[canvas] <ButtonGroup />: \`block\` applies to the segmented and spaced kinds; the ${kind} kind is fixed-width chrome and ignores it.`,
+      fills && (kind === "split" || kind === "stepper"),
+      `[canvas] <ButtonGroup />: \`block\` and the measure steps apply to the segmented and spaced kinds; the ${kind} kind is fixed-width chrome and ignores them.`,
     );
     devWarn(
       !!props.iconsOnly && (kind === "split" || kind === "stepper"),
@@ -524,7 +527,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
               corners={skin.spacedCorners}
               leading={false}
               standalone
-              block={props.block}
+              block={fills}
               size={size}
               disabled={disabled}
               onPress={(e) => onSelect?.(i, itemLabelOf(item), e)}
@@ -584,7 +587,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
         selectable
         corners={skin.joinCorners(i, count)}
         leading={i > 0}
-        block={props.block}
+        block={fills}
         size={size}
         disabled={disabled}
         onPress={(e) => {

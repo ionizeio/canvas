@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { Animated, Easing, type LayoutChangeEvent } from "react-native";
-import { View, Text, useTheme, useFillStyle, useReducedMotion, supportsNativeDriver, palette, type ColorTokens, type LayoutStyle, type ViewStyle, type TextStyle, type StyleProp } from "../../style/index.js";
+import { View, Text, useTheme, useFillStyle, useReducedMotion, supportsNativeDriver, palette, type ColorTokens, type LayoutStyle, type MeasureProps, type ViewStyle, type TextStyle, type StyleProp } from "../../style/index.js";
 
 // Shared Progress shell. Uses React Native's primitives DIRECTLY (no engine className
 // layer) and reads the active brand tokens via useTheme, so the track/fill colors follow
@@ -25,7 +25,7 @@ import { View, Text, useTheme, useFillStyle, useReducedMotion, supportsNativeDri
 // takes the bounds its parent layout container provides and shares a Row with hugging
 // siblings. It never carries a width of its own.
 
-export interface ProgressProps {
+export interface ProgressProps extends MeasureProps {
   /** Completion as a 0..1 fraction (clamped). Ignored when `indeterminate`. Defaults to 0. */
   value?: number;
   /** Indeterminate mode: ignore `value` and animate a sliding bar (a spinner on iOS). */
@@ -166,7 +166,7 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
     const size = sizeOf(props);
     const tone = toneOf(props);
     // FILL, appended after the skin's width:"100%" (the row-sharing pair).
-    const widthStyle = useFillStyle("Progress");
+    const widthStyle = useFillStyle("Progress", props);
 
     const height = skin.height[size];
     const radius = skin.radius[size];

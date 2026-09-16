@@ -27,10 +27,19 @@
 // `width:"100%"` resolves to the child's own content and a text field would
 // resize on every keystroke (the `field-width.ts` post-mortem). Such a Column
 // publishes `hugging: true` and `useFillStyle` warns in development.
+//
+// The MEASURE axis (`MeasureProps`) is Container's cap moved onto a component:
+// the same step booleans (`xxxs` 192 .. `page` 1280) and the same `start`, so a
+// short field or a call-to-action names its own measure without a wrapper. A
+// step is not a width of the component's own: it is FILL capped at the step
+// (`maxWidth`), fluid below it, centered in its column unless `start` pins it,
+// and in a Row the cap alone (alignSelf is the cross axis there). Fields, Field,
+// Form, Progress, Button, and ButtonGroup carry it; Container extends it.
 
 import { createContext, createElement, useContext, type ReactNode } from "react";
 import type { StyleProp, ViewStyle } from "react-native";
 import { devWarn } from "./dev-warn.js";
+import { widths, type WidthKey } from "./tokens.js";
 
 /** The FILL nature: fill the parent's bounds in a Column, share a Row. */
 export const FILL: ViewStyle = { width: "100%", flexShrink: 1, minWidth: 0 };
@@ -130,13 +139,76 @@ export function useHugStyle(): ViewStyle | null {
 }
 
 /**
- * The sizing style for a HUG component that also offers `block`: `block` turns
- * it into FILL (a full-width button in a Column, an equal share in a Row), and
- * without it the component hugs.
+ * The measure axis: the Container steps on a component. A step caps the
+ * component at that width of the shared scale (fluid below it: inside anything
+ * narrower it fills its parent) and centers it in its column; `start` pins it
+ * to the leading edge instead. Omit every step to take the parent's bounds.
+ * Container's own `ContainerProps` extends this, so the grammar is one.
  */
-export function useSizing(p: { block?: boolean }): ViewStyle | null {
+export interface MeasureProps {
+  // Measure (pick one; omit to take the parent's bounds). Caps the component at a step of the width scale, centered in its column; `start` pins it to the leading edge.
+  xxxs?: boolean; // 192
+  xxs?: boolean; // 256
+  xs?: boolean; // 320
+  sm?: boolean; // 384
+  md?: boolean; // 448
+  lg?: boolean; // 512
+  xl?: boolean; // 576
+  xxl?: boolean; // 672
+  xxxl?: boolean; // 768
+  wide?: boolean; // 896
+  wider?: boolean; // 1024
+  widest?: boolean; // 1152
+  page?: boolean; // 1280
+  /** Pin a capped component to the leading edge instead of centering it in its column. */
+  start?: boolean;
+}
+
+/**
+ * The step a component's measure props name, or null when none is passed.
+ * Narrowest first when several are, so a stray wider step never silently widens
+ * a deliberate narrow one: the precedence IS the scale's declaration order in
+ * `widths` (ascending, which `test/sizing.test.tsx` pins), so a step added to
+ * the scale needs no second list here.
+ */
+export function stepOf(p: MeasureProps): WidthKey | null {
+  for (const step of Object.keys(widths) as WidthKey[]) if (p[step]) return step;
+  return null;
+}
+
+/**
+ * The style for a measured component: FILL capped at the step, centered in its
+ * column or pinned to the start. The alignment is resolved against the nearest
+ * kit layout container like HUG is: in a Row `alignSelf` is the CROSS axis
+ * (it would pin a field to the top of the row), so only the cap applies there
+ * and the Row's own `justifyContent` places the box.
+ */
+export function measureStyle(step: WidthKey, start: boolean, axis: LayoutAxis | null): ViewStyle {
+  return {
+    ...FILL,
+    maxWidth: widths[step],
+    ...(axis?.axis === "row" ? null : { alignSelf: start ? "flex-start" : "center" }),
+  };
+}
+
+/** The measure style for a component's props, or null when no step is passed. */
+export function useMeasureStyle(p: MeasureProps): ViewStyle | null {
+  const ctx = useContext(LayoutAxisContext);
+  const step = stepOf(p);
+  return step === null ? null : measureStyle(step, !!p.start, ctx);
+}
+
+/**
+ * The sizing style for a HUG component that also offers `block` and the measure
+ * axis: a step caps it (FILL up to the step, so a call-to-action is as wide as
+ * its measure), `block` turns it into FILL (a full-width button in a Column, an
+ * equal share in a Row), and without either the component hugs. A step wins
+ * over `block`: it is the more specific ask.
+ */
+export function useSizing(p: { block?: boolean } & MeasureProps): ViewStyle | null {
   const hug = useHugStyle();
-  return p.block ? FILL : hug;
+  const measure = useMeasureStyle(p);
+  return measure ?? (p.block ? FILL : hug);
 }
 
 export interface FillOptions {
@@ -149,17 +221,20 @@ export interface FillOptions {
 }
 
 /**
- * The FILL nature for a component root, plus the development warning for the
- * one layout that collapses it: a bare Column inside a Row. Give that Column a
- * `span` or `fill` so the field has bounds.
+ * The FILL nature for a component root, capped at the step its measure props
+ * name (pass the component's props; a component without the axis passes
+ * nothing), plus the development warning for the one layout that collapses it:
+ * a bare Column inside a Row. Give that Column a `span` or `fill` so the field
+ * has bounds.
  */
-export function useFillStyle(component: string, options?: FillOptions): ViewStyle {
+export function useFillStyle(component: string, measure?: MeasureProps, options?: FillOptions): ViewStyle {
   const ctx = useContext(LayoutAxisContext);
   devWarn(
     ctx !== null && ctx.hugging && !options?.hugsInCell,
     `[canvas] <${component} />: rendered inside a bare <Column> that sits in a <Row>. That Column hugs its content, so the ${component} collapses to its own text (and a text field resizes on every keystroke). Give the Column a span={n} or fill so it has bounds.`,
   );
-  return FILL;
+  const step = measure ? stepOf(measure) : null;
+  return step === null ? FILL : measureStyle(step, !!measure?.start, ctx);
 }
 
 /** The style keys a layout container owns; a non-layout component never takes them. */
@@ -168,7 +243,8 @@ export type SizingKey = "width" | "minWidth" | "maxWidth" | "flex" | "flexBasis"
 /**
  * The `style` a non-layout component accepts: `ViewStyle` without the sizing
  * keys. Width, min/max width, flex, and `alignSelf` belong to the parent layout
- * container (a Column `span`, `fill`, a Container step); passing them here is a
- * type error, not a runtime warning.
+ * container (a Column `span`, `fill`, a Container step) or to the component's
+ * own measure axis (`MeasureProps`); passing them here is a type error, not a
+ * runtime warning.
  */
 export type LayoutStyle = StyleProp<Omit<ViewStyle, SizingKey>>;

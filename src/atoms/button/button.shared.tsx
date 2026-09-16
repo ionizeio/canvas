@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { primaryText } from "../../style/primary-text.js";
-import { Pressable, RippleClip, Text, useMinTargetSlop, useSizing, useTheme, type LayoutStyle } from "../../style/index.js";
+import { Pressable, RippleClip, Text, useMinTargetSlop, useSizing, useTheme, type LayoutStyle, type MeasureProps } from "../../style/index.js";
 import { type ButtonSkin, type Intent, type Size, FG_TOKEN } from "./button.styles.js";
 
 // Shared Button shell. The structure (Pressable + optional loading spinner +
@@ -17,7 +17,7 @@ import { type ButtonSkin, type Intent, type Size, FG_TOKEN } from "./button.styl
 // precedence live here once; a platform file supplies only its skin (shape,
 // sizing, label weight, press feedback) and calls createButton.
 
-export interface ButtonProps {
+export interface ButtonProps extends MeasureProps {
   children?: ReactNode;
   /**
    * An icon element rendered before the label (e.g. a lucide or Canvas `Icon`).
@@ -72,7 +72,8 @@ export interface ButtonProps {
   icon?: boolean;
   // Layout and state. A Button is HUG (src/style/sizing.ts): it keeps its content
   // width inside a stretching Column and sits content-sized in a Row; `block` makes
-  // it FILL (full width in a Column, an equal share in a Row).
+  // it FILL (full width in a Column, an equal share in a Row), and a measure step
+  // (`sm`, `lg`, …, from MeasureProps) makes it FILL up to that width of the scale.
   block?: boolean;
   loading?: boolean;
   disabled?: boolean;
@@ -91,7 +92,7 @@ export interface ButtonProps {
   haspopup?: "menu" | "dialog" | "listbox" | "grid" | "tree" | true;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Composition within a parent only, never a restyle hook and never a width: `block` and the parent layout container own the width. */
+  /** Composition within a parent only, never a restyle hook and never a width: `block`, the measure steps, and the parent layout container own the width. */
   style?: LayoutStyle;
 }
 
@@ -130,7 +131,7 @@ export function createButton(skin: ButtonSkin) {
     const size = sizeOf(props);
 
     const opts = { icon: !!icon, block: !!block, dim: !!(disabled || loading) };
-    const sizing = useSizing({ block });
+    const sizing = useSizing(props);
     const container = skin.container(tokens, intent, size, opts);
     const ripple = skin.ripple ? skin.ripple(tokens, intent) : undefined;
     // The rounded shape the ripple is clipped to (Android only; undefined on iOS/web). A bounded

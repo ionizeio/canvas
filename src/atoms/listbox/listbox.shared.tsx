@@ -1,6 +1,6 @@
 import { useState, type ComponentType } from "react";
 import { type Role } from "react-native";
-import { View, Pressable, Text, useTheme, useControllableState, useFillStyle, useRovingFocus, isRTL, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useControllableState, useFillStyle, useRovingFocus, isRTL, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 
 // Shared Listbox shell. An inline, selectable list of options rendered directly
 // (not a popover). Each row is a Pressable. Two selection modes, mutually
@@ -45,7 +45,7 @@ export interface ListboxItem {
 // indefinite width to 0 with no free space to grow into, so on iOS/Android every
 // label collapses to zero and only the checkmark gutter shows. `useFillStyle`
 // warns in development when the list lands in such a cell.
-export interface ListboxProps {
+export interface ListboxProps extends MeasureProps {
   /** The options to render, top to bottom. */
   items: ListboxItem[];
   /** Accessible name of the option list or multi-select checkbox group. Defaults to "Options". */
@@ -136,7 +136,7 @@ export function createListbox(skin: ListboxSkin, CheckboxIndicator: ComponentTyp
     const accessibleName = props.accessibilityLabel?.trim() || "Options";
     const { tokens } = useTheme();
     // FILL, applied to the root list View (see the note above the interface).
-    const widthCap = useFillStyle("Listbox");
+    const widthCap = useFillStyle("Listbox", props);
 
     // Normalize the single|multi selection to an index array so one code path
     // drives both modes. Controlled via `selected`; uncontrolled seeds from

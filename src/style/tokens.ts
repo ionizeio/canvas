@@ -678,8 +678,10 @@ export type WidthKey = "xxxs" | "xxs" | "xs" | "sm" | "md" | "lg" | "xl" | "xxl"
  * the numbers only), 64px apart from xs to xxl and then doubling strides, plus
  * two tile steps below xs (`max-w-48` and `max-w-64`, the small KPI card and the
  * chart tile), so the kit and the design mirror name widths instead of inventing
- * them. A component never carries one of these on its own root: it is FILL or
- * HUG (see `sizing.ts`), and the parent layout container picks the step.
+ * them. A component never carries one of these as a width of its own: it is FILL
+ * or HUG (see `sizing.ts`), and the step is a cap, picked by the parent layout
+ * container or named on the component through its measure axis (`MeasureProps`).
+ * Declared narrowest first: `stepOf` reads this order as its precedence.
  */
 export const widths: Record<WidthKey, number> = {
   xxxs: 192,

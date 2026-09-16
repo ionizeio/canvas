@@ -1,7 +1,7 @@
 import { useInputEscapeBridge } from "../../style/escape-layer.js";
 import { forwardRef, useId, useState } from "react";
 import { type TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from "react-native";
-import { View, Text, TextInput, useTheme, useFillStyle, FloatingLabel, LabelContent, FOCUS_RESET, type SizingKey, type StyleProp, type TextStyle, type ViewStyle } from "../../style/index.js";
+import { View, Text, TextInput, useTheme, useFillStyle, FloatingLabel, LabelContent, FOCUS_RESET, type MeasureProps, type SizingKey, type StyleProp, type TextStyle, type ViewStyle } from "../../style/index.js";
 import { type TextEntryProps } from "../input/input.shared.js";
 import { type TextareaSkin, type Size, sizeText, minHeight } from "./textarea.styles.js";
 
@@ -32,7 +32,7 @@ const ANDROID_TEXTAREA_INSET = 12;
 // file supplies only its skin (fill, shape, border/underline, focus feedback)
 // and calls createTextarea.
 
-export interface TextareaProps extends TextEntryProps {
+export interface TextareaProps extends TextEntryProps, MeasureProps {
   /** Controlled text value. Omit and use `defaultValue` for uncontrolled use. */
   value?: string;
   /** Fired with the next text value on each edit. */
@@ -105,7 +105,7 @@ export function createTextarea(skin: TextareaSkin) {
     const onKeyPress = useInputEscapeBridge(props.onKeyPress);
     // FILL: the field takes the bounds its parent provides; a flush textarea sits
     // inside a framed container (a toolbar Card) whose frame IS the field edge.
-    const widthCap = useFillStyle("Textarea");
+    const widthCap = useFillStyle("Textarea", props);
     // One collision-free id linking the field to its label (aria-labelledby).
     const labelId = useId();
 

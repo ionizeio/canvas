@@ -41,10 +41,10 @@ it with `tools/handoff-parity/extract.ts --from <export>`.
 | Present in the kit | 74 |
 | Absent (tracked) | 1 |
 | Hand-off props compared | 733 |
-| Same name, present | 526 |
-| Settled divergences | 151 |
+| Same name, present | 515 |
+| Settled divergences | 162 |
 | Open gaps (tracked) | 56 |
-| Metric gaps (not detectable here) | 1 |
+| Metric gaps (not detectable here) | 4 |
 | **Unclassified** | **0** |
 
 ## Components absent from the kit
@@ -131,6 +131,9 @@ Interactive state has to be driven first: a closed menu measures nothing.
 | Component | Canvas | Hand-off | Planned | Why |
 |---|---|---|---|---|
 | `Avatar` | tiny 24 / small 28 / default 40 / large 48 | small 24 / default 32 / large 40 | unscheduled | The whole scale sits one step high. The prop check cannot see this: `small` and `large` exist on both sides, so it reports them satisfied while the diameters differ. Re-scaling shipped avatars is a visual break for every consumer, so it is tracked rather than done; the `tiny` 24 step was added for the AvatarMenu pill inset without moving the rest. |
+| `Input` | wide 896 (the `wide` step of the shared width scale, a maxWidth cap) | wide 480px field width | unscheduled | Same name, different width. The hand-off's `wide` is the 480px field; the kit's `wide` is the 896 step of the one width scale every measure reads (Container, the fields, Button), so renaming it on the fields alone would split the scale. The hand-off's capability is the `lg` step (512): consumers migrating `wide` should write `lg`, not `wide`. The prop check counts the name as satisfied, so this is recorded here from the numbers. |
+| `Select` | wide 896 (the `wide` step of the shared width scale, a maxWidth cap) | wide 480px field width | unscheduled | Same name, different width. The hand-off's `wide` is the 480px field; the kit's `wide` is the 896 step of the one width scale every measure reads (Container, the fields, Button), so renaming it on the fields alone would split the scale. The hand-off's capability is the `lg` step (512): consumers migrating `wide` should write `lg`, not `wide`. The prop check counts the name as satisfied, so this is recorded here from the numbers. |
+| `Textarea` | wide 896 (the `wide` step of the shared width scale, a maxWidth cap) | wide 480px field width | unscheduled | Same name, different width. The hand-off's `wide` is the 480px field; the kit's `wide` is the 896 step of the one width scale every measure reads (Container, the fields, Button), so renaming it on the fields alone would split the scale. The hand-off's capability is the `lg` step (512): consumers migrating `wide` should write `lg`, not `wide`. The prop check counts the name as satisfied, so this is recorded here from the numbers. |
 
 ## Settled divergences
 
@@ -144,12 +147,17 @@ Differences in spelling or shape where the kit carries the capability its own wa
 | `ActionSheet` | `items` | Renamed | `actions` | Named `actions` to match the sheet's other action-bearing props. |
 | `ActionSheet` | `onClose` | Renamed | `onOpenChange` | Canvas's controllable-state convention pairs `open`/`defaultOpen` with `onOpenChange`, which reports both directions rather than close only. |
 | `ActionSheet` | `glass` | Not offered | — | Glass is a theming-level surface mode in Canvas (`<ThemeProvider glass>` / `data-surface`), never a per-component prop. CLAUDE.md forbids adding one. |
+| `Alert` | `narrow` | Renamed | `Container` | An Alert is a FILL content surface with no measure axis of its own; its measure is the parent's, so a sidebar-column or page-width banner is a `Container` step (`xs` 320, `xxl` 672) around it rather than a prop on it. |
+| `Alert` | `wide` | Renamed | `Container` | An Alert is a FILL content surface with no measure axis of its own; its measure is the parent's, so a sidebar-column or page-width banner is a `Container` step (`xs` 320, `xxl` 672) around it rather than a prop on it. |
+| `Alert` | `block` | Not offered | — | Filling the parent is the only default now: the control is FILL (`width: 100%` plus the row-sharing pair, src/style/sizing.ts) and the parent layout container provides the bounds, so there is no fixed width for `block` to remove. A measure step (`xs`, `lg`, …) is the only cap, and it is opt-in. |
 | `AlertDialog` | `confirmField` | Renamed | `withInput`, `confirmText` | Canvas splits type-to-confirm into the boolean that turns it on and the string that must be matched. |
 | `AlertDialog` | `dismissible` | Not offered | — | An alert dialog is modal by contract in Canvas: it must be resolved through confirm or cancel, so scrim-dismiss is not offered. |
 | `AlertDialog` | `width` | Boolean axis | `narrow`, `small`, `large` | Pixel widths are rejected; the width axis is flat booleans. |
 | `AreaChart` | `xLabels` | Renamed | `labels` | The cartesian frame calls its category axis `labels`; there is no second label axis to disambiguate from. |
 | `AreaChart` | `height` | Not offered | — | Canvas charts size themselves from the skin's plot height and the `compact` axis, so a caller never hand-sets a pixel height. |
 | `Autocomplete` | `helper` | Renamed | `helperText` | Already present under this name; phase 3 aligns the a11y wiring, not the spelling. |
+| `Autocomplete` | `block` | Not offered | — | Filling the parent is the only default now: the control is FILL (`width: 100%` plus the row-sharing pair, src/style/sizing.ts) and the parent layout container provides the bounds, so there is no fixed width for `block` to remove. A measure step (`xs`, `lg`, …) is the only cap, and it is opt-in. |
+| `Autocomplete` | `narrow` | Renamed | `xxs` | The 240px field width has no step on the shared width scale (src/style/tokens.ts). The measure axis (`MeasureProps`) names `xxs` (256) as the nearest step on the field itself, and a Row `span` covers any other fraction; the step is a cap on the parent's bounds, fluid below it, never a fixed width. |
 | `Avatar` | `size` | Boolean axis | `small`, `large` | Canvas rejects string and numeric size props; every size axis is flat booleans (CLAUDE.md 'Semantic prop styling'). |
 | `AvatarMenu` | `align` | Boolean axis | `alignEnd` | String-enum alignment is rejected; Canvas spells the non-default end as a boolean. |
 | `Breadcrumb` | `separator` | Boolean axis | `chevron`, `slash`, `dot` | String-enum separator is rejected; each glyph is its own boolean. |
@@ -220,6 +228,8 @@ Differences in spelling or shape where the kit carries the capability its own wa
 | `Icon` | `name` | Boolean axis | — | Canvas exposes every glyph as its own boolean prop (`<Icon shield />`), so the glyph set is type-checked at the call site rather than stringly-typed. |
 | `Input` | `iconLeft` | Renamed | `icon`, `leadingIcon` | Canvas pairs one `icon` glyph with the boolean that places it. |
 | `Input` | `iconRight` | Renamed | `icon`, `trailingIcon` | As above. |
+| `Input` | `narrow` | Renamed | `xxs` | The 240px field width has no step on the shared width scale (src/style/tokens.ts). The measure axis (`MeasureProps`) names `xxs` (256) as the nearest step on the field itself, and a Row `span` covers any other fraction; the step is a cap on the parent's bounds, fluid below it, never a fixed width. |
+| `Input` | `block` | Not offered | — | Filling the parent is the only default now: the control is FILL (`width: 100%` plus the row-sharing pair, src/style/sizing.ts) and the parent layout container provides the bounds, so there is no fixed width for `block` to remove. A measure step (`xs`, `lg`, …) is the only cap, and it is opt-in. |
 | `Input` | `onChange` | Renamed | `onChangeText`, `onSelect`, `onValueChange` | Canvas names the callback for what it reports, per the controllable-state naming table. |
 | `Input` | `type` | Web-only | — | The DOM <input type> attribute. Canvas carries the shape rule as `validateAs` and the masking as `password`/`masked`. |
 | `InputOTP` | `active` | Not offered | — | The focused cell is internal state; exposing it would let a caller desync the caret from the value. |
@@ -257,10 +267,13 @@ Differences in spelling or shape where the kit carries the capability its own wa
 | `ScatterPlot` | `yTicks` | Not offered | — | Canvas's chart-math nices the domain and picks its own tick count; `min`/`max` bound it instead. |
 | `ScatterPlot` | `grid` | Renamed | `hideGrid` | Shown by default; the inverse boolean suppresses it. |
 | `Select` | `onChange` | Renamed | `onChangeText`, `onSelect`, `onValueChange` | Canvas names the callback for what it reports, per the controllable-state naming table. |
+| `Select` | `narrow` | Renamed | `xxs` | The 240px field width has no step on the shared width scale (src/style/tokens.ts). The measure axis (`MeasureProps`) names `xxs` (256) as the nearest step on the field itself, and a Row `span` covers any other fraction; the step is a cap on the parent's bounds, fluid below it, never a fixed width. |
+| `Select` | `block` | Not offered | — | Filling the parent is the only default now: the control is FILL (`width: 100%` plus the row-sharing pair, src/style/sizing.ts) and the parent layout container provides the bounds, so there is no fixed width for `block` to remove. A measure step (`xs`, `lg`, …) is the only cap, and it is opt-in. |
 | `Skeleton` | `circle` | Renamed | `avatar` | Canvas names its shapes for what they stand in for (`avatar`, `text`, `card`, `table`, `list`, `button`) rather than for their geometry. |
 | `Skeleton` | `width` | Not offered | — | Shape presets carry their own dimensions; a raw width would be a styling escape hatch. |
 | `Skeleton` | `height` | Not offered | — | As above. |
 | `Slider` | `label` | Renamed | `children` | Slider owns its title as children, with `description` for the second line. |
+| `Slider` | `block` | Not offered | — | Filling the parent is the only default now: the control is FILL (`width: 100%` plus the row-sharing pair, src/style/sizing.ts) and the parent layout container provides the bounds, so there is no fixed width for `block` to remove. A measure step (`xs`, `lg`, …) is the only cap, and it is opt-in. |
 | `Sparkline` | `data` | Renamed | `values` | Canvas names the plain number series `values`. |
 | `Sparkline` | `width` | Not offered | — | The strip fills its container; a pixel width would be a styling escape hatch. |
 | `Sparkline` | `height` | Boolean axis | `tall` | Two heights are offered as a boolean rather than a pixel value. |
@@ -284,6 +297,7 @@ Differences in spelling or shape where the kit carries the capability its own wa
 | `Tabs` | `items` | Renamed | `tabs` | Named for what they are, matching the component. |
 | `Tabs` | `value` | Renamed | `active` | Canvas's tab state is `active`/`defaultActive`/`onChange`. |
 | `Tabs` | `onChange` | Renamed | `onChangeText`, `onSelect`, `onValueChange` | Canvas names the callback for what it reports, per the controllable-state naming table. |
+| `Textarea` | `block` | Not offered | — | Filling the parent is the only default now: the control is FILL (`width: 100%` plus the row-sharing pair, src/style/sizing.ts) and the parent layout container provides the bounds, so there is no fixed width for `block` to remove. A measure step (`xs`, `lg`, …) is the only cap, and it is opt-in. |
 | `Textarea` | `onChange` | Renamed | `onChangeText`, `onSelect`, `onValueChange` | Canvas names the callback for what it reports, per the controllable-state naming table. |
 | `Toast` | `title` | Renamed | `message` | Toast owns its text as `message`, with `description` for the second line. |
 | `Toast` | `onClose` | Renamed | `onDismiss` | Canvas's Toast reports dismissal only (there is no open/close duality to report), so the callback is named for what it reports. |

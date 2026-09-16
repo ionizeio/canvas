@@ -7,7 +7,7 @@ import {
   type GestureResponderEvent,
   type AccessibilityActionEvent,
 } from "react-native";
-import { View, Text, GlassSurface, useTheme, useControllableState, useFillStyle, useReducedMotion, isRTL, FOCUS_RESET, type ColorTokens, type ViewProps, type ViewStyle, type TextStyle, type StyleProp, type LayoutStyle } from "../../style/index.js";
+import { View, Text, GlassSurface, useTheme, useControllableState, useFillStyle, useReducedMotion, isRTL, FOCUS_RESET, type ColorTokens, type ViewProps, type ViewStyle, type TextStyle, type StyleProp, type LayoutStyle, type MeasureProps } from "../../style/index.js";
 import { clamp } from "../../style/math.js";
 
 // Shared Slider shell. Uses React Native's primitives DIRECTLY (no engine className
@@ -20,7 +20,7 @@ import { clamp } from "../../style/math.js";
 // Android, and react-native-web alike, so the drag is one cross-platform code path
 // (no Platform.OS branch).
 
-export interface SliderProps {
+export interface SliderProps extends MeasureProps {
   /** Controlled value; omit for uncontrolled use. The thumb sits at this value (clamped to [min, max]). */
   value?: number;
   /** Initial value for uncontrolled use (a bare <Slider/> drags out of the box). Default `min`. */
@@ -209,7 +209,7 @@ export function createSlider(skin: SliderSkin) {
     const rtl = isRTL();
     // FILL, appended after the base width:"100%": the row-sharing pair lets a slider
     // beside a button take the remainder of a Row.
-    const widthCap = useFillStyle("Slider");
+    const widthCap = useFillStyle("Slider", props);
 
     // Controlled when `value` is provided, self-managed otherwise, so a bare
     // <Slider/> drags out of the box (the standard library contract).

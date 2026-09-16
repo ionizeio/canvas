@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { CELL_AXIS, LayoutAxisProvider, View, widths, type StyleProp, type ViewStyle, type WidthKey } from "../../style/index.js";
+import { CELL_AXIS, LayoutAxisProvider, View, stepOf, widths, type MeasureProps, type StyleProp, type ViewStyle, type WidthKey } from "../../style/index.js";
 import { type FlexSkin } from "../layout/layout.styles.js";
 import { type Pad } from "../layout/layout.shared.js";
 
@@ -23,6 +23,11 @@ import { type Pad } from "../layout/layout.shared.js";
 //   - gutters   padTight 8 / pad 16 / padLoose 24 of HORIZONTAL padding (Row and
 //               Column's pad scale); vertical rhythm belongs to the Column inside.
 //
+// The measure and alignment axes are the kit-wide `MeasureProps` (sizing.ts): the
+// fields, Button, and the other components that carry a measure of their own read
+// the same booleans with the same precedence, so `<Container sm start>` and
+// `<Input sm start>` say the same thing. Container adds `fluid` and the gutters.
+//
 // Layout is a "Shared" platform treatment like Row and Column: flexbox is
 // identical on iOS, Android, and react-native-web, so the three skins reference
 // the same padding scale.
@@ -32,28 +37,11 @@ export type Measure = WidthKey | "fluid";
 /** The default measure: no cap, the container conforms to its parent. */
 export const FLUID: Measure = "fluid";
 
-export interface ContainerProps {
+export interface ContainerProps extends MeasureProps {
   children?: ReactNode;
 
-  // Measure (pick one; omit for full width). The step of the width scale the container caps at.
-  xxxs?: boolean; // 192, a small KPI tile
-  xxs?: boolean; // 256, a chart tile
-  xs?: boolean; // 320
-  sm?: boolean; // 384
-  md?: boolean; // 448
-  lg?: boolean; // 512
-  xl?: boolean; // 576
-  xxl?: boolean; // 672
-  xxxl?: boolean; // 768
-  wide?: boolean; // 896
-  wider?: boolean; // 1024
-  widest?: boolean; // 1152
-  page?: boolean; // 1280
   /** No cap, the default: the container spans its parent. Explicit `fluid` wins over every step when several are passed. */
   fluid?: boolean;
-
-  /** Pin the container to the leading edge instead of centering it in its parent. */
-  start?: boolean;
 
   // Gutters: horizontal padding (pick one; omit for none).
   padTight?: boolean; // 8
@@ -69,23 +57,10 @@ export interface ContainerProps {
   style?: StyleProp<ViewStyle>;
 }
 
-// Measure precedence: fluid, then narrowest first; default full width (fluid).
+// Measure precedence: fluid, then the shared step order (narrowest first); default full width (fluid).
 export function measureOf(p: ContainerProps): Measure {
   if (p.fluid) return "fluid";
-  if (p.xxxs) return "xxxs";
-  if (p.xxs) return "xxs";
-  if (p.xs) return "xs";
-  if (p.sm) return "sm";
-  if (p.md) return "md";
-  if (p.lg) return "lg";
-  if (p.xl) return "xl";
-  if (p.xxl) return "xxl";
-  if (p.xxxl) return "xxxl";
-  if (p.wide) return "wide";
-  if (p.wider) return "wider";
-  if (p.widest) return "widest";
-  if (p.page) return "page";
-  return FLUID;
+  return stepOf(p) ?? FLUID;
 }
 
 // Gutter precedence, loosest first (Row and Column's own); default none.

@@ -218,3 +218,136 @@ describe("the fields are FILL", () => {
     }
   });
 });
+
+// The measure axis (MeasureProps, src/style/sizing.ts): Container's steps on a
+// component. A step is FILL capped at that width of the scale (maxWidth), so it is
+// still the parent's bounds below the step; it centers in its column unless
+// `start` pins it, and in a Row only the cap applies (alignSelf is the cross axis
+// there). Narrowest wins when several steps are passed, and on a hug component a
+// step wins over `block`.
+import { Button } from "../src/atoms/button/button.tsx";
+import { ButtonGroup } from "../src/atoms/button-group/button-group.tsx";
+import { Field } from "../src/molecules/field/field.tsx";
+import { Form } from "../src/molecules/form/form.tsx";
+import { Container } from "../src/atoms/container/container.tsx";
+import { widths } from "../src/style/tokens.ts";
+import { measureStyle, stepOf, useMeasureStyle } from "../src/style/sizing.ts";
+
+const expectMeasured = (el: HTMLElement | null, step: keyof typeof widths, align: "center" | "flex-start" | "") => {
+  expect(el).not.toBeNull();
+  expect(el!.style.width).toBe("100%");
+  expect(el!.style.flexShrink).toBe("1");
+  expect(el!.style.minWidth).toBe("0px");
+  expect(el!.style.maxWidth).toBe(`${widths[step]}px`);
+  expect(el!.style.alignSelf).toBe(align);
+};
+/** The nearest ancestor (or self) carrying a max width (the measured node). */
+const measuredAncestor = (el: HTMLElement | null) => {
+  let node: HTMLElement | null = el;
+  while (node && node.style.maxWidth === "") node = node.parentElement;
+  return node;
+};
+
+describe("the measure axis", () => {
+  it("stepOf: null without a step, narrowest first when several are passed", () => {
+    // The precedence is the scale's own declaration order, so the scale must be ascending.
+    const values = Object.values(widths);
+    expect(values).toEqual([...values].sort((a, b) => a - b));
+    expect(Object.keys(widths)[0]).toBe("xxxs");
+    expect(stepOf({})).toBeNull();
+    expect(stepOf({ start: true })).toBeNull();
+    expect(stepOf({ lg: true })).toBe("lg");
+    expect(stepOf({ page: true, xs: true, xxl: true })).toBe("xs");
+  });
+
+  it("measureStyle: FILL capped at the step; centered or pinned in a column, the cap alone in a Row", () => {
+    expect(measureStyle("sm", false, null)).toEqual({ ...FILL, maxWidth: widths.sm, alignSelf: "center" });
+    expect(measureStyle("sm", true, CELL_AXIS)).toEqual({ ...FILL, maxWidth: widths.sm, alignSelf: "flex-start" });
+    expect(measureStyle("sm", true, ROW_AXIS)).toEqual({ ...FILL, maxWidth: widths.sm });
+  });
+
+  it("the hooks read the measure from the props; a step wins over block, and no step is the plain nature", () => {
+    expect(renderHook(() => useMeasureStyle({})).result.current).toBeNull();
+    expect(renderHook(() => useMeasureStyle({ md: true })).result.current).toEqual(measureStyle("md", false, null));
+    expect(renderHook(() => useFillStyle("Input", {})).result.current).toBe(FILL);
+    expect(renderHook(() => useFillStyle("Input", { md: true, start: true }), { wrapper: inAxis(CELL_AXIS) }).result.current).toEqual(measureStyle("md", true, CELL_AXIS));
+    expect(renderHook(() => useSizing({ block: true, xs: true })).result.current).toEqual(measureStyle("xs", false, null));
+    expect(renderHook(() => useSizing({ xs: true }), { wrapper: inAxis(ROW_AXIS) }).result.current).toEqual(measureStyle("xs", false, ROW_AXIS));
+    expect(renderHook(() => useSizing({}), { wrapper: inAxis(CELL_AXIS) }).result.current).toBe(HUG_IN_STRETCH_COLUMN);
+  });
+
+  it("Container reads the same booleans with the same precedence", () => {
+    const { container } = ui(<Container xl sm start testID="c"><View /></Container>);
+    const c = at(container, "c");
+    expect(c.style.maxWidth).toBe(`${widths.sm}px`);
+    expect(c.style.alignSelf).toBe("flex-start");
+  });
+
+  it("caps every field's outermost node at the step, centered, and pins it with start", () => {
+    const i = ui(<Input sm placeholder="Email" />);
+    expectMeasured(i.container.querySelector("input"), "sm", "center");
+    cleanup();
+    const labeled = ui(<Input lg start label="Email" placeholder="ada@acme.dev" />);
+    expectMeasured(measuredAncestor(labeled.container.querySelector("input")), "lg", "flex-start");
+    cleanup();
+    const t = ui(<Textarea xs start placeholder="Notes" />);
+    expectMeasured(measuredAncestor(t.container.querySelector("textarea")), "xs", "flex-start");
+    cleanup();
+    const s = ui(<Select md label="Region" options={["EU", "US"]} />);
+    expectMeasured(s.container.firstElementChild as HTMLElement, "md", "center");
+    cleanup();
+    const a = ui(<Autocomplete xs start label="City" options={["Paris", "Oslo"]} />);
+    expectMeasured(a.container.firstElementChild as HTMLElement, "xs", "flex-start");
+    cleanup();
+    const l = ui(<Listbox sm start testID="lb" items={[{ label: "Backend" }, { label: "Frontend" }]} />);
+    expectMeasured(at(l.container, "lb"), "sm", "flex-start");
+    cleanup();
+    const p = ui(<Progress xxs start testID="p" value={0.5} />);
+    expectMeasured(at(p.container, "p"), "xxs", "flex-start");
+    cleanup();
+    const sl = ui(<Slider lg testID="s" defaultValue={40} />);
+    expectMeasured(at(sl.container, "s"), "lg", "center");
+    cleanup();
+    const f = ui(<Field sm start testID="f" label="ZIP"><Input placeholder="94103" /></Field>);
+    expectMeasured(at(f.container, "f"), "sm", "flex-start");
+    // The control inside a measured Field (labeled by delegation) fills the Field, with no cap of its own.
+    expectFill(fillAncestor(f.container.querySelector("input")));
+    cleanup();
+    const fm = ui(<Form md start testID="fm"><Input placeholder="Name" /></Form>);
+    expectMeasured(at(fm.container, "fm"), "md", "flex-start");
+  });
+
+  it("makes a Button FILL up to the step (its wrapper, the outermost node) and pins it with start", () => {
+    const b = ui(<Button md testID="b">Continue</Button>);
+    const wrapper = at(b.container, "b").parentElement as HTMLElement;
+    expectMeasured(wrapper, "md", "center");
+    cleanup();
+    const pinned = ui(<Column><Button xs start testID="b">Continue</Button></Column>);
+    expectMeasured(at(pinned.container, "b").parentElement as HTMLElement, "xs", "flex-start");
+    cleanup();
+    // Without a step the button keeps HUG, and block keeps plain FILL.
+    const hug = ui(<Column><Button testID="b">Continue</Button></Column>);
+    expect((at(hug.container, "b").parentElement as HTMLElement).style.alignSelf).toBe("flex-start");
+    expect((at(hug.container, "b").parentElement as HTMLElement).style.maxWidth).toBe("");
+    cleanup();
+    const block = ui(<Button block testID="b">Continue</Button>);
+    expectFill(at(block.container, "b").parentElement as HTMLElement);
+  });
+
+  it("stretches a segmented ButtonGroup to the step and flexes its segments like block does", () => {
+    const { container } = ui(<ButtonGroup segmented defaultActive={0} items={["Day", "Week", "Month"]} sm start />);
+    expectMeasured(container.querySelector('[role="tablist"]') as HTMLElement, "sm", "flex-start");
+    for (const tab of Array.from(container.querySelectorAll('[role="tab"]')) as HTMLElement[]) expect(tab.style.flexGrow).toBe("1");
+  });
+
+  it("in a Row the cap applies and alignSelf does not: the Row places the box on its own axis", () => {
+    const { container } = ui(
+      <Row>
+        <Input sm start placeholder="Search" />
+        <Button lg testID="b">Go</Button>
+      </Row>,
+    );
+    expectMeasured(container.querySelector("input"), "sm", "");
+    expectMeasured(at(container, "b").parentElement as HTMLElement, "lg", "");
+  });
+});

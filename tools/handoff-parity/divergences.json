@@ -136,7 +136,22 @@
         "reason": "Named `actions` to match the sheet's other action-bearing props."
       }
     },
-    "Alert": {},
+    "Alert": {
+      "block": {
+        "kind": "intentional-omission",
+        "reason": "Filling the parent is the only default now: the control is FILL (`width: 100%` plus the row-sharing pair, src/style/sizing.ts) and the parent layout container provides the bounds, so there is no fixed width for `block` to remove. A measure step (`xs`, `lg`, …) is the only cap, and it is opt-in."
+      },
+      "narrow": {
+        "kind": "renamed",
+        "to": "Container",
+        "reason": "An Alert is a FILL content surface with no measure axis of its own; its measure is the parent's, so a sidebar-column or page-width banner is a `Container` step (`xs` 320, `xxl` 672) around it rather than a prop on it."
+      },
+      "wide": {
+        "kind": "renamed",
+        "to": "Container",
+        "reason": "An Alert is a FILL content surface with no measure axis of its own; its measure is the parent's, so a sidebar-column or page-width banner is a `Container` step (`xs` 320, `xxl` 672) around it rather than a prop on it."
+      }
+    },
     "AlertDialog": {
       "confirmField": {
         "kind": "renamed",
@@ -166,6 +181,15 @@
         "kind": "renamed",
         "to": "helperText",
         "reason": "Already present under this name; phase 3 aligns the a11y wiring, not the spelling."
+      },
+      "narrow": {
+        "kind": "renamed",
+        "to": "xxs",
+        "reason": "The 240px field width has no step on the shared width scale (src/style/tokens.ts). The measure axis (`MeasureProps`) names `xxs` (256) as the nearest step on the field itself, and a Row `span` covers any other fraction; the step is a cap on the parent's bounds, fluid below it, never a fixed width."
+      },
+      "block": {
+        "kind": "intentional-omission",
+        "reason": "Filling the parent is the only default now: the control is FILL (`width: 100%` plus the row-sharing pair, src/style/sizing.ts) and the parent layout container provides the bounds, so there is no fixed width for `block` to remove. A measure step (`xs`, `lg`, …) is the only cap, and it is opt-in."
       }
     },
     "Avatar": {},
@@ -594,6 +618,15 @@
         "kind": "open-gap",
         "plannedIn": "phase-4",
         "reason": "Reports the current error to the parent."
+      },
+      "narrow": {
+        "kind": "renamed",
+        "to": "xxs",
+        "reason": "The 240px field width has no step on the shared width scale (src/style/tokens.ts). The measure axis (`MeasureProps`) names `xxs` (256) as the nearest step on the field itself, and a Row `span` covers any other fraction; the step is a cap on the parent's bounds, fluid below it, never a fixed width."
+      },
+      "block": {
+        "kind": "intentional-omission",
+        "reason": "Filling the parent is the only default now: the control is FILL (`width: 100%` plus the row-sharing pair, src/style/sizing.ts) and the parent layout container provides the bounds, so there is no fixed width for `block` to remove. A measure step (`xs`, `lg`, …) is the only cap, and it is opt-in."
       }
     },
     "InputOTP": {
@@ -795,7 +828,17 @@
         "reason": "Shown by default; the inverse boolean suppresses it."
       }
     },
-    "Select": {},
+    "Select": {
+      "narrow": {
+        "kind": "renamed",
+        "to": "xxs",
+        "reason": "The 240px field width has no step on the shared width scale (src/style/tokens.ts). The measure axis (`MeasureProps`) names `xxs` (256) as the nearest step on the field itself, and a Row `span` covers any other fraction; the step is a cap on the parent's bounds, fluid below it, never a fixed width."
+      },
+      "block": {
+        "kind": "intentional-omission",
+        "reason": "Filling the parent is the only default now: the control is FILL (`width: 100%` plus the row-sharing pair, src/style/sizing.ts) and the parent layout container provides the bounds, so there is no fixed width for `block` to remove. A measure step (`xs`, `lg`, …) is the only cap, and it is opt-in."
+      }
+    },
     "Skeleton": {
       "circle": {
         "kind": "renamed",
@@ -816,6 +859,10 @@
         "kind": "renamed",
         "to": "children",
         "reason": "Slider owns its title as children, with `description` for the second line."
+      },
+      "block": {
+        "kind": "intentional-omission",
+        "reason": "Filling the parent is the only default now: the control is FILL (`width: 100%` plus the row-sharing pair, src/style/sizing.ts) and the parent layout container provides the bounds, so there is no fixed width for `block` to remove. A measure step (`xs`, `lg`, …) is the only cap, and it is opt-in."
       }
     },
     "Sparkline": {
@@ -988,6 +1035,12 @@
         "kind": "web-only",
         "reason": "Choosing the rendered HTML element. React Native has no element to choose; the role props set the type scale and the accessibility role."
       }
+    },
+    "Textarea": {
+      "block": {
+        "kind": "intentional-omission",
+        "reason": "Filling the parent is the only default now: the control is FILL (`width: 100%` plus the row-sharing pair, src/style/sizing.ts) and the parent layout container provides the bounds, so there is no fixed width for `block` to remove. A measure step (`xs`, `lg`, …) is the only cap, and it is opt-in."
+      }
     }
   },
   "absentComponents": {
@@ -1004,6 +1057,27 @@
       "handoff": "small 24 / default 32 / large 40",
       "plannedIn": "unscheduled",
       "reason": "The whole scale sits one step high. The prop check cannot see this: `small` and `large` exist on both sides, so it reports them satisfied while the diameters differ. Re-scaling shipped avatars is a visual break for every consumer, so it is tracked rather than done; the `tiny` 24 step was added for the AvatarMenu pill inset without moving the rest."
+    },
+    "input-wide-step": {
+      "component": "Input",
+      "canvas": "wide 896 (the `wide` step of the shared width scale, a maxWidth cap)",
+      "handoff": "wide 480px field width",
+      "plannedIn": "unscheduled",
+      "reason": "Same name, different width. The hand-off's `wide` is the 480px field; the kit's `wide` is the 896 step of the one width scale every measure reads (Container, the fields, Button), so renaming it on the fields alone would split the scale. The hand-off's capability is the `lg` step (512): consumers migrating `wide` should write `lg`, not `wide`. The prop check counts the name as satisfied, so this is recorded here from the numbers."
+    },
+    "select-wide-step": {
+      "component": "Select",
+      "canvas": "wide 896 (the `wide` step of the shared width scale, a maxWidth cap)",
+      "handoff": "wide 480px field width",
+      "plannedIn": "unscheduled",
+      "reason": "Same name, different width. The hand-off's `wide` is the 480px field; the kit's `wide` is the 896 step of the one width scale every measure reads (Container, the fields, Button), so renaming it on the fields alone would split the scale. The hand-off's capability is the `lg` step (512): consumers migrating `wide` should write `lg`, not `wide`. The prop check counts the name as satisfied, so this is recorded here from the numbers."
+    },
+    "textarea-wide-step": {
+      "component": "Textarea",
+      "canvas": "wide 896 (the `wide` step of the shared width scale, a maxWidth cap)",
+      "handoff": "wide 480px field width",
+      "plannedIn": "unscheduled",
+      "reason": "Same name, different width. The hand-off's `wide` is the 480px field; the kit's `wide` is the 896 step of the one width scale every measure reads (Container, the fields, Button), so renaming it on the fields alone would split the scale. The hand-off's capability is the `lg` step (512): consumers migrating `wide` should write `lg`, not `wide`. The prop check counts the name as satisfied, so this is recorded here from the numbers."
     }
   }
 }

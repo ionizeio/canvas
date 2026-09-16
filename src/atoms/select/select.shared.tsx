@@ -2,7 +2,7 @@ import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js
 import { forwardRef, useId, useRef } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { type Role } from "react-native";
-import { View, Pressable, Text, useTheme, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, RippleClip, cornerRadii, type LayoutStyle, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the option-list
@@ -49,7 +49,7 @@ export interface SelectOption {
   label: string;
 }
 
-export interface SelectProps {
+export interface SelectProps extends MeasureProps {
   /**
    * Controlled selection; omit for uncontrolled use. Empty shows the placeholder.
    * With plain string options this is the option itself; with `SelectOption`
@@ -143,7 +143,7 @@ export function createSelect(skin: SelectSkin) {
     const { tokens } = useTheme();
     // A Select's content is its value, so a bare Column in a Row (the `.col-auto`
     // toolbar cell) hugs it legitimately: no hugging-cell warning.
-    const widthCap = useFillStyle("Select", { hugsInCell: true });
+    const widthCap = useFillStyle("Select", props, { hugsInCell: true });
     // One collision-free id for the label so the floated label carries a nativeID.
     const labelId = useId();
     const listId = `${labelId}-options`;

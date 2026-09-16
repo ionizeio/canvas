@@ -1,6 +1,6 @@
 import { Children, useEffect, useId, useRef, type ComponentType, type ElementRef, type ReactNode } from "react";
 import { type Role } from "react-native";
-import { View, Text, useTheme, useContainerWidth, widths, type ColorTokens, type StyleProp, type TextStyle, type ViewStyle, type LayoutStyle, useFillStyle } from "../../style/index.js";
+import { View, Text, useTheme, useContainerWidth, widths, type ColorTokens, type StyleProp, type TextStyle, type ViewStyle, type LayoutStyle, type MeasureProps, useFillStyle } from "../../style/index.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
 import * as s from "./form.styles.js";
@@ -63,7 +63,7 @@ export interface FormSectionProps {
   style?: LayoutStyle;
 }
 
-export interface FormProps {
+export interface FormProps extends MeasureProps {
   /**
    * The form rows, stitched by the caller: Input, Select, Checkbox, a
    * FormSection, any node. Each control keeps its own state (controlled or
@@ -138,7 +138,7 @@ export function createForm(skin: FormSkin, Button: ButtonComponent = WebButton) 
     // each column a usable field, while a form in an `xl` (576) Container stays
     // two-up.
     // FILL: the form spans the parent it is given; its measure is a Container step.
-    const fill = useFillStyle("Form");
+    const fill = useFillStyle("Form", props);
     const { width: rowsWidth, onLayout: onRowsLayout } = useContainerWidth();
     const twoUp = rowsWidth <= 0 || rowsWidth > widths.lg;
 

@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { type StyleProp, type ViewStyle } from "react-native";
-import { View, Text, useTheme, LabelContent, type LayoutStyle, useFillStyle } from "../../style/index.js";
+import { View, Text, useTheme, LabelContent, type LayoutStyle, type MeasureProps, useFillStyle } from "../../style/index.js";
 import { type FieldSkin } from "./field.styles.js";
 
 // Shared Field shell. A form row: a label, the control, and one message line under it.
@@ -25,7 +25,7 @@ import { type FieldSkin } from "./field.styles.js";
 // float, which is exactly the Android divergence this avoids. Any other child (a Switch, a group)
 // keeps the static label above, because those do not own a label slot of that kind.
 
-export interface FieldProps {
+export interface FieldProps extends MeasureProps {
   /**
    * Row label. When the lone child is a field-family control (Input, Textarea, Select,
    * Autocomplete) that carries no `label` of its own, the label and `required` are DELEGATED into
@@ -63,7 +63,7 @@ export function createField(skin: FieldSkin, labelOwners: ComponentType<never>[]
     const { label, helper, error, required, children, testID, style } = props;
     const { tokens } = useTheme();
     // FILL: the labeled field spans the parent it is given.
-    const fill = useFillStyle("Field");
+    const fill = useFillStyle("Field", props);
 
     // One id for the message, so a delegated control can point at it. The hand-off's Field skips
     // this wiring; a screen reader should hear the hint with the field, so the kit does it.
