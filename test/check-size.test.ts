@@ -80,7 +80,7 @@ describe("JavaScript size gate", () => {
 
   it("retains real named imports through the public root in every fixture", async () => {
     const metadata = JSON.parse(await readFile(join(ROOT, "package.json"), "utf8"));
-    expect(JS_MAX_GZIP).toBe(196_608);
+    expect(JS_MAX_GZIP).toBe(212_992);
     for (const fixture of NAMED_IMPORT_BUDGETS) {
       const source = await readFile(join(ROOT, fixture.entry), "utf8");
       const scan = new Bun.Transpiler({ loader: "ts" }).scan(source);

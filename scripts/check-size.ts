@@ -53,7 +53,15 @@ const CORE_FILE_GZIP_OVERRIDES: Record<string, number> = {
 // the measured figure. That is deliberately more slack than the 160KB cap ended up
 // with (1.4%, which meant any addition at all failed CI) and still far under the
 // 1.6x an accidental doubling would need.
-export const JS_MAX_GZIP = 196_608; // 192 KB
+//
+// Raised again from 192KB for the Riskora restyle and the sizing natures, which
+// landed in the same week: the themed Text/TextInput primitives and the face
+// resolver (~600B), the `shape` token set and the skins that read it, and the
+// width contract every field and surface now carries. Measured at 194,710 /
+// 194,645 / 196,615B (web / iOS / Android), 7 bytes over the old cap on Android.
+// 208KB restores ~6% headroom over the measured figure, the same slack the 192KB
+// cap started with.
+export const JS_MAX_GZIP = 212_992; // 208 KB
 
 export interface JavaScriptBudget {
   label: string;
