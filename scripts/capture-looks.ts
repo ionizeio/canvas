@@ -19,6 +19,7 @@
  *   bun scripts/capture-looks.ts --only=switch,button      # a subset
  *   bun scripts/capture-looks.ts --surfaces=ios,web        # a subset of surfaces
  *   BASE=http://localhost:8081 bun scripts/capture-looks.ts
+ *   IOS_DEVICE=<udid> bun scripts/capture-looks.ts --surfaces=ios   # when two simulators are booted
  */
 import { execFileSync } from "node:child_process";
 import { mkdir, rm, stat, writeFile } from "node:fs/promises";
@@ -51,6 +52,9 @@ const COLD_LINK_MS = 14_000;
 const WARMUP_MS = 18_000;
 const ADB = process.env.ADB ?? "/opt/homebrew/share/android-commandlinetools/platform-tools/adb";
 const BASE = process.env.BASE ?? "http://localhost:8081";
+// The iOS simulator to drive: a UDID, or "booted" when exactly one device is up (simctl
+// refuses "booted" as ambiguous when two are).
+const IOS_DEVICE = process.env.IOS_DEVICE ?? "booted";
 
 const arg = (name: string) => process.argv.find((a) => a.startsWith(`--${name}=`))?.split("=")[1];
 const only = arg("only")?.split(",").filter(Boolean);
@@ -71,9 +75,9 @@ const adb = (...args: string[]) => sh(ADB, args);
 // iOS: deep link into the booted simulator, then grab the whole screen.
 // ---------------------------------------------------------------------------
 async function captureIos(slug: string, file: string) {
-  sh("xcrun", ["simctl", "openurl", "booted", `${SCHEME}:///components/${slug}`]);
+  sh("xcrun", ["simctl", "openurl", IOS_DEVICE, `${SCHEME}:///components/${slug}`]);
   await sleep(2600);
-  sh("xcrun", ["simctl", "io", "booted", "screenshot", file]);
+  sh("xcrun", ["simctl", "io", IOS_DEVICE, "screenshot", file]);
 }
 
 // Bring the app up and let it pull its Metro bundle BEFORE the first deep link, the
@@ -82,7 +86,7 @@ async function captureIos(slug: string, file: string) {
 // carries a status bar and a label, so it clears BLANK_BYTES and banks as a real
 // capture. Warming here is what makes the deep links below land on a routed app.
 async function iosSetup() {
-  sh("xcrun", ["simctl", "launch", "booted", IOS_BUNDLE]);
+  sh("xcrun", ["simctl", "launch", IOS_DEVICE, IOS_BUNDLE]);
   await sleep(WARMUP_MS);
 }
 
@@ -207,7 +211,7 @@ async function main() {
   for (const s of surfaces) {
     if (s === "web") continue; // a fresh Playwright page always navigates
     const seed = join(RAW, `__seed-${s}.png`);
-    if (s === "ios") sh("xcrun", ["simctl", "io", "booted", "screenshot", seed]);
+    if (s === "ios") sh("xcrun", ["simctl", "io", IOS_DEVICE, "screenshot", seed]);
     if (s === "android") await writeFile(seed, adb("exec-out", "screencap", "-p"));
     lastPrint[s] = await fingerprint(seed);
   }
