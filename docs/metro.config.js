@@ -32,7 +32,10 @@ config.resolver.disableHierarchicalLookup = true;
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   // Live-source pin: the package's main/exports point at dist (the publish
   // artifact), but docs development must track src edits without a rebuild.
-  if (moduleName === "@ionizeio/canvas") {
+  // The prior scope is pinned too while examples/starter (a real consumer of the
+  // published package, whose smoke fixtures the docs' testing routes import) still
+  // depends on @nannier-com/canvas until @ionizeio/canvas is published.
+  if (moduleName === "@ionizeio/canvas" || moduleName === "@nannier-com/canvas") {
     // Resolve through the node_modules symlink path (docs/node_modules/@ionizeio/
     // canvas -> repoRoot), NOT a raw repoRoot path: Metro's file map indexes the kit
     // under the node_modules path it crawls, so the raw out-of-tree path misses on the
