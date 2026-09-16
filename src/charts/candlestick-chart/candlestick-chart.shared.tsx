@@ -2,7 +2,7 @@ import { G, Line, Path, Rect } from "react-native-svg";
 import { View, Text, useTheme, useControllableState, alpha, devWarn, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSeries, type ChartSkin } from "../shared/types.js";
-import { CartesianFrame, chartRootWidth, type CartesianLayout } from "../shared/chart-frame.js";
+import { CartesianFrame, CHART_ROOT, type CartesianLayout } from "../shared/chart-frame.js";
 import { ChartLegend } from "../shared/chart-legend.js";
 import { ChartValueFlag, announceSelection, DIM_OPACITY } from "../shared/chart-inspect.js";
 import { DENSE_SERIES, formatCompact, linePath, linearScale } from "../shared/chart-math.js";
@@ -56,7 +56,6 @@ export interface CandlestickChartProps {
 
 const PLOT_HEIGHT = { default: 220, compact: 150 } as const;
 const VOLUME_PANE = { default: 40, compact: 26 } as const;
-const STANDARD_WIDTH = 480;
 
 const num = (v: number | undefined): number => (Number.isFinite(v) ? (v as number) : 0);
 
@@ -188,7 +187,7 @@ export function createCandlestickChart(skin: ChartSkin) {
         style={[
           s.surface(tokens, skin.surfaceRadius),
           compact ? s.surfacePadCompact : s.surfacePadDefault,
-          chartRootWidth(style, STANDARD_WIDTH),
+          CHART_ROOT,
           style,
         ]}
       >

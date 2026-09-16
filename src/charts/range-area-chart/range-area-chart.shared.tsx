@@ -3,9 +3,9 @@ import { View, Text, useTheme, useControllableState, alpha, devWarn, type StyleP
 import * as s from "../shared/charts.styles.js";
 import { type Tone } from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
-import { CartesianFrame, chartRootWidth } from "../shared/chart-frame.js";
+import { CartesianFrame, CHART_ROOT } from "../shared/chart-frame.js";
 import { ChartValueFlag, announceSelection } from "../shared/chart-inspect.js";
-import { PLOT_HEIGHT, STANDARD_WIDTH } from "../shared/cartesian-series.js";
+import { PLOT_HEIGHT } from "../shared/cartesian-series.js";
 import { areaBandPath, formatCompact, linePath, monotonePath, DENSE_SERIES, type Pt } from "../shared/chart-math.js";
 
 // RangeAreaChart: a min/max envelope (forecast band, error envelope, daily
@@ -130,7 +130,7 @@ export function createRangeAreaChart(skin: ChartSkin) {
         style={[
           s.surface(tokens, skin.surfaceRadius),
           compact ? s.surfacePadCompact : s.surfacePadDefault,
-          chartRootWidth(style, STANDARD_WIDTH),
+          CHART_ROOT,
           style,
         ]}
       >

@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { StyleSheet } from "react-native";
 import Svg, { Line } from "react-native-svg";
-import { View, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, useTheme, FILL, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { ScrubSurface } from "./chart-inspect.js";
 import { bandScale, estimateTextWidth, formatCompact, linearScale, niceTicks, type Band } from "./chart-math.js";
 
@@ -234,13 +234,8 @@ export function CartesianFrame(props: CartesianFrameProps) {
 }
 
 /**
- * The chart-root width guard shared by the SVG chart types: render AT the
- * standard chart width (capped by the container) unless the caller sized the
- * chart via `width`/`flex`, mirroring the field-width lesson - a bare
- * width:100% collapses to nothing in centered/content-sized parents.
+ * The chart-root nature shared by the SVG chart types: a chart is FILL. It spans
+ * the parent it is given (a Container step, a Row span, a Card body) and the
+ * geometry measures that width; it never carries a standard width of its own.
  */
-export function chartRootWidth(style: StyleProp<ViewStyle>, standard: number): ViewStyle {
-  const flat = (StyleSheet.flatten(style) ?? {}) as ViewStyle;
-  const sized = flat.width != null || flat.flex != null || flat.flexBasis != null || flat.flexGrow != null;
-  return sized ? {} : { width: standard, maxWidth: "100%" };
-}
+export const CHART_ROOT: ViewStyle = FILL;

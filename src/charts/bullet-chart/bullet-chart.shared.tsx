@@ -2,7 +2,7 @@ import { View, Text, useTheme, alpha, devWarn, tabularNums, type StyleProp, type
 import * as s from "../shared/charts.styles.js";
 import { type Tone } from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
-import { chartRootWidth } from "../shared/chart-frame.js";
+import { CHART_ROOT } from "../shared/chart-frame.js";
 import { formatCompact } from "../shared/chart-math.js";
 
 // Shared BulletChart shell. The goal-attainment rows: per datum a leading
@@ -63,7 +63,6 @@ function toneOf(p: BulletChartProps): Tone {
   return "primary";
 }
 
-const STANDARD_WIDTH = 480;
 // Band washes, outermost (best) to innermost: fading muted alphas.
 const BAND_ALPHAS = [0.35, 0.22, 0.12, 0.07];
 
@@ -107,7 +106,7 @@ export function createBulletChart(skin: ChartSkin) {
         style={[
           s.surface(tokens, skin.surfaceRadius),
           compact ? s.surfacePadCompact : s.surfacePadDefault,
-          chartRootWidth(style, STANDARD_WIDTH),
+          CHART_ROOT,
           style,
         ]}
       >

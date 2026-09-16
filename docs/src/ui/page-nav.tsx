@@ -1,4 +1,4 @@
-import { View, Row, Button, useTheme } from "@nannier-com/canvas";
+import { View, Row, Column, Button, useTheme } from "@nannier-com/canvas";
 import { usePathname, useRouter } from "expo-router";
 import { FLAT_PAGES, getActiveSlug } from "../data/nav";
 
@@ -28,16 +28,20 @@ export function PageNav() {
       }}
     >
       {prev ? (
-        <Button link small onPress={() => router.push(prev.href as never)} style={{ flexShrink: 1 }}>
-          ← {prev.label}
-        </Button>
+        <Column shrink>
+          <Button link small onPress={() => router.push(prev.href as never)}>
+            ← {prev.label}
+          </Button>
+        </Column>
       ) : (
         <View />
       )}
       {next ? (
-        <Button link small onPress={() => router.push(next.href as never)} style={{ flexShrink: 1 }}>
-          {next.label} →
-        </Button>
+        <Column shrink>
+          <Button link small onPress={() => router.push(next.href as never)}>
+            {next.label} →
+          </Button>
+        </Column>
       ) : (
         <View />
       )}

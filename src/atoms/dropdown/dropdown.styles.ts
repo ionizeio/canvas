@@ -77,8 +77,10 @@ export interface DropdownSkin {
 
 // --- wrapper + trigger (identical across platforms) -------------------------
 
-// self-start keeps the trigger from stretching; relative anchors the menu.
-export const wrapper: ViewStyle = { position: "relative", alignSelf: "flex-start" };
+// relative anchors the menu; the shell appends `useHugStyle()` (src/style/sizing.ts)
+// so the trigger keeps its content width inside a stretching Column without a
+// static alignSelf pinning it to the top of a centered Row.
+export const wrapper: ViewStyle = { position: "relative" };
 
 // When the menu is open, the wrapper is lifted into its own stacking context
 // above sibling content. react-native-web gives every positioned View an

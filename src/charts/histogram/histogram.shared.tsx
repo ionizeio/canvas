@@ -4,9 +4,9 @@ import { View, Text, useTheme, useControllableState, devWarn, type StyleProp, ty
 import * as s from "../shared/charts.styles.js";
 import { type Tone } from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
-import { CartesianFrame, chartRootWidth } from "../shared/chart-frame.js";
+import { CartesianFrame, CHART_ROOT } from "../shared/chart-frame.js";
 import { ChartValueFlag, ScrubSurface, announceSelection, DIM_OPACITY } from "../shared/chart-inspect.js";
-import { PLOT_HEIGHT, STANDARD_WIDTH } from "../shared/cartesian-series.js";
+import { PLOT_HEIGHT } from "../shared/cartesian-series.js";
 import { binValues, formatCompact, topRoundedRect } from "../shared/chart-math.js";
 
 // Histogram: an auto-binned frequency distribution on a numeric x axis. Pass
@@ -102,7 +102,7 @@ export function createHistogram(skin: ChartSkin) {
         style={[
           s.surface(tokens, skin.surfaceRadius),
           compact ? s.surfacePadCompact : s.surfacePadDefault,
-          chartRootWidth(style, STANDARD_WIDTH),
+          CHART_ROOT,
           style,
         ]}
       >

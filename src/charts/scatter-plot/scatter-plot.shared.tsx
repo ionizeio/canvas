@@ -4,7 +4,7 @@ import { View, Text, Pressable, useTheme, useControllableState, devWarn, type St
 import * as s from "../shared/charts.styles.js";
 import { type Tone } from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
-import { CartesianFrame, chartRootWidth } from "../shared/chart-frame.js";
+import { CartesianFrame, CHART_ROOT } from "../shared/chart-frame.js";
 import { ChartLegend } from "../shared/chart-legend.js";
 import { ChartValueFlag, announceSelection, pressPoint, DIM_OPACITY } from "../shared/chart-inspect.js";
 import { formatCompact } from "../shared/chart-math.js";
@@ -70,7 +70,6 @@ function toneOf(p: ScatterPlotProps): Tone {
 }
 
 const PLOT_HEIGHT = { default: 180, compact: 120 } as const;
-const STANDARD_WIDTH = 480;
 
 /** Build a ScatterPlot from a platform skin. */
 export function createScatterPlot(skin: ChartSkin) {
@@ -142,7 +141,7 @@ export function createScatterPlot(skin: ChartSkin) {
         style={[
           s.surface(tokens, skin.surfaceRadius),
           compact ? s.surfacePadCompact : s.surfacePadDefault,
-          chartRootWidth(style, STANDARD_WIDTH),
+          CHART_ROOT,
           style,
         ]}
       >

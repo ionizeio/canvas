@@ -66,12 +66,14 @@ export const segmentBase: ViewStyle = {
 // The dimmed look applied to a disabled group/segment (opacity-50).
 export const dim: ViewStyle = { opacity: 0.5 };
 
-// The split control's outer row, anchoring the (absolute) dropdown.
+// The split control's outer row, anchoring the (absolute) dropdown. Every group
+// is HUG: the shell appends `useHugStyle()` (src/style/sizing.ts) at the root, so
+// no container here carries a static alignSelf (which would pin a Row child to the
+// top of a centered Row).
 export const splitContainer: ViewStyle = {
   position: "relative",
   flexDirection: "row",
   alignItems: "center",
-  alignSelf: "flex-start",
 };
 
 // When the split dropdown is open, the container is lifted into its own stacking
@@ -95,7 +97,6 @@ export const splitMenuItem: ViewStyle = {
 export const stepperContainer: ViewStyle = {
   flexDirection: "row",
   alignItems: "center",
-  alignSelf: "flex-start",
 };
 
 // A plain row of detached peers separated by a gap (gap-2).
@@ -112,12 +113,10 @@ export const segmentedContainer: ViewStyle = {
 };
 
 // The `block` modifier, pure color-free layout that is identical on every
-// platform (so it lives here once, not in the skins): the group row takes the
-// full container width (width beats the skins' self-sizing
-// `alignSelf: "flex-start"` wraps), and each segment flexes to an equal share.
-// RN's `flex: 1` sets flex-basis 0, so segments split evenly regardless of how
-// long their labels are.
-export const blockContainer: ViewStyle = { width: "100%" };
+// platform (so it lives here once, not in the skins): the group row is FILL
+// (`useSizing({ block })` in the shell), and each segment flexes to an equal
+// share. RN's `flex: 1` sets flex-basis 0, so segments split evenly regardless
+// of how long their labels are.
 export const blockSegment: ViewStyle = { flex: 1 };
 
 // =============================================================================
@@ -251,7 +250,6 @@ export const iosSkin: ButtonGroupSkin = {
     return {
       flexDirection: "row",
       alignItems: "center",
-      alignSelf: "flex-start",
       padding: 3,
       borderRadius: 9999,
       backgroundColor: t.muted,
@@ -378,7 +376,6 @@ export const androidSkin: ButtonGroupSkin = {
     return {
       flexDirection: "row",
       alignItems: "center",
-      alignSelf: "flex-start",
       borderRadius: 9999,
       borderWidth: 1,
       borderColor: t.border,

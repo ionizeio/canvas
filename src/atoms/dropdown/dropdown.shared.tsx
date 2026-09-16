@@ -1,6 +1,6 @@
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { View, Pressable, Text, useTheme, AnchoredOverlay, useOverlayHost, useMeasuredWidth, useRovingFocus, isRTL, RippleClip, cornerRadii, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useHugStyle, useTheme, AnchoredOverlay, useOverlayHost, useMeasuredWidth, useRovingFocus, isRTL, RippleClip, cornerRadii, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../button/button.js";
 import { Icon, type IconName } from "../icon/icon.js";
 import { wrapper, wrapperLifted, customTrigger, type DropdownSkin } from "./dropdown.styles.js";
@@ -133,6 +133,8 @@ export function createDropdown(skin: DropdownSkin) {
   return function Dropdown(props: DropdownProps) {
     const { trigger, children, triggerLabel, label, title, description, items, open: openProp, onOpenChange, onSelect, alignEnd, disabled, testID, style } = props;
     const { tokens, dark } = useTheme();
+    // HUG: the trigger keeps its content width inside a stretching Column.
+    const hug = useHugStyle();
     // Uncontrolled by default (Headless-UI style): the trigger opens/closes the
     // menu and a select closes it; a controlled `open` prop overrides this.
     const [internalOpen, setInternalOpen] = useState(false);
@@ -244,7 +246,7 @@ export function createDropdown(skin: DropdownSkin) {
       <View
         ref={triggerRef}
         testID={testID}
-        style={[wrapper, open && !host ? wrapperLifted : null, style]}
+        style={[wrapper, open && !host ? wrapperLifted : null, hug, style]}
         onLayout={onTriggerLayout}
       >
         {children != null ? (

@@ -3,7 +3,7 @@ import { View, Text, useTheme, useControllableState, devWarn, type StyleProp, ty
 import * as s from "./charts.styles.js";
 import { type Tone } from "./charts.styles.js";
 import { type ChartSeries, type ChartSkin } from "./types.js";
-import { CartesianFrame, chartRootWidth, type CartesianLayout } from "./chart-frame.js";
+import { CartesianFrame, CHART_ROOT, type CartesianLayout } from "./chart-frame.js";
 import { ChartLegend } from "./chart-legend.js";
 import { ChartValueFlag, announceSelection } from "./chart-inspect.js";
 import { formatCompact, seriesAccessibleName, type Pt } from "./chart-math.js";
@@ -59,8 +59,6 @@ function toneOf(p: CartesianSeriesProps): Tone {
 
 // Plot heights by density (taller than the bar Chart: these carry a y axis).
 export const PLOT_HEIGHT = { default: 180, compact: 120 } as const;
-// The standard chart width when the caller leaves the chart unsized.
-export const STANDARD_WIDTH = 480;
 
 export const finite = (v: number | undefined): number => (Number.isFinite(v) ? (v as number) : 0);
 
@@ -156,7 +154,7 @@ export function chartShell(
       style={[
         s.surface(tokens, skin.surfaceRadius),
         compact ? s.surfacePadCompact : s.surfacePadDefault,
-        chartRootWidth(style, STANDARD_WIDTH),
+        CHART_ROOT,
         style,
       ]}
     >

@@ -18,10 +18,12 @@ import { type ChipSkin } from "./chip.shared.js";
 
 // The structure every skin shares. Horizontal padding is per-skin: the web/iOS
 // pill pads a fixed 8px; Android resolves 16dp/8dp per side in the shell.
+// The chip is HUG: the shell appends `useHugStyle()` (src/style/sizing.ts) at the
+// root, so it keeps its content width in a stretching Column without pinning a Row
+// child to the top the way a static alignSelf would.
 const shell: ViewStyle = {
   flexDirection: "row",
   alignItems: "center",
-  alignSelf: "flex-start",
   borderWidth: 1,
 };
 

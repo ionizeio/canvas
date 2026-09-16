@@ -3,7 +3,7 @@ import { StyleSheet } from "react-native";
 import { View, Text, Pressable, useTheme, useControllableState, devWarn, tabularNums, type StyleProp, type ViewStyle } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
-import { chartRootWidth } from "../shared/chart-frame.js";
+import { CHART_ROOT } from "../shared/chart-frame.js";
 import { ChartValueFlag, announceSelection, pressPoint, DIM_OPACITY } from "../shared/chart-inspect.js";
 import { estimateTextWidth, formatCompact, squarify } from "../shared/chart-math.js";
 
@@ -48,7 +48,6 @@ export interface TreemapProps {
   style?: StyleProp<ViewStyle>;
 }
 
-const STANDARD_WIDTH = 480;
 const PLOT_HEIGHT = { default: 240, compact: 160 } as const;
 const MAX_TILES = 24;
 
@@ -92,7 +91,7 @@ export function createTreemap(skin: ChartSkin) {
         style={[
           s.surface(tokens, skin.surfaceRadius),
           compact ? s.surfacePadCompact : s.surfacePadDefault,
-          chartRootWidth(style, STANDARD_WIDTH),
+          CHART_ROOT,
           style,
         ]}
       >

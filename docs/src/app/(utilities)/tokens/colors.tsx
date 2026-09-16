@@ -20,6 +20,7 @@ import {
   Typography,
   type ColorTokens,
   type StatusTone,
+  Grid,
 } from "@nannier-com/canvas";
 import { Page } from "../../../ui/page";
 import { PageNav } from "../../../ui/page-nav";
@@ -253,12 +254,12 @@ export default function ColorsScreen() {
           anatomy="Alert and Badge read the same tone-to-hue map (statusHues), so a warning banner and a warning pill in one view are guaranteed to be the same amber."
         >
           <Column relaxed>
-            <Row wrap cozy alignStart>
-              <Alert success title="success" description={ramp("success")} icon={<Badge status success accessibilityLabel="success" />} style={{ flexGrow: 1, flexBasis: 210 }} />
-              <Alert warning title="warning" description={ramp("warning")} icon={<Badge status warning accessibilityLabel="warning" />} style={{ flexGrow: 1, flexBasis: 210 }} />
-              <Alert error title="error" description={ramp("error")} icon={<Badge status error accessibilityLabel="error" />} style={{ flexGrow: 1, flexBasis: 210 }} />
-              <Alert info title="info" description={ramp("info")} icon={<Badge status info accessibilityLabel="info" />} style={{ flexGrow: 1, flexBasis: 210 }} />
-            </Row>
+            <Grid minTileWidth={210} cozy>
+              <Alert success title="success" description={ramp("success")} icon={<Badge status success accessibilityLabel="success" />} />
+              <Alert warning title="warning" description={ramp("warning")} icon={<Badge status warning accessibilityLabel="warning" />} />
+              <Alert error title="error" description={ramp("error")} icon={<Badge status error accessibilityLabel="error" />} />
+              <Alert info title="info" description={ramp("info")} icon={<Badge status info accessibilityLabel="info" />} />
+            </Grid>
             <Row wrap snug alignCenter>
               <Badge status success>Active</Badge>
               <Badge status warning>Pending</Badge>

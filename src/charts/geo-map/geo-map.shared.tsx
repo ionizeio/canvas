@@ -18,7 +18,7 @@ import {
 import { GESTURE_SURFACE, useWheel } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
-import { chartRootWidth } from "../shared/chart-frame.js";
+import { CHART_ROOT } from "../shared/chart-frame.js";
 import { ChartValueFlag, announceSelection, pressPoint, DIM_OPACITY } from "../shared/chart-inspect.js";
 import { formatCompact } from "../shared/chart-math.js";
 import { projectNaturalEarth } from "./geo-map.projection.js";
@@ -128,10 +128,6 @@ export interface GeoMapProps {
   style?: StyleProp<ViewStyle>;
 }
 
-// The map is a fixed-aspect graphic, so density picks its WIDTH and the height
-// follows the projection; the other charts pick a plot height instead because
-// their width is free.
-const STANDARD_WIDTH = { default: 480, compact: 320 } as const;
 
 /** Width / height of the generated viewBox, and so of the rendered map. */
 export const GEO_MAP_ASPECT = WORLD_VIEW_BOX.width / WORLD_VIEW_BOX.height;
@@ -477,7 +473,7 @@ export function createGeoMap(skin: ChartSkin) {
         style={[
           s.surface(tokens, skin.surfaceRadius),
           compact ? s.surfacePadCompact : s.surfacePadDefault,
-          chartRootWidth(style, compact ? STANDARD_WIDTH.compact : STANDARD_WIDTH.default),
+          CHART_ROOT,
           style,
         ]}
       >

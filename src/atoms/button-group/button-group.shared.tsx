@@ -1,7 +1,7 @@
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useRef, useState } from "react";
 import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, AnchoredOverlay, useOverlayHost, useMeasuredWidth, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useHugStyle, useSizing, useTheme, useControllableState, AnchoredOverlay, useOverlayHost, useMeasuredWidth, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Icon, type IconName } from "../icon/icon.js";
 import { primaryText } from "../../style/primary-text.js";
 import * as s from "./button-group.styles.js";
@@ -310,6 +310,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     style?: StyleProp<ViewStyle>;
   }) {
     const { tokens } = useTheme();
+    const hug = useHugStyle();
     const [open, setOpen] = useState(false);
     const escapeScope = useEscapeLayer(open, () => setOpen(false));
     const triggerHeight = s.sizeHeight[size];
@@ -328,7 +329,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     return (
       <View
         ref={triggerRef}
-        style={[s.splitContainer, open && !host ? s.splitContainerLifted : null, disabled ? s.dim : null, style]}
+        style={[s.splitContainer, open && !host ? s.splitContainerLifted : null, disabled ? s.dim : null, hug, style]}
         testID={testID}
         onLayout={onTriggerLayout}
       >
@@ -424,6 +425,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     style?: StyleProp<ViewStyle>;
   }) {
     const { tokens } = useTheme();
+    const hug = useHugStyle();
     const count = items.length;
     const clamp = (n: number) => (count > 0 ? Math.min(Math.max(0, n), count - 1) : 0);
     const [index, setIndex] = useState(() => clamp(initial));
@@ -442,7 +444,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
       onSelect?.(next, items[next], e);
     };
     return (
-      <View style={[s.stepperContainer, disabled ? s.dim : null, style]} testID={testID}>
+      <View style={[s.stepperContainer, disabled ? s.dim : null, hug, style]} testID={testID}>
         {/* Each pill-cornered arrow is its own rounded surface, so its bounded Android ripple
             is clipped to those corners by a RippleClip parent (no-op on iOS/web). See src/style/ripple-clip. */}
         <RippleClip shape={cornerRadii([skin.stepperArrow(tokens, height), skin.stepperArrowLeft])}>
@@ -484,6 +486,8 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     const { tokens } = useTheme();
     const kind = kindOf(props);
     const size = sizeOf(props);
+    // HUG, or FILL under `block` (the segmented/spaced kinds only; see below).
+    const sizing = useSizing({ block: !!props.block });
     // `block` is a segmented/spaced layout modifier. The split and stepper kinds
     // are fixed-width chrome (a chevron trigger, prev/next arrow cells) whose
     // cells cannot meaningfully share a stretched row, so they ignore it, with a
@@ -508,7 +512,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     // Spaced: detached peers separated by a gap, each with full rounding.
     if (kind === "spaced") {
       return (
-        <View style={[s.spacedContainer, props.block ? s.blockContainer : null, style]} testID={testID}>
+        <View style={[s.spacedContainer, sizing, style]} testID={testID}>
           {items.map((item, i) => (
             <Segment
               key={`${itemLabelOf(item)}-${i}`}
@@ -591,11 +595,10 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     ));
     // The segments are a single mutually-exclusive control, so the row is a
     // `tablist` grouping its `tab` segments (matching the Tabs precedent). The
-    // `block` width lands AFTER the skin wrap so it beats the iOS/Android wraps'
-    // self-sizing `alignSelf: "flex-start"`.
+    // sizing nature (HUG, or FILL under `block`) lands AFTER the skin wrap.
     if (wrap) {
-      return <View accessibilityRole="tablist" accessibilityLabel={props.accessibilityLabel} aria-label={props.accessibilityLabel} style={[wrap, props.block ? s.blockContainer : null, style]} testID={testID}>{row}</View>;
+      return <View accessibilityRole="tablist" accessibilityLabel={props.accessibilityLabel} aria-label={props.accessibilityLabel} style={[wrap, sizing, style]} testID={testID}>{row}</View>;
     }
-    return <View accessibilityRole="tablist" accessibilityLabel={props.accessibilityLabel} aria-label={props.accessibilityLabel} style={[s.segmentedContainer, props.block ? s.blockContainer : null, style]} testID={testID}>{row}</View>;
+    return <View accessibilityRole="tablist" accessibilityLabel={props.accessibilityLabel} aria-label={props.accessibilityLabel} style={[s.segmentedContainer, sizing, style]} testID={testID}>{row}</View>;
   };
 }

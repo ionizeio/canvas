@@ -161,9 +161,12 @@ describe("the layout-axis context the containers publish", () => {
     expect(axisIn((p) => <Row stacks>{p}</Row>)?.axis).toBe("column");
   });
 
-  it("Container and Grid cells are definite stretching columns", () => {
+  it("Container and Grid cells are definite stretching columns; only the Grid cell is bounded", () => {
     expect(axisIn((p) => <Container>{p}</Container>)).toEqual({ axis: "column", stretch: true, hugging: false });
-    expect(axisIn((p) => <Grid><Badge>a</Badge>{p}</Grid>)).toEqual({ axis: "column", stretch: true, hugging: false });
+    // A Grid cell is stretched to its row's height, so it is definite on both axes
+    // (`bounded`): a Card in it grows to that height. A Container has no such
+    // height, so a Card in one stays as tall as its sections.
+    expect(axisIn((p) => <Grid><Badge>a</Badge>{p}</Grid>)).toEqual({ axis: "column", stretch: true, hugging: false, bounded: true });
   });
 
   it("is null outside every kit container", () => {

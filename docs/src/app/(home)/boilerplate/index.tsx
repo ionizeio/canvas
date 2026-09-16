@@ -15,7 +15,7 @@ export default function BoilerplateScreen() {
     <Page>
       <Column loose>
         <PageHeader title="Boilerplate" description="A runnable Expo starter for web, iOS, and Android, built with the published Canvas package." />
-        <Alert info block title="An independent consumer" description="The starter has its own package.json and lockfile. Expo resolves the installed Canvas package normally, without docs aliases or a source overlay." />
+        <Alert info title="An independent consumer" description="The starter has its own package.json and lockfile. Expo resolves the installed Canvas package normally, without docs aliases or a source overlay." />
 
         <Section title="Clone and run">
           <Typography>With access to the repository, install and run the starter from its own directory.</Typography>

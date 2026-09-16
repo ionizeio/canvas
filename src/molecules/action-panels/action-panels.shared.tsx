@@ -106,9 +106,6 @@ function layoutOf(p: ActionPanelProps): Layout {
 
 // --- shared layout fragments (identical across platforms) -------------------
 
-// The card surface caps its width; passed to the Card child via its `style` prop.
-const cardWidth: ViewStyle = { maxWidth: 560 };
-
 // The copy block: title stacked above its consequence line. In the inline layout
 // it grows to push the action to the right (flex-1); stacked, it stays natural.
 const copyGrow: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%" };
@@ -199,7 +196,7 @@ export function createActionPanel(
       );
 
     return (
-      <Card padded testID={testID} style={[cardWidth, style]}>
+      <Card padded testID={testID} style={style}>
         {layout === "inline" && children != null ? (
           <View style={{ gap: skin.stackedGap }}>
             {body}

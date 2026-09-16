@@ -5,7 +5,7 @@ import * as s from "../shared/charts.styles.js";
 import { type Tone } from "../shared/charts.styles.js";
 import { ChartLegend } from "../shared/chart-legend.js";
 import { ChartValueFlag, ScrubSurface, announceSelection, DIM_OPACITY } from "../shared/chart-inspect.js";
-import { chartRootWidth } from "../shared/chart-frame.js";
+import { CHART_ROOT } from "../shared/chart-frame.js";
 import { type ChartSeries, type ChartSkin } from "../shared/types.js";
 
 // Shared Chart shell. The structure (a token-themed bar chart built entirely from
@@ -101,7 +101,6 @@ const PLOT_LENGTH = { default: 140, compact: 96 } as const;
 // The standard chart width when the caller leaves the chart unsized. Without
 // it, a content-sized parent (native Fabric especially) collapses the flex
 // columns to their intrinsic minimum: pencil bars and letter-wrapped labels.
-const STANDARD_WIDTH = 480;
 
 export function createChart(skin: ChartSkin) {
   return function Chart(props: ChartProps) {
@@ -240,7 +239,7 @@ export function createChart(skin: ChartSkin) {
         style={[
           s.surface(tokens, skin.surfaceRadius),
           compact ? s.surfacePadCompact : s.surfacePadDefault,
-          chartRootWidth(style, STANDARD_WIDTH),
+          CHART_ROOT,
           style,
         ]}
       >

@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { View, Pressable, Text, useTheme, controlRipple, pressDim, type StyleProp, type ViewProps, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useHugStyle, useTheme, controlRipple, pressDim, type StyleProp, type ViewProps, type ViewStyle } from "../../style/index.js";
 import { Button } from "../button/button.js";
 import { Icon } from "../icon/icon.js";
 import {
@@ -110,6 +110,8 @@ export function createTooltip(skin: TooltipSkin) {
     const { children, label, trigger, iconTrigger: isIconTrigger, textTrigger: isTextTrigger, onOpenChange, testID, style } = props;
     const placement = placementOf(props);
     const { tokens } = useTheme();
+    // HUG: the trigger + bubble wrapper shrinks to its content inside a stretching Column.
+    const hug = useHugStyle();
     // Uncontrolled by default: hovering or focusing the trigger shows the
     // bubble, leaving/blurring hides it, and tapping toggles it (the touch
     // analogue of hover); a controlled `open` prop overrides this.
@@ -242,7 +244,7 @@ export function createTooltip(skin: TooltipSkin) {
     );
 
     return (
-      <View style={[wrapper[placement], style]} testID={testID} {...(isElementTrigger ? elementDisclosure : undefined)}>
+      <View style={[wrapper[placement], hug, style]} testID={testID} {...(isElementTrigger ? elementDisclosure : undefined)}>
         {BUBBLE_FIRST[placement] ? tip : null}
         {triggerEl}
         {BUBBLE_FIRST[placement] ? null : tip}

@@ -1,5 +1,5 @@
 import { Fragment, type ReactNode } from "react";
-import { View, Text, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Text, useHugStyle, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 
 // Shared Kbd shell. Kbd is a keyboard shortcut indicator: a small bordered, slightly
 // raised key cap with monospace-ish small text. A single key comes from `children`
@@ -75,6 +75,8 @@ function keyList(keys: string | string[] | undefined): string[] | null {
 export function createKbd(skin: KbdSkin) {
   return function Kbd({ children, keys, sequence, testID, style }: KbdProps) {
     const { tokens } = useTheme();
+    // HUG: a keycap keeps its content width inside a stretching Column.
+    const hug = useHugStyle();
 
     const list = keyList(keys);
 
@@ -82,7 +84,7 @@ export function createKbd(skin: KbdSkin) {
     if (list == null || list.length === 1) {
       const label = list != null ? list[0] : children;
       return (
-        <View testID={testID} style={[skin.capBox, capSurface(tokens), style]}>
+        <View testID={testID} style={[skin.capBox, capSurface(tokens), hug, style]}>
           {label != null ? <Text style={[skin.labelType, labelColor(tokens)]}>{label}</Text> : null}
         </View>
       );
@@ -105,7 +107,7 @@ export function createKbd(skin: KbdSkin) {
         role="img"
         accessibilityLabel={name}
         aria-label={name}
-        style={[skin.chordRow, sequence ? SEQUENCE_GAP : null, style]}
+        style={[skin.chordRow, sequence ? SEQUENCE_GAP : null, hug, style]}
       >
         {list.map((key, i) => (
           <Fragment key={i}>

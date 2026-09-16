@@ -70,9 +70,10 @@ const roleType: Record<Role, TextStyle> = {
   muted: { fontSize: 14, lineHeight: 20 },
   // Subheading/X Small: 12/16 medium, uppercase, 4% tracking (0.48px at 12)
   caption: { fontSize: 12, lineHeight: 16, fontWeight: "500", textTransform: "uppercase", letterSpacing: 0.48 },
-  // self-start rounded bg-muted px-1.5 py-0.5 text-sm (fill added in roleColor)
+  // rounded bg-muted px-1.5 py-0.5 text-sm (fill added in roleColor). The pill is
+  // HUG: the shell appends `useHugStyle()` for this role instead of a static
+  // alignSelf, so it keeps its content width in a Column without pinning a Row child.
   code: {
-    alignSelf: "flex-start",
     borderRadius: 6,
     paddingHorizontal: 6,
     paddingVertical: 2,

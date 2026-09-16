@@ -1,7 +1,7 @@
 import { destructiveText } from "../../style/destructive-text.js";
 import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow, alpha } from "../../style/index.js";
+import { type ColorTokens, shadow, alpha, widths } from "../../style/index.js";
 
 // Co-located Dialog skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so they follow light/dark and read as glass when the
@@ -30,17 +30,17 @@ import { type ColorTokens, shadow, alpha } from "../../style/index.js";
 
 export type Size = "xs" | "small" | "medium" | "default" | "large" | "wide";
 
-// The dialog card's max width per size, narrowest to widest. The default sits
-// one step wider than `medium`, roomy enough for a short form; `xs`/`small`
-// tighten the panel for a terse message, `large`/`wide` open it up for a longer
-// form. Pixel widths mirror Tailwind's max-w-xs..2xl scale.
+// The dialog card's max width per size, narrowest to widest, drawn from the
+// shared width scale (src/style/tokens.ts `widths`): the default sits one step
+// wider than `medium`, roomy enough for a short form; `xs`/`small` tighten the
+// panel for a terse message, `large`/`wide` open it up for a longer form.
 export const PANEL_MAX_WIDTH: Record<Size, number> = {
-  xs: 320,
-  small: 384,
-  medium: 448,
-  default: 512,
-  large: 576,
-  wide: 672,
+  xs: widths.xs,
+  small: widths.sm,
+  medium: widths.md,
+  default: widths.lg,
+  large: widths.xl,
+  wide: widths.xxl,
 };
 
 // How the footer renders its actions. The web/Android footer is a horizontal
@@ -152,13 +152,13 @@ export const cardLayout: ViewStyle = { width: "100%", padding: 24 };
 // scale-fade. The card's own padding stays on cardLayout, inside the wrapper.
 export const cardSizing: ViewStyle = { width: "100%" };
 
-// Per-size panel width: the dialog RENDERS AT its size (a dialog is its width,
-// not its content's), shrinking via maxWidth:"100%" inside narrower parents.
-// The explicit width (not width:100% + a cap) keeps the panel at size even in
-// content-sized contexts (a centered docs stage), where width:"100%" would
-// collapse the card to its text's natural width.
+// Per-size panel width: a dialog is a floating container (a bounds provider for
+// its own content), so it spans its backdrop and caps at its size's step of the
+// width scale. The backdrop is definite (the viewport, a host, the docs stage),
+// which is what lets `width:"100%"` resolve; a content-sized parent would
+// collapse it, and the docs stage stopped being one for exactly that reason.
 export function cardWidth(size: Size): ViewStyle {
-  return { width: PANEL_MAX_WIDTH[size], maxWidth: "100%" };
+  return { width: "100%", maxWidth: PANEL_MAX_WIDTH[size] };
 }
 
 // ---------- Web: the established Canvas look (lifted verbatim) ----------

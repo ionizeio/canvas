@@ -1,5 +1,5 @@
 import { View, Text, useTheme, devWarn, type StyleProp, type ViewStyle } from "../../style/index.js";
-import { chartRootWidth } from "../shared/chart-frame.js";
+import { CHART_ROOT } from "../shared/chart-frame.js";
 import { StatusStrip, statusSummary, type UptimePeriod } from "../shared/status-strip.js";
 
 // UptimeBar is a "Shared" platform treatment (data visualization is
@@ -33,7 +33,6 @@ export interface UptimeBarProps {
   style?: StyleProp<ViewStyle>;
 }
 
-const STANDARD_WIDTH = 480;
 const PILL_HEIGHT = { default: 24, compact: 14 } as const;
 
 export function UptimeBar(props: UptimeBarProps) {
@@ -47,7 +46,7 @@ export function UptimeBar(props: UptimeBarProps) {
   const hasEdges = (startLabel != null && startLabel !== "") || (endLabel != null && endLabel !== "");
 
   return (
-    <View testID={testID} style={[chartRootWidth(style, STANDARD_WIDTH), { gap: 6 }, style]}>
+    <View testID={testID} style={[CHART_ROOT, { gap: 6 }, style]}>
       {caption != null && caption !== "" ? (
         <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens["card-foreground"] }}>{caption}</Text>
       ) : null}

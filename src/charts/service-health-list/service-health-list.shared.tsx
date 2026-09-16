@@ -1,7 +1,7 @@
 import { View, Text, Pressable, useTheme, surfaceRipple, pressDim, devWarn, tabularNums, type StyleProp, type ViewStyle } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
-import { chartRootWidth } from "../shared/chart-frame.js";
+import { CHART_ROOT } from "../shared/chart-frame.js";
 import { StatusStrip, statusColor, statusSummary, type UptimePeriod, type PeriodStatus } from "../shared/status-strip.js";
 
 // Shared ServiceHealthList shell. The status-overview card: one row per
@@ -60,7 +60,6 @@ function itemStatus(item: ServiceHealthItem): PeriodStatus {
   return "operational";
 }
 
-const STANDARD_WIDTH = 480;
 
 export function createServiceHealthList(skin: ChartSkin) {
   return function ServiceHealthList(props: ServiceHealthListProps) {
@@ -77,7 +76,7 @@ export function createServiceHealthList(skin: ChartSkin) {
         style={[
           props.plain ? null : s.surface(tokens, skin.surfaceRadius),
           props.plain ? null : compact ? s.surfacePadCompact : s.surfacePadDefault,
-          chartRootWidth(style, STANDARD_WIDTH),
+          CHART_ROOT,
           style,
         ]}
       >

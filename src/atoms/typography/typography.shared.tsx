@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { type GestureResponderEvent } from "react-native";
-import { Text, useTheme, MONO_FONT, type StyleProp, type TextStyle } from "../../style/index.js";
+import { Text, useHugStyle, useTheme, MONO_FONT, type StyleProp, type TextStyle } from "../../style/index.js";
 import {
   type Role,
   type Tone,
@@ -211,6 +211,10 @@ export function createTypography(skin: TypographySkin) {
     // The mono/code roles ask for a monospace face; there is no font-family
     // utility, so request the cross-platform monospace alias via inline style.
     const monoStyle = MONO_ROLES.has(role) ? { fontFamily: MONO_FONT } : null;
+    // The code pill is HUG (a boxed inline token); every other role is a text run that
+    // spans its parent and wraps.
+    const hug = useHugStyle();
+    const codeHug = role === "code" ? hug : null;
 
     // Heading roles expose the native heading trait + level so screen readers
     // can navigate heading-by-heading (the H key / rotor); body/helper roles
@@ -242,6 +246,7 @@ export function createTypography(skin: TypographySkin) {
           // so its placement in the cascade is free; it layers on before the escape hatch.
           decoration ? decorationStyle(decoration) : null,
           monoStyle,
+          codeHug,
           style,
         ]}
       >

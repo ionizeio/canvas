@@ -76,8 +76,9 @@ export interface StackedListSkin {
 
 // --- shared layout fragments (identical across platforms) -------------------
 
-// w-full max-w-[560px]: full width, capped at 560px.
-export const outer: ViewStyle = { width: "100%", maxWidth: 560 };
+// FILL: the list spans the parent it is given (the parent picks the measure) and
+// shares a Row with hugging siblings.
+export const outer: ViewStyle = { width: "100%", flexShrink: 1, minWidth: 0 };
 
 // flex-1: the primary + secondary text column.
 export const column: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%" };

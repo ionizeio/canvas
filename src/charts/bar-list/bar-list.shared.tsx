@@ -2,7 +2,7 @@ import { View, Text, useTheme, devWarn, type StyleProp, type ViewStyle } from ".
 import * as s from "../shared/charts.styles.js";
 import { type Tone } from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
-import { chartRootWidth } from "../shared/chart-frame.js";
+import { CHART_ROOT } from "../shared/chart-frame.js";
 import { formatCompact } from "../shared/chart-math.js";
 import { BreakdownRows, hasSlot, type BreakdownRow } from "../shared/breakdown-rows.js";
 
@@ -63,7 +63,6 @@ function toneOf(p: BarListProps): Tone | null {
   return null;
 }
 
-const STANDARD_WIDTH = 480;
 
 export function createBarList(skin: ChartSkin) {
   return function BarList(props: BarListProps) {
@@ -90,7 +89,7 @@ export function createBarList(skin: ChartSkin) {
         style={[
           props.plain ? null : s.surface(tokens, skin.surfaceRadius),
           props.plain ? null : compact ? s.surfacePadCompact : s.surfacePadDefault,
-          chartRootWidth(style, STANDARD_WIDTH),
+          CHART_ROOT,
           style,
         ]}
       >

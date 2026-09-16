@@ -9,6 +9,7 @@ import {
   View,
   Text,
   TextInput,
+  useHugStyle,
   useTheme,
   useControllableState,
   useReducedMotion,
@@ -169,6 +170,8 @@ export function createInputOTP(skin: InputOTPSkin) {
     } = props;
     const size = sizeOf(props);
     const { tokens } = useTheme();
+    // HUG: the cell row keeps its content width inside a stretching Column.
+    const hug = useHugStyle();
     const [focused, setFocused] = useState(false);
 
     // Controlled when `value` is provided, self-managed otherwise, so a bare
@@ -242,7 +245,7 @@ export function createInputOTP(skin: InputOTPSkin) {
     return (
       <View
         testID={testID}
-        style={[{ alignSelf: "flex-start" }, disabled ? { opacity: skin.disabledOpacity } : null, style]}
+        style={[hug, disabled ? { opacity: skin.disabledOpacity } : null, style]}
       >
         {/* The visible segmented row. Relatively positioned so the real input can
             overlay it absolutely. The connected web group shares borders (gap 0);

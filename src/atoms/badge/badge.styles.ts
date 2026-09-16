@@ -8,10 +8,11 @@ import { type BadgeSkin } from "./badge.shared.js";
 // matches Material 3's more-rounded label (M3 label-small: 11sp / +0.5 tracking /
 // weight 500).
 
+// Badges are HUG: the shell appends `useHugStyle()` (src/style/sizing.ts) at the
+// root instead of a static alignSelf, which would pin a Row child to the top.
 const META: ViewStyle = {
   flexDirection: "row",
   alignItems: "center",
-  alignSelf: "flex-start",
   borderWidth: 1,
   paddingHorizontal: 8,
   paddingVertical: 2,
@@ -20,7 +21,6 @@ const META: ViewStyle = {
 const STATUS: ViewStyle = {
   flexDirection: "row",
   alignItems: "center",
-  alignSelf: "flex-start",
   gap: 6,
   borderWidth: 1,
   borderRadius: 9999,

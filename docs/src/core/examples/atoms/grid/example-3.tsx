@@ -5,18 +5,21 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Card, Typography, Grid } = scope;
   return (
-<Grid minTileWidth={160} tight>
+<Grid minTileWidth={200} columns={3}>
   <Card padded>
-    <Typography small>CPU</Typography>
+    <Typography medium>Uptime</Typography>
+    <Typography small muted>99.98% over the last 30 days.</Typography>
   </Card>
   <Card padded>
-    <Typography small>Memory</Typography>
+    <Typography medium>Incidents</Typography>
+    <Typography small muted>
+      One partial outage on the EU edge, resolved in 14 minutes; a postmortem is
+      scheduled for Thursday.
+    </Typography>
   </Card>
   <Card padded>
-    <Typography small>Disk</Typography>
-  </Card>
-  <Card padded>
-    <Typography small>Network</Typography>
+    <Typography medium>On call</Typography>
+    <Typography small muted>Priya, until 09:00.</Typography>
   </Card>
 </Grid>
   );

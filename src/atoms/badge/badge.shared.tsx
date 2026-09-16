@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Text, useTheme, palette, statusHues, MONO_FONT, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Text, useHugStyle, useTheme, palette, statusHues, MONO_FONT, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 
 // Shared Badge shell. The structure (a metadata pill, or a status pill with a leading
 // dot), the boolean-prop axes, and the semantic color logic live here once; a platform
@@ -129,6 +129,8 @@ export function createBadge(skin: BadgeSkin) {
   return function Badge(props: BadgeProps) {
     const { children, mono, style, accessibilityLabel, testID } = props;
     const { tokens, dark } = useTheme();
+    // HUG: content width inside a stretching Column, content-sized in a Row.
+    const hug = useHugStyle();
 
     if (props.status) {
       const tone = statusOf(props);
@@ -150,7 +152,7 @@ export function createBadge(skin: BadgeSkin) {
       const role = statusName == null ? null : children == null ? "img" : "group";
       return (
         <View
-          style={[skin.statusBase, statusContainer(tokens, dark, tone), style]}
+          style={[skin.statusBase, statusContainer(tokens, dark, tone), hug, style]}
           testID={testID}
           {...(role === "img"
             ? { accessibilityRole: "image" as const, role: "img" as const }
@@ -174,7 +176,7 @@ export function createBadge(skin: BadgeSkin) {
     const monoStyle = mono ? { fontFamily: MONO_FONT } : null;
 
     return (
-      <View style={[skin.metaBase, metaContainer(tokens, tone), style]} testID={testID}>
+      <View style={[skin.metaBase, metaContainer(tokens, tone), hug, style]} testID={testID}>
         {children != null ? (
           <Text style={[skin.labelType, metaLabel(tokens, tone), monoStyle]}>{children}</Text>
         ) : null}

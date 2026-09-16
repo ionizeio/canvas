@@ -2,9 +2,9 @@ import { Line, Rect } from "react-native-svg";
 import { View, Text, useTheme, useControllableState, palette, devWarn, type StyleProp, type ViewStyle } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
-import { CartesianFrame, chartRootWidth } from "../shared/chart-frame.js";
+import { CartesianFrame, CHART_ROOT } from "../shared/chart-frame.js";
 import { ChartValueFlag, announceSelection, DIM_OPACITY } from "../shared/chart-inspect.js";
-import { PLOT_HEIGHT, STANDARD_WIDTH } from "../shared/cartesian-series.js";
+import { PLOT_HEIGHT } from "../shared/cartesian-series.js";
 import { formatCompact, waterfallLayout } from "../shared/chart-math.js";
 
 // WaterfallChart: the running-total bridge (a P&L walk, a headcount bridge).
@@ -97,7 +97,7 @@ export function createWaterfallChart(skin: ChartSkin) {
         style={[
           s.surface(tokens, skin.surfaceRadius),
           compact ? s.surfacePadCompact : s.surfacePadDefault,
-          chartRootWidth(style, STANDARD_WIDTH),
+          CHART_ROOT,
           style,
         ]}
       >

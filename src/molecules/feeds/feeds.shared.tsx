@@ -5,8 +5,10 @@ import {
   Pressable,
   Text,
   useTheme,
+  useFillStyle,
   devWarn,
   type ColorTokens,
+  type LayoutStyle,
   type StyleProp,
   type ViewStyle,
   type TextStyle,
@@ -102,8 +104,8 @@ export interface FeedProps {
   virtualized?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
 export type Lead = "connector" | "avatar";
@@ -177,6 +179,8 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
   return function Feed(props: FeedProps) {
     const { items = [], onItemPress, virtualized, testID, style } = props;
     const { tokens } = useTheme();
+    // FILL: the feed spans the parent it is given; the parent picks the measure.
+    const fill = useFillStyle("Feed");
     const lead = leadOf(props);
     const compact = !!props.compact;
     const lastIndex = items.length - 1;
@@ -260,7 +264,7 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
         ) : (
           items.map((item, index) => <Fragment key={keyOf(item, index)}>{renderRow(item, index)}</Fragment>)
         );
-      return <View testID={testID} style={[skin.cardSurface(tokens), style]}>{body}</View>;
+      return <View testID={testID} style={[skin.cardSurface(tokens), fill, style]}>{body}</View>;
     }
 
     // Connector lead: a bordered node per row with a vertical line linking each
@@ -327,6 +331,6 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
         items.map((item, index) => <Fragment key={keyOf(item, index)}>{renderRow(item, index)}</Fragment>)
       );
 
-    return <View testID={testID} style={[skin.cardSurface(tokens), skin.connectorPad(compact), style]}>{body}</View>;
+    return <View testID={testID} style={[skin.cardSurface(tokens), skin.connectorPad(compact), fill, style]}>{body}</View>;
   };
 }

@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { primaryText } from "../../style/primary-text.js";
-import { Pressable, RippleClip, Text, useMinTargetSlop, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { Pressable, RippleClip, Text, useMinTargetSlop, useSizing, useTheme, type LayoutStyle } from "../../style/index.js";
 import { type ButtonSkin, type Intent, type Size, FG_TOKEN } from "./button.styles.js";
 
 // Shared Button shell. The structure (Pressable + optional loading spinner +
@@ -70,7 +70,9 @@ export interface ButtonProps {
   small?: boolean;
   large?: boolean;
   icon?: boolean;
-  // Layout and state.
+  // Layout and state. A Button is HUG (src/style/sizing.ts): it keeps its content
+  // width inside a stretching Column and sits content-sized in a Row; `block` makes
+  // it FILL (full width in a Column, an equal share in a Row).
   block?: boolean;
   loading?: boolean;
   disabled?: boolean;
@@ -89,8 +91,8 @@ export interface ButtonProps {
   haspopup?: "menu" | "dialog" | "listbox" | "grid" | "tree" | true;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: `block` and the parent layout container own the width. */
+  style?: LayoutStyle;
 }
 
 // Intent precedence when more than one is passed: first match wins.
@@ -128,6 +130,7 @@ export function createButton(skin: ButtonSkin) {
     const size = sizeOf(props);
 
     const opts = { icon: !!icon, block: !!block, dim: !!(disabled || loading) };
+    const sizing = useSizing({ block });
     const container = skin.container(tokens, intent, size, opts);
     const ripple = skin.ripple ? skin.ripple(tokens, intent) : undefined;
     // The rounded shape the ripple is clipped to (Android only; undefined on iOS/web). A bounded
@@ -150,11 +153,11 @@ export function createButton(skin: ButtonSkin) {
     // than direct attributes.
     const anchor = href != null && !(disabled || loading) ? { href, hrefAttrs } : null;
 
-    // Outer layout (block/full width + the consumer `style`) lives on the <RippleClip> wrapper,
+    // Outer layout (the sizing nature + the consumer `style`) lives on the <RippleClip> wrapper,
     // the outermost node on every platform, so positioning is identical with or without the clip
     // and the Pressable stretches to fill a block button.
     return (
-      <RippleClip shape={clipShape} style={[block ? { width: "100%" } : null, style]}>
+      <RippleClip shape={clipShape} style={[sizing, style]}>
         <Pressable
           ref={hostRef}
           {...(anchor ?? undefined)}

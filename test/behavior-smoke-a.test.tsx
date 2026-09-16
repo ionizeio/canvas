@@ -95,39 +95,19 @@ describe("Alert", () => {
     expect(screen.getByText("Retry")).toBeTruthy();
   });
 
-  // The width measure axis: every measure is a MAXIMUM, never a floor. The
-  // banner rides width:"100%" under a maxWidth cap (480 default / 320 narrow /
-  // 640 wide; block drops the cap), so it still shrinks to its container. RNW
-  // serializes the pair as inline width/max-width, so the axis is assertable
-  // at the DOM.
+  // Width: an Alert is FILL (src/style/sizing.ts). It spans the parent it is
+  // given with the row-sharing pair and carries no cap of its own; a Container
+  // step around it sets the measure. RNW serializes the style inline, so the
+  // nature is assertable at the DOM.
   const alertRoot = (c: HTMLElement) => c.querySelector('[role="alert"]') as HTMLElement;
 
-  it("caps a bare banner at the default 480px measure, filling under the cap", () => {
+  it("fills the parent with no cap of its own", () => {
     const { container } = ui(<Alert info title="Measured" />);
-    expect(alertRoot(container).style.width).toBe("100%");
-    expect(alertRoot(container).style.maxWidth).toBe("480px");
-  });
-
-  it("narrow and wide pick the other two caps", () => {
-    const n = ui(<Alert narrow info title="Narrow" />);
-    expect(alertRoot(n.container).style.maxWidth).toBe("320px");
-    n.unmount();
-    const w = ui(<Alert wide info title="Wide" />);
-    expect(alertRoot(w.container).style.maxWidth).toBe("640px");
-  });
-
-  it("block fills the container with no cap", () => {
-    const { container } = ui(<Alert block info title="Announcement" />);
-    expect(alertRoot(container).style.width).toBe("100%");
-    expect(alertRoot(container).style.maxWidth).toBe("");
-  });
-
-  it("resolves measure conflicts first-match: block > wide > narrow", () => {
-    const all = ui(<Alert narrow wide block info title="All three" />);
-    expect(alertRoot(all.container).style.maxWidth).toBe("");
-    all.unmount();
-    const two = ui(<Alert narrow wide info title="Wide beats narrow" />);
-    expect(alertRoot(two.container).style.maxWidth).toBe("640px");
+    const root = alertRoot(container);
+    expect(root.style.width).toBe("100%");
+    expect(root.style.flexShrink).toBe("1");
+    expect(root.style.minWidth).toBe("0px");
+    expect(root.style.maxWidth).toBe("");
   });
 });
 

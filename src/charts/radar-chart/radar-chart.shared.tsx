@@ -4,7 +4,7 @@ import { View, Text, useTheme, alpha, devWarn, type StyleProp, type ViewStyle } 
 import * as s from "../shared/charts.styles.js";
 import { type Tone } from "../shared/charts.styles.js";
 import { type ChartSeries, type ChartSkin } from "../shared/types.js";
-import { chartRootWidth } from "../shared/chart-frame.js";
+import { CHART_ROOT } from "../shared/chart-frame.js";
 import { ChartLegend } from "../shared/chart-legend.js";
 import { estimateTextWidth, formatCompact, niceTicks, polarPoint, polygonPath, seriesAccessibleName } from "../shared/chart-math.js";
 
@@ -57,7 +57,6 @@ function toneOf(p: RadarChartProps): Tone {
   return "primary";
 }
 
-const STANDARD_WIDTH = 480;
 // The graphic's height, ring radius, and the label margin around the rings.
 const PLOT = { default: { height: 240, radius: 88 }, compact: { height: 180, radius: 62 } } as const;
 const MIN_AXES = 3;
@@ -112,7 +111,7 @@ export function createRadarChart(skin: ChartSkin) {
         style={[
           s.surface(tokens, skin.surfaceRadius),
           compact ? s.surfacePadCompact : s.surfacePadDefault,
-          chartRootWidth(style, STANDARD_WIDTH),
+          CHART_ROOT,
           style,
         ]}
       >

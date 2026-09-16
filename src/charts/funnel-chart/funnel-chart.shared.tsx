@@ -5,7 +5,7 @@ import { View, Text, Pressable, useTheme, useControllableState, devWarn, tabular
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
 import { type StackedSegment } from "../shared/types.js";
-import { chartRootWidth } from "../shared/chart-frame.js";
+import { CHART_ROOT } from "../shared/chart-frame.js";
 import { announceSelection, pressPoint, DIM_OPACITY } from "../shared/chart-inspect.js";
 import { estimateTextWidth, formatCompact, funnelLayout, polygonPath } from "../shared/chart-math.js";
 
@@ -47,7 +47,6 @@ export interface FunnelChartProps {
   style?: StyleProp<ViewStyle>;
 }
 
-const STANDARD_WIDTH = 480;
 const FUNNEL_HEIGHT = { default: 220, compact: 150 } as const;
 const STAGE_GAP = 3;
 
@@ -105,7 +104,7 @@ export function createFunnelChart(skin: ChartSkin) {
         style={[
           s.surface(tokens, skin.surfaceRadius),
           compact ? s.surfacePadCompact : s.surfacePadDefault,
-          chartRootWidth(style, STANDARD_WIDTH),
+          CHART_ROOT,
           style,
         ]}
       >

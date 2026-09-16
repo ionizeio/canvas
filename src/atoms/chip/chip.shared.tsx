@@ -1,5 +1,5 @@
 import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
-import { View, Text, Pressable, RippleClip, cornerRadii, useTheme, useControllableState, surfaceRipple, pressDim, palette, statusHues, type Hue, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Text, Pressable, RippleClip, cornerRadii, useHugStyle, useTheme, useControllableState, surfaceRipple, pressDim, palette, statusHues, type Hue, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
 
 // Shared Chip shell. The interactive/removable pill, so no call site hand-composes
@@ -121,7 +121,7 @@ export interface ChipProps {
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** For layout composition only (not styling). */
-  style?: StyleProp<ViewStyle>;
+  style?: LayoutStyle;
 }
 
 // The three colors a chip paints with: container fill, border, and label/glyph text.
@@ -175,6 +175,8 @@ export function createChip(skin: ChipSkin) {
   return function Chip(props: ChipProps) {
     const { children, icon, trailing, onPress, onRemove, disabled, accessibilityLabel, testID, style } = props;
     const { tokens, dark } = useTheme();
+    // HUG: content width inside a stretching Column, content-sized in a Row.
+    const hug = useHugStyle();
 
     // A selectable chip is a filter toggle that owns its selected state (controlled
     // via `selected`, uncontrolled via `defaultSelected`). It is "selectable" when
@@ -242,6 +244,7 @@ export function createChip(skin: ChipSkin) {
           }
         : null,
       disabled ? { opacity: 0.5 } : null,
+      hug,
       style,
     ];
 
@@ -330,7 +333,7 @@ export function createChip(skin: ChipSkin) {
         // The whole-pill ripple is clipped to the rounded chip by this RippleClip parent
         // (Android only). A bounded android_ripple is the pressable's own rectangular-masked
         // background, which its own overflow:"hidden" cannot clip. See src/style/ripple-clip.
-        <RippleClip shape={cornerRadii(container)}>
+        <RippleClip shape={cornerRadii(container)} style={hug}>
           <Pressable
             onPress={handlePress}
             disabled={disabled}

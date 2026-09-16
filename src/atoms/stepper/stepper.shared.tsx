@@ -12,6 +12,7 @@ import {
   Pressable,
   RippleClip,
   cornerRadii,
+  useHugStyle,
   useTheme,
   useControllableState,
   FOCUS_RESET,
@@ -166,6 +167,9 @@ export function createStepper(skin: StepperSkin) {
       style,
     } = props;
     const { tokens } = useTheme();
+    // HUG: the control keeps its content width inside a stretching Column (whichever
+    // node is the root: the bare control, or the labeled wrapper).
+    const hug = useHugStyle();
     const size = sizeOf(props);
 
     // Collision-free ids so the group can name itself from the visible label and be
@@ -370,11 +374,11 @@ export function createStepper(skin: StepperSkin) {
           {
             flexDirection: "row",
             alignItems: "center",
-            alignSelf: "flex-start",
             // With a label the outer wrapper carries the disabled dim (so the label
             // dims with the control, matching Input); bare, the group dims itself.
             opacity: label == null && disabled ? 0.5 : 1,
           },
+          label != null ? null : hug,
           // The style escape hatch rides the outer wrapper when a label is present
           // (as in Input); on the bare control it stays here to preserve its layout.
           label != null ? null : style,
@@ -408,7 +412,7 @@ export function createStepper(skin: StepperSkin) {
     // the control, mirroring Input's above-field placement. The wrapper owns the
     // style escape hatch and the disabled dim so the label dims with the control.
     return (
-      <View style={[{ alignSelf: "flex-start", gap: 6 }, disabled ? { opacity: 0.5 } : null, style]}>
+      <View style={[{ gap: 6 }, hug, disabled ? { opacity: 0.5 } : null, style]}>
         <Text nativeID={labelId} style={skin.labelAbove(tokens, size)}>
           <LabelContent label={label} required={required} starColor={tokens.destructive} />
         </Text>

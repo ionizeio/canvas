@@ -58,7 +58,6 @@ export function nodeDot(tokens: ColorTokens): ViewStyle {
 export const webSkin: FeedSkin = {
   cardSurface: (t) => ({
     width: "100%",
-    maxWidth: 560,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: t.border,
@@ -106,7 +105,6 @@ export const webSkin: FeedSkin = {
 export const iosSkin: FeedSkin = {
   cardSurface: (t) => ({
     width: "100%",
-    maxWidth: 560,
     borderRadius: 12,
     // Apple's smooth/continuous (superellipse) corners; RN iOS-only, no-op elsewhere.
     borderCurve: "continuous",
@@ -155,7 +153,6 @@ export const iosSkin: FeedSkin = {
 export const androidSkin: FeedSkin = {
   cardSurface: (t) => ({
     width: "100%",
-    maxWidth: 560,
     // M3 medium shape (12dp), matching M3 cards and the kit's own Android Card atom.
     borderRadius: 12,
     borderWidth: 1,

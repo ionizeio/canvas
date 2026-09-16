@@ -5,12 +5,13 @@ import {
   Text,
   useTheme,
   useControllableState,
+  useFillStyle,
   controlRipple,
   pressDim,
   palette,
   statusHues,
   type ColorTokens,
-  type StyleProp,
+  type LayoutStyle,
   type ViewStyle,
   type TextStyle,
 } from "../../style/index.js";
@@ -84,13 +85,6 @@ export interface AlertProps {
   /** Shows a trailing dismiss control. Pressing it hides the banner out of the box
    *  (uncontrolled); pass `dismissed` to own that state instead. */
   dismissible?: boolean;
-  // Width measure (pick at most one; omit for the default 480px cap).
-  /** Cap the banner at 320px, the measure of a standard (base-width) form field. */
-  narrow?: boolean;
-  /** Cap the banner at 640px, for roomy content regions. */
-  wide?: boolean;
-  /** Fill the container with no cap: the full-width announcement bar. */
-  block?: boolean;
   /** Controlled dismissal: `true` hides the banner. Omit to let the Alert manage it. */
   dismissed?: boolean;
   /** Uncontrolled seed: start hidden. Rarely useful; defaults to false. */
@@ -108,36 +102,14 @@ export interface AlertProps {
    * Pass a fragment for more than one action.
    */
   actions?: ReactNode;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: StyleProp<ViewStyle>;
+  /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
+  style?: LayoutStyle;
 }
 
-// The width measure axis (per the hand-off mirror): one measure, shared
-// conceptually with the field width ladder (src/style/tokens.ts fieldWidths) so
-// a banner over a form lines up with it: the alert's narrow 320 sits flush on a
-// base-width field, and its default 480 spans a wide one. Every width is a MAX,
-// never a floor: the banner rides width:"100%" under the cap and still shrinks
-// to its container, so it fits a phone column, a dialog, or a full-bleed page
-// region without a media query, and a column of alerts is the same measure top
-// to bottom. A reading measure is platform-neutral (it is not a platform
-// shape), so the values live here in the shared shell, not the per-OS skins.
-const MEASURE: Record<"narrow" | "base" | "wide" | "block", ViewStyle> = {
-  narrow: { width: "100%", maxWidth: 320 },
-  base: { width: "100%", maxWidth: 480 },
-  wide: { width: "100%", maxWidth: 640 },
-  block: { width: "100%" },
-};
-
-// Measure precedence when more than one is passed: first match wins
-// (block > wide > narrow; omit all for the default 480 cap). Block leads
-// because "fill the container" is the most specific instruction of the three:
-// a caller that asks for it has a layout that owns the width already.
-function measureOf(p: AlertProps): ViewStyle {
-  if (p.block) return MEASURE.block;
-  if (p.wide) return MEASURE.wide;
-  if (p.narrow) return MEASURE.narrow;
-  return MEASURE.base;
-}
+// Width: an Alert is FILL (src/style/sizing.ts). It spans the parent it is given,
+// a page column, a dialog body, a Container step over a form, so a column of
+// alerts is the same measure top to bottom and a banner over a form lines up with
+// the fields; the parent layout container decides the measure.
 
 // Tone precedence when more than one is passed: first match wins. `destructive` and
 // `error` are the same tone under two names, so they share one branch.
@@ -193,6 +165,7 @@ export function createAlert(skin: AlertSkin) {
     const { title, description, icon, children, actions, dismissible, onDismiss, testID, style } = props;
     const { tokens, dark } = useTheme();
     const tone = toneOf(props);
+    const fill = useFillStyle("Alert");
 
     // Dismissal obeys the kit's controlled + uncontrolled contract: pressing the
     // trailing "×" hides the banner out of the box, a controlled `dismissed` prop
@@ -229,7 +202,7 @@ export function createAlert(skin: AlertSkin) {
         accessibilityRole="alert"
         accessibilityLiveRegion={live}
         aria-live={live}
-        style={[skin.container, containerColor(tokens, dark, tone), measureOf(props), style]}
+        style={[skin.container, containerColor(tokens, dark, tone), fill, style]}
       >
         {icon != null ? (
           tintedIcon != null ? (

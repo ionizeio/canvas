@@ -6,7 +6,7 @@ import {
   useControllableState,
   useContainerBreakpoint,
   spanWidth,
-  CELL_AXIS,
+  GRID_CELL_AXIS,
   LayoutAxisProvider,
   type Responsive,
   type StyleProp,
@@ -90,10 +90,11 @@ const ROOT: ViewStyle = { width: "100%", maxWidth: "100%" };
 // in a 158px tile beside a 427px neighbour, and the 269px underneath it was page background
 // rather than anything the board had put there.
 //
-// Stretching the CELL is all this does; the widget inside still sizes itself, so a board of
-// widgets that hug their content renders exactly as it did before. A widget that wants the
-// tile's full height asks for it (a Card's `grow`, `flex: 1` on anything else) and now has a
-// box to grow into, which is the half that was impossible from outside the kit.
+// Stretching the CELL makes it a definite box, and the cell publishes GRID_CELL_AXIS (the
+// `bounded` cell from sizing.ts) so a Card widget grows to fill it without being asked, the
+// same contract as the Grid atom's tiles. Any other widget still sizes itself: a chart or a
+// list that hugs its content renders exactly as before, and one that wants the tile's full
+// height asks for it (`flex: 1`) and has a box to grow into.
 const GRID: ViewStyle = { flexDirection: "row", flexWrap: "wrap", alignItems: "stretch" };
 // The customize-mode chrome between a stretched cell and the widget it holds. Without it the
 // drag wrapper and the dashed ring keep hugging the widget, so a tile that fills its cell
@@ -263,7 +264,7 @@ export function createDashboardGrid(skin: DashboardGridSkin, parts: DashboardGri
           if (!unlocked) {
             return (
               <View key={widget.id} style={cell}>
-                <LayoutAxisProvider value={CELL_AXIS}>{widget.content}</LayoutAxisProvider>
+                <LayoutAxisProvider value={GRID_CELL_AXIS}>{widget.content}</LayoutAxisProvider>
               </View>
             );
           }
@@ -283,7 +284,7 @@ export function createDashboardGrid(skin: DashboardGridSkin, parts: DashboardGri
                   <View style={skin.gripRow}>
                     <DragHandle label={`Reorder ${widget.title}`} />
                   </View>
-                  <LayoutAxisProvider value={CELL_AXIS}>{widget.content}</LayoutAxisProvider>
+                  <LayoutAxisProvider value={GRID_CELL_AXIS}>{widget.content}</LayoutAxisProvider>
                 </View>
               </Draggable>
             </DropZone>

@@ -1,5 +1,5 @@
 import type RNQRCodeType from "react-native-qrcode-svg";
-import { View, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, useHugStyle, type StyleProp, type ViewStyle } from "../../style/index.js";
 
 // react-native-qrcode-svg is an OPTIONAL peer (it drags a large text-encoding
 // polyfill), so it is loaded with a guarded literal require: consumers who never
@@ -97,9 +97,11 @@ export function createQRCode(skin: QRCodeSkin) {
     // a spoken equivalent of the otherwise camera-only content. aria-label is added for
     // RNW, which does not forward accessibilityLabel as the web image's accessible name.
     const label = accessibilityLabel ?? `QR code encoding ${value}`;
+    // HUG: the card keeps the code's size inside a stretching Column.
+    const hug = useHugStyle();
     return (
       <View
-        style={[skin.frame, style]}
+        style={[skin.frame, hug, style]}
         testID={testID}
         accessible
         accessibilityRole="image"

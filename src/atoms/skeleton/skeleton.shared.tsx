@@ -133,8 +133,8 @@ const cardLine70: ViewStyle = { width: "70%" };
 const cardLine40: ViewStyle = { width: "40%", marginTop: 6 };
 const cardLine80: ViewStyle = { width: "80%", marginTop: 6 };
 
-// The list container. `flex-col gap-4 max-w-[400px]`.
-const listContainer: ViewStyle = { flexDirection: "column", gap: 16, maxWidth: 400 };
+// The list container: FILL (the parent picks the measure). `flex-col gap-4`.
+const listContainer: ViewStyle = { flexDirection: "column", gap: 16, width: "100%", flexShrink: 1, minWidth: 0 };
 
 // A list row. `flex-row items-center gap-3`.
 const listRow: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 12 };
@@ -148,8 +148,8 @@ const listLineGap: ViewStyle = { marginBottom: 6 };
 // The list row's trailing meta line. `w-10`.
 const w10: ViewStyle = { width: 40 };
 
-// The table container. `max-w-[560px]`.
-const tableContainer: ViewStyle = { maxWidth: 560 };
+// The table container: FILL (the parent picks the measure).
+const tableContainer: ViewStyle = { width: "100%", flexShrink: 1, minWidth: 0 };
 
 // A table row. `flex-row items-center gap-3 py-3`.
 const tableRow: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 12 };

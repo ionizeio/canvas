@@ -1,6 +1,6 @@
 # Alert
 
-Inline notification banners: info, success, warning, and destructive, plus a full-width announcement bar. Width comes off the measure axis rather than whatever the parent happens to be, so a column of alerts is the same measure top to bottom: a bare banner caps at 480px, `narrow` caps at 320px (the measure of a standard form field, so a banner over a form lines up with it), `wide` caps at 640px, and `block` fills the container with no cap (first match wins: block, then wide, then narrow). Every cap is a maximum, never a floor: the banner still shrinks to its container. For a blocking confirmation prompt, see Alert Dialog.
+Inline notification banners: info, success, warning, and destructive, plus a full-width announcement bar. A banner fills the parent it is given, so a column of alerts is the same measure top to bottom and a banner over a form lines up with the fields; a Container step sets the measure when the layout calls for one. For a blocking confirmation prompt, see Alert Dialog.
 
 ## Usage
 
@@ -97,30 +97,31 @@ Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onD
 />
 ```
 
-### Measures
+### Measures come from the parent
 
 ```tsx
 <Column snug>
+  <Container xs start>
+    <Alert
+      info
+      icon={<Icon info size={16} />}
+      title="In an xs Container"
+      description="The banner fills the 320px step, the measure of a short form."
+    />
+  </Container>
+  <Container xxl start>
+    <Alert
+      success
+      icon="✓"
+      title="In an xxl Container"
+      description="The banner fills the 672px step for roomy content regions."
+    />
+  </Container>
   <Alert
-    narrow
-    info
-    icon={<Icon info size={16} />}
-    title="Narrow"
-    description="Capped at 320px, the measure of a standard form field."
-  />
-  <Alert
-    wide
-    success
-    icon="✓"
-    title="Wide"
-    description="Capped at 640px for roomy content regions; a banner without a measure prop caps at 480px."
-  />
-  <Alert
-    block
     warning
     icon={<Icon alertTriangle size={16} />}
-    title="Block"
-    description="No cap: the announcement bar fills whatever container it sits in."
+    title="Bare"
+    description="No container of its own: the announcement bar fills whatever parent it sits in."
   />
 </Column>
 ```

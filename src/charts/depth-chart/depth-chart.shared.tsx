@@ -2,7 +2,7 @@ import { Path } from "react-native-svg";
 import { View, Text, useTheme, alpha, devWarn, type StyleProp, type ViewStyle } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
-import { CartesianFrame, chartRootWidth } from "../shared/chart-frame.js";
+import { CartesianFrame, CHART_ROOT } from "../shared/chart-frame.js";
 import { ChartLegend } from "../shared/chart-legend.js";
 import { cumulativeDepth, formatCompact, stepAreaPath, type DepthLevel } from "../shared/chart-math.js";
 
@@ -36,7 +36,6 @@ export interface DepthChartProps {
 }
 
 const PLOT_HEIGHT = { default: 180, compact: 120 } as const;
-const STANDARD_WIDTH = 480;
 
 /** Build a DepthChart from a platform skin. */
 export function createDepthChart(skin: ChartSkin) {
@@ -77,7 +76,7 @@ export function createDepthChart(skin: ChartSkin) {
         style={[
           s.surface(tokens, skin.surfaceRadius),
           compact ? s.surfacePadCompact : s.surfacePadDefault,
-          chartRootWidth(style, STANDARD_WIDTH),
+          CHART_ROOT,
           style,
         ]}
       >

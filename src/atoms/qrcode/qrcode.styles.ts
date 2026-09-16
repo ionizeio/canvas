@@ -8,8 +8,8 @@ import { type QRCodeSkin } from "./qrcode.shared.js";
 // identical on iOS, Android, and the web; the three skin exports point at the same values.
 
 // A fixed white card with a quiet-zone of padding around the code, regardless of theme.
+// HUG via the shell's `useHugStyle()`, not a static alignSelf.
 const frame: ViewStyle = {
-  alignSelf: "flex-start",
   padding: 12,
   borderRadius: 12,
   backgroundColor: "#ffffff",

@@ -2,7 +2,7 @@ import { destructiveText } from "../../style/destructive-text.js";
 import { primaryText } from "../../style/primary-text.js";
 import { type ComponentType } from "react";
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow, alpha } from "../../style/index.js";
+import { type ColorTokens, shadow, alpha, widths } from "../../style/index.js";
 import { type InputProps } from "../../atoms/input/input.shared.js";
 
 // The confirmation field is rendered through the platform-correct Input atom,
@@ -40,17 +40,16 @@ export type InputComponent = ComponentType<InputProps>;
 
 export type Width = "narrow" | "small" | "medium" | "large";
 
-// Panel width per width axis (mirroring Tailwind's max-w-xs..lg). Shared by
-// every platform; the native skins narrow the medium/large footprint a touch but
-// the axis mapping is one source of truth. The panel RENDERS AT its width
-// (shrinking via maxWidth:"100%" in narrower parents), so it holds its size
-// even in content-sized contexts (a centered docs stage), where a
-// width:"100%" + cap would collapse it to its text's natural width.
+// Panel width per width axis, drawn from the shared width scale (xs..lg). Shared
+// by every platform; the native skins narrow the medium/large footprint a touch
+// but the axis mapping is one source of truth. The panel is a floating container
+// (a bounds provider for its own content): it spans its definite backdrop and caps
+// at the step.
 export const panelWidth: Record<Width, ViewStyle> = {
-  narrow: { width: 320, maxWidth: "100%" },
-  small: { width: 384, maxWidth: "100%" },
-  medium: { width: 448, maxWidth: "100%" },
-  large: { width: 512, maxWidth: "100%" },
+  narrow: { width: "100%", maxWidth: widths.xs },
+  small: { width: "100%", maxWidth: widths.sm },
+  medium: { width: "100%", maxWidth: widths.md },
+  large: { width: "100%", maxWidth: widths.lg },
 };
 
 // How the action row is structured. "buttons" renders the shell's Button-based

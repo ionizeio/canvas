@@ -36,12 +36,13 @@ export interface TooltipSkin {
 
 // Wrapper layout per placement: a column for top/bottom (bubble stacked above or
 // below the trigger), a row for left/right (bubble beside the trigger). Centered
-// on the cross axis and shrunk to its content (self-start).
+// on the cross axis; the shell appends `useHugStyle()` (src/style/sizing.ts) so the
+// wrapper shrinks to its content inside a stretching Column.
 export const wrapper: Record<Placement, ViewStyle> = {
-  top: { flexDirection: "column", alignItems: "center", alignSelf: "flex-start" },
-  bottom: { flexDirection: "column", alignItems: "center", alignSelf: "flex-start" },
-  left: { flexDirection: "row", alignItems: "center", alignSelf: "flex-start" },
-  right: { flexDirection: "row", alignItems: "center", alignSelf: "flex-start" },
+  top: { flexDirection: "column", alignItems: "center" },
+  bottom: { flexDirection: "column", alignItems: "center" },
+  left: { flexDirection: "row", alignItems: "center" },
+  right: { flexDirection: "row", alignItems: "center" },
 };
 
 // Gap between bubble and trigger (the old `m{b,t,r,l}-1.5` = 6), applied to the
