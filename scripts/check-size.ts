@@ -74,12 +74,17 @@ export interface JavaScriptBudget {
 // the face resolver, ~580B gzip, which is the cost of one brand face on every label
 // without a fontFamily at any call site. The ceiling moved from 3,584 to 4,096B for
 // that deliberate growth; the others keep their headroom.
+// Input was 31,895 / 32,203 / 32,210B before the sizing natures (src/style/sizing.ts:
+// FILL, the layout-axis context, the hugging-cell warning, the span math) replaced
+// the fixed field width; measured after at 31,906 / 32,972 / 32,123B, so every field
+// now carries the width contract, ~770B gzip on iOS. The Input ceiling moved from
+// 32,768 to 34,816B for that deliberate growth.
 // Fixed ceilings leave room for deliberate growth while catching a heavy import.
 // These are independent budgets, not a combined total: shared modules legitimately
 // occur in more than one consumer. Changes require a fresh measurement and rationale.
 export const NAMED_IMPORT_BUDGETS: readonly JavaScriptBudget[] = [
   { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 4_096, requiredExports: ["Button", "ThemeProvider"] },
-  { label: "Input + ThemeProvider", entry: "scripts/size-fixtures/input.ts", maxGzip: 32_768, requiredExports: ["Input", "ThemeProvider"] },
+  { label: "Input + ThemeProvider", entry: "scripts/size-fixtures/input.ts", maxGzip: 34_816, requiredExports: ["Input", "ThemeProvider"] },
   { label: "DataTable + ThemeProvider", entry: "scripts/size-fixtures/data-table.ts", maxGzip: 40_960, requiredExports: ["DataTable", "ThemeProvider"] },
   { label: "StackedList + ThemeProvider", entry: "scripts/size-fixtures/stacked-list.ts", maxGzip: 53_248, requiredExports: ["StackedList", "ThemeProvider"] },
 ];
