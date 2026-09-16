@@ -77,13 +77,51 @@ Author desktop-first: lay out and size each component for the desktop case first
 then add the responsive variants that scale it down to tablet and phone. This is
 the inverse of mobile-first.
 
+### Sizing: the parent provides the bounds
+
+A component never dictates its own width. Every component root declares a sizing
+nature from `src/style/sizing.ts`, and the nearest layout container provides the
+bounds, which is Bootstrap's contract (`.container` > `.row` > `.col-*` size the
+box, `.form-control` is `width: 100%`):
+
+- **FILL** (`useFillStyle` / `FILL`: `width:"100%"`, `flexShrink:1`, `minWidth:0`):
+  fills a Column, shares a Row with hugging siblings (a field beside a button takes
+  the remainder), splits a Row equally with other fill siblings, takes its own line
+  in a wrap Row. Fields, cards, alerts, lists, tables, charts, feeds, forms, the
+  calendar.
+- **HUG** (`useHugStyle` / `useSizing({ block })`): the content's own width. Button,
+  Badge, Chip, Kbd, ButtonGroup, Dropdown, Tooltip, QRCode, Stepper, InputOTP, the
+  Typography code role; `block` turns the hug components that offer it into FILL.
+  HUG resolves against the layout-axis context the kit containers publish:
+  `alignSelf:"flex-start"` inside a stretching Column and nothing anywhere else,
+  because Yoga ignores `width:"fit-content"` against a stretching parent and a bare
+  `alignSelf` pins a Row child to the top of a centered Row (both verified on iOS).
+  Never write a static `alignSelf:"flex-start"` on a component root.
+
+Only the **layout containers** carry widths, from the one width scale (`widths` in
+`src/style/tokens.ts`: Tailwind's `max-w` values copied by hand, `xxxs` 192 through
+`page` 1280): `Container` (a step as `maxWidth`, centered, `fluid`, `start`), Row
+children's `span={1..12}` (container-measured px cells with the gaps in the math,
+`stacks` ignores spans once stacked), `Grid` tiles, and the shells and floating
+overlays (Sidebar, FilterPanel, Dialog, AlertDialog, Popover, Command) that are
+bounds providers for their own content. Non-layout components take `LayoutStyle`
+for `style` (ViewStyle without width, min/max width, flex, and alignSelf), so a
+width shim at a call site is a type error; the docs generator rejects the same keys
+in a fence on any non-layout tag; and `test/design-rules-source.test.ts` keeps the
+render-at-a-width pair (`{ width: N, maxWidth: "100%" }`) and off-scale caps out of
+the kit. The one parent that still collapses `width:"100%"` is a content-sized cell
+(a bare Column or Row inside a Row); `useFillStyle` warns there in development, and
+a Select opts out because hugging its value is the toolbar cell (`.col-auto`).
+
 ### The responsiveness system (three mechanisms, in order of preference)
 
-1. **Intrinsic sizing** (default, zero JS): a fixed desktop width plus
-   `maxWidth:"100%"` (fields, dialogs, chart roots), or `minWidth` floors plus
-   `flexWrap` (Stats). Never swap a fixed width for `width:"100%"` below a
-   threshold (the `src/style/field-width.ts` post-mortem: in a content-sized
-   parent the element then tracks its own content).
+1. **Intrinsic sizing** (default, zero JS): FILL or HUG on the component, bounds
+   from the parent (a Container step, a Row span, a Grid cell), `minWidth` floors
+   plus `flexWrap` (Stats). Zero re-renders, correct in any DEFINITE container,
+   correct on frame one and on the server. Never give a component root a fixed
+   width, and never make a parent content-sized where a fill child must resolve
+   (the old `field-width.ts` post-mortem: a text field in such a parent re-sized on
+   every keystroke; the docs stage is definite for exactly that reason).
 2. **Container measurement** (components that switch layout): measure the
    component's OWN width via `useContainerBreakpoint` / `useMeasuredWidth` /
    `useContainerWidth` (`src/style/container.ts`), never the window; a component
@@ -99,14 +137,17 @@ the inverse of mobile-first.
    qualify. Pointer capability comes from `usePointerCoarse` /
    `useHoverCapable` (`src/style/pointer.ts`).
 
-Layout at call sites: equal-width tiles that renumber columns are `Grid`
-(`minTileWidth` floor + `columns` cap, container-measured); content-sized rows
-that stack at narrow widths are `Row stacks` (+ `stackBreakpoint`). Responsive
-props follow the boolean grammar (`stacks`, `responsive`) with
+Layout at call sites: a measure is a `Container` step (never a `maxWidth` on a
+component or a raw `View`); a two-up split is a Row of `span` children; equal-width
+tiles that renumber columns are `Grid` (`minTileWidth` floor + `columns` cap,
+container-measured); content-sized rows that stack at narrow widths are `Row stacks`
+(+ `stackBreakpoint`); a hugging toolbar cell is a bare `Column` inside a Row.
+Responsive props follow the boolean grammar (`stacks`, `responsive`) with
 `BreakpointKey`-valued config props (`stackBreakpoint`, `drawerBreakpoint`);
 `Responsive<T>`-valued component props are rejected (compose the public hooks
-in app code instead). Rule of thumb: viewport for the shell, container for the
-components, intrinsic wherever possible.
+in app code instead), and so are per-breakpoint spans (a stacked Row is the
+`col-12 col-md-6` idiom; finer reflow is Grid's). Rule of thumb: viewport for the
+shell, container for the components, intrinsic wherever possible.
 
 ## Semantic prop styling
 
