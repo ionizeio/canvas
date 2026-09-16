@@ -18,73 +18,32 @@ nor the menu button that stands in for it.
 <Navbar
   brand="Canvas"
   links={["Dashboard", "Users", "Settings"]}
-  defaultActive={0}
   actionLabel="New"
   avatar="RC"
-  bordered
 />
 ```
 
 ## Variants
 
-### Borderless
+### Bordered
 
 ```tsx
-<Navbar
-  brand="Canvas"
-  links={["Dashboard", "Users", "Settings"]}
-  defaultActive={0}
-  actionLabel="New"
-  avatar="RC"
-/>
+<Navbar bordered brand="Canvas" links={["Dashboard", "Users", "Settings"]} />
 ```
 
 ### Floating
 
 ```tsx
-<Navbar
-  floating
-  brand="Canvas"
-  links={["Dashboard", "Users", "Settings"]}
-  defaultActive={0}
-  actionLabel="New"
-  avatar="RC"
-/>
+<Navbar floating brand="Canvas" links={["Dashboard", "Users", "Settings"]} />
 ```
 
 ### Console topbar
 
 ```tsx
 <Navbar
-  bordered
-  brandContent={<Icon layers size={22} />}
-  actions={
-    <>
-      <Button ghost small accessibilityLabel="Search" iconLeft={<Icon search muted size={13} />} iconRight={<Kbd>⌘K</Kbd>} />
-      <Dropdown
-        alignEnd
-        triggerLabel="Notifications"
-        items={[
-          { label: "Deploy finished", icon: "check" },
-          { label: "Quota at 90%", icon: "bell" },
-        ]}
-      >
-        <Row tight alignCenter>
-          <Icon bell muted size={18} />
-          <Badge status error accessibilityLabel="2 unread notifications">2</Badge>
-        </Row>
-      </Dropdown>
-      <AvatarMenu
-        compact
-        name="Rachel Chen"
-        email="rachel@example.com"
-        items={[
-          { label: "Profile", icon: "user" },
-          { label: "Sign out", icon: "logOut", separatorBefore: true },
-        ]}
-      />
-    </>
-  }
+  brandContent={<Icon layers />}
+  actions={<Button ghost small icon accessibilityLabel="Search" iconLeft={<Icon search size={16} />} />}
+  avatar="RC"
 />
 ```
 

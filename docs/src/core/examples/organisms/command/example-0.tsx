@@ -6,7 +6,6 @@ export default function Example(scope: ExampleScope) {
   const { Command } = scope;
   return (
 <Command
-  defaultActive={0}
   trigger
   groups={[
     { heading: "Actions", items: [

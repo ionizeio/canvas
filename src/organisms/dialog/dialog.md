@@ -15,10 +15,8 @@ A controlled owner may keep it open; that request never confirms an action.
 <Dialog
   trigger="Open dialog"
   title="Refund payment"
-  description="The refund will be reflected in the customer's bank account within 2 to 3 business days."
+  description="The refund posts to the original card in 2 to 3 business days."
   withBody
-  confirmLabel="Confirm"
-  cancelLabel="Cancel"
 />
 ```
 
@@ -27,85 +25,37 @@ A controlled owner may keep it open; that request never confirms an action.
 ### Extra small
 
 ```tsx
-<Dialog
-  trigger="Open dialog"
-  title="Refund payment"
-  description="The refund will be reflected in the customer's bank account within 2 to 3 business days."
-  withBody
-  confirmLabel="Confirm"
-  cancelLabel="Cancel"
-  xs
-/>
+<Dialog trigger="Open dialog" title="Refund payment" xs />
 ```
 
 ### Small
 
 ```tsx
-<Dialog
-  trigger="Open dialog"
-  title="Refund payment"
-  description="The refund will be reflected in the customer's bank account within 2 to 3 business days."
-  withBody
-  confirmLabel="Confirm"
-  cancelLabel="Cancel"
-  small
-/>
+<Dialog trigger="Open dialog" title="Refund payment" small />
 ```
 
 ### Medium
 
 ```tsx
-<Dialog
-  trigger="Open dialog"
-  title="Refund payment"
-  description="The refund will be reflected in the customer's bank account within 2 to 3 business days."
-  withBody
-  confirmLabel="Confirm"
-  cancelLabel="Cancel"
-  medium
-/>
+<Dialog trigger="Open dialog" title="Refund payment" medium />
 ```
 
 ### Large
 
 ```tsx
-<Dialog
-  trigger="Open dialog"
-  title="Refund payment"
-  description="The refund will be reflected in the customer's bank account within 2 to 3 business days."
-  withBody
-  confirmLabel="Confirm"
-  cancelLabel="Cancel"
-  large
-/>
+<Dialog trigger="Open dialog" title="Refund payment" large />
 ```
 
 ### Wide
 
 ```tsx
-<Dialog
-  trigger="Open dialog"
-  title="Refund payment"
-  description="The refund will be reflected in the customer's bank account within 2 to 3 business days."
-  withBody
-  confirmLabel="Confirm"
-  cancelLabel="Cancel"
-  wide
-/>
+<Dialog trigger="Open dialog" title="Refund payment" wide />
 ```
 
 ### Destructive action
 
 ```tsx
-<Dialog
-  trigger="Open dialog"
-  title="Refund payment"
-  description="The refund will be reflected in the customer's bank account within 2 to 3 business days."
-  withBody
-  confirmLabel="Refund"
-  cancelLabel="Cancel"
-  destructive
-/>
+<Dialog trigger="Delete workspace" title="Delete workspace" destructive confirmLabel="Delete" />
 ```
 
 ## Do & Don't

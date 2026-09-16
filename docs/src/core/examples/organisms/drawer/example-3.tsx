@@ -3,14 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Drawer, Typography, Column } = scope;
+  const { Drawer, Typography, Column } = scope;
   return (
-<Drawer trigger="Bottom sheet" bottom>
+<Drawer trigger="Top sheet" top>
   <Column padLoose snug>
-    <Typography lead semibold>Actions</Typography>
-    <Button ghost block onPress={() => {}}>Share</Button>
-    <Button ghost block onPress={() => {}}>Duplicate</Button>
-    <Button destructive block onPress={() => {}}>Delete</Button>
+    <Typography lead semibold>What's new</Typography>
+    <Typography small muted>A sheet that drops down from the top edge.</Typography>
   </Column>
 </Drawer>
   );

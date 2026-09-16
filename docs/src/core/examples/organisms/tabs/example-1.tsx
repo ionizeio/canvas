@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Tabs } = scope;
   return (
-<Tabs pills tabs={["All", "Active", "Archived", "Deleted"]} defaultActive={0} />
+<Tabs pills tabs={["All", "Active", "Archived"]} />
   );
 }

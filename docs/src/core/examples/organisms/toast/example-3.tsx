@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Toast } = scope;
   return (
-<Toast destructive message="Upload failed" description="Check your connection and try again." action={{ label: "Retry", onPress: () => {} }} />
+<Toast destructive message="Upload failed" />
   );
 }

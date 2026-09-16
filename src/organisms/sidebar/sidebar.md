@@ -10,31 +10,14 @@ The one `Sidebar` below is the whole story: on desktop it is the collapsible acc
 
 ```tsx
 <AppShell>
-  {({ open, setOpen, select }) => (
+  {({ open, setOpen }) => (
     <Sidebar
       responsive
       collapsible
       defaultActive="Dashboard"
       open={open}
       onOpenChange={setOpen}
-      onSelect={select}
-      header={(collapsed) =>
-        collapsed ? (
-          <Icon layoutGrid primary size={22} />
-        ) : (
-          <Row snug alignCenter>
-            <Icon layoutGrid primary size={22} />
-            <Typography body semibold>Acme</Typography>
-          </Row>
-        )
-      }
-      footer={(collapsed) =>
-        collapsed ? (
-          <Button ghost icon small accessibilityLabel="Settings" iconLeft={<Icon settings size={16} />} />
-        ) : (
-          <Button ghost block small iconLeft={<Icon settings size={16} />}>Settings</Button>
-        )
-      }
+      header={(collapsed) => (collapsed ? <Icon layoutGrid primary size={22} /> : <Typography body semibold>Acme</Typography>)}
       sections={[
         { items: [
           { label: "Dashboard", icon: "layoutGrid" },
@@ -43,10 +26,6 @@ The one `Sidebar` below is the whole story: on desktop it is the collapsible acc
         { title: "Reports", icon: "barChart2", collapsible: true, items: [
           { label: "Analytics", icon: "barChart2" },
           { label: "Traffic", icon: "activity" }
-        ] },
-        { title: "Team", icon: "users", collapsible: true, items: [
-          { label: "Members", icon: "users" },
-          { label: "Roles", icon: "shield" }
         ] }
       ]}
     />
@@ -59,31 +38,16 @@ The one `Sidebar` below is the whole story: on desktop it is the collapsible acc
 ### Collapsed rail
 
 ```tsx
-<Row loose alignStart>
-  <Sidebar
-    bordered
-    defaultActive="Dashboard"
-    sections={[
-      { title: "Main", items: [
-        { label: "Dashboard", icon: "layoutGrid" },
-        { label: "Inbox", icon: "inbox", badge: "3" },
-        { label: "Settings", icon: "settings" }
-      ] }
-    ]}
-  />
-  <Sidebar
-    bordered
-    collapsed
-    defaultActive="Dashboard"
-    sections={[
-      { title: "Main", items: [
-        { label: "Dashboard", icon: "layoutGrid" },
-        { label: "Inbox", icon: "inbox", badge: "3" },
-        { label: "Settings", icon: "settings" }
-      ] }
-    ]}
-  />
-</Row>
+<Sidebar
+  bordered
+  collapsed
+  defaultActive="Dashboard"
+  items={[
+    { label: "Dashboard", icon: "layoutGrid" },
+    { label: "Inbox", icon: "inbox" },
+    { label: "Settings", icon: "settings" }
+  ]}
+/>
 ```
 
 ### Error badge
@@ -92,12 +56,10 @@ The one `Sidebar` below is the whole story: on desktop it is the collapsible acc
 <Sidebar
   bordered
   defaultActive="Dashboard"
-  sections={[
-    { title: "Admin", items: [
-      { label: "Dashboard", icon: "layoutGrid" },
-      { label: "Members", icon: "users", badge: "24" },
-      { label: "Security", icon: "shield", badge: "3", badgeError: true }
-    ] }
+  items={[
+    { label: "Dashboard", icon: "layoutGrid" },
+    { label: "Members", icon: "users" },
+    { label: "Security", icon: "shield", badge: "3", badgeError: true }
   ]}
 />
 ```

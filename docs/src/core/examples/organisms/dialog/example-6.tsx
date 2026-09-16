@@ -5,14 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Dialog } = scope;
   return (
-<Dialog
-  trigger="Open dialog"
-  title="Refund payment"
-  description="The refund will be reflected in the customer's bank account within 2 to 3 business days."
-  withBody
-  confirmLabel="Refund"
-  cancelLabel="Cancel"
-  destructive
-/>
+<Dialog trigger="Delete workspace" title="Delete workspace" destructive confirmLabel="Delete" />
   );
 }

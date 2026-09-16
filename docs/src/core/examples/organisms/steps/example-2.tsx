@@ -5,10 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Steps } = scope;
   return (
-<Steps
-  stacks
-  steps={[{ label: "Account" }, { label: "Profile" }, { label: "Review" }, { label: "Done" }]}
-  defaultCurrent={1}
-/>
+<Steps progress steps={[]} value={68} />
   );
 }

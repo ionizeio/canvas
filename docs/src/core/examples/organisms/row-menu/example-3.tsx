@@ -9,7 +9,7 @@ export default function Example(scope: ExampleScope) {
   items={[
     { label: "Edit", icon: "pencil" },
     { label: "Duplicate", icon: "copy" },
-    { label: "Delete", icon: "trash", destructive: true, separatorBefore: true }
+    { label: "Settings", icon: "settings" }
   ]}
 />
   );

@@ -3,24 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, DataTable } = scope;
+  const { DataTable } = scope;
   return (
-<Stateful initial={[
-  ["/pricing", "12,480"],
-  ["/docs", "8,102"],
-  ["/blog", "5,914"]
-]}>
-  {(rows, setRows) => (
-    <DataTable
-      columns={["Page", { label: "Visits", numeric: true }]}
-      rows={rows}
-      bordered
-      inlineEdit
-      onCellCommit={(i, c, next) =>
-        setRows(rows.map((row, r) => (r === i ? row.map((cell, ci) => (ci === c ? next : cell)) : row)))
-      }
-    />
-  )}
-</Stateful>
+<DataTable
+  columns={["Name", "Email", "Role"]}
+  rows={[
+    ["Alice Johnson", "alice@example.com", "Admin"],
+    ["Bob Smith", "bob@example.com", "Editor"],
+    ["Rachel Chen", "rachel@example.com", "Admin"]
+  ]}
+  comfortable
+/>
   );
 }

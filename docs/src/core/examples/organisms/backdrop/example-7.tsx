@@ -6,11 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { View, Backdrop } = scope;
   return (
 <View style={{ height: 220 }}>
-  <Backdrop subtle>
+  <Backdrop still>
     <Backdrop.Particles
       field={Array.from({ length: 90 }, (_, i) => ({ x: ((i * 37) % 101) / 101, y: ((i * 61) % 97) / 97, r: 0.8 + ((i * 13) % 7) / 4, a: 0.4 + ((i * 7) % 10) / 14 }))}
-      depth={0}
-      sprite="halo"
     />
   </Backdrop>
 </View>

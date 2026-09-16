@@ -10,11 +10,10 @@ export default function Example(scope: ExampleScope) {
   rows={[
     ["Alice Johnson", "alice@example.com", "Admin"],
     ["Bob Smith", "bob@example.com", "Editor"],
-    ["Rachel Chen", "rachel@example.com", "Admin"]
+    ["Rachel Chen", "rachel@example.com", "Admin"],
+    ["Dan Wright", "dan@example.com", "Viewer"]
   ]}
-  bordered
-  selectable
-  defaultSelectedKeys={[1]}
+  striped
 />
   );
 }

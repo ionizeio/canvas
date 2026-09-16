@@ -6,12 +6,19 @@ export default function Example(scope: ExampleScope) {
   const { View, Backdrop } = scope;
   return (
 <View style={{ height: 220 }}>
-  <Backdrop still>
-    <Backdrop.Particles
-      field={Array.from({ length: 90 }, (_, i) => ({ x: ((i * 37) % 101) / 101, y: ((i * 61) % 97) / 97, r: 0.8 + ((i * 13) % 7) / 4, a: 0.4 + ((i * 7) % 10) / 14 }))}
-      depth={0}
-      sprite="spark"
-    />
+  <Backdrop>
+    {[0, 0.5].map((phase) => (
+      <Backdrop.Particles
+        key={phase}
+        field={Array.from({ length: 40 }, (_, i) => ({
+          x: 0.5 + Math.cos(i * 2.4) * (0.05 + ((i * 11) % 40) / 100),
+          y: 0.5 + Math.sin(i * 2.4) * (0.05 + ((i * 11) % 40) / 100),
+          r: 0.8 + ((i * 7) % 5) / 3,
+          a: 0.4 + ((i * 3) % 10) / 16,
+        }))}
+        phase={phase}
+      />
+    ))}
   </Backdrop>
 </View>
   );

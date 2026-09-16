@@ -13,18 +13,93 @@ no scrolling tab stop. The iOS compact primary-column layout is unchanged.
 
 ```tsx
 <DataTable
-  columns={["Name", "Email", "Role", "Status"]}
+  columns={["Name", "Email", "Role"]}
   rows={[
-    ["Alice Johnson", "alice@example.com", "Admin", "Active"],
-    ["Bob Smith", "bob@example.com", "Editor", "Inactive"],
-    ["Rachel Chen", "rachel@example.com", "Admin", "Active"]
+    ["Alice Johnson", "alice@example.com", "Admin"],
+    ["Bob Smith", "bob@example.com", "Editor"],
+    ["Rachel Chen", "rachel@example.com", "Admin"]
   ]}
-  bordered
-  sortable
 />
 ```
 
 ## Variants
+
+### Bordered
+
+```tsx
+<DataTable
+  columns={["Name", "Email", "Role"]}
+  rows={[
+    ["Alice Johnson", "alice@example.com", "Admin"],
+    ["Bob Smith", "bob@example.com", "Editor"],
+    ["Rachel Chen", "rachel@example.com", "Admin"]
+  ]}
+  bordered
+/>
+```
+
+### Striped
+
+```tsx
+<DataTable
+  columns={["Name", "Email", "Role"]}
+  rows={[
+    ["Alice Johnson", "alice@example.com", "Admin"],
+    ["Bob Smith", "bob@example.com", "Editor"],
+    ["Rachel Chen", "rachel@example.com", "Admin"],
+    ["Dan Wright", "dan@example.com", "Viewer"]
+  ]}
+  striped
+/>
+```
+
+### Compact
+
+```tsx
+<DataTable
+  columns={["Name", "Email", "Role"]}
+  rows={[
+    ["Alice Johnson", "alice@example.com", "Admin"],
+    ["Bob Smith", "bob@example.com", "Editor"],
+    ["Rachel Chen", "rachel@example.com", "Admin"]
+  ]}
+  compact
+/>
+```
+
+### Comfortable
+
+```tsx
+<DataTable
+  columns={["Name", "Email", "Role"]}
+  rows={[
+    ["Alice Johnson", "alice@example.com", "Admin"],
+    ["Bob Smith", "bob@example.com", "Editor"],
+    ["Rachel Chen", "rachel@example.com", "Admin"]
+  ]}
+  comfortable
+/>
+```
+
+### Loading
+
+```tsx
+<DataTable
+  columns={["Name", "Email", "Status"]}
+  rows={[]}
+  loading
+/>
+```
+
+### Empty
+
+```tsx
+<DataTable
+  columns={["Name", "Email", "Status"]}
+  rows={[]}
+  emptyMessage="No results found."
+/>
+```
 
 ### Sortable
 
@@ -34,10 +109,8 @@ no scrolling tab stop. The iOS compact primary-column layout is unchanged.
   rows={[
     ["Rachel Chen", "rachel@example.com", "Admin"],
     ["Alice Johnson", "alice@example.com", "Admin"],
-    ["Dan Wright", "dan@example.com", "Viewer"],
     ["Bob Smith", "bob@example.com", "Editor"]
   ]}
-  bordered
   sortable
   defaultSort={{ column: "Name" }}
 />
@@ -53,9 +126,65 @@ no scrolling tab stop. The iOS compact primary-column layout is unchanged.
     ["Bob Smith", "bob@example.com", "Editor"],
     ["Rachel Chen", "rachel@example.com", "Admin"]
   ]}
-  bordered
   selectable
   defaultSelectedKeys={[1]}
+/>
+```
+
+### Paginated
+
+```tsx
+<DataTable
+  columns={["Employee", "Team"]}
+  rows={Array.from({ length: 23 }, (_, i) => [
+    `Employee ${i + 1}`,
+    ["Design", "Platform", "Growth"][i % 3]
+  ])}
+  paginated
+  pageSize={5}
+/>
+```
+
+### Numeric and custom columns
+
+```tsx
+<DataTable
+  columns={[
+    "Invoice",
+    { label: "Status", centered: true, width: 120 },
+    { label: "Amount", numeric: true }
+  ]}
+  rows={[
+    ["INV-0041", <Badge success>Paid</Badge>, "$1,250.00"],
+    ["INV-0042", <Badge warning>Due</Badge>, "$450.00"],
+    ["INV-0043", <Badge neutral>Draft</Badge>, "$8,120.00"]
+  ]}
+/>
+```
+
+### Sparkline trend column
+
+```tsx
+<DataTable
+  columns={["Page", "7D", "Visits"]}
+  rows={[
+    ["/pricing", <Sparkline values={[52, 60, 55, 71, 68, 84, 96]} />, "12,480"],
+    ["/docs", <Sparkline values={[88, 74, 70, 66, 58, 49, 41]} />, "8,102"],
+    ["/blog", <Sparkline values={[34, 42, 39, 51, 60, 66, 78]} />, "5,914"]
+  ]}
+/>
+```
+
+### Avatar identity cells
+
+```tsx
+<DataTable
+  columns={["Member", "Role"]}
+  rows={[
+    [<MediaObject compact avatar="AJ" title="Alice Johnson" />, "Admin"],
+    [<MediaObject compact avatar="BS" title="Bob Smith" />, "Editor"],
+    [<MediaObject compact avatar="RC" title="Rachel Chen" />, "Admin"]
+  ]}
 />
 ```
 
@@ -71,7 +200,6 @@ no scrolling tab stop. The iOS compact primary-column layout is unchanged.
     <DataTable
       columns={["Name", "Email", "Role"]}
       rows={rows}
-      bordered
       onRowEdit={() => {}}
       onRowCommit={(i, cells) => setRows(rows.map((row, r) => (r === i ? cells.map(String) : row)))}
       onRowDelete={(i) => setRows(rows.filter((_row, r) => r !== i))}
@@ -90,9 +218,8 @@ no scrolling tab stop. The iOS compact primary-column layout is unchanged.
 ]}>
   {(rows, setRows) => (
     <DataTable
-      columns={["Page", { label: "Visits", numeric: true }]}
+      columns={["Page", "Visits"]}
       rows={rows}
-      bordered
       inlineEdit
       onCellCommit={(i, c, next) =>
         setRows(rows.map((row, r) => (r === i ? row.map((cell, ci) => (ci === c ? next : cell)) : row)))
@@ -100,170 +227,6 @@ no scrolling tab stop. The iOS compact primary-column layout is unchanged.
     />
   )}
 </Stateful>
-```
-
-### Paginated
-
-```tsx
-<DataTable
-  columns={["Employee", "Team"]}
-  rows={Array.from({ length: 23 }, (_, i) => [
-    `Employee ${i + 1}`,
-    ["Design", "Platform", "Growth"][i % 3]
-  ])}
-  bordered
-  selectable
-  paginated
-  pageSize={5}
-/>
-```
-
-### Numeric and custom columns
-
-```tsx
-<DataTable
-  columns={[
-    "Invoice",
-    { label: "Status", centered: true, width: 120, sortable: false },
-    { label: "Amount", numeric: true, sortValue: (cell) => Number(String(cell).replace(/[^0-9.]/g, "")) }
-  ]}
-  rows={[
-    ["INV-0041", <Badge success>Paid</Badge>, "$1,250.00"],
-    ["INV-0042", <Badge warning>Due</Badge>, "$450.00"],
-    ["INV-0043", <Badge neutral>Draft</Badge>, "$8,120.00"],
-    ["INV-0044", <Badge success>Paid</Badge>, "$96.00"]
-  ]}
-  bordered
-  sortable
-  defaultSort={{ column: "Amount", descending: true }}
-/>
-```
-
-### Sparkline trend column
-
-```tsx
-<DataTable
-  columns={[
-    "Page",
-    { label: "7D", centered: true, width: 120, sortValue: (_cell, _row, i) => [96, 41, 78][i] },
-    { label: "Visits", numeric: true, sortValue: (cell) => Number(String(cell).replace(/[^0-9.]/g, "")) }
-  ]}
-  rows={[
-    ["/pricing", <Sparkline values={[52, 60, 55, 71, 68, 84, 96]} />, "12,480"],
-    ["/docs", <Sparkline values={[88, 74, 70, 66, 58, 49, 41]} destructive />, "8,102"],
-    ["/blog", <Sparkline values={[34, 42, 39, 51, 60, 66, 78]} success />, "5,914"]
-  ]}
-  bordered
-  sortable
-/>
-```
-
-### Avatar identity cells
-
-```tsx
-<DataTable
-  columns={[
-    { label: "Member", sortValue: (_cell, _row, i) => ["Alice Johnson", "Bob Smith", "Rachel Chen"][i] },
-    "Role",
-    { label: "Status", centered: true, width: 120 }
-  ]}
-  rows={[
-    [
-      <Row snug alignCenter>
-        <Avatar small name="Alice Johnson" />
-        <Typography small medium>Alice Johnson</Typography>
-      </Row>,
-      "Admin",
-      <Badge success>Active</Badge>
-    ],
-    [
-      <Row snug alignCenter>
-        <Avatar small name="Bob Smith" />
-        <Typography small medium>Bob Smith</Typography>
-      </Row>,
-      "Editor",
-      <Badge neutral>Invited</Badge>
-    ],
-    [
-      <Row snug alignCenter>
-        <Avatar small name="Rachel Chen" />
-        <Typography small medium>Rachel Chen</Typography>
-      </Row>,
-      "Admin",
-      <Badge success>Active</Badge>
-    ]
-  ]}
-  bordered
-  sortable
-/>
-```
-
-### Striped
-
-```tsx
-<DataTable
-  columns={["Name", "Email", "Role", "Status"]}
-  rows={[
-    ["Alice Johnson", "alice@example.com", "Admin", "Active"],
-    ["Bob Smith", "bob@example.com", "Editor", "Inactive"],
-    ["Rachel Chen", "rachel@example.com", "Admin", "Active"],
-    ["Dan Wright", "dan@example.com", "Viewer", "Active"]
-  ]}
-  bordered
-  striped
-/>
-```
-
-### Compact
-
-```tsx
-<DataTable
-  columns={["Name", "Email", "Role", "Status"]}
-  rows={[
-    ["Alice Johnson", "alice@example.com", "Admin", "Active"],
-    ["Bob Smith", "bob@example.com", "Editor", "Inactive"],
-    ["Rachel Chen", "rachel@example.com", "Admin", "Active"]
-  ]}
-  bordered
-  compact
-/>
-```
-
-### Comfortable
-
-```tsx
-<DataTable
-  columns={["Name", "Email", "Role", "Status"]}
-  rows={[
-    ["Alice Johnson", "alice@example.com", "Admin", "Active"],
-    ["Bob Smith", "bob@example.com", "Editor", "Inactive"],
-    ["Rachel Chen", "rachel@example.com", "Admin", "Active"]
-  ]}
-  bordered
-  comfortable
-/>
-```
-
-### Loading
-
-```tsx
-<DataTable
-  columns={["Name", "Email", "Status"]}
-  rows={[]}
-  bordered
-  loading
-/>
-```
-
-### Empty
-
-```tsx
-<DataTable
-  columns={["Name", "Email", "Status"]}
-  rows={[]}
-  bordered
-  emptyMessage="No results found."
-/>
 ```
 
 ## Do & Don't

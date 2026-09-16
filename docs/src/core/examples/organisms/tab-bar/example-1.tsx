@@ -3,16 +3,20 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Icon, TabBar } = scope;
+  const { Stateful, Icon, TabBar } = scope;
   return (
-<TabBar
-  active="search"
-  onSelect={() => {}}
-  items={[
-    { key: "home", label: "Home", icon: (active) => <Icon home size={22} primary={active} muted={!active} /> },
-    { key: "search", label: "Search", icon: (active) => <Icon search size={22} primary={active} muted={!active} /> },
-    { key: "profile", label: "Profile", icon: (active) => <Icon user size={22} primary={active} muted={!active} /> }
-  ]}
-/>
+<Stateful initial="home">
+  {(active, setActive) => (
+    <TabBar
+      active={active}
+      onSelect={setActive}
+      items={[
+        { key: "home", label: "Home", icon: (active) => <Icon home size={22} primary={active} muted={!active} /> },
+        { key: "search", label: "Search", icon: (active) => <Icon search size={22} primary={active} muted={!active} /> },
+        { key: "profile", label: "Profile", icon: (active) => <Icon user size={22} primary={active} muted={!active} /> }
+      ]}
+    />
+  )}
+</Stateful>
   );
 }

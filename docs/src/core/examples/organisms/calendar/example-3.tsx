@@ -6,17 +6,16 @@ export default function Example(scope: ExampleScope) {
   const { Calendar } = scope;
   return (
 <Calendar
-  day
+  week
   month="May 2026"
   today={23}
-  defaultSelected={24}
+  defaultSelected={20}
   daysInMonth={31}
   startWeekday={4}
   events={[
-    { day: 24, title: "Sprint planning", start: 9, end: 10.5, description: "Backlog grooming and capacity check for the next sprint." },
-    { day: 24, title: "Design review", start: 11.5, end: 13, description: "Walkthrough of the checkout flow explorations." },
-    { day: 24, title: "Team lunch", start: 12.5, end: 13.5 },
-    { day: 25, title: "1:1 with manager", start: 14, end: 15 }
+    { day: 19, title: "Design review", start: 11, end: 12.5 },
+    { day: 20, title: "Sprint planning", start: 9.5, end: 11 },
+    { day: 21, title: "User interviews", start: 10, end: 12 }
   ]}
 />
   );

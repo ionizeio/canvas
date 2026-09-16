@@ -11,8 +11,8 @@ export default function Example(scope: ExampleScope) {
     { id: "doing", label: "Doing" },
   ]}
   defaultItems={[
-    { id: "t1", columnId: "todo", title: "Rotate webhook secrets", description: "Before the audit window closes.", badge: "3", menu: [{ label: "Edit", icon: "pencil" }, { label: "Archive" }, { label: "Delete", icon: "trash", destructive: true }] },
-    { id: "t2", columnId: "doing", title: "SSO rollout", chips: <Chip>identity</Chip>, menu: [{ label: "Edit", icon: "pencil" }] },
+    { id: "t1", columnId: "todo", title: "Rotate webhook secrets", menu: [{ label: "Edit", icon: "pencil" }, { label: "Delete", icon: "trash", destructive: true }] },
+    { id: "t2", columnId: "doing", title: "SSO rollout", chips: <Chip>identity</Chip> },
   ]}
   onPressItem={(item) => {}}
   onSelectItemMenu={(item, menuItem) => {}}

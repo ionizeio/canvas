@@ -19,28 +19,13 @@ Vertical action menu items and navigation links.
 ### Links
 
 ```tsx
-<RowMenu
-  links
-  items={[
-    { label: "Profile" },
-    { label: "Billing" },
-    { label: "Members" },
-    { label: "Settings" }
-  ]}
-/>
+<RowMenu links items={[{ label: "Profile" }, { label: "Billing" }, { label: "Members" }]} />
 ```
 
 ### Section label
 
 ```tsx
-<RowMenu
-  sectionLabel="Actions"
-  items={[
-    { label: "Edit" },
-    { label: "Duplicate" },
-    { label: "Delete", destructive: true, separatorBefore: true }
-  ]}
-/>
+<RowMenu sectionLabel="Actions" items={[{ label: "Edit" }, { label: "Duplicate" }, { label: "Rename" }]} />
 ```
 
 ### Leading icons
@@ -50,7 +35,7 @@ Vertical action menu items and navigation links.
   items={[
     { label: "Edit", icon: "pencil" },
     { label: "Duplicate", icon: "copy" },
-    { label: "Delete", icon: "trash", destructive: true, separatorBefore: true }
+    { label: "Settings", icon: "settings" }
   ]}
 />
 ```
@@ -61,11 +46,7 @@ Mark an item `disabled` when its action is unavailable in the current context; t
 does not fire `onSelect`, keeps the menu open, and is announced as disabled.
 
 ```tsx
-<RowMenu open items={[
-    { label: "Edit", icon: "pencil" },
-    { label: "Duplicate", icon: "copy" },
-    { label: "Clear column", icon: "trash", destructive: true, disabled: true, separatorBefore: true }
-  ]} />
+<RowMenu items={[{ label: "Edit" }, { label: "Duplicate" }, { label: "Clear column", disabled: true }]} />
 ```
 
 ## Do & Don't

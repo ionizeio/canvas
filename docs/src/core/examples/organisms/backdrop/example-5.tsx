@@ -6,10 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { View, Backdrop } = scope;
   return (
 <View style={{ height: 220 }}>
-  <Backdrop sparse>
+  <Backdrop subtle>
     <Backdrop.Particles
-      field={Array.from({ length: 120 }, (_, i) => ({ x: ((i * 31) % 101) / 101, y: ((i * 47) % 91) / 91, r: 0.6 + ((i * 7) % 6) / 4, a: 0.3 + ((i * 11) % 10) / 14 }))}
-      depth={0}
+      field={Array.from({ length: 90 }, (_, i) => ({ x: ((i * 37) % 101) / 101, y: ((i * 61) % 97) / 97, r: 0.8 + ((i * 13) % 7) / 4, a: 0.4 + ((i * 7) % 10) / 14 }))}
     />
   </Backdrop>
 </View>

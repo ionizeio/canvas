@@ -10,20 +10,15 @@ start-edge drawer, so a phone keeps its width for the results; `open` /
 
 ```tsx
 <FilterPanel
-  bordered
   groups={[
     { title: "Status", options: [
       { label: "Active", checked: true, count: "128" },
-      { label: "Pending", count: "12", checked: false },
-      { label: "Archived", count: "2", checked: false }
+      { label: "Pending", count: "12" },
+      { label: "Archived", count: "2" }
     ] },
     { title: "Schema", options: [
-      { label: "Default", checked: true, count: "96" },
-      { label: "Custom", count: "46", checked: false }
-    ] },
-    { title: "MFA", options: [
-      { label: "Enabled", count: "84", checked: false },
-      { label: "Disabled", count: "58", checked: false }
+      { label: "Default", count: "96" },
+      { label: "Custom", count: "46" }
     ] }
   ]}
 />
@@ -40,16 +35,14 @@ drawer.
 ```tsx
 <FilterPanel
   responsive
-  bordered
   groups={[
     { title: "Status", options: [
-      { label: "Active", checked: true, count: "128" },
-      { label: "Pending", count: "12", checked: false },
-      { label: "Archived", count: "2", checked: false }
+      { label: "Active", checked: true },
+      { label: "Archived" }
     ] },
     { title: "Schema", options: [
-      { label: "Default", checked: true, count: "96" },
-      { label: "Custom", count: "46", checked: false }
+      { label: "Default" },
+      { label: "Custom" }
     ] }
   ]}
 />

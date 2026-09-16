@@ -3,38 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Badge, Button, Dropdown, Icon, Kbd, Navbar, Row, AvatarMenu } = scope;
+  const { Button, Icon, Navbar } = scope;
   return (
 <Navbar
-  bordered
-  brandContent={<Icon layers size={22} />}
-  actions={
-    <>
-      <Button ghost small accessibilityLabel="Search" iconLeft={<Icon search muted size={13} />} iconRight={<Kbd>⌘K</Kbd>} />
-      <Dropdown
-        alignEnd
-        triggerLabel="Notifications"
-        items={[
-          { label: "Deploy finished", icon: "check" },
-          { label: "Quota at 90%", icon: "bell" },
-        ]}
-      >
-        <Row tight alignCenter>
-          <Icon bell muted size={18} />
-          <Badge status error accessibilityLabel="2 unread notifications">2</Badge>
-        </Row>
-      </Dropdown>
-      <AvatarMenu
-        compact
-        name="Rachel Chen"
-        email="rachel@example.com"
-        items={[
-          { label: "Profile", icon: "user" },
-          { label: "Sign out", icon: "logOut", separatorBefore: true },
-        ]}
-      />
-    </>
-  }
+  brandContent={<Icon layers />}
+  actions={<Button ghost small icon accessibilityLabel="Search" iconLeft={<Icon search size={16} />} />}
+  avatar="RC"
 />
   );
 }

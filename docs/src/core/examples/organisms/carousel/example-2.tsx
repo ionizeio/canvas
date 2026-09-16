@@ -3,29 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, Carousel, Typography, Column } = scope;
+  const { Carousel, Card } = scope;
   return (
 <Carousel
   defaultIndex={1}
-  loop
   items={[
-    { key: "x", content: (
-      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
-        <Typography lead medium>First</Typography>
-      </Column>
-    ) },
-    { key: "y", content: (
-      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
-        <Typography lead medium>Second</Typography>
-      </Column>
-    ) },
-    { key: "z", content: (
-      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
-        <Typography lead medium>Third</Typography>
-      </Column>
-    ) }
+    { key: "x", content: <Card title="First" /> },
+    { key: "y", content: <Card title="Second" /> },
+    { key: "z", content: <Card title="Third" /> }
   ]}
-  onIndexChange={() => {}}
 />
   );
 }

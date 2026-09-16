@@ -6,8 +6,6 @@ Bottom app navigation: a row of equal-width destinations, each an icon over a sh
 
 ```tsx
 <TabBar
-  active="home"
-  onSelect={() => {}}
   items={[
     { key: "home", label: "Home", icon: (active) => <Icon home size={22} primary={active} muted={!active} /> },
     { key: "search", label: "Search", icon: (active) => <Icon search size={22} primary={active} muted={!active} /> },
@@ -18,18 +16,22 @@ Bottom app navigation: a row of equal-width destinations, each an icon over a sh
 
 ## Variants
 
-### Active item moves
+### Controlled
 
 ```tsx
-<TabBar
-  active="search"
-  onSelect={() => {}}
-  items={[
-    { key: "home", label: "Home", icon: (active) => <Icon home size={22} primary={active} muted={!active} /> },
-    { key: "search", label: "Search", icon: (active) => <Icon search size={22} primary={active} muted={!active} /> },
-    { key: "profile", label: "Profile", icon: (active) => <Icon user size={22} primary={active} muted={!active} /> }
-  ]}
-/>
+<Stateful initial="home">
+  {(active, setActive) => (
+    <TabBar
+      active={active}
+      onSelect={setActive}
+      items={[
+        { key: "home", label: "Home", icon: (active) => <Icon home size={22} primary={active} muted={!active} /> },
+        { key: "search", label: "Search", icon: (active) => <Icon search size={22} primary={active} muted={!active} /> },
+        { key: "profile", label: "Profile", icon: (active) => <Icon user size={22} primary={active} muted={!active} /> }
+      ]}
+    />
+  )}
+</Stateful>
 ```
 
 ## Do & Don't

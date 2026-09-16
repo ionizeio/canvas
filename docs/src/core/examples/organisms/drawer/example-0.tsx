@@ -5,12 +5,12 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Button, Drawer, Typography, Column } = scope;
   return (
-<Drawer trigger="Open menu" left width={260}>
+<Drawer trigger="Open menu">
   <Column padLoose cozy>
     <Typography lead semibold>Menu</Typography>
-    <Button ghost block onPress={() => {}}>Home</Button>
-    <Button ghost block onPress={() => {}}>Components</Button>
-    <Button ghost block onPress={() => {}}>Settings</Button>
+    <Button ghost block>Home</Button>
+    <Button ghost block>Components</Button>
+    <Button ghost block>Settings</Button>
   </Column>
 </Drawer>
   );

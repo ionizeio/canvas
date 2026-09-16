@@ -3,34 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { AppShell, Button, Icon, Sidebar, Typography, Row } = scope;
+  const { AppShell, Icon, Sidebar, Typography } = scope;
   return (
 <AppShell>
-  {({ open, setOpen, select }) => (
+  {({ open, setOpen }) => (
     <Sidebar
       responsive
       collapsible
       defaultActive="Dashboard"
       open={open}
       onOpenChange={setOpen}
-      onSelect={select}
-      header={(collapsed) =>
-        collapsed ? (
-          <Icon layoutGrid primary size={22} />
-        ) : (
-          <Row snug alignCenter>
-            <Icon layoutGrid primary size={22} />
-            <Typography body semibold>Acme</Typography>
-          </Row>
-        )
-      }
-      footer={(collapsed) =>
-        collapsed ? (
-          <Button ghost icon small accessibilityLabel="Settings" iconLeft={<Icon settings size={16} />} />
-        ) : (
-          <Button ghost block small iconLeft={<Icon settings size={16} />}>Settings</Button>
-        )
-      }
+      header={(collapsed) => (collapsed ? <Icon layoutGrid primary size={22} /> : <Typography body semibold>Acme</Typography>)}
       sections={[
         { items: [
           { label: "Dashboard", icon: "layoutGrid" },
@@ -39,10 +22,6 @@ export default function Example(scope: ExampleScope) {
         { title: "Reports", icon: "barChart2", collapsible: true, items: [
           { label: "Analytics", icon: "barChart2" },
           { label: "Traffic", icon: "activity" }
-        ] },
-        { title: "Team", icon: "users", collapsible: true, items: [
-          { label: "Members", icon: "users" },
-          { label: "Roles", icon: "shield" }
         ] }
       ]}
     />

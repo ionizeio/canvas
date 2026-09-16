@@ -7,35 +7,9 @@ A 12-column widget board for overview screens. Each widget declares a span in tw
 ```tsx
 <DashboardGrid
   items={[
-    {
-      id: "revenue",
-      span: 8,
-      title: "Revenue",
-      content: <Chart title="Revenue" data={[{ label: "Mon", value: 12 }, { label: "Tue", value: 18 }, { label: "Wed", value: 15 }, { label: "Thu", value: 22 }]} />,
-    },
-    {
-      id: "signups",
-      span: 4,
-      title: "Signups",
-      content: (
-        <Card>
-          <CardHeader>
-            <CardTitle>Signups</CardTitle>
-            <CardDescription>Last 30 days</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Typography h2>1,204</Typography>
-            <Sparkline values={[8, 12, 9, 14, 13, 18, 22]} />
-          </CardContent>
-        </Card>
-      ),
-    },
-    {
-      id: "endpoints",
-      span: 12,
-      title: "Slowest endpoints",
-      content: <BarList title="Slowest endpoints" items={[{ label: "/api/search", value: 240 }, { label: "/api/feed", value: 180 }, { label: "/api/me", value: 90 }]} />,
-    },
+    { id: "revenue", span: 8, title: "Revenue", content: <Chart title="Revenue" data={[{ label: "Mon", value: 12 }, { label: "Tue", value: 18 }, { label: "Wed", value: 15 }, { label: "Thu", value: 22 }]} /> },
+    { id: "signups", span: 4, title: "Signups", content: <BarList title="Signups" items={[{ label: "Web", value: 82 }, { label: "iOS", value: 64 }]} /> },
+    { id: "endpoints", span: 12, title: "Slowest endpoints", content: <BarList title="Slowest endpoints" items={[{ label: "/api/search", value: 240 }, { label: "/api/feed", value: 180 }]} /> },
   ]}
 />
 ```
@@ -44,23 +18,16 @@ A 12-column widget board for overview screens. Each widget declares a span in tw
 
 ### Customize mode
 
-`unlocked` is the app's switch, never the grid's: turning it on paints the cell affordance, shows a grip on every widget, and makes the board reorderable. The grips stay visible for as long as the mode lasts, because React Native has no portable hover event and an edit mode already announces itself.
+`unlocked` is the app's switch, never the grid's: turning it on paints the cell affordance, shows a grip on every widget, and makes the board reorderable. The grips stay visible for as long as the mode lasts, because React Native has no portable hover event and an edit mode already announces itself. `defaultOrder` hands the order to the grid, which applies each drop itself and reports the result through `onOrderChange`, so a bare board is interactive out of the box.
 
 ```tsx
-<Stateful initial={true}>
-  {(unlocked, setUnlocked) => (
-    <Column snug>
-      <Switch checked={unlocked} onChange={setUnlocked}>Customize layout</Switch>
-      <DashboardGrid
-        unlocked={unlocked}
-        items={[
-          { id: "revenue", span: 6, title: "Revenue", content: <Chart title="Revenue" data={[{ label: "Mon", value: 12 }, { label: "Tue", value: 18 }]} /> },
-          { id: "signups", span: 6, title: "Signups", content: <BarList title="Signups" items={[{ label: "Web", value: 82 }, { label: "iOS", value: 64 }]} /> },
-        ]}
-      />
-    </Column>
-  )}
-</Stateful>
+<DashboardGrid
+  unlocked
+  items={[
+    { id: "revenue", span: 6, title: "Revenue", content: <Chart title="Revenue" data={[{ label: "Mon", value: 12 }, { label: "Tue", value: 18 }]} /> },
+    { id: "signups", span: 6, title: "Signups", content: <BarList title="Signups" items={[{ label: "Web", value: 82 }, { label: "iOS", value: 64 }]} /> },
+  ]}
+/>
 ```
 
 ### Controlled order
@@ -97,15 +64,13 @@ A wide board is not a narrow one cut in half, so a widget can declare the width 
 />
 ```
 
-### Uncontrolled and compact
+### Compact
 
-`defaultOrder` hands the order to the grid, which applies each drop itself and reports the result through `onOrderChange`, so a bare board is interactive out of the box. The density axis tightens the space between cells.
+The density axis tightens the space between cells.
 
 ```tsx
 <DashboardGrid
-  unlocked
   compact
-  defaultOrder={["signups", "revenue", "errors"]}
   items={[
     { id: "revenue", span: 4, title: "Revenue", content: <BarList title="Revenue" items={[{ label: "Pro", value: 82 }]} /> },
     { id: "signups", span: 4, title: "Signups", content: <BarList title="Signups" items={[{ label: "Web", value: 64 }]} /> },

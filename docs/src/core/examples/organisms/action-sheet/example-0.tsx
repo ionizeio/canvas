@@ -7,12 +7,9 @@ export default function Example(scope: ExampleScope) {
   return (
 <ActionSheet
   trigger="Add photo"
-  title="Photo"
-  message="Choose how to add a photo."
   actions={[
     { label: "Take Photo", onPress: () => {} },
-    { label: "Choose from Library", onPress: () => {} },
-    { label: "Remove Photo", destructive: true, onPress: () => {} },
+    { label: "Choose from Library", onPress: () => {} }
   ]}
 />
   );

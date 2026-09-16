@@ -3,25 +3,20 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, applyBoardMove, Board } = scope;
+  const { Board } = scope;
   return (
-<Stateful initial={[
-  { id: "t1", columnId: "todo", title: "Rotate webhook secrets", description: "Before the audit window closes.", badge: "3" },
-  { id: "t2", columnId: "todo", title: "Draft the design review" },
-  { id: "t3", columnId: "doing", title: "SSO rollout", badge: "8" },
-  { id: "t4", columnId: "done", title: "Upgrade the CI runners" },
-]}>
-  {(items, setItems) => (
-    <Board
-      columns={[
-        { id: "todo", label: "To do" },
-        { id: "doing", label: "Doing" },
-        { id: "done", label: "Done" },
-      ]}
-      items={items}
-      onMove={(move) => setItems(applyBoardMove(items, move))}
-    />
-  )}
-</Stateful>
+<Board
+  columns={[
+    { id: "todo", label: "To do" },
+    { id: "doing", label: "Doing" },
+    { id: "done", label: "Done" },
+  ]}
+  defaultItems={[
+    { id: "t1", columnId: "todo", title: "Rotate webhook secrets" },
+    { id: "t2", columnId: "todo", title: "Draft the design review" },
+    { id: "t3", columnId: "doing", title: "SSO rollout" },
+    { id: "t4", columnId: "done", title: "Upgrade the CI runners" },
+  ]}
+/>
   );
 }

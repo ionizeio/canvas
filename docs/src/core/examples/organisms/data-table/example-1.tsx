@@ -8,14 +8,11 @@ export default function Example(scope: ExampleScope) {
 <DataTable
   columns={["Name", "Email", "Role"]}
   rows={[
-    ["Rachel Chen", "rachel@example.com", "Admin"],
     ["Alice Johnson", "alice@example.com", "Admin"],
-    ["Dan Wright", "dan@example.com", "Viewer"],
-    ["Bob Smith", "bob@example.com", "Editor"]
+    ["Bob Smith", "bob@example.com", "Editor"],
+    ["Rachel Chen", "rachel@example.com", "Admin"]
   ]}
   bordered
-  sortable
-  defaultSort={{ column: "Name" }}
 />
   );
 }

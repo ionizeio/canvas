@@ -6,16 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { Steps } = scope;
   return (
 <Steps
-  steps={[
-    { label: "Account", description: "Email verified and password set." },
-    { label: "Profile", description: "Add your name and avatar." },
-    { label: "Review", description: "Invite collaborators to your workspace." },
-    { label: "Done", description: "You're all set." }
-  ]}
+  stacks
+  steps={[{ label: "Account" }, { label: "Profile" }, { label: "Review" }]}
   defaultCurrent={1}
-  progress
-  value={68}
-  label="Setup progress"
 />
   );
 }

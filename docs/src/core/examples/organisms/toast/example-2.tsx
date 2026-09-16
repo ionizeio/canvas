@@ -3,8 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Toast } = scope;
+  const { Toast } = scope;
   return (
-<Toast success message="Profile updated" description="Your changes are now live." action={{ label: "View", onPress: () => {} }} />
+<Toast success message="Profile updated" />
   );
 }

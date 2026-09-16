@@ -392,6 +392,10 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Drag & drop",
     description: "A reusable drag-and-drop context: wrap a surface in a DragDropProvider, mark droppable regions with DropZone, and make items draggable with Draggable plus a DragHandle grip. Cards lift into a floating ghost and reorder within or across zones, position-aware. Built from PanResponder and Animated so it runs on iOS, Android, and the web with no platform forks, and it is fully keyboard- and screen-reader-operable (Space to grab, arrows to move, Space to drop, Escape to cancel).",
     category: "Organisms",
+    // A drop zone is a layout container that fills its parent; the stretched stage
+    // is that parent, so the zones and their cards span the stage instead of
+    // hugging a card's label in center mode.
+    stageAlign: "start",
   },
   {
     slug: "drawer",

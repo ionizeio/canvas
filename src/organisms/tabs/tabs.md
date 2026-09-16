@@ -5,16 +5,7 @@ Underline, pill, vertical, with badges.
 ## Usage
 
 ```tsx
-<Tabs
-  tabs={[
-    "General",
-    "Security",
-    "Notifications",
-    "Billing",
-    "Integrations"
-  ]}
-  defaultActive={0}
-/>
+<Tabs tabs={["General", "Security", "Notifications"]} />
 ```
 
 ## Variants
@@ -22,17 +13,13 @@ Underline, pill, vertical, with badges.
 ### Pill
 
 ```tsx
-<Tabs pills tabs={["All", "Active", "Archived", "Deleted"]} defaultActive={0} />
+<Tabs pills tabs={["All", "Active", "Archived"]} />
 ```
 
 ### Vertical
 
 ```tsx
-<Tabs
-  vertical
-  tabs={["General", "Security", "Notifications", "API Keys", "Billing"]}
-  defaultActive={0}
-/>
+<Tabs vertical tabs={["General", "Security", "Notifications"]} />
 ```
 
 ### Responsive vertical
@@ -43,46 +30,25 @@ settings rail inside a narrow column flattens to a top tab bar instead of
 starving the panel beside it.
 
 ```tsx
-<Tabs
-  vertical
-  responsive
-  tabs={["General", "Security", "Notifications", "API Keys", "Billing"]}
-  defaultActive={0}
-/>
+<Tabs vertical responsive tabs={["General", "Security", "Notifications"]} />
 ```
 
 ### Badge counts
 
 ```tsx
-<Tabs
-  tabs={[
-    { label: "All", badge: "142" },
-    { label: "Active", badge: "89" },
-    { label: "Pending", badge: "12" },
-    { label: "Archived", badge: "53" }
-  ]}
-  defaultActive={0}
-/>
+<Tabs tabs={[{ label: "All", badge: "142" }, { label: "Active", badge: "89" }, { label: "Archived", badge: "53" }]} />
 ```
 
 ### Disabled tab
 
 ```tsx
-<Tabs
-  tabs={[
-    "Overview",
-    "Activity",
-    { label: "Billing", disabled: true },
-    "Settings"
-  ]}
-  defaultActive={0}
-/>
+<Tabs tabs={["Overview", { label: "Billing", disabled: true }, "Settings"]} />
 ```
 
 ### Block
 
 ```tsx
-<Tabs block tabs={["Overview", "Activity", "Settings"]} defaultActive={0} />
+<Tabs block tabs={["Overview", "Activity", "Settings"]} />
 ```
 
 ### Scrollable overflow
@@ -94,17 +60,7 @@ of its neighbor left showing. `block` shares the row equally and never
 overflows; a vertical rail stacks instead.
 
 ```tsx
-<Tabs
-  tabs={[
-    "General",
-    "Security",
-    "Notifications",
-    "Billing",
-    "Integrations",
-    "Advanced"
-  ]}
-  defaultActive={0}
-/>
+<Tabs tabs={["General", "Security", "Notifications", "Billing", "Integrations", "Advanced"]} />
 ```
 
 ## Do & Don't

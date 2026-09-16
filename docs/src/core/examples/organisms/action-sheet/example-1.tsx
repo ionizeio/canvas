@@ -10,8 +10,8 @@ export default function Example(scope: ExampleScope) {
   title="Discard draft?"
   message="Your unsaved changes will be lost."
   actions={[
-    { label: "Discard Changes", destructive: true, onPress: () => {} },
-    { label: "Keep Editing", onPress: () => {} },
+    { label: "Discard Changes", onPress: () => {} },
+    { label: "Keep Editing", onPress: () => {} }
   ]}
 />
   );

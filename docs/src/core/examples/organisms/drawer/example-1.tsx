@@ -3,13 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Drawer, Typography, Column } = scope;
+  const { Drawer, Typography, Column } = scope;
   return (
-<Drawer trigger="Left drawer" left width={240}>
+<Drawer trigger="Right drawer" right>
   <Column padLoose snug>
-    <Typography lead semibold>Navigation</Typography>
-    <Typography small muted>A full-height panel on the left.</Typography>
-    <Button primary block onPress={() => {}}>Go to settings</Button>
+    <Typography lead semibold>Details</Typography>
+    <Typography small muted>A full-height panel on the right.</Typography>
   </Column>
 </Drawer>
   );

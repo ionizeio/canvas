@@ -12,13 +12,13 @@ export default function Example(scope: ExampleScope) {
 ]}>
   {(cards, setCards) => (
     <DragDropProvider>
-      <DropZone id="list" label="Tasks" onDrop={(e) => setCards(applyDrop(cards, e))} style={{ width: 280, maxWidth: "100%", minHeight: 96 }}>
+      <DropZone id="list" label="Tasks" onDrop={(e) => setCards(applyDrop(cards, e))}>
         <Column snug>
           {cards.map((c) => (
             <Draggable key={c.id} id={c.id} data={c} label={c.title}>
-              <Card compact>
+              <Card>
                 <Row between alignCenter>
-                  <Typography small>{c.title}</Typography>
+                  <Typography>{c.title}</Typography>
                   <DragHandle label={`Reorder ${c.title}`} />
                 </Row>
               </Card>

@@ -8,12 +8,10 @@ export default function Example(scope: ExampleScope) {
 <Sidebar
   bordered
   defaultActive="Dashboard"
-  sections={[
-    { title: "Admin", items: [
-      { label: "Dashboard", icon: "layoutGrid" },
-      { label: "Members", icon: "users", badge: "24" },
-      { label: "Security", icon: "shield", badge: "3", badgeError: true }
-    ] }
+  items={[
+    { label: "Dashboard", icon: "layoutGrid" },
+    { label: "Members", icon: "users" },
+    { label: "Security", icon: "shield", badge: "3", badgeError: true }
   ]}
 />
   );

@@ -8,10 +8,8 @@ export default function Example(scope: ExampleScope) {
 <Dialog
   trigger="Open dialog"
   title="Refund payment"
-  description="The refund will be reflected in the customer's bank account within 2 to 3 business days."
+  description="The refund posts to the original card in 2 to 3 business days."
   withBody
-  confirmLabel="Confirm"
-  cancelLabel="Cancel"
 />
   );
 }

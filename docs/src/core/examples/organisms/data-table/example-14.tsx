@@ -6,17 +6,18 @@ export default function Example(scope: ExampleScope) {
   const { Stateful, DataTable } = scope;
   return (
 <Stateful initial={[
-  ["Alice Johnson", "alice@example.com", "Admin"],
-  ["Bob Smith", "bob@example.com", "Editor"],
-  ["Rachel Chen", "rachel@example.com", "Viewer"]
+  ["/pricing", "12,480"],
+  ["/docs", "8,102"],
+  ["/blog", "5,914"]
 ]}>
   {(rows, setRows) => (
     <DataTable
-      columns={["Name", "Email", "Role"]}
+      columns={["Page", "Visits"]}
       rows={rows}
-      onRowEdit={() => {}}
-      onRowCommit={(i, cells) => setRows(rows.map((row, r) => (r === i ? cells.map(String) : row)))}
-      onRowDelete={(i) => setRows(rows.filter((_row, r) => r !== i))}
+      inlineEdit
+      onCellCommit={(i, c, next) =>
+        setRows(rows.map((row, r) => (r === i ? row.map((cell, ci) => (ci === c ? next : cell)) : row)))
+      }
     />
   )}
 </Stateful>

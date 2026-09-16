@@ -14,12 +14,9 @@ open. The visible Cancel row remains available to assistive technology.
 ```tsx
 <ActionSheet
   trigger="Add photo"
-  title="Photo"
-  message="Choose how to add a photo."
   actions={[
     { label: "Take Photo", onPress: () => {} },
-    { label: "Choose from Library", onPress: () => {} },
-    { label: "Remove Photo", destructive: true, onPress: () => {} },
+    { label: "Choose from Library", onPress: () => {} }
   ]}
 />
 ```
@@ -34,21 +31,8 @@ open. The visible Cancel row remains available to assistive technology.
   title="Discard draft?"
   message="Your unsaved changes will be lost."
   actions={[
-    { label: "Discard Changes", destructive: true, onPress: () => {} },
-    { label: "Keep Editing", onPress: () => {} },
-  ]}
-/>
-```
-
-### Actions only
-
-```tsx
-<ActionSheet
-  trigger="Show actions"
-  actions={[
-    { label: "Share", onPress: () => {} },
-    { label: "Duplicate", onPress: () => {} },
-    { label: "Move", onPress: () => {} },
+    { label: "Discard Changes", onPress: () => {} },
+    { label: "Keep Editing", onPress: () => {} }
   ]}
 />
 ```
@@ -57,10 +41,11 @@ open. The visible Cancel row remains available to assistive technology.
 
 ```tsx
 <ActionSheet
-  trigger="Delete file…"
-  title="Delete this file?"
-  message="This permanently removes the file. This action cannot be undone."
-  actions={[{ label: "Delete File", destructive: true, onPress: () => {} }]}
+  trigger="File options"
+  actions={[
+    { label: "Move to Folder", onPress: () => {} },
+    { label: "Delete File", destructive: true, onPress: () => {} }
+  ]}
 />
 ```
 
@@ -71,8 +56,7 @@ open. The visible Cancel row remains available to assistive technology.
   trigger="File options"
   actions={[
     { label: "Save", onPress: () => {} },
-    { label: "Save As…", disabled: true, onPress: () => {} },
-    { label: "Export", onPress: () => {} },
+    { label: "Save As…", disabled: true, onPress: () => {} }
   ]}
 />
 ```
@@ -82,23 +66,17 @@ open. The visible Cancel row remains available to assistive technology.
 ```tsx
 <Stateful initial={false}>
   {(open, setOpen) => (
-    <Stateful initial="">
-      {(picked, setPicked) => (
-        <Column snug alignStart>
-          <Button outline onPress={() => setOpen(true)}>Share…</Button>
-          <ActionSheet
-            open={open}
-            onOpenChange={setOpen}
-            title="Share this document"
-            actions={[
-              { label: "Copy Link", onPress: () => setPicked("Copy Link") },
-              { label: "Send by Email", onPress: () => setPicked("Send by Email") },
-            ]}
-          />
-          <Typography muted>{picked === "" ? "Nothing picked yet" : `Picked ${picked}`}</Typography>
-        </Column>
-      )}
-    </Stateful>
+    <>
+      <Button onPress={() => setOpen(true)}>Share…</Button>
+      <ActionSheet
+        open={open}
+        onOpenChange={setOpen}
+        actions={[
+          { label: "Copy Link", onPress: () => {} },
+          { label: "Send by Email", onPress: () => {} }
+        ]}
+      />
+    </>
   )}
 </Stateful>
 ```

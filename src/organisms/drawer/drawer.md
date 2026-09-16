@@ -18,38 +18,25 @@ than navigating a sidebar level. Focus restoration remains platform-dependent.
 ## Usage
 
 ```tsx
-<Drawer trigger="Open menu" left width={260}>
+<Drawer trigger="Open menu">
   <Column padLoose cozy>
     <Typography lead semibold>Menu</Typography>
-    <Button ghost block onPress={() => {}}>Home</Button>
-    <Button ghost block onPress={() => {}}>Components</Button>
-    <Button ghost block onPress={() => {}}>Settings</Button>
+    <Button ghost block>Home</Button>
+    <Button ghost block>Components</Button>
+    <Button ghost block>Settings</Button>
   </Column>
 </Drawer>
 ```
 
 ## Variants
 
-### Left
-
-```tsx
-<Drawer trigger="Left drawer" left width={240}>
-  <Column padLoose snug>
-    <Typography lead semibold>Navigation</Typography>
-    <Typography small muted>A full-height panel on the left.</Typography>
-    <Button primary block onPress={() => {}}>Go to settings</Button>
-  </Column>
-</Drawer>
-```
-
 ### Right
 
 ```tsx
-<Drawer trigger="Right drawer" right width={240}>
+<Drawer trigger="Right drawer" right>
   <Column padLoose snug>
     <Typography lead semibold>Details</Typography>
     <Typography small muted>A full-height panel on the right.</Typography>
-    <Button primary block onPress={() => {}}>View full details</Button>
   </Column>
 </Drawer>
 ```
@@ -60,9 +47,7 @@ than navigating a sidebar level. Focus restoration remains platform-dependent.
 <Drawer trigger="Bottom sheet" bottom>
   <Column padLoose snug>
     <Typography lead semibold>Actions</Typography>
-    <Button ghost block onPress={() => {}}>Share</Button>
-    <Button ghost block onPress={() => {}}>Duplicate</Button>
-    <Button destructive block onPress={() => {}}>Delete</Button>
+    <Typography small muted>A sheet that rises from the bottom edge.</Typography>
   </Column>
 </Drawer>
 ```
@@ -74,7 +59,6 @@ than navigating a sidebar level. Focus restoration remains platform-dependent.
   <Column padLoose snug>
     <Typography lead semibold>What's new</Typography>
     <Typography small muted>A sheet that drops down from the top edge.</Typography>
-    <Button primary block onPress={() => {}}>See all updates</Button>
   </Column>
 </Drawer>
 ```

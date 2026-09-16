@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Toast } = scope;
   return (
-<Toast message="Your changes were saved." action={{ label: "Undo", onPress: () => {} }} />
+<Toast message="Your changes were saved" description="They are live for everyone." />
   );
 }

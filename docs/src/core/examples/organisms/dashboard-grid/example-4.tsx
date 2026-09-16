@@ -6,9 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { DashboardGrid, BarList } = scope;
   return (
 <DashboardGrid
-  unlocked
   compact
-  defaultOrder={["signups", "revenue", "errors"]}
   items={[
     { id: "revenue", span: 4, title: "Revenue", content: <BarList title="Revenue" items={[{ label: "Pro", value: 82 }]} /> },
     { id: "signups", span: 4, title: "Signups", content: <BarList title="Signups" items={[{ label: "Web", value: 64 }]} /> },

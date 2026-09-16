@@ -3,15 +3,22 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { ActionSheet } = scope;
+  const { Stateful, ActionSheet, Button } = scope;
   return (
-<ActionSheet
-  trigger="File options"
-  actions={[
-    { label: "Save", onPress: () => {} },
-    { label: "Save As…", disabled: true, onPress: () => {} },
-    { label: "Export", onPress: () => {} },
-  ]}
-/>
+<Stateful initial={false}>
+  {(open, setOpen) => (
+    <>
+      <Button onPress={() => setOpen(true)}>Share…</Button>
+      <ActionSheet
+        open={open}
+        onOpenChange={setOpen}
+        actions={[
+          { label: "Copy Link", onPress: () => {} },
+          { label: "Send by Email", onPress: () => {} }
+        ]}
+      />
+    </>
+  )}
+</Stateful>
   );
 }

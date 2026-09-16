@@ -14,8 +14,6 @@ export default function Example(scope: ExampleScope) {
         r: 0.6 + ((i * 13) % 7) / 4,
         a: 0.3 + ((i * 7) % 10) / 14,
       }))}
-      depth={0}
-      twinkle
     />
   </Backdrop>
 </View>

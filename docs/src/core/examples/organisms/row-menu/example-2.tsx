@@ -5,13 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { RowMenu } = scope;
   return (
-<RowMenu
-  sectionLabel="Actions"
-  items={[
-    { label: "Edit" },
-    { label: "Duplicate" },
-    { label: "Delete", destructive: true, separatorBefore: true }
-  ]}
-/>
+<RowMenu sectionLabel="Actions" items={[{ label: "Edit" }, { label: "Duplicate" }, { label: "Rename" }]} />
   );
 }

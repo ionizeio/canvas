@@ -3,42 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Avatar, Badge, DataTable, Typography, Row } = scope;
+  const { DataTable } = scope;
   return (
 <DataTable
-  columns={[
-    { label: "Member", sortValue: (_cell, _row, i) => ["Alice Johnson", "Bob Smith", "Rachel Chen"][i] },
-    "Role",
-    { label: "Status", centered: true, width: 120 }
-  ]}
+  columns={["Name", "Email", "Role"]}
   rows={[
-    [
-      <Row snug alignCenter>
-        <Avatar small name="Alice Johnson" />
-        <Typography small medium>Alice Johnson</Typography>
-      </Row>,
-      "Admin",
-      <Badge success>Active</Badge>
-    ],
-    [
-      <Row snug alignCenter>
-        <Avatar small name="Bob Smith" />
-        <Typography small medium>Bob Smith</Typography>
-      </Row>,
-      "Editor",
-      <Badge neutral>Invited</Badge>
-    ],
-    [
-      <Row snug alignCenter>
-        <Avatar small name="Rachel Chen" />
-        <Typography small medium>Rachel Chen</Typography>
-      </Row>,
-      "Admin",
-      <Badge success>Active</Badge>
-    ]
+    ["Alice Johnson", "alice@example.com", "Admin"],
+    ["Bob Smith", "bob@example.com", "Editor"],
+    ["Rachel Chen", "rachel@example.com", "Admin"]
   ]}
-  bordered
-  sortable
+  selectable
+  defaultSelectedKeys={[1]}
 />
   );
 }

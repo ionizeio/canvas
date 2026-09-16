@@ -3,13 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { DataTable } = scope;
+  const { DataTable, MediaObject } = scope;
   return (
 <DataTable
-  columns={["Name", "Email", "Status"]}
-  rows={[]}
-  bordered
-  loading
+  columns={["Member", "Role"]}
+  rows={[
+    [<MediaObject compact avatar="AJ" title="Alice Johnson" />, "Admin"],
+    [<MediaObject compact avatar="BS" title="Bob Smith" />, "Editor"],
+    [<MediaObject compact avatar="RC" title="Rachel Chen" />, "Admin"]
+  ]}
 />
   );
 }

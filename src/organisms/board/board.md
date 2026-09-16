@@ -5,24 +5,19 @@ A data-driven kanban board: columns scroll horizontally, each column is a drop z
 ## Usage
 
 ```tsx
-<Stateful initial={[
-  { id: "t1", columnId: "todo", title: "Rotate webhook secrets", description: "Before the audit window closes.", badge: "3" },
-  { id: "t2", columnId: "todo", title: "Draft the design review" },
-  { id: "t3", columnId: "doing", title: "SSO rollout", badge: "8" },
-  { id: "t4", columnId: "done", title: "Upgrade the CI runners" },
-]}>
-  {(items, setItems) => (
-    <Board
-      columns={[
-        { id: "todo", label: "To do" },
-        { id: "doing", label: "Doing" },
-        { id: "done", label: "Done" },
-      ]}
-      items={items}
-      onMove={(move) => setItems(applyBoardMove(items, move))}
-    />
-  )}
-</Stateful>
+<Board
+  columns={[
+    { id: "todo", label: "To do" },
+    { id: "doing", label: "Doing" },
+    { id: "done", label: "Done" },
+  ]}
+  defaultItems={[
+    { id: "t1", columnId: "todo", title: "Rotate webhook secrets" },
+    { id: "t2", columnId: "todo", title: "Draft the design review" },
+    { id: "t3", columnId: "doing", title: "SSO rollout" },
+    { id: "t4", columnId: "done", title: "Upgrade the CI runners" },
+  ]}
+/>
 ```
 
 ## Variants
@@ -32,24 +27,18 @@ A data-driven kanban board: columns scroll horizontally, each column is a drop z
 The density axis tightens the lane padding, the card gaps, and the card insets for a board that has to show more at once.
 
 ```tsx
-<Stateful initial={[
-  { id: "t1", columnId: "todo", title: "Rotate webhook secrets", badge: "3" },
-  { id: "t2", columnId: "todo", title: "Draft the design review" },
-  { id: "t3", columnId: "doing", title: "SSO rollout" },
-]}>
-  {(items, setItems) => (
-    <Board
-      compact
-      columnWidth={240}
-      columns={[
-        { id: "todo", label: "To do" },
-        { id: "doing", label: "Doing" },
-      ]}
-      items={items}
-      onMove={(move) => setItems(applyBoardMove(items, move))}
-    />
-  )}
-</Stateful>
+<Board
+  compact
+  columns={[
+    { id: "todo", label: "To do" },
+    { id: "doing", label: "Doing" },
+  ]}
+  defaultItems={[
+    { id: "t1", columnId: "todo", title: "Rotate webhook secrets" },
+    { id: "t2", columnId: "todo", title: "Draft the design review" },
+    { id: "t3", columnId: "doing", title: "SSO rollout" },
+  ]}
+/>
 ```
 
 ### Card menus and press
@@ -63,8 +52,8 @@ The density axis tightens the lane padding, the card gaps, and the card insets f
     { id: "doing", label: "Doing" },
   ]}
   defaultItems={[
-    { id: "t1", columnId: "todo", title: "Rotate webhook secrets", description: "Before the audit window closes.", badge: "3", menu: [{ label: "Edit", icon: "pencil" }, { label: "Archive" }, { label: "Delete", icon: "trash", destructive: true }] },
-    { id: "t2", columnId: "doing", title: "SSO rollout", chips: <Chip>identity</Chip>, menu: [{ label: "Edit", icon: "pencil" }] },
+    { id: "t1", columnId: "todo", title: "Rotate webhook secrets", menu: [{ label: "Edit", icon: "pencil" }, { label: "Delete", icon: "trash", destructive: true }] },
+    { id: "t2", columnId: "doing", title: "SSO rollout", chips: <Chip>identity</Chip> },
   ]}
   onPressItem={(item) => {}}
   onSelectItemMenu={(item, menuItem) => {}}
@@ -76,39 +65,39 @@ The density axis tightens the lane padding, the card gaps, and the card insets f
 An empty column shows the muted `emptyLabel` and stays a valid drop target. A column's `badge` prop replaces the automatic item count (a WIP limit, a status).
 
 ```tsx
-<Stateful initial={[
-  { id: "t1", columnId: "todo", title: "Rotate webhook secrets" },
-  { id: "t2", columnId: "todo", title: "Draft the design review" },
-]}>
-  {(items, setItems) => (
-    <Board
-      columns={[
-        { id: "todo", label: "To do", badge: "WIP 2" },
-        { id: "doing", label: "Doing" },
-      ]}
-      items={items}
-      emptyLabel="Drop tasks here"
-      onMove={(move) => setItems(applyBoardMove(items, move))}
-    />
-  )}
-</Stateful>
-```
-
-### Uncontrolled
-
-`defaultItems` hands the list to the board: each drop is applied internally and reported through `onItemsChange` (and `onMove`), so a bare board is interactive out of the box.
-
-```tsx
 <Board
   columns={[
-    { id: "todo", label: "To do" },
+    { id: "todo", label: "To do", badge: "WIP 2" },
     { id: "doing", label: "Doing" },
   ]}
   defaultItems={[
     { id: "t1", columnId: "todo", title: "Rotate webhook secrets" },
-    { id: "t2", columnId: "doing", title: "SSO rollout" },
+    { id: "t2", columnId: "todo", title: "Draft the design review" },
   ]}
+  emptyLabel="Drop tasks here"
 />
+```
+
+### Controlled
+
+`items` keeps the list in your hands: each drop reports a `BoardMove` through `onMove`, and `applyBoardMove` is the standard reducer to apply it.
+
+```tsx
+<Stateful initial={[
+  { id: "t1", columnId: "todo", title: "Rotate webhook secrets" },
+  { id: "t2", columnId: "doing", title: "SSO rollout" },
+]}>
+  {(items, setItems) => (
+    <Board
+      columns={[
+        { id: "todo", label: "To do" },
+        { id: "doing", label: "Doing" },
+      ]}
+      items={items}
+      onMove={(move) => setItems(applyBoardMove(items, move))}
+    />
+  )}
+</Stateful>
 ```
 
 ## Do & Don't

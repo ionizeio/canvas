@@ -6,11 +6,10 @@ export default function Example(scope: ExampleScope) {
   const { ActionSheet } = scope;
   return (
 <ActionSheet
-  trigger="Show actions"
+  trigger="File options"
   actions={[
-    { label: "Share", onPress: () => {} },
-    { label: "Duplicate", onPress: () => {} },
-    { label: "Move", onPress: () => {} },
+    { label: "Move to Folder", onPress: () => {} },
+    { label: "Delete File", destructive: true, onPress: () => {} }
   ]}
 />
   );

@@ -5,14 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { RowMenu } = scope;
   return (
-<RowMenu
-  links
-  items={[
-    { label: "Profile" },
-    { label: "Billing" },
-    { label: "Members" },
-    { label: "Settings" }
-  ]}
-/>
+<RowMenu links items={[{ label: "Profile" }, { label: "Billing" }, { label: "Members" }]} />
   );
 }

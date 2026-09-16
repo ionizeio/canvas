@@ -6,17 +6,13 @@ export default function Example(scope: ExampleScope) {
   const { Steps } = scope;
   return (
 <Steps
+  vertical
   steps={[
     { label: "Account", description: "Email verified and password set." },
     { label: "Profile", description: "Add your name and avatar." },
-    { label: "Review", description: "Invite collaborators to your workspace." },
-    { label: "Done", description: "You're all set." }
+    { label: "Review", description: "Invite collaborators." }
   ]}
   defaultCurrent={1}
-  vertical
-  onStepPress={() => {}}
-  value={68}
-  label="Setup progress"
 />
   );
 }

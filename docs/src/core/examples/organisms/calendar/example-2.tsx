@@ -6,20 +6,15 @@ export default function Example(scope: ExampleScope) {
   const { Calendar } = scope;
   return (
 <Calendar
-  week
+  dayPeek
   month="May 2026"
   today={23}
-  defaultSelected={20}
+  defaultSelected={24}
   daysInMonth={31}
   startWeekday={4}
   events={[
-    { day: 18, title: "Standup", start: 9, end: 9.5 },
-    { day: 19, title: "Design review", start: 11, end: 12.5 },
-    { day: 20, title: "Sprint planning", start: 9.5, end: 11 },
-    { day: 20, title: "Team lunch", start: 12.5, end: 13.5 },
-    { day: 21, title: "User interviews", start: 10, end: 12 },
-    { day: 22, title: "Retro", start: 16, end: 17 },
-    { day: 23, title: "Release cut", start: 14, end: 15 }
+    { day: 24, title: "Sprint planning", start: 9, end: 10.5 },
+    { day: 24, title: "Team lunch", start: 12.5, end: 13.5 }
   ]}
 />
   );

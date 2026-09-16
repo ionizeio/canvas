@@ -3,30 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Calendar, Row } = scope;
+  const { Calendar } = scope;
   return (
-<Row loose wrap alignStart>
-  <Calendar
-    compact
-    month="May 2026"
-    today={23}
-    defaultSelected={24}
-    daysInMonth={31}
-    startWeekday={4}
-    events={[{ day: 8 }, { day: 14 }, { day: 24 }]}
-  />
-  <Calendar
-    compact
-    day
-    month="May 2026"
-    defaultSelected={24}
-    daysInMonth={31}
-    startWeekday={4}
-    events={[
-      { day: 24, title: "Sprint planning", start: 9, end: 10.5 },
-      { day: 24, title: "Design review", start: 11.5, end: 13 }
-    ]}
-  />
-</Row>
+<Calendar
+  range
+  month="May 2026"
+  today={23}
+  daysInMonth={31}
+  startWeekday={4}
+  defaultRangeStart={14}
+  defaultRangeEnd={20}
+/>
   );
 }

@@ -6,8 +6,6 @@ export default function Example(scope: ExampleScope) {
   const { Icon, TabBar } = scope;
   return (
 <TabBar
-  active="home"
-  onSelect={() => {}}
   items={[
     { key: "home", label: "Home", icon: (active) => <Icon home size={22} primary={active} muted={!active} /> },
     { key: "search", label: "Search", icon: (active) => <Icon search size={22} primary={active} muted={!active} /> },

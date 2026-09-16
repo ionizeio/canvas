@@ -10,21 +10,7 @@ Toast is usually driven imperatively: mount a `<ToastProvider>` near your app ro
 <AppScreen>
   <ToastProvider>
     <WithToast hook={useToast}>
-      {({ toast }) => (
-        <Button
-          primary
-          onPress={() =>
-            toast({
-              success: true,
-              message: "Profile updated",
-              description: "Your changes are now live.",
-              action: { label: "Undo", onPress: () => {} },
-            })
-          }
-        >
-          Show toast
-        </Button>
-      )}
+      {({ toast }) => <Button onPress={() => toast({ message: "Profile updated" })}>Show toast</Button>}
     </WithToast>
   </ToastProvider>
 </AppScreen>
@@ -35,25 +21,25 @@ Toast is usually driven imperatively: mount a `<ToastProvider>` near your app ro
 ### Rendered directly
 
 ```tsx
-<Toast message="Your changes were saved." action={{ label: "Undo", onPress: () => {} }} />
+<Toast message="Your changes were saved" description="They are live for everyone." />
 ```
 
 ### Success
 
 ```tsx
-<Toast success message="Profile updated" description="Your changes are now live." action={{ label: "View", onPress: () => {} }} />
+<Toast success message="Profile updated" />
 ```
 
 ### Destructive
 
 ```tsx
-<Toast destructive message="Upload failed" description="Check your connection and try again." action={{ label: "Retry", onPress: () => {} }} />
+<Toast destructive message="Upload failed" />
 ```
 
 ### Warning
 
 ```tsx
-<Toast warning message="Storage almost full" description="Free up space to keep syncing." action={{ label: "Manage", onPress: () => {} }} />
+<Toast warning message="Storage almost full" />
 ```
 
 ### With an action

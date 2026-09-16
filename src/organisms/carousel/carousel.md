@@ -18,24 +18,10 @@ Android, independently of the small painted dots.
 ```tsx
 <Carousel
   items={[
-    { key: "one", content: (
-      <Column alignCenter center style={{ height: 160, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
-        <Typography lead semibold>Slide 1</Typography>
-      </Column>
-    ) },
-    { key: "two", content: (
-      <Column alignCenter center style={{ height: 160, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
-        <Typography lead semibold>Slide 2</Typography>
-      </Column>
-    ) },
-    { key: "three", content: (
-      <Column alignCenter center style={{ height: 160, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
-        <Typography lead semibold>Slide 3</Typography>
-      </Column>
-    ) }
+    { key: "one", content: <Card title="Slide 1" /> },
+    { key: "two", content: <Card title="Slide 2" /> },
+    { key: "three", content: <Card title="Slide 3" /> }
   ]}
-  defaultIndex={0}
-  onIndexChange={() => {}}
 />
 ```
 
@@ -50,19 +36,9 @@ page the carousel, the iOS page-control idiom.
 <Carousel
   showArrows={false}
   items={[
-    { key: "a", content: (
-      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
-        <Typography lead medium>Featured</Typography>
-      </Column>
-    ) },
-    { key: "b", content: (
-      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
-        <Typography lead medium>Popular</Typography>
-      </Column>
-    ) }
+    { key: "a", content: <Card title="Featured" /> },
+    { key: "b", content: <Card title="Popular" /> }
   ]}
-  defaultIndex={0}
-  onIndexChange={() => {}}
 />
 ```
 
@@ -73,25 +49,11 @@ Start on a later slide with `defaultIndex`; the matching dot reads selected.
 ```tsx
 <Carousel
   defaultIndex={1}
-  loop
   items={[
-    { key: "x", content: (
-      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
-        <Typography lead medium>First</Typography>
-      </Column>
-    ) },
-    { key: "y", content: (
-      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
-        <Typography lead medium>Second</Typography>
-      </Column>
-    ) },
-    { key: "z", content: (
-      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
-        <Typography lead medium>Third</Typography>
-      </Column>
-    ) }
+    { key: "x", content: <Card title="First" /> },
+    { key: "y", content: <Card title="Second" /> },
+    { key: "z", content: <Card title="Third" /> }
   ]}
-  onIndexChange={() => {}}
 />
 ```
 
@@ -106,54 +68,27 @@ arrows-plus-dots anatomy on every platform.
   showArrows
   showDots
   items={[
-    { key: "p", content: (
-      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
-        <Typography lead medium>Photos</Typography>
-      </Column>
-    ) },
-    { key: "q", content: (
-      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
-        <Typography lead medium>Albums</Typography>
-      </Column>
-    ) },
-    { key: "r", content: (
-      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
-        <Typography lead medium>Shared</Typography>
-      </Column>
-    ) }
+    { key: "p", content: <Card title="Photos" /> },
+    { key: "q", content: <Card title="Albums" /> },
+    { key: "r", content: <Card title="Shared" /> }
   ]}
-  defaultIndex={0}
-  onIndexChange={() => {}}
 />
 ```
 
-### Clamped at the ends
+### Loop
 
-Without `loop` the index clamps: the prev arrow disables on the first slide and
-the next arrow on the last, so the ends are unmistakable.
+With `loop` the index wraps: both arrows stay enabled at the ends, and next on the
+last slide returns to the first.
 
 ```tsx
 <Carousel
+  loop
   showArrows
   items={[
-    { key: "first", content: (
-      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
-        <Typography lead medium>Start</Typography>
-      </Column>
-    ) },
-    { key: "mid", content: (
-      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
-        <Typography lead medium>Middle</Typography>
-      </Column>
-    ) },
-    { key: "last", content: (
-      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
-        <Typography lead medium>End</Typography>
-      </Column>
-    ) }
+    { key: "first", content: <Card title="Start" /> },
+    { key: "mid", content: <Card title="Middle" /> },
+    { key: "last", content: <Card title="End" /> }
   ]}
-  defaultIndex={0}
-  onIndexChange={() => {}}
 />
 ```
 

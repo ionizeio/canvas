@@ -3,17 +3,22 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Board } = scope;
+  const { Stateful, applyBoardMove, Board } = scope;
   return (
-<Board
-  columns={[
-    { id: "todo", label: "To do" },
-    { id: "doing", label: "Doing" },
-  ]}
-  defaultItems={[
-    { id: "t1", columnId: "todo", title: "Rotate webhook secrets" },
-    { id: "t2", columnId: "doing", title: "SSO rollout" },
-  ]}
-/>
+<Stateful initial={[
+  { id: "t1", columnId: "todo", title: "Rotate webhook secrets" },
+  { id: "t2", columnId: "doing", title: "SSO rollout" },
+]}>
+  {(items, setItems) => (
+    <Board
+      columns={[
+        { id: "todo", label: "To do" },
+        { id: "doing", label: "Doing" },
+      ]}
+      items={items}
+      onMove={(move) => setItems(applyBoardMove(items, move))}
+    />
+  )}
+</Stateful>
   );
 }

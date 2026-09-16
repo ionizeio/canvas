@@ -8,21 +8,7 @@ export default function Example(scope: ExampleScope) {
 <AppScreen>
   <ToastProvider>
     <WithToast hook={useToast}>
-      {({ toast }) => (
-        <Button
-          primary
-          onPress={() =>
-            toast({
-              success: true,
-              message: "Profile updated",
-              description: "Your changes are now live.",
-              action: { label: "Undo", onPress: () => {} },
-            })
-          }
-        >
-          Show toast
-        </Button>
-      )}
+      {({ toast }) => <Button onPress={() => toast({ message: "Profile updated" })}>Show toast</Button>}
     </WithToast>
   </ToastProvider>
 </AppScreen>

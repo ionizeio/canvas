@@ -20,7 +20,26 @@ A bare calendar is uncontrolled: pressing a day selects it, and in the week/day 
 
 ### Events
 
-Each event carries the `day` it falls on, plus an optional `title` and `start`/`end` hours. The month grid marks event days with a dot and reads the count to assistive tech. With `dayPeek`, pressing a marked day opens that day's hour timeline (the same timeline the day view renders) beside the cell: to its right, to its left when the right lacks room, and below it when neither side fits. A tap anywhere else or Escape dismisses it. Press May 24 below.
+Each event carries the `day` it falls on, plus an optional `title` and `start`/`end` hours. The month grid marks event days with a dot and reads the count to assistive tech.
+
+```tsx
+<Calendar
+  month="May 2026"
+  today={23}
+  defaultSelected={24}
+  daysInMonth={31}
+  startWeekday={4}
+  events={[
+    { day: 8, title: "Design review" },
+    { day: 14, title: "1:1 with manager" },
+    { day: 24, title: "Sprint planning" }
+  ]}
+/>
+```
+
+### Day peek
+
+With `dayPeek`, pressing a marked day opens that day's hour timeline (the same timeline the day view renders) beside the cell: to its right, to its left when the right lacks room, and below it when neither side fits. A tap anywhere else or Escape dismisses it.
 
 ```tsx
 <Calendar
@@ -31,9 +50,6 @@ Each event carries the `day` it falls on, plus an optional `title` and `start`/`
   daysInMonth={31}
   startWeekday={4}
   events={[
-    { day: 8, title: "Design review", start: 11.5, end: 13 },
-    { day: 14, title: "1:1 with manager", start: 14, end: 15 },
-    { day: 23, title: "Release cut", start: 16, end: 17 },
     { day: 24, title: "Sprint planning", start: 9, end: 10.5 },
     { day: 24, title: "Team lunch", start: 12.5, end: 13.5 }
   ]}
@@ -53,20 +69,16 @@ Each event carries the `day` it falls on, plus an optional `title` and `start`/`
   daysInMonth={31}
   startWeekday={4}
   events={[
-    { day: 18, title: "Standup", start: 9, end: 9.5 },
     { day: 19, title: "Design review", start: 11, end: 12.5 },
     { day: 20, title: "Sprint planning", start: 9.5, end: 11 },
-    { day: 20, title: "Team lunch", start: 12.5, end: 13.5 },
-    { day: 21, title: "User interviews", start: 10, end: 12 },
-    { day: 22, title: "Retro", start: 16, end: 17 },
-    { day: 23, title: "Release cut", start: 14, end: 15 }
+    { day: 21, title: "User interviews", start: 10, end: 12 }
   ]}
 />
 ```
 
 ### Day
 
-`day` renders a single day's hour timeline with each block carrying its title and time span. The timeline covers the whole day (narrow it with `startHour`/`endHour`); the scroller opens on 8 AM to 5 PM and scrolls to the remaining hours, and the 12h/24h control flips the labels. Hovering a block floats a detail card with the event's `description`. The chevrons page a day at a time, so pressing next here reveals the following day's schedule.
+`day` renders a single day's hour timeline with each block carrying its title and time span. The timeline covers the whole day (narrow it with `startHour`/`endHour`); the scroller opens on 8 AM to 5 PM and scrolls to the remaining hours, and the 12h/24h control flips the labels. Hovering a block floats a detail card with the event's `description`. The chevrons page a day at a time.
 
 ```tsx
 <Calendar
@@ -78,9 +90,8 @@ Each event carries the `day` it falls on, plus an optional `title` and `start`/`
   startWeekday={4}
   events={[
     { day: 24, title: "Sprint planning", start: 9, end: 10.5, description: "Backlog grooming and capacity check for the next sprint." },
-    { day: 24, title: "Design review", start: 11.5, end: 13, description: "Walkthrough of the checkout flow explorations." },
-    { day: 24, title: "Team lunch", start: 12.5, end: 13.5 },
-    { day: 25, title: "1:1 with manager", start: 14, end: 15 }
+    { day: 24, title: "Design review", start: 11.5, end: 13 },
+    { day: 24, title: "Team lunch", start: 12.5, end: 13.5 }
   ]}
 />
 ```
@@ -106,29 +117,14 @@ Each event carries the `day` it falls on, plus an optional `title` and `start`/`
 `compact` tightens the cells and type for dense surfaces, in every view.
 
 ```tsx
-<Row loose wrap alignStart>
-  <Calendar
-    compact
-    month="May 2026"
-    today={23}
-    defaultSelected={24}
-    daysInMonth={31}
-    startWeekday={4}
-    events={[{ day: 8 }, { day: 14 }, { day: 24 }]}
-  />
-  <Calendar
-    compact
-    day
-    month="May 2026"
-    defaultSelected={24}
-    daysInMonth={31}
-    startWeekday={4}
-    events={[
-      { day: 24, title: "Sprint planning", start: 9, end: 10.5 },
-      { day: 24, title: "Design review", start: 11.5, end: 13 }
-    ]}
-  />
-</Row>
+<Calendar
+  compact
+  month="May 2026"
+  today={23}
+  defaultSelected={24}
+  daysInMonth={31}
+  startWeekday={4}
+/>
 ```
 
 ## Do & Don't

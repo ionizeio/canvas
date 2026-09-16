@@ -10,7 +10,6 @@ The search placeholder names the input and its result list. Supply `accessibilit
 
 ```tsx
 <Command
-  defaultActive={0}
   trigger
   groups={[
     { heading: "Actions", items: [
@@ -32,16 +31,15 @@ The search placeholder names the input and its result list. Supply `accessibilit
 
 ```tsx
 <Command
-  defaultActive={0}
   groups={[
     { heading: "Actions", items: [
-      { label: "New File", icon: "file", shortcut: "Ctrl+N" },
-      { label: "Open File", icon: "folder", shortcut: "Ctrl+O" },
-      { label: "Save", icon: "save", shortcut: "Ctrl+S" }
+      { label: "New File" },
+      { label: "Open File" },
+      { label: "Save" }
     ] },
     { heading: "Navigation", items: [
-      { label: "Go to Dashboard", icon: "arrowRight" },
-      { label: "Go to Settings", icon: "arrowRight" }
+      { label: "Go to Dashboard" },
+      { label: "Go to Settings" }
     ] }
   ]}
 />
@@ -51,18 +49,16 @@ The search placeholder names the input and its result list. Supply `accessibilit
 
 ```tsx
 <Command
-  defaultActive={0}
-  trigger
   footer
   groups={[
     { heading: "Actions", items: [
-      { label: "New File", icon: "file", shortcut: "Ctrl+N" },
-      { label: "Open File", icon: "folder", shortcut: "Ctrl+O" },
-      { label: "Save", icon: "save", shortcut: "Ctrl+S" }
+      { label: "New File" },
+      { label: "Open File" },
+      { label: "Save" }
     ] },
     { heading: "Navigation", items: [
-      { label: "Go to Dashboard", icon: "arrowRight" },
-      { label: "Go to Settings", icon: "arrowRight" }
+      { label: "Go to Dashboard" },
+      { label: "Go to Settings" }
     ] }
   ]}
 />
@@ -75,17 +71,16 @@ actions match), and groups left with no match drop out.
 
 ```tsx
 <Command
-  defaultActive={0}
   defaultQuery="file"
   groups={[
     { heading: "Actions", items: [
-      { label: "New File", icon: "file", shortcut: "Ctrl+N" },
-      { label: "Open File", icon: "folder", shortcut: "Ctrl+O" },
-      { label: "Save", icon: "save", shortcut: "Ctrl+S" }
+      { label: "New File" },
+      { label: "Open File" },
+      { label: "Save" }
     ] },
     { heading: "Navigation", items: [
-      { label: "Go to Dashboard", icon: "arrowRight" },
-      { label: "Go to Settings", icon: "arrowRight" }
+      { label: "Go to Dashboard" },
+      { label: "Go to Settings" }
     ] }
   ]}
 />

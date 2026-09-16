@@ -3,21 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, Chart, DashboardGrid, Switch, Column, BarList } = scope;
+  const { Chart, DashboardGrid, BarList } = scope;
   return (
-<Stateful initial={true}>
-  {(unlocked, setUnlocked) => (
-    <Column snug>
-      <Switch checked={unlocked} onChange={setUnlocked}>Customize layout</Switch>
-      <DashboardGrid
-        unlocked={unlocked}
-        items={[
-          { id: "revenue", span: 6, title: "Revenue", content: <Chart title="Revenue" data={[{ label: "Mon", value: 12 }, { label: "Tue", value: 18 }]} /> },
-          { id: "signups", span: 6, title: "Signups", content: <BarList title="Signups" items={[{ label: "Web", value: 82 }, { label: "iOS", value: 64 }]} /> },
-        ]}
-      />
-    </Column>
-  )}
-</Stateful>
+<DashboardGrid
+  unlocked
+  items={[
+    { id: "revenue", span: 6, title: "Revenue", content: <Chart title="Revenue" data={[{ label: "Mon", value: 12 }, { label: "Tue", value: 18 }]} /> },
+    { id: "signups", span: 6, title: "Signups", content: <BarList title="Signups" items={[{ label: "Web", value: 82 }, { label: "iOS", value: 64 }]} /> },
+  ]}
+/>
   );
 }

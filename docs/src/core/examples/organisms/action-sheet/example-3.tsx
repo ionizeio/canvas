@@ -6,10 +6,11 @@ export default function Example(scope: ExampleScope) {
   const { ActionSheet } = scope;
   return (
 <ActionSheet
-  trigger="Delete file…"
-  title="Delete this file?"
-  message="This permanently removes the file. This action cannot be undone."
-  actions={[{ label: "Delete File", destructive: true, onPress: () => {} }]}
+  trigger="File options"
+  actions={[
+    { label: "Save", onPress: () => {} },
+    { label: "Save As…", disabled: true, onPress: () => {} }
+  ]}
 />
   );
 }

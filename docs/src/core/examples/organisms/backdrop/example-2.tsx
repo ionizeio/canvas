@@ -6,14 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { View, Backdrop } = scope;
   return (
 <View style={{ height: 220 }}>
-  <Backdrop calm>
-    <Backdrop.Gradient
-      blobs={[
-        { color: "#6366f1", cx: 0.35, cy: 0.35, r: 0.5, o: 0.35, end: 0.62 },
-        { color: "#ec4899", cx: 0.7, cy: 0.6, r: 0.44, o: 0.28, end: 0.6 },
-      ]}
-      depth={0.2}
-      size={420}
+  <Backdrop energetic>
+    <Backdrop.Particles
+      field={Array.from({ length: 70 }, (_, i) => ({ x: ((i * 29) % 97) / 97, y: ((i * 53) % 89) / 89, r: 0.7 + ((i * 5) % 6) / 4, a: 0.35 + ((i * 9) % 10) / 15 }))}
     />
   </Backdrop>
 </View>

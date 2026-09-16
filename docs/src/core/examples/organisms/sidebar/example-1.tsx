@@ -3,32 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Sidebar, Row } = scope;
+  const { Sidebar } = scope;
   return (
-<Row loose alignStart>
-  <Sidebar
-    bordered
-    defaultActive="Dashboard"
-    sections={[
-      { title: "Main", items: [
-        { label: "Dashboard", icon: "layoutGrid" },
-        { label: "Inbox", icon: "inbox", badge: "3" },
-        { label: "Settings", icon: "settings" }
-      ] }
-    ]}
-  />
-  <Sidebar
-    bordered
-    collapsed
-    defaultActive="Dashboard"
-    sections={[
-      { title: "Main", items: [
-        { label: "Dashboard", icon: "layoutGrid" },
-        { label: "Inbox", icon: "inbox", badge: "3" },
-        { label: "Settings", icon: "settings" }
-      ] }
-    ]}
-  />
-</Row>
+<Sidebar
+  bordered
+  collapsed
+  defaultActive="Dashboard"
+  items={[
+    { label: "Dashboard", icon: "layoutGrid" },
+    { label: "Inbox", icon: "inbox" },
+    { label: "Settings", icon: "settings" }
+  ]}
+/>
   );
 }

@@ -7,16 +7,14 @@ export default function Example(scope: ExampleScope) {
   return (
 <FilterPanel
   responsive
-  bordered
   groups={[
     { title: "Status", options: [
-      { label: "Active", checked: true, count: "128" },
-      { label: "Pending", count: "12", checked: false },
-      { label: "Archived", count: "2", checked: false }
+      { label: "Active", checked: true },
+      { label: "Archived" }
     ] },
     { title: "Schema", options: [
-      { label: "Default", checked: true, count: "96" },
-      { label: "Custom", count: "46", checked: false }
+      { label: "Default" },
+      { label: "Custom" }
     ] }
   ]}
 />

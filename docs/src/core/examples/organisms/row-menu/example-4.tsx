@@ -5,10 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { RowMenu } = scope;
   return (
-<RowMenu open items={[
-    { label: "Edit", icon: "pencil" },
-    { label: "Duplicate", icon: "copy" },
-    { label: "Clear column", icon: "trash", destructive: true, disabled: true, separatorBefore: true }
-  ]} />
+<RowMenu items={[{ label: "Edit" }, { label: "Duplicate" }, { label: "Clear column", disabled: true }]} />
   );
 }

@@ -6,18 +6,16 @@ export default function Example(scope: ExampleScope) {
   const { Command } = scope;
   return (
 <Command
-  defaultActive={0}
-  trigger
   footer
   groups={[
     { heading: "Actions", items: [
-      { label: "New File", icon: "file", shortcut: "Ctrl+N" },
-      { label: "Open File", icon: "folder", shortcut: "Ctrl+O" },
-      { label: "Save", icon: "save", shortcut: "Ctrl+S" }
+      { label: "New File" },
+      { label: "Open File" },
+      { label: "Save" }
     ] },
     { heading: "Navigation", items: [
-      { label: "Go to Dashboard", icon: "arrowRight" },
-      { label: "Go to Settings", icon: "arrowRight" }
+      { label: "Go to Dashboard" },
+      { label: "Go to Settings" }
     ] }
   ]}
 />

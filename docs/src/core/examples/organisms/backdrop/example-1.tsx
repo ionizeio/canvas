@@ -6,22 +6,10 @@ export default function Example(scope: ExampleScope) {
   const { View, Backdrop } = scope;
   return (
 <View style={{ height: 220 }}>
-  <Backdrop energetic>
-    {[0, 0.25, 0.5, 0.75].map((phase) => (
-      <Backdrop.Particles
-        key={phase}
-        field={Array.from({ length: 40 }, (_, i) => ({
-          x: 0.5 + Math.cos(i * 2.4) * (0.05 + ((i * 11) % 40) / 100),
-          y: 0.5 + Math.sin(i * 2.4) * (0.05 + ((i * 11) % 40) / 100),
-          r: 0.8 + ((i * 7) % 5) / 3,
-          a: 0.4 + ((i * 3) % 10) / 16,
-        }))}
-        depth={1}
-        phase={phase}
-        sprite="halo"
-        bloom
-      />
-    ))}
+  <Backdrop calm>
+    <Backdrop.Particles
+      field={Array.from({ length: 70 }, (_, i) => ({ x: ((i * 29) % 97) / 97, y: ((i * 53) % 89) / 89, r: 0.7 + ((i * 5) % 6) / 4, a: 0.35 + ((i * 9) % 10) / 15 }))}
+    />
   </Backdrop>
 </View>
   );

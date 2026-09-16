@@ -6,16 +6,8 @@ Multi-step progress indicators: horizontal, vertical, with progress.
 
 ```tsx
 <Steps
-  steps={[
-    { label: "Account", description: "Email verified and password set." },
-    { label: "Profile", description: "Add your name and avatar." },
-    { label: "Review", description: "Invite collaborators to your workspace." },
-    { label: "Done", description: "You're all set." }
-  ]}
+  steps={[{ label: "Account" }, { label: "Profile" }, { label: "Review" }]}
   defaultCurrent={1}
-  onStepPress={() => {}}
-  value={68}
-  label="Setup progress"
 />
 ```
 
@@ -25,18 +17,20 @@ Multi-step progress indicators: horizontal, vertical, with progress.
 
 ```tsx
 <Steps
+  vertical
   steps={[
     { label: "Account", description: "Email verified and password set." },
     { label: "Profile", description: "Add your name and avatar." },
-    { label: "Review", description: "Invite collaborators to your workspace." },
-    { label: "Done", description: "You're all set." }
+    { label: "Review", description: "Invite collaborators." }
   ]}
   defaultCurrent={1}
-  vertical
-  onStepPress={() => {}}
-  value={68}
-  label="Setup progress"
 />
+```
+
+### Progress bar
+
+```tsx
+<Steps progress steps={[]} value={68} />
 ```
 
 ### Stacks at narrow widths
@@ -49,25 +43,8 @@ column stacks too.
 ```tsx
 <Steps
   stacks
-  steps={[{ label: "Account" }, { label: "Profile" }, { label: "Review" }, { label: "Done" }]}
+  steps={[{ label: "Account" }, { label: "Profile" }, { label: "Review" }]}
   defaultCurrent={1}
-/>
-```
-
-### Progress bar
-
-```tsx
-<Steps
-  steps={[
-    { label: "Account", description: "Email verified and password set." },
-    { label: "Profile", description: "Add your name and avatar." },
-    { label: "Review", description: "Invite collaborators to your workspace." },
-    { label: "Done", description: "You're all set." }
-  ]}
-  defaultCurrent={1}
-  progress
-  value={68}
-  label="Setup progress"
 />
 ```
 

@@ -3,39 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, CardContent, CardDescription, CardHeader, CardTitle, Chart, DashboardGrid, Typography, Sparkline, BarList } = scope;
+  const { Chart, DashboardGrid, BarList } = scope;
   return (
 <DashboardGrid
   items={[
-    {
-      id: "revenue",
-      span: 8,
-      title: "Revenue",
-      content: <Chart title="Revenue" data={[{ label: "Mon", value: 12 }, { label: "Tue", value: 18 }, { label: "Wed", value: 15 }, { label: "Thu", value: 22 }]} />,
-    },
-    {
-      id: "signups",
-      span: 4,
-      title: "Signups",
-      content: (
-        <Card>
-          <CardHeader>
-            <CardTitle>Signups</CardTitle>
-            <CardDescription>Last 30 days</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Typography h2>1,204</Typography>
-            <Sparkline values={[8, 12, 9, 14, 13, 18, 22]} />
-          </CardContent>
-        </Card>
-      ),
-    },
-    {
-      id: "endpoints",
-      span: 12,
-      title: "Slowest endpoints",
-      content: <BarList title="Slowest endpoints" items={[{ label: "/api/search", value: 240 }, { label: "/api/feed", value: 180 }, { label: "/api/me", value: 90 }]} />,
-    },
+    { id: "revenue", span: 8, title: "Revenue", content: <Chart title="Revenue" data={[{ label: "Mon", value: 12 }, { label: "Tue", value: 18 }, { label: "Wed", value: 15 }, { label: "Thu", value: 22 }]} /> },
+    { id: "signups", span: 4, title: "Signups", content: <BarList title="Signups" items={[{ label: "Web", value: 82 }, { label: "iOS", value: 64 }]} /> },
+    { id: "endpoints", span: 12, title: "Slowest endpoints", content: <BarList title="Slowest endpoints" items={[{ label: "/api/search", value: 240 }, { label: "/api/feed", value: 180 }]} /> },
   ]}
 />
   );
