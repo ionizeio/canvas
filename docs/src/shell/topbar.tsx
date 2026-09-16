@@ -9,7 +9,7 @@ import { Github } from "../brand/brand-logos";
 import { sans } from "../ui/fonts";
 
 // The public repository the GitHub button in the bar links back to (mirrors the home page's link).
-const REPO_URL = "https://github.com/nannier-com/canvas";
+const REPO_URL = "https://github.com/ionizeio/canvas";
 
 // The topbar overlays the scrolling content (so its glass frost refracts what
 // scrolls behind it). Content scrollers add this as a top inset so their first row

@@ -16,7 +16,7 @@ import { useFluidType } from "../lib/fluid-type";
 import { CONTENT_TOP_INSET } from "./topbar";
 import { ScreenFrame } from "./native-header";
 
-const REPO_URL = "https://github.com/nannier-com/canvas";
+const REPO_URL = "https://github.com/ionizeio/canvas";
 const NPM_URL = "https://www.npmjs.com/package/@nannier-com/canvas";
 const PLATFORMS = ["iOS", "Android", "Web", "React Native Web"];
 

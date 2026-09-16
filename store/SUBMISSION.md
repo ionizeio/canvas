@@ -42,7 +42,7 @@ The chain, in order. Steps 1-2 and 4 need a human; 3 and 5 are console/CLI work.
    "Select an existing..."** is what BINDS it to the package. Until it is bound,
    `eas submit` keeps failing with "Google Service Account Keys cannot be set up in
    --non-interactive mode", which reads like a flag problem and is not.
-5. `gh variable set PLAY_SUBMIT_ENABLED --repo nannier-com/canvas --body true`.
+5. `gh variable set PLAY_SUBMIT_ENABLED --repo ionizeio/canvas --body true`.
 
 Delete the JSON from disk afterwards; EAS holds its own copy on its servers.
 | Play identity verification | **PASSED (29 Jul 2026).** Confirmed by the console switching the account name from "Bobby Nannier" to the legal name "Robert Nannier" and dropping the step from the checklist. NOTE it briefly regressed to "Verify your identity / Get started" on 28 Jul before clearing, so a reset there is not necessarily a rejection. |
@@ -299,7 +299,7 @@ release:
 NOTE: `android` was REMOVED from the keywords and the description on 2026-07-29 to clear
 Guideline 2.3.10 (see below). Do not put it back. `ipad` took the freed slot.
 
-**Support URL**: `https://github.com/nannier-com/canvas/issues`
+**Support URL**: `https://github.com/ionizeio/canvas/issues`
 **Marketing URL**: `https://canvas.nannier.com/`
 **Privacy Policy URL**: `https://canvas.nannier.com/privacy/`
 
@@ -371,7 +371,7 @@ Review Information section. No new build is required for that, so this text must
 true of whatever binary is attached: do NOT let it claim changes that are only on `main`.
 
 > Canvas is the official reference app for the Canvas React Native UI kit
-> (https://github.com/nannier-com/canvas). It is a component catalog: every screen is a
+> (https://github.com/ionizeio/canvas). It is a component catalog: every screen is a
 > live, interactive native view built from the library it documents, not a screenshot,
 > a marketing page, or an embedded web page.
 >

@@ -7,7 +7,7 @@ A small Expo application using the published `@nannier-com/canvas` package. It r
 With access to the source repository:
 
 ```sh
-git clone https://github.com/nannier-com/canvas.git
+git clone https://github.com/ionizeio/canvas.git
 cd canvas/examples/starter
 bun install --frozen-lockfile
 bun run web

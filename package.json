@@ -7,10 +7,10 @@
   "homepage": "https://canvas.nannier.com/",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nannier-com/canvas.git"
+    "url": "git+https://github.com/ionizeio/canvas.git"
   },
   "bugs": {
-    "url": "https://github.com/nannier-com/canvas/issues"
+    "url": "https://github.com/ionizeio/canvas/issues"
   },
   "keywords": [
     "react-native",

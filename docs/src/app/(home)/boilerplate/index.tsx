@@ -20,7 +20,7 @@ export default function BoilerplateScreen() {
         <Section title="Clone and run">
           <Typography>With access to the repository, install and run the starter from its own directory.</Typography>
           <CodeBlock copy language="sh" code={[
-            "git clone https://github.com/nannier-com/canvas.git",
+            "git clone https://github.com/ionizeio/canvas.git",
             "cd canvas/examples/starter",
             "bun install --frozen-lockfile",
             "bun run web",

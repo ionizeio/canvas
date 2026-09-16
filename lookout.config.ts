@@ -1,5 +1,5 @@
 /**
- * lookout config for the Canvas docs (https://github.com/nannier-com/lookout).
+ * lookout config for the Canvas docs (https://github.com/ionizeio/lookout).
  *
  * Targets the running docs app (bun run dev in docs/, Metro on 8081) and derives
  * the component routes from nav.config.json, which check-nav-sync holds 1:1 with

@@ -11,7 +11,7 @@ reporting an issue.
 Please report vulnerabilities **privately**, not through a public issue.
 
 Open a private security advisory through GitHub:
-[Create a private advisory](https://github.com/nannier-com/canvas/security/advisories/new).
+[Create a private advisory](https://github.com/ionizeio/canvas/security/advisories/new).
 
 Include the affected version, a description of the issue, and, where possible,
 a minimal reproduction. You can expect an initial acknowledgement within a few

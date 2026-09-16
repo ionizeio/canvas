@@ -17,7 +17,7 @@
  * Data Safety answers recorded in store/SUBMISSION.md.
  */
 
-export const PRIVACY_ISSUES_URL = "https://github.com/nannier-com/canvas/issues";
+export const PRIVACY_ISSUES_URL = "https://github.com/ionizeio/canvas/issues";
 
 // Stated rather than computed, so the policy does not silently claim to have changed on
 // every rebuild.
