@@ -50,6 +50,24 @@ same slot, so the row never changes height and nothing below it jumps.
 </Form>
 ```
 
+### Measure
+
+```tsx
+<Column>
+  <Field xs start label="ZIP code" helper="xs step, pinned to the start (320)">
+    <Input placeholder="94103" />
+  </Field>
+  <Field lg start label="Street" helper="lg step, pinned to the start (512)">
+    <Input placeholder="1 Market St" />
+  </Field>
+  <Container lg start>
+    <Field label="City" helper="Bare, in an lg Container: fills it (512)">
+      <Input placeholder="San Francisco" />
+    </Field>
+  </Container>
+</Column>
+```
+
 ## Do & Don't
 
 ### The message line

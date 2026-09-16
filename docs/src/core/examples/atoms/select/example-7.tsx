@@ -6,8 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { Select, Column, Container } = scope;
   return (
 <Column snug>
-  <Container xs start><Select options={["Small", "Medium", "Large"]} placeholder="In an xs Container (320)" /></Container>
-  <Select options={["Small", "Medium", "Large"]} placeholder="Bare: fills the parent" />
+  <Select xs start options={["Small", "Medium", "Large"]} placeholder="xs step, pinned to the start (320)" />
+  <Select lg start options={["Small", "Medium", "Large"]} placeholder="lg step, pinned to the start (512)" />
+  <Container lg start><Select options={["Small", "Medium", "Large"]} placeholder="Bare, in an lg Container: fills it (512)" /></Container>
 </Column>
   );
 }

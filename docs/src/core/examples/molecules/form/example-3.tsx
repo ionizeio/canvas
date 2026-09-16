@@ -3,11 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Form, Select, Switch } = scope;
+  const { Checkbox, Form, FormSection, Input } = scope;
   return (
 <Form submitLabel="Save">
-  <Select label="Role" options={["Admin", "Editor", "Viewer"]} defaultValue="Editor" />
-  <Switch defaultChecked>Notifications</Switch>
+  <FormSection title="Personal info" description="This information will be displayed on your public profile.">
+    <Input label="Full name" defaultValue="Rachel Chen" />
+    <Input label="Email" defaultValue="rachel@example.com" />
+  </FormSection>
+  <FormSection title="Notifications" description="Choose how you'd like to be notified.">
+    <Checkbox defaultChecked>Email notifications</Checkbox>
+    <Checkbox>SMS alerts</Checkbox>
+  </FormSection>
 </Form>
   );
 }

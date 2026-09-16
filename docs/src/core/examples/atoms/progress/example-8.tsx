@@ -6,8 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { Progress, Column, Container } = scope;
   return (
 <Column snug>
-  <Container xs start><Progress value={0.6}>In an xs Container (320)</Progress></Container>
-  <Progress value={0.6}>Bare: fills the parent</Progress>
+  <Progress xs start value={0.6}>xs step, pinned to the start (320)</Progress>
+  <Progress lg start value={0.6}>lg step, pinned to the start (512)</Progress>
+  <Container lg start><Progress value={0.6}>Bare, in an lg Container: fills it (512)</Progress></Container>
 </Column>
   );
 }

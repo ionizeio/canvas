@@ -5,6 +5,13 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { ButtonGroup } = scope;
   return (
-<ButtonGroup split items={["Save"]} menu={["Save as draft", "Save and close", "Save a copy"]} />
+<ButtonGroup
+  iconsOnly
+  items={[
+    { label: "Phone width", icon: "smartphone" },
+    { label: "Tablet width", icon: "tablet" },
+    { label: "Desktop width", icon: "monitor" }
+  ]}
+/>
   );
 }

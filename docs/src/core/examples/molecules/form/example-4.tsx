@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Form, Input } = scope;
+  const { Form, Select, Switch } = scope;
   return (
-<Form sm start submitLabel="Sign in">
-  <Input label="Email" placeholder="sm step, pinned to the start (384)" />
-  <Input label="Password" />
+<Form submitLabel="Save">
+  <Select label="Role" options={["Admin", "Editor", "Viewer"]} defaultValue="Editor" />
+  <Switch defaultChecked>Notifications</Switch>
 </Form>
   );
 }

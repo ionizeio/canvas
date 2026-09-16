@@ -1,6 +1,6 @@
 # Listbox
 
-A custom (non-native) select: single or multi-select, an optional detail line under each option, and a checkmark on the chosen items. Reach for it when a native select can't show rich options; prefer a native select for simple short lists. The list fills the parent it is given; a Container step or a Row span sets its measure.
+A custom (non-native) select: single or multi-select, an optional detail line under each option, and a checkmark on the chosen items. Reach for it when a native select can't show rich options; prefer a native select for simple short lists. The list fills the parent it is given; a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container step sets its measure.
 
 Single-select exposes a list of selectable options. With `multi`, it exposes a checkbox group: each row owns its label, checked state, and tap target. Give either mode a meaningful `accessibilityLabel`; the fallback is "Options". Arrow keys and Home/End move focus within one tab stop. Single-select follows focus, while multi-select keeps the current selection until Enter or Space toggles the focused row.
 
@@ -88,12 +88,13 @@ Single-select exposes a list of selectable options. With `multi`, it exposes a c
 />
 ```
 
-### Widths come from the parent
+### Measure
 
 ```tsx
 <Column snug>
-  <Container xs start><Listbox bordered items={[{ label: "In an xs Container (320)", selected: true }, { label: "Frontend" }]} /></Container>
-  <Listbox bordered items={[{ label: "Bare: fills the parent", selected: true }, { label: "Frontend" }]} />
+  <Listbox xs start bordered items={[{ label: "xs step, pinned to the start (320)", selected: true }, { label: "Frontend" }]} />
+  <Listbox lg start bordered items={[{ label: "lg step, pinned to the start (512)", selected: true }, { label: "Frontend" }]} />
+  <Container lg start><Listbox bordered items={[{ label: "Bare, in an lg Container: fills it (512)", selected: true }, { label: "Frontend" }]} /></Container>
 </Column>
 ```
 

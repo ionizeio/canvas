@@ -6,8 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { Slider, Column, Container } = scope;
   return (
 <Column>
-  <Container xs start><Slider defaultValue={40}>In an xs Container (320)</Slider></Container>
-  <Slider defaultValue={40}>Bare: fills the parent</Slider>
+  <Slider xs start defaultValue={40}>xs step, pinned to the start (320)</Slider>
+  <Slider lg start defaultValue={40}>lg step, pinned to the start (512)</Slider>
+  <Container lg start><Slider defaultValue={40}>Bare, in an lg Container: fills it (512)</Slider></Container>
 </Column>
   );
 }

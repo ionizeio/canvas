@@ -6,8 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { Listbox, Column, Container } = scope;
   return (
 <Column snug>
-  <Container xs start><Listbox bordered items={[{ label: "In an xs Container (320)", selected: true }, { label: "Frontend" }]} /></Container>
-  <Listbox bordered items={[{ label: "Bare: fills the parent", selected: true }, { label: "Frontend" }]} />
+  <Listbox xs start bordered items={[{ label: "xs step, pinned to the start (320)", selected: true }, { label: "Frontend" }]} />
+  <Listbox lg start bordered items={[{ label: "lg step, pinned to the start (512)", selected: true }, { label: "Frontend" }]} />
+  <Container lg start><Listbox bordered items={[{ label: "Bare, in an lg Container: fills it (512)", selected: true }, { label: "Frontend" }]} /></Container>
 </Column>
   );
 }

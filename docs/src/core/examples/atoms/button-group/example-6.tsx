@@ -3,8 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { ButtonGroup } = scope;
+  const { ButtonGroup, Column, Container } = scope;
   return (
-<ButtonGroup stepper items={["Yesterday", "Today", "Tomorrow"]} />
+<Container>
+  <Column>
+    <ButtonGroup items={["Day", "Week", "Month"]} xs start />
+    <ButtonGroup spaced items={["Edit", "Duplicate", "Archive"]} md />
+  </Column>
+</Container>
   );
 }

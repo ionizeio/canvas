@@ -84,6 +84,18 @@ A disabled button ignores presses: `onPress` never runs.
 <Button block>Create account</Button>
 ```
 
+### Measure
+
+```tsx
+<Container>
+  <Column>
+    <Button xs start>xs step, pinned to the start (320)</Button>
+    <Button md>md step, centered (448)</Button>
+    <Button block>Block: fills the parent</Button>
+  </Column>
+</Container>
+```
+
 ### With icon
 
 ```tsx

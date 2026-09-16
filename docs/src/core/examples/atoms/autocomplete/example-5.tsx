@@ -6,9 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { Autocomplete, Column, Container } = scope;
   return (
 <Column snug>
-  <Container xs start><Autocomplete options={["Ada Lovelace", "Grace Hopper"]} placeholder="In an xs Container (320)" /></Container>
-  <Container lg start><Autocomplete options={["Ada Lovelace", "Grace Hopper"]} placeholder="In an lg Container (512)" /></Container>
-  <Autocomplete options={["Ada Lovelace", "Grace Hopper"]} placeholder="Bare: fills the parent" />
+  <Autocomplete xs start options={["Ada Lovelace", "Grace Hopper"]} placeholder="xs step, pinned to the start (320)" />
+  <Autocomplete lg start options={["Ada Lovelace", "Grace Hopper"]} placeholder="lg step, pinned to the start (512)" />
+  <Container lg start><Autocomplete options={["Ada Lovelace", "Grace Hopper"]} placeholder="Bare, in an lg Container: fills it (512)" /></Container>
 </Column>
   );
 }

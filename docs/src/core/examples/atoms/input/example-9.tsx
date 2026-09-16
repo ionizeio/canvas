@@ -6,8 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { Input, Column, Container } = scope;
   return (
 <Column snug>
-  <Container xs start><Input placeholder="In an xs Container (320)" /></Container>
-  <Input placeholder="Bare: fills the parent" />
+  <Input xs start placeholder="xs step, pinned to the start (320)" />
+  <Input lg start placeholder="lg step, pinned to the start (512)" />
+  <Container lg start><Input placeholder="Bare, in an lg Container: fills it (512)" /></Container>
 </Column>
   );
 }

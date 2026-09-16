@@ -104,6 +104,7 @@ import e_atoms_button_example_9 from "./examples/atoms/button/example-9";
 import e_atoms_button_example_10 from "./examples/atoms/button/example-10";
 import e_atoms_button_example_11 from "./examples/atoms/button/example-11";
 import e_atoms_button_example_12 from "./examples/atoms/button/example-12";
+import e_atoms_button_example_13 from "./examples/atoms/button/example-13";
 import e_atoms_button_dont_0_do from "./examples/atoms/button/dont-0-do";
 import e_atoms_button_dont_0_dont from "./examples/atoms/button/dont-0-dont";
 import e_atoms_button_dont_1_do from "./examples/atoms/button/dont-1-do";
@@ -125,6 +126,7 @@ import e_atoms_button_group_example_5 from "./examples/atoms/button-group/exampl
 import e_atoms_button_group_example_6 from "./examples/atoms/button-group/example-6";
 import e_atoms_button_group_example_7 from "./examples/atoms/button-group/example-7";
 import e_atoms_button_group_example_8 from "./examples/atoms/button-group/example-8";
+import e_atoms_button_group_example_9 from "./examples/atoms/button-group/example-9";
 import e_atoms_button_group_dont_0_do from "./examples/atoms/button-group/dont-0-do";
 import e_atoms_button_group_dont_0_dont from "./examples/atoms/button-group/dont-0-dont";
 import e_atoms_button_group_dont_1_do from "./examples/atoms/button-group/dont-1-do";
@@ -707,6 +709,7 @@ import e_molecules_field_example_0 from "./examples/molecules/field/example-0";
 import e_molecules_field_example_1 from "./examples/molecules/field/example-1";
 import e_molecules_field_example_2 from "./examples/molecules/field/example-2";
 import e_molecules_field_example_3 from "./examples/molecules/field/example-3";
+import e_molecules_field_example_4 from "./examples/molecules/field/example-4";
 import e_molecules_field_dont_0_do from "./examples/molecules/field/dont-0-do";
 import e_molecules_field_dont_0_dont from "./examples/molecules/field/dont-0-dont";
 import e_molecules_field_dont_1_do from "./examples/molecules/field/dont-1-do";
@@ -715,6 +718,7 @@ import e_molecules_form_example_0 from "./examples/molecules/form/example-0";
 import e_molecules_form_example_1 from "./examples/molecules/form/example-1";
 import e_molecules_form_example_2 from "./examples/molecules/form/example-2";
 import e_molecules_form_example_3 from "./examples/molecules/form/example-3";
+import e_molecules_form_example_4 from "./examples/molecules/form/example-4";
 import e_molecules_form_dont_0_do from "./examples/molecules/form/dont-0-do";
 import e_molecules_form_dont_0_dont from "./examples/molecules/form/dont-0-dont";
 import e_molecules_form_dont_1_do from "./examples/molecules/form/dont-1-do";
@@ -1124,7 +1128,7 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "With helper text", code: "<Autocomplete label=\"Assigned to\" helperText=\"The person responsible for this account.\" placeholder=\"Search a person…\" options={[\"Ada Lovelace\", \"Grace Hopper\", \"Kira Tanaka\"]} />", render: e_atoms_autocomplete_example_2 },
       { label: "Disabled", code: "<Autocomplete label=\"Assigned to\" placeholder=\"Search a person…\" disabled options={[\"Ada Lovelace\", \"Grace Hopper\", \"Kira Tanaka\"]} />", render: e_atoms_autocomplete_example_3 },
       { label: "Controlled selection", code: "<Stateful initial=\"Grace Hopper\">\n  {(value, setValue) => (\n    <Autocomplete label=\"Assigned to\" options={[\"Ada Lovelace\", \"Grace Hopper\", \"Kira Tanaka\"]} value={value} onValueChange={setValue} />\n  )}\n</Stateful>", render: e_atoms_autocomplete_example_4 },
-      { label: "Widths come from the parent", code: "<Column snug>\n  <Container xs start><Autocomplete options={[\"Ada Lovelace\", \"Grace Hopper\"]} placeholder=\"In an xs Container (320)\" /></Container>\n  <Container lg start><Autocomplete options={[\"Ada Lovelace\", \"Grace Hopper\"]} placeholder=\"In an lg Container (512)\" /></Container>\n  <Autocomplete options={[\"Ada Lovelace\", \"Grace Hopper\"]} placeholder=\"Bare: fills the parent\" />\n</Column>", render: e_atoms_autocomplete_example_5 },
+      { label: "Measure", code: "<Column snug>\n  <Autocomplete xs start options={[\"Ada Lovelace\", \"Grace Hopper\"]} placeholder=\"xs step, pinned to the start (320)\" />\n  <Autocomplete lg start options={[\"Ada Lovelace\", \"Grace Hopper\"]} placeholder=\"lg step, pinned to the start (512)\" />\n  <Container lg start><Autocomplete options={[\"Ada Lovelace\", \"Grace Hopper\"]} placeholder=\"Bare, in an lg Container: fills it (512)\" /></Container>\n</Column>", render: e_atoms_autocomplete_example_5 },
     ],
     donts: [
       { title: "When to use", do: { caption: "A plain select for short, fixed lists; reserve the autocomplete for long, searchable ones.", code: "<Select label=\"Size\" options={[\"Small\", \"Medium\", \"Large\"]} placeholder=\"Select a size\" />", render: e_atoms_autocomplete_dont_0_do }, dont: { caption: "Type or click: a search field for three fixed options is overhead with nothing to filter.", code: "<Autocomplete label=\"Size\" options={[\"Small\", \"Medium\", \"Large\"]} placeholder=\"Search…\" />", render: e_atoms_autocomplete_dont_0_dont } },
@@ -1223,7 +1227,8 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Disabled", code: "<Button disabled>Save changes</Button>", render: e_atoms_button_example_9 },
       { label: "Loading", code: "<Button loading>Saving</Button>", render: e_atoms_button_example_10 },
       { label: "Block", code: "<Button block>Create account</Button>", render: e_atoms_button_example_11 },
-      { label: "With icon", code: "<Button iconLeft={<Icon plus primaryForeground size={16} />}>Save changes</Button>", render: e_atoms_button_example_12 },
+      { label: "Measure", code: "<Container>\n  <Column>\n    <Button xs start>xs step, pinned to the start (320)</Button>\n    <Button md>md step, centered (448)</Button>\n    <Button block>Block: fills the parent</Button>\n  </Column>\n</Container>", render: e_atoms_button_example_12 },
+      { label: "With icon", code: "<Button iconLeft={<Icon plus primaryForeground size={16} />}>Save changes</Button>", render: e_atoms_button_example_13 },
     ],
     donts: [
       { title: "Default (primary)", do: { caption: "One clear primary action; everything else is supporting.", code: "<Row alignCenter snug>\n  <Button primary>Save</Button>\n  <Button outline>Cancel</Button>\n</Row>", render: e_atoms_button_dont_0_do }, dont: { caption: "Multiple primaries compete; nothing stands out.", code: "<View style={{ flexDirection: \"row\", alignItems: \"center\", gap: 8 }}>\n  <Button primary>Save</Button>\n  <Button primary>Apply</Button>\n  <Button primary>Continue</Button>\n</View>", render: e_atoms_button_dont_0_dont } },
@@ -1244,9 +1249,10 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Disabled", code: "<ButtonGroup items={[\"Day\", \"Week\", \"Month\"]} disabled />", render: e_atoms_button_group_example_3 },
       { label: "Block", code: "<ButtonGroup items={[\"Day\", \"Week\", \"Month\"]} block />", render: e_atoms_button_group_example_4 },
       { label: "Block spaced", code: "<ButtonGroup spaced items={[\"Edit\", \"Duplicate\", \"Archive\"]} block />", render: e_atoms_button_group_example_5 },
-      { label: "Stepper", code: "<ButtonGroup stepper items={[\"Yesterday\", \"Today\", \"Tomorrow\"]} />", render: e_atoms_button_group_example_6 },
-      { label: "Split", code: "<ButtonGroup split items={[\"Save\"]} menu={[\"Save as draft\", \"Save and close\", \"Save a copy\"]} />", render: e_atoms_button_group_example_7 },
-      { label: "Icon segments", code: "<ButtonGroup\n  iconsOnly\n  items={[\n    { label: \"Phone width\", icon: \"smartphone\" },\n    { label: \"Tablet width\", icon: \"tablet\" },\n    { label: \"Desktop width\", icon: \"monitor\" }\n  ]}\n/>", render: e_atoms_button_group_example_8 },
+      { label: "Measure", code: "<Container>\n  <Column>\n    <ButtonGroup items={[\"Day\", \"Week\", \"Month\"]} xs start />\n    <ButtonGroup spaced items={[\"Edit\", \"Duplicate\", \"Archive\"]} md />\n  </Column>\n</Container>", render: e_atoms_button_group_example_6 },
+      { label: "Stepper", code: "<ButtonGroup stepper items={[\"Yesterday\", \"Today\", \"Tomorrow\"]} />", render: e_atoms_button_group_example_7 },
+      { label: "Split", code: "<ButtonGroup split items={[\"Save\"]} menu={[\"Save as draft\", \"Save and close\", \"Save a copy\"]} />", render: e_atoms_button_group_example_8 },
+      { label: "Icon segments", code: "<ButtonGroup\n  iconsOnly\n  items={[\n    { label: \"Phone width\", icon: \"smartphone\" },\n    { label: \"Tablet width\", icon: \"tablet\" },\n    { label: \"Desktop width\", icon: \"monitor\" }\n  ]}\n/>", render: e_atoms_button_group_example_9 },
     ],
     donts: [
       { title: "Segmented", do: { caption: "Keep a segmented control to a few mutually-exclusive views.", code: "<ButtonGroup segmented defaultActive={0} items={[\"Day\", \"Week\", \"Month\"]} />", render: e_atoms_button_group_dont_0_do }, dont: { caption: "Past ~4 options a segmented control gets cramped and hard to scan; reach for a select.", code: "<ButtonGroup segmented defaultActive={0} items={[\"Day\", \"Week\", \"Month\", \"Quarter\", \"Year\", \"5Y\", \"All\"]} />", render: e_atoms_button_group_dont_0_dont } },
@@ -1414,7 +1420,7 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Error", code: "<Input error placeholder=\"rachel.chen@example.com\" />", render: e_atoms_input_example_6 },
       { label: "Disabled", code: "<Input disabled placeholder=\"rachel.chen@example.com\" />", render: e_atoms_input_example_7 },
       { label: "Read only", code: "<Input readOnly defaultValue=\"rachel.chen@example.com\" />", render: e_atoms_input_example_8 },
-      { label: "Widths come from the parent", code: "<Column snug>\n  <Container xs start><Input placeholder=\"In an xs Container (320)\" /></Container>\n  <Input placeholder=\"Bare: fills the parent\" />\n</Column>", render: e_atoms_input_example_9 },
+      { label: "Measure", code: "<Column snug>\n  <Input xs start placeholder=\"xs step, pinned to the start (320)\" />\n  <Input lg start placeholder=\"lg step, pinned to the start (512)\" />\n  <Container lg start><Input placeholder=\"Bare, in an lg Container: fills it (512)\" /></Container>\n</Column>", render: e_atoms_input_example_9 },
     ],
     donts: [
       { title: "text", do: { caption: "Pass `label` so every field carries a persistent, programmatically-linked name.", code: "<Input label=\"Email\" placeholder=\"ada@acme.dev\" />", render: e_atoms_input_dont_0_do }, dont: { caption: "A placeholder is not a label; it vanishes the moment the user types and screen readers may skip it.", code: "<Input placeholder=\"Email\" />", render: e_atoms_input_dont_0_dont } },
@@ -1484,7 +1490,7 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Large", code: "<Listbox\n  accessibilityLabel=\"Teams\"\n  items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\" },\n    { label: \"Design\" }\n  ]}\n  large\n/>", render: e_atoms_listbox_example_3 },
       { label: "Disabled", code: "<Listbox\n  accessibilityLabel=\"Teams\"\n  items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\" },\n    { label: \"Design\" }\n  ]}\n  disabled\n/>", render: e_atoms_listbox_example_4 },
       { label: "Detail line", code: "<Listbox\n  accessibilityLabel=\"People\"\n  items={[\n    { label: \"Rachel Chen\", detail: \"rachel@acme.io\", selected: true },\n    { label: \"Ada Lovelace\", detail: \"ada@acme.io\" },\n    { label: \"Kevin Turner\", detail: \"kevin@acme.io\" }\n  ]}\n/>", render: e_atoms_listbox_example_5 },
-      { label: "Widths come from the parent", code: "<Column snug>\n  <Container xs start><Listbox bordered items={[{ label: \"In an xs Container (320)\", selected: true }, { label: \"Frontend\" }]} /></Container>\n  <Listbox bordered items={[{ label: \"Bare: fills the parent\", selected: true }, { label: \"Frontend\" }]} />\n</Column>", render: e_atoms_listbox_example_6 },
+      { label: "Measure", code: "<Column snug>\n  <Listbox xs start bordered items={[{ label: \"xs step, pinned to the start (320)\", selected: true }, { label: \"Frontend\" }]} />\n  <Listbox lg start bordered items={[{ label: \"lg step, pinned to the start (512)\", selected: true }, { label: \"Frontend\" }]} />\n  <Container lg start><Listbox bordered items={[{ label: \"Bare, in an lg Container: fills it (512)\", selected: true }, { label: \"Frontend\" }]} /></Container>\n</Column>", render: e_atoms_listbox_example_6 },
     ],
     donts: [
       { title: "Prefer a native select for simple lists", do: { caption: "For short, plain lists a native select is lighter, accessible, and uses the platform picker on mobile.", code: "<Select defaultValue=\"Yes\" options={[\"Yes\", \"No\"]} />", render: e_atoms_listbox_dont_0_do }, dont: { caption: "A custom listbox for two short options is heavier than it needs to be and worse on mobile.", code: "<Listbox bordered items={[\n    { label: \"Yes\", selected: true },\n    { label: \"No\" }\n  ]} />", render: e_atoms_listbox_dont_0_dont } },
@@ -1544,7 +1550,7 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Warning", code: "<Progress warning value={0.85}>Storage used</Progress>", render: e_atoms_progress_example_5 },
       { label: "Danger", code: "<Progress danger value={1}>Over the WIP limit</Progress>", render: e_atoms_progress_example_6 },
       { label: "Live", code: "<Ticker values={[0, 0.15, 0.4, 0.65, 0.85, 1]}>\n  {(value) => (\n    <Progress showValue value={value}>Uploading…</Progress>\n  )}\n</Ticker>", render: e_atoms_progress_example_7 },
-      { label: "Widths come from the parent", code: "<Column snug>\n  <Container xs start><Progress value={0.6}>In an xs Container (320)</Progress></Container>\n  <Progress value={0.6}>Bare: fills the parent</Progress>\n</Column>", render: e_atoms_progress_example_8 },
+      { label: "Measure", code: "<Column snug>\n  <Progress xs start value={0.6}>xs step, pinned to the start (320)</Progress>\n  <Progress lg start value={0.6}>lg step, pinned to the start (512)</Progress>\n  <Container lg start><Progress value={0.6}>Bare, in an lg Container: fills it (512)</Progress></Container>\n</Column>", render: e_atoms_progress_example_8 },
     ],
     donts: [
       { title: "Determinate", do: { caption: "Use a determinate bar when you know the share of work done, and pass `showValue` so the control renders the percent on the label line; the number and the bar always agree.", code: "<Progress showValue value={0.72}>Uploading…</Progress>", render: e_atoms_progress_dont_0_do }, dont: { caption: "Don't park a determinate bar at a hard-coded value as a decorative divider; a frozen fill reads as a stalled task.", code: "<View style={{ gap: 8 }}>\n  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>Section</Text>\n  <Progress accessibilityLabel=\"Section progress\" value={0.5} />\n</View>", render: e_atoms_progress_dont_0_dont } },
@@ -1623,7 +1629,7 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Large", code: "<Select large label=\"Country\" defaultValue=\"United States\" options={[\"United States\", \"Canada\", \"Mexico\"]} />", render: e_atoms_select_example_4 },
       { label: "With leading icon", code: "<Select icon label=\"Country\" defaultValue=\"United States\" options={[\"United States\", \"Canada\", \"Mexico\"]} />", render: e_atoms_select_example_5 },
       { label: "Disabled", code: "<Select disabled label=\"Country\" defaultValue=\"United States\" options={[\"United States\", \"Canada\", \"Mexico\"]} />", render: e_atoms_select_example_6 },
-      { label: "Widths come from the parent", code: "<Column snug>\n  <Container xs start><Select options={[\"Small\", \"Medium\", \"Large\"]} placeholder=\"In an xs Container (320)\" /></Container>\n  <Select options={[\"Small\", \"Medium\", \"Large\"]} placeholder=\"Bare: fills the parent\" />\n</Column>", render: e_atoms_select_example_7 },
+      { label: "Measure", code: "<Column snug>\n  <Select xs start options={[\"Small\", \"Medium\", \"Large\"]} placeholder=\"xs step, pinned to the start (320)\" />\n  <Select lg start options={[\"Small\", \"Medium\", \"Large\"]} placeholder=\"lg step, pinned to the start (512)\" />\n  <Container lg start><Select options={[\"Small\", \"Medium\", \"Large\"]} placeholder=\"Bare, in an lg Container: fills it (512)\" /></Container>\n</Column>", render: e_atoms_select_example_7 },
     ],
     donts: [
       { do: { caption: "Use the placeholder prop for the prompt so it can never be submitted as a value.", code: "<Column style={{ minHeight: 220 }}>\n  <Select open label=\"Country\" placeholder=\"Choose a country…\" options={[\"United States\", \"Canada\", \"Mexico\"]} />\n</Column>", render: e_atoms_select_dont_0_do }, dont: { caption: "A placeholder as a normal option can be submitted as a real value.", code: "<View style={{ minHeight: 260 }}>\n  <Select open label=\"Country\" defaultValue=\"Choose a country…\" options={[\"Choose a country…\", \"United States\", \"Canada\", \"Mexico\"]} />\n</View>", render: e_atoms_select_dont_0_dont } },
@@ -1664,7 +1670,7 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Large", code: "<Slider large accessibilityLabel=\"Volume\" defaultValue={75} />", render: e_atoms_slider_example_4 },
       { label: "Stepped", code: "<Slider accessibilityLabel=\"Playback speed\" defaultValue={6} max={10} step={2} />", render: e_atoms_slider_example_5 },
       { label: "Disabled", code: "<Slider disabled accessibilityLabel=\"Volume\" defaultValue={30} />", render: e_atoms_slider_example_6 },
-      { label: "Widths come from the parent", code: "<Column>\n  <Container xs start><Slider defaultValue={40}>In an xs Container (320)</Slider></Container>\n  <Slider defaultValue={40}>Bare: fills the parent</Slider>\n</Column>", render: e_atoms_slider_example_7 },
+      { label: "Measure", code: "<Column>\n  <Slider xs start defaultValue={40}>xs step, pinned to the start (320)</Slider>\n  <Slider lg start defaultValue={40}>lg step, pinned to the start (512)</Slider>\n  <Container lg start><Slider defaultValue={40}>Bare, in an lg Container: fills it (512)</Slider></Container>\n</Column>", render: e_atoms_slider_example_7 },
     ],
     donts: [
       { title: "Range", do: { caption: "Give the track room to breathe so the thumb has a clear travel path and the value reads at a glance. Pass the label as `children`; the slider owns the title above the rail.", code: "<Slider defaultValue={65} min={0} max={100}>Volume</Slider>", render: e_atoms_slider_dont_0_do }, dont: { caption: "Cramming the slider into a tiny width leaves no travel, so the thumb can barely move and the value is hard to set.", code: "<View style={{ width: 64 }}>\n  <Slider accessibilityLabel=\"Volume\" defaultValue={65} min={0} max={100} />\n</View>", render: e_atoms_slider_dont_0_dont } },
@@ -1776,7 +1782,7 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Character counter", code: "<Textarea showCount maxLength={280} />", render: e_atoms_textarea_example_4 },
       { label: "Formatting toolbar", code: "<Card flat flush style={{ overflow: \"hidden\" }}>\n  <Row tight padTight>\n    <Button ghost small>B</Button>\n    <Button ghost small>I</Button>\n  </Row>\n  <Divider />\n  <Textarea flush placeholder=\"Leave a comment…\" />\n</Card>", render: e_atoms_textarea_example_5 },
       { label: "Disabled", code: "<Textarea disabled placeholder=\"A few words about this project\" />", render: e_atoms_textarea_example_6 },
-      { label: "Widths come from the parent", code: "<Column>\n  <Container xs start><Textarea rows={2} placeholder=\"In an xs Container (320)\" /></Container>\n  <Container lg start><Textarea rows={2} placeholder=\"In an lg Container (512)\" /></Container>\n  <Textarea rows={2} placeholder=\"Bare: fills the parent\" />\n</Column>", render: e_atoms_textarea_example_7 },
+      { label: "Measure", code: "<Column>\n  <Textarea xs start rows={2} placeholder=\"xs step, pinned to the start (320)\" />\n  <Textarea lg start rows={2} placeholder=\"lg step, pinned to the start (512)\" />\n  <Container lg start><Textarea rows={2} placeholder=\"Bare, in an lg Container: fills it (512)\" /></Container>\n</Column>", render: e_atoms_textarea_example_7 },
     ],
     donts: [
       { title: "With label", do: { caption: "Set `rows` for a sensible starting height so users can see their text; the field grows with the content from there.", code: "<Textarea label=\"Description\" rows={3} value=\"This is a longer description that runs past one line and stays readable.\" />", render: e_atoms_textarea_dont_0_do }, dont: { caption: "A locked, single-line textarea hides long content with no way to expand.", code: "<View style={{ maxWidth: 400, flexDirection: \"column\", gap: 6 }}>\n  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens.foreground }}>Description</Text>\n  <TextInput numberOfLines={1} value=\"This is a longer description that runs past one line and gets clipped.\" style={{ height: 32, width: \"100%\", borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12, paddingVertical: 4, fontSize: 14, lineHeight: 20, color: tokens.foreground }} />\n</View>", render: e_atoms_textarea_dont_0_dont } },
@@ -2059,6 +2065,7 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Error", code: "<Field label=\"Email\" error=\"Enter a valid email address.\">\n  <Input defaultValue=\"rachel.chen\" />\n</Field>", render: e_molecules_field_example_1 },
       { label: "Wrapping a control that keeps its own label", code: "<Field label=\"Notifications\">\n  <Switch>Release activity</Switch>\n</Field>", render: e_molecules_field_example_2 },
       { label: "In a form", code: "<Form>\n  <Field label=\"Full name\">\n    <Input placeholder=\"Rachel Chen\" />\n  </Field>\n  <Field label=\"Role\">\n    <Select options={[\"Admin\", \"Editor\", \"Viewer\"]} placeholder=\"Pick a role\" />\n  </Field>\n  <Field label=\"Notes\">\n    <Textarea rows={3} placeholder=\"Anything worth remembering\" />\n  </Field>\n</Form>", render: e_molecules_field_example_3 },
+      { label: "Measure", code: "<Column>\n  <Field xs start label=\"ZIP code\" helper=\"xs step, pinned to the start (320)\">\n    <Input placeholder=\"94103\" />\n  </Field>\n  <Field lg start label=\"Street\" helper=\"lg step, pinned to the start (512)\">\n    <Input placeholder=\"1 Market St\" />\n  </Field>\n  <Container lg start>\n    <Field label=\"City\" helper=\"Bare, in an lg Container: fills it (512)\">\n      <Input placeholder=\"San Francisco\" />\n    </Field>\n  </Container>\n</Column>", render: e_molecules_field_example_4 },
     ],
     donts: [
       { title: "The message line", do: { caption: "Put helper and error text on the Field, so the row owns one message slot and the type and", code: "<Field label=\"Email\" error=\"Enter a valid email address.\" required>\n  <Input value=\"rachel.chen\" />\n</Field>", render: e_molecules_field_dont_0_do }, dont: { caption: "Stack a raw Text under the control: it drifts from the caption scale, misses the", code: "<Column tight>\n  <Input label=\"Email\" required value=\"rachel.chen\" />\n  <Text style={{ fontSize: 12, color: \"#e7000b\" }}>Enter a valid email address.</Text>\n</Column>", render: e_molecules_field_dont_0_dont } },
@@ -2071,8 +2078,9 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     examples: [
       { label: "Default", code: "<Form submitLabel=\"Sign in\">\n  <Input label=\"Email\" placeholder=\"you@example.com\" />\n  <Input label=\"Password\" />\n</Form>", render: e_molecules_form_example_0 },
       { label: "Two-column", code: "<Form twoColumn submitLabel=\"Create\">\n  <Input label=\"First name\" placeholder=\"Ada\" />\n  <Input label=\"Last name\" placeholder=\"King\" />\n  <Input label=\"Email\" placeholder=\"ada@example.com\" />\n</Form>", render: e_molecules_form_example_1 },
-      { label: "Sections", code: "<Form submitLabel=\"Save\">\n  <FormSection title=\"Personal info\" description=\"This information will be displayed on your public profile.\">\n    <Input label=\"Full name\" defaultValue=\"Rachel Chen\" />\n    <Input label=\"Email\" defaultValue=\"rachel@example.com\" />\n  </FormSection>\n  <FormSection title=\"Notifications\" description=\"Choose how you'd like to be notified.\">\n    <Checkbox defaultChecked>Email notifications</Checkbox>\n    <Checkbox>SMS alerts</Checkbox>\n  </FormSection>\n</Form>", render: e_molecules_form_example_2 },
-      { label: "Select and switch controls", code: "<Form submitLabel=\"Save\">\n  <Select label=\"Role\" options={[\"Admin\", \"Editor\", \"Viewer\"]} defaultValue=\"Editor\" />\n  <Switch defaultChecked>Notifications</Switch>\n</Form>", render: e_molecules_form_example_3 },
+      { label: "Measure", code: "<Form sm start submitLabel=\"Sign in\">\n  <Input label=\"Email\" placeholder=\"sm step, pinned to the start (384)\" />\n  <Input label=\"Password\" />\n</Form>", render: e_molecules_form_example_2 },
+      { label: "Sections", code: "<Form submitLabel=\"Save\">\n  <FormSection title=\"Personal info\" description=\"This information will be displayed on your public profile.\">\n    <Input label=\"Full name\" defaultValue=\"Rachel Chen\" />\n    <Input label=\"Email\" defaultValue=\"rachel@example.com\" />\n  </FormSection>\n  <FormSection title=\"Notifications\" description=\"Choose how you'd like to be notified.\">\n    <Checkbox defaultChecked>Email notifications</Checkbox>\n    <Checkbox>SMS alerts</Checkbox>\n  </FormSection>\n</Form>", render: e_molecules_form_example_3 },
+      { label: "Select and switch controls", code: "<Form submitLabel=\"Save\">\n  <Select label=\"Role\" options={[\"Admin\", \"Editor\", \"Viewer\"]} defaultValue=\"Editor\" />\n  <Switch defaultChecked>Notifications</Switch>\n</Form>", render: e_molecules_form_example_4 },
     ],
     donts: [
       { title: "Stacked", do: { caption: "Keep short forms one field per row so each label sits directly above its input and the eye flows straight down.", code: "<Form submitLabel=\"Sign in\">\n  <Input label=\"Email\" placeholder=\"you@example.com\" />\n  <Input label=\"Password\" />\n</Form>", render: e_molecules_form_dont_0_do }, dont: { caption: "Pairing an email and password side by side cramps a sign-in form and breaks the natural top-to-bottom reading order.", code: "<Form twoColumn submitLabel=\"Sign in\">\n  <Input label=\"Email\" placeholder=\"you@example.com\" />\n  <Input label=\"Password\" />\n</Form>", render: e_molecules_form_dont_0_dont } },

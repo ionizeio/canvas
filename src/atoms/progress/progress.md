@@ -1,6 +1,6 @@
 # Progress
 
-A rounded bar that reports how far a task has gotten, or that work is underway. The bar fills the parent it is given; a Container step or a Row span sets its measure.
+A rounded bar that reports how far a task has gotten, or that work is underway. The bar fills the parent it is given; a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container step sets its measure.
 
 Name the task with string `children`, or pass `accessibilityLabel` when the visible title is omitted or contains rich content.
 
@@ -67,12 +67,13 @@ progress fills smoothly. (Reduce Motion snaps instead.)
 </Ticker>
 ```
 
-### Widths come from the parent
+### Measure
 
 ```tsx
 <Column snug>
-  <Container xs start><Progress value={0.6}>In an xs Container (320)</Progress></Container>
-  <Progress value={0.6}>Bare: fills the parent</Progress>
+  <Progress xs start value={0.6}>xs step, pinned to the start (320)</Progress>
+  <Progress lg start value={0.6}>lg step, pinned to the start (512)</Progress>
+  <Container lg start><Progress value={0.6}>Bare, in an lg Container: fills it (512)</Progress></Container>
 </Column>
 ```
 

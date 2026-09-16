@@ -1,6 +1,6 @@
 # Slider
 
-Drag (or tap) along a track to pick a value in a range. Controlled by `value`, bounded by `min` / `max`, and snapped to `step`. Like the other input-like controls, a slider fills the parent it is given; a Container step or a Row span sets its measure.
+Drag (or tap) along a track to pick a value in a range. Controlled by `value`, bounded by `min` / `max`, and snapped to `step`. Like the other input-like controls, a slider fills the parent it is given; a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container step sets its measure.
 
 Pass `ref` to access the interactive adjustable track, including when a header is shown. Use `useRef<ComponentRef<typeof Slider>>(null)` from React, or `useRef<View>(null)` with React Native's `View` type. Object and callback refs are supported and detach on unmount. Calling `ref.current?.focus()` or `.blur()` delegates to the host without activating the control. Browser focus is supported; native focus depends on the platform and React Native version, and is separate from accessibility focus.
 
@@ -52,12 +52,13 @@ On iOS 26 the handle is a real Apple Liquid Glass control: a bright knob that sp
 <Slider disabled accessibilityLabel="Volume" defaultValue={30} />
 ```
 
-### Widths come from the parent
+### Measure
 
 ```tsx
 <Column>
-  <Container xs start><Slider defaultValue={40}>In an xs Container (320)</Slider></Container>
-  <Slider defaultValue={40}>Bare: fills the parent</Slider>
+  <Slider xs start defaultValue={40}>xs step, pinned to the start (320)</Slider>
+  <Slider lg start defaultValue={40}>lg step, pinned to the start (512)</Slider>
+  <Container lg start><Slider defaultValue={40}>Bare, in an lg Container: fills it (512)</Slider></Container>
 </Column>
 ```
 

@@ -114,6 +114,20 @@ the kit. The one parent that still collapses `width:"100%"` is a content-sized c
 (a bare Column or Row inside a Row); `useFillStyle` warns there in development, and
 a Select opts out because hugging its value is the toolbar cell (`.col-auto`).
 
+The **measure axis** (`MeasureProps` in `src/style/sizing.ts`) is the one way a
+component names a width of its own, and it is Container's cap moved onto the
+component, not a width: the same step booleans (`xxxs` .. `page`) and `start`, on
+Input, Textarea, Select, Autocomplete, Listbox, Slider, Progress, Field, Form,
+Button, and ButtonGroup. `<Input sm start>` is FILL capped at 384 (`maxWidth`),
+fluid below it, exactly what `<Container sm start>` around it gives; without a step
+nothing changes. The precedence is Container's (narrowest wins, `stepOf` reads the
+scale's own order), a step centers and `start` pins, and two rules follow from the
+component not being a layout container: inside a Row only the cap applies
+(`alignSelf` is the cross axis there), and on the hug components a step wins over
+`block`. A new adopter extends `MeasureProps` and passes its props to
+`useFillStyle` / `useSizing`; do not add a second width vocabulary (`narrow`,
+`wide` as a field width, a pixel prop) beside it.
+
 ### The responsiveness system (three mechanisms, in order of preference)
 
 1. **Intrinsic sizing** (default, zero JS): FILL or HUG on the component, bounds

@@ -1,6 +1,6 @@
 # Select
 
-Native select restyled to match Canvas inputs. Pass `label` (and `required`) to name the field: iOS and web render the label above the trigger, while Android floats the Material 3 in-container label once the menu opens or a value is selected. The trigger fills the parent it is given; a Container step or a Row span sets its measure.
+Native select restyled to match Canvas inputs. Pass `label` (and `required`) to name the field: iOS and web render the label above the trigger, while Android floats the Material 3 in-container label once the menu opens or a value is selected. The trigger fills the parent it is given; a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container step sets its measure.
 
 The label also names the option list. Use `accessibilityLabel` to provide an explicit purpose when the visible label or placeholder is insufficient; it overrides both accessible names. A required field announces "required" with the button name and marks the option list as required. The selected value never replaces the field's purpose.
 
@@ -50,12 +50,13 @@ Pass `ref` to access the interactive trigger, preserving overlay measurement. Us
 <Select disabled label="Country" defaultValue="United States" options={["United States", "Canada", "Mexico"]} />
 ```
 
-### Widths come from the parent
+### Measure
 
 ```tsx
 <Column snug>
-  <Container xs start><Select options={["Small", "Medium", "Large"]} placeholder="In an xs Container (320)" /></Container>
-  <Select options={["Small", "Medium", "Large"]} placeholder="Bare: fills the parent" />
+  <Select xs start options={["Small", "Medium", "Large"]} placeholder="xs step, pinned to the start (320)" />
+  <Select lg start options={["Small", "Medium", "Large"]} placeholder="lg step, pinned to the start (512)" />
+  <Container lg start><Select options={["Small", "Medium", "Large"]} placeholder="Bare, in an lg Container: fills it (512)" /></Container>
 </Column>
 ```
 

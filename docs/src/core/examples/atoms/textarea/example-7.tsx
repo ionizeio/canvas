@@ -6,9 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { Textarea, Column, Container } = scope;
   return (
 <Column>
-  <Container xs start><Textarea rows={2} placeholder="In an xs Container (320)" /></Container>
-  <Container lg start><Textarea rows={2} placeholder="In an lg Container (512)" /></Container>
-  <Textarea rows={2} placeholder="Bare: fills the parent" />
+  <Textarea xs start rows={2} placeholder="xs step, pinned to the start (320)" />
+  <Textarea lg start rows={2} placeholder="lg step, pinned to the start (512)" />
+  <Container lg start><Textarea rows={2} placeholder="Bare, in an lg Container: fills it (512)" /></Container>
 </Column>
   );
 }

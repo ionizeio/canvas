@@ -40,6 +40,17 @@ Segmented controls, split buttons, attached groups.
 <ButtonGroup spaced items={["Edit", "Duplicate", "Archive"]} block />
 ```
 
+### Measure
+
+```tsx
+<Container>
+  <Column>
+    <ButtonGroup items={["Day", "Week", "Month"]} xs start />
+    <ButtonGroup spaced items={["Edit", "Duplicate", "Archive"]} md />
+  </Column>
+</Container>
+```
+
 ### Stepper
 
 ```tsx

@@ -27,6 +27,15 @@ Form is a composition surface: you stitch the field atoms as children and keep t
 </Form>
 ```
 
+### Measure
+
+```tsx
+<Form sm start submitLabel="Sign in">
+  <Input label="Email" placeholder="sm step, pinned to the start (384)" />
+  <Input label="Password" />
+</Form>
+```
+
 ### Sections
 
 ```tsx

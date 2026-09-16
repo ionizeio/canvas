@@ -3,8 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Icon } = scope;
+  const { Button, Column, Container } = scope;
   return (
-<Button iconLeft={<Icon plus primaryForeground size={16} />}>Save changes</Button>
+<Container>
+  <Column>
+    <Button xs start>xs step, pinned to the start (320)</Button>
+    <Button md>md step, centered (448)</Button>
+    <Button block>Block: fills the parent</Button>
+  </Column>
+</Container>
   );
 }

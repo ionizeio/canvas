@@ -13,6 +13,12 @@ which is all a phone screen is. `start` pins a capped box to the leading edge
 instead of centering it, and `padTight` / `pad` / `padLoose` add horizontal
 gutters from Row and Column's own padding scale.
 
+The step booleans and `start` are the kit's measure axis, and the fields, Field,
+Form, Button, and ButtonGroup carry it too: `<Input sm start>` says exactly what
+`<Container sm start>` around it says, a cap at the step and fluid below it. Reach
+for Container when the measure belongs to a group (a form, an article, a card
+stack) rather than to one component.
+
 ## Usage
 
 ```tsx

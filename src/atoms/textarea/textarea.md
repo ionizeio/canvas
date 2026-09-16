@@ -1,6 +1,6 @@
 # Textarea
 
-Multi-line input, with character count, with toolbar. Pass `label` (and `required`) to name the field: iOS and web render the label above the control, while Android floats the Material 3 in-container label at the top of the multiline box. The box fills the parent it is given; a Container step or a Row span sets its measure.
+Multi-line input, with character count, with toolbar. Pass `label` (and `required`) to name the field: iOS and web render the label above the control, while Android floats the Material 3 in-container label at the top of the multiline box. The box fills the parent it is given; a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container step sets its measure.
 
 Android uses the same opaque muted surface as the other filled fields. Its label
 uses `primary-text` when focused and `destructive-text` on error. The over-limit
@@ -61,13 +61,13 @@ Cancelling an IME candidate keeps the overlay open.
 <Textarea disabled placeholder="A few words about this project" />
 ```
 
-### Widths come from the parent
+### Measure
 
 ```tsx
 <Column>
-  <Container xs start><Textarea rows={2} placeholder="In an xs Container (320)" /></Container>
-  <Container lg start><Textarea rows={2} placeholder="In an lg Container (512)" /></Container>
-  <Textarea rows={2} placeholder="Bare: fills the parent" />
+  <Textarea xs start rows={2} placeholder="xs step, pinned to the start (320)" />
+  <Textarea lg start rows={2} placeholder="lg step, pinned to the start (512)" />
+  <Container lg start><Textarea rows={2} placeholder="Bare, in an lg Container: fills it (512)" /></Container>
 </Column>
 ```
 

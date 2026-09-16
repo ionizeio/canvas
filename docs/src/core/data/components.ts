@@ -102,7 +102,7 @@ export const COMPONENTS: ComponentDoc[] = [
     description: "Text input + dropdown: searchable single-select.",
     category: "Atoms",
     // A field fills its parent either way; the stretched stage makes the parent the
-    // stage itself, so the "Widths come from the parent" Column of Container steps
+    // stage itself, so the "Measure" Column of stepped fields and Container steps
     // has a definite width to hand down (in center mode it shrink-wraps and every
     // step collapses to the field's own content).
     stageAlign: "start",
@@ -178,10 +178,10 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "input",
     name: "Input",
-    description: "The Input component is a React Native text field with semantic boolean props (<code>error</code>, <code>small</code>, <code>large</code>, <code>disabled</code>), plus prefix/suffix addons and overlaid icons. Input is single-line; for multi-line entry use the dedicated Textarea. A field fills the parent it is given; a Container step or a Row span sets its measure. Select and the search field share its look, and Form stitches labeled inputs into a full form.",
+    description: "The Input component is a React Native text field with semantic boolean props (<code>error</code>, <code>small</code>, <code>large</code>, <code>disabled</code>), plus prefix/suffix addons and overlaid icons. Input is single-line; for multi-line entry use the dedicated Textarea. A field fills the parent it is given; a step of its own (<code>xs</code>, <code>lg</code>, …, <code>start</code> to pin it) or a Container step sets its measure. Select and the search field share its look, and Form stitches labeled inputs into a full form.",
     category: "Atoms",
     // A field fills its parent either way; the stretched stage makes the parent the
-    // stage itself, so the "Widths come from the parent" Column of Container steps
+    // stage itself, so the "Measure" Column of stepped fields and Container steps
     // has a definite width to hand down (in center mode it shrink-wraps and every
     // step collapses to the field's own content).
     stageAlign: "start",
@@ -214,7 +214,7 @@ export const COMPONENTS: ComponentDoc[] = [
     description: "Native select restyled to match Canvas inputs.",
     category: "Atoms",
     // A field fills its parent either way; the stretched stage makes the parent the
-    // stage itself, so the "Widths come from the parent" Column of Container steps
+    // stage itself, so the "Measure" Column of stepped fields and Container steps
     // has a definite width to hand down (in center mode it shrink-wraps and every
     // step collapses to the field's own content).
     stageAlign: "start",
@@ -238,7 +238,7 @@ export const COMPONENTS: ComponentDoc[] = [
     description: "Multi-line input, with character count, with toolbar.",
     category: "Atoms",
     // A field fills its parent either way; the stretched stage makes the parent the
-    // stage itself, so the "Widths come from the parent" Column of Container steps
+    // stage itself, so the "Measure" Column of stepped fields and Container steps
     // has a definite width to hand down (in center mode it shrink-wraps and every
     // step collapses to the field's own content).
     stageAlign: "start",
