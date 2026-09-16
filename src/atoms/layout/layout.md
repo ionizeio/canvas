@@ -115,6 +115,52 @@ stacks.
 </Row>
 ```
 
+### Spans (twelfths of the Row)
+
+A direct child's `span` is its width in twelfths of the Row, Bootstrap's
+`col-n`: `span={6}` is half, `span={4}` a third, `span={8}` two thirds. The Row
+measures its own width and hands each spanning child a px cell with the gaps
+accounted for, so two `span={6}` children and the gap between them fill the row
+exactly, and spans past twelve wrap onto the next line. Fill components inside a
+span (a field, a card) fill the cell.
+
+```tsx
+<Row snug>
+  <Column span={8}>
+    <Card padded>
+      <Typography medium>Content</Typography>
+      <Typography small muted>Eight of twelve columns.</Typography>
+    </Card>
+  </Column>
+  <Column span={4}>
+    <Card padded>
+      <Typography medium>Aside</Typography>
+      <Typography small muted>Four of twelve.</Typography>
+    </Card>
+  </Column>
+</Row>
+```
+
+### Spans that stack
+
+`stacks` and spans compose: below the breakpoint the Row becomes a Column and
+every child is full width, the `col-12 col-md-6` idiom without a second prop.
+
+```tsx
+<Row snug stacks>
+  <Column span={6}>
+    <Card padded>
+      <Typography medium>Left</Typography>
+    </Card>
+  </Column>
+  <Column span={6}>
+    <Card padded>
+      <Typography medium>Right</Typography>
+    </Card>
+  </Column>
+</Row>
+```
+
 ## Do & Don't
 
 ### Gap

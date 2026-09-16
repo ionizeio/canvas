@@ -1,5 +1,5 @@
 import { Children, isValidElement, type ReactNode } from "react";
-import { View, useContainerWidth, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { CELL_AXIS, LayoutAxisProvider, View, useContainerWidth, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { type FlexSkin } from "../layout/layout.styles.js";
 import { gapOf, type Gap } from "../layout/layout.shared.js";
 
@@ -94,9 +94,11 @@ export function createGrid(skin: FlexSkin) {
             cols > 1 && isValidElement(child) && child.type === GridItem && !!(child.props as GridItemProps).wide;
           const cell =
             cellWidth == null ? null : { width: wide ? cellWidth * 2 + gapPx : cellWidth };
+          // A cell is a definite-width column: hug components hug inside it and
+          // fill components fill it (the layout-axis context from sizing.ts).
           return (
             <View key={i} style={cell}>
-              {child}
+              <LayoutAxisProvider value={CELL_AXIS}>{child}</LayoutAxisProvider>
             </View>
           );
         })}

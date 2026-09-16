@@ -17,6 +17,7 @@ export * from "./input-otp/input-otp.js";
 export * from "./kbd/kbd.js";
 export * from "./layout/layout.js";
 export * from "./grid/grid.js";
+export * from "./container/container.js";
 export * from "./listbox/listbox.js";
 export * from "./pagination/pagination.js";
 export * from "./popover/popover.js";

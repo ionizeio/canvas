@@ -5,6 +5,9 @@ import {
   useTheme,
   useControllableState,
   useContainerBreakpoint,
+  spanWidth,
+  CELL_AXIS,
+  LayoutAxisProvider,
   type Responsive,
   type StyleProp,
   type ViewStyle,
@@ -161,8 +164,7 @@ export function clearStoredDashboardOrder(storageKey: string): void {
  * files: it is the layout's own arithmetic, not public API.
  */
 export function dashboardCellWidth(width: number, span: number, gap: number): number {
-  const unit = (width - gap * (DASHBOARD_COLUMNS - 1)) / DASHBOARD_COLUMNS;
-  return Math.max(0, Math.floor(unit * span + gap * (span - 1)));
+  return spanWidth(width, span, gap, DASHBOARD_COLUMNS);
 }
 
 /** Same ids in the same positions: a drop that changes nothing reports nothing. */
@@ -261,7 +263,7 @@ export function createDashboardGrid(skin: DashboardGridSkin, parts: DashboardGri
           if (!unlocked) {
             return (
               <View key={widget.id} style={cell}>
-                {widget.content}
+                <LayoutAxisProvider value={CELL_AXIS}>{widget.content}</LayoutAxisProvider>
               </View>
             );
           }
@@ -281,7 +283,7 @@ export function createDashboardGrid(skin: DashboardGridSkin, parts: DashboardGri
                   <View style={skin.gripRow}>
                     <DragHandle label={`Reorder ${widget.title}`} />
                   </View>
-                  {widget.content}
+                  <LayoutAxisProvider value={CELL_AXIS}>{widget.content}</LayoutAxisProvider>
                 </View>
               </Draggable>
             </DropZone>

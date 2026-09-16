@@ -60,16 +60,47 @@ export function useLayoutAxis(): LayoutAxis | null {
   return useContext(LayoutAxisContext);
 }
 
-/** Row cell for a hugging Column child: the value a bare Column inside a Row publishes. */
-export function columnAxis(stretch: boolean, parent: LayoutAxis | null, sized: boolean): LayoutAxis {
-  return { axis: "column", stretch, hugging: parent?.axis === "row" && !sized };
+/**
+ * The value a Row or Column publishes. `sized` is whether the container itself
+ * has bounds inside a Row parent (a `span`, `fill`, or `grow`): an unsized Row
+ * or Column inside a Row is content-sized, so it is a hugging cell.
+ */
+export function layoutAxis(axis: "row" | "column", stretch: boolean, parent: LayoutAxis | null, sized: boolean): LayoutAxis {
+  return { axis, stretch, hugging: parent?.axis === "row" && !sized };
 }
 
-/** The value a Row publishes: children are content-sized on the row axis. */
+/** The value a Column publishes (see `layoutAxis`). */
+export function columnAxis(stretch: boolean, parent: LayoutAxis | null, sized: boolean): LayoutAxis {
+  return layoutAxis("column", stretch, parent, sized);
+}
+
+/** The value a definite Row publishes: children are content-sized on the row axis. */
 export const ROW_AXIS: LayoutAxis = { axis: "row", stretch: false, hugging: false };
 
 /** The value a definite-width column cell publishes (Grid cells, Container). */
 export const CELL_AXIS: LayoutAxis = { axis: "column", stretch: true, hugging: false };
+
+/** The twelve-column grid that Row spans and the DashboardGrid share. */
+export const GRID_COLUMNS = 12;
+
+/**
+ * The px width of a cell spanning `span` of `columns` equal units in a row
+ * `width` wide whose cells sit `gap` apart: a multi-column span also swallows
+ * the gaps it straddles, so two 6-column cells plus the gap between them fill
+ * the row exactly, as do twelve 1-column cells and their eleven gaps. Floored,
+ * so rounding can only leave a sub-pixel sliver rather than overflow the row
+ * into an extra wrap.
+ */
+export function spanWidth(width: number, span: number, gap: number, columns: number = GRID_COLUMNS): number {
+  const unit = (width - gap * (columns - 1)) / columns;
+  return Math.max(0, Math.floor(unit * span + gap * (span - 1)));
+}
+
+/** A span clamped to a whole number of the twelve columns (1..12). */
+export function clampSpan(span: number): number {
+  if (!Number.isFinite(span)) return GRID_COLUMNS;
+  return Math.min(GRID_COLUMNS, Math.max(1, Math.round(span)));
+}
 
 /**
  * The HUG nature, resolved against the nearest kit layout container: the

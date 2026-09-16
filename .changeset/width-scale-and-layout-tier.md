@@ -19,3 +19,12 @@ content-sized cell; `useFillStyle` warns in development when a fill component si
 bare Column inside a Row (the one layout that still collapses `width: 100%`). The
 `LayoutStyle` type (ViewStyle without the sizing keys) is the `style` a non-layout
 component accepts.
+
+The `Container` atom is the bounds provider (Bootstrap `.container` / `.container-fluid`):
+it spans its parent, caps at one step of the width scale (`xs` .. `page`, default `page`,
+`fluid` for no cap), centers itself (`start` pins it to the leading edge), and takes
+horizontal gutters from Row and Column's pad scale. Row children take `span={1..12}`
+(Bootstrap `.col-n`): the Row measures its own width and hands each spanning child a px
+cell with the gaps in the arithmetic (the DashboardGrid twelfths math, now shared as
+`spanWidth`), span rows wrap past twelve, and `stacks` ignores spans once stacked. Row,
+Column, Container, Grid cells, and DashboardGrid cells publish the layout-axis context.

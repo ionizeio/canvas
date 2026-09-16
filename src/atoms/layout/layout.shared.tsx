@@ -1,5 +1,19 @@
-import { type ReactNode } from "react";
-import { View, devWarn, useContainerBreakpoint, type BreakpointKey, type Responsive, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { Children, isValidElement, type ReactNode } from "react";
+import {
+  View,
+  LayoutAxisProvider,
+  breakpoints,
+  clampSpan,
+  devWarn,
+  layoutAxis,
+  spanWidth,
+  useContainerWidth,
+  useLayoutAxis,
+  type BreakpointKey,
+  type LayoutAxis,
+  type StyleProp,
+  type ViewStyle,
+} from "../../style/index.js";
 import { type FlexSkin } from "./layout.styles.js";
 
 // Shared layout primitives: Row (horizontal) and Column (vertical). The kit had
@@ -16,6 +30,15 @@ import { type FlexSkin } from "./layout.styles.js";
 //   - cross axis      align   (alignStart / alignCenter / alignEnd / baseline / stretch)
 //   - modifiers       wrap / fill / grow / shrink (orthogonal, stack freely)
 //   - padding scale  (padTight / pad / padLoose; default none)
+//   - span           (a Row child's width in twelfths of the Row: Bootstrap `.col-n`)
+//
+// Both publish the layout-axis context from src/style/sizing.ts (the container's
+// axis, whether a Column stretches its children, and whether the box is a
+// content-sized cell inside a Row), which is how a HUG component hugs inside a
+// stretching Column and how a FILL component warns inside a bare Column in a Row.
+// A Row whose children carry `span` measures its own width (the Grid and Form
+// precedent) and wraps each spanning child in a px-wide cell; a Row with neither
+// spans nor `stacks` mounts no measurement at all.
 // Main- and cross-axis "center" carry distinct prop names (`center` vs
 // `alignCenter`) so `<Row center alignCenter>` is unambiguous.
 //
@@ -93,6 +116,18 @@ export interface FlexProps {
    *  `"sm"`). Only meaningful with `stacks` (DEV warns without it). */
   stackBreakpoint?: BreakpointKey;
   /**
+   * Width in twelfths of the parent Row (Bootstrap `.col-n`): `span={6}` is half
+   * the row, `span={4}` a third, `span={12}` the full width. The Row measures its
+   * own width and gives this box a px cell, gaps included in the arithmetic, so
+   * two `span={6}` children plus the gap between them fill the row exactly. Spans
+   * over twelve wrap onto the next line. A Row with `stacks` ignores spans once it
+   * has stacked (every child is then full width). Only meaningful on a direct
+   * child of a Row (DEV warns elsewhere); in a Column, a width is a Container
+   * step. A child without a span, `fill`, or `grow` hugs its content
+   * (`.col-auto`): a fill component inside it collapses, so give it one of those.
+   */
+  span?: number;
+  /**
    * Indent the whole stack by one control gutter (24: a control box plus the row
    * gap), so a nested option group lines up under its parent control's label
    * instead of its box. For nesting checkboxes/radios under a "select all" parent.
@@ -108,9 +143,11 @@ export interface FlexProps {
   testID?: string;
 
   /**
-   * For sizing/composition only (e.g. `maxWidth` to bound a responsive block),
-   * never for styling or spacing: gap, margin, padding, and flex layout come from
+   * Layout containers are the exception to the no-sizing rule: for sizing and
+   * composition only (a `maxWidth` on a shell, a `flex` inside an app frame),
+   * never for styling or spacing. Gap, margin, padding, and flex layout come from
    * the props above, and the codegen guardrail rejects those keys in `style`.
+   * Prefer a Container step or a `span` where one fits.
    */
   style?: StyleProp<ViewStyle>;
 }
@@ -173,6 +210,25 @@ function padOf(p: FlexProps): Pad | null {
   return null;
 }
 
+/** Whether any direct child declares a `span` (the Row then measures itself). */
+function hasSpans(children: ReactNode): boolean {
+  return Children.toArray(children).some((child) => isValidElement(child) && (child.props as FlexProps).span != null);
+}
+
+/** Wrap each spanning child in a px-wide cell; other children pass through. */
+function spanCells(children: ReactNode, width: number, gap: number): ReactNode {
+  return Children.toArray(children).map((child, i) => {
+    const span = isValidElement(child) ? (child.props as FlexProps).span : undefined;
+    if (span == null) return child;
+    const cell = width > 0 ? { width: spanWidth(width, clampSpan(span), gap) } : null;
+    return (
+      <View key={i} style={cell}>
+        {child}
+      </View>
+    );
+  });
+}
+
 /** Build a Row or Column component from a platform skin and a fixed direction. */
 export function createFlex(skin: FlexSkin, direction: Direction) {
   // Resolve every axis to one ViewStyle for a concrete direction. While stacked
@@ -196,23 +252,41 @@ export function createFlex(skin: FlexSkin, direction: Direction) {
     return layout;
   }
 
-  // The measuring variant, mounted only when a Row passes `stacks`: a bare
-  // Row/Column keeps zero hooks and a byte-identical DOM.
-  function StackingRow(props: FlexProps) {
+  // The context value this box publishes: its axis, whether it stretches its
+  // children, and whether it is a content-sized cell inside a Row.
+  function axisOf(props: FlexProps, dir: Direction, parent: LayoutAxis | null): LayoutAxis {
+    const sized = props.span != null || !!props.fill || !!props.grow;
+    // `stretch` describes the WIDTH of children, so it is a Column fact only: a
+    // Row's cross axis is its height.
+    return layoutAxis(dir, dir === "column" && alignOf(props) === "stretch", parent, sized);
+  }
+
+  // The measuring variant, mounted only when a Row passes `stacks` or a child
+  // carries a `span`: a bare Row/Column mounts no measurement and keeps a
+  // byte-identical DOM. Width falls back to the window until the first layout
+  // (the Grid and Form precedent), so a phone's first frame already stacks.
+  function MeasuredRow(props: FlexProps & { parent: LayoutAxis | null; spanning: boolean }) {
+    const { parent, spanning, children, style, testID } = props;
     const bp = props.stackBreakpoint ?? "sm";
-    const { value: stacked, onLayout } = useContainerBreakpoint(
-      { base: false, [bp]: true } as Responsive<boolean>,
-      { seedViewport: true },
-    );
+    const { width, onLayout } = useContainerWidth();
+    const stacked = !!props.stacks && width > 0 && width <= breakpoints[bp];
+    const dir: Direction = stacked ? "column" : "row";
+    const layout = flexStyle(props, dir, stacked);
+    // A span row wraps like Bootstrap's `.row`: spans past twelve go to the next line.
+    if (spanning && !stacked) layout.flexWrap = "wrap";
+    const gap = skin.gap[gapOf(props)];
     return (
-      <View onLayout={onLayout} style={[flexStyle(props, stacked ? "column" : "row", stacked), props.style]} testID={props.testID}>
-        {props.children}
+      <View onLayout={onLayout} style={[layout, style]} testID={testID}>
+        <LayoutAxisProvider value={axisOf(props, dir, parent)}>
+          {spanning && !stacked ? spanCells(children, width, gap) : children}
+        </LayoutAxisProvider>
       </View>
     );
   }
 
   return function Flex(props: FlexProps) {
     const { children, testID, style } = props;
+    const parent = useLayoutAxis();
     devWarn(
       direction === "column" && !!props.stacks,
       "[canvas] <Column stacks>: `stacks` applies to Row only (a stacked Row IS the Column); it is ignored here.",
@@ -221,7 +295,21 @@ export function createFlex(skin: FlexSkin, direction: Direction) {
       !!props.stackBreakpoint && !props.stacks,
       "[canvas] <Row stackBreakpoint>: `stackBreakpoint` refines `stacks` and does nothing without it.",
     );
-    if (direction === "row" && props.stacks) return <StackingRow {...props} />;
-    return <View style={[flexStyle(props, direction, false), style]} testID={testID}>{children}</View>;
+    devWarn(
+      props.span != null && parent?.axis !== "row",
+      `[canvas] <${direction === "row" ? "Row" : "Column"} span>: \`span\` sizes a direct child of a Row in twelfths and does nothing here. In a Column, give the box a Container step instead.`,
+    );
+    devWarn(
+      props.span != null && (!Number.isInteger(props.span) || props.span < 1 || props.span > 12),
+      `[canvas] <${direction === "row" ? "Row" : "Column"} span={${String(props.span)}}>: \`span\` is a whole number of the twelve columns (1..12); it is clamped.`,
+    );
+    if (direction === "row" && (props.stacks || hasSpans(children))) {
+      return <MeasuredRow {...props} parent={parent} spanning={hasSpans(children)} />;
+    }
+    return (
+      <View style={[flexStyle(props, direction, false), style]} testID={testID}>
+        <LayoutAxisProvider value={axisOf(props, direction, parent)}>{children}</LayoutAxisProvider>
+      </View>
+    );
   };
 }

@@ -146,6 +146,11 @@
             "icon": "layout-grid"
           },
           {
+            "slug": "container",
+            "label": "Container",
+            "icon": "maximize"
+          },
+          {
             "slug": "chip",
             "label": "Chip",
             "icon": "tag"

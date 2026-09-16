@@ -157,6 +157,12 @@ import e_atoms_chip_example_5 from "./examples/atoms/chip/example-5";
 import e_atoms_chip_example_6 from "./examples/atoms/chip/example-6";
 import e_atoms_chip_dont_0_do from "./examples/atoms/chip/dont-0-do";
 import e_atoms_chip_dont_0_dont from "./examples/atoms/chip/dont-0-dont";
+import e_atoms_container_example_0 from "./examples/atoms/container/example-0";
+import e_atoms_container_example_1 from "./examples/atoms/container/example-1";
+import e_atoms_container_example_2 from "./examples/atoms/container/example-2";
+import e_atoms_container_example_3 from "./examples/atoms/container/example-3";
+import e_atoms_container_dont_0_do from "./examples/atoms/container/dont-0-do";
+import e_atoms_container_dont_0_dont from "./examples/atoms/container/dont-0-dont";
 import e_atoms_divider_example_0 from "./examples/atoms/divider/example-0";
 import e_atoms_divider_example_1 from "./examples/atoms/divider/example-1";
 import e_atoms_divider_example_2 from "./examples/atoms/divider/example-2";
@@ -267,6 +273,8 @@ import e_atoms_layout_example_4 from "./examples/atoms/layout/example-4";
 import e_atoms_layout_example_5 from "./examples/atoms/layout/example-5";
 import e_atoms_layout_example_6 from "./examples/atoms/layout/example-6";
 import e_atoms_layout_example_7 from "./examples/atoms/layout/example-7";
+import e_atoms_layout_example_8 from "./examples/atoms/layout/example-8";
+import e_atoms_layout_example_9 from "./examples/atoms/layout/example-9";
 import e_atoms_layout_dont_0_do from "./examples/atoms/layout/dont-0-do";
 import e_atoms_layout_dont_0_dont from "./examples/atoms/layout/dont-0-dont";
 import e_atoms_layout_dont_1_do from "./examples/atoms/layout/dont-1-do";
@@ -1282,6 +1290,19 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { title: "Removable filter", do: { caption: "Use a Chip with `onRemove` so the pill and its \"×\" stay consistent and accessible.", code: "<Chip blue onRemove={() => {}}>Status: Active</Chip>", render: e_atoms_chip_dont_0_do }, dont: { caption: "Hand-build the pill from a raw Pressable with border-radius, padding, and a text \"×\".", code: "<Pressable style={{ flexDirection: \"row\", alignItems: \"center\", gap: 4, alignSelf: \"flex-start\", borderRadius: 9999, backgroundColor: \"#4f46e5\", paddingHorizontal: 10, paddingVertical: 4 }}>\n  <Text style={{ color: \"#ffffff\", fontSize: 13 }}>Status: Active</Text>\n  <Text style={{ color: \"#ffffff\", fontSize: 13 }}>×</Text>\n</Pressable>", render: e_atoms_chip_dont_0_dont } },
     ],
   },
+  "container": {
+    dir: "container",
+    category: "atoms",
+    examples: [
+      { label: "Default", code: "<Container sm>\n  <Card padded>\n    <Typography medium>Sign in</Typography>\n    <Typography small muted>The card fills the container; the container caps at the sm step (384).</Typography>\n  </Card>\n</Container>", render: e_atoms_container_example_0 },
+      { label: "Steps", code: "<Column snug>\n  <Container xs><Card padded><Typography small>xs, 320</Typography></Card></Container>\n  <Container md><Card padded><Typography small>md, 448</Typography></Card></Container>\n  <Container xl><Card padded><Typography small>xl, 576</Typography></Card></Container>\n</Column>", render: e_atoms_container_example_1 },
+      { label: "Pinned to the start", code: "<Container sm start>\n  <Card padded>\n    <Typography small>A leading-edge measure for a settings row.</Typography>\n  </Card>\n</Container>", render: e_atoms_container_example_2 },
+      { label: "Fluid with gutters", code: "<Container fluid pad>\n  <Card padded>\n    <Typography small>No cap, 16px gutters on both sides.</Typography>\n  </Card>\n</Container>", render: e_atoms_container_example_3 },
+    ],
+    donts: [
+      { title: "Naming a measure", do: { caption: "Wrap the block in a Container step; the component inside fills it.", code: "<Container md>\n  <Card padded>\n    <Typography medium>Billing</Typography>\n    <Typography small muted>Plan, invoices, and payment method.</Typography>\n  </Card>\n</Container>", render: e_atoms_container_dont_0_do }, dont: { caption: "Pin a width on the component; the number is invented at every call", code: "<Card padded style={{ maxWidth: 420 }}>\n  <Typography medium>Billing</Typography>\n  <Typography small muted>Plan, invoices, and payment method.</Typography>\n</Card>", render: e_atoms_container_dont_0_dont } },
+    ],
+  },
   "divider": {
     dir: "divider",
     category: "atoms",
@@ -1446,6 +1467,8 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Shrink a child to the row", code: "<Row between alignEnd wrap snug>\n  <Column tight shrink>\n    <Typography h3>Dashboard</Typography>\n    <Typography small muted>\n      Identity platform overview. Each widget reports its own window, not one shared period.\n    </Typography>\n  </Column>\n  <Row snug alignCenter>\n    <Button outline small>Customize</Button>\n    <Button outline small>Export</Button>\n  </Row>\n</Row>", render: e_atoms_layout_example_5 },
       { label: "Padded surround", code: "<Row relaxed pad>\n  <MediaObject avatar=\"RC\" title=\"Rachel Chen\" description=\"rachel.chen@example.com\" />\n</Row>", render: e_atoms_layout_example_6 },
       { label: "Stacks at narrow widths", code: "<Row stacks between alignCenter relaxed>\n  <Input placeholder=\"Search runs…\" />\n  <Row snug>\n    <Button outline>Filter</Button>\n    <Button primary>New run</Button>\n  </Row>\n</Row>", render: e_atoms_layout_example_7 },
+      { label: "Spans (twelfths of the Row)", code: "<Row snug>\n  <Column span={8}>\n    <Card padded>\n      <Typography medium>Content</Typography>\n      <Typography small muted>Eight of twelve columns.</Typography>\n    </Card>\n  </Column>\n  <Column span={4}>\n    <Card padded>\n      <Typography medium>Aside</Typography>\n      <Typography small muted>Four of twelve.</Typography>\n    </Card>\n  </Column>\n</Row>", render: e_atoms_layout_example_8 },
+      { label: "Spans that stack", code: "<Row snug stacks>\n  <Column span={6}>\n    <Card padded>\n      <Typography medium>Left</Typography>\n    </Card>\n  </Column>\n  <Column span={6}>\n    <Card padded>\n      <Typography medium>Right</Typography>\n    </Card>\n  </Column>\n</Row>", render: e_atoms_layout_example_9 },
     ],
     donts: [
       { title: "Gap", do: { caption: "Use the gap scale so spacing tracks the kit's spacing tokens.", code: "<Row alignCenter snug>\n  <Button primary>Save</Button>\n  <Button ghost>Cancel</Button>\n</Row>", render: e_atoms_layout_dont_0_do }, dont: { caption: "Hand-roll `flexDirection` and a raw `gap`; that is a styling escape hatch.", code: "<View style={{ flexDirection: \"row\", alignItems: \"center\", gap: 8 }}>\n  <Button primary>Save</Button>\n  <Button ghost>Cancel</Button>\n</View>", render: e_atoms_layout_dont_0_dont } },

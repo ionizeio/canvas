@@ -54,6 +54,13 @@ export const COMPONENTS: ComponentDoc[] = [
   },
 
   {
+    slug: "container",
+    name: "Container",
+    description: "The bounds provider. A component never dictates its own width; Container spans its parent, caps at one named step of the shared width scale (xs 320 through page 1280), and centers itself, so a form, an article, or a card stack has a measure you can name instead of a width invented at the call site. fluid drops the cap, start pins it to the leading edge, and the pad scale adds horizontal gutters.",
+    category: "Atoms",
+  },
+
+  {
     slug: "grid",
     name: "Grid",
     description: "The container-measured auto-fit tile grid. minTileWidth sets the floor (default 240): the grid fits as many equal-width columns of at least that width as its own container allows and re-fits as the container changes, columns caps the desktop count, the gap scale is Row and Column's own, and a GridItem with wide spans two cells. No breakpoints at the call site: three-up on desktop, one column on a phone, by container math alone.",
