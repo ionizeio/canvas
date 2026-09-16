@@ -206,6 +206,20 @@ jobs:
       - name: Seal the tested artifacts
         run: node scripts/release.mjs seal "$RUNNER_TEMP/candidate" "$RUNNER_TEMP/artifacts"
 
+      # The consumer-support check renders the web floor in headless Chromium
+      # (scripts/verify-consumer-support.mjs). It used to ride on the browser the
+      # rendered-colour check installed above; that check left with the Riskora
+      # restyle, so the browser is installed here in its own right. Same cache key
+      # as the e2e job: the lockfile pins the Playwright build.
+      - name: Cache the Playwright browsers
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+
+      - name: Install Chromium for the consumer-support check
+        run: bunx playwright install --with-deps chromium
+
       - name: Verify declared React and React Native support with the sealed package
         run: bun run verify-consumer-support --artifacts "$RUNNER_TEMP/artifacts"
 
