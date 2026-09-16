@@ -100,13 +100,14 @@ const COLOR_TOKENS = new Set<keyof ColorTokens>([
   "background", "foreground", "card", "card-foreground", "popover", "popover-foreground",
   "primary", "primary-text", "primary-foreground", "secondary", "secondary-foreground", "muted", "muted-foreground",
   "accent", "accent-foreground", "destructive", "destructive-text", "destructive-foreground",
-  "border", "input", "ring",
+  "border", "input", "field-border", "ring",
 ]);
 // The optional text roles fall back for legacy complete token objects, exactly as
 // the tokens screen resolves them.
 function tokenColor(tokens: ColorTokens, key: keyof ColorTokens): string {
   if (key === "primary-text") return tokens[key] ?? tokens.primary;
   if (key === "destructive-text") return tokens[key] ?? tokens.destructive;
+  if (key === "field-border") return tokens[key] ?? tokens.input;
   return tokens[key];
 }
 function color(v: string, tokens: ColorTokens): string | undefined {

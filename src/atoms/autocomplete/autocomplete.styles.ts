@@ -1,5 +1,6 @@
 import { StyleSheet, type ViewStyle, type TextStyle } from "react-native";
 import { shadow, activeIndicator, shape, type ColorTokens, type FloatingLabelStyles } from "../../style/index.js";
+import { fieldBorder } from "../../style/field-colors.js";
 
 // Co-located Autocomplete skins, one per platform. An Autocomplete is a searchable
 // single-select: an editable field that filters an open option list. The BRAND
@@ -186,34 +187,41 @@ const IOS_FIELD_BOX: Record<Size, number> = { small: 44, default: 44, large: 50 
 // iOS-native field scale (matches select.styles.ts IOS_TEXT): the field value,
 // placeholder, and stacked label sit a notch larger than the brand web scale so
 // the control reads at the iOS-native footprint (13/15/17pt).
+// The reference's 16pt value (the same ladder as the Input's iOS skin).
 const IOS_TEXT: Record<Size, TextStyle> = {
-  small: { fontSize: 13, lineHeight: 18 },
-  default: { fontSize: 15, lineHeight: 20 },
-  large: { fontSize: 17, lineHeight: 22 },
+  small: { fontSize: 13, lineHeight: 16 },
+  default: { fontSize: 16, lineHeight: 24 },
+  large: { fontSize: 17, lineHeight: 26 },
+};
+// The above-field label: the reference's 14pt regular secondary title.
+const IOS_LABEL: Record<Size, TextStyle> = {
+  small: { fontSize: 12, lineHeight: 16 },
+  default: { fontSize: 14, lineHeight: 20 },
+  large: { fontSize: 16, lineHeight: 24 },
 };
 // Menu rows hold the iOS body size (17pt) regardless of the field's size axis,
 // matching the kit's fixed "Menu Item, Title" type and select.styles.ts IOS_ROW_TEXT.
 const IOS_ROW_TEXT: TextStyle = { fontSize: 17, lineHeight: 22 };
 export const iosSkin: AutocompleteSkin = {
   text: (size) => IOS_TEXT[size],
-  label: (t, size) => ({ marginBottom: 6, fontWeight: "600", color: t.foreground, ...IOS_TEXT[size] }),
-  // Filled rounded rect (.roundedBorder), continuous corners; the border tints to the
-  // brand `ring` when the list is open. A full border box, not a bottom underline.
+  label: (t, size) => ({ marginBottom: 8, fontWeight: "400", letterSpacing: -0.15, color: t["muted-foreground"], ...IOS_LABEL[size] }),
+  // The reference's field box (see input.styles.ts): `card` fill, the 8pt corner,
+  // the resting `field-border` hairline turning `ring` while the list is open.
   field: (t, size, open) => ({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    borderRadius: 10,
+    borderRadius: shape.ios.field,
     borderCurve: "continuous",
     borderWidth: 1,
-    borderColor: open ? t.ring : t.input,
-    backgroundColor: t.secondary,
+    borderColor: open ? t.ring : fieldBorder(t),
+    backgroundColor: t.card,
     paddingHorizontal: 12,
     height: IOS_FIELD_BOX[size],
   }),
   fieldText: (t, size, muted) => ({ color: muted ? t["muted-foreground"] : t.foreground, ...IOS_TEXT[size] }),
-  // The trailing disclosure is the brand indigo, the iOS field/pop-up tint.
-  chevron: (t, size) => ({ color: t.primary, ...IOS_TEXT[size] }),
+  // The trailing disclosure is the reference's gray caret (its Icon/Default).
+  chevron: (t, size) => ({ color: t["muted-foreground"], ...IOS_TEXT[size] }),
   chevronTarget: () => ({
     alignSelf: "stretch", alignItems: "center", justifyContent: "center", flexShrink: 0,
     width: 44, minHeight: 44,

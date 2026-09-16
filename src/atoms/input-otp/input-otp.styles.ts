@@ -1,5 +1,6 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { alpha, shape, type ColorTokens } from "../../style/index.js";
+import { fieldBorder } from "../../style/field-colors.js";
 import { type InputOTPSkin, type Size } from "./input-otp.shared.js";
 
 // Co-located InputOTP skins, one per platform, all driven by the brand tokens
@@ -91,8 +92,10 @@ function caretBar(color: string, size: Size): ViewStyle {
   return { width: 1.5, height, borderRadius: 1, backgroundColor: color };
 }
 
-// ---------- iOS (HIG): rounded-square filled cells, separated, primary ring on active ----------
-const IOS_RADIUS = 12;
+// ---------- iOS: the reference's field box per cell, separated, ring on active ----------
+// Each cell is the iOS input-field reference's box (see input.styles.ts): `card`
+// fill, the 8pt corner, a 1pt resting `field-border` hairline that turns `ring` on
+// the active cell, so a code field under an Input reads as the same family.
 const IOS_W: Record<Size, number> = { small: 38, base: 44, large: 52 };
 const IOS_H: Record<Size, number> = { small: 44, base: 52, large: 60 };
 
@@ -103,15 +106,13 @@ export const iosSkin: InputOTPSkin = {
     ...CELL_BASE,
     width: IOS_W[size],
     height: IOS_H[size],
-    borderRadius: IOS_RADIUS,
+    borderRadius: shape.ios.field,
     // Apple rounded rects are superellipses: the continuous corner curve (iOS-only
     // RN style prop, a no-op elsewhere), not the default circular arc.
     borderCurve: "continuous",
-    // HIG field-style fill so the empty cells read as tappable slots on both schemes.
-    backgroundColor: t.secondary,
-    // Active cell gets a brand ring; resting cells are borderless (the fill defines them).
-    borderWidth: active ? 2 : 0,
-    borderColor: active ? t.primary : "transparent",
+    backgroundColor: t.card,
+    borderWidth: 1,
+    borderColor: active ? t.ring : fieldBorder(t),
   }),
   digit: (t, size) => digitText(t, size, "600"),
   separator: (t, size) => separatorText(t, DIGIT_SIZE[size]),

@@ -75,15 +75,19 @@ describe("field active indicator: content box stays fixed across the active stat
 });
 
 // ---------------------------------------------------------------------------
-// Part C: a prefix/suffix affix must hug the value on the inline-affix skins.
+// Part C: a prefix/suffix affix must hug the value on the inline-affix skin.
 //
-// On iOS and Android the prefix/suffix is INLINE affix text sharing the field
-// surface (no separate fill, no divider), so the value follows it with only a
-// small gap; the affix owns the container's leading/trailing inset. The Android
-// skin regressed to a padded box (addon paddingHorizontal 16 + a 1px divider +
-// the field's own 16 inset => a ~33dp void between "https://" and the value).
-// This locks the inline behavior: the affix->value gap is tight and there is no
+// On Android the prefix/suffix is INLINE affix text sharing the field surface
+// (no separate fill, no divider), so the value follows it with only a small gap;
+// the affix owns the container's leading/trailing inset. The Android skin
+// regressed to a padded box (addon paddingHorizontal 16 + a 1px divider + the
+// field's own 16 inset => a ~33dp void between "https://" and the value). This
+// locks the inline behavior: the affix->value gap is tight and there is no
 // divider, while the container inset before the affix is preserved.
+//
+// iOS is deliberately NOT inline: the iOS input-field reference draws its
+// currency addon as a BOXED, muted addon with a divider on the field side (see
+// input.styles.ts iosSkin), which Part C2 pins instead.
 // ---------------------------------------------------------------------------
 
 // Resolve a horizontal edge padding, honoring paddingHorizontal as the fallback.
@@ -100,9 +104,10 @@ describe("grouped affix hugs the value on the inline-affix skins", () => {
   const suffixField = (skin: typeof inputAndroid) =>
     skin.groupField(t, { leadingIcon: false, trailingIcon: false, hasPrefix: false, hasSuffix: true });
 
-  for (const [plat, skin] of [["ios", inputIos], ["android", inputAndroid]] as const) {
+  const rest = { focused: false, error: false };
+  for (const [plat, skin] of [["android", inputAndroid]] as const) {
     it(`Input ${plat}: prefix -> value gap is tight (<= 8) and there is no divider`, () => {
-      const addon = skin.addonBox(t, "left") as Record<string, unknown>;
+      const addon = skin.addonBox(t, "left", rest) as Record<string, unknown>;
       const gap = hpad(addon, "end") + hpad(prefixField(skin), "start");
       expect(gap).toBeLessThanOrEqual(8);
       // Inline affix: no fill of its own and no separator rule.
@@ -111,13 +116,30 @@ describe("grouped affix hugs the value on the inline-affix skins", () => {
     });
 
     it(`Input ${plat}: suffix -> value gap is tight (<= 8) and there is no divider`, () => {
-      const addon = skin.addonBox(t, "right") as Record<string, unknown>;
+      const addon = skin.addonBox(t, "right", rest) as Record<string, unknown>;
       const gap = hpad(addon, "start") + hpad(suffixField(skin), "end");
       expect(gap).toBeLessThanOrEqual(8);
       expect(addon.borderStartWidth).toBeUndefined();
       expect(addon.borderEndWidth).toBeUndefined();
     });
   }
+
+  // Part C2: the iOS addon is the reference's boxed addon. Its divider sits on the
+  // field side and takes the field's state colour (rest hairline, ring on focus,
+  // destructive on error), its fill is `muted` at rest and the error wash on error,
+  // and the field keeps its own 12pt inset after the divider.
+  it("Input ios: the addon is a boxed, muted addon whose divider follows the field state", () => {
+    const left = inputIos.addonBox(t, "left", rest) as Record<string, unknown>;
+    const right = inputIos.addonBox(t, "right", rest) as Record<string, unknown>;
+    expect(left.borderEndWidth).toBe(1);
+    expect(right.borderStartWidth).toBe(1);
+    expect(left.backgroundColor).toBe(t.muted);
+    expect(left.borderColor).toBe(t["field-border"]);
+    expect((inputIos.addonBox(t, "left", { focused: true, error: false }) as Record<string, unknown>).borderColor).toBe(t.ring);
+    expect((inputIos.addonBox(t, "left", { focused: false, error: true }) as Record<string, unknown>).borderColor).toBe(t.destructive);
+    expect((inputIos.addonBox(t, "left", { focused: false, error: true }) as Record<string, unknown>).backgroundColor).not.toBe(t.muted);
+    expect(hpad(prefixField(inputIos), "start")).toBe(12);
+  });
 
   it("Input android: the prefix still keeps the 16dp container leading inset", () => {
     // The affix owns the container edge inset (M3 content padding), so only the
@@ -131,7 +153,7 @@ describe("grouped affix hugs the value on the inline-affix skins", () => {
     // border/indicator band.
     for (const skin of [inputWeb, inputIos, inputAndroid]) {
       for (const side of ["left", "right"] as const) {
-        expect((skin.addonBox(t, side) as Record<string, unknown>).height).toBeUndefined();
+        expect((skin.addonBox(t, side, { focused: false, error: false }) as Record<string, unknown>).height).toBeUndefined();
       }
     }
   });

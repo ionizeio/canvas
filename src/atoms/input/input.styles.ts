@@ -1,4 +1,5 @@
 import { primaryText } from "../../style/primary-text.js";
+import { fieldBorder, fieldErrorFill } from "../../style/field-colors.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, FOCUS_RESET, activeIndicator, shape, type FloatingLabelStyles } from "../../style/index.js";
 
@@ -6,12 +7,13 @@ import { type ColorTokens, FOCUS_RESET, activeIndicator, shape, type FloatingLab
 // (the cursor/selection is always the sky `primary`, the focus accent is the
 // `ring`, never a platform default), and only the native SHAPE, sizing, fill,
 // border treatment, and press feedback change per OS:
-//   iOS (HIG, iOS 26+/Liquid Glass): a PLAIN text field — the value text sits on
-//     a TRANSPARENT surface with a single bottom HAIRLINE rule (1pt `border`
-//     separator) and NO fill, NO surrounding box, NO rounded capsule. Focus
-//     thickens/tints the hairline to the brand (`ring`), error to `destructive`;
-//     press (action suffix) = opacity dim (~0.8). The cursor/selection stays the
-//     indigo `primary`.
+//   iOS: the "iOS Mobile Input Fields" reference (Figma N8TScrzAPwpmwxFS1032my,
+//     see src/style/field-colors.ts): a white `card` box, 44pt tall, an 8pt corner,
+//     a 1pt gray-300 resting hairline (`field-border`), 12pt inset, a 16pt value,
+//     a 14pt regular muted title above. Focus tints the border, the glyph and the
+//     caret to the brand (`ring`/`primary`); error tints the border and the glyph
+//     `destructive` and washes the box with a red-50 fill. A prefix/suffix is a
+//     boxed, muted addon with a divider; press (action suffix) = opacity dim.
 //   Android (Material 3 filled): a subtle fill (`muted`), TOP corners ~4 radius
 //     and a flat bottom, a bottom active-indicator underline (1dp `border` at
 //     rest -> 2dp `ring` on focus, `destructive` on error), ~56dp tall; the
@@ -23,6 +25,12 @@ import { type ColorTokens, FOCUS_RESET, activeIndicator, shape, type FloatingLab
 //     source's 1.5:1 hairline (WCAG 1.4.11; see src/style/tokens.ts).
 
 export type Size = "small" | "base" | "large";
+
+/** The interaction state a skin resolves colours for. */
+export interface FieldState {
+  focused: boolean;
+  error: boolean;
+}
 
 // The contract a platform skin fulfills. Both layouts (bare field, grouped addon
 // row) and the size/state inputs the shell resolves are passed in; the skin maps
@@ -46,10 +54,20 @@ export interface InputSkin extends FloatingLabelStyles<Size> {
   groupField: (t: ColorTokens, opts: { leadingIcon: boolean; trailingIcon: boolean; hasPrefix: boolean; hasSuffix: boolean }) => TextStyle;
   /** A prefix/suffix addon box. Stretches to the row height (alignItems stretch);
    *  it must not set its own height, or it would re-inflate the container past
-   *  groupedHeight by the border/indicator band. */
-  addonBox: (t: ColorTokens, side: "left" | "right") => ViewStyle;
+   *  groupedHeight by the border/indicator band. The iOS box follows the field's
+   *  state (its divider and fill tint with focus and error); web and Android
+   *  ignore the state. */
+  addonBox: (t: ColorTokens, side: "left" | "right", state: FieldState) => ViewStyle;
   addonText: (t: ColorTokens) => TextStyle;
   actionText: (t: ColorTokens) => TextStyle;
+  /** Glyph size (px) of the overlaid leading/trailing icon and the trailing action
+   *  glyphs (the password eye, the clear button). */
+  iconSize: number;
+  /** The glyph colour by state. `action` is a pressable trailing glyph (eye, clear),
+   *  which the iOS reference draws a step darker than the passive leading glyph. */
+  iconColor: (t: ColorTokens, state: FieldState & { action: boolean }) => string;
+  /** Gap between the above-field label and the field (the Field/Form rhythm). */
+  labelGap: number;
   /** Overlaid icon position inside the field area (left or right gutter). The shell
    *  anchors it to the field-area wrapper — the container's CONTENT box — never to
    *  the bordered container itself: the Android active indicator changes the
@@ -131,6 +149,9 @@ export const webSkin: InputSkin = {
     justifyContent: "center",
     ...(side === "left" ? { start: 0, paddingStart: 16 } : { end: 0, paddingEnd: 16 }),
   }),
+  iconSize: 16,
+  iconColor: (t) => t["muted-foreground"],
+  labelGap: 6,
   disabledOpacity: 0.5,
   pressedOpacity: 0.9,
   ripple: null,
@@ -145,13 +166,16 @@ export const webSkin: InputSkin = {
   }),
 };
 
-// ---------- iOS (HIG): .roundedBorder filled field ----------
-// The iOS text field reads as SwiftUI's `.roundedBorder`: the value text sits in a
-// subtly filled, rounded rectangle (continuous corners) with a 1pt border that
-// resolves error > focus(`ring`) > `input`. It is a full border box, never a bottom
-// underline, so the field reads as a native iOS field rather than the Material
-// filled/underlined one. The cursor/selection is always the indigo `primary` (set in
-// the shell); focus tints the whole border to the brand `ring`.
+// ---------- iOS: the iOS input-field reference ----------
+// Drawn to the "iOS Mobile Input Fields" Figma kit (N8TScrzAPwpmwxFS1032my), light
+// and dark: a white `card` box with an 8pt corner (`shape.ios.field`) and a 1pt
+// border that resolves error (`destructive`) > focus (`ring`) > the resting
+// gray-300 hairline (`field-border`, see src/style/field-colors.ts for the disclosed
+// contrast trade-off). The error state also washes the box with the reference's
+// red-50 fill. 44pt tall at the base size with a 16pt value, 12pt inset, and the
+// leading glyph 20px with an 8pt gap to the text. The cursor/selection is the brand
+// `primary` (set in the shell); the reference's blue is its own system tint, which
+// the brand replaces on every platform.
 
 // react-native-web paints a default focus outline (a bright-blue rectangle) and a
 // browser-default caret on the field. These web-only style props suppress that outline
@@ -162,62 +186,88 @@ export const webSkin: InputSkin = {
 function iosWebFieldReset(t: ColorTokens): TextStyle {
   return {
     ...FOCUS_RESET, // shared outline-ring suppression (outlineStyle/outlineWidth)
-    caretColor: t.primary, // brand indigo caret (RN Web), matching selectionColor
-    cursorColor: t.primary, // brand indigo caret (RN Android prop, harmless on iOS)
+    caretColor: t.primary, // brand caret (RN Web), matching selectionColor
+    cursorColor: t.primary, // brand caret (RN Android prop, harmless on iOS)
   } as unknown as TextStyle;
 }
 
+// The reference's type: SF Pro 16 regular in the box (the 44pt box holds a 24pt line
+// between two 10pt insets); the small and large sizes step it by the same ladder.
+function iosText(_t: ColorTokens, size: Size): TextStyle {
+  if (size === "large") return { fontSize: 17, lineHeight: 26 };
+  if (size === "small") return { fontSize: 13, lineHeight: 16 };
+  return { fontSize: 16, lineHeight: 24 };
+}
+
+// The border by state: the shell resolves the token KEY (error > focus > input);
+// at rest the iOS box reads the reference's hairline instead of the 3:1 `input`.
+function iosEdge(t: ColorTokens, borderColor: keyof ColorTokens): string {
+  return borderColor === "input" ? fieldBorder(t) : (t[borderColor] ?? t.input);
+}
+
+// The box fill: `card`, washed with the destructive hue in the error state.
+function iosFill(t: ColorTokens, error: boolean): string {
+  return error ? fieldErrorFill(t) : t.card;
+}
+
+const IOS_ICON = 20;
+// Content inset, the glyph, and the 8pt glyph-to-text gap.
+const IOS_INSET = 12;
+const IOS_ICON_GUTTER = IOS_INSET + IOS_ICON + 8;
+
 export const iosSkin: InputSkin = {
-  text: webText,
+  text: iosText,
   bareBox: (size) => ({ height: size === "large" ? 50 : size === "small" ? 36 : 44 }),
   groupedHeight: (size) => (size === "large" ? 50 : size === "small" ? 36 : 44),
-  // Filled rounded rect, continuous corners; the border carries the shell-resolved
-  // state color (error > focus(ring) > input).
-  bareField: (t, borderColor) => ({
+  // The white box: 8pt corner, 1pt state border, the error wash.
+  bareField: (t, borderColor, _focused, error) => ({
     width: "100%",
-    borderRadius: 10,
+    borderRadius: shape.ios.field,
     borderCurve: "continuous",
     borderWidth: 1,
-    borderColor: t[borderColor],
-    backgroundColor: t.secondary,
+    borderColor: iosEdge(t, borderColor),
+    backgroundColor: iosFill(t, error),
     ...iosWebFieldReset(t),
-    paddingHorizontal: 12,
+    paddingHorizontal: IOS_INSET,
     paddingVertical: 10,
     color: t.foreground,
   }),
-  // The grouped (addon) row shares one rounded border box; joined edges are clipped.
-  groupContainer: (t, borderColor) => ({
+  // The grouped (addon) row shares one box; joined edges are clipped.
+  groupContainer: (t, borderColor, _focused, error) => ({
     flexDirection: "row",
     alignItems: "stretch",
     width: "100%",
-    borderRadius: 10,
+    borderRadius: shape.ios.field,
     borderCurve: "continuous",
     borderWidth: 1,
-    borderColor: t[borderColor],
+    borderColor: iosEdge(t, borderColor),
     overflow: "hidden",
-    backgroundColor: t.secondary,
+    backgroundColor: iosFill(t, error),
   }),
   // No vertical padding (see webSkin.groupField): minHeight + stretch own the
-  // row height and the single-line value self-centers.
-  groupField: (t, { leadingIcon, trailingIcon, hasPrefix, hasSuffix }) => ({
+  // row height and the single-line value self-centers. The 12pt inset holds on
+  // every side, including next to a boxed addon (the reference's value box keeps
+  // its own inset after the addon's divider); an overlaid glyph widens it to the
+  // glyph gutter (inset + 20 + 8).
+  groupField: (t, { leadingIcon, trailingIcon }) => ({
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: "0%",
     color: t.foreground,
     // Brand caret + outline suppression on the inner grouped field too.
     ...iosWebFieldReset(t),
-    // 12pt content inset per side, EXCEPT where an inline prefix/suffix affix already
-    // supplies that inset plus a tight gap (then the value hugs the affix); an overlaid
-    // icon uses a wider gutter.
-    paddingStart: leadingIcon ? 36 : hasPrefix ? 0 : 12,
-    paddingEnd: trailingIcon ? 36 : hasSuffix ? 0 : 12,
+    paddingStart: leadingIcon ? IOS_ICON_GUTTER : IOS_INSET,
+    paddingEnd: trailingIcon ? IOS_ICON_GUTTER : IOS_INSET,
   }),
-  // Prefix/suffix is inline affix text inside the rounded box: no separate fill, no
-  // divider. The affix owns the 12pt box inset and keeps an 8pt gap to the value; the
-  // field zeroes its padding on that side (see groupField).
-  addonBox: (_t, side) => ({
+  // The reference's boxed addon (its currency field): a `muted` box with the 12pt
+  // inset and a 1pt divider on the field side, both following the field's state
+  // (the divider takes the state border, the box the error wash).
+  addonBox: (t, side, { focused, error }) => ({
     justifyContent: "center",
-    ...(side === "left" ? { paddingStart: 12, paddingEnd: 8 } : { paddingStart: 8, paddingEnd: 12 }),
+    paddingHorizontal: IOS_INSET,
+    backgroundColor: error ? fieldErrorFill(t) : t.muted,
+    borderColor: error ? t.destructive : focused ? t.ring : fieldBorder(t),
+    ...(side === "left" ? { borderEndWidth: 1 } : { borderStartWidth: 1 }),
   }),
   addonText: (t) => ({ color: t["muted-foreground"] }),
   actionText: (t) => ({ fontWeight: "600", color: primaryText(t) }),
@@ -227,21 +277,27 @@ export const iosSkin: InputSkin = {
     bottom: 0,
     zIndex: 10,
     justifyContent: "center",
-    ...(side === "left" ? { start: 0, paddingStart: 12 } : { end: 0, paddingEnd: 12 }),
+    ...(side === "left" ? { start: 0, paddingStart: IOS_INSET } : { end: 0, paddingEnd: IOS_INSET }),
   }),
+  iconSize: IOS_ICON,
+  // The reference's glyph tints: error red, focus blue, otherwise a passive leading
+  // glyph rests on the lighter `input` gray (its Icon/Disabled) and a pressable
+  // trailing glyph (eye, clear) on `muted-foreground` (its Icon/Default).
+  iconColor: (t, { focused, error, action }) =>
+    error ? t.destructive : focused ? t.ring : action ? t["muted-foreground"] : t.input,
+  labelGap: 8,
   disabledOpacity: 0.5,
   pressedOpacity: 0.8,
   ripple: null,
-  // iOS (HIG): the label sits ABOVE the field, as a form-row title. SF Pro Text
-  // tracking (letterSpacing -0.15 at 14pt, Apple's SF tracking table) and a
-  // semibold (600) weight, the iOS field-label convention.
+  // The label sits ABOVE the field: the reference's 14pt regular secondary title
+  // (its Text/Label), with SF Pro Text's tracking at that size (-0.15).
   floatingLabel: false,
   labelAbove: (t, size) => ({
     fontSize: size === "large" ? 16 : size === "small" ? 12 : 14,
     lineHeight: size === "large" ? 24 : size === "small" ? 16 : 20,
-    fontWeight: "600",
+    fontWeight: "400",
     letterSpacing: -0.15,
-    color: t.foreground,
+    color: t["muted-foreground"],
   }),
 };
 
@@ -324,6 +380,9 @@ export const androidSkin: InputSkin = {
     justifyContent: "center",
     ...(side === "left" ? { start: 0, paddingStart: 16 } : { end: 0, paddingEnd: 16 }),
   }),
+  iconSize: 16,
+  iconColor: (t) => t["muted-foreground"],
+  labelGap: 6,
   disabledOpacity: 0.38, // M3 disabled opacity
   pressedOpacity: null, // Android uses a ripple instead
   ripple: (t) => ({ color: t.primary, borderless: false }),

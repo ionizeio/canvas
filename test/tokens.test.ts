@@ -190,6 +190,23 @@ describe("control boundary contrast (WCAG 1.4.11)", () => {
     });
   }
 
+  it("`field-border` is the iOS field's resting hairline: between `border` and `input`, below the floor on purpose", () => {
+    // The iOS input-field reference (Figma N8TScrzAPwpmwxFS1032my) rests its fields
+    // on gray-300 / systemGray4, a disclosed WCAG 1.4.11 trade-off scoped to the iOS
+    // field skins (src/style/field-colors.ts). It must stay distinct from both
+    // neighbours: collapsing it onto `input` would re-heavy the iOS box, collapsing
+    // it onto `border` would make the box vanish on the card.
+    for (const t of [lightColors, darkColors]) {
+      const rest = t["field-border"]!;
+      expect(rest).toMatch(/^#[0-9a-f]{6}$/);
+      expect(contrast(rest, t.card)).toBeLessThan(3);
+      expect(contrast(rest, t.card)).toBeGreaterThan(contrast(t.border, t.card));
+      expect(contrast(rest, t.card)).toBeLessThan(contrast(t.input, t.card));
+    }
+    expect(lightColors["field-border"]).toBe("#d1d5db");
+    expect(darkColors["field-border"]).toBe("#3a3a3c");
+  });
+
   it("does NOT hold `border` to the control floor, keeping the separator hairline", () => {
     // Guards the split from the other side: someone "fixing" the contrast run
     // by collapsing border back onto input would coarsen every divider and card

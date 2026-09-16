@@ -99,11 +99,14 @@ describe("floating labels use text roles without recoloring control indicators",
       expect(rgb(field.style.borderBottomColor)).toBe(rgb(t.ring));
     });
 
-    for (const [name, Component, props] of [
-      ["Web Input", WebInput, {}], ["iOS Input", IOSInput, {}],
-      ["Web Textarea", WebTextarea, {}], ["iOS Textarea", IOSTextarea, {}],
-      ["Android grouped Input", Input, { prefix: "$" }],
-      ["Android flush Textarea", Textarea, { flush: true }],
+    // The static above-field label never recolours on focus. Web and the Android
+    // grouped fallback title it in `foreground`; the iOS skins title it in the iOS
+    // input-field reference's secondary gray (`muted-foreground`, its Text/Label).
+    for (const [name, Component, props, role] of [
+      ["Web Input", WebInput, {}, "foreground"], ["iOS Input", IOSInput, {}, "muted-foreground"],
+      ["Web Textarea", WebTextarea, {}, "foreground"], ["iOS Textarea", IOSTextarea, {}, "muted-foreground"],
+      ["Android grouped Input", Input, { prefix: "$" }, "foreground"],
+      ["Android flush Textarea", Textarea, { flush: true }, "foreground"],
     ] as const) {
       it(`${scheme} ${name} preserves its above-field label`, () => {
         render(<ThemeProvider scheme={scheme}><Component label="Static label" {...props} /></ThemeProvider>);
@@ -111,7 +114,7 @@ describe("floating labels use text roles without recoloring control indicators",
         const before = label.style.color;
         fireEvent.focus(screen.getByLabelText("Static label"));
         expect(label.style.color).toBe(before);
-        expect(rgb(before)).toBe(rgb(t.foreground));
+        expect(rgb(before)).toBe(rgb(t[role]));
       });
     }
   }

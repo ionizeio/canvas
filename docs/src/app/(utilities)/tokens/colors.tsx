@@ -51,6 +51,9 @@ const NEUTRAL_KEYS: { key: keyof ColorTokens; name: string }[] = [
   // border and input carry the same value in both schemes, so the sheet samples
   // them once rather than shipping two identical chips.
   { key: "border", name: "border / input" },
+  // The iOS field's resting hairline: the one neutral that sits below the 3:1
+  // control floor on purpose (the iOS input-field reference's gray-300).
+  { key: "field-border", name: "field-border" },
   { key: "muted-foreground", name: "muted-foreground" },
   { key: "foreground", name: "foreground" },
 ];
@@ -173,6 +176,7 @@ function ramp(tone: StatusTone): string {
 function colorValue(tokens: ColorTokens, key: keyof ColorTokens): string {
   if (key === "primary-text") return tokens[key] ?? tokens.primary;
   if (key === "destructive-text") return tokens[key] ?? tokens.destructive;
+  if (key === "field-border") return tokens[key] ?? tokens.input;
   return tokens[key];
 }
 

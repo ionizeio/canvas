@@ -1,12 +1,13 @@
 import { useInputEscapeBridge } from "../../style/escape-layer.js";
-import { forwardRef, useId, useState } from "react";
+import { forwardRef, useId, useRef, useState } from "react";
 import {
   type GestureResponderEvent,
   type TextInput as RNTextInput,
   type TextInputProps as RNTextInputProps,
 } from "react-native";
 import { View, Pressable, Text, TextInput, useTheme, useFillStyle, FloatingLabel, LabelContent, FOCUS_RESET, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
-import { Icon } from "../icon/icon.js";
+import { useComposedRefs } from "../../style/use-composed-refs.js";
+import { Icon, type IconName } from "../icon/icon.js";
 import { type InputSkin, type Size } from "./input.styles.js";
 
 // Shared Input shell. The structure (bare field vs. grouped addon layout, the
@@ -17,17 +18,17 @@ import { type InputSkin, type Size } from "./input.styles.js";
 // height, the Android active-indicator underline, press feedback) and calls
 // createInput.
 
-// Glyphs an overlaid leading/trailing icon can name. Maps the scalar `icon`
-// string to the Icon atom's flat boolean prop, so the playground stays
-// serializable (a name string, not a React element).
-const ICON_BOOL: Record<string, "search" | "mail" | "lock" | "user" | "key" | "globe"> = {
-  search: "search",
-  mail: "mail",
-  lock: "lock",
-  user: "user",
-  key: "key",
-  globe: "globe",
-};
+// The overlaid leading/trailing glyph is named by the scalar `icon` string (any
+// Canvas glyph, typed as IconName so a typo is a type error) and rendered through
+// the Icon atom's flat boolean prop, so the playground stays serializable (a name
+// string, not a React element).
+
+// The trailing action glyphs: the password eye (eye-off while the value is masked,
+// eye once revealed, the iOS reference's eye.slash) and the clear button (the
+// reference's xmark.circle.fill). Hit slop widens each glyph to a 44pt target.
+const ACTION_HIT_SLOP = 12;
+// The gap between two trailing glyphs when both the clear button and the eye show.
+const ACTION_GAP = 8;
 
 // react-native-web paints a default focus outline on the field; in the grouped
 // (addon) layout that ring is clipped by the rounded, overflow-hidden container
@@ -114,12 +115,26 @@ export interface InputProps extends TextEntryProps, MeasureProps {
   leadingIcon?: boolean;
   /** Render `icon` as a passive glyph inside the right of the field. */
   trailingIcon?: boolean;
-  /** Glyph name for leadingIcon/trailingIcon (e.g. "search", "mail"). */
-  icon?: string;
+  /** Glyph name for leadingIcon/trailingIcon: any Canvas glyph (e.g. "search", "mail", "lock", "phone", "calendar", "creditCard"). */
+  icon?: IconName;
   /** Render the suffix as a pressable action button rather than a passive label. */
   action?: boolean;
   /** Called when the action suffix is pressed (action only). */
   onActionPress?: (event: GestureResponderEvent) => void;
+  /**
+   * A trailing eye button that reveals and re-masks a `secureTextEntry` value (the
+   * password field's show/hide toggle). The field starts masked; the button is
+   * announced as "Show password" / "Hide password". Takes effect only with
+   * `secureTextEntry`.
+   */
+  passwordToggle?: boolean;
+  /**
+   * A trailing clear button (a circled x) that empties the field, shown while the
+   * field holds text (the search field's clear affordance). Works in both the
+   * controlled and the uncontrolled mode: it clears the native field and reports
+   * "" through `onChangeText`.
+   */
+  clearable?: boolean;
 
   /**
    * Accessible name for the field when there is no programmatically-associated
@@ -150,10 +165,6 @@ function sizeOf(p: InputProps): Size {
   if (p.small) return "small";
   return "base";
 }
-
-// A style bump keeping the label above/beside its field spaced from it (the 6px
-// the Field/Form control stacks use between the label and the control).
-const LABEL_GAP: ViewStyle = { gap: 6 };
 
 // The grouped layout's field area: the flexible cell between the addon boxes that
 // holds the TextInput and its overlaid icons. The icon overlays anchor to THIS
@@ -195,14 +206,22 @@ export function createInput(skin: InputSkin) {
       icon,
       action,
       onActionPress,
+      passwordToggle,
+      clearable,
       style,
     } = props;
     const isError = !!(props.error || props.invalid);
     const size = sizeOf(props);
     const [focused, setFocused] = useState(false);
+    // The password toggle's own state: masked until the eye is pressed.
+    const [revealed, setRevealed] = useState(false);
     const { tokens } = useTheme();
     const onKeyPress = useInputEscapeBridge(props.onKeyPress);
     const widthCap = useFillStyle("Input", props);
+    // The clear button empties the NATIVE field too (an uncontrolled field keeps its
+    // own text), so the shell holds a ref of its own beside the forwarded one.
+    const fieldRef = useRef<RNTextInput>(null);
+    const hostRef = useComposedRefs(fieldRef, ref);
     // One collision-free id for the label so the field can name itself via
     // aria-labelledby (unconditional hook: the id is cheap and always available).
     const labelId = useId();
@@ -232,8 +251,14 @@ export function createInput(skin: InputSkin) {
     // on Android).
     const borderColor: keyof ColorTokens = isError ? "destructive" : focused ? "ring" : "input";
     const text = skin.text(tokens, size);
-    const iconName = icon != null ? ICON_BOOL[icon] : undefined;
-    const hasAddons = prefix != null || suffix != null || !!leadingIcon || !!trailingIcon || !!action;
+    const state = { focused, error: isError };
+    const iconName = icon;
+    // The trailing action glyphs: the eye needs a masked value to toggle; the clear
+    // button shows only while there is text to clear (and the field is editable).
+    const hasEye = !!passwordToggle && !!props.secureTextEntry;
+    const hasClear = !!clearable && populated && !disabled && !readOnly;
+    const hasAddons = prefix != null || suffix != null || !!leadingIcon || !!trailingIcon || !!action || hasEye || !!clearable;
+    const labelGap: ViewStyle = { gap: skin.labelGap };
 
     const common = {
       value,
@@ -244,7 +269,8 @@ export function createInput(skin: InputSkin) {
       selectionColor: tokens.primary, // brand cursor / selection on every platform
       // Text-entry behavior passthrough (the curated TextEntryProps slice).
       defaultValue: props.defaultValue,
-      secureTextEntry: props.secureTextEntry,
+      // The eye reveals the masked value; without the toggle the prop passes through.
+      secureTextEntry: hasEye ? !revealed : props.secureTextEntry,
       keyboardType: props.keyboardType,
       inputMode: props.inputMode,
       autoCapitalize: props.autoCapitalize,
@@ -324,7 +350,7 @@ export function createInput(skin: InputSkin) {
         return (
           <View style={[{ position: "relative" }, disabledDim, widthCap, style]}>
             <TextInput
-              ref={ref}
+              ref={hostRef}
               style={[...bareStyle, skin.labelReserve!(size)]}
               textAlignVertical="center"
               {...common}
@@ -350,9 +376,9 @@ export function createInput(skin: InputSkin) {
       // cap, style, and disabled dim; the field fills it (its skin sets width:100%).
       if (above) {
         return (
-          <View style={[LABEL_GAP, disabledDim, widthCap, style]}>
+          <View style={[labelGap, disabledDim, widthCap, style]}>
             {aboveLabel}
-            <TextInput ref={ref} style={bareStyle} textAlignVertical="center" {...common} />
+            <TextInput ref={hostRef} style={bareStyle} textAlignVertical="center" {...common} />
           </View>
         );
       }
@@ -360,7 +386,7 @@ export function createInput(skin: InputSkin) {
       // No label: the original bare field, unchanged (byte-identical root).
       return (
         <TextInput
-          ref={ref}
+          ref={hostRef}
           style={[...bareStyle, disabledDim, widthCap, style]}
           textAlignVertical="center"
           {...common}
@@ -379,6 +405,15 @@ export function createInput(skin: InputSkin) {
     // field, and the total stays groupedHeight — the indicator/border band lives
     // INSIDE it rather than inflating past it.
     const height = skin.groupedHeight(size);
+    // How many glyphs share the trailing gutter (clear, eye, a passive trailing icon).
+    const trailingGlyphs = (hasClear ? 1 : 0) + (hasEye ? 1 : 0) + (trailingIcon && iconName != null ? 1 : 0);
+    // Clear: empty the native field (the uncontrolled case keeps its own text), then
+    // report the empty value so a controlled parent and the populated flag follow.
+    const clearField = () => {
+      fieldRef.current?.clear();
+      handleChangeText("");
+      fieldRef.current?.focus();
+    };
     const groupedField = (
       <View
         style={[
@@ -390,7 +425,7 @@ export function createInput(skin: InputSkin) {
         ]}
       >
         {prefix != null ? (
-          <View style={skin.addonBox(tokens, "left")}>
+          <View style={skin.addonBox(tokens, "left", state)}>
             <Text style={[skin.addonText(tokens), text]}>{prefix}</Text>
           </View>
         ) : null}
@@ -398,15 +433,56 @@ export function createInput(skin: InputSkin) {
         <View style={GROUP_FIELD_AREA}>
           {leadingIcon && iconName != null ? (
             <View style={[skin.iconOverlay("left"), { pointerEvents: "none" }]}>
-              <Icon {...{ [iconName]: true }} muted size={16} />
+              <Icon {...{ [iconName]: true }} color={skin.iconColor(tokens, { ...state, action: false })} size={skin.iconSize} decorative />
             </View>
           ) : null}
 
-          <TextInput ref={ref} style={[skin.groupField(tokens, { leadingIcon: !!leadingIcon, trailingIcon: !!trailingIcon, hasPrefix: prefix != null, hasSuffix: suffix != null }), text, FOCUS_RESET]} textAlignVertical="center" {...common} />
+          <TextInput
+            ref={hostRef}
+            style={[
+              skin.groupField(tokens, { leadingIcon: !!leadingIcon, trailingIcon: trailingGlyphs > 0, hasPrefix: prefix != null, hasSuffix: suffix != null }),
+              // A second (or third) trailing glyph widens the trailing gutter by a glyph + gap each.
+              trailingGlyphs > 1 ? { paddingEnd: asNum(skin.groupField(tokens, { leadingIcon: false, trailingIcon: true, hasPrefix: false, hasSuffix: false }).paddingEnd, 0) + (trailingGlyphs - 1) * (skin.iconSize + ACTION_GAP) } : null,
+              text,
+              FOCUS_RESET,
+            ]}
+            textAlignVertical="center"
+            {...common}
+          />
 
-          {trailingIcon && iconName != null ? (
-            <View style={[skin.iconOverlay("right"), { pointerEvents: "none" }]}>
-              <Icon {...{ [iconName]: true }} muted size={16} />
+          {trailingGlyphs > 0 ? (
+            <View style={[skin.iconOverlay("right"), { flexDirection: "row", alignItems: "center", gap: ACTION_GAP }]} pointerEvents="box-none">
+              {hasClear ? (
+                <Pressable
+                  onPress={clearField}
+                  hitSlop={ACTION_HIT_SLOP}
+                  accessibilityRole="button"
+                  accessibilityLabel="Clear text"
+                  android_ripple={skin.ripple ? { ...skin.ripple(tokens), borderless: true } : undefined}
+                  style={({ pressed }) => (skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null)}
+                >
+                  <Icon circleX color={skin.iconColor(tokens, { ...state, action: true })} size={skin.iconSize} decorative />
+                </Pressable>
+              ) : null}
+              {hasEye ? (
+                <Pressable
+                  onPress={() => setRevealed((r) => !r)}
+                  hitSlop={ACTION_HIT_SLOP}
+                  accessibilityRole="button"
+                  accessibilityLabel={revealed ? "Hide password" : "Show password"}
+                  accessibilityState={{ selected: revealed }}
+                  disabled={disabled}
+                  android_ripple={skin.ripple ? { ...skin.ripple(tokens), borderless: true } : undefined}
+                  style={({ pressed }) => (skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null)}
+                >
+                  <Icon {...(revealed ? { eye: true } : { eyeOff: true })} color={skin.iconColor(tokens, { ...state, action: true })} size={skin.iconSize} decorative />
+                </Pressable>
+              ) : null}
+              {trailingIcon && iconName != null ? (
+                <View pointerEvents="none">
+                  <Icon {...{ [iconName]: true }} color={skin.iconColor(tokens, { ...state, action: false })} size={skin.iconSize} decorative />
+                </View>
+              ) : null}
             </View>
           ) : null}
         </View>
@@ -415,7 +491,7 @@ export function createInput(skin: InputSkin) {
           action ? (
             <Pressable
               style={({ pressed }) => [
-                skin.addonBox(tokens, "right"),
+                skin.addonBox(tokens, "right", state),
                 skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
               ]}
               onPress={onActionPress}
@@ -426,7 +502,7 @@ export function createInput(skin: InputSkin) {
               <Text style={[skin.actionText(tokens), text]}>{suffix}</Text>
             </Pressable>
           ) : (
-            <View style={skin.addonBox(tokens, "right")}>
+            <View style={skin.addonBox(tokens, "right", state)}>
               <Text style={[skin.addonText(tokens), text]}>{suffix}</Text>
             </View>
           )
@@ -438,7 +514,7 @@ export function createInput(skin: InputSkin) {
     // fallback). The wrapper carries width/style/dim; the group drops them above.
     if (above) {
       return (
-        <View style={[LABEL_GAP, disabled ? { opacity: skin.disabledOpacity } : null, widthCap, style]}>
+        <View style={[labelGap, disabled ? { opacity: skin.disabledOpacity } : null, widthCap, style]}>
           {aboveLabel}
           {groupedField}
         </View>

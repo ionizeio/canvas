@@ -30,6 +30,8 @@
      panel); `border` only separates surfaces. Solve, do not eyeball. Why in
      src/style/tokens.ts. Dark below is solved the same way. */
   --input:oklch(0.65 0.012 262);
+  /* iOS field RESTING hairline only, below 3:1 on purpose; why in tokens.ts. */
+  --field-border:oklch(0.871 0.009 257);
   /* One ring value in both schemes: it reads on a light page and a dark page. */
   --ring:oklch(0.694 0.152 246.867);
 
@@ -97,6 +99,7 @@
   --warning-foreground:oklch(0.279 0.074 45.635);
   --border:oklch(0.26 0.006 262);
   --input:oklch(0.532 0.012 262);
+  --field-border:oklch(0.350 0.002 259);
   --ring:oklch(0.694 0.152 246.867);
   --p-menu-destructive:#dc6565;
   /* iOS resolves its drawer scrim per scheme: 0.2 light, 0.48 dark. */

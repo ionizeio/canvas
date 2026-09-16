@@ -30,6 +30,7 @@ colors:
   warning-foreground: "#ffffff"
   border: "#f1f2f3"
   input: "#8b8f97"
+  field-border: "#d1d5db"
   ring: "#3da3f5"
 colorsDark:
   background: "#111213"
@@ -56,6 +57,7 @@ colorsDark:
   warning-foreground: "#451a03"
   border: "#222427"
   input: "#696d74"
+  field-border: "#3a3a3c"
   ring: "#3da3f5"
 chart:
   chart-1: "#3da3f5"
@@ -358,6 +360,7 @@ dark keys off a `.dark` class on the root rather than `prefers-color-scheme`.
 | `warning-foreground` | `#ffffff` | `#451a03` |
 | `border` | `#f1f2f3` | `#222427` |
 | `input` | `#8b8f97` | `#696d74` |
+| `field-border` | `#d1d5db` | `#3a3a3c` |
 | `ring` | `#3da3f5` | `#3da3f5` |
 <!-- @/generated -->
 
@@ -423,7 +426,7 @@ the web follows the Riskora kit: 12 on every control and field, 16 on floating s
 | Platform | Button | Card | Field | Minimum touch target |
 | --- | --- | --- | --- | --- |
 | web | 12px | 20px | 12px | 0px |
-| ios | 9999px | 12px | 10px | 44px |
+| ios | 9999px | 12px | 8px | 44px |
 | android | 9999px | 12px | 4px | 48px |
 <!-- @/generated -->
 

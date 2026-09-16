@@ -205,7 +205,7 @@ export function createTextarea(skin: TextareaSkin) {
     // as an array (not StyleProp) so the floating path can spread it with the reserve.
     const fieldStyle: StyleProp<TextStyle>[] = [
       skin.field(tokens, { error: isError, focused }),
-      sizeText(size),
+      skin.text ? skin.text(size) : sizeText(size),
       minHeight(rows),
       // Flush: strip the field's own border + radius so it sits flush inside a
       // framed container (a toolbar Card). Zero every edge so it works whether

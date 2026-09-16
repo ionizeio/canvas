@@ -1,4 +1,5 @@
 import { destructiveText } from "../../style/destructive-text.js";
+import { fieldBorder, fieldErrorFill } from "../../style/field-colors.js";
 import { type TextStyle } from "react-native";
 import { type ColorTokens, shape, type FloatingLabelStyles } from "../../style/index.js";
 
@@ -7,13 +8,11 @@ import { type ColorTokens, shape, type FloatingLabelStyles } from "../../style/i
 // platform (the focus/active cue is always the indigo `ring`/`primary` token,
 // the error cue the `destructive` token, never a platform default); only the
 // native SHAPE, fill, border/underline, and focus feedback change per OS:
-//   iOS (HIG, iOS 27 / Liquid Glass): the PLAIN multiline text view, a fully
-//     transparent field with NO fill and NO box, carrying only a subtle bottom
-//     hairline rule (the `input` token at rest), so it reads like the iOS 27
-//     plain text field rather than a filled gray capsule. The hairline brightens
-//     to the brand `primary` on focus and `destructive` on error; the brand
-//     cursor/selection is the indigo `primary` (set on the shell, never a system
-//     blue).
+//   iOS: the "iOS Mobile Input Fields" reference (see input.styles.ts): the same
+//     white `card` box as the single-line Input, an 8pt corner, the 1pt gray-300
+//     resting hairline (`field-border`), `ring` on focus, `destructive` plus the
+//     red-50 wash on error, a 16pt value; the brand cursor/selection is `primary`
+//     (set on the shell, never a system blue).
 //   Android (Material 3 filled): a subtle fill with a flat bottom active
 //     indicator (underline). Top corners ~4, square bottom. The indicator is a
 //     1px resting line that thickens to 2px indigo on focus (destructive on
@@ -39,6 +38,8 @@ export interface TextareaFieldState {
 // across platforms), so the shell composes them around the skin.
 export interface TextareaSkin extends FloatingLabelStyles<Size> {
   field: (tokens: ColorTokens, state: TextareaFieldState) => TextStyle;
+  /** The value's type scale per size; a skin that omits it reads the shared `sizeText`. */
+  text?: (size: Size) => TextStyle;
   /**
    * The live character-count line the component renders under the field when
    * `showCount` is set (end-aligned, "N / max"). Muted at rest, `destructive-text`
@@ -109,29 +110,32 @@ export const webSkin: TextareaSkin = {
   count: (t, over) => ({ fontSize: 12, lineHeight: 16, color: over ? destructiveText(t) : t["muted-foreground"] }),
 };
 
-// ---------- iOS (HIG): .roundedBorder filled multiline field ----------
-// The iOS multiline text view reads as SwiftUI's `.roundedBorder`: a subtly filled,
-// rounded rectangle (continuous corners) with a 1pt border that resolves error >
-// focus(`ring`) > `input`. A full border box, never a bottom underline, so the field
-// reads as a native iOS field rather than the Material filled/underlined one; the
-// brand cursor/selection is the indigo `primary` (set on the shell). Mirrors the
-// single-line Input's iOS skin exactly.
+// ---------- iOS: the iOS input-field reference, multiline ----------
+// The same box as the single-line Input's iOS skin (input.styles.ts), so a Textarea
+// under an Input reads as one family: `card` fill, `shape.ios.field` corner, a 1pt
+// border resolving error (`destructive`, with the red-50 wash) > focus (`ring`) >
+// the resting `field-border` hairline, and the 16pt value.
 export const iosSkin: TextareaSkin = {
   field: (t, st) => ({
     width: "100%",
-    borderRadius: 10,
+    borderRadius: shape.ios.field,
     borderCurve: "continuous",
     borderWidth: 1,
-    borderColor: st.error ? t.destructive : st.focused ? t.ring : t.input,
-    backgroundColor: t.secondary,
+    borderColor: st.error ? t.destructive : st.focused ? t.ring : fieldBorder(t),
+    backgroundColor: st.error ? fieldErrorFill(t) : t.card,
     paddingHorizontal: 12,
     paddingVertical: 10,
     color: t.foreground,
   }),
-  // iOS (HIG): the label sits ABOVE the field as a form-row title — SF Pro Text
-  // tracking (-0.15) and a semibold weight, mirroring the single-line Input.
+  text: (size) => {
+    if (size === "large") return { fontSize: 17, lineHeight: 26 };
+    if (size === "small") return { fontSize: 13, lineHeight: 18 };
+    return { fontSize: 16, lineHeight: 24 };
+  },
+  // The label sits ABOVE the field: the reference's 14pt regular secondary title,
+  // with SF Pro Text's tracking (-0.15), mirroring the single-line Input.
   floatingLabel: false,
-  labelAbove: (t, size) => ({ ...aboveLabelType(size), fontWeight: "600", letterSpacing: -0.15, color: t.foreground }),
+  labelAbove: (t, size) => ({ ...aboveLabelType(size), fontWeight: "400", letterSpacing: -0.15, color: t["muted-foreground"] }),
   // The count line: an SF Pro caption (12/16, -0.08 tracking), the secondary
   // gray, turning destructive once the count passes the soft cap.
   count: (t, over) => ({ fontSize: 12, lineHeight: 16, letterSpacing: -0.08, color: over ? destructiveText(t) : t["muted-foreground"] }),

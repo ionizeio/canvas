@@ -27,6 +27,8 @@
   --p-field-radius:12px;--p-field-height:48px;--p-field-height-sm:40px;--p-field-height-lg:56px;
   --p-field-fill:var(--card);--p-field-pad-x:16px;--p-field-font:14px;--p-field-lh:20px;
   --p-field-border-width:1px;--p-field-underline:0px;--p-field-radius-bottom:12px;
+  /* The resting border: the 3:1 `input` boundary on web; iOS rests on the reference's hairline. */
+  --p-field-border:var(--input);--p-label-color:var(--foreground);--p-field-icon:16px;
   /* Only M3 draws a darker active indicator; web/iOS keep the bottom edge the same hairline. */
   --p-field-underline-color:var(--input);
   --p-label-weight:500;--p-label-tracking:0px;
@@ -351,9 +353,13 @@
   --p-press:0.8 /* @kind other */;--p-disabled:0.4 /* @kind other */;
   --p-min-target:44px;
   --p-card-radius:12px;--p-card-shadow:none;--p-card-shadow-raised:0px 1px 3px rgba(13,18,27,0.08);
-  --p-field-radius:10px;--p-field-height:44px;--p-field-height-sm:36px;--p-field-height-lg:50px;
-  --p-field-fill:var(--secondary);--p-field-radius-bottom:10px;--p-field-pad-x:16px;
-  --p-label-weight:600;--p-label-tracking:-0.15px;
+  /* Field — iOS: the iOS input-field reference (input.styles.ts iosSkin): a white card box,
+     8pt corner, the gray-300 `field-border` hairline at rest, 16pt value, 20px glyph, a 14pt
+     regular muted title above. */
+  --p-field-radius:8px;--p-field-height:44px;--p-field-height-sm:36px;--p-field-height-lg:50px;
+  --p-field-fill:var(--card);--p-field-radius-bottom:8px;--p-field-pad-x:12px;--p-field-font:16px;--p-field-lh:24px;
+  --p-field-border:var(--field-border);--p-label-color:var(--muted-foreground);--p-field-icon:20px;
+  --p-label-weight:400;--p-label-tracking:-0.15px;
   --p-check-size:20px;--p-check-radius:5px;--p-check-border:1px;
   --p-switch-w:46px;--p-switch-h:28px;--p-switch-thumb-w:28px;--p-switch-thumb-h:24px;--p-switch-thumb-fill:#ffffff;
   /* Switch (switch.styles.ts IOS_OFF_TRACK): systemGray3 off track, never the washed-out input token; the white capsule knob keeps its soft shadow in both states */
@@ -530,8 +536,8 @@
   /* Radio — iOS: a 22pt ring with a 1.5px border and a 10pt dot */
   --p-radio-ring-small:20px;--p-radio-ring-default:22px;--p-radio-ring-large:24px;
   --p-radio-dot-small:8px;--p-radio-dot-default:10px;--p-radio-dot-large:10px;--p-radio-border:1.5px;
-  /* Textarea — iOS: filled 10pt continuous rounded rect on secondary */
-  --p-textarea-fill:var(--secondary);--p-field-caption-tracking:-0.08px;
+  /* Textarea — iOS: the same white reference box as the Input */
+  --p-textarea-fill:var(--card);--p-field-caption-tracking:-0.08px;
   /* Form — SwiftUI Form / HIG "Entering data": footnote-emphasized headings, roomier stack */
   --p-form-stack:20px;--p-form-actions-gap:12px;
   --p-form-title:13px;--p-form-title-lh:18px;--p-form-title-tracking:-0.08px;

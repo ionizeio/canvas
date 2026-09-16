@@ -47,6 +47,12 @@ const optionScroll: ViewStyle = { flexShrink: 1 };
 export interface SelectOption {
   value: string;
   label: string;
+  /**
+   * A short leading glyph shown before the label in the trigger and in the option
+   * row: a flag emoji for a country list ("🇺🇸"), a currency sign, a unit. Content,
+   * not styling; it inherits the row's type and colour.
+   */
+  leading?: string;
 }
 
 export interface SelectProps extends MeasureProps {
@@ -206,8 +212,11 @@ export function createSelect(skin: SelectSkin) {
     const triggerHeight = asNum((skin.trigger(tokens, size, open) as { height?: unknown }).height, 56);
     // Floating label owns the resting placeholder: show nothing until the menu opens
     // (matching the M3 Input); a selected value always shows.
-    const selectedLabel = items.find((o) => o.value === value)?.label ?? value;
+    const selected = items.find((o) => o.value === value);
+    const selectedLabel = selected?.label ?? value;
     const displayText = hasValue ? selectedLabel : floating && !open ? "" : placeholder;
+    // The selected option's leading glyph rides in the trigger before the value.
+    const selectedLeading = hasValue ? selected?.leading : undefined;
 
     return (
       <View style={[root, open && !host ? rootLifted : null, widthCap, style]}>
@@ -266,6 +275,7 @@ export function createSelect(skin: SelectSkin) {
               </Text>
             ) : null}
             {icon ? <Icon globe muted size={14} /> : null}
+            {selectedLeading != null ? <Text style={skin.valueText(tokens, size, true)}>{selectedLeading}</Text> : null}
             <Text style={skin.valueText(tokens, size, hasValue)}>{displayText}</Text>
           </View>
           <Text style={skin.chevron(tokens, size, open)}>{skin.chevronGlyph}</Text>
@@ -337,6 +347,9 @@ export function createSelect(skin: SelectSkin) {
                     <Text style={[skin.indicator(tokens, size), { width: 14 }]}>
                       {selected ? "✓" : " "}
                     </Text>
+                  ) : null}
+                  {option.leading != null ? (
+                    <Text style={skin.optionText(tokens, size)}>{option.leading}</Text>
                   ) : null}
                   <Text style={[skin.optionText(tokens, size), { flexShrink: 1 }]}>
                     {option.label}

@@ -13,9 +13,11 @@ import { type ColorTokens } from "../../style/index.js";
 //   Web: the Riskora form row — a 14/20 medium label, an 8px stack gap, and a 12/16
 //     message line. Matches what Input already renders above itself, so a wrapped and an unwrapped
 //     field line up in one column.
-//   iOS (HIG): SF Pro Text tracking on the label (-0.15 at 14pt) and on the caption (0 at 12pt),
-//     per Apple's SF tracking table, with the same rhythm. iOS places field labels above the
-//     control, which is what the shell already does.
+//   iOS: the "iOS Mobile Input Fields" reference (Figma N8TScrzAPwpmwxFS1032my): a 14pt
+//     REGULAR secondary title (its Text/Label, `muted-foreground`) 8 above the box, and the
+//     12pt message 8 below it, red only when it is the error. SF Pro Text tracking on the
+//     label (-0.15 at 14pt) per Apple's SF tracking table. iOS places field labels above the
+//     control, which is what the shell already does, and Input's own above-label matches.
 //   Android (Material 3): M3 type roles — the label is body-large 16/24 at +0.5 tracking when it
 //     stays above, and the supporting text below a text field is body-small 12/16 at +0.4. The
 //     stack opens to 4px because M3's supporting text sits tighter under the box.
@@ -39,13 +41,13 @@ export const webSkin: FieldSkin = {
 };
 
 export const iosSkin: FieldSkin = {
-  stack: { flexDirection: "column", gap: 6 },
+  stack: { flexDirection: "column", gap: 8 },
   label: (t) => ({
     fontSize: 14,
     lineHeight: 20,
-    fontWeight: "500",
+    fontWeight: "400",
     letterSpacing: -0.15,
-    color: t.foreground,
+    color: t["muted-foreground"],
   }),
   message: (t, error) => ({
     fontSize: 12,

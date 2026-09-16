@@ -33,6 +33,15 @@ export interface ColorTokens {
   "warning-foreground": string;
   border: string;
   input: string;
+  /**
+   * The RESTING border of a text field on the iOS skins (Input, Textarea, Select,
+   * Autocomplete, PhoneInput), and only there: a gray-300 hairline on a white box,
+   * the iOS field look the design source draws, which sits BELOW the 3:1 control
+   * floor `input` holds (see `fieldBorder` in src/style/field-colors.ts for the
+   * disclosed trade-off). Focus and error still paint `ring` and `destructive`.
+   * Omit in legacy maps to rest on `input`.
+   */
+  "field-border"?: string;
   ring: string;
   // Categorical data-viz series colors, assigned to series in fixed order
   // (series 1 is always chart-1, never re-ranked when a series is filtered
@@ -106,6 +115,15 @@ export const lightColors: ColorTokens = {
   // nudging it by eye. test/tokens.test.ts pins the floor, and asserts `border`
   // stays BELOW it so the two cannot be collapsed back together.
   input: "#8b8f97",
+  // The iOS field's resting hairline, from the "iOS Mobile Input Fields" Figma kit
+  // (file N8TScrzAPwpmwxFS1032my, Border/Default): Tailwind gray-300 on a white box,
+  // 1.47:1 against `card`. This is a DELIBERATE, disclosed departure from the 3:1
+  // boundary `input` holds (WCAG 1.4.11), chosen on 2026-09-16 so the iOS fields
+  // read as the iOS reference rather than as the web's heavier outline. Only the
+  // iOS field skins' resting state reads it (through `fieldBorder`); focus and
+  // error keep their full-strength `ring` / `destructive` borders, and the white
+  // `card` box on the tinted page carries the rest of the boundary read.
+  "field-border": "#d1d5db",
   ring: "#3da3f5", // one ring value in both schemes; see colors.css
   "chart-1": "#3da3f5", // Riskora sky/400
   "chart-2": "#fb8c4c", // Riskora orange/400 (the bar highlight)
@@ -143,6 +161,9 @@ export const darkColors: ColorTokens = {
   border: "#222427",
   // Control boundary held to 3:1; see the light `input` above for the full note.
   input: "#696d74",
+  // iOS systemGray4 dark (the same Figma kit's dark Border/Default), 1.5:1 on `card`;
+  // see the light note above for why the iOS resting field border sits below 3:1.
+  "field-border": "#3a3a3c",
   ring: "#3da3f5",
   // Same series values as light: the palette was validated against both
   // surfaces, so brand overrides stay consistent across schemes by default.
@@ -587,9 +608,9 @@ export const shape: Record<PlatformKey, ShapeTokens> = {
   // Riskora: 12 on every control and field, 16 on floating surfaces, 20 on cards,
   // 30 on the app shell and sheets, a 6 checkbox, capsules for chips and badges.
   web: { control: 12, field: 12, card: 20, dialog: 16, menu: 16, sheet: 30, checkbox: 6, pill: 9999 },
-  // HIG / iOS 26: capsule buttons, 10 rounded-border fields, 12 grouped surfaces
+  // HIG / iOS 26: capsule buttons, 8 rounded-border fields (the iOS input-field kit), 12 grouped surfaces
   // with the continuous curve, 28 alerts, 26 menus, the 38 sheet corner, a 5 box.
-  ios: { control: 9999, field: 10, card: 12, dialog: 28, menu: 26, sheet: 38, checkbox: 5, pill: 9999 },
+  ios: { control: 9999, field: 8, card: 12, dialog: 28, menu: 26, sheet: 38, checkbox: 5, pill: 9999 },
   // Material 3: stadium buttons, the 4 filled-field top corner, the 12 medium shape
   // for cards, 28 extra-large dialogs and sheets, 4 extra-small menus, a 2 box.
   android: { control: 9999, field: 4, card: 12, dialog: 28, menu: 4, sheet: 28, checkbox: 2, pill: 9999 },

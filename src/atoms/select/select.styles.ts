@@ -1,5 +1,6 @@
 import { StyleSheet, type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, alpha, activeIndicator, shape, type FloatingLabelStyles } from "../../style/index.js";
+import { fieldBorder } from "../../style/field-colors.js";
 
 // Co-located Select skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so they follow light/dark). The option-list panel
@@ -10,10 +11,11 @@ import { type ColorTokens, shadow, alpha, activeIndicator, shape, type FloatingL
 // on every platform (the open/focus accent and the selected-row indicator are the
 // indigo `primary`, never a platform default); only the native SHAPE, sizing,
 // fill, border/underline treatment, and press feedback change per OS:
-//   iOS 26 (Liquid Glass pop-up button): a PLAIN hairline-outlined trigger
-//     (~12 radius, 1px `border`, `background` fill, NO heavy gray capsule), ~44pt
-//     tall, with a trailing chevron-up-down glyph in `primary`; press = opacity
-//     dim (~0.8). The menu is the very rounded Liquid Glass popover (26 radius,
+//   iOS: the "iOS Mobile Input Fields" reference's country select (see
+//     input.styles.ts): the same white `card` box as the Input (8 radius, the 1pt
+//     gray-300 `field-border` hairline, `ring` when open), ~44pt tall, a 16pt
+//     value, and a trailing ▾ caret in `muted-foreground`; press = opacity dim
+//     (~0.8). The menu is the very rounded Liquid Glass popover (26 radius,
 //     `popover`, soft shadow, ~17pt rows ~42pt tall, hairline group separators);
 //     the selected row shows a LEADING brand checkmark.
 //   Android (Material 3 exposed dropdown): a filled trigger (subtle `muted`
@@ -192,48 +194,55 @@ export const webSkin: SelectSkin = {
 // ---------- iOS 26 (Liquid Glass) pop-up button + menu ----------
 // Apple's iOS 26 pop-up button is a PLAIN, lightly outlined row (not a heavy
 // filled gray capsule): the value text followed by a trailing chevron-up-down
-// disclosure tinted with the brand `primary`, over the `background` fill with a
-// single hairline `border`, ~44pt tall and only modestly rounded (~12pt). The
+// disclosure, drawn as the reference's field box: `card` fill, the resting
+// `field-border` hairline, `ring` when open, 44pt tall, the 8pt field corner. The
 // MENU it opens is the Liquid Glass surface from Apple's kit: a VERY rounded
 // popover (26pt continuous corners), `popover` fill, a soft drop shadow, ~17pt
 // rows that are ~42pt tall (the kit's iPhone "Menu Item, Title" is 198x42), with
 // a hairline group separator between rows. The SELECTED row is marked by a
 // LEADING brand checkmark (the kit's "Menu Item - Selectable" puts the check on
 // the leading edge), in `primary`.
-const IOS_TRIGGER_RADIUS = 12;
 const IOS_MENU_RADIUS = 26;
 const IOS_TRIGGER_BOX: Record<Size, number> = { small: 36, default: 44, large: 50 };
+// The reference's 16pt value (the same ladder as the Input's iOS skin).
 const IOS_TEXT: Record<Size, TextStyle> = {
-  small: { fontSize: 13, lineHeight: 18 },
-  default: { fontSize: 15, lineHeight: 20 },
-  large: { fontSize: 17, lineHeight: 22 },
+  small: { fontSize: 13, lineHeight: 16 },
+  default: { fontSize: 16, lineHeight: 24 },
+  large: { fontSize: 17, lineHeight: 26 },
+};
+// The above-trigger label: the reference's 14pt regular secondary title.
+const IOS_LABEL: Record<Size, TextStyle> = {
+  small: { fontSize: 12, lineHeight: 16 },
+  default: { fontSize: 14, lineHeight: 20 },
+  large: { fontSize: 16, lineHeight: 24 },
 };
 // Menu rows hold the iOS body size (17pt) regardless of the trigger's size axis,
 // matching the kit's fixed menu type.
 const IOS_ROW_TEXT: TextStyle = { fontSize: 17, lineHeight: 22 };
 export const iosSkin: SelectSkin = {
   text: (size) => IOS_TEXT[size],
-  label: (t, size) => ({ marginBottom: 6, fontWeight: "600", color: t.foreground, ...IOS_TEXT[size] }),
+  label: (t, size) => ({ marginBottom: 8, fontWeight: "400", letterSpacing: -0.15, color: t["muted-foreground"], ...IOS_LABEL[size] }),
   // Inline (toolbar) label: iOS uses a regular-weight secondary label beside the
   // value (the iOS bar/toolbar caption read), tinted `muted-foreground`.
   inlineLabel: (t, size) => ({ fontWeight: "400", color: t["muted-foreground"], ...IOS_TEXT[size] }),
-  // A plain pop-up button: hairline-outlined row over `background`, NOT a filled
-  // capsule, so the value + primary chevron read as the iOS 26 pop-up control.
-  trigger: (t, size) => ({
+  // The reference's select trigger: the Input's white box (see input.styles.ts),
+  // its resting hairline turning `ring` while the list is open.
+  trigger: (t, size, open) => ({
     ...TRIGGER_ROW,
-    borderRadius: IOS_TRIGGER_RADIUS,
+    borderRadius: shape.ios.field,
+    borderCurve: "continuous",
     borderWidth: 1,
-    borderColor: t.border,
-    backgroundColor: t.background,
-    paddingHorizontal: 14,
+    borderColor: open ? t.ring : fieldBorder(t),
+    backgroundColor: t.card,
+    paddingHorizontal: 12,
     height: IOS_TRIGGER_BOX[size],
   }),
   triggerValue: { flexDirection: "row", alignItems: "center", gap: 8 },
   valueText: (t, size, hasValue) => ({ color: hasValue ? t.foreground : t["muted-foreground"], ...IOS_TEXT[size] }),
-  // The trailing disclosure is the brand indigo, the iOS pop-up button tint.
-  // "⇅" reads as the chevron-up-down pop-up disclosure inline.
-  chevron: (t, size) => ({ color: t.primary, fontWeight: "600", ...IOS_TEXT[size] }),
-  chevronGlyph: "⇅",
+  // The trailing disclosure is the reference's gray caret (its Icon/Default), a
+  // small filled ▾ in `muted-foreground`, unchanged while the list is open.
+  chevron: (t, size) => ({ color: t["muted-foreground"], ...IOS_TEXT[size] }),
+  chevronGlyph: "▾",
   // The Liquid Glass menu: very rounded (26pt), `popover`, soft shadow, and
   // CLIPPED to those corners so a pressed row, the full-bleed separators, and any
   // option scrolled under the cap cannot poke past them. iOS still draws the soft
