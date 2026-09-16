@@ -27,11 +27,8 @@ import { OVERLAY_RECIPES, TOAST_RECIPE } from "./e2e/support/overlay-recipes.ts"
 // ---------------------------------------------------------------------------
 
 const sidebar = (navConfig as {
-  web: { sidebar: { components?: { slug: string }[] }[] };
+  web: { sidebar: { base?: string; components?: { slug: string }[] }[] };
 }).web.sidebar;
-
-// A component can appear in more than one navigation group; capture its route once.
-const componentSlugs = [...new Set(sidebar.flatMap((group) => group.components ?? []).map((c) => c.slug))];
 
 /** Overlay routes and the state that opens them (see states below). */
 const OVERLAY_STATE: Record<string, string> = {
@@ -48,12 +45,28 @@ const OVERLAY_STATE: Record<string, string> = {
   toast: "show-toast",
 };
 
-const componentRoutes: RouteDef[] = componentSlugs.map((slug) => ({
-  path: `/components/${slug}`,
-  name: slug,
-  element: "[data-preview-card]",
-  states: OVERLAY_STATE[slug] ? [OVERLAY_STATE[slug]!] : [],
-}));
+// Each sidebar group carries the path base its entries live under (/components,
+// /templates, /patterns); a component can appear in more than one group, so a path is
+// captured once. Only the component reference renders the preview card: the template
+// and pattern pages (MockupDocPage) are shot full-page and open no overlay.
+const seenPaths = new Set<string>();
+const componentRoutes: RouteDef[] = sidebar.flatMap((group) =>
+  (group.components ?? []).flatMap((c): RouteDef[] => {
+    const base = group.base ?? "/components";
+    const path = `${base}/${c.slug}`;
+    if (seenPaths.has(path)) return [];
+    seenPaths.add(path);
+    if (base !== "/components") return [{ path, name: `${base.slice(1)}/${c.slug}` }];
+    return [
+      {
+        path,
+        name: c.slug,
+        element: "[data-preview-card]",
+        states: OVERLAY_STATE[c.slug] ? [OVERLAY_STATE[c.slug]!] : [],
+      },
+    ];
+  }),
+);
 
 /** Functional-layer components: the ones that render the glass material. */
 const FUNCTIONAL_LAYER = [
