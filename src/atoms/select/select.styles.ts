@@ -1,5 +1,5 @@
 import { StyleSheet, type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow, alpha, activeIndicator, type FloatingLabelStyles } from "../../style/index.js";
+import { type ColorTokens, shadow, alpha, activeIndicator, shape, type FloatingLabelStyles } from "../../style/index.js";
 
 // Co-located Select skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so they follow light/dark). The option-list panel
@@ -135,9 +135,9 @@ const TRIGGER_ROW: ViewStyle = {
 // it when hosted). The skins own the card's shape/fill/shadow only.
 export const PANEL_ANCHOR: ViewStyle = { position: "absolute", top: "100%", start: 0, end: 0, zIndex: 50, marginTop: 4 };
 
-// ---------- Web: the established Canvas look (lifted verbatim) ----------
-// Trigger height per size; mirrors the Input control's footprint (h-8/h-9/h-10).
-const WEB_TRIGGER_BOX: Record<Size, number> = { small: 32, default: 36, large: 40 };
+// ---------- Web: the Riskora dashboard field + menu ----------
+// Trigger height per size; mirrors the Input control's footprint (40 / 48 / 56).
+const WEB_TRIGGER_BOX: Record<Size, number> = { small: 40, default: 48, large: 56 };
 export const webSkin: SelectSkin = {
   text: textType,
   label: (t, size) => ({ marginBottom: 6, fontWeight: "500", color: t.foreground, ...TEXT_SIZE[size] }),
@@ -146,34 +146,36 @@ export const webSkin: SelectSkin = {
   inlineLabel: (t, size) => ({ fontWeight: "500", color: t["muted-foreground"], ...TEXT_SIZE[size] }),
   trigger: (t, size) => ({
     ...TRIGGER_ROW,
-    borderRadius: 6,
+    borderRadius: shape.web.field,
     borderWidth: 1,
     borderColor: t.input,
-    backgroundColor: t.background,
-    paddingHorizontal: 12,
+    backgroundColor: t.card,
+    paddingHorizontal: 16,
     height: WEB_TRIGGER_BOX[size],
   }),
   triggerValue: { flexDirection: "row", alignItems: "center", gap: 8 },
   valueText: (t, size, hasValue) => ({ color: hasValue ? t.foreground : t["muted-foreground"], ...TEXT_SIZE[size] }),
   chevron: (t, size) => ({ color: t["muted-foreground"], ...TEXT_SIZE[size] }),
   chevronGlyph: "▾",
+  // The list is the Riskora menu: a 16px-cornered card with an 8px inset, 40px
+  // rows with a 10px corner, the soft panel fill marking the selected row.
   panel: (t) => ({
-    maxHeight: 240,
+    maxHeight: 280,
     overflow: "hidden", // clip rows to the rounded card; the list scrolls inside
-    borderRadius: 6,
+    borderRadius: shape.web.menu,
     borderWidth: 1,
     borderColor: t.border,
     backgroundColor: t.popover,
-    padding: 4,
+    padding: 8,
     ...shadow("lg"),
   }),
   optionRow: (t, selected) => ({
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    borderRadius: 2,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
+    gap: 10,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     ...(selected ? { backgroundColor: t.accent } : null),
   }),
   optionPressed: (t) => ({ backgroundColor: t.accent }),
@@ -183,7 +185,7 @@ export const webSkin: SelectSkin = {
   disabledOpacity: 0.5,
   pressedOpacity: 0.9,
   ripple: null,
-  // Web keeps the established Canvas look: the label sits ABOVE the trigger.
+  // The label sits ABOVE the trigger (Riskora's form rows).
   floatingLabel: false,
 };
 

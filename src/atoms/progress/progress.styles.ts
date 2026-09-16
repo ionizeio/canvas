@@ -17,9 +17,8 @@ import { type ProgressSkin, type Size } from "./progress.shared.js";
 //     plus the M3 segmented anatomy: a 4dp GAP between the active indicator and the
 //     track, and the 4x4dp stop indicator dot in the active color at the trailing edge
 //     (rendered by the shell via trackGap/stopIndicator; determinate only, per M3).
-//   Web: the established Canvas / shadcn look (Radix Progress): an h-2 (8px) FULLY ROUNDED
-//     track, `bg-primary/20` inactive track, `bg-primary` fill. Kept verbatim as the
-//     web-appropriate default.
+//   Web: the Riskora meter: a chunkier FULLY ROUNDED track (12px at the base size) on
+//     the soft `muted` panel fill, with the sky `primary` fill.
 
 // iOS: a thin 4pt bar across all sizes, nudged up/down a hair by the size axis so `small`
 // and `large` still read as distinct without ever losing the hairline iOS feel.
@@ -35,8 +34,8 @@ const ANDROID_RADIUS: Record<Size, number> = { small: 1.5, base: 2, large: 4 };
 
 // Web (shadcn/Radix): h-2 (8px) default, fully rounded; the size axis steps the thickness
 // while keeping the rounded-full ends.
-const WEB_HEIGHT: Record<Size, number> = { small: 6, base: 8, large: 12 };
-const WEB_RADIUS: Record<Size, number> = { small: 3, base: 4, large: 6 };
+const WEB_HEIGHT: Record<Size, number> = { small: 8, base: 12, large: 20 };
+const WEB_RADIUS: Record<Size, number> = { small: 4, base: 6, large: 10 };
 
 // Header type shared across every platform (the label is brand type, not a platform face,
 // matching Checkbox/Radio/Switch). The canonical scale: the title line is 14/20 medium
@@ -90,8 +89,8 @@ export const androidSkin: ProgressSkin = {
 export const webSkin: ProgressSkin = {
   height: WEB_HEIGHT,
   radius: WEB_RADIUS,
-  // shadcn: bg-primary/20 track, bg-primary fill.
-  trackColor: (t: ColorTokens) => alpha(t.primary, 0.2),
+  // Riskora: the soft panel fill as the inactive track, the sky primary as the fill.
+  trackColor: (t: ColorTokens) => t.muted,
   fillColor: (t: ColorTokens) => t.primary,
   label,
   description,

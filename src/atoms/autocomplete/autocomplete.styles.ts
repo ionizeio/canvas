@@ -1,5 +1,5 @@
 import { StyleSheet, type ViewStyle, type TextStyle } from "react-native";
-import { shadow, activeIndicator, type ColorTokens, type FloatingLabelStyles } from "../../style/index.js";
+import { shadow, activeIndicator, shape, type ColorTokens, type FloatingLabelStyles } from "../../style/index.js";
 
 // Co-located Autocomplete skins, one per platform. An Autocomplete is a searchable
 // single-select: an editable field that filters an open option list. The BRAND
@@ -108,9 +108,9 @@ function webText(size: Size): TextStyle {
 }
 
 // Field height per size; mirrors Input's footprint per platform.
-const WEB_FIELD_BOX: Record<Size, number> = { small: 32, default: 36, large: 40 };
+const WEB_FIELD_BOX: Record<Size, number> = { small: 40, default: 48, large: 56 };
 
-// ---------- Web: the established Canvas look (lifted verbatim) ----------
+// ---------- Web: the Riskora dashboard field + menu ----------
 export const webSkin: AutocompleteSkin = {
   text: webText,
   label: (t, size) => ({ marginBottom: 6, fontWeight: "500", color: t.foreground, ...TEXT_SIZE[size] }),
@@ -118,11 +118,11 @@ export const webSkin: AutocompleteSkin = {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    borderRadius: 6,
+    borderRadius: shape.web.field,
     borderWidth: 1,
     borderColor: t.input,
-    backgroundColor: t.background,
-    paddingHorizontal: 12,
+    backgroundColor: t.card,
+    paddingHorizontal: 16,
     height: WEB_FIELD_BOX[size],
   }),
   fieldText: (t, size, muted) => ({ color: muted ? t["muted-foreground"] : t.foreground, ...TEXT_SIZE[size] }),
@@ -131,28 +131,29 @@ export const webSkin: AutocompleteSkin = {
     alignSelf: "stretch", alignItems: "center", justifyContent: "center", flexShrink: 0,
     width: 24, minHeight: 24,
   }),
+  // The list is the Riskora menu: a 16px-cornered card with an 8px inset and
+  // 40px rows with a 10px corner (matches Select's panel).
   popover: (t) => ({
-    maxHeight: 240,
+    maxHeight: 280,
     overflow: "hidden", // clip rows to the rounded card; the list scrolls inside
-    borderRadius: 6,
+    borderRadius: shape.web.menu,
     borderWidth: 1,
     borderColor: t.border,
     backgroundColor: t.popover,
-    padding: 4,
+    padding: 8,
     ...shadow("lg"),
   }),
-  emptyRow: { paddingHorizontal: 8, paddingVertical: 6 },
+  emptyRow: { paddingHorizontal: 12, paddingVertical: 10 },
   emptyText: (t, size) => ({ color: t["muted-foreground"], ...TEXT_SIZE[size] }),
   row: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    borderRadius: 2,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
+    gap: 10,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
-  // Web marks both selection and press with the brand `accent` fill (the
-  // established Canvas look, lifted verbatim).
+  // Web marks both selection and press with the soft `accent` panel fill.
   rowSelected: (t) => ({ backgroundColor: t.accent }),
   rowPressed: (t) => ({ backgroundColor: t.accent }),
   check: (t, size) => ({ width: 14, color: t["popover-foreground"], ...TEXT_SIZE[size] }),
@@ -161,7 +162,7 @@ export const webSkin: AutocompleteSkin = {
   disabledOpacity: 0.5,
   pressedOpacity: null, // web shows press via the active accent fill, not opacity
   ripple: null,
-  // Web keeps the established Canvas look: the label sits ABOVE the field.
+  // The label sits ABOVE the field (Riskora's form rows).
   floatingLabel: false,
 };
 

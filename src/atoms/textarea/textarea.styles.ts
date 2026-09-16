@@ -1,6 +1,6 @@
 import { destructiveText } from "../../style/destructive-text.js";
 import { type TextStyle } from "react-native";
-import { type ColorTokens, type FloatingLabelStyles } from "../../style/index.js";
+import { type ColorTokens, shape, type FloatingLabelStyles } from "../../style/index.js";
 
 // Co-located Textarea skins, one per platform. The field is a multiline
 // TextInput, so every fragment is a TextStyle. The BRAND survives on every
@@ -18,8 +18,8 @@ import { type ColorTokens, type FloatingLabelStyles } from "../../style/index.js
 //     indicator (underline). Top corners ~4, square bottom. The indicator is a
 //     1px resting line that thickens to 2px indigo on focus (destructive on
 //     error).
-//   Web: the established Canvas look (lifted verbatim) — full-width, 6 radius,
-//     1px border, on the background fill; border is error > focus(ring) > input.
+//   Web: the Riskora dashboard field — full-width, the 12px field corner,
+//     1px border, on the card fill; border is error > focus(ring) > input.
 
 export type Size = "small" | "base" | "large";
 
@@ -85,22 +85,23 @@ export function minHeight(rows?: number): TextStyle {
   return { minHeight: r == null ? 80 : r * 22 + 16 };
 }
 
-// ---------- Web: the established Canvas look (lifted verbatim) ----------
-// Full width, bordered, padded, on the background fill, with the foreground
-// text color. Border resolves error > focus(ring) > default input.
+// ---------- Web: the Riskora dashboard field ----------
+// Full width, a white (`card`) box with the 12px field corner and a full 1px
+// border, 16px inset, with the foreground text color. Border resolves error >
+// focus(ring) > default input (the 3:1 control boundary; see input.styles.ts).
 export const webSkin: TextareaSkin = {
   field: (t, st) => ({
     width: "100%",
-    borderRadius: 6,
+    borderRadius: shape.web.field,
     borderWidth: 1,
     borderColor: st.error ? t.destructive : st.focused ? t.ring : t.input,
-    backgroundColor: t.background,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    backgroundColor: t.card,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     color: t.foreground,
   }),
-  // Web keeps the established Canvas look: the label sits ABOVE the field (14/20
-  // medium weight per size, matching the Field/Form composers and the Input).
+  // The label sits ABOVE the field (14/20 medium weight per size, matching the
+  // Field/Form composers and the Input).
   floatingLabel: false,
   labelAbove: (t, size) => ({ ...aboveLabelType(size), fontWeight: "500", color: t.foreground }),
   // The count line: the established Canvas caption (12/16), muted, turning

@@ -10,7 +10,7 @@ import { type ColorTokens } from "../../style/index.js";
 // Field paints no surface and owns no pressable of its own: the control it wraps brings its own
 // per-OS press feedback from its own skin, so nothing here declares ripple or opacity.
 //
-//   Web: the established Canvas field rhythm — a 14/20 medium label, a 6px stack gap, and a 12/16
+//   Web: the Riskora form row — a 14/20 medium label, an 8px stack gap, and a 12/16
 //     message line. Matches what Input already renders above itself, so a wrapped and an unwrapped
 //     field line up in one column.
 //   iOS (HIG): SF Pro Text tracking on the label (-0.15 at 14pt) and on the caption (0 at 12pt),
@@ -29,7 +29,7 @@ export interface FieldSkin {
 }
 
 export const webSkin: FieldSkin = {
-  stack: { flexDirection: "column", gap: 6 },
+  stack: { flexDirection: "column", gap: 8 },
   label: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t.foreground }),
   message: (t, error) => ({
     fontSize: 12,

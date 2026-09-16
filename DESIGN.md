@@ -419,7 +419,7 @@ the web follows the Riskora kit: 12 on every control and field, 16 on floating s
 <!-- @generated:shapes -->
 | Platform | Button | Card | Field | Minimum touch target |
 | --- | --- | --- | --- | --- |
-| web | 6px | 8px | 6px | 0px |
+| web | 12px | 8px | 12px | 0px |
 | ios | 9999px | 12px | 10px | 44px |
 | android | 9999px | 12px | 4px | 48px |
 <!-- @/generated -->

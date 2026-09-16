@@ -201,8 +201,8 @@ export const androidSkin: SliderSkin = {
 };
 
 // ----- Web: the established Canvas look (shadcn-matched) -----
-const WEB_TRACK_H: Record<Size, number> = { small: 5, base: 6, large: 8 };
-const WEB_THUMB: Record<Size, number> = { small: 14, base: 16, large: 20 };
+const WEB_TRACK_H: Record<Size, number> = { small: 6, base: 8, large: 10 };
+const WEB_THUMB: Record<Size, number> = { small: 16, base: 20, large: 24 };
 
 export const webSkin: SliderSkin = {
   trackHeight: (size) => WEB_TRACK_H[size],

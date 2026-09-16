@@ -37,13 +37,14 @@ const NATIVE_TRACK: Record<Size, { width: number; height: number }> = {
   large: { width: 56, height: 34 },
 };
 
+// Riskora's toggle: a 44x24 pill at the base size with a 20px thumb inset 2px.
 const WEB_TRACK: Record<Size, { width: number; height: number }> = {
-  small: { width: 32, height: 20 },
-  base: { width: 36, height: 20 },
-  large: { width: 44, height: 24 },
+  small: { width: 36, height: 20 },
+  base: { width: 44, height: 24 },
+  large: { width: 52, height: 28 },
 };
 
-const WEB_THUMB: Record<Size, number> = { small: 14, base: 16, large: 20 };
+const WEB_THUMB: Record<Size, number> = { small: 16, base: 20, large: 24 };
 
 const PILL: ViewStyle = { borderRadius: 999, position: "relative" };
 const ABS: ViewStyle = { position: "absolute", borderRadius: 999 };

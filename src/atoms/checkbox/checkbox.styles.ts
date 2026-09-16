@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens } from "../../style/index.js";
+import { shape, type ColorTokens } from "../../style/index.js";
 import { type CheckboxSkin, type Size } from "./checkbox.shared.js";
 
 // Co-located Checkbox skins, one per platform, all driven by the brand tokens
@@ -17,7 +17,7 @@ import { type CheckboxSkin, type Size } from "./checkbox.shared.js";
 //     14/16/20px box per size, 3 radius, 1px border, brand fill + foreground check.
 
 // Box dimensions per size.
-const WEB_BOX: Record<Size, number> = { small: 14, base: 16, large: 20 };
+const WEB_BOX: Record<Size, number> = { small: 16, base: 20, large: 24 };
 const IOS_BOX: Record<Size, number> = { small: 18, base: 20, large: 24 };
 const ANDROID_BOX: Record<Size, number> = { small: 18, base: 18, large: 20 };
 
@@ -26,7 +26,7 @@ const ANDROID_BOX: Record<Size, number> = { small: 18, base: 18, large: 20 };
 function glyphType(fontSize: number): TextStyle {
   return { fontSize, lineHeight: fontSize };
 }
-const WEB_GLYPH: Record<Size, number> = { small: 12, base: 12, large: 14 };
+const WEB_GLYPH: Record<Size, number> = { small: 12, base: 14, large: 16 };
 const IOS_GLYPH: Record<Size, number> = { small: 13, base: 14, large: 17 };
 const ANDROID_GLYPH: Record<Size, number> = { small: 13, base: 13, large: 15 };
 
@@ -69,11 +69,11 @@ function boxBase(box: number, nudge: boolean): ViewStyle {
   };
 }
 
-// ---------- Web: the established Canvas look ----------
+// ---------- Web: the Riskora dashboard checkbox (a 20px box with the 6px corner) ----------
 export const webSkin: CheckboxSkin = {
   box: (t, filled, size, nudge) => ({
     ...boxBase(WEB_BOX[size], nudge),
-    borderRadius: 3,
+    borderRadius: shape.web.checkbox,
     borderWidth: 1,
     ...(filled
       ? { borderColor: t.primary, backgroundColor: t.primary }

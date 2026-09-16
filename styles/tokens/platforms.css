@@ -12,21 +12,21 @@
 
    Values are lifted verbatim from the upstream skins. */
 :root,[data-platform="web"]{
-  /* Button — 6px radius, medium label, opacity press */
-  --p-btn-radius:6px;--p-btn-pad-x:16px;--p-btn-pad-y:8px;--p-btn-gap:8px;
+  /* Button — the Riskora control: 12px corner, 44px tall, medium label, opacity press */
+  --p-btn-radius:12px;--p-btn-pad-x:20px;--p-btn-pad-y:12px;--p-btn-gap:8px;
   --p-btn-font:14px;--p-btn-lh:20px;--p-btn-weight:500;--p-btn-tracking:0px;
-  --p-btn-pad-x-sm:12px;--p-btn-pad-y-sm:6px;--p-btn-font-sm:12px;--p-btn-lh-sm:16px;
-  --p-btn-pad-x-lg:24px;--p-btn-pad-y-lg:12px;--p-btn-font-lg:16px;--p-btn-lh-lg:24px;
-  --p-btn-square:40px;--p-btn-square-sm:32px;--p-btn-square-lg:48px;
+  --p-btn-pad-x-sm:14px;--p-btn-pad-y-sm:8px;--p-btn-font-sm:14px;--p-btn-lh-sm:20px;
+  --p-btn-pad-x-lg:24px;--p-btn-pad-y-lg:14px;--p-btn-font-lg:16px;--p-btn-lh-lg:24px;
+  --p-btn-square:44px;--p-btn-square-sm:36px;--p-btn-square-lg:52px;
   --p-press:0.9 /* @kind other */;--p-disabled:0.5 /* @kind other */;
   /* Card — hairline + soft resting shadow, 24px inset */
   --p-card-radius:8px;--p-card-shadow:0px 1px 2px rgba(13,18,27,0.04);--p-card-shadow-raised:0px 0px 24px rgba(13,18,27,0.1);
   --p-card-pad:24px;--p-card-gap:16px;--p-card-pad-compact:16px;--p-card-gap-compact:12px;
   --p-card-pad-comfortable:32px;--p-card-gap-comfortable:24px;--p-card-border:var(--border) /* @kind other */;
-  /* Field — full 1px border, 36px tall, background fill */
-  --p-field-radius:6px;--p-field-height:36px;--p-field-height-sm:32px;--p-field-height-lg:40px;
-  --p-field-fill:var(--background);--p-field-pad-x:16px;--p-field-font:14px;--p-field-lh:20px;
-  --p-field-border-width:1px;--p-field-underline:0px;--p-field-radius-bottom:6px;
+  /* Field — the Riskora box: 12px corner, full 1px border, 48px tall, card fill */
+  --p-field-radius:12px;--p-field-height:48px;--p-field-height-sm:40px;--p-field-height-lg:56px;
+  --p-field-fill:var(--card);--p-field-pad-x:16px;--p-field-font:14px;--p-field-lh:20px;
+  --p-field-border-width:1px;--p-field-underline:0px;--p-field-radius-bottom:12px;
   /* Only M3 draws a darker active indicator; web/iOS keep the bottom edge the same hairline. */
   --p-field-underline-color:var(--input);
   --p-label-weight:500;--p-label-tracking:0px;
@@ -41,18 +41,18 @@
   --p-label-float-reserve:0px;--p-label-float-font:12px;--p-label-float-lh:16px;--p-label-float-tracking:0.4px;
   --p-label-float-placeholder:1 /* @kind other */;
   /* Choice controls */
-  --p-check-size:16px;--p-check-radius:3px;--p-check-border:1px;
-  --p-switch-w:36px;--p-switch-h:20px;--p-switch-thumb-w:16px;--p-switch-thumb-h:16px;--p-switch-thumb-fill:var(--background);
+  --p-check-size:20px;--p-check-radius:6px;--p-check-border:1px;
+  --p-switch-w:44px;--p-switch-h:24px;--p-switch-thumb-w:20px;--p-switch-thumb-h:20px;--p-switch-thumb-fill:var(--background);
   /* Switch off state (switch.styles.ts: the on-track is always the brand primary; off is the platform's resting anatomy) */
   --p-switch-off-track:var(--input);--p-switch-off-ring:none;--p-switch-thumb-inset:2px;
-  --p-switch-thumb-off-w:16px;--p-switch-thumb-off-h:16px;--p-switch-thumb-off-fill:var(--background);--p-switch-thumb-off-x:2px;
+  --p-switch-thumb-off-w:20px;--p-switch-thumb-off-h:20px;--p-switch-thumb-off-fill:var(--background);--p-switch-thumb-off-x:2px;
   --p-switch-thumb-shadow:none;
   /* Pills and tiles */
-  --p-badge-radius:6px;--p-badge-font:12px;--p-badge-weight:500;--p-badge-tracking:0px;
-  --p-chip-radius:9999px;--p-chip-pad-x:8px;--p-chip-pad-y:1px;--p-chip-font:12px;--p-chip-gap:4px;
+  --p-badge-radius:9999px;--p-badge-font:12px;--p-badge-weight:500;--p-badge-tracking:0px;
+  --p-chip-radius:9999px;--p-chip-pad-x:10px;--p-chip-pad-y:4px;--p-chip-font:12px;--p-chip-gap:6px;
   /* Chip glyphs (chip.styles.ts: 12px web/iOS remove glyph; the M3 selected checkmark shows on Android only) */
   --p-chip-remove:12px;--p-chip-check-display:none /* @kind other */;--p-chip-check-size:18px;
-  --p-avatar-square-radius:6px;
+  --p-avatar-square-radius:12px;
   /* Banners and overlays */
   --p-alert-radius:8px;--p-alert-tracking:0px;
   --p-overlay-radius:8px;--p-sheet-radius:12px;
@@ -135,8 +135,8 @@
   /* Collapsible (collapsible.styles.ts webSkin: the Radix caret, 0→90°) */
   --p-collapse-glyph:"chevron-right" /* @kind other */;--p-collapse-spin:90deg /* @kind other */;
   /* Progress (progress.styles.ts webSkin: shadcn h-2 track at primary/20) */
-  --p-progress-h-small:6px;--p-progress-h-base:8px;--p-progress-h-large:12px;
-  --p-progress-track:color-mix(in oklab, var(--primary) 20%, transparent);
+  --p-progress-h-small:8px;--p-progress-h-base:12px;--p-progress-h-large:20px;
+  --p-progress-track:var(--muted);
   --p-progress-gap:0px;--p-progress-stop:0px;--p-progress-stop-opacity:0 /* @kind other */;
   /* Emblem (emblem.styles.ts webSkin: the Catalyst rounded square) */
   --p-emblem-box-small:32px;--p-emblem-box-default:40px;--p-emblem-box-large:48px;
@@ -159,7 +159,7 @@
   --p-empty-pad-x:24px;--p-empty-pad-y:32px;
   --p-empty-title:16px;--p-empty-title-lh:24px;--p-empty-title-weight:600;
   /* Radio (radio.styles.ts webSkin) */
-  --p-radio-ring-small:14px;--p-radio-ring-default:16px;--p-radio-ring-large:20px;
+  --p-radio-ring-small:16px;--p-radio-ring-default:20px;--p-radio-ring-large:24px;
   --p-radio-dot-small:6px;--p-radio-dot-default:8px;--p-radio-dot-large:10px;--p-radio-border:2px;--p-radio-rest-border:var(--input);
   /* Textarea + field captions (textarea.styles.ts webSkin) */
   --p-textarea-fill:var(--background);--p-textarea-underline-rest:var(--input);--p-field-caption-tracking:0px;
@@ -177,12 +177,12 @@
   --p-tabbar-inset-x:0px;--p-tabbar-inset-b:0px;--p-tabbar-radius:0px;--p-tabbar-item-radius:0px;
   --p-tabbar-fill:var(--popover) /* @kind other */;--p-tabbar-pad-bottom:0px;
   /* Select (select.styles.ts webSkin) */
-  --p-select-h:36px;--p-select-radius:6px;--p-select-radius-bottom:6px;--p-select-border:1px;--p-select-underline:0px;
-  --p-select-border-color:var(--input);--p-select-underline-rest:var(--input);--p-select-fill:var(--background);--p-select-pad-x:12px;
+  --p-select-h:48px;--p-select-radius:12px;--p-select-radius-bottom:12px;--p-select-border:1px;--p-select-underline:0px;
+  --p-select-border-color:var(--input);--p-select-underline-rest:var(--input);--p-select-fill:var(--card);--p-select-pad-x:16px;
   --p-select-font:14px;--p-select-lh:20px;--p-select-chevron:"▾" /* @kind other */;--p-select-chevron-color:var(--muted-foreground);--p-select-chevron-weight:400;
-  --p-select-panel-max:240px;--p-select-panel-radius:6px;--p-select-panel-border:1px;--p-select-panel-pad-x:4px;--p-select-panel-pad-y:4px;
+  --p-select-panel-max:280px;--p-select-panel-radius:16px;--p-select-panel-border:1px;--p-select-panel-pad-x:8px;--p-select-panel-pad-y:8px;
   --p-select-panel-shadow:0px 0px 40px rgba(13,18,27,0.14);
-  --p-select-row-radius:2px;--p-select-row-pad-x:8px;--p-select-row-pad-y:6px;--p-select-row-gap:8px;--p-select-row-min-h:0px;
+  --p-select-row-radius:10px;--p-select-row-pad-x:12px;--p-select-row-pad-y:10px;--p-select-row-gap:10px;--p-select-row-min-h:0px;
   --p-select-row-font:14px;--p-select-row-lh:20px;--p-select-row-selected-fill:var(--accent);
   --p-select-check-color:var(--popover-foreground);--p-select-check-weight:400;
   /* AvatarMenu identity pill (an addition, built on Avatar + Dropdown) */
@@ -192,12 +192,12 @@
   --p-idpill-open-border-color:var(--input);
   --p-idpill-name:13px;--p-idpill-name-lh:16px;--p-idpill-name-weight:500;--p-idpill-tracking:0px;
   /* Autocomplete (autocomplete.styles.ts webSkin) */
-  --p-ac-h:36px;--p-ac-radius:6px;--p-ac-radius-bottom:6px;--p-ac-border:1px;--p-ac-underline:0px;
-  --p-ac-border-color:var(--input);--p-ac-underline-rest:var(--input);--p-ac-fill:var(--background);--p-ac-pad-x:12px;
+  --p-ac-h:48px;--p-ac-radius:12px;--p-ac-radius-bottom:12px;--p-ac-border:1px;--p-ac-underline:0px;
+  --p-ac-border-color:var(--input);--p-ac-underline-rest:var(--input);--p-ac-fill:var(--card);--p-ac-pad-x:16px;
   --p-ac-font:14px;--p-ac-lh:20px;--p-ac-chevron:var(--muted-foreground);
-  --p-ac-menu-max:240px;--p-ac-menu-radius:6px;--p-ac-menu-border:1px;--p-ac-menu-pad-x:4px;--p-ac-menu-pad-y:4px;
+  --p-ac-menu-max:280px;--p-ac-menu-radius:16px;--p-ac-menu-border:1px;--p-ac-menu-pad-x:8px;--p-ac-menu-pad-y:8px;
   --p-ac-menu-shadow:0px 0px 40px rgba(13,18,27,0.14);
-  --p-ac-row-radius:2px;--p-ac-row-pad-x:8px;--p-ac-row-pad-y:6px;--p-ac-row-gap:8px;--p-ac-row-min-h:0px;--p-ac-row-separator:0px;
+  --p-ac-row-radius:10px;--p-ac-row-pad-x:12px;--p-ac-row-pad-y:10px;--p-ac-row-gap:10px;--p-ac-row-min-h:0px;--p-ac-row-separator:0px;
   --p-ac-row-font:14px;--p-ac-row-lh:20px;--p-ac-row-selected:var(--accent);
   --p-ac-check-w:14px;--p-ac-check-color:var(--popover-foreground);
   /* Dropdown menu (dropdown.styles.ts webSkin) */
@@ -265,10 +265,10 @@
   --p-page-radius:6px;--p-page-border:1px;--p-page-weight:500;--p-page-rest-fill:var(--background);
   --p-page-selected-fill:var(--primary);--p-page-selected-border:var(--primary);--p-page-selected-label:var(--primary-foreground);
   /* Slider (slider.styles.ts webSkin — shadcn-matched) */
-  --p-slider-track-h-small:5px;--p-slider-track-h-base:6px;--p-slider-track-h-large:8px;
+  --p-slider-track-h-small:6px;--p-slider-track-h-base:8px;--p-slider-track-h-large:10px;
   --p-slider-track-radius:999px;--p-slider-inner-radius:999px;--p-slider-gap:0px;--p-slider-row-min-h:16px;
-  --p-slider-thumb-w-small:14px;--p-slider-thumb-w-base:16px;--p-slider-thumb-w-large:20px;
-  --p-slider-thumb-h-small:14px;--p-slider-thumb-h-base:16px;--p-slider-thumb-h-large:20px;
+  --p-slider-thumb-w-small:16px;--p-slider-thumb-w-base:20px;--p-slider-thumb-w-large:24px;
+  --p-slider-thumb-h-small:16px;--p-slider-thumb-h-base:20px;--p-slider-thumb-h-large:24px;
   --p-slider-thumb-radius:999px;--p-slider-thumb-fill:var(--background);
   --p-slider-thumb-border:1px;--p-slider-thumb-border-color:var(--primary);--p-slider-thumb-shadow:0px 1px 2px rgba(0,0,0,0.1);
   --p-slider-stop:0px;--p-slider-stop-opacity:0 /* @kind other */;
@@ -282,9 +282,9 @@
   --p-stepper-group-radius:6px;--p-stepper-group-border:1px;--p-stepper-group-fill:var(--background);--p-stepper-group-gap:0px;--p-stepper-outer-gap:0px;
   /* InputOTP (input-otp.styles.ts webSkin — shadcn input-otp) */
   --p-otp-seam:0px;--p-otp-seam-active:0px;--p-otp-shared-edge:0 /* @kind other */;--p-otp-gap-small:0px;--p-otp-gap-base:0px;--p-otp-gap-large:0px;
-  --p-otp-w-small:32px;--p-otp-w-base:36px;--p-otp-w-large:44px;
-  --p-otp-h-small:32px;--p-otp-h-base:36px;--p-otp-h-large:44px;
-  --p-otp-radius:6px;--p-otp-inner-radius:0px;--p-otp-fill:var(--background);
+  --p-otp-w-small:40px;--p-otp-w-base:48px;--p-otp-w-large:56px;
+  --p-otp-h-small:40px;--p-otp-h-base:48px;--p-otp-h-large:56px;
+  --p-otp-radius:12px;--p-otp-inner-radius:0px;--p-otp-fill:var(--card);
   --p-otp-rest-border:1px;--p-otp-active-border:1px;--p-otp-rest-border-color:var(--input);--p-otp-active-border-color:var(--ring);
   --p-otp-active-ring:0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent) /* @kind other */;
   --p-otp-digit-small:15px;--p-otp-digit-base:18px;--p-otp-digit-large:22px;--p-otp-digit-weight:500;--p-otp-digit-tracking:0px;

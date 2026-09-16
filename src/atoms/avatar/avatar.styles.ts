@@ -1,5 +1,5 @@
 import { type TextStyle, type ViewStyle } from "react-native";
-import { alpha, controlRipple, mixOklab, type ColorTokens } from "../../style/index.js";
+import { alpha, controlRipple, mixOklab, shape, type ColorTokens } from "../../style/index.js";
 import { type AvatarSkin, type Size } from "./avatar.shared.js";
 import { type AvatarMenuSkin } from "./avatar-menu.shared.js";
 
@@ -8,7 +8,7 @@ import { type AvatarMenuSkin } from "./avatar-menu.shared.js";
 // avatar.shared.tsx); only the rounded-square corner radius, the initials type,
 // and the press feedback shift per OS.
 //
-// Web keeps the current Canvas look (Catalyst-style): a 6px rounded square and a
+// Web is the Riskora identity tile: a 12px rounded square (the control corner) and a
 // medium-weight (500) initials. iOS uses SF conventions: semibold (600) initials,
 // SF Pro Text tracking per point size, and a softer 10px continuous-feel corner;
 // press dims opacity to 0.8 (HIG). Android follows Material 3: a 12px rounded
@@ -47,10 +47,10 @@ const ANDROID_LABEL: Record<Size, TextStyle> = {
   large: { fontWeight: "500", fontSize: 18, lineHeight: 28, letterSpacing: 0.1 },
 };
 
-// Web: the current Canvas look. Rounded square at the card/menu radius (6); the
+// Web: the Riskora look. Rounded square at the 12px control corner; the
 // pressable trigger dims opacity on press, no ripple.
 export const webSkin: AvatarSkin = {
-  roundedRadius: 6,
+  roundedRadius: shape.web.control,
   labelType: WEB_LABEL,
   ripple: null,
   pressedOpacity: 0.9,

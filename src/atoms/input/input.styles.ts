@@ -1,9 +1,9 @@
 import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, FOCUS_RESET, activeIndicator, type FloatingLabelStyles } from "../../style/index.js";
+import { type ColorTokens, FOCUS_RESET, activeIndicator, shape, type FloatingLabelStyles } from "../../style/index.js";
 
 // Co-located Input skins, one per platform. The BRAND survives on every platform
-// (the cursor/selection is always the indigo `primary`, the focus accent is the
+// (the cursor/selection is always the sky `primary`, the focus accent is the
 // `ring`, never a platform default), and only the native SHAPE, sizing, fill,
 // border treatment, and press feedback change per OS:
 //   iOS (HIG, iOS 26+/Liquid Glass): a PLAIN text field — the value text sits on
@@ -16,9 +16,11 @@ import { type ColorTokens, FOCUS_RESET, activeIndicator, type FloatingLabelStyle
 //     and a flat bottom, a bottom active-indicator underline (1dp `border` at
 //     rest -> 2dp `ring` on focus, `destructive` on error), ~56dp tall; the
 //     action suffix uses android_ripple; disabled opacity 0.38.
-//   Web: the established Canvas look (the current input, lifted verbatim) — full
-//     1px border (error > focus > input), 6 radius, background fill, 36/32/40
-//     tall, opacity 0.5 disabled, action press opacity 0.9.
+//   Web: the Riskora dashboard field — a white (`card`) box with the 12px control
+//     corner and a full 1px border (error > focus > input), 48 tall at the base
+//     size (40 small, 56 large), 16px inset, opacity 0.5 disabled, action press
+//     opacity 0.9. The resting border stays the 3:1 `input` boundary rather than the
+//     source's 1.5:1 hairline (WCAG 1.4.11; see src/style/tokens.ts).
 
 export type Size = "small" | "base" | "large";
 
@@ -75,19 +77,19 @@ function webText(_t: ColorTokens, size: Size): TextStyle {
   return { fontSize: 14, lineHeight: 20 };
 }
 
-// ---------- Web: the established Canvas look ----------
+// ---------- Web: the Riskora dashboard field ----------
 export const webSkin: InputSkin = {
   text: webText,
-  bareBox: (size) => ({ height: size === "large" ? 40 : size === "small" ? 32 : 36 }),
-  groupedHeight: (size) => (size === "large" ? 40 : size === "small" ? 32 : 36),
+  bareBox: (size) => ({ height: size === "large" ? 56 : size === "small" ? 40 : 48 }),
+  groupedHeight: (size) => (size === "large" ? 56 : size === "small" ? 40 : 48),
   bareField: (t, borderColor) => ({
     width: "100%",
-    borderRadius: 6,
+    borderRadius: shape.web.field,
     borderWidth: 1,
     borderColor: t[borderColor],
-    backgroundColor: t.background,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    backgroundColor: t.card,
+    paddingHorizontal: 16,
+    paddingVertical: 0,
     color: t.foreground,
   }),
   groupContainer: (t, borderColor) => ({
@@ -96,9 +98,9 @@ export const webSkin: InputSkin = {
     width: "100%",
     borderWidth: 1,
     borderColor: t[borderColor],
-    borderRadius: 6,
+    borderRadius: shape.web.field,
     overflow: "hidden",
-    backgroundColor: t.background,
+    backgroundColor: t.card,
   }),
   // No vertical padding: the container's minHeight (groupedHeight) owns the row
   // height, the stretched input fills it, and a single line self-centers. Any
@@ -107,15 +109,15 @@ export const webSkin: InputSkin = {
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: "0%",
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
     color: t.foreground,
-    ...(leadingIcon ? { paddingStart: 36 } : null),
-    ...(trailingIcon ? { paddingEnd: 36 } : null),
+    ...(leadingIcon ? { paddingStart: 44 } : null),
+    ...(trailingIcon ? { paddingEnd: 44 } : null),
   }),
   addonBox: (t, side) => ({
     justifyContent: "center",
     backgroundColor: t.muted,
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
     borderColor: t.border,
     ...(side === "left" ? { borderEndWidth: 1 } : { borderStartWidth: 1 }),
   }),
@@ -127,13 +129,13 @@ export const webSkin: InputSkin = {
     bottom: 0,
     zIndex: 10,
     justifyContent: "center",
-    ...(side === "left" ? { start: 0, paddingStart: 12 } : { end: 0, paddingEnd: 12 }),
+    ...(side === "left" ? { start: 0, paddingStart: 16 } : { end: 0, paddingEnd: 16 }),
   }),
   disabledOpacity: 0.5,
   pressedOpacity: 0.9,
   ripple: null,
-  // Web keeps the established Canvas look: the label sits ABOVE the field (the
-  // exact visual the Field/Form composers render today — 14/20 medium weight).
+  // The label sits ABOVE the field (Riskora's form rows: a 14/20 medium title over
+  // the box), which is the visual the Field/Form composers render.
   floatingLabel: false,
   labelAbove: (t, size) => ({
     fontSize: size === "large" ? 16 : size === "small" ? 12 : 14,

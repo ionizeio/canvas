@@ -25,7 +25,7 @@ import {
 
 // Ring diameter per size, per platform family. Default is the form control; small
 // pairs with dense rows, large with touch-first layouts.
-const WEB_RING: Record<Size, number> = { small: 14, default: 16, large: 20 };
+const WEB_RING: Record<Size, number> = { small: 16, default: 20, large: 24 };
 const IOS_RING: Record<Size, number> = { small: 20, default: 22, large: 24 };
 const ANDROID_RING: Record<Size, number> = { small: 18, default: 20, large: 22 };
 

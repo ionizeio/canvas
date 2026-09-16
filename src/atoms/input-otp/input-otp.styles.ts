@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { alpha, type ColorTokens } from "../../style/index.js";
+import { alpha, shape, type ColorTokens } from "../../style/index.js";
 import { type InputOTPSkin, type Size } from "./input-otp.shared.js";
 
 // Co-located InputOTP skins, one per platform, all driven by the brand tokens
@@ -148,14 +148,14 @@ export const androidSkin: InputOTPSkin = {
   disabledOpacity: 0.38, // M3 disabled opacity
 };
 
-// ---------- Web: the established Canvas look (shadcn input-otp) ----------
+// ---------- Web: the Riskora field, as a connected run of cells ----------
 // Connected group of bordered cells sharing borders (gap 0): the left edge is drawn
 // only on the cell that STARTS a run, every cell draws top/right/bottom, and only a
 // run's outer corners are rounded (md). With `groups` the row holds several runs, one
-// per chunk, so each chunk closes and rounds its own ends. The active cell tints to
+// per chunk, so each chunk closes and rounds its own ends (the 12px field corner). The active cell tints to
 // `ring` with a soft 3px ring.
-const WEB_RADIUS = 6; // rounded-md
-const WEB_SIZE: Record<Size, number> = { small: 32, base: 36, large: 44 };
+const WEB_RADIUS = shape.web.field;
+const WEB_SIZE: Record<Size, number> = { small: 40, base: 48, large: 56 };
 
 export const webSkin: InputOTPSkin = {
   gap: () => 0,
@@ -167,7 +167,7 @@ export const webSkin: InputOTPSkin = {
       width: d,
       height: d,
       position: "relative",
-      backgroundColor: t.background,
+      backgroundColor: t.card,
       // Shared borders: every cell draws top/right/bottom; only a run's first draws the left.
       borderTopWidth: 1,
       borderBottomWidth: 1,

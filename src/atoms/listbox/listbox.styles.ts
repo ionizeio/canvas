@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { surfaceRipple, type ColorTokens } from "../../style/index.js";
+import { surfaceRipple, shape, type ColorTokens } from "../../style/index.js";
 import { type ListboxSkin, type Size } from "./listbox.shared.js";
 
 // Co-located Listbox skins, one per platform. Layout-only fragments are static
@@ -18,15 +18,15 @@ import { type ListboxSkin, type Size } from "./listbox.shared.js";
 // exactly as the previous single-file look did). Multi-select composes each
 // platform's Checkbox indicator separately, preserving its native shape and size.
 
-// A bordered container reads as a content card: rounded card, hairline border, solid
-// `card` fill, and a 4px inset so rows don't touch the edge. Listbox is an inline,
+// A bordered container reads as a content card: the 12px control corner, hairline border, solid
+// `card` fill, and an 8px inset so rows don't touch the edge. Listbox is an inline,
 // in-page list (the CONTENT layer, not a floating overlay), so it uses the solid `card`
 // token, NOT `popover`: `card` is the content layer's own fill and never takes the
 // glass material (Apple: don't put Liquid Glass in the content layer). Listbox renders
 // its card as a plain View, never through GlassSurface, so it is opaque in every
 // theming mode.
 function containerBordered(tokens: ColorTokens): ViewStyle {
-  return { borderRadius: 6, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 4 };
+  return { borderRadius: shape.web.control, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 8 };
 }
 
 // Each row: a horizontal Pressable with a leading control, the label/detail
@@ -34,14 +34,14 @@ function containerBordered(tokens: ColorTokens): ViewStyle {
 // vertical padding.
 // overflow:hidden clips the Material ripple to the rounded outline (borderRadius)
 // so the bounded ripple does not bleed past the rounded corners on Android.
-const rowBase: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, overflow: "hidden" };
+const rowBase: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 10, overflow: "hidden" };
 
 // Per-row padding by size: small reads like the legacy h-8 trigger, medium like
 // h-9, large like h-10.
 const rowSize: Record<Size, ViewStyle> = {
-  small: { paddingHorizontal: 8, paddingVertical: 6 },
-  medium: { paddingHorizontal: 8, paddingVertical: 8 },
-  large: { paddingHorizontal: 8, paddingVertical: 10 },
+  small: { paddingHorizontal: 12, paddingVertical: 8 },
+  medium: { paddingHorizontal: 12, paddingVertical: 10 },
+  large: { paddingHorizontal: 12, paddingVertical: 12 },
 };
 
 // The accent fill used for a selected single-select row and the press state.

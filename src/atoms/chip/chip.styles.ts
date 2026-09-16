@@ -4,9 +4,10 @@ import { type ChipSkin } from "./chip.shared.js";
 // Co-located Chip skins. The semantic tint colors live in the shell; each skin
 // carries its platform's shape, sizing, and label type.
 //
-//   Web + iOS: the established compact tag pill (~20px tall, GitHub/Linear tag
-//     scale), fully rounded. iOS bumps the label weight to SF 600; tracking stays
-//     0 (the SF Pro Text value at 12pt).
+//   Web: the Riskora pill (26px tall, a 10/4 inset), fully rounded.
+//   iOS: the established compact tag pill (~20px tall, GitHub/Linear tag scale),
+//     fully rounded, with the label weight bumped to SF 600; tracking stays 0 (the
+//     SF Pro Text value at 12pt).
 //   Android (Material 3 chips, m3.material.io/components/chips/specs): a 32dp
 //     container with an 8dp corner radius (NOT a pill), 16dp side padding that
 //     drops to 8dp beside an icon (`sidePadding`, resolved per side in the shell),
@@ -27,7 +28,7 @@ const shell: ViewStyle = {
   borderWidth: 1,
 };
 
-// The web/iOS compact pill.
+// The iOS compact pill.
 const pill: ViewStyle = {
   ...shell,
   gap: 4,
@@ -36,8 +37,11 @@ const pill: ViewStyle = {
   paddingVertical: 1,
 };
 
+// The Riskora pill: the same anatomy at the dashboard's roomier inset.
+const webPill: ViewStyle = { ...pill, gap: 6, paddingHorizontal: 10, paddingVertical: 4 };
+
 export const webSkin: ChipSkin = {
-  base: pill,
+  base: webPill,
   labelType: { fontSize: 12, lineHeight: 16, fontWeight: "500" },
   removeSize: 12,
   // The established web target; the 44pt/48dp minimums are a native-platform rule.

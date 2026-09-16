@@ -1,6 +1,6 @@
 import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, alpha, shadow, customShadow } from "../../style/index.js";
+import { type ColorTokens, alpha, shadow, customShadow, shape } from "../../style/index.js";
 import { type ButtonGroupSkin, type Size } from "./button-group.shared.js";
 
 // Co-located ButtonGroup skins, one per platform. The group is laid out per
@@ -120,8 +120,11 @@ export const segmentedContainer: ViewStyle = {
 export const blockSegment: ViewStyle = { flex: 1 };
 
 // =============================================================================
-// Web: the established Canvas look (lifted verbatim from the original file).
+// Web: the Riskora control (the 12px corner on a run's outer edges, the sky fill on
+// the selected segment, the `card` fill with the 3:1 `input` boundary otherwise).
 // =============================================================================
+
+const WEB_R = shape.web.control;
 
 export const webSkin: ButtonGroupSkin = {
   // No wrapper around segmented (the row is bare); selected lifts above its
@@ -129,18 +132,18 @@ export const webSkin: ButtonGroupSkin = {
   segmentedWrap: () => null,
   segmentBorderWidth: 1,
   joinCorners(index, count) {
-    if (count === 1) return { borderRadius: 6 };
-    if (index === 0) return { borderTopStartRadius: 6, borderBottomStartRadius: 6 };
-    if (index === count - 1) return { borderTopEndRadius: 6, borderBottomEndRadius: 6 };
+    if (count === 1) return { borderRadius: WEB_R };
+    if (index === 0) return { borderTopStartRadius: WEB_R, borderBottomStartRadius: WEB_R };
+    if (index === count - 1) return { borderTopEndRadius: WEB_R, borderBottomEndRadius: WEB_R };
     return {};
   },
-  spacedCorners: { borderRadius: 6 },
+  spacedCorners: { borderRadius: WEB_R },
   // All but the leading segment overlap the previous border by 1px (-ml-px).
   overlap: { marginStart: -1 },
   segmentSurface(t, selected) {
     return selected
       ? { zIndex: 10, borderColor: t.primary, backgroundColor: t.primary }
-      : { borderColor: t.input, backgroundColor: t.background };
+      : { borderColor: t.input, backgroundColor: t.card };
   },
   segmentLabel(t, selected) {
     return { fontWeight: "500", color: selected ? t["primary-foreground"] : t.foreground };
@@ -155,8 +158,8 @@ export const webSkin: ButtonGroupSkin = {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      borderTopStartRadius: 6,
-      borderBottomStartRadius: 6,
+      borderTopStartRadius: WEB_R,
+      borderBottomStartRadius: WEB_R,
       backgroundColor: t.primary,
     };
   },
@@ -171,10 +174,10 @@ export const webSkin: ButtonGroupSkin = {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      borderTopEndRadius: 6,
-      borderBottomEndRadius: 6,
+      borderTopEndRadius: WEB_R,
+      borderBottomEndRadius: WEB_R,
       backgroundColor: t.primary,
-      paddingHorizontal: 8,
+      paddingHorizontal: 10,
       height,
     };
   },
@@ -187,11 +190,11 @@ export const webSkin: ButtonGroupSkin = {
       zIndex: 50,
       marginTop: 4,
       minWidth: 180,
-      borderRadius: 6,
+      borderRadius: shape.web.menu,
       borderWidth: 1,
       borderColor: t.border,
       backgroundColor: t.popover,
-      padding: 4,
+      padding: 8,
       ...shadow("lg"),
     };
   },

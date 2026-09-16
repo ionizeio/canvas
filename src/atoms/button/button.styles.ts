@@ -1,13 +1,13 @@
 import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens } from "../../style/index.js";
+import { shape, type ColorTokens } from "../../style/index.js";
 
 // Co-located Button skins, one per platform. The BRAND survives on every platform
-// (fills/labels use the indigo `primary` and the semantic tokens, never a platform
+// (fills/labels use the sky `primary` and the semantic tokens, never a platform
 // default); only the native SHAPE, sizing, label weight, and press feedback change:
 //   iOS (HIG / iOS 26+ Liquid Glass): capsule (fully rounded), semibold SF-scale label, dim-on-press.
 //   Android (Material 3): fully-rounded pill, medium label, flat, ripple.
-//   Web: the established Canvas look (rounded-md, medium label, opacity press).
+//   Web: the Riskora dashboard control (12px corner, 44px tall, medium label, opacity press).
 
 export type Intent = "primary" | "secondary" | "destructive" | "outline" | "ghost" | "link";
 export type Size = "small" | "base" | "large";
@@ -89,24 +89,29 @@ function androidRipple(_t: ColorTokens, intent: Intent) {
 
 const ROW: ViewStyle = { flexDirection: "row", alignItems: "center", justifyContent: "center" };
 
-// ---------- Web: the established Canvas look ----------
+// ---------- Web: the Riskora dashboard control ----------
+// A 12px-cornered rounded rectangle (every Riskora control shares the corner), 44px
+// tall at the base size (a 14/20 medium label inside 12px of vertical padding), 36
+// small and 52 large; icon buttons are the matching squares. Fills stay the semantic
+// intents: the sky primary carries the dark ink, `secondary` is the soft panel fill
+// with no border, `outline` keeps the 3:1 `input` boundary.
 export const webSkin: ButtonSkin = {
   container: (t, intent, size, o) => ({
     ...ROW,
     gap: 8,
-    borderRadius: 6,
+    borderRadius: shape.web.control,
     ...(o.icon
-      ? sq(size === "small" ? 32 : size === "large" ? 48 : 40)
-      : size === "small" ? { paddingHorizontal: 12, paddingVertical: 6 }
-      : size === "large" ? { paddingHorizontal: 24, paddingVertical: 12 }
-      : { paddingHorizontal: 16, paddingVertical: 8 }),
+      ? sq(size === "small" ? 36 : size === "large" ? 52 : 44)
+      : size === "small" ? { paddingHorizontal: 14, paddingVertical: 8 }
+      : size === "large" ? { paddingHorizontal: 24, paddingVertical: 14 }
+      : { paddingHorizontal: 20, paddingVertical: 12 }),
     ...fill(t, intent),
     // `block` (full width) lives on the shell's <RippleClip> wrapper, the outer node.
     ...(o.dim ? { opacity: 0.5 } : null),
   }),
   label: (t, intent, size) => ({
     fontWeight: "500",
-    ...(size === "large" ? FS(16, 24) : size === "small" ? FS(12, 16) : FS(14, 20)),
+    ...(size === "large" ? FS(16, 24) : FS(14, 20)),
     ...labelColor(t, intent),
     ...(intent === "link" ? { textDecorationLine: "underline" as const } : null), // web-only link underline
   }),
