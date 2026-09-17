@@ -573,3 +573,26 @@ describe("DataTable loading and empty states", () => {
     expect(screen.queryByText("No users found.")).toBeNull();
   });
 });
+
+// The web header band: Riskora's soft 10px-cornered band when the table stands
+// alone, squared to the frame when the table is framed (its own `bordered`
+// outline, or an `attached` parent frame), so no fill peeks out under the band's
+// bottom corners inside a clipped panel.
+describe("DataTable header band framing (web)", () => {
+  const band = (container: HTMLElement) => container.querySelector('[role="row"]') as HTMLElement;
+
+  it("floats the band with rounded corners when the table stands alone", () => {
+    const { container } = ui(<DataTable columns={COLUMNS} rows={ROWS} />);
+    expect(band(container).style.borderRadius).toBe("10px");
+  });
+
+  it("`attached` squares the band to a frame the parent draws", () => {
+    const { container } = ui(<DataTable attached columns={COLUMNS} rows={ROWS} />);
+    expect(band(container).style.borderRadius).toBe("0px");
+  });
+
+  it("`bordered` squares the band to the table's own outline", () => {
+    const { container } = ui(<DataTable bordered columns={COLUMNS} rows={ROWS} />);
+    expect(band(container).style.borderRadius).toBe("0px");
+  });
+});

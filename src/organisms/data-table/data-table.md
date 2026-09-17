@@ -38,6 +38,24 @@ no scrolling tab stop. The iOS compact primary-column layout is unchanged.
 />
 ```
 
+### Attached
+
+A table that sits flush inside a frame its parent draws (a `flush` Card, a bordered panel that clips to its corners) passes `attached`, so the header band squares its corners to that frame instead of floating as a rounded band; `bordered` implies the same for the table's own outline.
+
+```tsx
+<Card flat flush style={{ overflow: "hidden" }}>
+  <DataTable
+    attached
+    columns={["Name", "Email", "Role"]}
+    rows={[
+      ["Alice Johnson", "alice@example.com", "Admin"],
+      ["Bob Smith", "bob@example.com", "Editor"],
+      ["Rachel Chen", "rachel@example.com", "Admin"]
+    ]}
+  />
+</Card>
+```
+
 ### Striped
 
 ```tsx
@@ -242,7 +260,7 @@ no scrolling tab stop. The iOS compact primary-column layout is unchanged.
     <Button outline small>Export</Button>
   </Row>
   <Divider />
-  <DataTable paginated pageSize={3} columns={["Name", "Email"]} rows={[
+  <DataTable attached paginated pageSize={3} columns={["Name", "Email"]} rows={[
     ["Alice Johnson", "alice@example.com"],
     ["Bob Smith", "bob@example.com"],
     ["Rachel Chen", "rachel@example.com"],
@@ -283,7 +301,7 @@ no scrolling tab stop. The iOS compact primary-column layout is unchanged.
     </Row>
   </Row>
   <Divider />
-  <DataTable selectable defaultSelectedKeys={[0, 2]} columns={["Name", "Email"]} rows={[
+  <DataTable attached selectable defaultSelectedKeys={[0, 2]} columns={["Name", "Email"]} rows={[
     ["Alice Johnson", "alice@example.com"],
     ["Bob Smith", "bob@example.com"],
     ["Rachel Chen", "rachel@example.com"]

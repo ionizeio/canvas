@@ -319,14 +319,13 @@ export default function LayoutScreen() {
           title="Responsive (desktop-first)"
           description="useResponsive({ base, md, ... }) returns the active value for the viewport. Because the model is desktop-first, a breakpoint entry applies at that width and BELOW. Resize the window across the md (768px) boundary to watch the live preview switch from a row to a column."
         >
-          <View>
+          {/* Mirrors the Playground stage: a fully-rounded card a gap above its source. */}
+          <Column cozy>
             <Column flush center alignCenter
               style={{
                 borderWidth: 1,
                 borderColor: tokens.border,
-                borderTopLeftRadius: 12,
-                borderTopRightRadius: 12,
-                borderBottomWidth: 0,
+                borderRadius: 12,
                 backgroundColor: tokens.background,
                 minHeight: 84,
                 paddingVertical: 24,
@@ -335,8 +334,8 @@ export default function LayoutScreen() {
             >
               <ResponsiveDemo />
             </Column>
-            <CodeBlock code={responsiveCode} flush />
-          </View>
+            <CodeBlock code={responsiveCode} />
+          </Column>
         </TokenSection>
 
         <TokenSection

@@ -6,13 +6,14 @@ export default function Example(scope: ExampleScope) {
   const { DataTable } = scope;
   return (
 <DataTable
-  columns={["Employee", "Team"]}
-  rows={Array.from({ length: 23 }, (_, i) => [
-    `Employee ${i + 1}`,
-    ["Design", "Platform", "Growth"][i % 3]
-  ])}
-  paginated
-  pageSize={5}
+  columns={["Name", "Email", "Role"]}
+  rows={[
+    ["Alice Johnson", "alice@example.com", "Admin"],
+    ["Bob Smith", "bob@example.com", "Editor"],
+    ["Rachel Chen", "rachel@example.com", "Admin"]
+  ]}
+  selectable
+  defaultSelectedKeys={[1]}
 />
   );
 }

@@ -3,22 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, DataTable } = scope;
+  const { DataTable, MediaObject } = scope;
   return (
-<Stateful initial={[
-  ["Alice Johnson", "alice@example.com", "Admin"],
-  ["Bob Smith", "bob@example.com", "Editor"],
-  ["Rachel Chen", "rachel@example.com", "Viewer"]
-]}>
-  {(rows, setRows) => (
-    <DataTable
-      columns={["Name", "Email", "Role"]}
-      rows={rows}
-      onRowEdit={() => {}}
-      onRowCommit={(i, cells) => setRows(rows.map((row, r) => (r === i ? cells.map(String) : row)))}
-      onRowDelete={(i) => setRows(rows.filter((_row, r) => r !== i))}
-    />
-  )}
-</Stateful>
+<DataTable
+  columns={["Member", "Role"]}
+  rows={[
+    [<MediaObject compact avatar="AJ" title="Alice Johnson" />, "Admin"],
+    [<MediaObject compact avatar="BS" title="Bob Smith" />, "Editor"],
+    [<MediaObject compact avatar="RC" title="Rachel Chen" />, "Admin"]
+  ]}
+/>
   );
 }

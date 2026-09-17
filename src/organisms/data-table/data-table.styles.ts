@@ -49,6 +49,13 @@ export interface DataTableSkin {
   borderedOutline: (t: ColorTokens) => ViewStyle;
   /** The header band (a flex row on the muted surface). */
   headerRow: (t: ColorTokens) => ViewStyle;
+  /**
+   * Layered over `headerRow` when the table is framed (`attached`, or its own
+   * `bordered` outline): the band squares its corners to the frame, whose
+   * clipped corners are then the only rounded ones. Null where the band is
+   * square already (iOS, Android).
+   */
+  headerRowAttached: ViewStyle | null;
   /** Header vertical padding per density (horizontal padding lives on the cell). */
   headerPad: Record<Density, ViewStyle>;
   /**
@@ -151,11 +158,15 @@ const DATA_CELL: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%" };
 // The Riskora table: the header is a soft 10px-cornered band with sentence-case
 // medium labels, rows are 56px tall and separated by DASHED hairlines, status
 // reads as pills, the row kebab is a 36px square with the control corner, and a
-// bordered table takes the 20px card corner.
+// bordered table takes the 20px card corner. The band's own corners belong to
+// the STANDALONE table (Riskora floats it inside a padded card); framed by an
+// outline or an `attached` parent it squares up, so the frame's corners are the
+// only rounded ones and no fill peeks out under the band's bottom corners.
 export const webSkin: DataTableSkin = {
   wrap: WRAP,
   borderedOutline: (t) => ({ borderRadius: shape.web.card, borderWidth: 1, borderColor: t.border }),
   headerRow: (t) => ({ flexDirection: "row", backgroundColor: t.muted, borderRadius: 10 }),
+  headerRowAttached: { borderRadius: 0 },
   headerPad: {
     compact: { paddingVertical: 8 },
     regular: { paddingVertical: 12 },
@@ -225,6 +236,7 @@ export const iosSkin: DataTableSkin = {
   wrap: WRAP,
   borderedOutline: (t) => ({ borderRadius: 10, borderCurve: "continuous", borderWidth: 1, borderColor: t.border }),
   headerRow: (t) => ({ flexDirection: "row", backgroundColor: t.muted }),
+  headerRowAttached: null,
   headerPad: {
     compact: { paddingVertical: 6 },
     regular: { paddingVertical: 8 },
@@ -303,6 +315,7 @@ export const androidSkin: DataTableSkin = {
   wrap: WRAP,
   borderedOutline: (t) => ({ borderRadius: 8, borderWidth: 1, borderColor: t.border }),
   headerRow: (t) => ({ flexDirection: "row", backgroundColor: t.muted }),
+  headerRowAttached: null,
   headerPad: {
     compact: { paddingVertical: 8 },
     regular: { paddingVertical: 10 },

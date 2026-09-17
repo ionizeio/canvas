@@ -6,14 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { DataTable } = scope;
   return (
 <DataTable
-  columns={["Name", "Email", "Role"]}
-  rows={[
-    ["Rachel Chen", "rachel@example.com", "Admin"],
-    ["Alice Johnson", "alice@example.com", "Admin"],
-    ["Bob Smith", "bob@example.com", "Editor"]
-  ]}
-  sortable
-  defaultSort={{ column: "Name" }}
+  columns={["Name", "Email", "Status"]}
+  rows={[]}
+  emptyMessage="No results found."
 />
   );
 }

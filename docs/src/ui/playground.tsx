@@ -142,7 +142,7 @@ function PlatformRow({ label, scope, render, resetKey, first, showLabel, stageAl
 }
 
 // The component playground: the stacked iOS/Android/Web stage (one device row on
-// native) + flush source, with the example rail to the right on wide viewports.
+// native), a gap, then the source, with the example rail to the right on wide viewports.
 // Selection is optionally controlled: pass `selected` + `onSelect` to drive the active
 // example from the URL variant (see ComponentReference); omit them and the rail manages
 // its own state.
@@ -212,11 +212,15 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
         {...(Platform.OS === "web" ? ({ dataSet: { previewStage: "" } } as object) : null)}
         style={{ flex: 1, minWidth: 0 }}
       >
-        {/* A single search field above the stage for catalog examples (SEARCHABLE_EXAMPLES): its
-            query flows to every platform column via IconSearchContext, so one control filters all
-            three previews at once. Absent for every other example. */}
-        {searchPlaceholder ? (
-          <View style={{ marginBottom: 12 }}>
+        {/* The stage stacks its pieces (the search field, the switcher, the card, the
+            code block) with one kit gap, so the card reads as a detached frame with the
+            same breathing room above and below it, in every example and at every
+            simulated tier. */}
+        <Column cozy>
+          {/* A single search field above the stage for catalog examples (SEARCHABLE_EXAMPLES): its
+              query flows to every platform column via IconSearchContext, so one control filters all
+              three previews at once. Absent for every other example. */}
+          {searchPlaceholder ? (
             <Input
               leadingIcon
               icon="search"
@@ -227,12 +231,10 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
               autoCapitalize="none"
               autoCorrect={false}
             />
-          </View>
-        ) : null}
-        {/* The form-factor switcher (web only; see FORM_FACTORS): icon segments
-            depicting each tier, the simulated width read out beside them. */}
-        {Platform.OS === "web" ? (
-          <View style={{ marginBottom: 8 }}>
+          ) : null}
+          {/* The form-factor switcher (web only; see FORM_FACTORS): icon segments
+              depicting each tier, the simulated width read out beside them. */}
+          {Platform.OS === "web" ? (
             <Row tight end alignCenter>
               {simulating ? (
                 <Text style={{ fontFamily: sans("500"), fontSize: 11, color: tokens["muted-foreground"] }}>
@@ -249,47 +251,41 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
                 onSelect={setFactorIndex}
               />
             </Row>
-          </View>
-        ) : null}
-        {/* The stage is a content surface: a solid card in solid mode, a frost in glass mode
-            (DocsSurface routes through the kit GlassSurface), so the preview never reads as a
-            clear hole. The cells below inherit it. When simulating, the card narrows to the
-            tier's width as a centered, fully-rounded frame detached from the code block
-            (which stays full width), and the kit's viewport bucket is pinned to match. */}
-        {/* onLayout attaches UNCONDITIONALLY: react-native-web registers its
-            ResizeObserver in a mount-once effect, so toggling the prop from
-            undefined to a handler on a live View never observes it (the
-            measurement would sit at 0 forever). Measuring while not simulating
-            is free; the readout only shows during simulation. */}
-        <View
-          // Marks the preview card (the platform-rows surface, without the
-          // switcher row or the code block) for tooling screenshots.
-          {...(Platform.OS === "web" ? ({ dataSet: { previewCard: "" } } as object) : null)}
-          onLayout={onCardLayout}
-          style={simulating ? { width: simulated.width ?? undefined, maxWidth: "100%", alignSelf: "center", marginBottom: 10 } : null}
-        >
-          <DocsSurface
-            fill="card"
-            style={{
-              borderWidth: 1,
-              borderBottomWidth: simulating ? 1 : 0,
-              borderColor: tokens.border,
-              borderTopLeftRadius: 12,
-              borderTopRightRadius: 12,
-              borderBottomLeftRadius: simulating ? 12 : 0,
-              borderBottomRightRadius: simulating ? 12 : 0,
-              overflow: "hidden",
-            }}
+          ) : null}
+          {/* The stage is a content surface: a solid card in solid mode, a frost in glass mode
+              (DocsSurface routes through the kit GlassSurface), so the preview never reads as a
+              clear hole. The cells below inherit it. The card is a fully-rounded, fully-bordered
+              frame that sits a gap above the code block (never flush to it). When simulating,
+              it narrows to the tier's width, centered, while the code block stays full width,
+              and the kit's viewport bucket is pinned to match. */}
+          {/* onLayout attaches UNCONDITIONALLY: react-native-web registers its
+              ResizeObserver in a mount-once effect, so toggling the prop from
+              undefined to a handler on a live View never observes it (the
+              measurement would sit at 0 forever). Measuring while not simulating
+              is free; the readout only shows during simulation. */}
+          <View
+            // Marks the preview card (the platform-rows surface, without the
+            // switcher row or the code block) for tooling screenshots.
+            {...(Platform.OS === "web" ? ({ dataSet: { previewCard: "" } } as object) : null)}
+            onLayout={onCardLayout}
+            style={simulating ? { width: simulated.width ?? undefined, maxWidth: "100%", alignSelf: "center" } : null}
           >
-            {previews.map((p, i) => (
-              <PlatformRow key={p.platform} label={p.label} scope={p.scope} render={ex.render} resetKey={`${p.platform}:${selected}`} first={i === 0} showLabel={showLabels} stageAlign={stageAlign} />
-            ))}
-          </DocsSurface>
-        </View>
-        {/* The block attaches to the card's flush bottom edge normally; a
-            simulated card is a detached rounded frame, so the block reverts to
-            its standalone rounded look instead of squaring up to nothing. */}
-        <CodeBlock code={ex.code} flush={!simulating} />
+            <DocsSurface
+              fill="card"
+              style={{
+                borderWidth: 1,
+                borderColor: tokens.border,
+                borderRadius: 12,
+                overflow: "hidden",
+              }}
+            >
+              {previews.map((p, i) => (
+                <PlatformRow key={p.platform} label={p.label} scope={p.scope} render={ex.render} resetKey={`${p.platform}:${selected}`} first={i === 0} showLabel={showLabels} stageAlign={stageAlign} />
+              ))}
+            </DocsSurface>
+          </View>
+          <CodeBlock code={ex.code} />
+        </Column>
       </View>
       </IconSearchContext.Provider>
     </OverlayProvider>

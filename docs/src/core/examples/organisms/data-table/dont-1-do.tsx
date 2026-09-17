@@ -14,7 +14,7 @@ export default function Example(scope: ExampleScope) {
     </Row>
   </Row>
   <Divider />
-  <DataTable selectable defaultSelectedKeys={[0, 2]} columns={["Name", "Email"]} rows={[
+  <DataTable attached selectable defaultSelectedKeys={[0, 2]} columns={["Name", "Email"]} rows={[
     ["Alice Johnson", "alice@example.com"],
     ["Bob Smith", "bob@example.com"],
     ["Rachel Chen", "rachel@example.com"]

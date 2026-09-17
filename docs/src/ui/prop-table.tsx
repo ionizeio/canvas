@@ -33,10 +33,13 @@ function GroupTable({ group }: { group: PropGroup }) {
   // is a clear hole: its rows are transparent between the muted stripes, so in frost
   // mode the Canvas Universe backdrop bleeds straight through and washes the rows out.
   // The surface owns the rounded bordered frame now, so the table drops its own
-  // `bordered` outline to avoid doubling it.
+  // `bordered` outline to avoid doubling it and passes `attached` instead: the
+  // header band squares up to the surface's frame rather than floating as a
+  // rounded band with the card fill peeking out under its bottom corners.
   return (
     <DocsSurface bordered>
       <DataTable
+        attached
         striped
         compact
         columns={["Prop", "Description"]}

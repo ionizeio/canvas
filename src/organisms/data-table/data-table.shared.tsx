@@ -104,6 +104,14 @@ export interface DataTableProps {
   striped?: boolean;
   /** Wrap the table in a rounded outer border. */
   bordered?: boolean;
+  /**
+   * The table sits flush inside a frame its parent draws (a `flush` Card, a
+   * bordered panel that clips to its corners), so the header band squares its
+   * corners to that frame instead of floating as a rounded band; `bordered`
+   * does the same for the table's own outline. Without a frame the band keeps
+   * its rounded corners, which is the standalone look.
+   */
+  attached?: boolean;
   // Density (pick one; default is the regular row height).
   /** Tighter vertical padding on header and data cells. */
   compact?: boolean;
@@ -352,7 +360,7 @@ export interface DataTableParts {
 export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
   const { Checkbox, Pagination, Skeleton } = parts;
   return function DataTable(props: DataTableProps) {
-    const { columns, rows, striped, bordered, selectable, onRowPress, onRowEdit, onRowDelete, inlineEdit, rowKey, virtualized, loading, emptyMessage, paginated, testID, style } = props;
+    const { columns, rows, striped, bordered, attached, selectable, onRowPress, onRowEdit, onRowDelete, inlineEdit, rowKey, virtualized, loading, emptyMessage, paginated, testID, style } = props;
     const density = densityOf(props);
     const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
@@ -629,7 +637,9 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
 
     const table = (
       <>
-        <View style={[withInnerFill(theme, skin.headerRow(tokens), "soft"), skin.headerPad[density]]} role="row">
+        {/* A framed table (its own outline, or an `attached` parent frame) squares the
+            band's corners: the frame's clipped corners are the rounded ones. */}
+        <View style={[withInnerFill(theme, skin.headerRow(tokens), "soft"), bordered || attached ? skin.headerRowAttached : null, skin.headerPad[density]]} role="row">
           {selectable ? (
             <View style={skin.selectCol} role="columnheader">
               <Checkbox

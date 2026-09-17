@@ -12,7 +12,7 @@ export default function Example(scope: ExampleScope) {
     ["Bob Smith", "bob@example.com", "Editor"],
     ["Rachel Chen", "rachel@example.com", "Admin"]
   ]}
-  comfortable
+  compact
 />
   );
 }

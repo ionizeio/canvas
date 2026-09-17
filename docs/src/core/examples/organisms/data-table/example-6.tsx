@@ -8,7 +8,7 @@ export default function Example(scope: ExampleScope) {
 <DataTable
   columns={["Name", "Email", "Status"]}
   rows={[]}
-  emptyMessage="No results found."
+  loading
 />
   );
 }

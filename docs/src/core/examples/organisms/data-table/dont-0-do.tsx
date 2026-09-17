@@ -11,7 +11,7 @@ export default function Example(scope: ExampleScope) {
     <Button outline small>Export</Button>
   </Row>
   <Divider />
-  <DataTable paginated pageSize={3} columns={["Name", "Email"]} rows={[
+  <DataTable attached paginated pageSize={3} columns={["Name", "Email"]} rows={[
     ["Alice Johnson", "alice@example.com"],
     ["Bob Smith", "bob@example.com"],
     ["Rachel Chen", "rachel@example.com"],

@@ -3,17 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { DataTable } = scope;
+  const { Card, DataTable } = scope;
   return (
-<DataTable
-  columns={["Name", "Email", "Role"]}
-  rows={[
-    ["Alice Johnson", "alice@example.com", "Admin"],
-    ["Bob Smith", "bob@example.com", "Editor"],
-    ["Rachel Chen", "rachel@example.com", "Admin"],
-    ["Dan Wright", "dan@example.com", "Viewer"]
-  ]}
-  striped
-/>
+<Card flat flush style={{ overflow: "hidden" }}>
+  <DataTable
+    attached
+    columns={["Name", "Email", "Role"]}
+    rows={[
+      ["Alice Johnson", "alice@example.com", "Admin"],
+      ["Bob Smith", "bob@example.com", "Editor"],
+      ["Rachel Chen", "rachel@example.com", "Admin"]
+    ]}
+  />
+</Card>
   );
 }

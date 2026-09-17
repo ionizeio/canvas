@@ -3,19 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Badge, DataTable } = scope;
+  const { DataTable } = scope;
   return (
 <DataTable
-  columns={[
-    "Invoice",
-    { label: "Status", centered: true, width: 120 },
-    { label: "Amount", numeric: true }
-  ]}
-  rows={[
-    ["INV-0041", <Badge success>Paid</Badge>, "$1,250.00"],
-    ["INV-0042", <Badge warning>Due</Badge>, "$450.00"],
-    ["INV-0043", <Badge neutral>Draft</Badge>, "$8,120.00"]
-  ]}
+  columns={["Employee", "Team"]}
+  rows={Array.from({ length: 23 }, (_, i) => [
+    `Employee ${i + 1}`,
+    ["Design", "Platform", "Growth"][i % 3]
+  ])}
+  paginated
+  pageSize={5}
 />
   );
 }
