@@ -4,7 +4,7 @@ import * as path from "node:path";
 import * as os from "node:os";
 import { SourceMap } from "node:module";
 import ts from "typescript";
-import { buildNative, nativeSpecifiers, watchNative } from "../../scripts/build-native.ts";
+import { buildNative, nativeSpecifiers } from "../../scripts/build-native.ts";
 import { verifyPackage } from "../../scripts/verify-package.ts";
 
 const roots: string[] = [];
@@ -65,16 +65,35 @@ test("native source maps retain exact module-request positions and following cod
 
 test("native watch transforms subsequent changes as well as the initial emit", async () => {
   const dir = compilerFixture();
-  const watcher = watchNative(path.join(dir, "tsconfig.json"));
+  // The dev launcher runs the watcher in its own Bun process. Exercise that
+  // boundary, including real filesystem events, without inheriting the suite's
+  // compiler caches or global timers. The ready message follows watch creation.
+  write(dir, "watch.ts", `import { watchNative } from ${JSON.stringify(path.resolve(import.meta.dir, "../../scripts/build-native.ts"))};\nwatchNative(${JSON.stringify(path.join(dir, "tsconfig.json"))});\nconsole.log("WATCH_READY");\n`);
+  const watcher = Bun.spawn([process.execPath, path.join(dir, "watch.ts")], { stdout: "pipe", stderr: "pipe" });
+  let output = "";
+  const consume = async (stream: ReadableStream<Uint8Array>) => {
+    const decoder = new TextDecoder();
+    for await (const chunk of stream) output += decoder.decode(chunk, { stream: true });
+  };
+  const streams = Promise.all([consume(watcher.stdout), consume(watcher.stderr)]);
+  const until = async (ready: () => boolean) => {
+    const deadline = Date.now() + 10_000;
+    while (!ready() && Date.now() < deadline && watcher.exitCode === null) await new Promise((done) => setTimeout(done, 50));
+    expect(ready(), output).toBe(true);
+  };
   try {
+    await until(() => output.includes("WATCH_READY"));
     const read = () => fs.readFileSync(path.join(dir, "dist/index.js"), "utf8");
     expect(read()).toContain('from "./value"');
     write(dir, "src/index.ts", 'export { value as updated } from "./value.js";\n');
-    const deadline = Date.now() + 10_000;
-    while (!read().includes("updated") && Date.now() < deadline) await new Promise((done) => setTimeout(done, 100));
+    await until(() => read().includes("updated"));
     expect(read()).toContain('value as updated } from "./value"');
-  } finally { watcher.close(); }
-}, 15_000);
+  } finally {
+    watcher.kill();
+    await watcher.exited;
+    await streams;
+  }
+}, 25_000);
 
 function packageFixture() {
   const dir = root();

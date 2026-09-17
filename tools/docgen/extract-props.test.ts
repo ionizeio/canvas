@@ -1,10 +1,14 @@
-import { expect, test } from "bun:test";
+import { beforeAll, expect, test } from "bun:test";
 import * as path from "node:path";
 import * as ts from "typescript";
 import { extractProps } from "./extract-props.ts";
 
 const root = path.resolve(import.meta.dir, "../..");
 const read = (dir: string) => extractProps([{ dir, file: path.join(root, `src/atoms/${dir}/${dir}.shared.tsx`) }])[dir];
+
+// Loading the kit's full TypeScript project is fixture setup, not a five-second
+// performance assertion on the first control. Keep a bounded cold-start budget.
+beforeAll(() => { read("button"); }, 30_000);
 
 test("public control refs are resolved from the factory return type and document their actual hosts", () => {
   for (const dir of ["button", "select", "checkbox", "switch", "radio", "slider"]) {
