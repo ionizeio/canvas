@@ -45,7 +45,11 @@ async function overflow(page: import("@playwright/test").Page): Promise<Overflow
  * not overflow at all, and a page listed here must not get worse.
  */
 const KNOWN_OVERFLOW: Record<string, { past: number; why: string }> = {
-  "/components/navbars": { past: 99, why: "the topbar link row does not collapse, so the links run past the card (99 once the card spans the full page column instead of a 384 Container)" },
+  // 99 when recorded; re-measured at 106 on the Linux runner across four consecutive
+  // main runs (e243db55 through 97b7c182) with no change to the page, and a macOS A/B
+  // of the two commits around the shift measured 108 on both, so the extra 7px is the
+  // runner's glyph metrics (the link labels set a touch wider), not the page.
+  "/components/navbars": { past: 106, why: "the topbar link row does not collapse, so the links run past the card (99 once the card spans the full page column instead of a 384 Container, 106 as the Linux runner measures it)" },
 };
 
 test.describe("tablet width", () => {
