@@ -1,5 +1,7 @@
 import type { ReactElement } from "react";
-import { View, Text, useTheme, useControllableState, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Text, useControllableState, type ColorTokens, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
+import { GlassPane, paneStyle } from "../../style/glass-surface/glass-pane.js";
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import type { DropdownItem, DropdownProps } from "../dropdown/dropdown.shared.js";
 import { Icon } from "../icon/icon.js";
 import { createAvatar, type AvatarSkin } from "./avatar.shared.js";
@@ -47,6 +49,8 @@ export interface AvatarMenuSkin extends AvatarSkin {
   menuPillSecondary: TextStyle;
   /** Trailing chevron glyph size, in px. */
   menuChevronSize: number;
+  /** Disabled foreground opacity, matching the platform's trigger convention. */
+  menuDisabledOpacity: number;
 }
 
 export interface AvatarMenuProps {
@@ -110,13 +114,14 @@ function accountLabel(name?: string, email?: string): string {
 /** Build an AvatarMenu from the same platform skin family as Avatar and AvatarGroup. */
 export function createAvatarMenu(skin: AvatarMenuSkin, Dropdown: (props: DropdownProps) => ReactElement) {
   // The pill's avatar comes from the same skin, built once per platform module. It
-  // is never pressable (Dropdown's trigger owns the press), so it takes the plain
-  // solid path and never needs iOS's interactive glass fallback surface.
+  // is never pressable (Dropdown's trigger owns the press). Its identity stays
+  // static while the outer account capsule owns the liquid material.
   const Avatar = createAvatar(skin);
 
   return function AvatarMenu(props: AvatarMenuProps) {
     const { name, email, src, initials, items, compact, alignStart, alignEnd, disabled, onSelect, testID, style } = props;
-    const { tokens } = useTheme();
+    const theme = useMaterialTheme({ layer: "control" });
+    const { tokens } = theme;
     // Uncontrolled by default (a bare <AvatarMenu /> opens and closes on its own);
     // a controlled `open` prop takes over when supplied. The raw prop goes into the
     // hook so an absent `open` stays uncontrolled.
@@ -128,6 +133,8 @@ export function createAvatarMenu(skin: AvatarMenuSkin, Dropdown: (props: Dropdow
     // Trailing-edge by default; `alignStart` is the only way to the leading edge,
     // and an explicit `alignEnd` outranks it.
     const menuAlignEnd = alignEnd || !alignStart;
+    const pillShape = [skin.menuPill, { borderRadius: PILL_RADIUS }, skin.menuPillFill(tokens, expanded)];
+    const disabledInk = theme.surface === "glass" && disabled ? { opacity: skin.menuDisabledOpacity } : null;
 
     return (
       <Dropdown
@@ -150,7 +157,7 @@ export function createAvatarMenu(skin: AvatarMenuSkin, Dropdown: (props: Dropdow
         {/* The capsule is pure presentation: it is labelled by nothing and focusable
             by nothing. Dropdown wraps it in the button-roled Pressable that owns the
             press, aria-haspopup="menu", the dual expanded/disabled state, and the
-            platform's disabled dim, and that same Pressable carries the account's
+            solid-mode disabled dim, and that same Pressable carries the account's
             ACCESSIBLE NAME, set from the `triggerLabel` passed above (Dropdown puts
             it on the button as accessibilityLabel plus its aria-label alias).
             Naming the button EXPLICITLY is the point: a button left to be named
@@ -163,12 +170,13 @@ export function createAvatarMenu(skin: AvatarMenuSkin, Dropdown: (props: Dropdow
             own: it is NOT a Pressable, since nesting one inside Dropdown's would
             make a doubly-focusable, invalid control
             (test/no-console-violations.test.tsx locks that). */}
-        <View style={[skin.menuPill, { borderRadius: PILL_RADIUS }, skin.menuPillFill(tokens, expanded)]}>
+        <View style={paneStyle(theme, pillShape)}>
+          <GlassPane layer="control" shape={pillShape} interactive={!disabled} />
           {/* `tiny` (24px) is the disc the capsule is drawn around: it leaves the
               hand-off's 4/6/8 inset inside the 32/36/40 pill on web/iOS/Android. */}
           <Avatar tiny src={src} name={name} initials={initials} />
           {compact ? null : (
-            <View style={IDENTITY_COLUMN}>
+            <View style={[IDENTITY_COLUMN, disabledInk]}>
               {name ? (
                 <Text numberOfLines={1} style={[skin.menuPillName, { color: tokens.foreground }]}>
                   {name}
@@ -183,7 +191,7 @@ export function createAvatarMenu(skin: AvatarMenuSkin, Dropdown: (props: Dropdow
           )}
           {/* The chevron points down when closed and flips up while the menu is open;
               it repeats the button's own state, so it stays decorative. */}
-          <View style={{ transform: [{ rotate: expanded ? "180deg" : "0deg" }] }}>
+          <View style={[{ transform: [{ rotate: expanded ? "180deg" : "0deg" }] }, disabledInk]}>
             <Icon chevronDown size={skin.menuChevronSize} muted decorative />
           </View>
         </View>

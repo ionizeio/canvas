@@ -1,6 +1,7 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useRef, useState } from "react";
-import { View, Pressable, Text, useTheme, AnchoredOverlay, useOverlayHost, useMeasuredWidth, RippleClip, cornerRadii, useMinTargetSlop, type StyleProp, type ViewStyle, type LayoutStyle, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, AnchoredOverlay, useOverlayHost, useMeasuredWidth, RippleClip, cornerRadii, useMinTargetSlop, type StyleProp, type ViewStyle, type LayoutStyle, withInnerFill } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { anchorLifted, type RowMenuItem, type RowMenuSkin } from "./row-menu.styles.js";
 
@@ -61,7 +62,7 @@ export function createRowMenu(skin: RowMenuSkin) {
     // What the menu is called when it opens. The section label names it when there is
     // one; otherwise the trigger's own label does, which is what the user pressed.
     const menuName = sectionLabel ?? triggerLabel;
-    const theme = useTheme();
+    const theme = useMaterialTheme({ layer: "dense" });
     const { tokens, dark } = theme;
     // Uncontrolled by default: the ⋯ trigger toggles the menu (closed), a select
     // closes it; a controlled `open` prop overrides this.

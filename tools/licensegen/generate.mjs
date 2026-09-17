@@ -1,7 +1,7 @@
 // Writes the MIT LICENSE into the package immediately before it is packed for npm.
 //
 // Canvas is deliberately split: the SOURCE in this repository is not licensed (all rights
-// reserved), while the PUBLISHED PACKAGE — the compiled dist that consumers install — is
+// reserved), while the PUBLISHED PACKAGE, the distribution that consumers install, is
 // MIT. As the copyright holder you can grant different terms to different recipients, and
 // this is the mechanism.
 //
@@ -16,6 +16,9 @@
 // Run automatically by `prepublishOnly`. Safe to run by hand: it only writes one file.
 
 import fs from "node:fs";
+import path from "node:path";
+const directory = path.resolve(process.argv[2] ?? ".");
+const { name } = JSON.parse(fs.readFileSync(path.join(directory, "package.json"), "utf8"));
 
 const YEAR = "2026";
 const HOLDER = "Robert Nannier";
@@ -24,8 +27,8 @@ const TEXT = `MIT License
 
 Copyright (c) ${YEAR} ${HOLDER}
 
-This license applies to this distributed package (the compiled output published to
-npm as @ionizeio/canvas). The project's source repository is not covered by it and
+This license applies to the files distributed in the package published to
+npm as ${name}. The project's source repository is not covered by it and
 remains all rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -47,5 +50,5 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 `;
 
-fs.writeFileSync("LICENSE", TEXT);
+fs.writeFileSync(path.join(directory, "LICENSE"), TEXT);
 console.log(`licensegen: wrote LICENSE (MIT, ${HOLDER}) for the published package`);

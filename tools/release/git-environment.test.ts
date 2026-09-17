@@ -51,7 +51,7 @@ test.skipIf(!existsSync(join(sourceRoot, "dist/index.js")))("release fixtures an
     const before = snapshot();
     // Run the real release suite in another process, never mutate this suite's
     // environment. It initializes fixtures, versions with Changesets, restores a
-    // bundle, seals a real npm tarball and docs archive, and pushes local refs/tags.
+    // bundle, seals real npm tarballs and docs archive, and pushes local refs/tags.
     const childReport = join(root, "child-results.xml");
     const result = Bun.spawnSync([
       process.execPath, "test", join(sourceRoot, "tools/release/release.test.ts"),
@@ -75,7 +75,7 @@ test.skipIf(!existsSync(join(sourceRoot, "dist/index.js")))("release fixtures an
         GIT_CONFIG_VALUE_1: remote,
         GIT_NAMESPACE: "inherited-sentinel",
       },
-      stdin: "ignore", stdout: "pipe", stderr: "pipe", timeout: 55_000,
+      stdin: "ignore", stdout: "pipe", stderr: "pipe", timeout: 235_000,
     });
     // Check the sentinel before asserting child success, so a fixture escape is
     // reported as corruption even when the redirected command also failed.
@@ -87,9 +87,9 @@ test.skipIf(!existsSync(join(sourceRoot, "dist/index.js")))("release fixtures an
     // name silently stops proving anything. The JUnit file names every case that
     // ran and counts the skips, so a fixture that quietly skips still fails here.
     const report = readFileSync(childReport, "utf8");
-    expect(report, diagnostics.slice(-8000)).toContain("seals a real npm tarball and docs archive");
+    expect(report, diagnostics.slice(-8000)).toContain("seals real npm tarballs and docs archive");
     expect(report).toMatch(/<testsuites[^>]*\sskipped="0"/);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
-}, 60_000);
+}, 240_000);

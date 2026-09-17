@@ -1,3 +1,4 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useCallback, useEffect, useRef, useState, Fragment } from "react";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { glassMessageStyle } from "../../style/glass-message.js";
@@ -11,7 +12,6 @@ import {
   GlassSurface,
   RippleClip,
   cornerRadii,
-  useTheme,
   useHardwareBack,
   useReducedMotion,
   supportsNativeDriver,
@@ -100,7 +100,7 @@ export interface ActionSheetProps {
 export function createActionSheet(skin: ActionSheetSkin) {
   return function ActionSheet(props: ActionSheetProps) {
     const { open: openProp, onOpenChange, trigger, title, message, actions, cancelLabel = "Cancel", testID, style } = props;
-    const theme = useTheme();
+    const theme = useMaterialTheme({ layer: "functional" });
     const { tokens } = theme;
 
     // Uncontrolled by default: the trigger opens the sheet and the scrim/Cancel

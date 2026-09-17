@@ -1,7 +1,8 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useCallback, useContext, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { type Role } from "react-native";
-import { View, Text, useTheme, GlassSurface, AnchoredOverlay, useOverlayHost, useMeasuredWidth, usePopoverFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, GlassSurface, AnchoredOverlay, useOverlayHost, useMeasuredWidth, usePopoverFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../button/button.js";
 import { type PopoverSkin, type Placement } from "./popover.styles.js";
 import * as s from "./popover.styles.js";
@@ -114,7 +115,7 @@ function placementOf(p: PopoverProps): Placement {
 export function createPopover(skin: PopoverSkin) {
   return function Popover(props: PopoverProps) {
     const { trigger, title, description, children, actionLabel, inline, onOpenChange, testID, style } = props;
-    const { tokens, surface } = useTheme();
+    const { tokens, surface } = useMaterialTheme({ layer: "functional" });
     const [internalOpen, setInternalOpen] = useState(false);
     // In static (inline) mode the card is always shown; otherwise it is
     // uncontrolled (the trigger toggles it) unless a controlled `open` is passed.

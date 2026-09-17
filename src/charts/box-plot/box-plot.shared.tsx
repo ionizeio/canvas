@@ -1,5 +1,6 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { Circle, G, Line, Rect } from "react-native-svg";
-import { View, Text, useTheme, useControllableState, alpha, devWarn, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, isGlass } from "../../style/index.js";
+import { View, Text, useControllableState, alpha, devWarn, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type Tone } from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
@@ -69,8 +70,9 @@ const MIN_SAMPLES = 5;
 export function createBoxPlot(skin: ChartSkin) {
   return function BoxPlot(props: BoxPlotProps) {
     const { data, title, testID, style } = props;
-    const theme = useTheme();
+    const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
+    const surfaceShape = s.surface(tokens, skin.surfaceRadius);
     const glass = isGlass(theme);
     const compact = !!props.compact;
     const formatValue = props.formatValue ?? formatCompact;
@@ -113,14 +115,14 @@ export function createBoxPlot(skin: ChartSkin) {
         {...(title != null && title !== "" ? { role: "group" as const, accessibilityLabel: `${title} chart`, "aria-label": `${title} chart` } : {})}
         testID={testID}
         style={[
-          s.surface(tokens, skin.surfaceRadius, glass),
+          paneStyle(theme, surfaceShape),
           compact ? s.surfacePadCompact : s.surfacePadDefault,
           CHART_ROOT,
           style,
         ]}
       >
         {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
-        <GlassPane layer="content" shape={{ borderRadius: skin.surfaceRadius }} />
+        {glass ? <GlassPane layer="content" shape={surfaceShape} /> : null}
         {title != null && title !== "" ? (
           <Text style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}>{title}</Text>
         ) : null}

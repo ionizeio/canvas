@@ -1,6 +1,7 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { StyleSheet } from "react-native";
 import { Circle } from "react-native-svg";
-import { View, Text, Pressable, useTheme, useControllableState, devWarn, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, isGlass } from "../../style/index.js";
+import { View, Text, Pressable, useControllableState, devWarn, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type Tone } from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
@@ -75,8 +76,9 @@ const PLOT_HEIGHT = { default: 180, compact: 120 } as const;
 export function createScatterPlot(skin: ChartSkin) {
   return function ScatterPlot(props: ScatterPlotProps) {
     const { series, title, testID, style } = props;
-    const theme = useTheme();
+    const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
+    const surfaceShape = s.surface(tokens, skin.surfaceRadius);
     const glass = isGlass(theme);
     const compact = !!props.compact;
     const multi = series.length > 1;
@@ -141,14 +143,14 @@ export function createScatterPlot(skin: ChartSkin) {
         {...(title != null && title !== "" ? { role: "group" as const, accessibilityLabel: `${title} chart`, "aria-label": `${title} chart` } : {})}
         testID={testID}
         style={[
-          s.surface(tokens, skin.surfaceRadius, glass),
+          paneStyle(theme, surfaceShape),
           compact ? s.surfacePadCompact : s.surfacePadDefault,
           CHART_ROOT,
           style,
         ]}
       >
         {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
-        <GlassPane layer="content" shape={{ borderRadius: skin.surfaceRadius }} />
+        {glass ? <GlassPane layer="content" shape={surfaceShape} /> : null}
         {title != null && title !== "" ? (
           <Text style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}>{title}</Text>
         ) : null}

@@ -1,11 +1,13 @@
-import { forwardRef, type ReactNode } from "react";
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
+import { forwardRef, useEffect, useState, type ReactNode } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { useSpaceActivation } from "../../style/use-space-activation.js";
-import { type GestureResponderEvent } from "react-native";
-import { Pressable, View, Text, useTheme, useControllableState, useMinTargetSlop, type ColorTokens, type StyleProp, type ViewStyle, type TouchTargetSkin, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import { Animated, type GestureResponderEvent } from "react-native";
+import { Pressable, View, Text, useControllableState, useMinTargetSlop, isRTL, type ColorTokens, type StyleProp, type ViewStyle, type TouchTargetSkin, type LayoutStyle, GlassPane, GlassSurface, paneStyle } from "../../style/index.js";
+import { useLiquidMotion } from "../../style/liquid-motion.js";
 
 // Shared Switch shell. Uses React Native's primitives DIRECTLY (no engine className
-// layer) and reads the active brand tokens via useTheme, so colors follow light/dark.
+// layer) and reads the active brand tokens via so colors follow light/dark.
 // The shared structure (label/description row, accessibility, toggle, sizing) lives
 // here once; a platform file supplies only its track + thumb styles (a SwitchSkin)
 // and calls createSwitch. Styles are plain RN objects, which work on iOS, Android,
@@ -69,13 +71,15 @@ export function createSwitch(skin: SwitchSkin) {
   const Switch = forwardRef<View, SwitchProps>(function Switch(props, ref) {
     const hostRef = useComposedRefs(ref);
     const { onChange, onValueChange, disabled, children, description, accessibilityLabel, style } = props;
-    const theme = useTheme();
+    const theme = useMaterialTheme({ static: true, layer: "control" });
+    const thumbTheme = useMaterialTheme({ layer: "control" });
     const { tokens, dark } = theme;
+    const glassThumb = thumbTheme.surface === "glass";
     const size = sizeOf(props);
-    // Under glass the track is a CONTROL-layer puck: a GlassPane paints the material
+    // Under glass the track is a static pane at control density: a GlassPane paints the material
     // behind the thumb (BRAND-tinted while checked) and the track drops its fill and
-    // outline (the pane's material and rim carry them). The thumb stays a solid knob.
-    const glass = isGlass(theme);
+    // outline (the pane's material and rim carry them). The moving thumb owns its
+    // liquid material, independently of the stable track.
 
     // Controlled when `checked` is provided, self-managed otherwise, so a bare
     // <Switch /> toggles out of the box (the standard library contract).
@@ -87,6 +91,21 @@ export function createSwitch(skin: SwitchSkin) {
         onValueChange?.(next);
       },
     );
+    const [pressed, setPressed] = useState(false);
+    useEffect(() => { if (disabled) setPressed(false); }, [disabled]);
+    const [measuredTrack, setMeasuredTrack] = useState<{ size: Size; width: number } | null>(null);
+    const trackShape = skin.track(tokens, dark, checked, size);
+    const thumbShape = skin.thumb(tokens, checked, size);
+    const { position, start, end, top, bottom, left, right, width, height, ...thumbSurface } = thumbShape;
+    const trackWidth = measuredTrack?.size === size ? measuredTrack.width : Number(trackShape.width);
+    const innerWidth = trackWidth - 2 * Number(trackShape.borderWidth ?? 0);
+    const thumbWidth = Number(width);
+    const thumbHeight = Number(height);
+    const logicalX = start != null ? Number(start) : innerWidth - Number(end ?? 0) - thumbWidth;
+    const thumbFrame = useLiquidMotion({
+      x: isRTL() ? innerWidth - logicalX - thumbWidth : logicalX,
+      y: Number(top ?? 0), width: thumbWidth, height: thumbHeight,
+    }, { enabled: glassThumb && !disabled, pressed, profile: "toggle" });
 
     const handlePress = (_event: GestureResponderEvent) => {
       setChecked(!checked);
@@ -104,6 +123,8 @@ export function createSwitch(skin: SwitchSkin) {
         {...(keyboard as object)}
         {...target}
         onPress={handlePress}
+        onPressIn={() => setPressed(true)}
+        onPressOut={() => setPressed(false)}
         disabled={disabled}
         testID={props.testID}
         accessibilityRole="switch"
@@ -118,24 +139,41 @@ export function createSwitch(skin: SwitchSkin) {
             gap: 16,
             alignItems: description != null ? "flex-start" : "center",
           },
-          disabled ? { opacity: 0.5 } : null,
-          pressed ? { opacity: 0.9 } : null,
+          disabled && !glassThumb ? { opacity: 0.5 } : null,
+          pressed && !glassThumb ? { opacity: 0.9 } : null,
           style,
         ]}
       >
         {children != null || description != null ? (
           <View>
             {children != null ? (
-              <Text style={{ fontWeight: "500", color: tokens.foreground, fontSize: LABEL_FONT[size] }}>{children}</Text>
+              <Text style={{ fontWeight: "500", color: disabled ? tokens["muted-foreground"] : tokens.foreground, fontSize: LABEL_FONT[size] }}>{children}</Text>
             ) : null}
             {description != null ? (
               <Text style={{ color: tokens["muted-foreground"], fontSize: DESC_FONT[size] }}>{description}</Text>
             ) : null}
           </View>
         ) : null}
-        <View style={paneStyle(glass, skin.track(tokens, dark, checked, size))}>
-          <GlassPane layer="control" shape={skin.track(tokens, dark, checked, size)} brand={checked ? tokens.primary : undefined} interactive />
-          <View style={skin.thumb(tokens, checked, size)} />
+        <View
+          // This measured coordinate owner must survive transparent material mode.
+          // Fabric can flatten a borderless track after its opaque fill is cleared.
+          collapsable={false}
+          onLayout={(event) => {
+            const width = event.nativeEvent.layout.width;
+            setMeasuredTrack((old) => old?.size === size && old.width === width ? old : { size, width });
+          }}
+          style={paneStyle(theme, disabled && glassThumb ? [trackShape, { backgroundColor: tokens.muted }] : trackShape)}
+        >
+          <GlassPane static layer="control" shape={trackShape} brand={checked && !disabled ? tokens.primary : undefined} />
+          <Animated.View style={[{ position: "absolute", pointerEvents: "none" }, thumbFrame]} testID={props.testID ? `${props.testID}-thumb-motion` : undefined}>
+            <GlassSurface
+              layer="control"
+              interactive
+              pointerEvents="none"
+              tint={disabled ? tokens["muted-foreground"] : String(thumbSurface.backgroundColor)}
+              style={[thumbSurface, { width: "100%", height: "100%" }, disabled && glassThumb ? { backgroundColor: tokens["muted-foreground"] } : null]}
+            />
+          </Animated.View>
         </View>
       </Pressable>
     );

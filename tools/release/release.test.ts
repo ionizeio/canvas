@@ -23,7 +23,7 @@ const git = (cwd: string, ...args: string[]) => execFileSync("git", args, {
 const write = (file: string, data: unknown) => fs.writeFileSync(file, JSON.stringify(data));
 afterEach(() => { for (const dir of roots.splice(0)) fs.rmSync(dir, { recursive: true, force: true }); });
 
-function fixture(bump = "patch") {
+function fixture(bump = "patch", blurBump?: string) {
   const dir = root();
   const remote = path.join(dir, "origin.git");
   const repo = path.join(dir, "repo");
@@ -40,6 +40,15 @@ function fixture(bump = "patch") {
   fs.mkdirSync(path.join(repo, ".changeset"));
   fs.copyFileSync(path.resolve(".changeset/config.json"), path.join(repo, ".changeset/config.json"));
   if (bump) fs.writeFileSync(path.join(repo, ".changeset/fix.md"), `---\n"@ionizeio/canvas": ${bump}\n---\n\nCorrect a behavior.\n`);
+  if (blurBump !== undefined) {
+    const metadataFile = path.join(repo, "package.json");
+    const metadata = JSON.parse(fs.readFileSync(metadataFile, "utf8"));
+    metadata.workspaces = [".", "packages/*"];
+    write(metadataFile, metadata);
+    fs.mkdirSync(path.join(repo, "packages/canvas-blur"), { recursive: true });
+    write(path.join(repo, "packages/canvas-blur/package.json"), { ...JSON.parse(fs.readFileSync(path.resolve("packages/canvas-blur/package.json"), "utf8")), version: "0.0.0" });
+    if (blurBump) fs.writeFileSync(path.join(repo, ".changeset/blur.md"), `---\n"@ionizeio/canvas-blur": ${blurBump}\n---\n\nAdd optional Android backdrop capture.\n`);
+  }
   git(repo, "add", ".");
   git(repo, "commit", "-m", "source");
   git(repo, "push", "origin", "main");
@@ -52,12 +61,13 @@ function fixture(bump = "patch") {
 
 function artifacts(f: ReturnType<typeof fixture>, c: ReturnType<typeof readCandidate>) {
   fs.mkdirSync(f.artifacts);
-  const files = ["package.tgz", "docs.tgz"].map((name) => {
+  const packageFiles = Object.fromEntries(c.packages.map((p) => [p.name, p.directory === "." ? "package.tgz" : "blur.tgz"]));
+  const files = [...Object.values(packageFiles), "docs.tgz"].map((name) => {
     const bytes = Buffer.from(name);
     fs.writeFileSync(path.join(f.artifacts, name), bytes);
     return { name, sha256: createHash("sha256").update(bytes).digest("hex") };
   });
-  write(path.join(f.artifacts, "manifest.json"), { ...c, packageFile: "package.tgz", files });
+  write(path.join(f.artifacts, "manifest.json"), { ...c, packageFile: "package.tgz", packageFiles, files });
 }
 
 function advance(f: ReturnType<typeof fixture>) {
@@ -73,6 +83,64 @@ function advance(f: ReturnType<typeof fixture>) {
 }
 
 describe("frozen release transaction", () => {
+  test("versions both root and module workspaces, publishes implementation first, and tags independently", () => {
+    const f = fixture("minor", "minor");
+    const c = prepare(f.repo, f.candidateDir, f.source, true);
+    expect(c.packages.map((p) => [p.name, p.version, p.release])).toEqual([
+      ["@ionizeio/canvas", "2.4.0", true], ["@ionizeio/canvas-blur", "0.1.0", true],
+    ]);
+    expect(fs.existsSync(path.join(f.repo, "packages/canvas-blur/CHANGELOG.md"))).toBe(true);
+    artifacts(f, c);
+    const files: string[] = [];
+    publish(f.repo, f.candidateDir, f.artifacts, (file) => files.push(path.basename(file)));
+    expect(files).toEqual(["blur.tgz", "package.tgz"]);
+    expect(git(f.repo, "ls-remote", "origin", "refs/tags/*")).toContain("refs/tags/canvas-blur@0.1.0");
+    expect(git(f.repo, "ls-remote", "origin", "refs/tags/*")).toContain("refs/tags/v2.4.0");
+  }, 30_000);
+
+  test("module-only changesets release the module without republishing unchanged Canvas", () => {
+    const f = fixture("", "minor");
+    const c = prepare(f.repo, f.candidateDir, f.source, true);
+    expect(c.version).toBe("2.3.4");
+    expect(c.packages[0].release).toBe(false);
+    expect(c.packages[1].version).toBe("0.1.0");
+    artifacts(f, c);
+    const files: string[] = [];
+    publish(f.repo, f.candidateDir, f.artifacts, (file) => files.push(path.basename(file)));
+    expect(files).toEqual(["blur.tgz"]);
+    expect(git(f.repo, "ls-remote", "origin", "refs/tags/*")).not.toContain("refs/tags/v2.3.4");
+  }, 30_000);
+
+  test("root-only changesets retain and seal an unchanged module", () => {
+    const f = fixture("patch", "");
+    const c = prepare(f.repo, f.candidateDir, f.source, true);
+    expect(c.packages[1].release).toBe(false);
+    artifacts(f, c);
+    const manifest = verifyArtifacts(f.repo, f.candidateDir, f.artifacts);
+    expect(manifest.files).toHaveLength(3);
+    fs.appendFileSync(path.join(f.artifacts, "blur.tgz"), "tampered");
+    expect(() => verifyArtifacts(f.repo, f.candidateDir, f.artifacts)).toThrow("checksum");
+  }, 30_000);
+
+  test("root major authorization never authorizes a module major", () => {
+    const f = fixture("", "major");
+    const previous = process.env.RELEASE_MAJOR;
+    process.env.RELEASE_MAJOR = "3.0.0";
+    try { expect(prepare(f.repo, f.candidateDir, f.source, true).status).toBe("blocked-major"); }
+    finally { if (previous === undefined) delete process.env.RELEASE_MAJOR; else process.env.RELEASE_MAJOR = previous; }
+  }, 30_000);
+
+  test("second-package publication failure leaves no tags and never retries an accepted candidate", () => {
+    const f = fixture("patch", "minor");
+    const c = prepare(f.repo, f.candidateDir, f.source, true);
+    artifacts(f, c);
+    let calls = 0;
+    expect(() => publish(f.repo, f.candidateDir, f.artifacts, () => { if (++calls === 2) throw new Error("second registry failure"); })).toThrow("second registry failure");
+    expect(calls).toBe(2);
+    expect(git(f.repo, "ls-remote", "origin", "refs/tags/*")).toBe("");
+    expect(publish(f.repo, f.candidateDir, f.artifacts, () => { throw new Error("no retry"); })).toBe("stale");
+  }, 30_000);
+
   test("prepares from a pinned detached CI checkout with no local main ref", () => {
     const f = fixture();
     git(f.repo, "checkout", "--detach", f.source);
@@ -82,18 +150,24 @@ describe("frozen release transaction", () => {
     expect(c.version).toBe("2.3.5");
     expect(git(f.repo, "rev-parse", "main")).toBe(f.source);
     expect(git(f.repo, "rev-parse", "HEAD^")).toBe(f.source);
-  });
+  }, 30_000);
 
   // This integration case runs Changesets, copies the complete distribution,
   // invokes npm pack and verifies unpacked files. Give those subprocesses their
   // own bounded budget instead of Bun's five-second unit-test default.
-  test.skipIf(!fs.existsSync(path.resolve("dist/index.js")))("seals a real npm tarball and docs archive, then verifies their unpacked bytes", () => {
-    const f = fixture();
+  test.skipIf(!fs.existsSync(path.resolve("dist/index.js")))("seals real npm tarballs and docs archive, then verifies their unpacked bytes", () => {
+    const f = fixture("patch", "minor");
     const c = prepare(f.repo, f.candidateDir, f.source, true);
     fs.cpSync(path.resolve("dist"), path.join(f.repo, "dist"), { recursive: true });
     fs.cpSync(path.resolve("styles"), path.join(f.repo, "styles"), { recursive: true });
     fs.mkdirSync(path.join(f.repo, "scripts"));
     fs.copyFileSync(path.resolve("scripts/verify-package.ts"), path.join(f.repo, "scripts/verify-package.ts"));
+    fs.copyFileSync(path.resolve("scripts/verify-blur-package.mjs"), path.join(f.repo, "scripts/verify-blur-package.mjs"));
+    for (const file of ["dist", "android/src/main", "android/build.gradle", "expo-module.config.json", "README.md"]) {
+      const destination = path.join(f.repo, "packages/canvas-blur", file);
+      fs.mkdirSync(path.dirname(destination), { recursive: true });
+      fs.cpSync(path.resolve("packages/canvas-blur", file), destination, { recursive: true });
+    }
     fs.mkdirSync(path.join(f.repo, "tools/licensegen"), { recursive: true });
     fs.copyFileSync(path.resolve("tools/licensegen/generate.mjs"), path.join(f.repo, "tools/licensegen/generate.mjs"));
     fs.mkdirSync(path.join(f.repo, "docs/dist"), { recursive: true });
@@ -105,7 +179,14 @@ describe("frozen release transaction", () => {
     expect(JSON.parse(packed).version).toBe("2.3.5");
     expect(execFileSync("tar", ["-xOf", path.join(f.artifacts, "docs.tgz"), "./index.html"], { encoding: "utf8" })).toBe("Validated docs bytes");
     expect(execFileSync("tar", ["-xOf", path.join(f.artifacts, m.packageFile), "package/LICENSE"], { encoding: "utf8" })).toContain("MIT License");
-  }, 30_000);
+    const blur = path.join(f.artifacts, m.packageFiles["@ionizeio/canvas-blur"]);
+    expect(execFileSync("tar", ["-xOf", blur, "package/LICENSE"], { encoding: "utf8" })).toContain("npm as @ionizeio/canvas-blur");
+    const entries = execFileSync("tar", ["-tzf", blur], { encoding: "utf8" });
+    expect(entries).toContain("android/src/main/java/io/ionize/canvas/blur/CanvasBlurModule.kt");
+    expect(entries).not.toContain("package/src/");
+    expect(entries).not.toContain("android/build/");
+    expect(entries).not.toContain("node_modules/");
+  }, 60_000);
 
   test("prepares version metadata first and restores the identical commit from its bundle", () => {
     const f = fixture();
@@ -118,7 +199,7 @@ describe("frozen release transaction", () => {
     expect(restore(validation, f.candidateDir, f.source).candidate).toBe(c.candidate);
     expect(git(validation, "rev-parse", "HEAD")).toBe(c.candidate);
     expect(fs.existsSync(path.join(validation, ".changeset/fix.md"))).toBe(false);
-  });
+  }, 30_000);
 
   test("major is blocked regardless of manual npm request; no changesets is a no-op", () => {
     const f = fixture("major");
@@ -131,7 +212,7 @@ describe("frozen release transaction", () => {
     expect(prepare(empty.repo, empty.candidateDir, empty.source, true).status).toBe("no-changesets");
     expect(() => assertReleaseVersion("2.3.4", "3.0.0")).toThrow("Major");
     expect(() => assertReleaseVersion("2.3.4", "2.3.4")).toThrow("increase");
-  });
+  }, 30_000);
 
   test("a human-typed exact next major authorizes the major; anything else still blocks", () => {
     const withMajor = (value: string, run: () => void) => {
@@ -177,7 +258,7 @@ describe("frozen release transaction", () => {
     expect(git(f.repo, "ls-remote", "origin", "refs/heads/main")).toStartWith(newer);
     expect(git(f.repo, "ls-remote", "origin", "refs/tags/*")).toBe("");
     expect(git(f.repo, "rev-parse", "HEAD")).toBe(c.candidate);
-  });
+  }, 30_000);
 
   test("a race after freshness check is rejected by normal push without rebase", () => {
     const f = fixture();
@@ -185,7 +266,7 @@ describe("frozen release transaction", () => {
     expect(accept(f.repo, c, () => advance(f))).toBe(false);
     expect(git(f.repo, "rev-parse", "HEAD")).toBe(c.candidate);
     expect(git(f.repo, "ls-remote", "origin", "refs/tags/*")).toBe("");
-  });
+  }, 30_000);
 
   test("publishes the tested file only after candidate push, then pushes only its tag", () => {
     const f = fixture();
@@ -200,7 +281,7 @@ describe("frozen release transaction", () => {
     })).toBe("published");
     expect(files).toEqual([path.join(f.artifacts, "package.tgz")]);
     expect(git(f.repo, "ls-remote", "origin", "refs/tags/*")).toBe(`${c.candidate}\trefs/tags/v2.3.5`);
-  });
+  }, 30_000);
 
   test("artifact corruption or candidate mismatch stops before acceptance", () => {
     const f = fixture();
@@ -211,7 +292,7 @@ describe("frozen release transaction", () => {
     expect(() => publish(f.repo, f.candidateDir, f.artifacts, () => {})).toThrow("checksum");
     expect(git(f.repo, "ls-remote", "origin", "refs/heads/main")).toStartWith(f.source);
     expect(() => restore(f.repo, f.candidateDir, "a".repeat(40))).toThrow("different");
-  });
+  }, 30_000);
 
   test("partial npm failure leaves no tag and cannot silently republish that candidate", () => {
     const f = fixture();
@@ -220,7 +301,7 @@ describe("frozen release transaction", () => {
     expect(() => publish(f.repo, f.candidateDir, f.artifacts, () => { throw new Error("registry failed"); })).toThrow("registry failed");
     expect(git(f.repo, "ls-remote", "origin", "refs/tags/*")).toBe("");
     expect(publish(f.repo, f.candidateDir, f.artifacts, () => { throw new Error("do not retry"); })).toBe("stale");
-  });
+  }, 30_000);
 });
 
 test("shared Pages preparation makes vendor fonts uploadable before browser validation", () => {

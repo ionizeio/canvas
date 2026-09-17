@@ -2,9 +2,12 @@
 
 The smoke app is an isolated copy of `examples/starter`. Its checked-in dependency
 stays pinned to npm. Candidate preparation verifies the release seal, installs the
-exact tarball only in the copy, and compares installed package bytes before building
+exact Canvas and optional capture module tarballs only in the copy, and compares
+installed package bytes before building
 or testing. No source resolver, workspace link, `.origin` overlay or optional-peer
-stub is allowed. These fixtures are outside the library's published `files` set.
+stub is allowed. Both package hashes and versions are retained in the identity.
+Preparation also proves Android autolinking resolves the isolated installed module,
+and preserves that result in `android-autolinking.json`. These fixtures are outside the library's published `files` set.
 
 Reviewed fixture bodies and route templates live in `examples/starter/smoke`,
 outside the ordinary app's source and route graph. Preparation copies only the
@@ -29,8 +32,39 @@ node scripts/native-smoke.mjs test --output /tmp/native-candidate --platform ios
 For Android, replace `ios` and `SIMULATOR_UDID` with `android` and an explicit adb
 serial. Set `JAVA_HOME`, `ANDROID_HOME` and `PATH` for that command if the SDK/JDK
 is not already configured. The runner does not alter shell profiles or SDK
-installations. It installs only `com.nannier.canvas.starter.smoke`, preserving the
-ordinary starter and docs apps. Maestro installs its native automation driver.
+installations. The journey installs `com.nannier.canvas.starter.smoke`, preserving
+the ordinary starter and docs apps. Maestro installs its native automation driver.
+
+Android CI also runs the capture module's device instrumentation before Maestro:
+
+```sh
+node scripts/native-smoke.mjs build --output /tmp/native-candidate --platform android --device emulator-5554
+node scripts/native-smoke.mjs instrument --output /tmp/native-candidate --platform android --device emulator-5554
+node scripts/native-smoke.mjs test --output /tmp/native-candidate --platform android --device emulator-5554 --maestro /tmp/native-tools/maestro/bin/maestro
+```
+
+Preparation archives the candidate revision's entire
+`packages/canvas-blur/android/src/androidTest` tree and the Gradle init script into
+`android-instrumentation-inputs`. They are verification inputs, intentionally
+absent from the published module. The init script locates the installed sealed
+module by its canonical project directory, attaches those preserved test sources
+to `androidTest`, and redirects generated output to `android-capture-build` outside
+`node_modules`. The same output redirection is used by the app's release build.
+Production files remain byte-for-byte equal to the sealed archive before and
+after either operation. No installed source is replaced or excluded from that
+comparison, and the app's release APK digest must remain unchanged.
+
+Instrumentation installs the module's test APK and runs its debug native variant
+on the same explicit emulator serial. It checks the sealed production source;
+Maestro separately checks the app's release binary. These are distinct proofs.
+The gate requires nonempty JUnit cases with no failures, errors, skips, or duplicate
+identities. A failed command cannot pass because a report exists, and previous
+connected-test reports are removed before the attempt. Candidate/module hashes,
+preserved test inventories, current tooling hashes, device API/fingerprint, actual
+Gradle project/source configuration, logs, and XML/HTML reports are retained in
+`android-instrumentation-evidence`. CI uploads that directory and its input archive
+even when the gate fails. This reuses the independent consumer and emulator;
+it does not build a second docs project or claim all supported Android versions.
 
 The release builds contain embedded JavaScript, so they do not require Metro.
 Before input, the flow reads the actual runtime candidate revision and tarball hash,

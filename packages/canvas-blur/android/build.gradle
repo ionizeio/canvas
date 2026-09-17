@@ -1,0 +1,25 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+def packageMetadata = new groovy.json.JsonSlurper().parse(file('../package.json'))
+group = 'io.ionize.canvas.blur'
+version = packageMetadata.version
+
+android {
+  namespace 'io.ionize.canvas.blur'
+  defaultConfig {
+    versionCode 1
+    versionName packageMetadata.version
+    testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+  }
+}
+
+dependencies {
+  // PaintHost delegates to the consuming app's RN View implementation.
+  // Expo's implementation dependency is not exported on our compile classpath.
+  implementation 'com.facebook.react:react-android'
+  androidTestImplementation 'androidx.test.ext:junit:1.3.0'
+  androidTestImplementation 'androidx.test:runner:1.7.0'
+}

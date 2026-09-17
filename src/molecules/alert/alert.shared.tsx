@@ -1,9 +1,9 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
 import {
   View,
   Pressable,
   Text,
-  useTheme,
   useControllableState,
   useFillStyle,
   controlRipple,
@@ -15,6 +15,7 @@ import {
   type ViewStyle,
   type TextStyle,
   GlassPane,
+  paneStyle,
   isGlass,
   alpha,
 } from "../../style/index.js";
@@ -177,7 +178,7 @@ export function createAlert(skin: AlertSkin) {
 
   return function Alert(props: AlertProps) {
     const { title, description, icon, children, actions, dismissible, onDismiss, testID, style } = props;
-    const theme = useTheme();
+    const theme = useMaterialTheme({ static: true });
     const { tokens, dark } = theme;
     const glass = isGlass(theme);
     const tone = toneOf(props);
@@ -218,12 +219,12 @@ export function createAlert(skin: AlertSkin) {
         accessibilityRole="alert"
         accessibilityLiveRegion={live}
         aria-live={live}
-        style={[skin.container, glass ? { ...containerColor(tokens, dark, tone), backgroundColor: "transparent" } : containerColor(tokens, dark, tone), fill, style]}
+        style={[paneStyle(theme, [skin.container, containerColor(tokens, dark, tone)]), glass ? { borderColor: containerColor(tokens, dark, tone).borderColor } : null, fill, style]}
       >
         {/* Under glass the alert is a CONTENT-layer pane (a toned alert tints it with its
             hue) painted behind the live-region root, which keeps its semantics and its
             tone-coloured edge. Renders nothing in solid mode. */}
-        <GlassPane layer="content" shape={skin.container} tint={paneTint(tokens, dark, tone)} />
+        <GlassPane layer="content" shape={[skin.container, containerColor(tokens, dark, tone)]} tint={paneTint(tokens, dark, tone)} />
         {icon != null ? (
           tintedIcon != null ? (
             <View style={iconSlot}>{tintedIcon}</View>

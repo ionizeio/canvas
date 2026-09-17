@@ -75,10 +75,10 @@ jobs:
       - name: Lint
         run: bun run lint
 
-      - name: Build package (dist)
+      - name: Build Canvas and optional Android module (dist)
         run: bun run build
 
-      - name: Verify package artifact
+      - name: Verify both package artifacts
         run: bun run verify-package
 
       - name: Unit tests

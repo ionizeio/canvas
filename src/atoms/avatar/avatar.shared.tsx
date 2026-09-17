@@ -1,12 +1,10 @@
-import { Children, cloneElement, isValidElement, useState, type ComponentType, type ReactElement, type ReactNode } from "react";
-import { View, Pressable, Text, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type ImageStyle, type LayoutStyle } from "../../style/index.js";
+import { Children, cloneElement, isValidElement, useState, type ReactElement, type ReactNode } from "react";
+import { View, Pressable, Text, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type ImageStyle, type LayoutStyle } from "../../style/index.js";
+import { GlassPane, paneStyle } from "../../style/glass-surface/glass-pane.js";
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
+import { isGlass } from "../../style/glass-fill.js";
+import { inkOn } from "../../style/color.js";
 import { Image } from "../image/image.js";
-
-// A platform-supplied surface for the initials fallback. iOS passes a GlassSurface
-// wrapper (real Liquid Glass) via createAvatar; web and Android pass nothing, so the
-// fallback stays the original plain, solid box. The glass path never enters the web or
-// Android bundle because only avatar.ios imports GlassSurface.
-export type AvatarSurface = ComponentType<{ style?: LayoutStyle; testID?: string; children?: ReactNode }>;
 
 // Shared Avatar shell. The structure (a photo when the account has one, falling
 // back to one or two initials in white on a deterministic per-name colour), the
@@ -180,16 +178,12 @@ function labelStyle(skin: AvatarSkin, size: Size, foreground: string): TextStyle
   return { color: foreground, ...skin.labelType[size] };
 }
 
-/**
- * Build an Avatar component from a platform skin. `GlassFallback` is an optional,
- * platform-supplied surface for the initials fallback: iOS passes its interactive
- * Liquid Glass surface, web and Android pass nothing (so their box stays solid and
- * their bundles never pull in the glass material).
- */
-export function createAvatar(skin: AvatarSkin, GlassFallback?: AvatarSurface) {
+/** Build an Avatar component from a platform skin. */
+export function createAvatar(skin: AvatarSkin) {
   return function Avatar(props: AvatarProps) {
     const { src, uri, name, initials, children, ring, accessibilityLabel, onPress, testID, style } = props;
-    const { tokens } = useTheme();
+    const theme = useMaterialTheme({ static: true, layer: "control" });
+    const { tokens } = theme;
     const size = sizeOf(props);
     const shape = shapeOf(props);
     const photo = src ?? uri;
@@ -208,21 +202,17 @@ export function createAvatar(skin: AvatarSkin, GlassFallback?: AvatarSurface) {
     const glyph = showPhoto ? "" : initials ?? (source ? initialsFrom(source) : "");
     const identity = name ?? initials ?? (typeof children === "string" ? children : "");
 
-    // Glass applies ONLY to the initials fallback of a pressable trigger (the topbar
-    // account button), and ONLY when a platform supplied a glass surface (iOS). There
-    // the interactive Liquid Glass reads as "tappable control", so it stays neutral and
-    // the per-name colour is not applied. Content avatars (stacks, identity rows) and
-    // every web/Android avatar take the solid coloured path below.
-    const useGlass = !showPhoto && GlassFallback != null && onPress != null;
-
-    // The initials fallback carries a deterministic per-name colour with white initials,
-    // so people stay distinct in stacks and lists. A photo (the image covers the box),
-    // an empty avatar, and the neutral glass trigger keep the muted surface instead.
-    const colored = glyph !== "" && !useGlass;
+    // Identity stays static whether or not it is pressable. Photos keep their
+    // pixels; initials retain a deterministic colour through the frosted material.
+    const colored = glyph !== "";
     const background = colored ? tokens[PALETTE_KEYS[paletteIndexFor(identity)]] : tokens.muted;
-    const foreground = colored ? tokens["primary-foreground"] : tokens["muted-foreground"];
-
-    const container: StyleProp<ViewStyle> = [containerStyle(tokens, skin, size, shape, !!ring, background), style];
+    const foreground = colored
+      ? isGlass(theme) ? inkOn(background) : tokens["primary-foreground"]
+      : tokens["muted-foreground"];
+    const shapeStyle = containerStyle(tokens, skin, size, shape, !!ring, background);
+    const separator = ring ? { borderWidth: RING_WIDTH, borderColor: theme.increasedContrast ? tokens.foreground : tokens.background } : null;
+    const container: StyleProp<ViewStyle> = [showPhoto ? shapeStyle : paneStyle(theme, shapeStyle), separator, style];
+    const pane = showPhoto ? null : <GlassPane static layer="control" shape={shapeStyle} brand={colored ? background : undefined} />;
 
     // Pad the visual box out to the skin's minimum touch target (44pt HIG / 48dp
     // M3) when the avatar is pressable: e.g. the 28px `small` topbar trigger gets
@@ -247,39 +237,24 @@ export function createAvatar(skin: AvatarSkin, GlassFallback?: AvatarSurface) {
       inner = glyph ? <Text style={labelStyle(skin, size, foreground)}>{glyph}</Text> : null;
     }
 
-    if (!useGlass) {
-      if (onPress) {
-        return (
-          <Pressable
-            android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
-            style={({ pressed }) => [container, pressed && skin.pressedOpacity != null ? { opacity: skin.pressedOpacity } : null]}
-            onPress={onPress}
-            hitSlop={hitSlop}
-            testID={testID}
-            accessibilityRole="button"
-            accessibilityLabel={label}
-            aria-label={label}
-          >
-            {inner}
-          </Pressable>
-        );
-      }
-      return <View style={container} testID={testID}>{inner}</View>;
-    }
-
-    // iOS initials fallback: the injected GlassSurface owns the sized, shaped surface;
-    // its material supplies the fill and, being interactive, its own touch animation. A
-    // pressable avatar wraps it in a bare Pressable (the glass itself signals the press,
-    // so there is no opacity dim on top of the material's animation).
-    const Surface = GlassFallback;
     if (onPress) {
       return (
-        <Pressable onPress={onPress} hitSlop={hitSlop} testID={testID} accessibilityRole="button" accessibilityLabel={label} aria-label={label}>
-          <Surface style={container}>{inner}</Surface>
+        <Pressable
+          android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
+          style={({ pressed }) => [container, pressed && skin.pressedOpacity != null ? { opacity: skin.pressedOpacity } : null]}
+          onPress={onPress}
+          hitSlop={hitSlop}
+          testID={testID}
+          accessibilityRole="button"
+          accessibilityLabel={label}
+          aria-label={label}
+        >
+          {pane}
+          {inner}
         </Pressable>
       );
     }
-    return <Surface style={container} testID={testID}>{inner}</Surface>;
+    return <View style={container} testID={testID}>{pane}{inner}</View>;
   };
 }
 
@@ -333,7 +308,8 @@ function overlapOf(p: AvatarGroupProps): Overlap {
 export function createAvatarGroup(skin: AvatarSkin) {
   return function AvatarGroup(props: AvatarGroupProps) {
     const { children, max, total, tiny, small, large, accessibilityLabel, testID } = props;
-    const { tokens } = useTheme();
+    const theme = useMaterialTheme({ static: true, layer: "control" });
+    const { tokens } = theme;
     const size = sizeOf(props);
     const overlap = OVERLAP[size][overlapOf(props)];
 
@@ -347,6 +323,19 @@ export function createAvatarGroup(skin: AvatarSkin) {
     // size otherwise. Overlap + ring are always injected, so the caller's
     // Avatars never carry layout style.
     const sizeProps: Partial<AvatarProps> = tiny ? { tiny: true } : small ? { small: true } : large ? { large: true } : {};
+
+    const overflowShape: ViewStyle = {
+      flexShrink: 0,
+      alignItems: "center",
+      justifyContent: "center",
+      overflow: "hidden",
+      backgroundColor: tokens.muted,
+      width: BOX[size],
+      height: BOX[size],
+      borderRadius: CIRCLE_RADIUS,
+      borderWidth: RING_WIDTH,
+      borderColor: tokens.background,
+    };
 
     return (
       <View
@@ -365,20 +354,9 @@ export function createAvatarGroup(skin: AvatarSkin) {
         )}
         {hidden > 0 ? (
           <View
-            style={{
-              flexShrink: 0,
-              alignItems: "center",
-              justifyContent: "center",
-              overflow: "hidden",
-              backgroundColor: tokens.muted,
-              width: BOX[size],
-              height: BOX[size],
-              borderRadius: CIRCLE_RADIUS,
-              borderWidth: RING_WIDTH,
-              borderColor: tokens.background,
-              marginStart: visible.length > 0 ? overlap : 0,
-            }}
+            style={[paneStyle(theme, overflowShape), { borderWidth: RING_WIDTH, borderColor: theme.increasedContrast ? tokens.foreground : tokens.background, marginStart: visible.length > 0 ? overlap : 0 }]}
           >
+            <GlassPane static layer="control" shape={overflowShape} />
             <Text style={{ color: tokens["muted-foreground"], ...skin.labelType[size] }}>+{hidden}</Text>
           </View>
         ) : null}

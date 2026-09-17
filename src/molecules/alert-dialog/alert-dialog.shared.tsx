@@ -1,4 +1,5 @@
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
+import { useHardwareBack } from "../../style/use-hardware-back.js";
 import { type ReactNode, useId, useState } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
 import { Entrance, GlassSurface, Portal, Pressable, RippleClip, Text, View, cornerRadii, type StyleProp, type ViewStyle, useDialogFocus, useTheme } from "../../style/index.js";
@@ -175,6 +176,9 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
     // Escape and native accessibility escape through the same Cancel policy.
     const panelRef = useDialogFocus(open);
     const escapeScope = useEscapeLayer(open, handleCancel);
+    // Inline catalogue panels do not own page navigation. A presented overlay
+    // consumes native Back through the same cancellation policy as Escape.
+    useHardwareBack(open && overlay, escapeScope.onRequestClose);
 
     // The action row. iOS renders two capsule buttons side by side (no divider)
     // drawn by the skin; Android renders a right-aligned row of flat M3 TEXT

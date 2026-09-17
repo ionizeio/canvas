@@ -1,5 +1,6 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { type ReactNode } from "react";
-import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle, GlassSurface, isGlass } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle, GlassSurface, GlassPane, paneStyle } from "../../style/index.js";
 import { Sparkline } from "../../charts/sparkline/sparkline.js";
 import { StackedBar } from "../../charts/stacked-bar/stacked-bar.js";
 import { type StackedSegment } from "../../charts/shared/types.js";
@@ -167,11 +168,10 @@ function accentOf(item: StatItem): string | null {
 export function createStats(skin: StatsSkin) {
   // One metric: label, value, optional delta. Tappable when an onPress is given.
   function StatItemView({ item, surface, framed, onPress }: { item: StatItem; surface: Surface; framed?: boolean; onPress?: () => void }): ReactNode {
-    const theme = useTheme();
+    const theme = useMaterialTheme({ static: true });
     const { tokens, dark } = theme;
     // Under glass a card-surface metric is a CONTENT-layer pane (the material rides
     // inside the pressable so the tap, ripple and dim stay on the Pressable).
-    const glass = isGlass(theme);
     // Split the surface shape (radius/border/fill/padding) from the outer flex sizing:
     // the shape stays on the tappable node, the sizing rides the RippleClip wrapper.
     const cardShape = surface === "card" ? skin.cardSurface(tokens) : null;
@@ -225,9 +225,10 @@ export function createStats(skin: StatsSkin) {
             accessibilityRole="button"
             onPress={onPress}
             android_ripple={android_ripple}
-            style={({ pressed }) => [glass && cardShape ? null : cardShape, pressed && skin.pressedOpacity != null ? { opacity: skin.pressedOpacity } : null]}
+            style={({ pressed }) => [cardShape ? paneStyle(theme, cardShape) : null, pressed && skin.pressedOpacity != null ? { opacity: skin.pressedOpacity } : null]}
           >
-            {glass && cardShape ? <GlassSurface layer="content" style={cardShape}>{inner}</GlassSurface> : inner}
+            {cardShape ? <GlassPane layer="content" shape={cardShape} /> : null}
+            {inner}
           </Pressable>
         </RippleClip>
       );

@@ -176,7 +176,7 @@ describe("Drawer window overlay host", () => {
     expect(closed).toEqual(["menu", "inner", "outer"]);
   });
 
-  it("preserves the separate-window blur bridge without leaking it into the local outlet", () => {
+  it("preserves the separate-window blur bridge for its panel and local outlet", () => {
     const target: RefObject<View | null> = { current: null };
     const seen: Record<string, unknown> = {};
     function Probe({ name }: { name: string }) {
@@ -197,10 +197,10 @@ describe("Drawer window overlay host", () => {
     );
     expect(seen.panel).toBe(target);
     expect(seen["nested-panel"]).toBe(target);
-    // The RNW/base target host has no native blur target. Its outlet must receive
-    // its own null target, never the bridged ancestor window target.
-    expect(seen.outlet).toBeNull();
-    expect(seen["nested-outlet"]).toBeNull();
+    // The explicit Modal bridge proves this target is outside the native window.
+    // Its panel and local outlets can safely sample that same external plane.
+    expect(seen.outlet).toBe(target);
+    expect(seen["nested-outlet"]).toBe(target);
     expect(seen["outlet-window"]).toBe(target);
     expect(seen["nested-outlet-window"]).toBe(target);
   });

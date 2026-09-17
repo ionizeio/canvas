@@ -26,3 +26,8 @@ blob-report/
 # package only. Committing it here would make GitHub read the whole repository as
 # MIT, which is the opposite of the intent (source stays all rights reserved).
 LICENSE
+
+# Optional native workspace build products stay local.
+packages/*/android/build/
+packages/*/android/.gradle/
+packages/*/android/.cxx/

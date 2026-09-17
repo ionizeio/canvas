@@ -36,8 +36,7 @@
 // never parsed from a markup string. Assigning a string to `innerHTML` is a
 // Trusted Types sink: under a `require-trusted-types-for 'script'` CSP, which
 // the docs site sends and any consumer may send, Chromium throws a TypeError on
-// that assignment. The shared def below is injected at IMPORT time, so a sink
-// there does not degrade the glass, it blanks the entire app (it did exactly
+// that assignment. A sink in material setup can blank the entire app (it did exactly
 // that: the throw escaped the module factory and canvas.nannier.com served a
 // white page). Node building touches no sink and needs no policy, so the lens
 // renders identically under every CSP. The filter geometry therefore lives in
@@ -207,6 +206,19 @@ export function ensureGlassLens(): boolean {
   return true;
 }
 
+function removeEmptyDefsHost(): void {
+  if (typeof document === "undefined") return;
+  const host = document.getElementById(GLASS_LENS_ID + "-defs");
+  if (host && host.childElementCount === 0) host.remove();
+}
+
+/** Release the document's CSS material without touching active React surfaces. */
+export function releaseGlassLens(): void {
+  if (typeof document === "undefined") return;
+  document.getElementById(GLASS_LENS_ID)?.remove();
+  removeEmptyDefsHost();
+}
+
 // The sized-def registry: one def per live surface size, refcounted so equal
 // sizes share and a def disappears when its last surface releases it.
 interface SizedDef {
@@ -243,6 +255,7 @@ export function releaseSizedGlassLens(key: string): void {
   if (def.refs <= 0) {
     sizedDefs.delete(key);
     def.el.remove();
+    removeEmptyDefsHost();
   }
 }
 
@@ -274,7 +287,7 @@ export function lensBackdropSupported(
 // The environment-reading wrapper around the pure gate above. Recomputed per
 // call (a regex and one CSS.supports probe) rather than memoized, so tests
 // that override the user agent stay isolated across files.
-function glassLensRenderable(): boolean {
+export function glassLensRenderable(): boolean {
   if (typeof navigator === "undefined" || typeof CSS === "undefined" || typeof CSS.supports !== "function") return false;
   return lensBackdropSupported(navigator.userAgent, (property, value) => CSS.supports(property, value));
 }
@@ -308,12 +321,4 @@ export function useSizedGlassLens(width: number, height: number): string {
     };
   }, [w, h]);
   return url ?? GLASS_LENS_PENDING_FILTER;
-}
-
-// The shared CSS-token def is injected as early as the document allows, so a
-// raw-CSS surface referencing `var(--glass-lens)` has its filter before the
-// first frame that draws it. A hidden 0x0 SVG, harmless for solid documents.
-if (typeof document !== "undefined") {
-  if (document.body) ensureGlassLens();
-  else document.addEventListener("DOMContentLoaded", () => { ensureGlassLens(); }, { once: true });
 }

@@ -1,6 +1,7 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useState } from "react";
 import { StyleSheet } from "react-native";
-import { View, Text, Pressable, useTheme, useControllableState, devWarn, tabularNums, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, isGlass } from "../../style/index.js";
+import { View, Text, Pressable, useControllableState, devWarn, tabularNums, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
 import { CHART_ROOT } from "../shared/chart-frame.js";
@@ -54,8 +55,9 @@ const MAX_TILES = 24;
 export function createTreemap(skin: ChartSkin) {
   return function Treemap(props: TreemapProps) {
     const { data, title, testID, style } = props;
-    const theme = useTheme();
+    const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
+    const surfaceShape = s.surface(tokens, skin.surfaceRadius);
     const glass = isGlass(theme);
     const compact = !!props.compact;
     const formatValue = props.formatValue ?? formatCompact;
@@ -91,14 +93,14 @@ export function createTreemap(skin: ChartSkin) {
         {...(title != null && title !== "" ? { role: "group" as const, accessibilityLabel: `${title} chart`, "aria-label": `${title} chart` } : {})}
         testID={testID}
         style={[
-          s.surface(tokens, skin.surfaceRadius, glass),
+          paneStyle(theme, surfaceShape),
           compact ? s.surfacePadCompact : s.surfacePadDefault,
           CHART_ROOT,
           style,
         ]}
       >
         {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
-        <GlassPane layer="content" shape={{ borderRadius: skin.surfaceRadius }} />
+        {glass ? <GlassPane layer="content" shape={surfaceShape} /> : null}
         {title != null && title !== "" ? (
           <Text style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}>{title}</Text>
         ) : null}

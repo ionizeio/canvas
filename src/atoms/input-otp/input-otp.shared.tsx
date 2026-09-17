@@ -1,3 +1,4 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { Fragment, forwardRef, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import {
   Animated,
@@ -11,7 +12,6 @@ import {
   Text,
   TextInput,
   useHugStyle,
-  useTheme,
   useControllableState,
   useReducedMotion,
   FOCUS_RESET,
@@ -20,7 +20,7 @@ import {
   type ViewStyle,
   type TextStyle,
   type LayoutStyle,
-  GlassPane,
+  GlassPane, paneStyle,
   isGlass,
 } from "../../style/index.js";
 
@@ -177,9 +177,9 @@ export function createInputOTP(skin: InputOTPSkin) {
       style,
     } = props;
     const size = sizeOf(props);
-    const theme = useTheme();
+    const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens } = theme;
-    // Under glass the code field is a CONTROL-layer puck per box: each separated iOS /
+    // Under glass the code field is a static pane at control density per box: each separated iOS /
     // M3 cell takes its own GlassPane, while a connected web run (cells sharing their
     // borders) takes ONE pane across the run, so it still reads as a single field box.
     // A cell drops its fill and resting border under glass (the pane's material and
@@ -307,7 +307,7 @@ export function createInputOTP(skin: InputOTPSkin) {
                   </Text>
                 ) : null}
                 <View style={[RUN, skin.connected ? null : { gap }]}>
-                  {skin.connected ? <GlassPane layer="control" shape={runShape} /> : null}
+                  {skin.connected ? <GlassPane static layer="control" shape={runShape} /> : null}
                   {run.map((index) => {
                     const char = value[index];
                     const filled = char != null;
@@ -320,7 +320,7 @@ export function createInputOTP(skin: InputOTPSkin) {
                       <View
                         key={index}
                         style={[
-                          cellShape,
+                          paneStyle(theme, cellShape),
                           glass ? { backgroundColor: "transparent", borderColor: active ? cellShape.borderColor : "transparent" } : null,
                           { pointerEvents: "none" },
                         ]}
@@ -328,7 +328,7 @@ export function createInputOTP(skin: InputOTPSkin) {
                         accessibilityElementsHidden
                         importantForAccessibility="no-hide-descendants"
                       >
-                        {skin.connected ? null : <GlassPane layer="control" shape={cellShape} />}
+                        {skin.connected ? null : <GlassPane static layer="control" shape={cellShape} />}
                         {filled ? (
                           // U+25CF BLACK CIRCLE, not the U+2022 text bullet: at the digit font
                           // size the text bullet paints as a tiny dot, while BLACK CIRCLE reads

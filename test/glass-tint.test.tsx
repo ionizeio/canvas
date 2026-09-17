@@ -167,17 +167,17 @@ describe("GlassSurface under-fill", () => {
     }
   });
 
-  it("thins the tint on a sheer surface instead of dropping it", async () => {
+  it("thins only the static content tint on a sheer surface", async () => {
     const restore = overrideUserAgent(CHROME_UA);
     try {
       render(
         <ThemeProvider light glass>
-          <Panel testID="sheer-gs" sheer />
+          <Panel testID="sheer-gs" sheer layer="content" />
         </ThemeProvider>,
       );
       const fill = await underFillOf("sheer-gs");
       const style = fill!.getAttribute("style") ?? "";
-      expect(style).toContain(`background-color: ${LIGHT_TINT}`);
+      expect(style).toContain(`background-color: ${glassByScheme.light["glass-tint-content"]}`);
       expect(style).toContain(`opacity: ${SHEER_FILL_OPACITY}`);
     } finally {
       restore();

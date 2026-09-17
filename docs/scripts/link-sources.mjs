@@ -3,8 +3,8 @@
 //
 // We do this with a symlink instead of a `file:` dependency because bun (and npm)
 // COPY `file:` directory deps, which would freeze a snapshot; the docs must render
-// the live library they document. This is isolated to this app (no Bun workspace,
-// no change to the root package). Runs as `postinstall`. (The generated docs core now
+// the live library they document. The docs app keeps its independent dependency installation.
+// Runs as `postinstall`. (The generated docs core now
 // lives in-tree at src/core and is imported relatively, so it needs no symlink.)
 import { symlinkSync, rmSync, mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
@@ -18,6 +18,7 @@ const repoRoot = resolve(projectRoot, "..");
 // symlink, preserving its live source and native skin resolution.
 const links = [
   ["node_modules/@ionizeio/canvas", repoRoot],
+  ["node_modules/@ionizeio/canvas-blur", resolve(repoRoot, "packages/canvas-blur")],
 ];
 
 for (const [rel, target] of links) {

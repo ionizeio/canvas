@@ -1,5 +1,6 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { cloneElement, isValidElement, type ComponentType, type ReactElement } from "react";
-import { View, Text, useTheme, type StyleProp, type ViewStyle, type LayoutStyle, useFillStyle, GlassSurface, withInnerFill } from "../../style/index.js";
+import { View, Text, type StyleProp, type ViewStyle, type LayoutStyle, useFillStyle, GlassSurface, withInnerFill } from "../../style/index.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
 import * as s from "./empty-state.styles.js";
@@ -84,7 +85,7 @@ export type ButtonComponent = ComponentType<ButtonProps>;
 export function createEmptyState(skin: EmptyStateSkin, Button: ButtonComponent = WebButton) {
   return function EmptyState(props: EmptyStateProps) {
     const { icon, title, description, actionLabel, onAction, bordered, compact, testID, style } = props;
-    const theme = useTheme();
+    const theme = useMaterialTheme({ static: true });
     const { tokens } = theme;
     // FILL: the state spans the parent it is given.
     const fill = useFillStyle("EmptyState");

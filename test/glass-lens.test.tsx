@@ -3,6 +3,7 @@ import { render, cleanup, waitFor, screen } from "@testing-library/react";
 import { Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { GlassSurface } from "../src/style/glass-surface/glass-surface.tsx";
+import { setSurface } from "../src/theme.ts";
 import {
   GLASS_LENS_ID,
   GLASS_LENS_PENDING_FILTER,
@@ -57,9 +58,20 @@ describe("lensBackdropSupported (pure engine gate)", () => {
 });
 
 describe("shared CSS-token def", () => {
-  it("injects once, idempotently, carrying blur + saturation and NO displacement", () => {
-    // The module's import-time injection has already run in this document.
+  it("releases CSS resources in solid while retaining independently owned lenses", () => {
+    const local = acquireSizedGlassLens(141, 39)!;
+    setSurface("glass");
     expect(hasGlassLens()).toBe(true);
+    setSurface("solid");
+    expect(hasGlassLens()).toBe(false);
+    expect(document.getElementById(local.key)).not.toBeNull();
+    releaseSizedGlassLens(local.key);
+    expect(document.getElementById(GLASS_LENS_ID + "-defs")).toBeNull();
+  });
+  it("injects once, idempotently, carrying blur + saturation and NO displacement", () => {
+    // CSS consumers explicitly acquire the shared definition when enabling glass.
+    document.getElementById(GLASS_LENS_ID)?.remove();
+    expect(hasGlassLens()).toBe(false);
     expect(ensureGlassLens()).toBe(true);
     expect(document.querySelectorAll(`#${GLASS_LENS_ID}`).length).toBe(1);
     const filter = document.getElementById(GLASS_LENS_ID)!;
@@ -225,10 +237,10 @@ describe("GlassSurface lens tier", () => {
     );
     await waitFor(() => {
       const outer = screen.getByTestId("frost-gs") as HTMLElement;
-      // expo-blur is stubbed in the test setup, so the next rung down here is
-      // the PlainSurface fallback: a single box, no material layers.
-      expect(outer.getAttribute("style") ?? "").not.toContain("backdrop-filter");
-      expect(outer.querySelector("[style*='backdrop-filter']")).toBeNull();
+      // Stable browser frost does not require the optional native blur peer.
+      const frost = outer.querySelector("[style*='backdrop-filter']") as HTMLElement;
+      expect(frost.style.backdropFilter).toBe("blur(16px) saturate(150%)");
+      expect(frost.style.backdropFilter).not.toContain("url(");
     });
   });
 

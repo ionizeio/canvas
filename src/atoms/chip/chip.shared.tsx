@@ -1,5 +1,6 @@
 import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
-import { View, Text, Pressable, RippleClip, cornerRadii, useHugStyle, useTheme, useControllableState, surfaceRipple, pressDim, palette, statusHues, HUE_WASH, type Hue, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle, GlassPane, isGlass, alpha } from "../../style/index.js";
+import { View, Text, Pressable, RippleClip, cornerRadii, useHugStyle, useControllableState, surfaceRipple, pressDim, palette, statusHues, HUE_WASH, type Hue, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, isGlass, alpha } from "../../style/index.js";
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { Icon } from "../icon/icon.js";
 
 // Shared Chip shell. The interactive/removable pill, so no call site hand-composes
@@ -126,7 +127,7 @@ export interface ChipProps {
 
 // The three colors a chip paints with: container fill, border, and label/glyph text,
 // plus the hue wash a coloured chip's glass pane takes under glass (a neutral or
-// outline chip leaves it unset and takes the plain control material).
+// outline chip leaves it unset and inherits the surrounding surface).
 interface Appearance {
   bg: string;
   border: string;
@@ -185,7 +186,14 @@ function neutralTint(tokens: ColorTokens, outline: boolean, mutedGray: boolean):
 export function createChip(skin: ChipSkin) {
   return function Chip(props: ChipProps) {
     const { children, icon, trailing, onPress, onRemove, disabled, accessibilityLabel, testID, style } = props;
-    const theme = useTheme();
+    const selectable =
+      props.selectable === true ||
+      props.selected !== undefined ||
+      props.defaultSelected !== undefined ||
+      props.onSelectedChange !== undefined;
+    // Removing metadata does not make its body an action surface.
+    const staticMaterial = !(onPress || selectable);
+    const theme = useMaterialTheme({ static: staticMaterial, layer: "control" });
     const { tokens, dark } = theme;
     // Under glass the chip is a CONTROL-layer puck: a GlassPane paints the material
     // behind its content (a coloured chip washes it with its hue), and the pill drops
@@ -198,11 +206,6 @@ export function createChip(skin: ChipSkin) {
     // A selectable chip is a filter toggle that owns its selected state (controlled
     // via `selected`, uncontrolled via `defaultSelected`). It is "selectable" when
     // asked explicitly or when any selection prop is passed.
-    const selectable =
-      props.selectable === true ||
-      props.selected !== undefined ||
-      props.defaultSelected !== undefined ||
-      props.onSelectedChange !== undefined;
     const [selectedState, setSelected] = useControllableState<boolean>(
       props.selected,
       props.defaultSelected ?? false,
@@ -213,6 +216,7 @@ export function createChip(skin: ChipSkin) {
     const accent = props.primary === true; // brand-accent (indigo) tone / the "active" look
     const outline = props.outline === true;
     const selectedActive = selectable && selectedState;
+    const surfaced = !outline || selectedActive;
     // M3 selected filter-chip anatomy, threaded through the skin (the Android skin
     // sets `selectedCheckSize`): while selected, the chip leads with a checkmark
     // (replacing any custom leading icon) and sheds its outline. iOS/web omit the
@@ -246,7 +250,7 @@ export function createChip(skin: ChipSkin) {
     const hasLeading = icon != null || selectedCheck != null;
     const hasTrailing = trailing != null || onRemove != null;
 
-    const container: StyleProp<ViewStyle> = [
+    const chrome: StyleProp<ViewStyle> = [
       skin.base,
       {
         backgroundColor: appearance.bg,
@@ -254,14 +258,17 @@ export function createChip(skin: ChipSkin) {
         // state); the borderWidth stays so the box doesn't shift between states.
         borderColor: selectedCheck != null ? "transparent" : appearance.border,
       },
-      glass ? { backgroundColor: "transparent", borderColor: "transparent" } : null,
+    ];
+    const liquid = surfaced && !staticMaterial;
+    const container: StyleProp<ViewStyle> = [
+      surfaced || theme.increasedContrast ? paneStyle(theme, chrome) : chrome,
       skin.sidePadding
         ? {
             paddingStart: hasLeading ? skin.sidePadding.icon : skin.sidePadding.text,
             paddingEnd: hasTrailing ? skin.sidePadding.icon : skin.sidePadding.text,
           }
         : null,
-      disabled ? { opacity: 0.5 } : null,
+      disabled && !liquid ? { opacity: 0.5 } : null,
       hug,
       style,
     ];
@@ -279,7 +286,7 @@ export function createChip(skin: ChipSkin) {
 
     // The chip's content minus the remove control: the leading check/icon, the
     // label, and any trailing element.
-    const pane = <GlassPane layer="control" shape={skin.base} tint={appearance.glassTint} interactive={!!(onPress || selectable)} />;
+    const pane = surfaced ? <GlassPane static={staticMaterial} layer="control" shape={skin.base} tint={appearance.glassTint} interactive={!staticMaterial && !disabled} /> : null;
     const bodyContent = (
       <>
         {selectedCheck != null ? (
@@ -304,6 +311,7 @@ export function createChip(skin: ChipSkin) {
       <Pressable
         onPress={onRemove}
         disabled={disabled}
+        style={liquid && disabled ? { opacity: 0.5 } : null}
         accessibilityRole="button"
         // Name the specific chip, not a bare "Remove", when the label is a string.
         accessibilityLabel={typeof children === "string" ? `Remove ${children}` : "Remove"}
@@ -337,7 +345,7 @@ export function createChip(skin: ChipSkin) {
             aria-pressed={isSelected}
             hitSlop={11}
             android_ripple={surfaceRipple(tokens)}
-            style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", gap: bodyGap }, pressDim(pressed, 0.85)]}
+            style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", gap: bodyGap }, liquid && disabled ? { opacity: 0.5 } : null, pressDim(pressed, 0.85)]}
           >
             {bodyContent}
           </Pressable>
@@ -373,10 +381,16 @@ export function createChip(skin: ChipSkin) {
             // fills the container), clipped to the rounded outline by the RippleClip parent;
             // iOS/web keep the opacity dim.
             android_ripple={surfaceRipple(tokens)}
-            style={({ pressed }) => [container, pressDim(pressed, 0.85)]}
+            style={({ pressed }) => [container, !liquid ? pressDim(pressed, 0.85) : null]}
           >
-            {pane}
-            {bodyContent}
+            {({ pressed }) => <>
+              {pane}
+              <View style={[
+                { flexDirection: "row", alignItems: "center", gap: skin.base.gap, flexShrink: 1 },
+                liquid && disabled ? { opacity: 0.5 } : null,
+                liquid ? pressDim(pressed, 0.85) : null,
+              ]}>{bodyContent}</View>
+            </>}
           </Pressable>
         </RippleClip>
       );

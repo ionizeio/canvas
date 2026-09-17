@@ -1,3 +1,4 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { forwardRef, useEffect, useRef, useState, type ReactNode } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import {
@@ -7,11 +8,13 @@ import {
   type GestureResponderEvent,
   type AccessibilityActionEvent,
 } from "react-native";
-import { View, Text, GlassSurface, useTheme, useControllableState, useFillStyle, useReducedMotion, isRTL, FOCUS_RESET, type ColorTokens, type ViewProps, type ViewStyle, type TextStyle, type StyleProp, type LayoutStyle, type MeasureProps } from "../../style/index.js";
+import { View, Text, GlassSurface, useControllableState, useFillStyle, isRTL, FOCUS_RESET, type ColorTokens, type ViewProps, type ViewStyle, type TextStyle, type StyleProp, type LayoutStyle, type MeasureProps } from "../../style/index.js";
+import { useLiquidMotion } from "../../style/liquid-motion.js";
+import { GlassPane, paneStyle } from "../../style/glass-surface/glass-pane.js";
 import { clamp } from "../../style/math.js";
 
 // Shared Slider shell. Uses React Native's primitives DIRECTLY (no engine className
-// layer) and reads the active brand tokens via useTheme, so the track/fill/thumb
+// layer) and reads the active brand tokens via so the track/fill/thumb
 // follow light/dark and the glass surface. The shared structure (the track + filled
 // range + draggable thumb, the geometry math, the PanResponder drag, tap-to-jump,
 // and the full adjustable accessibility) lives here once; a platform file supplies
@@ -109,20 +112,9 @@ export interface SliderSkin {
   /** The draggable thumb (its left/top offset is set by the shell). */
   thumb: (tokens: ColorTokens, size: Size, disabled: boolean, pressed: boolean) => ViewStyle;
   /**
-   * Render the thumb as a real Liquid Glass control (the iOS 26 slider handle
-   * "transforms into liquid glass during interaction", WWDC25). When set, the shell
-   * routes the thumb through the shared `GlassSurface` primitive: on iOS 26+ (theme
-   * `surface === "glass"`, the platform default there) it becomes an Apple Liquid
-   * Glass knob that refracts the track, and it springs up on press (Apple's
-   * scale/bounce); under solid surface, Reduce Transparency, or Increase Contrast it
-   * degrades to the opaque `thumb` fill above, unchanged. Omitted skins render the
-   * plain `thumb` View exactly as before.
-   */
-  glassThumb?: boolean;
-  /**
    * The bright translucent under-fill for the glass knob (passed to `GlassSurface`'s
    * `tint`), so the handle reads as a light glass puck on both schemes instead of a
-   * popover-tinted blob. Only consulted when `glassThumb` is set.
+   * popover-tinted blob. The per-platform shape remains the skin's responsibility.
    */
   glassTint?: (tokens: ColorTokens) => string;
   /**
@@ -157,11 +149,6 @@ function snap(raw: number, min: number, max: number, step: number): number {
 // kit Ticks layer are for coarse, discrete scales).
 const MAX_TICK_INTERVALS = 20;
 
-// How far the Liquid Glass handle springs up on press (Apple's scale/bounce as the
-// iOS 26 slider "transforms into liquid glass during interaction"). Only applied on
-// the glass-thumb path under real glass with motion allowed.
-const GLASS_THUMB_PRESS_SCALE = 1.12;
-
 // The stacked header the Slider owns above its track: a title row (the label with an
 // optional trailing live-value readout) over a muted description line. `OUTER` is the
 // column that wraps the header and the interactive rail; its snug 8px gap reproduces
@@ -190,8 +177,9 @@ export function createSlider(skin: SliderSkin) {
   const Slider = forwardRef<View, SliderProps>(function Slider(props, ref) {
     const hostRef = useComposedRefs(ref);
     const { min = 0, max = 100, step = 1, onChange, disabled, accessibilityLabel, style, children, description, showValue } = props;
-    const { tokens, surface } = useTheme();
-    const reducedMotion = useReducedMotion();
+    const theme = useMaterialTheme({ layer: "control" });
+    const railTheme = useMaterialTheme({ static: true, layer: "control" });
+    const { tokens, surface } = theme;
     const size = sizeOf(props);
     // Whether the component-owned header (title / description / value readout) renders
     // at all. A bare <Slider/> passes none of these and renders exactly as before —
@@ -242,35 +230,9 @@ export function createSlider(skin: SliderSkin) {
     // shows) while the slider holds focus. Stays false on native touch usage.
     const [focused, setFocused] = useState(false);
 
-    // Liquid Glass handle (iOS): the knob springs up on press. Apple's iOS 26 slider
-    // "transforms into liquid glass during interaction" with a scale/bounce; we drive
-    // that scale ourselves because the thumb is pointerEvents:"none" (the parent
-    // PanResponder owns the gesture, so the GlassView never receives the touch). Only
-    // under REAL glass (surface === "glass", the iOS 26 default) and with motion
-    // allowed; otherwise the knob stays at rest scale, matching today's static thumb.
-    //
-    // Crucially the grow is applied as ANIMATED WIDTH/HEIGHT (a layout resize), NOT a
-    // `transform: scale`. A scale transform on the GlassView's ancestor degrades Apple's
-    // Liquid Glass material to an opaque gray and it stays gray after the gesture
-    // (verified on the iOS 26.3 sim: the knob dropped from ~rgb250 to ~rgb114 after a
-    // scaled drag) — UIKit visual effects break under transforms. Resizing via layout
-    // keeps the material intact, so `useNativeDriver` MUST be false (layout props are
-    // not native-driver-animatable).
-    const glassThumb = !!skin.glassThumb;
-    const thumbScale = useRef(new Animated.Value(1)).current;
-    const springThumb = glassThumb && surface === "glass" && !reducedMotion;
-    useEffect(() => {
-      if (!springThumb) {
-        thumbScale.setValue(1);
-        return;
-      }
-      Animated.spring(thumbScale, {
-        toValue: pressed ? GLASS_THUMB_PRESS_SCALE : 1,
-        useNativeDriver: false,
-        friction: 7,
-        tension: 180,
-      }).start();
-    }, [pressed, springThumb, thumbScale]);
+    // Losing interactivity cancels the engaged decoration without changing the
+    // value. Preference changes cancel motion inside the shared bounds hook.
+    useEffect(() => { if (disabled) setPressed(false); }, [disabled]);
 
     const onLayout = (e: LayoutChangeEvent) => {
       const _l = e.nativeEvent.layout; if (!_l) return; const w = _l.width;
@@ -377,6 +339,12 @@ export function createSlider(skin: SliderSkin) {
     const rowHeight = Math.max(skin.minRowHeight ?? 0, Math.max(thumbH, trackHeight) + 16);
     const thumbTop = rowHeight / 2 - thumbH / 2;
     const trackTop = rowHeight / 2 - trackHeight / 2;
+    const thumbFrame = useLiquidMotion({
+      x: rtl ? Math.max(0, trackWidth - thumbW) - thumbLeft : thumbLeft,
+      y: thumbTop, width: thumbW, height: thumbH,
+    }, { enabled: surface === "glass" && !disabled, pressed, profile: "drag" });
+    const railShape = skin.track(tokens, size, !!disabled);
+
 
     // Segmented (M3 Expressive) geometry: active | gap | handle | gap | inactive.
     const activeWidth = Math.max(0, thumbLeft - gap);
@@ -456,7 +424,7 @@ export function createSlider(skin: SliderSkin) {
             justifyContent: "center",
             // Give the touch area a comfortable height around the rail.
             height: rowHeight,
-            opacity: disabled ? 0.5 : 1,
+            opacity: disabled && surface !== "glass" ? 0.5 : 1,
           },
           // The thumb paints the focus ring, so suppress RNW's default outline on the
           // focused container (no-op on native).
@@ -484,10 +452,12 @@ export function createSlider(skin: SliderSkin) {
             {/* The inactive segment, from `gap` after the handle to the far edge. */}
             <View
               style={[
-                skin.track(tokens, size, !!disabled),
+                paneStyle(railTheme, railShape),
                 { position: "absolute", left: rtl ? Math.max(0, trackWidth - inactiveLeft - inactiveWidth) : inactiveLeft, top: trackTop, width: inactiveWidth, height: trackHeight, pointerEvents: "none" },
               ]}
-            />
+            >
+              <GlassPane static layer="control" shape={railShape} />
+            </View>
             {/* Stop indicator dots at the interior steps, hidden where the handle
                 (plus its gaps) covers them. */}
             {skin.tick
@@ -506,7 +476,8 @@ export function createSlider(skin: SliderSkin) {
           // Continuous-rail anatomy: the fill overlays the full-width rail. Ticks
           // render UNDER the fill (the iOS 27 kit stacks Ticks inside the Track
           // layer, below the Fill), so the filled side covers its dots.
-          <View style={[skin.track(tokens, size, !!disabled), { pointerEvents: "none" }]}>
+          <View style={[paneStyle(railTheme, railShape), { pointerEvents: "none" }]}>
+            <GlassPane static layer="control" shape={railShape} />
             {skin.tick
               ? tickCenters.map((cx) => (
                   <View key={cx} style={[skin.tick!(tokens, size, !!disabled, cx <= fillWidth), tickBox(cx, trackHeight / 2)]} />
@@ -524,42 +495,18 @@ export function createSlider(skin: SliderSkin) {
             from the PanResponder OR web keyboard `focused`. It carries pointerEvents="none"
             so it never competes with the parent for the touch responder, keeping the
             drag/jump on one code path. */}
-        {glassThumb ? (
-          // iOS 26 Liquid Glass handle. An Animated wrapper owns the position + the press
-          // spring (Apple's scale/bounce on interaction); GlassSurface paints the real
-          // Liquid Glass material on iOS 26+ (refracting the track behind the knob) and
-          // degrades to the opaque `thumb` fill under solid surface / Reduce Transparency /
-          // Increase Contrast. The wrapper sizes the surface; the skin's own position is
-          // dropped so it fills the wrapper rather than double-offsetting. The press grow is
-          // an ANIMATED WIDTH/HEIGHT resize (not a transform, which would break the glass —
-          // see the spring effect); the negative margins keep the grow centered on the knob.
-          <Animated.View
-            style={{
-              position: "absolute",
-              left: rtl ? Math.max(0, trackWidth - thumbW) - thumbLeft : thumbLeft,
-              top: thumbTop,
-              width: thumbScale.interpolate({ inputRange: [1, GLASS_THUMB_PRESS_SCALE], outputRange: [thumbW, thumbW * GLASS_THUMB_PRESS_SCALE] }),
-              height: thumbScale.interpolate({ inputRange: [1, GLASS_THUMB_PRESS_SCALE], outputRange: [thumbH, thumbH * GLASS_THUMB_PRESS_SCALE] }),
-              marginLeft: thumbScale.interpolate({ inputRange: [1, GLASS_THUMB_PRESS_SCALE], outputRange: [0, (-thumbW * (GLASS_THUMB_PRESS_SCALE - 1)) / 2] }),
-              marginTop: thumbScale.interpolate({ inputRange: [1, GLASS_THUMB_PRESS_SCALE], outputRange: [0, (-thumbH * (GLASS_THUMB_PRESS_SCALE - 1)) / 2] }),
-              pointerEvents: "none",
-            }}
-          >
-            <GlassSurface
-              interactive
-              pointerEvents="none"
-              tint={skin.glassTint?.(tokens)}
-              style={[
-                skin.thumb(tokens, size, !!disabled, pressed || focused),
-                { position: "relative", width: "100%", height: "100%" },
-              ]}
-            />
-          </Animated.View>
-        ) : (
-          <View
-            style={[skin.thumb(tokens, size, !!disabled, pressed || focused), { left: rtl ? Math.max(0, trackWidth - thumbW) - thumbLeft : thumbLeft, top: thumbTop, pointerEvents: "none" }]}
+        <Animated.View style={[{ position: "absolute", pointerEvents: "none" }, thumbFrame]} testID={props.testID ? `${props.testID}-thumb-motion` : undefined}>
+          <GlassSurface
+            layer="control"
+            interactive
+            pointerEvents="none"
+            tint={skin.glassTint?.(tokens)}
+            style={[
+              skin.thumb(tokens, size, !!disabled, pressed || focused),
+              { position: "relative", width: "100%", height: "100%" },
+            ]}
           />
-        )}
+        </Animated.View>
       </View>
     );
 

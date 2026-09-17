@@ -75,8 +75,8 @@ plugin({
     }));
     // expo-blur / expo-glass-effect are OPTIONAL peers (they pull in expo-modules-core,
     // which needs RN internals RNW lacks). Stub them so GlassSurface takes its documented
-    // fallback (a plain translucent View) under test — exactly how the kit degrades when a
-    // consumer skips the optional glass deps.
+    // complete opaque native fallback under test when those peers are unavailable.
+    // Browser material capability is resolved separately from native optional peers.
     build.module("expo-blur", () => ({ exports: {}, loader: "object" }));
     build.module("expo-glass-effect", () => ({ exports: {}, loader: "object" }));
     // @shopify/react-native-skia is an OPTIONAL peer for Backdrop's GPU renderer.

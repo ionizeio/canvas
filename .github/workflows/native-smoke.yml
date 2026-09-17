@@ -123,6 +123,7 @@ jobs:
           pre-emulator-launch-script: node scripts/android-host-diagnostics.mjs start --output "$RUNNER_TEMP/native-smoke/android-host-diagnostics"
           script: |
             node scripts/android-host-diagnostics.mjs run --output "$RUNNER_TEMP/native-smoke/android-host-diagnostics" -- node scripts/native-smoke.mjs build --output "$RUNNER_TEMP/native-smoke" --platform android --device emulator-5554
+            node scripts/android-host-diagnostics.mjs run --output "$RUNNER_TEMP/native-smoke/android-host-diagnostics" -- node scripts/native-smoke.mjs instrument --output "$RUNNER_TEMP/native-smoke" --platform android --device emulator-5554
             node scripts/android-host-diagnostics.mjs run --output "$RUNNER_TEMP/native-smoke/android-host-diagnostics" -- node scripts/native-smoke.mjs test --output "$RUNNER_TEMP/native-smoke" --platform android --device emulator-5554 --maestro "$RUNNER_TEMP/native-tools/maestro/bin/maestro"
 
       - name: Finalize passive Android host evidence
@@ -137,6 +138,9 @@ jobs:
           name: native-${{ inputs.platform }}-evidence
           path: |
             ${{ runner.temp }}/native-smoke/context.json
+            ${{ runner.temp }}/native-smoke/android-autolinking.json
+            ${{ runner.temp }}/native-smoke/android-instrumentation-inputs/
+            ${{ runner.temp }}/native-smoke/android-instrumentation-inputs.tar
             ${{ runner.temp }}/native-smoke/*-build.json
             ${{ runner.temp }}/native-smoke/*-evidence/
             ${{ runner.temp }}/native-smoke/android-host-diagnostics/

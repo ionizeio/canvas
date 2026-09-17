@@ -1,3 +1,4 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { type GestureResponderEvent, StyleSheet } from "react-native";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
@@ -475,7 +476,7 @@ export function createCodeBlock(skin: CodeBlockSkin) {
     } = props;
     const variant = variantOf(props);
     const scrollFocus = useHorizontalScrollFocus();
-    const theme = useTheme();
+    const theme = useMaterialTheme({ static: true });
     const { tokens, dark } = theme;
 
     // Tabs: the active tab supplies code/language/filename, falling back to the

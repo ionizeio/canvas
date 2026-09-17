@@ -1,3 +1,4 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useMemo, useRef, useState } from "react";
 import { PanResponder, StyleSheet } from "react-native";
 import Svg, { Circle, G, Path } from "react-native-svg";
@@ -8,7 +9,6 @@ import {
   View,
   Text,
   Pressable,
-  useTheme,
   useMeasuredWidth,
   useControllableState,
   devWarn,
@@ -16,6 +16,7 @@ import {
   type ViewStyle,
   type LayoutStyle,
   GlassPane,
+  paneStyle,
   isGlass,
 } from "../../style/index.js";
 import { GESTURE_SURFACE, useWheel } from "../../style/index.js";
@@ -264,8 +265,9 @@ function touchesOf(
 export function createGeoMap(skin: ChartSkin) {
   return function GeoMap(props: GeoMapProps) {
     const { points, title, testID, style } = props;
-    const theme = useTheme();
+    const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
+    const surfaceShape = s.surface(tokens, skin.surfaceRadius);
     const glass = isGlass(theme);
     const compact = !!props.compact;
     const formatValue = props.formatValue ?? formatCompact;
@@ -476,14 +478,14 @@ export function createGeoMap(skin: ChartSkin) {
         {...(title != null && title !== "" ? { role: "group" as const, accessibilityLabel: `${title} chart`, "aria-label": `${title} chart` } : {})}
         testID={testID}
         style={[
-          s.surface(tokens, skin.surfaceRadius, glass),
+          paneStyle(theme, surfaceShape),
           compact ? s.surfacePadCompact : s.surfacePadDefault,
           CHART_ROOT,
           style,
         ]}
       >
         {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
-        <GlassPane layer="content" shape={{ borderRadius: skin.surfaceRadius }} />
+        {glass ? <GlassPane layer="content" shape={surfaceShape} /> : null}
         {title != null && title !== "" ? (
           <Text style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}>{title}</Text>
         ) : null}

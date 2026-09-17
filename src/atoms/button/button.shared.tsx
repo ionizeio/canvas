@@ -1,3 +1,4 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { forwardRef, type ReactNode } from "react";
 import {
   ActivityIndicator,
@@ -5,11 +6,10 @@ import {
   type MouseEvent,
   type NativeSyntheticEvent,
   type TargetedEvent,
-  type View,
 } from "react-native";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { primaryText } from "../../style/primary-text.js";
-import { Pressable, RippleClip, Text, useMinTargetSlop, useSizing, useTheme, type LayoutStyle, type MeasureProps, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import { View, Pressable, RippleClip, Text, useMinTargetSlop, useSizing, type LayoutStyle, type MeasureProps, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import { type ButtonSkin, type Intent, type Size, FG_TOKEN } from "./button.styles.js";
 
 // Shared Button shell. The structure (Pressable + optional loading spinner +
@@ -126,7 +126,7 @@ export function createButton(skin: ButtonSkin) {
   const Button = forwardRef<View, ButtonProps>(function Button(props, ref) {
     const hostRef = useComposedRefs(ref);
     const { children, iconLeft, iconRight, accessibilityLabel, onPress, href, hrefAttrs, onHoverIn, onHoverOut, onFocus, onBlur, loading, disabled, block, icon, testID, style } = props;
-    const theme = useTheme();
+    const theme = useMaterialTheme({ layer: "control" });
     const { tokens } = theme;
     const intent = intentOf(props);
     const size = sizeOf(props);
@@ -135,7 +135,7 @@ export function createButton(skin: ButtonSkin) {
     const sizing = useSizing(props);
     const container = skin.container(tokens, intent, size, opts);
     // Under glass a filled button is a CONTROL-layer puck: a GlassPane paints the
-    // material behind the label (the Pressable keeps its tap, ripple and dim), and the
+    // material behind the label (the Pressable keeps its tap and ripple), and the
     // container drops its fill and outline (the pane's material and rim carry them).
     // `primary` and `destructive` are BRAND-tinted glass (the intent colour under the
     // material, the intent's foreground on top); `secondary` and `outline` take the
@@ -191,15 +191,25 @@ export function createButton(skin: ButtonSkin) {
           aria-haspopup={props.haspopup}
           android_ripple={ripple}
           style={({ pressed }) => [
-            paneStyle(puck, container),
-            skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+            intent !== "ghost" && intent !== "link" ? paneStyle(theme, container) : container,
+            puck ? { opacity: 1 } : null,
+            !puck && skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
           ]}
         >
-          {puck ? <GlassPane layer="control" shape={container} brand={brand} interactive /> : null}
-          {loading ? <ActivityIndicator size="small" color={intent === "link" ? primaryText(tokens) : tokens[FG_TOKEN[intent]]} /> : null}
-          {!loading && iconLeft != null ? iconLeft : null}
-          {children != null ? <Text style={skin.label(tokens, intent, size)}>{children}</Text> : null}
-          {!loading && iconRight != null ? iconRight : null}
+          {({ pressed }) => <>
+            {puck ? <GlassPane layer="control" shape={container} brand={brand} interactive={!(disabled || loading)} /> : null}
+            <View style={[
+              { flexDirection: container.flexDirection, alignItems: container.alignItems, justifyContent: container.justifyContent, gap: container.gap, flexShrink: 1 },
+              // Dim the foreground independently of native material feedback.
+              // Keep this row in every mode to retain foreground child state.
+              puck ? { opacity: pressed && skin.pressedOpacity != null ? skin.pressedOpacity : container.opacity ?? 1 } : null,
+            ]}>
+              {loading ? <ActivityIndicator size="small" color={intent === "link" ? primaryText(tokens) : tokens[FG_TOKEN[intent]]} /> : null}
+              {!loading && iconLeft != null ? iconLeft : null}
+              {children != null ? <Text style={skin.label(tokens, intent, size)}>{children}</Text> : null}
+              {!loading && iconRight != null ? iconRight : null}
+            </View>
+          </>}
         </Pressable>
       </RippleClip>
     );

@@ -35,7 +35,7 @@
     "typescript": "~6.0.3"
   },
   "scripts": {
-    "postinstall": "node scripts/link-sources.mjs",
+    "postinstall": "node scripts/link-sources.mjs && bun run --cwd ../packages/canvas-blur build",
     "dev": "node scripts/dev.mjs",
     "start": "expo start",
     "android": "expo run:android",
@@ -45,9 +45,15 @@
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
     "check:nav": "bun scripts/check-nav-sync.ts",
-    "check:skins": "bun scripts/check-platform-skins.ts"
+    "check:skins": "bun scripts/check-platform-skins.ts",
+    "eas-build-pre-install": "bun install --cwd .. --frozen-lockfile"
   },
   "patchedDependencies": {
     "expo-modules-jsi@57.0.5": "patches/expo-modules-jsi@57.0.5.patch"
+  },
+  "expo": {
+    "autolinking": {
+      "nativeModulesDir": "../packages"
+    }
   }
 }

@@ -244,7 +244,7 @@ describe("GlassSurface reduce-transparency rung", () => {
 // never reaches it — rendering GlassBox directly covers the two-box structure that the
 // pure splitSurfaceStyle unit cannot).
 describe("GlassBox structure (real material path)", () => {
-  it("strips borders, rounds both boxes, clips the material, keeps padding", () => {
+  it("preserves border geometry and clips only decoration, keeping content and padding on the host", () => {
     render(
       <GlassBox
         testID="gbox"
@@ -256,8 +256,9 @@ describe("GlassBox structure (real material path)", () => {
     );
     const outer = screen.getByTestId("gbox") as HTMLElement;
     const clip = outer.firstElementChild as HTMLElement;
-    // No border survives on either box: the material supplies the edge.
-    expect(outer.getAttribute("style") ?? "").not.toContain("border-width");
+    // Keep layout geometry while the material supplies the visible edge.
+    expect(outer.style.borderWidth).toBe("1px");
+    expect(outer.style.borderColor).toMatch(/rgba\(0, ?0, ?0, ?0/);
     expect(clip.getAttribute("style") ?? "").not.toContain("border-width");
     // Radius lands on both boxes (rounded shadow on the outer, rounded clip inside).
     expect(outer.style.borderRadius).toBe("16px");
@@ -266,7 +267,9 @@ describe("GlassBox structure (real material path)", () => {
     // sizing. (react-native-web expands `overflow` to the two axis longhands.)
     expect(clip.style.overflowX).toBe("hidden");
     expect(clip.style.overflowY).toBe("hidden");
-    expect(clip.style.padding).toBe("8px");
+    expect(outer.style.padding).toBe("8px");
+    expect(clip.style.padding).toBe("");
+    expect(screen.getByText("surface content").parentElement).toBe(outer);
     expect(outer.style.width).toBe("200px");
     // The material renders behind (before) the content inside the clip box.
     expect(clip.firstElementChild?.textContent).toBe("material-layer");

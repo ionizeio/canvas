@@ -6,12 +6,8 @@ import { createSlider } from "../src/atoms/slider/slider.shared.tsx";
 import { iosSkin, androidSkin, webSkin } from "../src/atoms/slider/slider.styles.ts";
 import { lightColors, darkColors } from "../src/style/tokens.ts";
 
-// The iOS 26 slider handle "transforms into liquid glass during interaction" (WWDC25).
-// The kit expresses that as a skin-internal `glassThumb`: the shell routes the iOS thumb
-// through GlassSurface (real Liquid Glass on iOS 26, degrading to the opaque capsule
-// under solid surface / Reduce Transparency / Increase Contrast). These tests pin the
-// skin flags and prove the glass wrapper keeps the adjustable slider semantics intact on
-// both the glass and the solid surface — the regression risk of wrapping the thumb.
+// Moving thumbs use the liquid role while each platform keeps its own shape.
+// The rail is static glass and the iOS skin retains its bright native tint.
 
 afterEach(cleanup);
 
@@ -24,13 +20,17 @@ function mount(ui: ReactNode, surface: "glass" | "solid") {
 const handle = (c: HTMLElement) => c.querySelector('[role="slider"]') as HTMLElement | null;
 
 describe("Slider Liquid Glass handle", () => {
-  it("marks ONLY the iOS skin as a glass thumb", () => {
-    // Apple makes the iOS slider handle glass; Android's M3 bar handle and the web
-    // thumb are not glass, so only the iOS skin opts in.
-    expect(iosSkin.glassThumb).toBe(true);
-    expect(androidSkin.glassThumb).toBeUndefined();
-    expect(webSkin.glassThumb).toBeUndefined();
-  });
+  for (const [name, skin] of [["web", webSkin], ["ios", iosSkin], ["android", androidSkin]] as const) {
+    it(`${name} routes its native thumb geometry through the shared material`, () => {
+      const Slider = createSlider(skin);
+      const { container } = mount(<Slider testID="slider" defaultValue={50} />, "glass");
+      const frame = container.querySelector('[data-testid="slider-thumb-motion"]') as HTMLElement;
+      expect(frame.style.width).toBe(`${skin.thumbWidth("base")}px`);
+      expect(frame.style.height).toBe(`${skin.thumbHeight("base")}px`);
+      expect(frame.querySelector('[style*="backdrop-filter"]')).not.toBeNull();
+      expect(frame.style.transform).toBe("");
+    });
+  }
 
   it("tints the glass knob bright white (not the popover default) on both schemes", () => {
     // The under-fill is an opaque bright white, scheme-independent, so the knob reads as a

@@ -1,7 +1,9 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
+import { useHardwareBack } from "../../style/use-hardware-back.js";
 import { useId, useState, type ReactNode } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
-import { View, Text, Pressable, RippleClip, cornerRadii, useTheme, GlassSurface, Entrance, Portal, useDialogFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, Pressable, RippleClip, cornerRadii, GlassSurface, Entrance, Portal, useDialogFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
 import { Input } from "../../atoms/input/input.js";
 import * as s from "./dialog.styles.js";
@@ -126,7 +128,7 @@ export function createDialog(skin: DialogSkin) {
       testID,
       style,
     } = props;
-    const theme = useTheme();
+    const theme = useMaterialTheme({ layer: "functional" });
     const { tokens } = theme;
 
     // Stable, per-instance ids so the panel's title/description can be wired as
@@ -168,6 +170,9 @@ export function createDialog(skin: DialogSkin) {
     // Escape and native accessibility escape through the same Cancel policy.
     const panelRef = useDialogFocus(open);
     const escapeScope = useEscapeLayer(open, cancel);
+    // Inline catalogue panels do not own page navigation. A presented overlay
+    // consumes native Back and lets a nested escape layer dismiss first.
+    useHardwareBack(open && overlay, escapeScope.onRequestClose);
 
     // The confirm/cancel footer. Three platform shapes:
     //   - web (footerKind "buttons", no skin.textButton): the outline Cancel +

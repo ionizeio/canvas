@@ -1,6 +1,7 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { View, Pressable, Text, useHugStyle, useTheme, AnchoredOverlay, useOverlayHost, useMeasuredWidth, useRovingFocus, isRTL, RippleClip, cornerRadii, type StyleProp, type ViewStyle, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, useHugStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, useRovingFocus, isRTL, RippleClip, cornerRadii, type StyleProp, type ViewStyle, withInnerFill } from "../../style/index.js";
 import { Button } from "../button/button.js";
 import { Icon, type IconName } from "../icon/icon.js";
 import { wrapper, wrapperLifted, customTrigger, type DropdownSkin } from "./dropdown.styles.js";
@@ -132,7 +133,7 @@ const menuAnchorEnd = (gap: number): ViewStyle => ({ position: "absolute", top: 
 export function createDropdown(skin: DropdownSkin) {
   return function Dropdown(props: DropdownProps) {
     const { trigger, children, triggerLabel, label, title, description, items, open: openProp, onOpenChange, onSelect, alignEnd, disabled, testID, style } = props;
-    const theme = useTheme();
+    const theme = useMaterialTheme({ layer: "dense" });
     const { tokens, dark } = theme;
     // HUG: the trigger keeps its content width inside a stretching Column.
     const hug = useHugStyle();
@@ -252,10 +253,9 @@ export function createDropdown(skin: DropdownSkin) {
       >
         {children != null ? (
           <Pressable
-            // The disabled dim rides the skin's own disabled opacity, so the
-            // trigger fades by each platform's convention (0.5 on iOS/web, M3's
-            // 0.38 on Android).
-            style={[customTrigger, disabled ? { opacity: skin.disabledOpacity } : null]}
+            // Custom content can contain its own native material. Its owner
+            // handles disabled ink in glass mode; never fade that whole subtree.
+            style={[customTrigger, disabled && theme.surface !== "glass" ? { opacity: skin.disabledOpacity } : null]}
             onPress={disabled ? undefined : () => setOpen(!open)}
             disabled={disabled}
             accessibilityRole="button"

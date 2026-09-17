@@ -1,3 +1,4 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useEffect, useRef, type ReactNode } from "react";
 import { StyleSheet } from "react-native";
 import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useControllableState, useRovingFocus, useContainerBreakpoint, containerProbe, useReducedMotion, isRTL, type RovingItemProps, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutChangeEvent, type NativeSyntheticEvent, type NativeScrollEvent, GlassPane, paneStyle, isGlass } from "../../style/index.js";
@@ -226,7 +227,7 @@ export function createTabs(skin: TabsSkin) {
   }
 
   function Trigger({ label, badge, selected, variant, block, disabled, onPress, itemProps, onLayout }: TriggerProps) {
-    const theme = useTheme();
+    const theme = useMaterialTheme({ layer: "control" });
     const { tokens, dark } = theme;
     // Under glass the SELECTED tab is a BRAND-tinted CONTROL-layer puck: a GlassPane
     // paints the material behind its label (the Pressable keeps its tap, ripple and
@@ -235,11 +236,13 @@ export function createTabs(skin: TabsSkin) {
     // unselected trigger is bare on the track. A trigger with no fill of its own (the
     // web/M3 underline tab) keeps its ink indicator and takes no material.
     const glass = isGlass(theme);
-    const puckOf = (container: StyleProp<ViewStyle>) => {
+    const surfaced = (container: StyleProp<ViewStyle>) => {
       const bg = (StyleSheet.flatten(container) as ViewStyle).backgroundColor;
-      const surfaced = bg != null && bg !== "transparent";
-      return glass && selected && surfaced ? <GlassPane layer="control" shape={container} brand={tokens.primary} interactive /> : null;
+      return selected && bg != null && bg !== "transparent";
     };
+    const puckOf = (container: StyleProp<ViewStyle>) =>
+      glass && surfaced(container) ? <GlassPane layer="control" shape={container} brand={tokens.primary} interactive /> : null;
+    const triggerStyle = (container: StyleProp<ViewStyle>) => surfaced(container) ? paneStyle(theme, container) : container;
     const selectedInk: TextStyle | null = glass && selected ? { color: tokens["primary-foreground"] } : null;
     // The roving tab stop + web arrow-key handler ride onto the Pressable. `ref` is
     // passed explicitly (React never spreads it); `onKeyDown` is web-only, so the
@@ -278,7 +281,7 @@ export function createTabs(skin: TabsSkin) {
             accessibilityState={{ selected, disabled: !!disabled }}
             aria-selected={selected}
             aria-disabled={disabled || undefined}
-            style={({ pressed }) => [paneStyle(glass, container), skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
+            style={({ pressed }) => [triggerStyle(container), skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
           >
             {puckOf(container)}
             {/* One line: when the rail flexes down in a narrow container the label
@@ -315,7 +318,7 @@ export function createTabs(skin: TabsSkin) {
             accessibilityState={{ selected, disabled: !!disabled }}
             aria-selected={selected}
             aria-disabled={disabled || undefined}
-            style={({ pressed }) => [paneStyle(glass, container), skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
+            style={({ pressed }) => [triggerStyle(container), skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
           >
             {puckOf(container)}
             <Text style={[skin.pillsLabel(tokens, selected), selectedInk]}>{label}</Text>
@@ -353,7 +356,7 @@ export function createTabs(skin: TabsSkin) {
           accessibilityState={{ selected, disabled: !!disabled }}
           aria-selected={selected}
           aria-disabled={disabled || undefined}
-          style={({ pressed }) => [paneStyle(glass, container), skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
+          style={({ pressed }) => [triggerStyle(container), skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
         >
           {puck}
           <Text style={[skin.underlineLabel(tokens, selected), puck ? selectedInk : null]}>{label}</Text>
@@ -391,15 +394,15 @@ export function createTabs(skin: TabsSkin) {
       ) : (
         root
       );
-    const theme = useTheme();
+    const theme = useMaterialTheme({ layer: "functional" });
     const { tokens } = theme;
     // Under glass a row that paints a TRACK (the pills bar, the iOS segmented track)
     // renders it as a FUNCTIONAL-layer pane behind the triggers, dropping its own fill
     // and hairline; the web/M3 underline row has no fill and keeps its ink rule.
     const glass = isGlass(theme);
-    const isTrack = (row: ViewStyle) => glass && row.backgroundColor != null && row.backgroundColor !== "transparent";
-    const trackOf = (row: ViewStyle) => (isTrack(row) ? <GlassPane layer="functional" shape={row} /> : null);
-    const trackStyle = (row: ViewStyle) => paneStyle(isTrack(row), row);
+    const isTrack = (row: ViewStyle) => row.backgroundColor != null && row.backgroundColor !== "transparent";
+    const trackOf = (row: ViewStyle) => (glass && isTrack(row) ? <GlassPane layer="functional" shape={row} /> : null);
+    const trackStyle = (row: ViewStyle) => isTrack(row) ? paneStyle(theme, row) : row;
 
     // Controlled when `active` is provided, self-managed otherwise, so a bare
     // <Tabs /> switches tabs out of the box (the standard library contract).

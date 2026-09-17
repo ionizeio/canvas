@@ -1,4 +1,5 @@
-import { View, Text, useTheme, palette, statusHues, devWarn, tabularNums, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, isGlass } from "../../style/index.js";
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
+import { View, Text, palette, statusHues, devWarn, tabularNums, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
 import { CHART_ROOT } from "../shared/chart-frame.js";
@@ -10,7 +11,7 @@ import { Chip } from "../../atoms/chip/chip.js";
 // Shared MetricBreakdown shell. The decomposed-metric dashboard card: a
 // preformatted headline value with its caption, an optional secondary rate
 // readout top right, an optional trend strip (the kit Sparkline's line
-// variant) with a floating latest-value tag, per-category breakdown rows with
+// variant) with a latest-value caption, per-category breakdown rows with
 // proportional share bars, and a chip footer for recent notable codes. Every
 // section is independently optional; the card renders exactly what it is
 // given.
@@ -62,7 +63,7 @@ export interface MetricBreakdownProps {
   /** Trend series rendered as a Sparkline line strip under the header.
    *  Needs at least two points to draw. */
   spark?: number[];
-  /** Unit suffix on the floating latest-value tag (e.g. "req/s"). */
+  /** Unit suffix on the latest-value caption (e.g. "req/s"). */
   sparkUnit?: string;
   /** Per-category rows with proportional share bars. */
   breakdown?: BreakdownRow[];
@@ -107,8 +108,9 @@ function captionStyle(tokens: ColorTokens) {
 export function createMetricBreakdown(skin: ChartSkin) {
   return function MetricBreakdown(props: MetricBreakdownProps) {
     const { value, label, rate, rateLabel, sparkUnit, breakdown, chips, chipsLabel, testID, style } = props;
-    const theme = useTheme();
+    const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
+    const surfaceShape = s.surface(tokens, skin.surfaceRadius);
     const glass = isGlass(theme);
     const compact = !!props.compact;
     const formatValue = props.formatValue ?? formatCompact;
@@ -129,7 +131,7 @@ export function createMetricBreakdown(skin: ChartSkin) {
     const hasChips = chips != null && chips.length > 0;
     // The chip footer draws its divider only when a section precedes it.
     const chipsDivided = hasChips && (spark != null || hasRows);
-    // The floating tag inherits the rate tone when one is set; muted otherwise.
+    // The latest-value caption inherits the rate tone when one is set.
     const tagColor = props.rateSuccess || props.rateWarning || props.rateDestructive ? rateColor(tokens, props) : tokens["muted-foreground"];
     const last = spark != null ? spark[spark.length - 1] : 0;
     const sectionGap = compact ? 10 : 14;
@@ -141,7 +143,7 @@ export function createMetricBreakdown(skin: ChartSkin) {
         aria-label={label}
         testID={testID}
         style={[
-          props.plain ? null : s.surface(tokens, skin.surfaceRadius, glass),
+          props.plain ? null : paneStyle(theme, surfaceShape),
           props.plain ? null : compact ? s.surfacePadCompact : s.surfacePadDefault,
           CHART_ROOT,
           { gap: sectionGap },
@@ -149,7 +151,7 @@ export function createMetricBreakdown(skin: ChartSkin) {
         ]}
       >
         {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
-        <GlassPane layer="content" shape={{ borderRadius: skin.surfaceRadius }} />
+        {glass && !props.plain ? <GlassPane layer="content" shape={surfaceShape} /> : null}
         {/* Header: headline + caption left, rate + caption right. */}
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", gap: 12 }}>
           <View style={{ flexShrink: 1, gap: 2 }}>
@@ -170,22 +172,21 @@ export function createMetricBreakdown(skin: ChartSkin) {
           ) : null}
         </View>
 
-        {/* Trend strip: the kit Sparkline, with a floating latest-value tag
-            knocked out over the line on the opaque card fill (charts are the
-            solid content layer, so the knockout holds in glass mode too). */}
+        {/* Reserve a reading row so the caption needs no opaque knockout and
+            never hides a trend point, including in plain compositions. */}
         {spark != null ? (
-          <View style={{ position: "relative" }}>
-            <Sparkline line values={spark} compact={compact} accessibilityLabel={`${label} trend`} />
+          <View>
             <View
               aria-hidden
               accessibilityElementsHidden
               importantForAccessibility="no-hide-descendants"
-              style={{ position: "absolute", top: 0, right: 0, backgroundColor: props.plain ? undefined : tokens.card, paddingHorizontal: 4 }}
+              style={{ alignSelf: "flex-end", paddingHorizontal: 4 }}
             >
               <Text style={{ fontSize: 11, lineHeight: 14, fontWeight: "500", color: tagColor, ...tabularNums() }}>
                 {sparkUnit != null && sparkUnit !== "" ? `${formatValue(last)} ${sparkUnit}` : formatValue(last)}
               </Text>
             </View>
+            <Sparkline line values={spark} compact={compact} accessibilityLabel={`${label} trend`} />
           </View>
         ) : null}
 

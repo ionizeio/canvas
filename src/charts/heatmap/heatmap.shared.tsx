@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { StyleSheet, ScrollView } from "react-native";
-import { View, Text, Pressable, useTheme, alpha, shadow, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
-import { announceSelection } from "../shared/chart-inspect.js";
+import { ScrollView } from "react-native";
+import { View, Text, Pressable, useTheme, alpha, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { announceSelection, ChartInspectionSurface } from "../shared/chart-inspect.js";
 import { estimateTextWidth } from "../shared/chart-math.js";
 
 // Heatmap is a "Shared" platform treatment (data visualization is
@@ -13,11 +13,6 @@ import { estimateTextWidth } from "../shared/chart-math.js";
 //   • `calendar` — a GitHub-contribution-graph: week columns of seven day cells,
 //     weekday + month labels, discrete less-to-more levels, and press/hover-to-
 //     inspect showing the day's count and date.
-
-// pointerEvents must come from StyleSheet.create on react-native-web (an inline
-// object silently fails to compile the pointer-events declaration), so the
-// heatmap inspect flag never intercepts a hover/press meant for a cell.
-const vizStyles = StyleSheet.create({ passthrough: { pointerEvents: "none" } });
 
 /** One heatmap cell. A bare number is shorthand for `{ value }`. */
 export interface HeatmapCell {
@@ -264,28 +259,21 @@ function CalendarHeatmap({ cells, label, caption, hideLegend, testID, style }: H
                 ))}
               </View>
               {activeCell ? (
-                <View
-                  style={[
-                    vizStyles.passthrough,
-                    {
-                      position: "absolute",
-                      top: flagTop,
-                      left: flagLeft,
-                      width: flagW,
-                      borderRadius: 6,
-                      borderWidth: 1,
-                      borderColor: tokens.border,
-                      backgroundColor: tokens.card,
-                      paddingVertical: 6,
-                      paddingHorizontal: 8,
-                      gap: 1,
-                      ...shadow("md"),
-                    },
-                  ]}
+                <ChartInspectionSurface
+                  radius={6}
+                  style={{
+                    position: "absolute",
+                    top: flagTop,
+                    left: flagLeft,
+                    width: flagW,
+                    paddingVertical: 6,
+                    paddingHorizontal: 8,
+                    gap: 1,
+                  }}
                 >
                   <Text numberOfLines={1} style={{ fontSize: 12, lineHeight: 16, fontWeight: "600", color: tokens["card-foreground"] }}>{flagTitle}</Text>
                   {flagSub ? <Text numberOfLines={1} style={{ fontSize: 11, lineHeight: 15, color: tokens["muted-foreground"] }}>{flagSub}</Text> : null}
-                </View>
+                </ChartInspectionSurface>
               ) : null}
             </View>
           </View>

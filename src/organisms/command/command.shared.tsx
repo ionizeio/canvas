@@ -363,6 +363,8 @@ export function createCommand(skin: CommandSkin) {
       );
     }
 
+    // Every skin keeps the Search trigger transparent and outlined. It inherits
+    // its host; the palette owns the functional material and Kbd owns its keycap.
     // Trigger mode: the collapsed full-width search trigger, with the palette card
     // portaled below it through AnchoredOverlay (gap 12 = the old mt-3). When an
     // OverlayProvider hosts it the card floats OVER the page with an outside-tap

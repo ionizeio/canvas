@@ -91,11 +91,21 @@ script is CI-only and requires the prepared candidate and validated artifact
 directories.
 
 The main-push Deploy workflow prepares the versioned candidate before the shared
-validation jobs run. CI validates the candidate, packs its npm tarball, and tests
+validation jobs run. CI validates the candidate, packs both npm packages, and tests
 the prepared web artifact. Publication uses a normal fast-forward candidate push
-and the validated tarball. If main advances, it discards the candidate without
+and the validated tarballs. If main advances, it discards the candidate without
 publishing; the newer main run prepares and validates another. Cloudflare receives
 the tested docs artifact. The manual workflow uses the same gates.
+
+The workspace includes the root Canvas package and `packages/canvas-blur`.
+Changesets can version either package independently; include each changed package
+in its changeset. A compatible optional-peer update does not force a Canvas major.
+The candidate retains a version and release decision for every package. CI seals
+both tarballs, verifies their hashes and installed bytes, then publishes changed
+packages with the capture module first. Canvas keeps `v<version>` tags; the module
+uses `canvas-blur@<version>`. Tags are pushed only after all publications succeed.
+The optional-peer omission matrix continues to install Canvas alone; the native
+smoke app installs both sealed packages and checks Android autolinking.
 
 If a release fails after any publication step, fix the cause and add a new
 changeset for the next version. Do not republish an old version or release a

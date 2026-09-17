@@ -1,8 +1,9 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { Fragment, type ComponentType, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { consumeEscapeKey } from "../../style/escape-layer.js";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 import { FlatList, StyleSheet, ScrollView, type ViewProps, type ViewStyle as RNViewStyle } from "react-native";
-import { View, Pressable, Text, TextInput, useTheme, useControllableState, controlRipple, devWarn, breakpoints, useMeasuredWidth, tabularNums, type StyleProp, type TextStyle, type ViewStyle, type LayoutStyle, useFillStyle, GlassSurface, isGlass, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useControllableState, controlRipple, devWarn, breakpoints, useMeasuredWidth, tabularNums, type StyleProp, type TextStyle, type ViewStyle, type LayoutStyle, useFillStyle, GlassSurface, withInnerFill } from "../../style/index.js";
 import { type CheckboxProps } from "../../atoms/checkbox/checkbox.shared.js";
 import { type PaginationProps } from "../../atoms/pagination/pagination.shared.js";
 import { type SkeletonProps } from "../../atoms/skeleton/skeleton.shared.js";
@@ -39,8 +40,8 @@ const s = StyleSheet.create({
 //
 // DataTable is a "Light" platform treatment: one structure with small per-OS
 // touches (row height/density, header type/tracking, divider/hairline, striped
-// fill, M3 vs iOS row rhythm). It is a CONTENT-LAYER surface, so it stays SOLID
-// on every platform (it never goes glass).
+// fill, M3 vs iOS row rhythm). The table is a content surface with stable frost
+// in glass mode and the complete skin recipe in solid mode.
 
 export type { Density };
 
@@ -353,11 +354,10 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
   return function DataTable(props: DataTableProps) {
     const { columns, rows, striped, bordered, selectable, onRowPress, onRowEdit, onRowDelete, inlineEdit, rowKey, virtualized, loading, emptyMessage, paginated, testID, style } = props;
     const density = densityOf(props);
-    const theme = useTheme();
+    const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
     // Under glass the table is a CONTENT-layer pane and its header band, stripes and
     // pressed/selected rows are ink tints over the material (src/style/glass-fill.ts).
-    const glass = isGlass(theme);
     const fill = useFillStyle("DataTable");
 
     const cols = useMemo(() => normalizeColumns(columns), [columns]);
@@ -662,14 +662,13 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       </>
     );
 
-    const Root = glass ? GlassSurface : View;
     return (
-      <Root
+      <GlassSurface
+        layer="content"
         testID={testID}
         style={wrap}
         role={pans ? undefined : "table"}
         onLayout={onMeasureLayout}
-        {...(glass ? { layer: "content" as const } : null)}
       >
         {pans ? (
           <ScrollView {...scrollFocus} horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.panContent}>
@@ -705,7 +704,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
             />
           </View>
         ) : null}
-      </Root>
+      </GlassSurface>
     );
 
     // A header cell: a plain labeled box, or (sortable) a pressable label +

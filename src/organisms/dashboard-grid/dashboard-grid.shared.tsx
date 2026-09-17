@@ -1,8 +1,8 @@
 import { type ComponentType, useRef } from "react";
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import {
   View,
   devWarn,
-  useTheme,
   useControllableState,
   useContainerBreakpoint,
   spanWidth,
@@ -249,7 +249,7 @@ export function createDashboardGrid(skin: DashboardGridSkin, parts: DashboardGri
   // never the order state above it. The SAME row renders in both modes, so toggling
   // customize mode changes the paint and the drag wiring, not the arrangement.
   function DashboardCells({ items, unlocked, compact, onDrop }: CellsProps) {
-    const theme = useTheme();
+    const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
     const gap = skin.gap(compact);
     // One container query serves both jobs: `value` is the tier the spans resolve against,

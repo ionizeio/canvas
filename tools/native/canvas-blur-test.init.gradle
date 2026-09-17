@@ -1,0 +1,58 @@
+// The consumer builds sealed production bytes. Only test inputs and generated
+// output placement come from the candidate's separate verification bundle.
+def consumerDirectory = new File(System.getProperty('canvas.blur.consumer')).canonicalFile
+def moduleDirectory = new File(System.getProperty('canvas.blur.module')).canonicalFile
+def outputDirectory = new File(System.getProperty('canvas.blur.build')).canonicalFile
+def testDirectory = System.getProperty('canvas.blur.tests')
+def matches = []
+
+// Included plugin builds receive init scripts too; only configure this consumer.
+gradle.settingsEvaluated { settings ->
+  if (settings.settingsDir.canonicalFile == consumerDirectory) {
+    gradle.beforeProject { project ->
+      if (project.projectDir.canonicalFile == moduleDirectory) {
+        matches.add(project)
+        project.layout.buildDirectory.set(outputDirectory)
+        project.plugins.withId('com.android.library') {
+          if (testDirectory != null) {
+            def tests = new File(testDirectory).canonicalFile
+            def sourceSet = project.extensions.getByName('android').sourceSets.getByName('androidTest')
+            sourceSet.java.setSrcDirs([new File(tests, 'java'), new File(tests, 'kotlin')])
+            def manifest = new File(tests, 'AndroidManifest.xml')
+            if (manifest.exists()) sourceSet.manifest.srcFile(manifest)
+            sourceSet.res.setSrcDirs([new File(tests, 'res')])
+            sourceSet.assets.setSrcDirs([new File(tests, 'assets')])
+            sourceSet.resources.setSrcDirs([new File(tests, 'resources')])
+          }
+        }
+      }
+    }
+
+    gradle.projectsEvaluated {
+      if (matches.size() != 1) throw new GradleException('Expected exactly one sealed Canvas capture project')
+      def project = matches.first()
+      if (project.layout.buildDirectory.get().asFile.canonicalFile != outputDirectory) {
+        throw new GradleException('Canvas capture output must stay outside the installed package')
+      }
+      if (testDirectory != null) {
+        def android = project.extensions.getByName('android')
+        def tests = android.sourceSets.getByName('androidTest')
+        def main = android.sourceSets.getByName('main')
+        def connected = project.tasks.named('connectedDebugAndroidTest')
+        gradle.rootProject.tasks.register('canvasBlurConnectedDebugAndroidTest') { dependsOn(connected) }
+        def metadata = [
+          projectPath: project.path,
+          projectDirectory: project.projectDir.canonicalPath,
+          buildDirectory: outputDirectory.path,
+          task: connected.get().path,
+          productionJava: main.java.srcDirs.collect { it.canonicalPath },
+          productionManifest: main.manifest.srcFile.canonicalPath,
+          testJava: tests.java.srcDirs.collect { it.canonicalPath },
+          testManifest: tests.manifest.srcFile.exists() ? tests.manifest.srcFile.canonicalPath : null,
+          runner: android.defaultConfig.testInstrumentationRunner
+        ]
+        new File(System.getProperty('canvas.blur.metadata')).text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(metadata)) + '\n'
+      }
+    }
+  }
+}

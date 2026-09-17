@@ -2,7 +2,7 @@ import { afterEach, expect, test } from "bun:test";
 import { cpSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { appInventory, assertInstalledPackage, packageIdentity } from "./candidate.mjs";
+import { appInventory, assertInstalledPackage, packageArtifacts, packageIdentity } from "./candidate.mjs";
 
 const temporary: string[] = [];
 afterEach(() => { for (const directory of temporary.splice(0)) rmSync(directory, { recursive: true, force: true }); });
@@ -52,4 +52,15 @@ test("prepared app inputs detect fixture edits while excluding generated native 
   expect(appInventory(app)).toEqual(before);
   writeFileSync(join(app, "src/fixture.tsx"), "export const fixture = 'different';");
   expect(appInventory(app)).not.toEqual(before);
+});
+
+
+test("native capture identity binds both package tarballs and rejects a missing module digest", () => {
+  const native = { ...manifest, packages: [{ name: manifest.name, version: manifest.version }, { name: "@ionizeio/canvas-blur", version: "0.1.0" }],
+    packageFiles: { [manifest.name]: "canvas.tgz", "@ionizeio/canvas-blur": "blur.tgz" },
+    files: [...manifest.files, { name: "blur.tgz", sha256: "d".repeat(64) }] };
+  expect(packageIdentity(native).nativePackages).toEqual([{ packageName: "@ionizeio/canvas-blur", packageVersion: "0.1.0", packageSha256: "d".repeat(64) }]);
+  expect(packageArtifacts(native)).toHaveLength(2);
+  expect(() => packageIdentity({ ...native, files: manifest.files })).toThrow("Invalid native candidate packages");
+  expect(() => packageArtifacts({ ...native, packageFiles: { ...native.packageFiles, "@ionizeio/canvas-blur": "../blur.tgz" } })).toThrow("Invalid native candidate packages");
 });

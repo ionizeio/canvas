@@ -3,11 +3,13 @@
 The universal Canvas documentation app runs on iOS, Android, and the web from one
 Expo Router codebase. The published `@ionizeio/canvas` package contains compiled
 `dist/` output. This app develops against the checkout's live `src/` instead:
-`postinstall` creates one `node_modules/@ionizeio/canvas` symlink to the repository
+`postinstall` creates a `node_modules/@ionizeio/canvas` symlink to the repository
 root, and `metro.config.js` resolves the package import to `src/index.ts` through
 that symlink. Metro also watches the source and resolves the native skin files.
-Generated documentation and examples live in-tree at `src/core`, with no second
-symlink.
+The optional `@ionizeio/canvas-blur` workspace is also linked and compiled during
+postinstall. Expo autolinks its Android implementation from `../packages`; rebuild
+the native app after changing that module. The root dev watcher recompiles its
+JavaScript. Generated documentation and examples live in-tree at `src/core`.
 
 ## Develop
 
@@ -54,7 +56,7 @@ Publication accepts the frozen candidate only while its source is still the
 current main revision. If main advances, the candidate is discarded and the newer
 main run prepares another. Cloudflare Pages receives the same prepared web
 artifact that the browser tests exercised, at <https://canvas.nannier.com/>.
-The npm release publishes the validated tarball through CI. See the repository's
+The npm release publishes the validated Canvas and optional module tarballs through CI. See the repository's
 [contribution guide](../CONTRIBUTING.md) for changeset and recovery rules.
 
 `EXPO_BASE_URL` remains available for deployments under a subpath through
@@ -64,7 +66,8 @@ The npm release publishes the validated tarball through CI. See the repository's
 
 For native builds, run **Deploy** manually on main, select the `ios` and/or
 `android` input, and choose an EAS profile. These jobs use the accepted, validated
-source. The workflow queues builds with `--no-wait`; successful queueing is not a
+source. The EAS pre-install hook installs the frozen root workspace before the
+docs postinstall compiles the optional module. The workflow queues builds with `--no-wait`; successful queueing is not a
 completed device build or store submission. Follow the EAS links in the run
 summary for those results.
 

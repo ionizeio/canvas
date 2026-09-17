@@ -231,3 +231,331 @@ name: Sealed Canvas native candidate after measured drag
           id: overlay-resize-observation
           text: Visible overlay height shrank
 - takeScreenshot: command-selected-with-preserved-query
+# Material mode changes must preserve the live editor and retire native capture.
+- openLink: canvas-smoke:///testing/materials
+- assertVisible:
+    id: material-mode
+    text: 'Mode: solid; scheme: light'
+- runFlow:
+    when:
+      true: ${SCHEME == 'dark'}
+    commands:
+      - tapOn: Switch scheme
+- scrollUntilVisible:
+    element:
+      id: material-editor
+    direction: DOWN
+- tapOn:
+    id: material-editor
+    point: "95%,50%"
+- eraseText
+- inputText: Retained material text
+- pressKey: Enter
+- scrollUntilVisible:
+    element:
+      id: material-editor-identity
+    direction: DOWN
+- copyTextFrom:
+    id: material-editor-identity
+- evalScript: ${output.materialEditorIdentity = maestro.copiedText}
+- scrollUntilVisible:
+    element:
+      id: material-inspect
+    direction: UP
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - assertVisible:
+          id: material-native
+          text: 'Native capture: available'
+      - tapOn:
+          id: material-inspect
+      - assertVisible:
+          id: material-capture-stats
+          text: 'Hosts: [0-9]+; active: 0; recordings: [0-9]+; frost: 0; listeners: 0'
+- tapOn:
+    id: material-toggle
+- assertVisible:
+    id: material-mode
+    text: 'Mode: glass; scheme: ${SCHEME}'
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: material-inspect
+      - assertVisible:
+          id: material-capture-stats
+          text: 'Hosts: [1-9][0-9]*; active: [1-9][0-9]*; recordings: [1-9][0-9]*; frost: [1-9][0-9]*; listeners: [1-9][0-9]*'
+# Exercise a changing native capture, then let the scene become idle again.
+- tapOn:
+    id: material-animate
+- extendedWaitUntil:
+    visible:
+      id: material-backdrop-motion
+      text: Backdrop still
+    timeout: 10000
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: material-inspect
+      - assertVisible:
+          id: material-capture-stats
+          text: 'Hosts: [1-9][0-9]*; active: [1-9][0-9]*; recordings: [1-9][0-9]*; frost: [1-9][0-9]*; listeners: [1-9][0-9]*'
+- scrollUntilVisible:
+    element:
+      id: material-editor-identity
+    direction: DOWN
+- assertVisible:
+    id: material-editor
+    text: Retained material text
+- assertVisible:
+    id: material-editor-identity
+    text: ${output.materialEditorIdentity}
+- takeScreenshot: material-glass-editor-preserved
+- scrollUntilVisible:
+    element:
+      id: material-toggle
+    direction: UP
+- tapOn:
+    id: material-toggle
+- assertVisible:
+    id: material-mode
+    text: 'Mode: solid; scheme: ${SCHEME}'
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: material-inspect
+      - assertVisible:
+          id: material-capture-stats
+          text: 'Hosts: [0-9]+; active: 0; recordings: [0-9]+; frost: 0; listeners: 0'
+      - copyTextFrom:
+          id: material-capture-stats
+      - evalScript: ${output.stoppedMaterialCapture = maestro.copiedText}
+      - waitForAnimationToEnd:
+          timeout: 1500
+      - tapOn:
+          id: material-inspect
+      - assertVisible:
+          id: material-capture-stats
+          text: ${output.stoppedMaterialCapture}
+- scrollUntilVisible:
+    element:
+      id: material-editor-identity
+    direction: DOWN
+- assertVisible:
+    id: material-editor-identity
+    text: ${output.materialEditorIdentity}
+- assertVisible:
+    id: material-editor
+    text: Retained material text
+- takeScreenshot: material-solid-editor-preserved
+# An explicitly glass descendant must resume capture within a solid parent.
+- scrollUntilVisible:
+    element:
+      id: material-nested
+    direction: DOWN
+- tapOn:
+    id: material-nested
+- scrollUntilVisible:
+    element:
+      id: material-inspect
+    direction: UP
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: material-inspect
+      - assertVisible:
+          id: material-capture-stats
+          text: 'Hosts: [1-9][0-9]*; active: [1-9][0-9]*; recordings: [1-9][0-9]*; frost: [1-9][0-9]*; listeners: [1-9][0-9]*'
+- scrollUntilVisible:
+    element:
+      id: material-nested
+    direction: DOWN
+- tapOn:
+    id: material-nested
+- scrollUntilVisible:
+    element:
+      id: material-inspect
+    direction: UP
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: material-inspect
+      - assertVisible:
+          id: material-capture-stats
+          text: 'Hosts: [0-9]+; active: 0; recordings: [0-9]+; frost: 0; listeners: 0'
+# Tap near the editor end so backspace and later insertion use the end caret.
+# Arm the switch, then start its clock from a real focus event. This proves the
+# mode changes while the editor is focused without racing scroll/typing latency.
+- evalScript: ${output.materialEditorInstance = output.materialEditorIdentity.split(';')[0]}
+- scrollUntilVisible:
+    element:
+      id: material-editor
+    direction: DOWN
+- tapOn:
+    id: material-editor
+    point: "95%,50%"
+- eraseText
+- inputText: Focus remains
+- assertVisible:
+    id: material-editor
+    text: Focus remains
+- pressKey: Enter
+- scrollUntilVisible:
+    element:
+      id: material-schedule
+    direction: UP
+- tapOn:
+    id: material-schedule
+- scrollUntilVisible:
+    element:
+      id: material-editor
+    direction: DOWN
+- tapOn:
+    id: material-editor
+    point: "95%,50%"
+- extendedWaitUntil:
+    visible:
+      id: material-timer
+      text: Switch complete
+    timeout: 10000
+- assertVisible:
+    id: material-focus-mode
+    text: Focus began in solid
+- assertVisible:
+    id: material-mode
+    text: 'Mode: glass; scheme: ${SCHEME}'
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - assertVisible:
+          id: material-editor
+          focused: true
+- inputText: ' after glass'
+- assertVisible:
+    id: material-editor
+    text: Focus remains after glass
+- pressKey: Enter
+- scrollUntilVisible:
+    element:
+      id: material-editor-identity
+    direction: DOWN
+- assertVisible:
+    id: material-editor-identity
+    text: '${output.materialEditorInstance}; edits: [1-9][0-9]*'
+- takeScreenshot: material-focused-glass-transition
+- scrollUntilVisible:
+    element:
+      id: material-editor
+    direction: DOWN
+- tapOn:
+    id: material-editor
+    point: "95%,50%"
+- eraseText
+- inputText: Focus remains
+- assertVisible:
+    id: material-editor
+    text: Focus remains
+- pressKey: Enter
+- scrollUntilVisible:
+    element:
+      id: material-schedule
+    direction: UP
+- tapOn:
+    id: material-schedule
+- scrollUntilVisible:
+    element:
+      id: material-editor
+    direction: DOWN
+- tapOn:
+    id: material-editor
+    point: "95%,50%"
+- extendedWaitUntil:
+    visible:
+      id: material-timer
+      text: Switch complete
+    timeout: 10000
+- assertVisible:
+    id: material-focus-mode
+    text: Focus began in glass
+- assertVisible:
+    id: material-mode
+    text: 'Mode: solid; scheme: ${SCHEME}'
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - assertVisible:
+          id: material-editor
+          focused: true
+- inputText: ' after solid'
+- assertVisible:
+    id: material-editor
+    text: Focus remains after solid
+- pressKey: Enter
+- scrollUntilVisible:
+    element:
+      id: material-editor-identity
+    direction: DOWN
+- assertVisible:
+    id: material-editor-identity
+    text: '${output.materialEditorInstance}; edits: [1-9][0-9]*'
+- takeScreenshot: material-focused-solid-transition
+
+# Android Back must dismiss each presented layer without leaving the fixture.
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - scrollUntilVisible:
+          element:
+            id: material-toggle
+          direction: UP
+      - tapOn:
+          id: material-toggle
+      - assertVisible:
+          id: material-mode
+          text: 'Mode: glass; scheme: ${SCHEME}'
+      - scrollUntilVisible:
+          element: Material dialog
+          direction: DOWN
+      - tapOn: Material dialog
+      - assertVisible: Live dialog
+      - assertVisible: Confirm
+      - takeScreenshot: material-viewport-dialog
+      - pressKey: Back
+      - assertNotVisible: Live dialog
+      - assertVisible: Material dialog
+      - tapOn: Material drawer
+      - assertVisible: Native window
+      - tapOn: Drawer menu
+      - assertVisible: Nested choice
+      - pressKey: Back
+      - assertNotVisible: Nested choice
+      - assertVisible: Native window
+      - pressKey: Back
+      - assertNotVisible: Native window
+      - assertVisible: Material drawer
+      - scrollUntilVisible:
+          element:
+            id: material-toggle
+          direction: UP
+      - tapOn:
+          id: material-toggle
+      - tapOn:
+          id: material-inspect
+      - assertVisible:
+          id: material-capture-stats
+          text: 'Hosts: [0-9]+; active: 0; recordings: [0-9]+; frost: 0; listeners: 0'
+      - takeScreenshot: material-overlays-released

@@ -142,7 +142,7 @@ describe("option-list menus are dense glass under glass", () => {
         const card = anchoredCard(container, menu.content);
         // The skin's fill is stripped from the card (the material repaints it as the
         // under-fill), and the material's lens and rim ride inside it.
-        expect(card.style.backgroundColor).toBe("");
+        expect(rgbaOf(card.style.backgroundColor)).toEqual([0, 0, 0, 0]);
         expect(materialLayers(card)).toBe(1);
         expect(specularLayers(card)).toBe(1);
         // The under-fill is the DENSE tint, not the functional layer's sheer one.
@@ -171,8 +171,10 @@ describe("option-list menus are dense glass under glass", () => {
       const solid = await readCard(false);
       expect(solid).toContain("border-width: 1px");
       expect(await readCard(false)).toBe(solid);
-      // Glass mode hands the fill and the hairline to the material.
-      expect(await readCard(true)).not.toContain("border-width: 1px");
+      // Glass keeps border geometry so live layout does not shift on mode changes.
+      const glass = await readCard(true);
+      expect(glass).toContain("border-width: 1px");
+      expect(glass).toMatch(/border-color: rgba\(0, 0, 0, 0(?:\.0+)?\)/);
     } finally {
       restore();
     }
@@ -351,7 +353,7 @@ describe("the functional-layer overlays keep the sheer tint", () => {
       );
       await waitFor(() => expect(container.querySelector('[role="dialog"]')).not.toBeNull());
       const card = anchoredCard(container, '[role="dialog"]');
-      expect(card.style.backgroundColor).toBe("");
+      expect(rgbaOf(card.style.backgroundColor)).toEqual([0, 0, 0, 0]);
       expect(materialLayers(card)).toBe(1);
       expect(specularLayers(card)).toBe(1);
       expect(rgbaOf(underFillOf(card))).toEqual(FUNCTIONAL);
@@ -370,7 +372,7 @@ describe("the functional-layer overlays keep the sheer tint", () => {
       );
       await waitFor(() => expect(container.querySelector('[role="listbox"]')).not.toBeNull());
       const card = anchoredCard(container, '[role="listbox"]');
-      expect(card.style.backgroundColor).toBe("");
+      expect(rgbaOf(card.style.backgroundColor)).toEqual([0, 0, 0, 0]);
       expect(materialLayers(card)).toBe(1);
       expect(rgbaOf(underFillOf(card))).toEqual(FUNCTIONAL);
     } finally {

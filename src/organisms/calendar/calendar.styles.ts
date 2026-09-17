@@ -8,10 +8,9 @@ import { type ColorTokens, alpha, shadow, FOCUS_RESET, shape } from "../../style
 // SHAPE, sizing, weekday-label style, day-cell fill, today treatment, and press
 // feedback. The BRAND survives on every platform (the selected day fills with the
 // indigo `primary` token, never a platform default), so each follows light/dark.
-// The calendar is a CONTENT surface that paints the opaque `card` token, so it
-// stays SOLID (does not frost) under the ThemeProvider's "glass" surface: glass
-// swaps no semantic token at all, and only what renders through GlassSurface takes
-// the material.
+// The calendar frame uses static content frost in glass mode. The opaque `card`
+// token remains its solid fallback; date labels and selection states stay crisp
+// above the material. Glass swaps no semantic token.
 //
 //   iOS (HIG date picker): the SELECTED day is a filled `primary` circle
 //     (radius 9999) with `primary-foreground` text; TODAY is `primary`-colored
@@ -76,7 +75,7 @@ export interface CalendarSkin {
   // --- container ---
   /** The outer surface: border, radius, padding (layout-only). */
   containerBase: ViewStyle;
-  /** The surface fill + border (paints the opaque `card` token; stays solid, does not frost, under glass). */
+  /** The opaque surface fill and border, retained as the static content material's solid fallback. */
   containerSurface: (t: ColorTokens) => ViewStyle;
 
   // --- header (month label + prev/next chevrons) ---

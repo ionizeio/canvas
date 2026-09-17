@@ -1,5 +1,6 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { Fragment, type ReactNode } from "react";
-import { View, Text, useHugStyle, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, GlassPane, isGlass } from "../../style/index.js";
+import { View, Text, useHugStyle, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, GlassPane, paneStyle } from "../../style/index.js";
 
 // Shared Kbd shell. Kbd is a keyboard shortcut indicator: a small bordered, slightly
 // raised key cap with monospace-ish small text. A single key comes from `children`
@@ -48,8 +49,7 @@ export interface KbdProps {
 }
 
 // The cap surface: the muted fill and the hairline border color (platform-neutral,
-// token-driven so the cap follows light/dark). Under glass the cap is a CONTROL-layer
-// puck: it drops both (a GlassPane's material and rim carry them).
+// token-driven so the cap follows light/dark). Under glass the cap is a static pane at control density: it drops both (a GlassPane's material and rim carry them).
 function capSurface(tokens: ColorTokens, glass: boolean): ViewStyle {
   return glass ? { borderColor: "transparent", backgroundColor: "transparent" } : { borderColor: tokens.border, backgroundColor: tokens.muted };
 }
@@ -74,10 +74,9 @@ function keyList(keys: string | string[] | undefined): string[] | null {
 /** Build a Kbd component from a platform skin. */
 export function createKbd(skin: KbdSkin) {
   return function Kbd({ children, keys, sequence, testID, style }: KbdProps) {
-    const theme = useTheme();
+    const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens } = theme;
-    const glass = isGlass(theme);
-    const pane = <GlassPane layer="control" shape={skin.capBox} />;
+    const pane = <GlassPane static layer="control" shape={skin.capBox} />;
     // HUG: a keycap keeps its content width inside a stretching Column.
     const hug = useHugStyle();
 
@@ -87,7 +86,7 @@ export function createKbd(skin: KbdSkin) {
     if (list == null || list.length === 1) {
       const label = list != null ? list[0] : children;
       return (
-        <View testID={testID} style={[skin.capBox, capSurface(tokens, glass), hug, style]}>
+        <View testID={testID} style={[paneStyle(theme, [skin.capBox, capSurface(tokens, false)]), hug, style]}>
           {pane}
           {label != null ? <Text style={[skin.labelType, labelColor(tokens)]}>{label}</Text> : null}
         </View>
@@ -125,7 +124,7 @@ export function createKbd(skin: KbdSkin) {
               </Text>
             ) : null}
             <View
-              style={[skin.capBox, capSurface(tokens, glass)]}
+              style={[paneStyle(theme, [skin.capBox, capSurface(tokens, false)])]}
               importantForAccessibility="no-hide-descendants"
               aria-hidden
             >

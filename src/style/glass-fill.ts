@@ -26,8 +26,8 @@ const STRENGTH: Record<InnerFillStrength, { light: number; dark: number }> = {
 };
 
 /** The fill a role paints inside a surface: the opaque token in solid mode, an ink tint under glass. */
-export function innerFill(theme: Pick<ThemeValue, "tokens" | "surface" | "dark">, role: InnerFillRole, strength: InnerFillStrength = "soft"): string {
-  if (theme.surface !== "glass") return theme.tokens[role];
+export function innerFill(theme: Pick<ThemeValue, "tokens" | "surface" | "dark"> & Partial<Pick<ThemeValue, "reducedTransparency" | "increasedContrast">>, role: InnerFillRole, strength: InnerFillStrength = "soft"): string {
+  if (theme.surface !== "glass" || theme.reducedTransparency || theme.increasedContrast) return theme.tokens[role];
   const a = STRENGTH[strength];
   return alpha(theme.tokens.foreground, theme.dark ? a.dark : a.light);
 }
@@ -42,8 +42,8 @@ export function isGlass(theme: Pick<ThemeValue, "surface" | "reducedTransparency
  * by the ink tint of the given strength (so a header band, a stripe or a pressed row
  * stays translucent over the material); in solid mode the style is returned as is.
  */
-export function withInnerFill(theme: Pick<ThemeValue, "tokens" | "surface" | "dark">, style: ViewStyle, strength: InnerFillStrength = "soft"): ViewStyle {
-  if (theme.surface !== "glass" || style.backgroundColor == null) return style;
+export function withInnerFill(theme: Pick<ThemeValue, "tokens" | "surface" | "dark"> & Partial<Pick<ThemeValue, "reducedTransparency" | "increasedContrast">>, style: ViewStyle, strength: InnerFillStrength = "soft"): ViewStyle {
+  if (theme.surface !== "glass" || theme.reducedTransparency || theme.increasedContrast || style.backgroundColor == null) return style;
   return { ...style, backgroundColor: innerFill(theme, "muted", strength) };
 }
 

@@ -1,11 +1,12 @@
 import { afterEach, describe, expect, it, spyOn } from "bun:test";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { AccessibilityInfo, Animated } from "react-native";
+import { AccessibilityInfo } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { ButtonGroup as WebGroup } from "../src/atoms/button-group/button-group.tsx";
 import { ButtonGroup as IOSGroup } from "../src/atoms/button-group/button-group.ios.tsx";
 import { ButtonGroup as AndroidGroup } from "../src/atoms/button-group/button-group.android.tsx";
 import { GlassSelection } from "../src/atoms/button-group/button-group-glass.tsx";
+import { animationClock } from "./liquid-motion-clock.ts";
 import { layoutEntrance } from "./entrance-layout.ts";
 
 afterEach(cleanup);
@@ -13,38 +14,6 @@ afterEach(cleanup);
 const items = ["Day", "Week", "Month"];
 const materialLayers = (root: HTMLElement) => [...root.querySelectorAll<HTMLElement>("[style]")]
   .filter((node) => node.style.backdropFilter);
-
-// Drive RN's real springs through their frame callbacks. This tests the painted
-// bounds without replacing Animated.spring with a mock that jumps to its target.
-function animationClock() {
-  // RNW selects AnimatedMock under NODE_ENV=test. Opt this scope back into
-  // the production engine, and restore both methods before another test runs.
-  const engine = require("react-native-web/dist/vendor/react-native/Animated/AnimatedImplementation").default as typeof Animated;
-  const spring = spyOn(Animated, "spring").mockImplementation(engine.spring);
-  const parallel = spyOn(Animated, "parallel").mockImplementation(engine.parallel);
-  let now = Date.now();
-  let nextId = 0;
-  const frames = new Map<number, FrameRequestCallback>();
-  const time = spyOn(Date, "now").mockImplementation(() => now);
-  const raf = spyOn(globalThis, "requestAnimationFrame").mockImplementation((callback) => {
-    frames.set(++nextId, callback);
-    return nextId;
-  });
-  const cancel = spyOn(globalThis, "cancelAnimationFrame").mockImplementation((id) => { frames.delete(id); });
-  return {
-    advance(milliseconds: number) {
-      for (let elapsed = 0; elapsed < milliseconds; elapsed += 16) {
-        act(() => {
-          now += 16;
-          const callbacks = [...frames.values()];
-          frames.clear();
-          callbacks.forEach((callback) => callback(now));
-        });
-      }
-    },
-    restore() { time.mockRestore(); raf.mockRestore(); cancel.mockRestore(); spring.mockRestore(); parallel.mockRestore(); },
-  };
-}
 
 function selectionFrame() {
   const frame = screen.getByTestId("selection").parentElement!;
@@ -195,7 +164,7 @@ describe("ButtonGroup theme material", () => {
     } finally { unmount(); clock.restore(); }
   });
 
-  it("keeps opaque glass surfaces with contrast edges under Increase Contrast", async () => {
+  it("uses opaque solid segments with contrast edges under Increase Contrast", async () => {
     const original = window.matchMedia.bind(window);
     const contrast = spyOn(window, "matchMedia").mockImplementation((query) => {
       const result = original(query);
@@ -204,8 +173,14 @@ describe("ButtonGroup theme material", () => {
     });
     try {
       render(<ThemeProvider glass><WebGroup items={items} testID="group" /></ThemeProvider>);
-      await waitFor(() => expect(screen.getByTestId("group-glass").style.borderWidth).toBe("1px"));
+      await waitFor(() => expect(screen.getByRole("tab", { name: "Week" }).style.borderWidth).toBe("1px"));
+      expect(screen.queryByTestId("group-glass")).toBeNull();
+      expect(screen.queryByTestId("group-selection")).toBeNull();
       expect(materialLayers(screen.getByTestId("group"))).toHaveLength(0);
+      const week = screen.getByRole("tab", { name: "Week" });
+      expect(week.style.backgroundColor).not.toBe("");
+      expect(week.style.backgroundColor).not.toBe("transparent");
+      expect(week.style.borderColor).not.toBe("");
       fireEvent.click(screen.getByRole("tab", { name: "Week" }));
       expect(screen.getByRole("tab", { name: "Week" }).getAttribute("aria-selected")).toBe("true");
     } finally {

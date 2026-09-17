@@ -30,9 +30,9 @@ import { Icon } from "../../atoms/icon/icon.js";
 // its skin (the container shape, header insets, title type, chevron tint/size,
 // content insets, and press feedback) and calls createCollapsible.
 //
-// The collapsible is a CONTENT-layer surface, so it stays SOLID on every platform
-// (it is never routed through GlassSurface; per Apple, glass is the material for
-// the functional layer only).
+// Filled collapsible variants use static content frost through GlassSurface.
+// Unfilled variants inherit their surrounding surface; the solid skin remains
+// the opaque fallback, with disclosure state independent of material.
 //
 // Open state is controlled OR uncontrolled:
 //   - Uncontrolled: omit `open`; the component tracks open/closed in internal

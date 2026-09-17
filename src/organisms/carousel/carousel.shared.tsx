@@ -1,3 +1,4 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
@@ -13,7 +14,6 @@ import {
   Text,
   Pressable,
   StyleSheet,
-  useTheme,
   useReducedMotion,
   type ColorTokens,
   type StyleProp,
@@ -23,7 +23,6 @@ import {
   GlassSurface,
   GlassPane,
   paneStyle,
-  isGlass,
 } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
@@ -36,9 +35,8 @@ import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 // slide corner radius, the dot shape/size/tint, the active-dot treatment, and
 // the arrow button shape + press feedback) and calls createCarousel.
 //
-// The carousel is a CONTENT-layer surface, so it stays SOLID on every platform
-// (it is never routed through GlassSurface; per Apple, glass is the material for
-// the functional layer only).
+// Slides use stable frosted content material. Arrow actions resolve their own
+// liquid control material, while pictures and slide content stay sharp.
 //
 // Current index is controlled OR uncontrolled:
 //   - Uncontrolled: omit `index`; the component tracks the current slide in
@@ -169,9 +167,9 @@ export function createCarousel(skin: CarouselSkin) {
     disabled: boolean;
     onPress: () => void;
   }) {
-    const theme = useTheme();
+    const theme = useMaterialTheme({ layer: "control" });
     const { tokens } = theme;
-    const glass = isGlass(theme);
+    const liquid = theme.surface === "glass";
     const edge = side === "prev" ? { start: skin.arrowInset } : { end: skin.arrowInset };
     return (
       <View style={[arrowLayerStyles.layer, edge]}>
@@ -185,18 +183,21 @@ export function createCarousel(skin: CarouselSkin) {
           accessibilityState={{ disabled }}
           aria-disabled={disabled}
           style={({ pressed }) => [
-            paneStyle(glass, skin.arrow(tokens)),
-            disabled ? DISABLED_DIM : null,
-            skin.pressedOpacity != null && pressed && !disabled ? { opacity: skin.pressedOpacity } : null,
+            paneStyle(theme, skin.arrow(tokens)),
+            !liquid && disabled ? DISABLED_DIM : null,
+            !liquid && skin.pressedOpacity != null && pressed && !disabled ? { opacity: skin.pressedOpacity } : null,
           ]}
         >
-          {/* The arrow is a CONTROL puck under glass (nothing in solid mode). */}
-          <GlassPane layer="control" shape={skin.arrow(tokens)} interactive />
-          {side === "prev" ? (
-            <Icon chevronLeft muted size={skin.arrowIconSize} />
-          ) : (
-            <Icon chevronRight muted size={skin.arrowIconSize} />
-          )}
+          {({ pressed }) => <>
+            <GlassPane layer="control" shape={skin.arrow(tokens)} interactive />
+            <View style={liquid ? disabled ? DISABLED_DIM : pressed && skin.pressedOpacity != null ? { opacity: skin.pressedOpacity } : null : null}>
+              {side === "prev" ? (
+                <Icon chevronLeft muted decorative size={skin.arrowIconSize} />
+              ) : (
+                <Icon chevronRight muted decorative size={skin.arrowIconSize} />
+              )}
+            </View>
+          </>}
         </Pressable>
       </View>
     );
@@ -214,7 +215,7 @@ export function createCarousel(skin: CarouselSkin) {
       testID,
       style,
     } = props;
-    const { tokens } = useTheme();
+    const { tokens } = useMaterialTheme({ layer: "content" });
     const reduced = useReducedMotion();
     const count = items.length;
 

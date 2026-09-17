@@ -116,7 +116,7 @@ jobs:
         env:
           SOURCE_SHA: ${{ github.sha }}
           RELEASE_MAJOR: ${{ github.event_name == 'workflow_dispatch' && inputs.major && inputs.major_version || '' }}
-      - name: Accept candidate and publish tested tarball
+      - name: Accept candidate and publish tested tarballs
         id: publish
         run: node scripts/release.mjs publish "$RUNNER_TEMP/candidate" "$RUNNER_TEMP/artifacts"
         env:
@@ -132,7 +132,7 @@ jobs:
             echo '### npm release'
             echo "Publication step: ${OUTCOME:-not started}. Candidate result: ${STATUS:-not accepted}."
             case "$STATUS" in
-              published) echo 'The validated tarball was published and its candidate tag was pushed.' ;;
+              published) echo 'The validated package tarballs were published and their version tags were pushed.' ;;
               stale) echo 'Main advanced. No artifact was published and no tag was pushed; the newer main run owns release preparation.' ;;
               blocked-major) echo 'A major is pending and nothing authorized it. Dispatch this workflow with the major box ticked and the exact next major typed into major_version; the generic npm checkbox never authorizes a major.' ;;
               no-changesets|not-requested) echo 'No npm publication was requested by this candidate.' ;;

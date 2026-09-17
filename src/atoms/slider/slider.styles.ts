@@ -10,7 +10,7 @@ import { type SliderSkin, type Size } from "./slider.shared.js";
 //     smooth (continuous) corners, and a 37x24pt capsule knob (borderCurve
 //     continuous, soft drop shadow), brand fill on the rail. On iOS 26+ the knob
 //     "transforms into liquid glass during interaction" (WWDC25): it renders through
-//     GlassSurface (`glassThumb`), so it is a real Apple Liquid Glass puck refracting
+//     GlassSurface, so it is a real Apple Liquid Glass puck refracting
 //     the rail, and it SPRINGS UP on press (the shell's scale/bounce) rather than
 //     dimming. Under solid surface / Reduce Transparency / Increase Contrast it
 //     degrades to the opaque WHITE CAPSULE. Stepped sliders show small gray tick dots
@@ -114,14 +114,13 @@ export const iosSkin: SliderSkin = {
       borderColor: alpha("#000000", 0.04),
       ...IOS_THUMB_SHADOW,
       // No pressed OPACITY treatment: the iOS knob stays opaque through a drag. Under
-      // glass the handle scales up on press instead (see glassThumb below); this white
+      // glass the handle deforms through layout bounds on drag; this white
       // fill is what the knob degrades back to under solid surface / Reduce Transparency.
     };
   },
   // iOS 26 slider handles "transform into liquid glass during interaction" (WWDC25):
   // route the knob through GlassSurface so on iOS 26+ (glass is the platform default)
   // it becomes an Apple Liquid Glass puck that refracts the rail and springs on press.
-  glassThumb: true,
   // An OPAQUE white under-fill so the knob reads as a BRIGHT puck, matching the real
   // iOS handle (a bright white knob whose glass is the lit edge + interactive refraction,
   // not a see-through frost). This is deliberately not translucent: verified on the iOS

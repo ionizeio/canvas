@@ -5,8 +5,8 @@ import { type StatsSkin } from "./stats.shared.js";
 
 // Co-located Stats skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so the surfaces follow light/dark). Stats is a
-// CONTENT-layer surface that paints tokens.card, which stays SOLID under glass
-// (only the functional/popover layer frosts). The delta tone
+// content surface: card items use static frost in glass mode and tokens.card
+// for the solid fallback; plain items inherit their host. The delta tone
 // uses the Tailwind palette (a 600 hue in light, a 400 hue in dark), branched on
 // the active scheme; that semantic color logic lives once in stats.shared.tsx, so
 // the skin carries only the per-OS-varying pieces.

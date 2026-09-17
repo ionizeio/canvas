@@ -1,5 +1,6 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useMemo } from "react";
-import { View, Text, Pressable, useTheme, useControllableState, useBreakpoint, breakpoints, RippleClip, cornerRadii, type BreakpointKey, type StyleProp, type ViewStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, useControllableState, useBreakpoint, breakpoints, RippleClip, cornerRadii, type BreakpointKey, type StyleProp, type ViewStyle, GlassPane, paneStyle } from "../../style/index.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { CheckboxIndicator as WebCheckbox } from "../../atoms/checkbox/indicator/index.js";
@@ -159,9 +160,6 @@ export function createFilterPanel(
 
   return function FilterPanel(props: FilterPanelProps) {
     const { groups, activeCount, onClear, onChange, onSelectionChange, bordered, testID, style } = props;
-    const theme = useTheme();
-    const { tokens } = theme;
-    const glass = isGlass(theme);
     const density = densityOf(props);
 
     // Each option's stable key: its explicit `value`, else its group/option index.
@@ -207,6 +205,8 @@ export function createFilterPanel(
     const asDrawer =
       !!props.responsive && bucket !== "base" && breakpoints[bucket] <= breakpoints[props.drawerBreakpoint ?? "sm"];
     const [panelOpen, setPanelOpen] = useControllableState<boolean>(props.open, props.defaultOpen ?? false, props.onOpenChange);
+    const theme = useMaterialTheme({ layer: asDrawer ? "functional" : "content" });
+    const { tokens } = theme;
 
     // Under glass the bordered panel is a CONTENT-layer pane (a GlassPane behind the
     // groups; the chrome's fill and hairline drop, the material and rim carry them).
@@ -222,7 +222,7 @@ export function createFilterPanel(
           // the bare panel keeps the same width but drops the chrome. The radius
           // comes from the skin (per-OS); the border/fill follow the tokens so it
           // tracks light/dark.
-          chrome ? paneStyle(glass, chrome) : null,
+          chrome ? paneStyle(theme, chrome) : null,
           skin.panelPad[density],
           skin.panelStack[density],
           style,

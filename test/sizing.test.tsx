@@ -147,7 +147,7 @@ const fillAncestor = (el: HTMLElement | null) => {
 describe("the fields are FILL", () => {
   it("Input: the bare field, the labeled wrapper, and the grouped (addon) container", () => {
     const bare = ui(<Input placeholder="Email" />);
-    expectFill(bare.container.querySelector("input"));
+    expectFill(bare.container.firstElementChild as HTMLElement);
     cleanup();
     const labeled = ui(<Input label="Email" placeholder="ada@acme.dev" />);
     expectFill(fillAncestor(labeled.container.querySelector("input")));
@@ -183,7 +183,7 @@ describe("the fields are FILL", () => {
 
   it("the width is the same at every viewport: there is no width to drop", () => {
     const { container } = ui(<Input placeholder="Email" />);
-    expectFill(container.querySelector("input"));
+    expectFill(container.firstElementChild as HTMLElement);
   });
 
   it("warns once when a field lands in a bare Column inside a Row, and not inside a span", () => {
@@ -285,7 +285,7 @@ describe("the measure axis", () => {
 
   it("caps every field's outermost node at the step, centered, and pins it with start", () => {
     const i = ui(<Input sm placeholder="Email" />);
-    expectMeasured(i.container.querySelector("input"), "sm", "center");
+    expectMeasured(i.container.firstElementChild as HTMLElement, "sm", "center");
     cleanup();
     const labeled = ui(<Input lg start label="Email" placeholder="ada@acme.dev" />);
     expectMeasured(measuredAncestor(labeled.container.querySelector("input")), "lg", "flex-start");
@@ -337,7 +337,11 @@ describe("the measure axis", () => {
   it("stretches a segmented ButtonGroup to the step and flexes its segments like block does", () => {
     const { container } = ui(<ButtonGroup segmented defaultActive={0} items={["Day", "Week", "Month"]} sm start />);
     expectMeasured(container.querySelector('[role="tablist"]') as HTMLElement, "sm", "flex-start");
-    for (const tab of Array.from(container.querySelectorAll('[role="tab"]')) as HTMLElement[]) expect(tab.style.flexGrow).toBe("1");
+    const group = container.querySelector('[role="tablist"]');
+    for (const tab of Array.from(container.querySelectorAll('[role="tab"]')) as HTMLElement[]) {
+      expect(tab.parentElement!.parentElement).toBe(group);
+      expect(tab.parentElement!.style.flexGrow).toBe("1");
+    }
   });
 
   it("in a Row the cap applies and alignSelf does not: the Row places the box on its own axis", () => {
@@ -347,7 +351,7 @@ describe("the measure axis", () => {
         <Button lg testID="b">Go</Button>
       </Row>,
     );
-    expectMeasured(container.querySelector("input"), "sm", "");
+    expectMeasured(container.querySelector("input")!.parentElement, "sm", "");
     expectMeasured(at(container, "b").parentElement as HTMLElement, "lg", "");
   });
 });

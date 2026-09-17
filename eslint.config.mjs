@@ -28,6 +28,7 @@ const OPTIONAL_PEERS = Object.keys(packageMetadata.peerDependencies).filter(
 // with the same hooks hazards as the kit, so it gets the same rules.
 const SOURCES = [
   "src/**/*.{ts,tsx}",
+  "packages/*/src/**/*.{ts,tsx}",
   "tools/**/*.ts",
   "tools/native/*.mjs",
   "tools/package/consumer-support/*.{tsx,jsx}",
@@ -45,6 +46,10 @@ export default tseslint.config(
   {
     ignores: [
       "dist/**",
+      "packages/*/dist/**",
+      "packages/*/android/build/**",
+      "packages/*/android/.gradle/**",
+      "packages/*/android/.cxx/**",
       "**/node_modules/**",
       "**/*.d.ts",
       // The docs app's build output and its generated native projects, never its source.

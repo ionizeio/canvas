@@ -26,9 +26,9 @@ import { Icon } from "../../atoms/icon/icon.js";
 // shape, the row divider, header insets, title type, chevron tint/size, content
 // insets, and press feedback) and calls createAccordion.
 //
-// The accordion is a CONTENT-layer surface, so it stays SOLID on every platform
-// (it is never routed through GlassSurface; per Apple, glass is the material for
-// the functional layer only).
+// Filled accordion variants use static content frost through GlassSurface.
+// Unfilled variants inherit their surrounding surface; the solid skin remains
+// the opaque fallback, with disclosure state independent of material.
 //
 // Open state is controlled OR uncontrolled:
 //   - Uncontrolled: omit `value`; the component tracks which panels are open in

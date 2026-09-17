@@ -38,8 +38,11 @@ import {
   GlassBlurTargetContext,
   GlassWindowBlurTargetContext,
 } from "./glass-surface/glass-surface.shared.js";
+import { createCaptureTarget } from "./glass-surface/capture-target.js";
 import { GlassBlurTargetHost, blurTargetMountable } from "./glass-surface/glass-blur-target.js";
 import { EntranceReadinessContext } from "./entrance-readiness.js";
+import { useTheme } from "./theme.js";
+import { ResolvedThemeProvider } from "./theme-context.js";
 
 // What a <Portal> (and an anchored overlay) needs from its host. `measureOutlet`
 // is exposed so an anchored overlay can measure a trigger RELATIVE TO the outlet
@@ -157,18 +160,18 @@ export function OverlayProvider({ children, style, separateWindow = false, viewp
     return () => subscriptions.forEach((subscription) => subscription.remove());
   }, [parent]);
 
-  // The Android sibling blur target (expo-blur 57+; see GlassBlurTargetContext in
-  // glass-surface.shared). The host wraps `children` in a BlurTargetView holding
-  // this ref, and the outlet — a native SIBLING of that content — gets the ref via
-  // GlassBlurTargetContext so portaled frost overlays blur the page. The outlet
-  // must get this provider's OWN target, never an inherited one: an outer
-  // provider's target contains this whole subtree, outlet included, and an
-  // ancestor target segfaults Android's RenderThread. Only a flex-sized host
-  // mounts a target (see blurTargetMountable), so a content-sized host publishes
-  // null and its frosts fall back to fill-only instead of holding a dangling ref.
-  const blurTargetRef = useRef<View>(null);
+  // Each Android provider can own a stable content capture plane. Its outlet
+  // is a native sibling, so it can sample that plane without a render-node cycle.
+  // Content-sized providers inherit only an explicitly safe decorative or modal
+  // plane, never the window context that contains their own foreground subtree.
+  const captureTarget = useMemo(createCaptureTarget, []);
+  const blurTargetRef = captureTarget.ref;
   const hostStyle: StyleProp<ViewStyle> = [FILL, style];
   const ownBlurTarget = blurTargetMountable(hostStyle) ? blurTargetRef : null;
+  // A decorative backdrop already proven safe for the whole subtree is also
+  // safe for this outlet. Never substitute the inherited window-level target.
+  const inheritedSafeTarget = useContext(GlassBlurTargetContext);
+  const outletBlurTarget = ownBlurTarget ?? inheritedSafeTarget;
   // Separate-native-window surfaces (RN Modal — Drawer, ActionSheet) instead take
   // the window-level target, where OUTERMOST wins so a Modal opened from a nested
   // host (a docs stage) blurs the page, not just its stage. Safe at any depth: a
@@ -241,7 +244,7 @@ export function OverlayProvider({ children, style, separateWindow = false, viewp
           style={hostStyle}
           targetRef={blurTargetRef}
           outlet={
-            <GlassBlurTargetContext.Provider value={ownBlurTarget}>
+            <GlassBlurTargetContext.Provider value={outletBlurTarget}>
               <Outlet outletRef={outletRef} subscribe={subscribe} getSnapshot={getSnapshot} onLayout={onOutletLayout} />
             </GlassBlurTargetContext.Provider>
           }
@@ -285,16 +288,21 @@ export function Portal({ children }: PortalProps) {
   const host = useOverlayHost();
   const id = useId();
   const entranceReady = useContext(EntranceReadinessContext);
+  const theme = useTheme();
 
   // Publish the CURRENT children on every render (children is a fresh node each
   // render, so the teleported tree is never stale). Cheap: it sets the provider's
   // registry, not this component's state.
   useEffect(() => {
-    // Registry nodes render in a sibling outlet, so preserve this private
-    // context from the publisher's logical ancestry. Always keep the Provider
-    // here, including default-ready publishers, to retain child identity and
-    // avoid inheriting readiness from an unrelated outlet ancestor.
-    if (host) host.mount(id, <EntranceReadinessContext.Provider value={entranceReady}>{children}</EntranceReadinessContext.Provider>);
+    // Registry nodes render in a sibling outlet, so preserve the publisher's
+    // resolved theme and entrance readiness. Keep the providers stable across
+    // updates to retain foreground state. Capture targets intentionally come
+    // from the outlet: copying the publisher's target can create a native cycle.
+    if (host) host.mount(id,
+      <ResolvedThemeProvider value={theme}>
+        <EntranceReadinessContext.Provider value={entranceReady}>{children}</EntranceReadinessContext.Provider>
+      </ResolvedThemeProvider>,
+    );
   });
 
   // Cleanup runs ONLY on true unmount. Kept separate from the publish effect: a

@@ -1,54 +1,16 @@
-// GlassBlurTargetHost — Android. Mounts the sibling BlurTargetView that restores
-// real frost blur under expo-blur 57+, whose Android API blurs an explicitly
-// referenced target instead of whatever renders behind the BlurView. The one safe
-// shape (an ancestor target render-node-cycles libhwui into a RenderThread
-// SIGSEGV; see GlassBlurTargetContext in glass-surface.shared) is a target the
-// blurring surface does NOT sit inside, and <OverlayProvider>'s structure provides
-// exactly that: its page content and its overlay outlet are native siblings. So
-// the content side becomes the BlurTargetView and the outlet stays outside it:
-//
-//   <View box>                 — sizes/positions the provider in its parent, and
-//     <BlurTargetView content>   anchors the outlet's absolute layer
-//       {children}
-//     </BlurTargetView>
-//     {outlet}                 — portaled overlays; their frosts blur the sibling
-//   </View>                      target above, never an ancestor
-//
-// With expo-blur absent, or pre-57 (no BlurTargetView export — there the legacy
-// behind-the-view blur still works with no target at all), this renders the same
-// single-View wrapper as the base file and reports the target unavailable.
-
+// A stable native content plane, sampled only by sibling outlet surfaces.
+// The optional integration owns capture demand. Modern Expo targets cannot stop
+// recording while preserving their children, so absent integration is solid.
 import { StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
-import type * as ExpoBlurTypes from "expo-blur";
-import { type GlassBlurTargetHostProps } from "./glass-surface.shared.js";
+import type { GlassBlurTargetHostProps } from "./glass-surface.shared.js";
+import { NativePaintHost, NativeCaptureHost, nativeCaptureAvailable, useCaptureAvailability } from "./capture-runtime.js";
+import { captureTargetOwner, useCaptureEnabled } from "./capture-target.js";
 
-// expo-blur is an OPTIONAL peer: consumers without it must still build, so it is
-// loaded with a guarded require (a literal id, so bundlers that DO have it
-// installed still include it) instead of a static import (which fails module
-// resolution for everyone who skipped the optional peer). Undefined when absent
-// or in a pure-ESM runtime with no `require` — then the passthrough below.
-declare const require: (id: string) => unknown;
-let BlurTargetView: typeof ExpoBlurTypes.BlurTargetView | undefined;
-try {
-  // Directly in the try block: an intervening `if` makes Metro treat this as
-  // a REQUIRED dependency. See src/organisms/backdrop/skia-runtime.ts.
-  BlurTargetView = (require("expo-blur") as { BlurTargetView?: typeof ExpoBlurTypes.BlurTargetView }).BlurTargetView;
-} catch {
-  BlurTargetView = undefined;
-}
+export const glassBlurTargetAvailable = nativeCaptureAvailable;
 
-export const glassBlurTargetAvailable = BlurTargetView !== undefined;
-
-// Whether THIS host instance mounts a BlurTargetView, given the wrapper style it
-// will render with. Only a flex-sized host (an app root's flex: 1 — a box the
-// viewport already bounds) can hold one: inside ScrollView content, Fabric's
-// content measurement clamps a BlurTargetView to the viewport no matter its flex
-// longhands, capping the page's scroll range at ~one screen. Content-sized hosts
-// (a docs page or stage) therefore keep the plain-View passthrough and publish no
-// target, and their frosts fall back to the fill-only material.
 export function blurTargetMountable(style: StyleProp<ViewStyle>): boolean {
-  if (BlurTargetView === undefined) return false;
-  const flat = (StyleSheet.flatten(style) ?? {}) as ViewStyle;
+  if (!nativeCaptureAvailable) return false;
+  const flat = StyleSheet.flatten(style) ?? {};
   const grow = flat.flexGrow ?? (typeof flat.flex === "number" && flat.flex > 0 ? flat.flex : 0);
   return typeof grow === "number" && grow > 0;
 }
@@ -56,9 +18,9 @@ export function blurTargetMountable(style: StyleProp<ViewStyle>): boolean {
 // The style keys that arrange the provider's CHILDREN, as opposed to sizing or
 // positioning the wrapper box itself. Splitting the single wrapper in two must not
 // change layout, so the outer box keeps every box-level key (how the provider sits
-// in its parent, where the outlet's absolute layer anchors, the box's own fill and
-// border) while the BlurTargetView slotted between wrapper and children takes
-// these child-arrangement keys — a consumer style like the docs' `gap: 28` keeps
+// in its parent, where the outlet's absolute layer anchors, and all authored
+// paint). The target owns only child arrangement. Native capture samples the
+// paint owner's Drawable without visibly painting it again. `gap: 28` keeps
 // spacing the same nodes it spaced in the single-View structure.
 const CHILD_KEYS = new Set<string>([
   "flexDirection", "flexWrap", "justifyContent", "alignItems", "alignContent",
@@ -74,7 +36,7 @@ const CHILD_KEYS = new Set<string>([
 // than forcing a fill: a hardcoded flexShrink 1 let Fabric's ScrollView content
 // measurement shrink the BlurTargetView to the viewport, capping every docs
 // page's scroll range at ~one screen on Android. Longhands with an explicit
-// "auto" basis — react-native-web rewrites the `flex` shorthand's basis to 0%,
+// "auto" basis , react-native-web rewrites the `flex` shorthand's basis to 0%,
 // which collapses content-sized hosts, and native keeps the longhand form for
 // parity.
 const TARGET_FILL: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "auto" };
@@ -99,21 +61,18 @@ export function splitHostStyle(style: StyleProp<ViewStyle>): { box: ViewStyle; c
 }
 
 export function GlassBlurTargetHost({ style, targetRef, outlet, children }: GlassBlurTargetHostProps) {
-  if (!BlurTargetView || !blurTargetMountable(style)) {
-    return (
-      <View style={style}>
-        {children}
-        {outlet}
-      </View>
-    );
+  const enabled = useCaptureEnabled(targetRef);
+  const onAvailabilityChange = useCaptureAvailability(targetRef);
+  if (!NativePaintHost || !NativeCaptureHost || !blurTargetMountable(style)) {
+    return <View style={style}>{children}{outlet}</View>;
   }
   const { box, content } = splitHostStyle(style);
   return (
-    <View style={box}>
-      <BlurTargetView ref={targetRef} style={content}>
+    <NativePaintHost style={box}>
+      <NativeCaptureHost ref={captureTargetOwner(targetRef)?.attach ?? targetRef} onAvailabilityChange={onAvailabilityChange} captureEnabled={enabled} style={content}>
         {children}
-      </BlurTargetView>
+      </NativeCaptureHost>
       {outlet}
-    </View>
+    </NativePaintHost>
   );
 }

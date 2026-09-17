@@ -1,3 +1,4 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { type ComponentType, type ReactNode } from "react";
 import {
   View,
@@ -6,12 +7,12 @@ import {
   ScrollView,
   RippleClip,
   cornerRadii,
-  useTheme,
   useControllableState,
   useMeasuredWidth,
   type StyleProp,
   type ViewStyle,
   GlassSurface,
+  withInnerFill,
 } from "../../style/index.js";
 import { Card as WebCard } from "../../molecules/card/card.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
@@ -63,8 +64,8 @@ import { type BoardSkin } from "./board.styles.js";
 // button: invalid DOM on web (react-native-web renders real <button> elements) and an
 // ambiguous, doubly-focusable control for assistive tech.
 //
-// As content-layer surfaces the cards stay SOLID (the kit Card never goes glass); the lanes
-// are token-tinted wells, so no functional glass is involved anywhere on the board.
+// Lanes and composed Cards own static content surfaces in glass mode. Their
+// reading content stays stable; row menus resolve their own functional material.
 
 export type { BoardColumn, BoardItem, BoardMove };
 
@@ -145,7 +146,8 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
   // while a pointer drag is in flight the horizontal scroll freezes (the zone rects were
   // measured at grab time, so scrolling mid-drag would divorce hit-testing from the screen).
   function BoardLanes({ columns, list, onDrop, onPressItem, onSelectItemMenu, columnWidth, compact, emptyLabel }: LanesProps) {
-    const { tokens } = useTheme();
+    const theme = useMaterialTheme({ layer: "content" });
+    const { tokens } = theme;
     const dragging = useDragActive();
     // Lanes fit the measured board: in a container narrower than the configured
     // lane (a phone), a lane fills most of the width with a 32pt peek of the
@@ -178,7 +180,7 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
             style={({ pressed }) => [
               skin.bodyColumn(compact),
               skin.pressableBody,
-              pressed ? skin.pressedSurface(tokens) : null,
+              pressed ? withInnerFill(theme, skin.pressedSurface(tokens), "firm") : null,
               pressFeedback(pressed),
             ]}
             android_ripple={ripple}

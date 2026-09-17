@@ -1,6 +1,7 @@
-import { useRef } from "react";
+import { useRef, type ReactNode } from "react";
 import { AccessibilityInfo, StyleSheet } from "react-native";
 import { View, Text, useTheme, shadow, GlassPane, paneStyle, isGlass, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { estimateTextWidth } from "./chart-math.js";
 
 // Press-to-inspect support shared by the Chart family: the in-plot value flag
@@ -29,6 +30,23 @@ const TEXT = 12;
 const LINE = 16;
 const PAD = 10;
 
+/** Shared material behind a chart's existing, touch-through inspection flag. */
+export function ChartInspectionSurface({ children, radius = 12, style }: {
+  children: ReactNode;
+  radius?: number;
+  style?: StyleProp<ViewStyle>;
+}) {
+  const theme = useMaterialTheme({ layer: "dense" });
+  const { tokens } = theme;
+  const shape: ViewStyle = { borderRadius: radius, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card };
+  return (
+    <View style={[styles.passthrough, paneStyle(theme, shape), shadow("md"), style]}>
+      {isGlass(theme) ? <GlassPane layer="dense" shape={shape} /> : null}
+      {children}
+    </View>
+  );
+}
+
 /** Estimated flag width so positioning never needs a second layout pass. */
 function flagWidth(title: string | undefined, rows: FlagRow[]): number {
   const widest = Math.max(
@@ -52,8 +70,7 @@ export interface ChartValueFlagProps {
 }
 
 export function ChartValueFlag({ title, rows, x, plotW }: ChartValueFlagProps) {
-  const theme = useTheme();
-  const { tokens } = theme;
+  const { tokens } = useTheme();
   const w = flagWidth(title, rows);
   // Prefer sitting to the right of the datum; flip left when it would clip,
   // then clamp to the plot as a last resort (narrow plots).
@@ -61,28 +78,18 @@ export function ChartValueFlag({ title, rows, x, plotW }: ChartValueFlagProps) {
   if (left + w > plotW) left = x - 8 - w;
   if (left < 0) left = Math.max(0, Math.min(plotW - w, x - w / 2));
 
-  // Under glass the flag is a DENSE-layer pane (a value the reader inspects must stay
-  // legible over the plot), riding behind the node so the flag keeps its touch
-  // passthrough; the card fill and hairline drop, the material and rim carry them.
-  const shape: ViewStyle = { borderRadius: 12, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card };
   return (
-    <View
-      style={[
-        styles.passthrough,
-        paneStyle(isGlass(theme), shape),
-        {
-          position: "absolute",
-          top: 4,
-          left,
-          width: w,
-          paddingVertical: PAD - 4,
-          paddingHorizontal: PAD,
-          gap: 2,
-          ...shadow("md"),
-        },
-      ]}
+    <ChartInspectionSurface
+      style={{
+        position: "absolute",
+        top: 4,
+        left,
+        width: w,
+        paddingVertical: PAD - 4,
+        paddingHorizontal: PAD,
+        gap: 2,
+      }}
     >
-      <GlassPane layer="dense" shape={shape} />
       {title ? (
         <Text numberOfLines={1} style={{ fontSize: TEXT, lineHeight: LINE, fontWeight: "600", color: tokens["card-foreground"] }}>
           {title}
@@ -101,7 +108,7 @@ export function ChartValueFlag({ title, rows, x, plotW }: ChartValueFlagProps) {
           </Text>
         </View>
       ))}
-    </View>
+    </ChartInspectionSurface>
   );
 }
 

@@ -9,6 +9,8 @@ import {
 } from "../src/style/glass-surface/glass-surface.shared.tsx";
 import { glassBlurTargetAvailable as baseAvailable } from "../src/style/glass-surface/glass-blur-target.tsx";
 import { splitHostStyle } from "../src/style/glass-surface/glass-blur-target.android.tsx";
+import { resolveCaptureComponents } from "../src/style/glass-surface/capture-runtime.ts";
+import { composite } from "../src/style/color.ts";
 import { OverlayProvider, Portal } from "../src/style/portal.tsx";
 
 // The Android sibling blur-target wiring (expo-blur 57+). What must hold, per
@@ -47,11 +49,50 @@ describe("splitHostStyle (Android fork)", () => {
     });
   });
 
+  it("keeps translucent fill beneath its original border and corners without duplicating paint", () => {
+    const fill = "rgba(20, 40, 80, 0.5)";
+    const shape = { borderWidth: 2, borderColor: "#123456", borderRadius: 16, borderTopLeftRadius: 24, borderBottomEndRadius: 8, borderCurve: "continuous" as const };
+    const { box, content } = splitHostStyle([
+      { flex: 1, width: 320, backgroundColor: "#ffffff", ...shape },
+      { backgroundColor: fill, padding: 12, gap: 8 },
+    ]);
+    expect(box).toEqual({ flex: 1, width: 320, backgroundColor: fill, ...shape });
+    expect(content.backgroundColor).toBeUndefined();
+    expect(content.borderRadius).toBeUndefined();
+    expect(content.borderTopLeftRadius).toBeUndefined();
+    expect(content.borderBottomEndRadius).toBeUndefined();
+    expect(content.borderCurve).toBeUndefined();
+    expect(content.borderWidth).toBeUndefined();
+    expect(content.borderColor).toBeUndefined();
+    expect(content.overflow).toBeUndefined();
+    expect(content.padding).toBe(12);
+    expect(content.gap).toBe(8);
+    const backdrop = "#f0e0c0";
+    const rendered = [box, content].reduce((behind, layer) => typeof layer.backgroundColor === "string" ? composite(layer.backgroundColor, behind) : behind, backdrop);
+    expect(rendered).toBe(composite(fill, backdrop));
+    expect(rendered).not.toBe(composite(fill, composite(fill, backdrop)));
+  });
+
   it("fills the wrapper with longhands (no `flex` shorthand, whose web basis rewrite collapses content-sized hosts)", () => {
     const { box, content } = splitHostStyle(undefined);
     expect(box).toEqual({});
     expect(content).toEqual({ flexGrow: 1, flexShrink: 1, flexBasis: "auto" });
     expect("flex" in content).toBe(false);
+  });
+});
+
+describe("optional native capture capability", () => {
+  it("requires the complete paint, content and frost integration before activating any native material", () => {
+    const NativeView = () => null;
+    const complete = { available: true, PaintHost: NativeView, CaptureHost: NativeView, FrostView: NativeView };
+    expect(resolveCaptureComponents("android", complete)).toEqual({ PaintHost: NativeView, CaptureHost: NativeView, FrostView: NativeView });
+    for (const missing of ["PaintHost", "CaptureHost", "FrostView"] as const) {
+      expect(resolveCaptureComponents("android", { ...complete, [missing]: undefined })).toBeUndefined();
+    }
+    expect(resolveCaptureComponents("android", { ...complete, available: false })).toBeUndefined();
+    expect(resolveCaptureComponents("android")).toBeUndefined();
+    expect(resolveCaptureComponents("ios", complete)).toBeUndefined();
+    expect(resolveCaptureComponents("web", complete)).toBeUndefined();
   });
 });
 

@@ -38,6 +38,17 @@ describe("starter verification identity", () => {
     expect(config({ EXPO_PUBLIC_CANVAS_SMOKE: "1", CANVAS_SMOKE_IDENTITY: JSON.stringify(minimal) }).extra.canvasBuild).toEqual(minimal);
   });
 
+  it("preserves optional native package identity and validates every field", () => {
+    const nativePackages = [{ packageName: "@ionizeio/canvas-blur", packageVersion: "0.1.0", packageSha256: "d".repeat(64) }];
+    const payload = { ...identity, nativePackages };
+    expect(config({ EXPO_PUBLIC_CANVAS_SMOKE: "1", CANVAS_SMOKE_IDENTITY: JSON.stringify(payload) }).extra.canvasBuild).toEqual(payload);
+    for (const invalid of [null, [], [null], [{ ...nativePackages[0], packageName: "other" }],
+      [{ ...nativePackages[0], packageVersion: "latest" }], [{ ...nativePackages[0], packageSha256: "bad" }],
+      [{ ...nativePackages[0], packageSha256: "d".repeat(64) + "\n" }], [...nativePackages, ...nativePackages]]) {
+      expect(() => config({ EXPO_PUBLIC_CANVAS_SMOKE: "1", CANVAS_SMOKE_IDENTITY: JSON.stringify({ ...identity, nativePackages: invalid }) })).toThrow("invalid nativePackages");
+    }
+  });
+
   for (const raw of ["{", "null", "[]", '"identity"', "1"]) {
     it(`rejects a non-object or malformed payload: ${raw}`, () => {
       expect(() => config({ EXPO_PUBLIC_CANVAS_SMOKE: "1", CANVAS_SMOKE_IDENTITY: raw })).toThrow("CANVAS_SMOKE_IDENTITY");

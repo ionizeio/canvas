@@ -7,6 +7,7 @@
     "escape-layers",
     "form-autocomplete",
     "listbox",
+    "materials",
     "tabs"
   ],
   "routes": [
@@ -17,6 +18,7 @@
     "escape-layers",
     "form-autocomplete",
     "listbox",
+    "materials",
     "tabs"
   ]
 }

@@ -1,0 +1,46 @@
+{
+  "name": "@ionizeio/canvas-blur",
+  "version": "0.0.0",
+  "description": "Optional Android backdrop capture and frost renderer for Canvas.",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "react-native": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "android/build.gradle",
+    "android/src/main",
+    "expo-module.config.json",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ionizeio/canvas.git",
+    "directory": "packages/canvas-blur"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "peerDependencies": {
+    "expo-modules-core": ">=57.0.0",
+    "react": ">=19",
+    "react-native": ">=0.86"
+  },
+  "devDependencies": {
+    "expo-modules-core": "~57.0.13"
+  }
+}

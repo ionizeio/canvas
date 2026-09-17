@@ -1,6 +1,8 @@
 import { primaryText } from "../../style/primary-text.js";
 import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
-import { View, Text, useTheme, alpha, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle, innerFill } from "../../style/index.js";
+import { View, Text, alpha, type ColorTokens, type ViewStyle, type LayoutStyle, innerFill } from "../../style/index.js";
+import { GlassPane, paneStyle } from "../../style/glass-surface/glass-pane.js";
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { type EmblemSkin } from "./emblem.styles.js";
 
 // Shared Emblem shell. The tinted rounded square (or circle) that holds a single
@@ -102,12 +104,22 @@ function labelColor(tokens: ColorTokens, tone: Tone): string {
 export function createEmblem(skin: EmblemSkin) {
   return function Emblem(props: EmblemProps) {
     const { children, label, circle, testID, style } = props;
-    const theme = useTheme();
+    const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens } = theme;
     const tone = toneOf(props);
     const size = sizeOf(props);
     const box = skin.box[size];
     const glyph = skin.iconSize[size];
+    const tileShape: ViewStyle = {
+      flexShrink: 0,
+      alignItems: "center",
+      justifyContent: "center",
+      width: box,
+      height: box,
+      borderRadius: circle ? 9999 : skin.radius[size],
+      backgroundColor: tintBg(theme, tone),
+      ...skin.shape,
+    };
 
     // A monogram label paints in the tone color; otherwise own the icon color +
     // size by cloning the Icon child, so the caller writes only the glyph.
@@ -125,20 +137,9 @@ export function createEmblem(skin: EmblemSkin) {
     return (
       <View
         testID={testID}
-        style={[
-          {
-            flexShrink: 0,
-            alignItems: "center",
-            justifyContent: "center",
-            width: box,
-            height: box,
-            borderRadius: circle ? 9999 : skin.radius[size],
-            backgroundColor: tintBg(theme, tone),
-          },
-          skin.shape,
-          style,
-        ]}
+        style={[paneStyle(theme, tileShape), style]}
       >
+        <GlassPane static layer="control" shape={tileShape} tint={tone === "muted" ? undefined : tintBg(theme, tone)} />
         {inner}
       </View>
     );

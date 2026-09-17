@@ -1,6 +1,7 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { type ReactNode } from "react";
 import { type DimensionValue } from "react-native";
-import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, useContainerBreakpoint, containerProbe, useMinTargetSlop, type BreakpointKey, type Responsive, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useControllableState, useContainerBreakpoint, containerProbe, useMinTargetSlop, type BreakpointKey, type Responsive, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import * as s from "./steps.styles.js";
 import { type State, type StepsSkin } from "./steps.styles.js";
 
@@ -79,16 +80,16 @@ export function createSteps(skin: StepsSkin) {
     // rail's rhythm and short of both platforms' minimum, so the touch area grows
     // around it rather than the dot growing.
     const target = useMinTargetSlop(skin.minTarget);
-    const theme = useTheme();
+    const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens } = theme;
-    // Under glass the circle is a CONTROL-layer puck: a completed step is BRAND-tinted
-    // glass under its check, the current step keeps its brand ring as its state over
-    // the plain material, and an upcoming step is the plain material; the circle drops
-    // its fill and outline otherwise (the pane's material and rim carry them).
-    const glass = isGlass(theme);
+    // Completed and upcoming discs use stable frost. An intentionally unfilled
+    // current-step ring retains its skin outline without acquiring a material.
     const circle = skin.circleState(tokens, state);
-    const glassCircle: ViewStyle | null = glass ? { backgroundColor: "transparent", borderColor: state === "current" ? circle.borderColor : "transparent" } : null;
-    const pane = <GlassPane layer="control" shape={s.circleBase} brand={state === "completed" ? tokens.primary : undefined} interactive={!!onPress} />;
+    const surfaced = circle.backgroundColor != null && circle.backgroundColor !== "transparent";
+    const shape = [s.circleBase, circle];
+    const circleStyle = [surfaced ? paneStyle(theme, shape) : shape,
+      surfaced && state === "current" && isGlass(theme) ? { borderColor: circle.borderColor } : null];
+    const pane = surfaced ? <GlassPane static layer="control" shape={shape} brand={state === "completed" ? tokens.primary : undefined} /> : null;
     const glyph = (
       <Text style={[s.glyphBase, skin.glyphState(tokens, state)]}>
         {state === "completed" ? "✓" : String(index + 1)}
@@ -103,9 +104,7 @@ export function createSteps(skin: StepsSkin) {
           <Pressable
             {...target}
             style={({ pressed }) => [
-              s.circleBase,
-              circle,
-              glassCircle,
+              circleStyle,
               skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
             ]}
             android_ripple={ripple}
@@ -119,7 +118,7 @@ export function createSteps(skin: StepsSkin) {
       );
     }
     return (
-      <View style={[s.circleBase, circle, glassCircle]}>
+      <View style={circleStyle}>
         {pane}
         {glyph}
       </View>
@@ -128,10 +127,9 @@ export function createSteps(skin: StepsSkin) {
 
   return function Steps(props: StepsProps) {
     const { steps, value, label, onStepPress, testID, style } = props;
-    const theme = useTheme();
+    const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens } = theme;
-    // Under glass the progress rail is a CONTROL-layer puck (the brand fill slides over it).
-    const glass = isGlass(theme);
+    // The progress rail stays stable while the value fill updates.
     // `stacks` (horizontal only): the component measures its own CONTAINER and
     // renders the existing vertical layout in narrow ones. The hook is
     // unconditional (rules of hooks); the measurement only attaches with `stacks`.
@@ -177,8 +175,8 @@ export function createSteps(skin: StepsSkin) {
             <Text style={skin.progressCaption(tokens)}>{label ?? "Setup progress"}</Text>
             <Text style={skin.progressPercent(tokens)}>{pct}%</Text>
           </View>
-          <View style={paneStyle(glass, skin.progressTrack(tokens))}>
-            <GlassPane layer="control" shape={skin.progressTrack(tokens)} />
+          <View style={paneStyle(theme, skin.progressTrack(tokens))}>
+            <GlassPane static layer="control" shape={skin.progressTrack(tokens)} />
             <View style={[skin.progressFill(tokens), { width: `${pct}%` as DimensionValue }]} />
           </View>
         </View>

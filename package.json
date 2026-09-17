@@ -52,12 +52,12 @@
   ],
   "scripts": {
     "prepare": "node -e \"if (require('node:fs').existsSync('.husky/install.mjs')) import('./.husky/install.mjs')\"",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && bun run --cwd packages/canvas-blur typecheck",
     "typecheck:e2e": "tsc --noEmit -p e2e/tsconfig.json",
     "lint": "eslint .",
-    "build": "rm -rf dist && tsc -p tsconfig.build.json && bun scripts/build-native.ts",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && bun scripts/build-native.ts && bun run build:blur",
     "dev": "bun scripts/dev.ts",
-    "verify-package": "bun scripts/verify-package.ts",
+    "verify-package": "bun scripts/verify-package.ts && node scripts/verify-blur-package.mjs",
     "prepublishOnly": "node tools/licensegen/generate.mjs && bun run build && bun run verify-package",
     "test": "bun test ./test ./tools",
     "e2e": "playwright test",
@@ -94,7 +94,8 @@
     "notices:gen": "bun tools/noticegen/generate.ts",
     "notices:gen:check": "bun tools/noticegen/generate.ts --check",
     "verify-native-consumer": "node scripts/verify-native-consumer.mjs",
-    "verify-consumer-support": "node scripts/verify-consumer-support.mjs"
+    "verify-consumer-support": "node scripts/verify-consumer-support.mjs",
+    "build:blur": "bun run --cwd packages/canvas-blur build"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org",
@@ -109,7 +110,8 @@
     "expo-blur": "*",
     "expo-clipboard": "*",
     "expo-glass-effect": "*",
-    "@shopify/react-native-skia": ">=2"
+    "@shopify/react-native-skia": ">=2",
+    "@ionizeio/canvas-blur": "*"
   },
   "peerDependenciesMeta": {
     "@shopify/react-native-skia": {
@@ -129,10 +131,15 @@
     },
     "expo-glass-effect": {
       "optional": true
+    },
+    "@ionizeio/canvas-blur": {
+      "optional": true
     }
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
+    "@babel/parser": "^7.29.7",
+    "@babel/traverse": "^7.29.7",
     "@changesets/cli": "^2.31.0",
     "@eslint/js": "^9",
     "@happy-dom/global-registrator": "^20.10.6",
@@ -141,8 +148,10 @@
     "@react-native/metro-config": "0.86.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.2",
+    "@types/node": "^25.9.3",
     "@types/react": "^19.2.16",
     "@types/topojson-client": "^3.1.5",
+    "@types/topojson-specification": "^1.0.5",
     "esbuild": "0.28.2",
     "eslint": "^9",
     "eslint-plugin-react": "^7.37.5",
@@ -153,6 +162,7 @@
     "husky": "^9.1.7",
     "lucide-static": "^1.24.0",
     "metro": "0.84.5",
+    "playwright": "^1.60.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-native": "^0.86.0",
@@ -164,7 +174,12 @@
     "topojson-client": "^3.1.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.64.0",
-    "world-atlas": "^2.0.2"
+    "world-atlas": "^2.0.2",
+    "yaml": "^2.9.0"
   },
-  "react-native": "./dist/native/index.js"
+  "react-native": "./dist/native/index.js",
+  "workspaces": [
+    ".",
+    "packages/*"
+  ]
 }

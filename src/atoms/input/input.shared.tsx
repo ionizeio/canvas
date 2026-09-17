@@ -1,3 +1,4 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useInputEscapeBridge } from "../../style/escape-layer.js";
 import { forwardRef, useId, useRef, useState } from "react";
 import {
@@ -5,7 +6,7 @@ import {
   type TextInput as RNTextInput,
   type TextInputProps as RNTextInputProps,
 } from "react-native";
-import { View, Pressable, Text, TextInput, useTheme, useFillStyle, FloatingLabel, LabelContent, FOCUS_RESET, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, isGlass, withInnerFill, alpha, PANE_SIBLING_INPUT } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, FOCUS_RESET, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, isGlass, withInnerFill, alpha, PANE_SIBLING_INPUT } from "../../style/index.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { Icon, type IconName } from "../icon/icon.js";
 import { type InputSkin, type Size } from "./input.styles.js";
@@ -215,9 +216,9 @@ export function createInput(skin: InputSkin) {
     const [focused, setFocused] = useState(false);
     // The password toggle's own state: masked until the eye is pressed.
     const [revealed, setRevealed] = useState(false);
-    const theme = useTheme();
+    const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens } = theme;
-    // Under glass the field box is a CONTROL-layer puck: a GlassPane paints the
+    // Under glass the field box is a static pane at control density: a GlassPane paints the
     // material behind the native input, the box keeps only its STATE border (focus
     // ring, error) over it, and an errored box tints the pane with the destructive
     // hue instead of painting the skin's wash. Solid mode is untouched.
@@ -349,10 +350,10 @@ export function createInput(skin: InputSkin) {
       // top of the indicator. No-op on native; matches the grouped path and the
       // Autocomplete/Textarea/Stepper shells.
       const bareShape = skin.bareField(tokens, borderColor, focused, isError);
-      const bareStyle = [bareShape, skin.bareBox(size), text, FOCUS_RESET, glass ? glassBox : null];
+      const bareStyle = [paneStyle(theme, bareShape), skin.bareBox(size), text, FOCUS_RESET, glass ? glassBox : null];
       const disabledDim = disabled ? { opacity: skin.disabledOpacity } : null;
       // The puck behind a bare field (nothing in solid mode).
-      const barePane = <GlassPane layer="control" shape={bareShape} tint={paneTint} />;
+      const barePane = <GlassPane static layer="control" shape={bareShape} tint={paneTint} />;
 
       // Android M3 floating label: the field reserves top space for the floated
       // label, the animated label overlays it, and the placeholder is gated to the
@@ -392,37 +393,21 @@ export function createInput(skin: InputSkin) {
         return (
           <View style={[labelGap, disabledDim, widthCap, style]}>
             {aboveLabel}
-            {glass ? (
-              <View>
-                {barePane}
-                <TextInput ref={hostRef} style={bareStyle} textAlignVertical="center" {...common} />
-              </View>
-            ) : (
+            <View>
+              {barePane}
               <TextInput ref={hostRef} style={bareStyle} textAlignVertical="center" {...common} />
-            )}
+            </View>
           </View>
         );
       }
 
-      // No label under glass: a wrapper hosts the pane behind the native field (the
-      // width cap, the composition style and the dim ride the wrapper).
-      if (glass) {
-        return (
-          <View style={[disabledDim, widthCap, style]}>
-            {barePane}
-            <TextInput ref={hostRef} style={bareStyle} textAlignVertical="center" {...common} />
-          </View>
-        );
-      }
-
-      // No label: the original bare field, unchanged (byte-identical root).
+      // Keep the field host in place when the material changes, preserving focus,
+      // native selection and uncontrolled text. The pane stays decoration only.
       return (
-        <TextInput
-          ref={hostRef}
-          style={[...bareStyle, disabledDim, widthCap, style]}
-          textAlignVertical="center"
-          {...common}
-        />
+        <View style={[disabledDim, widthCap, style]}>
+          {barePane}
+          <TextInput ref={hostRef} style={bareStyle} textAlignVertical="center" {...common} />
+        </View>
       );
     }
 
@@ -450,7 +435,7 @@ export function createInput(skin: InputSkin) {
     const groupedField = (
       <View
         style={[
-          groupShape,
+          paneStyle(theme, groupShape),
           { minHeight: height },
           glass ? glassBox : null,
           above ? null : disabled ? { opacity: skin.disabledOpacity } : null,
@@ -458,7 +443,7 @@ export function createInput(skin: InputSkin) {
           above ? null : style,
         ]}
       >
-        <GlassPane layer="control" shape={groupShape} tint={paneTint} />
+        <GlassPane static layer="control" shape={groupShape} tint={paneTint} />
         {prefix != null ? (
           <View style={withInnerFill(theme, skin.addonBox(tokens, "left", state), "soft")}>
             <Text style={[skin.addonText(tokens), text]}>{prefix}</Text>

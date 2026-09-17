@@ -7,9 +7,9 @@ import { type AccordionSkin } from "./accordion.shared.js";
 // chevron rotation, and the panel reveal; the skin supplies only the native SHAPE,
 // sizing, divider, title type, chevron tint/size, content insets, and press
 // feedback. The BRAND survives on every platform (the semantic tokens, never a
-// platform default), so each follows light/dark and the glass surface. The
-// accordion is a CONTENT-layer surface, so it stays SOLID (never routed through
-// GlassSurface).
+// platform default), so each follows light/dark and the glass surface. Filled
+// variants use static content frost with this skin as their complete opaque
+// fallback. Unfilled variants inherit their host surface.
 //
 //   Web (Radix / shadcn accordion, the established Canvas look): no outer
 //     container; each item is separated by a `border-b` hairline; the header is a

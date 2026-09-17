@@ -1,5 +1,6 @@
 import { type ReactNode } from "react";
-import { View, Text, useTheme, useControllableState, devWarn, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Text, useControllableState, devWarn, GlassPane, paneStyle, isGlass, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import * as s from "./charts.styles.js";
 import { type Tone } from "./charts.styles.js";
 import { type ChartSeries, type ChartSkin } from "./types.js";
@@ -72,7 +73,8 @@ export function useSeriesChart(
   opts?: { extraExtent?: number[]; autoTone?: Tone; zeroBased?: boolean },
 ) {
   const { labels, series } = props;
-  const { tokens } = useTheme();
+  const theme = useMaterialTheme({ layer: "content" });
+  const { tokens } = theme;
   // An explicit tone boolean always wins over a derived (gain/loss) tone.
   const tone = props.success || props.destructive ? toneOf(props) : (opts?.autoTone ?? toneOf(props));
   const multi = series.length > 1;
@@ -128,7 +130,7 @@ export function useSeriesChart(
     }
   };
 
-  return { tokens, tone, multi, formatValue, colorOf, yExtent, name, selected, setSelected };
+  return { theme, tokens, tone, multi, formatValue, colorOf, yExtent, name, selected, setSelected };
 }
 
 // Points for series `sr` across the frame's categorical bands.
@@ -145,19 +147,21 @@ export function chartShell(
 ) {
   const { labels, series, title, testID, style } = props;
   const compact = !!props.compact;
-  const { tokens, multi, formatValue, colorOf, yExtent, name } = ctx;
+  const { theme, tokens, multi, formatValue, colorOf, yExtent, name } = ctx;
+  const surfaceShape = s.surface(tokens, skin.surfaceRadius);
 
   return (
     <View
       {...(title != null && title !== "" ? { role: "group" as const, accessibilityLabel: `${title} chart`, "aria-label": `${title} chart` } : {})}
       testID={testID}
       style={[
-        s.surface(tokens, skin.surfaceRadius),
+        paneStyle(theme, surfaceShape),
         compact ? s.surfacePadCompact : s.surfacePadDefault,
         CHART_ROOT,
         style,
       ]}
     >
+      {isGlass(theme) ? <GlassPane layer="content" shape={surfaceShape} /> : null}
       {title != null && title !== "" ? (
         <Text style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}>{title}</Text>
       ) : null}

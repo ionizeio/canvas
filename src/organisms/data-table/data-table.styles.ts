@@ -5,8 +5,8 @@ import { type ColorTokens, alpha, surfaceRipple, shape } from "../../style/index
 // rows of equal-width flex-1 cells (there is no CSS table primitive). Layout-only
 // fragments are static; anything that reads a color is a function of the active
 // brand tokens (so the header tint, hairlines, stripes, and press tint follow
-// light/dark — the table is a CONTENT-LAYER surface, so it stays SOLID and never
-// goes glass).
+// light/dark). The surfaced table frame uses static content frost in glass mode;
+// its solid skin remains the complete fallback, and data ink stays crisp.
 //
 // DataTable is a "Light" treatment: ONE structure (header band + flex-row grid)
 // with small per-OS touches. The BRAND survives on every platform (the tokens

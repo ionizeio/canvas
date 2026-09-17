@@ -3,13 +3,14 @@
 // colors. This is the one piece of shared state the raw-RN components depend on;
 // everything else they style with plain RN objects built from these tokens.
 
-import { type ReactNode, createContext, useContext, useEffect, useMemo, useState } from "react";
+import { type ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import { useColorScheme } from "react-native";
 import { colorsByScheme, glassByScheme, type BreakpointKey, type ColorScheme, type ColorTokens, type GlassTokens } from "./tokens.js";
 import { type ThemeFonts } from "./fonts.js";
 import { SsrBreakpointContext } from "./responsive.js";
 import { liquidGlassAvailable } from "./glass-surface/liquid-glass.js";
 import { useReducedTransparency, useIncreasedContrast } from "./a11y-preferences.js";
+import { ThemeContext } from "./theme-context.js";
 
 // Surface preference. "glass" requests role-appropriate material through shared
 // renderers; "solid" requests the complete opaque skin. Content/static material,
@@ -76,7 +77,6 @@ export interface ThemeValue {
   increasedContrast: boolean;
 }
 
-const ThemeContext = createContext<ThemeValue | null>(null);
 const NO_FONTS: ThemeFonts = {};
 const FALLBACK: ThemeValue = {
   scheme: "light",

@@ -9,14 +9,16 @@
 // solid tree is byte-identical to the pre-glass one.
 
 import { StyleSheet, type StyleProp, type ViewStyle } from "react-native";
-import { useTheme } from "../theme.js";
+import { useTheme, type ThemeValue } from "../theme.js";
 import { isGlass } from "../glass-fill.js";
 import { GlassSurface } from "./glass-surface.js";
-import type { GlassLayer } from "./glass-surface.shared.js";
+import { contrastBorder, type GlassLayer } from "./glass-surface.shared.js";
 
 export interface GlassPaneProps {
   /** The layer of the glass model the parent belongs to (see GlassSurface). */
   layer?: GlassLayer;
+  /** Stable frost independent of control/content density. */
+  static?: boolean;
   /** The parent's shape style: its corner radii shape the pane's clip and rim. */
   shape?: StyleProp<ViewStyle>;
   /** A `tint` override for the under-fill (see GlassSurface). */
@@ -29,11 +31,15 @@ export interface GlassPaneProps {
   testID?: string;
 }
 
-export function GlassPane({ layer = "control", shape, tint, brand, interactive, testID }: GlassPaneProps) {
+export function GlassPane({ layer = "control", shape, tint, brand, interactive, testID, static: stable }: GlassPaneProps) {
   const theme = useTheme();
   if (!isGlass(theme)) return null;
   const flat = (StyleSheet.flatten(shape) ?? {}) as ViewStyle;
   const radii: ViewStyle = {
+    backgroundColor: flat.backgroundColor,
+    borderWidth: flat.borderWidth,
+    borderColor: flat.borderColor,
+    borderStyle: flat.borderStyle,
     borderRadius: flat.borderRadius,
     borderTopLeftRadius: flat.borderTopLeftRadius,
     borderTopRightRadius: flat.borderTopRightRadius,
@@ -45,7 +51,10 @@ export function GlassPane({ layer = "control", shape, tint, brand, interactive, 
     borderBottomEndRadius: flat.borderBottomEndRadius,
     borderCurve: flat.borderCurve,
   };
-  return <GlassSurface layer={layer} tint={tint} brand={brand} interactive={interactive} pointerEvents="none" testID={testID} style={[StyleSheet.absoluteFill, radii]} />;
+  for (const [key, value] of Object.entries(flat)) {
+    if (key.startsWith("border")) (radii as Record<string, unknown>)[key] = value;
+  }
+  return <GlassSurface static={stable} layer={layer} tint={tint} brand={brand} interactive={interactive} pointerEvents="none" testID={testID} style={[StyleSheet.absoluteFill, radii, { zIndex: -1 }]} />;
 }
 
 /**
@@ -53,9 +62,16 @@ export function GlassPane({ layer = "control", shape, tint, brand, interactive, 
  * glass its opaque fill and its border are dropped (the pane's material and rim carry
  * them; a border would double the rim), in solid mode it is returned unchanged.
  */
-export function paneStyle(glass: boolean, style: StyleProp<ViewStyle>): StyleProp<ViewStyle> {
-  if (!glass) return style;
-  return [style, { backgroundColor: "transparent", borderColor: "transparent" }];
+export function paneStyle(appearance: boolean | ThemeValue, style: StyleProp<ViewStyle>): StyleProp<ViewStyle> {
+  const glass = typeof appearance === "boolean" ? appearance : isGlass(appearance);
+  if (!glass) return typeof appearance !== "boolean" && appearance.increasedContrast
+    ? [style, contrastBorder(appearance.tokens)] : style;
+  const flat = (StyleSheet.flatten(style) ?? {}) as Record<string, unknown>;
+  const clear: Record<string, unknown> = { backgroundColor: "transparent", borderColor: "transparent" };
+  for (const key of Object.keys(flat)) {
+    if (key.startsWith("border") && key.endsWith("Color")) clear[key] = "transparent";
+  }
+  return [style, clear as ViewStyle];
 }
 
 /**

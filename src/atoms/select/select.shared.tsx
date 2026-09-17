@@ -1,8 +1,9 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { forwardRef, useId, useRef } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { type Role } from "react-native";
-import { View, Pressable, Text, useTheme, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, GlassPane, isGlass, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, GlassPane, paneStyle, isGlass, withInnerFill } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the option-list
@@ -18,6 +19,7 @@ import { root, rootLifted, PANEL_ANCHOR, type SelectSkin, type Size } from "./se
 // Views default to `flexShrink: 0`, so the list has to be told it may shrink to the
 // capped card; the rows past the cap then scroll into view instead of disappearing.
 const optionScroll: ViewStyle = { flexShrink: 1 };
+const floatingLabelLayer: ViewStyle = { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, pointerEvents: "none" };
 
 // Shared Select shell. The structure (the stacked label + the trigger row with
 // its optional leading icon, value/placeholder and trailing chevron, plus the
@@ -146,7 +148,7 @@ export function createSelect(skin: SelectSkin) {
     const items: SelectOption[] = options.map((o) =>
       typeof o === "string" ? { value: o, label: o } : o,
     );
-    const theme = useTheme();
+    const theme = useMaterialTheme({ layer: "control" });
     const { tokens } = theme;
     // A Select's content is its value, so a bare Column in a Row (the `.col-auto`
     // toolbar cell) hugs it legitimately: no hugging-cell warning.
@@ -244,10 +246,10 @@ export function createSelect(skin: SelectSkin) {
           ref={hostRef}
           onLayout={onTriggerLayout}
           style={({ pressed }) => [
-            triggerShape,
+            paneStyle(theme, triggerShape),
             glassTrigger,
-            disabled ? { opacity: skin.disabledOpacity } : null,
-            skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+            !glass && disabled ? { opacity: skin.disabledOpacity } : null,
+            !glass && skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
           ]}
           disabled={disabled}
           onPress={() => setOpen(!open)}
@@ -267,43 +269,51 @@ export function createSelect(skin: SelectSkin) {
           // (RNW forwards aria-labelledby to the DOM) as the trigger's name too.
           aria-labelledby={inline && !props.accessibilityLabel && !required ? labelId : undefined}
         >
-          <GlassPane layer="control" shape={triggerShape} interactive />
-          <View
-            style={[
-              skin.triggerValue,
-              // Android floating label: the reserve (top padding that lets the value
-              // clear the floated label, mirroring the M3 Input) belongs to the VALUE
-              // cluster only, not the whole trigger row. Stretched to full height, the
-              // cluster centers its value within the space below the reserve, while the
-              // trailing chevron stays vertically centered in the full field (M3 centers
-              // a trailing dropdown icon in the container, unaffected by the label).
-              floating ? [{ alignSelf: "stretch" as const }, skin.labelReserve!(size)] : null,
-            ]}
-          >
-            {inline ? (
-              <Text nativeID={labelId} style={skin.inlineLabel(tokens, size)}>
-                <LabelContent label={label!} required={required} starColor={tokens.destructive} />
-              </Text>
-            ) : null}
-            {icon ? <Icon globe muted size={14} /> : null}
-            {selectedLeading != null ? <Text style={skin.valueText(tokens, size, true)}>{selectedLeading}</Text> : null}
-            <Text style={skin.valueText(tokens, size, hasValue)}>{displayText}</Text>
-          </View>
-          <Text style={skin.chevron(tokens, size, open)}>{skin.chevronGlyph}</Text>
-          {floating ? (
-            <FloatingLabel
-              styles={skin}
-              size={size}
-              tokens={tokens}
-              label={label!}
-              required={required}
-              labelId={labelId}
-              focused={open}
-              populated={hasValue}
-              isError={false}
-              height={triggerHeight}
-            />
-          ) : null}
+          {({ pressed }) => {
+            const ink = glass ? { opacity: disabled ? skin.disabledOpacity : pressed && skin.pressedOpacity != null ? skin.pressedOpacity : 1 } : null;
+            return <>
+              <GlassPane layer="control" shape={triggerShape} interactive={!disabled} />
+              <View
+                style={[
+                  skin.triggerValue,
+                  // Android floating label: the reserve (top padding that lets the value
+                  // clear the floated label, mirroring the M3 Input) belongs to the VALUE
+                  // cluster only, not the whole trigger row. Stretched to full height, the
+                  // cluster centers its value within the space below the reserve, while the
+                  // trailing chevron stays vertically centered in the full field (M3 centers
+                  // a trailing dropdown icon in the container, unaffected by the label).
+                  floating ? [{ alignSelf: "stretch" as const }, skin.labelReserve!(size)] : null,
+                  ink,
+                ]}
+              >
+                {inline ? (
+                  <Text nativeID={labelId} style={skin.inlineLabel(tokens, size)}>
+                    <LabelContent label={label!} required={required} starColor={tokens.destructive} />
+                  </Text>
+                ) : null}
+                {icon ? <Icon globe muted size={14} /> : null}
+                {selectedLeading != null ? <Text style={skin.valueText(tokens, size, true)}>{selectedLeading}</Text> : null}
+                <Text style={skin.valueText(tokens, size, hasValue)}>{displayText}</Text>
+              </View>
+              <Text style={[skin.chevron(tokens, size, open), ink]}>{skin.chevronGlyph}</Text>
+              {floating ? (
+                <View style={[floatingLabelLayer, ink]}>
+                  <FloatingLabel
+                    styles={skin}
+                    size={size}
+                    tokens={tokens}
+                    label={label!}
+                    required={required}
+                    labelId={labelId}
+                    focused={open}
+                    populated={hasValue}
+                    isError={false}
+                    height={triggerHeight}
+                  />
+                </View>
+              ) : null}
+            </>;
+          }}
         </Pressable>
         </RippleClip>
 

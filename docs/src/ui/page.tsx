@@ -17,10 +17,12 @@ import { H1, Lead } from "./prose";
 // never z-lift past its card's later siblings). It sits INSIDE the scroll content,
 // so portaled cards scroll with the page and stay glued to their triggers.
 // Playground stages mount their own nearer host and stay stage-contained.
-export function Page({ children }: { children: ReactNode }) {
+export function Page({ children, viewportOverlays = false }: { children: ReactNode; viewportOverlays?: boolean }) {
   const { tokens, surface } = useTheme();
-  return (
-    <ScreenFrame>
+  // Runtime fixtures need viewport modals and a sibling capture plane. Keep the
+  // catalogue's content host by default so anchored previews scroll as before.
+  const ContentHost = viewportOverlays ? View : OverlayProvider;
+  const content = (
       <ScrollView
         // Marks the page's scroller for tooling. The docs scroll in an INNER view, not
         // the window, so a check for "does this page scroll sideways" has to ask this
@@ -45,8 +47,12 @@ export function Page({ children }: { children: ReactNode }) {
             which collapses a content-sized scroll child to 0 height, so basis is
             set to auto explicitly. The column gap moves here from the content
             container, which now has one child. */}
-        <OverlayProvider style={{ flexGrow: 0, flexShrink: 0, flexBasis: "auto", gap: 28 }}>{children}</OverlayProvider>
+        <ContentHost style={{ flexGrow: 0, flexShrink: 0, flexBasis: "auto", gap: 28 }}>{children}</ContentHost>
       </ScrollView>
+  );
+  return (
+    <ScreenFrame>
+      {viewportOverlays ? <OverlayProvider viewport>{content}</OverlayProvider> : content}
     </ScreenFrame>
   );
 }

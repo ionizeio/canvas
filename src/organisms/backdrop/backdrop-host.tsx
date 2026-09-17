@@ -1,4 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { createCaptureTarget } from "../../style/glass-surface/capture-target.js";
+import { nativeCaptureAvailable } from "../../style/glass-surface/capture-runtime.js";
+import { GlassBlurTargetContext } from "../../style/glass-surface/glass-surface.shared.js";
+import { GlassBackdropTarget } from "../../style/glass-surface/glass-backdrop-target.js";
 import { useWindowDimensions } from "react-native";
 import { View } from "../../style/index.js";
 import { backdropClock, retainBackdropClock, releaseBackdropClock, type Energy } from "./backdrop-clock.js";
@@ -119,19 +123,24 @@ export function BackdropHost({ children }: BackdropHostProps) {
     [emit],
   );
 
+  const target = useMemo(createCaptureTarget, []);
+  const inheritedTarget = useContext(GlassBlurTargetContext);
+  const hasClaim = useSyncExternalStore(registry.subscribe, () => registry.snapshot() !== null, () => false);
+  const materialTarget = nativeCaptureAvailable && hasClaim ? target.ref : inheritedTarget;
+
   return (
     <HostContext.Provider value={registry}>
-      <HostSurface registry={registry} />
-      {children}
+      <HostSurface registry={registry} targetRef={target.ref} />
+      <GlassBlurTargetContext.Provider value={materialTarget}>{children}</GlassBlurTargetContext.Provider>
     </HostContext.Provider>
   );
 }
 
-function HostSurface({ registry }: { registry: Registry }) {
+function HostSurface({ registry, targetRef }: { registry: Registry; targetRef: ReturnType<typeof createCaptureTarget>["ref"] }) {
   const claim = useSyncExternalStore(registry.subscribe, registry.snapshot, registry.snapshot);
   // Zero claimants renders nothing, so an app's own gating still clears the sky.
   if (!claim) return null;
-  return <BackdropSurface claim={claim} />;
+  return <GlassBackdropTarget targetRef={targetRef}><BackdropSurface claim={claim} /></GlassBackdropTarget>;
 }
 
 /** The actual renderer. Rendered by the host, or inline by an unhosted Backdrop. */

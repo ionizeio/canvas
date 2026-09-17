@@ -1,5 +1,6 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { type ReactNode } from "react";
-import { View, Pressable, Text, StyleSheet, useFillStyle, useTheme, useLayoutAxis, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, devWarn, GlassSurface, isGlass, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Pressable, Text, StyleSheet, useFillStyle, useTheme, useLayoutAxis, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, devWarn, GlassSurface, GlassPane, paneStyle, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
 import { Image } from "../../atoms/image/image.shared.js";
 import * as s from "./card.styles.js";
 import { type CardSkin, type Elevation, type Density } from "./card.styles.js";
@@ -124,12 +125,11 @@ function densityOf(p: CardProps): Density {
 export function createCard(skin: CardSkin) {
   return function Card(props: CardProps) {
     const { children, title, icon, actions, description, body, footer, flush, onPress, selected, testID, style } = props;
-    const theme = useTheme();
+    const theme = useMaterialTheme({ static: true });
     const { tokens } = theme;
     // Under glass the card is a CONTENT-layer pane: GlassSurface strips the skin's fill
     // and hairline and lays the content tint + material behind the sections (see the
     // layered glass model in src/style/tokens.ts). Solid mode keeps the plain View.
-    const glass = isGlass(theme);
     const elev = elevationOf(props);
     const dens = densityOf(props);
     // A tile-grid cell is a definite box on both axes (the grid stretches it to
@@ -284,19 +284,6 @@ export function createCard(skin: CardSkin) {
       // moves onto the wrapper (whose own shadow is drawn around its outline, unclipped) while the
       // iOS `shadow*` stays on the inner node — so iOS is unchanged.
       const { parent: elevParent, child: elevChild } = splitElevation(skin.elevation(elev));
-      if (glass) {
-        // The material is a child of the Pressable (which keeps the tap, the role, the pressed
-        // dim and the ripple); the pane's shadow and radius ride on the GlassSurface's outer box.
-        return (
-          <RippleClip shape={cornerRadii(shape)} style={[elevParent, outer]}>
-            <Pressable accessibilityRole="button" onPress={onPress} testID={testID} android_ripple={surfaceRipple(tokens)} style={({ pressed }) => [fill, pressDim(pressed)]}>
-              <GlassSurface layer="content" tint={selected ? alpha(tokens.primary, 0.22) : undefined} style={[surface, elevChild, fill]}>
-                {inner}
-              </GlassSurface>
-            </Pressable>
-          </RippleClip>
-        );
-      }
       return (
         <RippleClip shape={cornerRadii(shape)} style={[elevParent, outer]}>
           <Pressable
@@ -304,21 +291,19 @@ export function createCard(skin: CardSkin) {
             onPress={onPress}
             testID={testID}
             android_ripple={surfaceRipple(tokens)}
-            style={({ pressed }) => [surface, elevChild, fill, pressDim(pressed)]}
+            style={({ pressed }) => [paneStyle(theme, surface), elevChild, fill, pressDim(pressed)]}
           >
+            <GlassPane layer="content" shape={surface} tint={selected ? alpha(tokens.primary, 0.22) : undefined} />
             {inner}
           </Pressable>
         </RippleClip>
       );
     }
-    if (glass) {
-      return (
-        <GlassSurface layer="content" testID={testID} tint={selected ? alpha(tokens.primary, 0.22) : undefined} style={[surface, skin.elevation(elev), outer]}>
-          {inner}
-        </GlassSurface>
-      );
-    }
-    return <View testID={testID} style={[surface, skin.elevation(elev), outer]}>{inner}</View>;
+    return (
+      <GlassSurface layer="content" testID={testID} tint={selected ? alpha(tokens.primary, 0.22) : undefined} style={[surface, skin.elevation(elev), outer]}>
+        {inner}
+      </GlassSurface>
+    );
   };
 }
 

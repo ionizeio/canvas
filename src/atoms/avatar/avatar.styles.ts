@@ -126,8 +126,8 @@ const PILL_CHEVRON = 14;
 // Web (--p-idpill-* in the :root block of platforms.css): a 32px `secondary`
 // capsule. The hairline is always 1px so opening never changes the pill's box;
 // it is transparent when closed and takes the `input` colour on open, over a fill
-// lifted 6% toward `foreground`. The disabled dim is not here: Dropdown's trigger
-// already fades by the platform's convention, so the pill never dims twice.
+// lifted 6% toward `foreground`. Dropdown owns disabled dim in solid mode; under
+// glass the capsule dims its foreground only, preserving the native material.
 export const webMenuSkin: AvatarMenuSkin = {
   ...webSkin,
   menuPill: { ...PILL_ROW, height: 32, paddingStart: 4, paddingEnd: 10, borderWidth: 1 },
@@ -138,6 +138,7 @@ export const webMenuSkin: AvatarMenuSkin = {
   menuPillName: { fontSize: 13, lineHeight: 16, fontWeight: "500" },
   menuPillSecondary: PILL_SECONDARY,
   menuChevronSize: PILL_CHEVRON,
+  menuDisabledOpacity: 0.5,
 };
 
 // iOS (the [data-platform="ios"] --p-idpill-* block): a 36pt capsule outlined with
@@ -151,6 +152,7 @@ export const iosMenuSkin: AvatarMenuSkin = {
   menuPillName: { fontSize: 15, lineHeight: 20, fontWeight: "600", letterSpacing: -0.15 },
   menuPillSecondary: { ...PILL_SECONDARY, letterSpacing: -0.15 },
   menuChevronSize: PILL_CHEVRON,
+  menuDisabledOpacity: 0.4,
 };
 
 // Android (the [data-platform="android"] --p-idpill-* block): Material 3's tonal
@@ -165,4 +167,5 @@ export const androidMenuSkin: AvatarMenuSkin = {
   menuPillName: { fontSize: 14, lineHeight: 20, fontWeight: "500", letterSpacing: 0.1 },
   menuPillSecondary: { ...PILL_SECONDARY, letterSpacing: 0.1 },
   menuChevronSize: PILL_CHEVRON,
+  menuDisabledOpacity: 0.38,
 };

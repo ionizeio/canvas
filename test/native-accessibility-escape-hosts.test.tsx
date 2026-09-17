@@ -311,8 +311,8 @@ it("the real material container retains escape on its plain outer host without g
   const current = host(screen.getByText("Material content"));
   expect(current.props.collapsable).toBe(false);
   expect(current.props.accessible).not.toBe(true);
-  expect(screen.getByTestId("material").parentElement?.parentElement).toBe(current.node);
-  expect(screen.getByText("Material content").parentElement).toBe(screen.getByTestId("material").parentElement);
+  expect(screen.getByTestId("material").parentElement?.parentElement === current.node).toBe(true);
+  expect(screen.getByText("Material content").parentElement === current.node).toBe(true);
   act(() => current.escape());
   expect(cancelled).toBe(1);
 }));

@@ -1,7 +1,8 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { type GestureResponderEvent, type View as RNView, type ScrollView as RNScrollView } from "react-native";
-import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useControllableState, AnchoredOverlay, useMeasuredWidth, FILL, type StyleProp, type ViewStyle, type LayoutStyle, GlassSurface, GlassPane, isGlass } from "../../style/index.js";
+import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useControllableState, AnchoredOverlay, useMeasuredWidth, FILL, type StyleProp, type ViewStyle, type LayoutStyle, GlassSurface, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import { ButtonGroup } from "../../atoms/button-group/button-group.js";
 import { type CalendarSkin, type DayState, type Density } from "./calendar.styles.js";
 import { calendarDayAccessibility } from "./calendar.accessibility.js";
@@ -258,9 +259,10 @@ export function createCalendar(skin: CalendarSkin) {
     const scrollRef = useRef<RNScrollView | null>(null);
     // Which view's scroller has been positioned on its initial window.
     const scrollInitFor = useRef<string | null>(null);
-    const theme = useTheme();
+    const theme = useMaterialTheme({ layer: "content" });
+    const dayTheme = useMaterialTheme({ layer: "control" });
     const { tokens } = theme;
-    const glass = isGlass(theme);
+    const dayGlass = isGlass(dayTheme);
     const density = densityOf(props);
     const view = viewOf(props);
     // Month-grid fluid cells: the grid is seven fixed-width cells, so a container
@@ -418,7 +420,8 @@ export function createCalendar(skin: CalendarSkin) {
       // Under glass the SELECTED day is a BRAND-tinted CONTROL-layer puck (a GlassPane
       // behind the label; the cell drops its brand fill). An unselected today keeps its
       // soft tint, which is translucent already and reads as a wash on the pane.
-      const selectedPuck = glass && isSelected;
+      const selectedPuck = dayGlass && isSelected;
+      const daySurface = [skin.dayCellBase, skin.dayCellState(tokens, state)];
       const rangeNote = r?.isStart ? ", start of range" : r?.isEnd ? ", end of range" : r?.between ? ", in range" : "";
       const band =
         r && r.spans && (r.isStart || r.isEnd || r.between) ? (
@@ -439,9 +442,8 @@ export function createCalendar(skin: CalendarSkin) {
                 else cellRefs.current.delete(dayNum);
               }}
               style={({ pressed }) => [
-                skin.dayCellBase,
+                isSelected ? paneStyle(dayTheme, daySurface) : daySurface,
                 m.cell,
-                selectedPuck ? null : skin.dayCellState(tokens, state),
                 skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
               ]}
               android_ripple={ripple}
@@ -467,7 +469,7 @@ export function createCalendar(skin: CalendarSkin) {
               }`}
               {...calendarDayAccessibility(isSelected)}
             >
-              {selectedPuck ? <GlassPane layer="control" shape={skin.dayCellBase} brand={tokens.primary} interactive /> : null}
+              {selectedPuck ? <GlassPane layer="control" shape={daySurface} brand={tokens.primary} interactive /> : null}
               <Text style={[m.label, skin.dayLabel(tokens, state)]}>{dayNum}</Text>
               {count > 0 ? <View style={[skin.eventDot, skin.eventDotColor(tokens, state)]} /> : null}
             </Pressable>

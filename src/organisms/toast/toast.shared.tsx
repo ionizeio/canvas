@@ -1,3 +1,4 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import {
   type ReactNode,
   createContext,
@@ -16,7 +17,6 @@ import {
   RippleClip,
   cornerRadii,
   StyleSheet,
-  useTheme,
   GlassSurface,
   inverseDenseTint,
   type ColorTokens,
@@ -213,7 +213,7 @@ export function createToastSystem(skin: ToastSkin) {
   // which assistive tech misses).
   function ToastCapsule(props: Omit<ToastProps, "testID" | "style">) {
     const { message, description, action, icon, onDismiss } = props;
-    const theme = useTheme();
+    const theme = useMaterialTheme({ layer: "dense" });
     const { tokens } = theme;
     const intent = intentOf(props);
 

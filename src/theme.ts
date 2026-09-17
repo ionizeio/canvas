@@ -1,3 +1,5 @@
+import { ensureGlassLens, releaseGlassLens } from "./style/glass-surface/glass-lens.js";
+
 export type Theme = "light" | "dark";
 export type Surface = "solid" | "glass";
 export type Density = "compact" | "regular" | "comfy";
@@ -50,8 +52,10 @@ export function setSurface(surface: Surface): void {
   if (hasDocument()) {
     if (surface === "solid") {
       delete document.documentElement.dataset.surface;
+      releaseGlassLens();
     } else {
       document.documentElement.dataset.surface = surface;
+      ensureGlassLens();
     }
   }
   store(STORAGE_KEY_SURFACE, surface);

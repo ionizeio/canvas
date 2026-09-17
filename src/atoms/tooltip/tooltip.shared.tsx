@@ -1,5 +1,6 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useState, type ReactNode } from "react";
-import { View, Pressable, Text, useHugStyle, useTheme, controlRipple, pressDim, type StyleProp, type ViewProps, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, isGlass, inverseDenseTint } from "../../style/index.js";
+import { View, Pressable, Text, useHugStyle, controlRipple, pressDim, type StyleProp, type ViewProps, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, inverseDenseTint } from "../../style/index.js";
 import { Button } from "../button/button.js";
 import { Icon } from "../icon/icon.js";
 import {
@@ -109,9 +110,8 @@ export function createTooltip(skin: TooltipSkin) {
   return function Tooltip(props: TooltipProps) {
     const { children, label, trigger, iconTrigger: isIconTrigger, textTrigger: isTextTrigger, onOpenChange, testID, style } = props;
     const placement = placementOf(props);
-    const theme = useTheme();
+    const theme = useMaterialTheme({ static: true, layer: "dense" });
     const { tokens } = theme;
-    const glass = isGlass(theme);
     // HUG: the trigger + bubble wrapper shrinks to its content inside a stretching Column.
     const hug = useHugStyle();
     // Uncontrolled by default: hovering or focusing the trigger shows the
@@ -177,12 +177,12 @@ export function createTooltip(skin: TooltipSkin) {
     // pane rides behind the node, which keeps its live-region semantics.
     const tip = open ? (
       <View
-        style={[paneStyle(glass, skin.bubble(tokens)), bubbleGap[placement]]}
+        style={[paneStyle(theme, skin.bubble(tokens)), bubbleGap[placement]]}
         accessibilityRole="alert"
         accessibilityLiveRegion="polite"
         aria-live="polite"
       >
-        <GlassPane layer="dense" shape={skin.bubble(tokens)} tint={inverseDenseTint(theme)} />
+        <GlassPane static layer="dense" shape={skin.bubble(tokens)} tint={inverseDenseTint(theme)} />
         <Text style={skin.label(tokens)}>{label}</Text>
       </View>
     ) : null;

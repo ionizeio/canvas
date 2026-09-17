@@ -1,6 +1,7 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { Fragment, type ComponentType, type ReactNode } from "react";
 import { FlatList, StyleSheet, type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, devWarn, type StyleProp, type ViewStyle, type LayoutStyle, GlassSurface, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, devWarn, type StyleProp, type ViewStyle, type LayoutStyle, GlassSurface, withInnerFill } from "../../style/index.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
@@ -45,9 +46,9 @@ import { type StackedListSkin } from "./stacked-lists.styles.js";
 // pressedOpacity). Web keeps the current Canvas look exactly; iOS uses SF/HIG
 // inset-list conventions; Android uses Material 3 list / card conventions.
 //
-// As a content-layer surface (the frame paints tokens.card) it stays SOLID even
-// when the ThemeProvider's surface is "glass": glass only turns the popover-layer
-// overlays translucent, never the card.
+// The framed list uses static content frost in glass mode. Its rows inherit
+// that shared pane, and the skin retains the complete opaque solid treatment.
+// Plain list anatomy does not gain an independent material.
 //
 // Boolean-prop API: one boolean per option, grouped by axis, first-match
 // precedence within an axis (mirrors Button's intentOf).
@@ -207,7 +208,7 @@ export function createStackedList(
   return function StackedList(props: StackedListProps) {
     const { items = [], title, action, addAction, rowMenu, onPressItem, onPressItemMenu, flush, virtualized, reorderable, onReorder, testID, style } = props;
     const variant = variantOf(props);
-    const theme = useTheme();
+    const theme = useMaterialTheme({ static: true });
     const { tokens } = theme;
 
     // The Android ripple over the component's own pressable rows / overflow menu;

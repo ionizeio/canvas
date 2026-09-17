@@ -1,7 +1,8 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { consumeEscapeKey, EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { forwardRef, useEffect, useId, useRef, useState } from "react";
 import { Platform, type Role, type TextInput as RNTextInput } from "react-native";
-import { View, Pressable, Text, TextInput, useTheme, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, isGlass, PANE_SIBLING_INPUT, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, isGlass, PANE_SIBLING_INPUT, withInnerFill } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useActiveOptionScroll } from "../../style/use-active-option-scroll.js";
 import { AccessibilityReturnBoundary, accessibilitySelectionProps, useAccessibilityReturn } from "../../style/use-accessibility-return.js";
@@ -145,7 +146,8 @@ export function createAutocomplete(skin: AutocompleteSkin) {
       style,
     } = props;
     const size = sizeOf(props);
-    const theme = useTheme();
+    const theme = useMaterialTheme({ static: true, layer: "control" });
+    const menuTheme = useMaterialTheme({ layer: "dense" });
     const { tokens } = theme;
     const widthCap = useFillStyle("Autocomplete", props);
     // One collision-free id for the label so the floated label carries a nativeID.
@@ -244,7 +246,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
     const populated = fieldValue !== "";
     const fieldShape = skin.field(tokens, size, open);
     const fieldHeight = asNum((fieldShape as { height?: unknown }).height, 56);
-    // Under glass the field box is a CONTROL-layer puck: a GlassPane paints the material
+    // Under glass the field box is a static pane at control density: a GlassPane paints the material
     // behind the native input and its toggle, the box drops its fill and resting
     // hairline and keeps only its OPEN border (the iOS/web `ring`) as state; the
     // Android skin's bottom indicator is a side colour, which the shorthand reset
@@ -263,12 +265,12 @@ export function createAutocomplete(skin: AutocompleteSkin) {
           ref={fieldRef}
           onLayout={onTriggerLayout}
           style={[
-            fieldShape,
+            paneStyle(theme, fieldShape),
             glassField,
             disabled ? { opacity: skin.disabledOpacity } : null,
           ]}
         >
-          <GlassPane layer="control" shape={fieldShape} />
+          <GlassPane static layer="control" shape={fieldShape} />
           <TextInput
             ref={accessibilityReturn.inputRef}
             // The field paints its own focus state (the skin's open border), so
@@ -469,8 +471,8 @@ export function createAutocomplete(skin: AutocompleteSkin) {
                           style={({ pressed }) => [
                             skin.row,
                             separator,
-                            selected ? withInnerFill(theme, skin.rowSelected(tokens) ?? {}, "firm") : null,
-                            pressed || index === activeIndex ? withInnerFill(theme, skin.rowPressed(tokens) ?? {}, "firm") : null,
+                            selected ? withInnerFill(menuTheme, skin.rowSelected(tokens) ?? {}, "firm") : null,
+                            pressed || index === activeIndex ? withInnerFill(menuTheme, skin.rowPressed(tokens) ?? {}, "firm") : null,
                           ]}
                           onPress={() => selectOption(option)}
                           {...accessibilitySelectionProps(() => accessibilityReturn.activate(() => selectOption(option, true)))}

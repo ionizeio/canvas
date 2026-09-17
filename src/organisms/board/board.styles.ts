@@ -18,8 +18,8 @@ import { type ColorTokens, surfaceRipple, shape } from "../../style/index.js";
 //     tracking (header title-small 14/20/500/+0.1, title title-small, description body-small
 //     12/16/+0.4); press = android_ripple (the neutral surface state layer), no dim.
 //
-// Content cards stay SOLID on every platform (they render through the kit Card, whose `card`
-// token never goes glass); the functional glass layer is not involved anywhere on the board.
+// Lanes and composed Card surfaces use static content frost in glass mode. The
+// skin keeps their complete opaque treatment for solid and unavailable material.
 
 export interface BoardSkin {
   /** The horizontal row of columns (the ScrollView content): direction, alignment, gap. */

@@ -4,13 +4,8 @@
 // 26+, an expo-blur frost on web/Android/older iOS, the skin's own flat surface
 // otherwise — and hand it to GlassBox, which lays the material behind the content.
 //
-// Why two boxes in the glass path: clipping the material to the skin's rounded
-// corners needs overflow:"hidden", but that also clips the surface's drop shadow.
-// So the glass path nests an inner CLIP box (radius + overflow:hidden, holds the
-// material and children) inside an outer SHADOW box (shadow + position + margin +
-// matching radius, no clip). The fallback path is a single plain View, byte-for-
-// byte the pre-glass behavior, so non-glass themes and module-absent cases never
-// change layout.
+// The content host keeps its layout in every mode. A separate absolute material
+// clip contains only decoration, preserving shadow, focus and child identity.
 
 import { createContext, useContext, type ReactNode, type RefObject } from "react";
 import { View, StyleSheet, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
@@ -33,6 +28,8 @@ export interface GlassSurfaceProps {
    * floating over it. Defaults to `functional`.
    */
   layer?: GlassLayer;
+  /** Stable frost independent of density. Content defaults to static material. */
+  static?: boolean;
   /**
    * Tint the material with a colour: the brand-tinted glass of a primary control (a
    * sky-tinted puck). On iOS 26 it is passed to the native Liquid Glass as its
@@ -94,27 +91,13 @@ export interface GlassSurfaceProps {
   tint?: string;
 }
 
-// The Android blur-target plumbing for expo-blur 57+, whose new Android API blurs an
-// explicitly designated BlurTargetView (passed by ref) instead of whatever renders
-// behind the BlurView (the pre-57 behavior the frost relied on). A target is only
-// safe when the frost BlurView is NOT a descendant of it: a BlurView whose target is
-// its own ancestor creates a render-node cycle that libhwui recurses on until the
-// RenderThread segfaults (verified on device: RenderNode::prepareTreeImpl recursion
-// → SIGSEGV). So this context carries a target ONLY where the consuming surface is a
-// genuine native sibling of it:
-//
-// - <OverlayProvider> (portal.tsx) wraps its page content in a BlurTargetView (the
-//   Android glass-blur-target fork) and provides that ref around its OUTLET alone —
-//   the outlet is a native sibling of the content, so portaled overlays (menus,
-//   dropdowns, selects, popovers, toasts) blur the page safely.
-// - <GlassModalBlurTarget> re-provides the nearest window-level target (below)
-//   inside an RN Modal, which renders in a separate native window — never an
-//   ancestor of the main-window target, whatever the React nesting.
-//
-// Everywhere else the context stays null and the frost renders fill-only
-// (frostMethodProps asks for "none"): in-content surfaces (bar shells, the inline
-// dialogs, sheer content panels) are descendants of any enclosing target, so giving
-// them one would recreate the crash.
+// Android materials sample an explicitly safe native plane. An ancestor target
+// would create a render-node cycle, so OverlayProvider publishes its own content
+// target only to its sibling outlet. GlassModalBlurTarget bridges a window-level
+// target into a genuinely separate RN Modal window. BackdropHost may also expose
+// its separate decorative plane to inline content. Targetless surfaces resolve
+// to their complete solid skin. The optional capture integration owns demand,
+// readiness and resource release without changing the content host.
 export const GlassBlurTargetContext = createContext<RefObject<View | null> | null>(null);
 
 // The window-level Android blur target: the OUTERMOST <OverlayProvider>'s content
@@ -148,7 +131,7 @@ export function GlassModalBlurTarget({ children }: { children?: ReactNode }) {
 export interface GlassBlurTargetHostProps {
   /** The provider wrapper's style (OverlayProvider's [FILL, style]). */
   style?: StyleProp<ViewStyle>;
-  /** Attached to the BlurTargetView on Android when expo-blur 57+ is installed;
+  /** Attached to the optional native capture host on supported Android;
    *  left unattached (current stays null) everywhere else. */
   targetRef: RefObject<View | null>;
   /** The overlay outlet subtree; rendered after (and never inside) the target. */
@@ -160,9 +143,9 @@ export interface GlassBlurTargetHostProps {
 // generation is installed. expo-blur 57+ (detected by its BlurTargetView export) wants
 // `blurMethod` + `blurTarget`; passing the legacy prop there logs a deprecation
 // warning, and naming the dimezis method without a target logs a fallback warning, so
-// without a target it asks for "none" outright (the glass tint under the blur keeps
-// the surface a substantial material; only surfaces with a safe sibling target — see
-// GlassBlurTargetContext above — get one). Older expo-blur keeps the legacy prop
+// without a target it defensively asks for "none". The renderer resolves that
+// missing-target case to the complete solid skin before mounting a BlurView.
+// Older expo-blur keeps the legacy prop
 // unchanged, which still blurs the content behind the surface there. Web ignores all
 // three props (its backdrop-filter path never reads them).
 // Keep the return contract structural: an Expo type here leaks into Canvas's
@@ -308,25 +291,22 @@ export function splitSurfaceStyle(style: StyleProp<ViewStyle>): Split {
   return { outer: outer as ViewStyle, clip: clip as ViewStyle };
 }
 
-// The two-box glass structure. `material` is the platform's blur/glass node(s),
-// rendered absolute-fill behind the content.
+// A stable content host for every appearance. Only the decorative material is
+// clipped; content, focus rings, hit targets and the exterior shadow keep the
+// skin's own layout and overflow policy. Switching modes never reparents children.
 export function GlassBox({
-  style,
-  children,
-  pointerEvents,
-  testID,
-  role,
-  onLayout,
-  onAccessibilityEscape,
-  material,
-}: GlassSurfaceProps & { material: ReactNode }) {
-  const { outer, clip } = splitSurfaceStyle(style);
+  style, children, pointerEvents, testID, role, onLayout, onAccessibilityEscape,
+  material, solid = false,
+}: GlassSurfaceProps & { material: ReactNode; solid?: boolean }) {
+  const flat = (StyleSheet.flatten(style) ?? {}) as Record<string, unknown>;
+  const clear: Record<string, unknown> = { backgroundColor: "transparent", borderColor: "transparent" };
+  for (const key of Object.keys(flat)) {
+    if (key.startsWith("border") && key.endsWith("Color")) clear[key] = "transparent";
+  }
   return (
-    <View style={[outer, pointerEvents ? { pointerEvents } : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={onAccessibilityEscape ? false : undefined}>
-      <View style={clip}>
-        {material}
-        {children}
-      </View>
+    <View style={[style, solid ? null : clear as ViewStyle, pointerEvents ? { pointerEvents } : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={onAccessibilityEscape ? false : undefined}>
+      {material ? <View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[materialFill(style), { overflow: "hidden", zIndex: -1 }]}>{material}</View> : null}
+      {children}
     </View>
   );
 }

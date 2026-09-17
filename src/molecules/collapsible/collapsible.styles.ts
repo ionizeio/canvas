@@ -7,8 +7,8 @@ import { type CollapsibleSkin } from "./collapsible.shared.js";
 // the panel reveal; the skin supplies only the native SHAPE, sizing, title type,
 // chevron tint/size, content insets, and press feedback. The BRAND survives on
 // every platform (the semantic tokens, never a platform default), so each follows
-// light/dark and the glass surface. The collapsible is a CONTENT-layer surface, so
-// it stays SOLID (never routed through GlassSurface).
+// light/dark and the glass surface. Filled variants use static content frost;
+// the skin supplies their complete solid fallback. Unfilled variants inherit.
 //
 // A Collapsible is one accordion Row standing alone, so the skins mirror the
 // Accordion's per-platform looks: a single disclosure reads exactly like one

@@ -30,7 +30,8 @@ Install the optional peers needed by your app's features. The package remains us
 | --- | --- | --- |
 | `react-native-qrcode-svg` | you render QR codes with `QRCode` | the accessible, sized frame remains empty and warns once in development |
 | `expo-glass-effect` | you want native Liquid Glass on supported iOS 26+ devices | forced glass uses `expo-blur` when available, otherwise the skin's solid fill; automatic surface mode remains solid |
-| `expo-blur` | you want frosted glass on non-Chromium web, Android, or older iOS | surfaces use their solid fill when no other material is available; native Liquid Glass and the Chromium lens still work |
+| `@ionizeio/canvas-blur` | you want Canvas backdrop capture and frost on Android 12+ in Expo SDK 57 (module 0.1.0+) | Canvas uses another supported material or the complete solid appearance |
+| `expo-blur` | you want static frost on iOS, including content beneath iOS 26 Liquid Glass, or supported legacy Android frost | surfaces use their solid fill when no other material is available; browser frost/lenses, native Liquid Glass and the Android capture module remain independent |
 | `expo-clipboard` | you want `CodeBlock` to copy text on native | web can use `navigator.clipboard`; native copying needs a supplied `onCopy` handler |
 | `react-native-safe-area-context` | you want safe-area insets in Canvas shells, with your app's `SafeAreaProvider` | safe-area wrappers render as plain views without insets |
 | `@shopify/react-native-skia` | you want `Backdrop` to use an available GPU drawing backend | `Backdrop` keeps its React Native SVG renderer |
@@ -38,6 +39,8 @@ Install the optional peers needed by your app's features. The package remains us
 ```bash
 # add any subset you actually use
 npm install react-native-qrcode-svg expo-glass-effect expo-blur expo-clipboard react-native-safe-area-context @shopify/react-native-skia
+# Android native capture also requires rebuilding your custom native app
+npm install @ionizeio/canvas-blur
 ```
 
 ## Quick start
@@ -178,6 +181,16 @@ and unpainted. Native Liquid Glass does not require custom wobble. Explicit soli
 mode and material fallbacks must restore opaque fill, foreground, boundary and
 elevation without losing input focus or application state. Android blur needs a
 safe live backdrop target; a tint-only path does not establish native blur support.
+
+On Android 12+ with Expo SDK 57, the optional `@ionizeio/canvas-blur` integration
+keeps a stable native content host and records only while a glass surface uses it.
+`OverlayProvider` supplies a sibling target to its overlays and a separate-window
+target to native modals. `BackdropHost` can supply its decorative scene to inline
+surfaces, without sampling their own foreground. Without a safe target, supported
+module or hardware material, the complete solid skin remains visible. Modern Expo
+blur targets are not kept recording in solid mode. The Android module requires a
+native rebuild; Expo Go does not contain it.
+
 The maintained [material inventory](tools/materials/README.md) records intended
 coverage and verification obligations, not completed runtime evidence.
 

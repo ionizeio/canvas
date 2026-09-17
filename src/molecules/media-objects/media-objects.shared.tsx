@@ -1,6 +1,7 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { type ComponentType, type ReactNode } from "react";
 import { StyleSheet } from "react-native";
-import { View, Pressable, Text, useTheme, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle, GlassSurface, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import { View, Pressable, Text, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle, GlassSurface, GlassPane, paneStyle } from "../../style/index.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { type AvatarProps } from "../../atoms/avatar/avatar.shared.js";
 import { type Align, type Direction, DIRECTION_ROW, ALIGN_ITEMS } from "./media-objects.styles.js";
@@ -61,9 +62,8 @@ export interface MediaObjectDensity {
 export interface MediaObjectSkin {
   /** Row gap between the leading media, content column, and trailing slot. */
   containerBase: ViewStyle;
-  /** bordered card surface: corner radius + border width + padding (+ elevation). The
-   *  card fill (which reads the tokens and follows light/dark; the card stays SOLID
-   *  under glass) is supplied by shared; the skin carries the shape/density/shadow. */
+  /** Bordered card shape, padding, and elevation. Shared rendering supplies static
+   *  content frost in glass mode and the opaque token fill for solid fallback. */
   borderedSurface: ViewStyle;
   /** bordered-card border-color resolver. web/iOS paint the hairline tokens.border; on
    *  Android the M3 ELEVATED card separates by elevation, not an outline, so it returns
@@ -158,9 +158,9 @@ function directionOf(p: MediaObjectProps): Direction {
 }
 
 // The bordered card surface color: the card fill reads the active tokens, so the
-// surface follows light/dark. MediaObject is a CONTENT-layer surface that paints
-// tokens.card, which stays SOLID under glass (only the functional/popover layer
-// frosts). The border color comes from the skin (web/iOS hairline tokens.border;
+// surface follows light/dark. Bordered MediaObject uses static content frost,
+// with tokens.card as the opaque solid fallback. The border color comes from
+// the skin (web/iOS hairline tokens.border;
 // Android's M3 ELEVATED card paints it transparent so elevation, not an outline,
 // separates it). The skin carries the shape/density/shadow.
 function borderedColors(tokens: ColorTokens, skin: MediaObjectSkin): ViewStyle {
@@ -183,9 +183,8 @@ function borderedColors(tokens: ColorTokens, skin: MediaObjectSkin): ViewStyle {
 export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent = WebAvatar) {
   return function MediaObject(props: MediaObjectProps) {
     const { title, description, body, meta, avatar, src, icon, action, truncate, testID, style } = props;
-    const theme = useTheme();
+    const theme = useMaterialTheme({ static: true });
     const { tokens } = theme;
-    const glass = isGlass(theme);
     // FILL: the identity row spans the parent it is given, so a long body wraps.
     const fill = useFillStyle("MediaObject");
     const align = alignOf(props);
@@ -275,9 +274,9 @@ export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent
             onPress={props.onPress}
             testID={testID}
             android_ripple={surfaceRipple(tokens)}
-            style={({ pressed }) => [paneStyle(glass && !!props.bordered, surface), minTarget, elevZero, pressDim(pressed, skin.pressedOpacity)]}
+            style={({ pressed }) => [props.bordered ? paneStyle(theme, surface) : surface, minTarget, elevZero, pressDim(pressed, skin.pressedOpacity)]}
           >
-            {props.bordered ? <GlassPane layer="content" shape={skin.borderedSurface} /> : null}
+            {props.bordered ? <GlassPane layer="content" shape={surface} /> : null}
             {inner}
           </Pressable>
         </RippleClip>

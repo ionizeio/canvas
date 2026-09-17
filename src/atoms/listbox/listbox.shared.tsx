@@ -1,6 +1,7 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useState, type ComponentType } from "react";
 import { type Role } from "react-native";
-import { View, Pressable, Text, useTheme, useControllableState, useFillStyle, useRovingFocus, isRTL, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassSurface, withInnerFill, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import { View, Pressable, Text, useControllableState, useFillStyle, useRovingFocus, isRTL, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, withInnerFill, GlassPane, paneStyle } from "../../style/index.js";
 
 // Shared Listbox shell. An inline, selectable list of options rendered directly
 // (not a popover). Each row is a Pressable. Two selection modes, mutually
@@ -52,7 +53,7 @@ export interface ListboxProps extends MeasureProps {
   accessibilityLabel?: string;
   /** Multi-select: each row is a checkbox with a leading indicator instead of a single ✓. */
   multi?: boolean;
-  /** Wrap the list in a rounded, bordered content card (solid, stays opaque under glass). */
+  /** Wrap the list in a rounded, bordered content card with static glass in glass mode. */
   bordered?: boolean;
   // Size (pick one; default is medium).
   /** Tighter rows with smaller text. */
@@ -134,7 +135,7 @@ export function createListbox(skin: ListboxSkin, CheckboxIndicator: ComponentTyp
     const mode = modeOf(props);
     const size = sizeOf(props);
     const accessibleName = props.accessibilityLabel?.trim() || "Options";
-    const theme = useTheme();
+    const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
     // FILL, applied to the root list View (see the note above the interface).
     const widthCap = useFillStyle("Listbox", props);
@@ -186,7 +187,7 @@ export function createListbox(skin: ListboxSkin, CheckboxIndicator: ComponentTyp
       // parent rather than collapsing to content the way a width-less View would);
       // FILL below adds the row-sharing pair.
       { width: "100%" },
-      bordered ? paneStyle(isGlass(theme), skin.containerBordered(tokens)) : null,
+      bordered ? paneStyle(theme, skin.containerBordered(tokens)) : null,
       disabled ? { opacity: 0.5 } : null,
       widthCap,
       style,

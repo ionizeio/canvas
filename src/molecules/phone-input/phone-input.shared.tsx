@@ -1,3 +1,4 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { forwardRef, useId, useRef, useState } from "react";
 import { type Role, type TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from "react-native";
@@ -6,7 +7,6 @@ import {
   Pressable,
   Text,
   TextInput,
-  useTheme,
   useControllableState,
   useFillStyle,
   AnchoredOverlay,
@@ -20,6 +20,7 @@ import {
   type MeasureProps,
   type ViewStyle,
   GlassPane,
+  paneStyle,
   isGlass,
   withInnerFill,
   alpha,
@@ -134,7 +135,7 @@ export function createPhoneInput(skin: PhoneInputSkin) {
     } = props;
     const isError = !!(props.error || props.invalid);
     const size = sizeOf(props);
-    const theme = useTheme();
+    const theme = useMaterialTheme({ static: true });
     const { tokens } = theme;
     // Under glass the box is a CONTROL-layer puck like the grouped Input: a GlassPane
     // paints the material behind the country segment and the native input, the box
@@ -192,9 +193,9 @@ export function createPhoneInput(skin: PhoneInputSkin) {
       <View
         ref={boxRef}
         onLayout={onBoxLayout}
-        style={[boxShape, { minHeight: field.groupedHeight(size) }, glassBox]}
+        style={[paneStyle(theme, boxShape), { minHeight: field.groupedHeight(size) }, glassBox]}
       >
-        <GlassPane layer="control" shape={boxShape} tint={isError ? alpha(tokens.destructive, 0.18) : undefined} />
+        <GlassPane static layer="control" shape={boxShape} tint={isError ? alpha(tokens.destructive, 0.18) : undefined} />
         <Pressable
           onPress={() => setOpen(!open)}
           disabled={!editable}

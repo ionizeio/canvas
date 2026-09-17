@@ -1,6 +1,7 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useEffect, useRef } from "react";
 import { Animated } from "react-native";
-import { View, useTheme, useReducedMotion, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, isGlass, innerFill } from "../../style/index.js";
+import { View, useReducedMotion, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, innerFill } from "../../style/index.js";
 
 // Shared Skeleton shell. The structure (a single muted shape — text line, avatar,
 // button — or a composite card / list / table scaffold built from one muted fill,
@@ -219,13 +220,13 @@ export function createSkeleton(skin: SkeletonSkin) {
   // The muted fill + the line base (`h-3.5 w-full`) + the skin's line radius, then
   // any width/margin overrides the caller layers on.
   function Line({ animate, style }: { animate?: boolean; style?: StyleProp<ViewStyle> }) {
-    const theme = useTheme();
+    const theme = useMaterialTheme({ layer: "content" });
     return <Pulse animate={animate} style={[fill(theme), lineBase, { borderRadius: skin.lineRadius }, style]} />;
   }
 
   return function Skeleton(props: SkeletonProps) {
     const { animate, accessibilityLabel, testID, style } = props;
-    const theme = useTheme();
+    const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
     const shape = shapeOf(props);
     const a11y = loadingA11y(accessibilityLabel);
@@ -242,7 +243,7 @@ export function createSkeleton(skin: SkeletonSkin) {
 
     if (shape === "card") {
       return (
-        <View {...a11y} {...innerHidden} testID={testID} style={[paneStyle(isGlass(theme), cardSurface(tokens)), { borderRadius: skin.cardRadius }, style]}>
+        <View {...a11y} {...innerHidden} testID={testID} style={[paneStyle(theme, cardSurface(tokens)), { borderRadius: skin.cardRadius }, style]}>
           <GlassPane layer="content" shape={{ borderRadius: skin.cardRadius }} />
           <View style={cardRow}>
             <Pulse animate={animate} style={[fill(theme), cardAvatar, { borderRadius: skin.avatarRadius }]} />

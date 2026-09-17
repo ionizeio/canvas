@@ -7,6 +7,9 @@ import { join } from "node:path";
  */
 
 const procs = [
+	Bun.spawn(["bunx", "tsc", "-p", "packages/canvas-blur/tsconfig.json", "--watch", "--preserveWatchOutput"], {
+		stdout: "inherit", stderr: "inherit",
+	}),
 	Bun.spawn(["bunx", "tsc", "-p", "tsconfig.build.json", "--watch", "--preserveWatchOutput"], {
 		stdout: "inherit",
 		stderr: "inherit",

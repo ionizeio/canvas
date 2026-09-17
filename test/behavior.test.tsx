@@ -391,7 +391,10 @@ describe("ButtonGroup", () => {
     expect(list.style.width).toBe("100%");
     const tabs = Array.from(container.querySelectorAll('[role="tab"]')) as HTMLElement[];
     expect(tabs.length).toBe(3);
-    for (const tab of tabs) expect(tab.style.flexGrow).toBe("1");
+    for (const tab of tabs) {
+      expect(tab.parentElement!.parentElement).toBe(list);
+      expect(tab.parentElement!.style.flexGrow).toBe("1");
+    }
   });
 
   it("stays self-sized without block", () => {
@@ -399,7 +402,7 @@ describe("ButtonGroup", () => {
     const list = container.querySelector('[role="tablist"]') as HTMLElement;
     expect(list.style.width).toBe("");
     const tab = container.querySelector('[role="tab"]') as HTMLElement;
-    expect(tab.style.flexGrow).toBe("");
+    expect(tab.parentElement!.style.flexGrow).toBe("");
   });
 
   it("iconsOnly segments hide the label, take it as the accessible name, and report it on select", () => {

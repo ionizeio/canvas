@@ -1,11 +1,13 @@
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useEffect, useRef, useState } from "react";
 import { type GestureResponderEvent, type LayoutChangeEvent, type LayoutRectangle } from "react-native";
-import { View, Pressable, Text, RippleClip, cornerRadii, useHugStyle, useSizing, useTheme, useControllableState, AnchoredOverlay, useOverlayHost, useMeasuredWidth, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, type MeasureProps, stepOf } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useHugStyle, useSizing, useControllableState, AnchoredOverlay, useOverlayHost, useMeasuredWidth, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, type MeasureProps, stepOf } from "../../style/index.js";
 import { Icon, type IconName } from "../icon/icon.js";
 import { primaryText } from "../../style/primary-text.js";
 import * as s from "./button-group.styles.js";
 import { GroupGlass, GlassSelection } from "./button-group-glass.js";
+import { paneStyle } from "../../style/glass-surface/glass-pane.js";
 
 // Shared ButtonGroup shell. The structure (the four kinds, their layout, the
 // uncontrolled stepper position, the split dropdown), the accessibility, the
@@ -225,25 +227,22 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
   }
 
   function Segment({ label, icon, iconOnly, selected, selectable, corners, leading, standalone, block, size, disabled, onPress, onPressIn, onPressOut, onLayout }: SegmentProps) {
-    const { tokens, surface } = useTheme();
+    const theme = useMaterialTheme({ layer: "functional" });
+    const { tokens, surface } = theme;
     const glass = surface === "glass";
     const iconColor = glass ? (selected && selectable ? "primary" : "foreground") : skin.segmentIconColor(selected && selectable);
     const iconTint = iconColor === "primary" ? { color: primaryText(tokens) } : iconColorProps(iconColor);
-    // The equal-share flex must ride the segment's OUTERMOST node: the Pressable
-    // itself when solid and attached, but the RippleClip wrapper under glass or
-    // when standalone (see the
-    // return below), because a `flex: 1` on the Pressable INSIDE that column
-    // wrapper would flex it vertically, not share the row.
+    // Keep the wrapper in every mode so changing material preserves the focused
+    // pressable. Outer flex, border overlap and stacking stay on that wrapper.
+    const solidSurface = skin.segmentSurface(tokens, selected);
     const container: StyleProp<ViewStyle> = [
       s.segmentBase,
       { borderWidth: glass ? 0 : skin.segmentBorderWidth },
       s.sizeContainer[size],
       glass ? s.glassCorners : corners,
-      !glass && leading && skin.overlap ? skin.overlap : null,
       !glass && leading && skin.segmentDivider ? skin.segmentDivider(tokens) : null,
-      glass ? s.glassCell : skin.segmentSurface(tokens, selected),
-      disabled ? s.dim : null,
-      block && !standalone && !glass ? s.blockSegment : null,
+      glass ? s.glassCell : solidSurface,
+      disabled && !glass ? s.dim : null,
     ];
     // `aria-selected` is only valid on roles that support a selected state. A
     // segmented option reads as a `tab` (matching Tabs) so its selection is
@@ -255,11 +254,10 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     const showIconAlone = iconOnly && icon != null;
     const button = (
       <Pressable
-        style={({ pressed }) => [container, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
+        style={({ pressed }) => [paneStyle(theme, container), skin.pressedOpacity != null && pressed && !glass ? { opacity: skin.pressedOpacity } : null]}
         onPress={onPress}
         onPressIn={onPressIn}
         onPressOut={onPressOut}
-        onLayout={standalone || glass ? undefined : onLayout}
         disabled={disabled}
         aria-disabled={!!disabled}
         android_ripple={ripple ? ripple(tokens) : undefined}
@@ -282,18 +280,20 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
           // stay silent to assistive tech.
           <Icon {...{ [icon]: true }} decorative size={s.chevronSize[size]} {...iconTint} style={showIconAlone ? undefined : { marginEnd: 6 }} />
         ) : null}
-        {showIconAlone ? null : <Text style={[s.sizeLabel[size], glass ? s.glassSegmentLabel(tokens, selected) : skin.segmentLabel(tokens, selected)]}>{label}</Text>}
+        {showIconAlone ? null : <Text style={[s.sizeLabel[size], glass ? s.glassSegmentLabel(tokens, selected) : skin.segmentLabel(tokens, selected), disabled && glass ? s.dim : null]}>{label}</Text>}
       </Pressable>
     );
-    // Glass segments and detached peers own rounded ripple clips. Solid attached
-    // segments use the skin's existing group clip. Equal-share flex and layout
-    // measurement belong on the outer wrapper, keeping the pill's measured frame
-    // relative to the group rather than to its own clipping parent.
-    return standalone || glass ? (
-      <RippleClip shape={cornerRadii(container)} style={block ? s.blockSegment : null} onLayout={onLayout}>
+    // Attached solid segments retain the skin's existing group clip. The stable
+    // outer wrapper also keeps measurements relative to the group in every mode.
+    return (
+      <RippleClip
+        shape={standalone || glass ? cornerRadii(container) : undefined}
+        style={[block ? s.blockSegment : null, !glass && leading ? skin.overlap : null, !glass && solidSurface.zIndex != null ? { zIndex: solidSurface.zIndex } : null]}
+        onLayout={onLayout}
+      >
         {button}
       </RippleClip>
-    ) : button;
+    );
   }
 
   // The split kind's secondary control: a chevron that toggles a floating dropdown
@@ -319,7 +319,8 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     testID?: string;
     style?: LayoutStyle;
   }) {
-    const { tokens, surface } = useTheme();
+    const theme = useMaterialTheme({ layer: "functional" });
+    const { tokens, surface } = theme;
     const glass = surface === "glass";
     const hug = useHugStyle();
     const [open, setOpen] = useState(false);
@@ -340,7 +341,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     return (
       <View
         ref={triggerRef}
-        style={[s.splitContainer, open && !host ? s.splitContainerLifted : null, disabled ? s.dim : null, hug, style]}
+        style={[s.splitContainer, open && !host ? s.splitContainerLifted : null, disabled && !glass ? s.dim : null, hug, style]}
         testID={testID}
         onLayout={onTriggerLayout}
       >
@@ -349,20 +350,20 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
             to those corners by a RippleClip parent (no-op on iOS/web). See src/style/ripple-clip. */}
         <RippleClip shape={glass ? s.glassStartCorners : cornerRadii(skin.splitPrimary(tokens))}>
           <Pressable
-            style={({ pressed }) => [skin.splitPrimary(tokens), s.sizeContainer[size], glass ? s.glassCell : null, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
+            style={({ pressed }) => [paneStyle(theme, [skin.splitPrimary(tokens), s.sizeContainer[size], glass ? s.glassCell : null]), skin.pressedOpacity != null && pressed && !glass ? { opacity: skin.pressedOpacity } : null]}
             onPress={(e) => onSelect?.(0, primary, e)}
             disabled={disabled}
             android_ripple={ripple ? ripple(tokens) : undefined}
             accessibilityRole="button"
           >
-            <Text style={[skin.splitPrimaryLabel(tokens), s.sizeLabel[size], glass ? s.glassSegmentLabel(tokens, true) : null]}>{primary}</Text>
+            <Text style={[skin.splitPrimaryLabel(tokens), s.sizeLabel[size], glass ? s.glassSegmentLabel(tokens, true) : null, disabled && glass ? s.dim : null]}>{primary}</Text>
           </Pressable>
         </RippleClip>
         {/* Hairline divider so the chevron reads as a distinct trigger. */}
         <View style={glass ? s.glassDivider(tokens, triggerHeight) : skin.splitDivider(tokens, triggerHeight)} />
         <RippleClip shape={glass ? s.glassEndCorners : cornerRadii(skin.splitTrigger(tokens, triggerHeight))}>
           <Pressable
-            style={({ pressed }) => [skin.splitTrigger(tokens, triggerHeight), glass ? s.glassCell : null, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
+            style={({ pressed }) => [paneStyle(theme, [skin.splitTrigger(tokens, triggerHeight), glass ? s.glassCell : null]), skin.pressedOpacity != null && pressed && !glass ? { opacity: skin.pressedOpacity } : null]}
             onPress={() => setOpen((o) => !o)}
             disabled={disabled}
             android_ripple={ripple ? ripple(tokens) : undefined}
@@ -436,7 +437,8 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     testID?: string;
     style?: LayoutStyle;
   }) {
-    const { tokens, surface } = useTheme();
+    const theme = useMaterialTheme({ layer: "functional" });
+    const { tokens, surface } = theme;
     const glass = surface === "glass";
     const hug = useHugStyle();
     const count = items.length;
@@ -457,13 +459,13 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
       onSelect?.(next, items[next], e);
     };
     return (
-      <View style={[s.stepperContainer, disabled ? s.dim : null, hug, style]} testID={testID}>
+      <View style={[s.stepperContainer, disabled && !glass ? s.dim : null, hug, style]} testID={testID}>
         {glass ? <GroupGlass testID={testID ? `${testID}-glass` : undefined} /> : null}
         {/* Each pill-cornered arrow is its own rounded surface, so its bounded Android ripple
             is clipped to those corners by a RippleClip parent (no-op on iOS/web). See src/style/ripple-clip. */}
         <RippleClip shape={glass ? s.glassStartCorners : cornerRadii([skin.stepperArrow(tokens, height), skin.stepperArrowLeft])}>
           <Pressable
-            style={({ pressed }) => [skin.stepperArrow(tokens, height), skin.stepperArrowLeft, glass ? s.glassCell : null, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
+            style={({ pressed }) => [paneStyle(theme, [skin.stepperArrow(tokens, height), skin.stepperArrowLeft, glass ? s.glassCell : null]), skin.pressedOpacity != null && pressed && !glass ? { opacity: skin.pressedOpacity } : null]}
             onPress={(e) => step(-1, e)}
             disabled={disabled}
             android_ripple={ripple ? ripple(tokens) : undefined}
@@ -473,15 +475,15 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
             <Icon chevronLeft size={chevron} {...iconColorProps(skin.stepperChevronColor)} />
           </Pressable>
         </RippleClip>
-        <View style={[skin.stepperMiddle(tokens), s.sizeContainer[size], glass ? s.glassCell : null]}>
-          <Text style={[skin.stepperLabel(tokens), s.sizeLabel[size]]}>{items[i] ?? ""}</Text>
+        <View style={paneStyle(theme, [skin.stepperMiddle(tokens), s.sizeContainer[size], glass ? s.glassCell : null])}>
+          <Text style={[skin.stepperLabel(tokens), s.sizeLabel[size], disabled && glass ? s.dim : null]}>{items[i] ?? ""}</Text>
         </View>
         <RippleClip
           shape={glass ? s.glassEndCorners : cornerRadii([skin.stepperArrow(tokens, height), stepperArrowRightCorners])}
           style={{ marginStart: glass ? 0 : rightOverlap }}
         >
           <Pressable
-            style={({ pressed }) => [skin.stepperArrow(tokens, height), stepperArrowRightCorners, glass ? s.glassCell : null, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
+            style={({ pressed }) => [paneStyle(theme, [skin.stepperArrow(tokens, height), stepperArrowRightCorners, glass ? s.glassCell : null]), skin.pressedOpacity != null && pressed && !glass ? { opacity: skin.pressedOpacity } : null]}
             onPress={(e) => step(1, e)}
             disabled={disabled}
             android_ripple={ripple ? ripple(tokens) : undefined}
@@ -497,7 +499,8 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
 
   return function ButtonGroup(props: ButtonGroupProps) {
     const { items = DEFAULT_ITEMS, onSelect, disabled, testID, style } = props;
-    const { tokens, surface } = useTheme();
+    const theme = useMaterialTheme({ layer: "functional" });
+    const { tokens, surface } = theme;
     const glass = surface === "glass";
     const [segmentLayouts, setSegmentLayouts] = useState<Record<number, LayoutRectangle>>({});
     const [pressedSegment, setPressedSegment] = useState<number | null>(null);
@@ -628,21 +631,15 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     // The segments are a single mutually-exclusive control, so the row is a
     // `tablist` grouping its `tab` segments (matching the Tabs precedent). The
     // sizing nature (HUG, or FILL under `block`) lands AFTER the skin wrap.
-    if (glass) {
-      const selectionLayout = segmentLayouts[disabled ? active : pressedSegment ?? active];
-      return (
-        <View accessibilityRole="tablist" accessibilityLabel={props.accessibilityLabel} aria-label={props.accessibilityLabel} style={[s.glassSegmentedContainer, sizing, style]} testID={testID}>
-          <GroupGlass testID={testID ? `${testID}-glass` : undefined} />
-          {active >= 0 && active < count && selectionLayout ? (
-            <GlassSelection layout={selectionLayout} pressed={pressedSegment !== null} disabled={disabled} testID={testID ? `${testID}-selection` : undefined} />
-          ) : null}
-          {row}
-        </View>
-      );
-    }
-    if (wrap) {
-      return <View accessibilityRole="tablist" accessibilityLabel={props.accessibilityLabel} aria-label={props.accessibilityLabel} style={[wrap, sizing, style]} testID={testID}>{row}</View>;
-    }
-    return <View accessibilityRole="tablist" accessibilityLabel={props.accessibilityLabel} aria-label={props.accessibilityLabel} style={[s.segmentedContainer, sizing, style]} testID={testID}>{row}</View>;
+    const selectionLayout = segmentLayouts[disabled ? active : pressedSegment ?? active];
+    return (
+      <View collapsable={false} accessibilityRole="tablist" accessibilityLabel={props.accessibilityLabel} aria-label={props.accessibilityLabel} style={[glass ? s.glassSegmentedContainer : wrap ? paneStyle(theme, wrap) : s.segmentedContainer, sizing, style]} testID={testID}>
+        {glass ? <GroupGlass testID={testID ? `${testID}-glass` : undefined} /> : null}
+        {glass && active >= 0 && active < count && selectionLayout ? (
+          <GlassSelection layout={selectionLayout} pressed={pressedSegment !== null} disabled={disabled} testID={testID ? `${testID}-selection` : undefined} />
+        ) : null}
+        {row}
+      </View>
+    );
   };
 }

@@ -4,13 +4,10 @@ import { type ChartSeries, type ChartSkin } from "./types.js";
 
 // Co-located Chart styles. Layout-only fragments are static objects; anything
 // that reads a color is a function of the active tokens (so the surface follows
-// light/dark). Charts are a content surface: they paint tokens.card, and glass mode
-// swaps NO semantic token (the material carries its own `glass-tint` fill), so
-// charts do NOT read as glass. Only the surfaces that render through GlassSurface
-// take the material (popovers, dialogs, sheets, drawers, the command palette, and
-// the bar/sidebar shells); menus, selects, alert dialogs and the chart tooltip stay
-// opaque cards on every theming surface. The bar fill per tone is the one
-// palette-vs-token choice, resolved by `barFill`.
+// light/dark). Intentional chart frames use stable content frost where supported,
+// while all data ink stays crisp. Frame owners resolve capability before clearing
+// their solid fill with paneStyle. Inspection flags own a separate dense material.
+// The bar fill per tone is the palette-vs-token choice resolved by `barFill`.
 
 export type Tone = "primary" | "success" | "destructive";
 
@@ -18,16 +15,15 @@ export type Tone = "primary" | "success" | "destructive";
 
 // The bordered, shadowed card surface (rounded-lg border border-border bg-card
 // shadow-sm), mirroring the docs `cardCls`. In solid mode the fill is the opaque
-// `card`; under glass (`glass` true) the chart frame is a CONTENT-layer pane whose
-// material a GlassPane paints behind the chart, so the fill and the hairline drop here
-// (the pane's tint and rim carry them) while the width keeps the box identical. The
-// corner radius is supplied by the skin (8 everywhere; Chart is Shared).
-export function surface(tokens: ColorTokens, radius: number, glass = false): ViewStyle {
+// `card`. Keep this complete opaque recipe for capability and accessibility
+// fallbacks; paneStyle clears it only when static material can actually render.
+// The corner radius is supplied by the skin.
+export function surface(tokens: ColorTokens, radius: number): ViewStyle {
   return {
     borderRadius: radius,
     borderWidth: 1,
-    borderColor: glass ? "transparent" : tokens.border,
-    backgroundColor: glass ? "transparent" : tokens.card,
+    borderColor: tokens.border,
+    backgroundColor: tokens.card,
     ...shadow("sm"),
   };
 }

@@ -148,7 +148,8 @@ Route owned surfaces through `GlassSurface`, or `GlassPane` behind a semantic ho
 that must retain its input, focus or live-region behavior. Keep role, density,
 renderer capability and motion separate. Use supported native Liquid Glass through
 `expo-glass-effect` on iOS where appropriate, supported native frost through
-`expo-blur`, and the shared web material paths. Android blur requires safe live
+`expo-blur`, the optional `@ionizeio/canvas-blur` capture integration on Android 12+
+(Expo SDK 57), and the shared web material paths. Android blur requires safe live
 backdrop ownership; no material may sample itself. A browser skin preview is not
 native evidence, and tint without blur is not proof of a native material.
 
