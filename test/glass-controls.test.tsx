@@ -255,7 +255,7 @@ describe("field boxes", () => {
       const name = container.querySelector('[data-testid="name"]') as HTMLElement;
       expect(name.style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
       expect(name.style.borderColor).toBe("rgba(0, 0, 0, 0.00)");
-      expect(rgbaOf(underFillOf(name.parentElement as HTMLElement))).toEqual(rgbaOf(LIGHT["glass-tint-control"]));
+      expect(rgbaOf(underFillOf(name.parentElement as HTMLElement))).toEqual(rgbaOf(alpha(lightColors.card, 0.22)));
       const email = container.querySelector('[data-testid="email"]') as HTMLElement;
       expect(rgbaOf(email.style.borderColor)).toEqual(rgbaOf(alpha(lightColors.destructive, 1)));
       expect(rgbaOf(underFillOf(email.parentElement as HTMLElement))).toEqual(rgbaOf(alpha(lightColors.destructive, 0.18)));

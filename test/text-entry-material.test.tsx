@@ -219,10 +219,27 @@ describe("clear web text-entry material", () => {
       const input = screen.getByTestId("name");
       const owner = input.parentElement!;
       const before = owner.innerHTML;
-      fireEvent.mouseDown(input, { button: 0, clientX: 25, clientY: 15 });
+      const pointer = { button: 0, clientX: 25, clientY: 15 };
+      fireEvent.mouseDown(input, { ...pointer, buttons: 1 });
+      try {
+        expect(owner.innerHTML).toBe(before);
+      } finally {
+        // React's selection plugin tracks mouse state across roots and tests.
+        fireEvent.mouseUp(input, { ...pointer, buttons: 0 });
+        fireEvent.click(input, pointer);
+      }
       const touch = { identifier: 1, pageX: 25, pageY: 15, clientX: 25, clientY: 15, target: input };
       fireEvent.touchStart(input, { touches: [touch], changedTouches: [touch] });
-      fireEvent.touchEnd(input, { touches: [], changedTouches: [touch] });
+      try {
+        expect(owner.innerHTML).toBe(before);
+      } finally {
+        fireEvent.touchEnd(input, { touches: [], changedTouches: [touch] });
+        // Complete the browser's compatibility mouse sequence. RNW suppresses
+        // mouse starts after a touch until this mouseup ends that sequence.
+        fireEvent.mouseDown(input, { ...pointer, buttons: 1 });
+        fireEvent.mouseUp(input, { ...pointer, buttons: 0 });
+        fireEvent.click(input, pointer);
+      }
       expect(owner.innerHTML).toBe(before);
       expect(materials(owner)).toHaveLength(1);
     });
