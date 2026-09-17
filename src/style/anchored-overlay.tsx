@@ -40,6 +40,9 @@ import { Entrance } from "./entrance.js";
 import { EntranceReadinessContext } from "./entrance-readiness.js";
 import { fitOverlayHeight, type OverlaySide } from "./overlay-layout.js";
 import { OverlayScrollContext, OverlayScrollView } from "./overlay-scroll.js";
+import { useMaterialTheme } from "./glass-surface/use-material-theme.js";
+import { MaterialMotionContext, PopupInteractionContext, PopupMotionPolicy, StationaryEntranceContext, usePopupMotion, usePopupPresence, type PopupEdge, type PopupSize } from "./popup-motion.js";
+import { PortalActivationContext } from "./portal-activation.js";
 
 const OverlaySideContext = createContext<{ side: OverlaySide; centerX?: number; cardWidth?: number }>({ side: "below" });
 /** The actual collision-resolved edge for a card's directional decoration. */
@@ -147,7 +150,7 @@ export interface AnchoredOverlayProps {
 }
 
 export function AnchoredOverlay({
-  open,
+  open: requestedOpen,
   onDismiss,
   onAccessibilityEscape,
   triggerRef,
@@ -167,17 +170,26 @@ export function AnchoredOverlay({
   onCardMount,
   ownsScroll = false,
 }: AnchoredOverlayProps) {
+  const parentInteractive = useContext(PopupInteractionContext);
+  const open = requestedOpen && parentInteractive;
   const host = useOverlayHost();
+  const liquid = useContext(PopupMotionPolicy) && !opaque;
+  const presence = usePopupPresence(open, liquid);
+  // A nested public helper must not inherit the owning component's activation.
+  const body = <PopupMotionPolicy.Provider value={false}>{children}</PopupMotionPolicy.Provider>;
 
   // No provider: render the card inline in place, exactly as the kit did before
   // the portal layer (absolute anchor under the trigger, no backdrop). The card
   // pops open from the trigger corner (Entrance owns the absolute anchor position).
   if (!host) {
-    return open ? (
+    if (!presence.present) return null;
+    return liquid ? (
+      <PopupCard open={open} opening={presence.opening} onExited={presence.finish} wrapperStyle={inlineStyle} cardStyle={cardStyle} dense={dense} onMount={onCardMount} ownsScroll={ownsScroll} decoration={decoration} onAccessibilityEscape={onAccessibilityEscape}>{body}</PopupCard>
+    ) : (
       <Entrance anchor style={inlineStyle}>
-        <OverlayCard onAccessibilityEscape={onAccessibilityEscape} cardStyle={cardStyle} opaque={opaque} dense={dense} onMount={onCardMount} ownsScroll={ownsScroll} decoration={decoration}>{children}</OverlayCard>
+        <OverlayCard onAccessibilityEscape={onAccessibilityEscape} cardStyle={cardStyle} opaque={opaque} dense={dense} onMount={onCardMount} ownsScroll={ownsScroll} decoration={decoration}>{body}</OverlayCard>
       </Entrance>
-    ) : null;
+    );
   }
 
   return (
@@ -200,8 +212,9 @@ export function AnchoredOverlay({
       onCardMount={onCardMount}
       ownsScroll={ownsScroll}
       decoration={decoration}
+      liquid={liquid}
     >
-      {children}
+      {body}
     </HostedAnchoredOverlay>
   );
 }
@@ -221,6 +234,8 @@ function OverlayCard({
   onLayout,
   onAccessibilityEscape,
   ready = true,
+  opening = 0,
+  open = true,
 }: {
   cardStyle?: StyleProp<ViewStyle>;
   opaque?: boolean;
@@ -232,22 +247,24 @@ function OverlayCard({
   onLayout?: (event: LayoutChangeEvent) => void;
   onAccessibilityEscape?: ViewProps["onAccessibilityEscape"];
   ready?: boolean;
+  opening?: number;
+  open?: boolean;
 }) {
   // Latch the callback so the usual fresh-closure-per-render caller cannot re-arm
   // the effect; it must fire once per opening, not once per render.
   const mount = useRef(onMount);
   mount.current = onMount;
-  const notified = useRef(false);
+  const notified = useRef<number | null>(null);
   const entranceReady = useContext(EntranceReadinessContext);
   useEffect(() => {
     // The owner's fitted placement and Entrance's own layout must both be
     // committed before focus enters the card. Ancestor readiness propagates
     // through nested entrances without replaying a notified opening.
-    if (ready && entranceReady && !notified.current) {
-      notified.current = true;
+    if (open && ready && entranceReady && notified.current !== opening) {
+      notified.current = opening;
       mount.current?.();
     }
-  }, [ready, entranceReady]);
+  }, [open, opening, ready, entranceReady]);
   // An opaque card takes the kit's plain surface: one View wearing the skin's
   // style untouched, which is byte for byte what GlassSurface itself renders in
   // solid mode, so an option list looks and lays out the same under either
@@ -257,7 +274,70 @@ function OverlayCard({
   return <GlassSurface layer={dense ? "dense" : "functional"} style={cardStyle} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape}>{decoration}{content}</GlassSurface>;
 }
 
+/** A stable foreground host with independently animated decorative material. */
+function PopupCard({
+  open, opening, onExited, ready = true, edge = "top", anchorX, anchorY,
+  wrapperStyle, cardStyle, dense, onMount, ownsScroll, decoration,
+  children, onLayout, onAccessibilityEscape,
+}: {
+  open: boolean; opening: number; onExited: () => void; ready?: boolean;
+  edge?: PopupEdge; anchorX?: number; anchorY?: number;
+  wrapperStyle?: StyleProp<ViewStyle>; cardStyle?: StyleProp<ViewStyle>;
+  dense?: boolean; onMount?: () => void; ownsScroll?: boolean; decoration?: ReactNode;
+  children: ReactNode; onLayout?: (event: LayoutChangeEvent) => void;
+  onAccessibilityEscape?: ViewProps["onAccessibilityEscape"];
+}) {
+  // This runs in the outlet's safe backdrop context, never the trigger's context.
+  const theme = useMaterialTheme({ layer: dense ? "dense" : "functional" });
+  const report = useContext(OverlayScrollContext);
+  const [size, setSize] = useState<PopupSize>({ width: 0, height: 0 });
+  const inheritedReady = useContext(EntranceReadinessContext);
+  const liquid = theme.surface === "glass";
+  const motion = usePopupMotion({ open, enabled: liquid, ready: ready && inheritedReady, size, edge, anchorX, anchorY, onExited });
+  const measure = (event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout;
+    if (open && width > 0 && height > 0) setSize(old => old.width === width && old.height === height ? old : { width, height });
+    onLayout?.(event);
+  };
+  // Measure the complete scrollport before concealing its retained foreground.
+  const freeze = size.width > 0 && size.height > 0 && (!open || ready && inheritedReady) && !motion.readable;
+  const frozen = useRef(freeze);
+  frozen.current = freeze;
+  const visibleReport = useMemo(() => report ? {
+    contentHeight: (height: number) => { if (!frozen.current) report.contentHeight(height); },
+    viewportHeight: (height: number) => { if (!frozen.current) report.viewportHeight(height); },
+  } : null, [report]);
+  return (
+    <StationaryEntranceContext.Provider value={liquid}>
+      <PopupInteractionContext.Provider value={open}>
+      <Entrance anchor anchorBottom={edge === "bottom"} ready={ready} style={wrapperStyle}>
+        <EntranceReadinessContext.Provider value={inheritedReady && motion.readable}>
+          <MaterialMotionContext.Provider value={motion.frame}>
+            <OverlayScrollContext.Provider value={visibleReport}>
+            <OverlayCard
+              cardStyle={[cardStyle, freeze ? { width: size.width, height: size.height } : null]}
+              dense={dense} onMount={onMount} opening={opening} open={open}
+              ownsScroll={ownsScroll} decoration={decoration} onLayout={measure}
+              onAccessibilityEscape={open && motion.readable ? onAccessibilityEscape : undefined}
+            >
+              <View
+                style={{ flexShrink: 1, display: freeze ? "none" : "flex", opacity: motion.readable ? 1 : 0, pointerEvents: motion.readable ? "auto" : "none" }}
+                accessibilityElementsHidden={!motion.readable}
+                importantForAccessibility={motion.readable ? "auto" : "no-hide-descendants"}
+                aria-hidden={!motion.readable}
+              >{children}</View>
+            </OverlayCard>
+            </OverlayScrollContext.Provider>
+          </MaterialMotionContext.Provider>
+        </EntranceReadinessContext.Provider>
+      </Entrance>
+      </PopupInteractionContext.Provider>
+    </StationaryEntranceContext.Provider>
+  );
+}
+
 interface HostedProps {
+  liquid?: boolean;
   onAccessibilityEscape?: ViewProps["onAccessibilityEscape"];
   host: OverlayHost;
   open: boolean;
@@ -339,7 +419,10 @@ export function placeOverlay(
   return { left: Math.max(CLAMP_INSET, x), top: below.top };
 }
 
-function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, triggerRef, gap, cardStyle, dismissable, cardWidth, centered, preferSide, alignEnd, rtl, opaque, dense, onCardMount, ownsScroll, children, decoration }: HostedProps) {
+function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, triggerRef, gap, cardStyle, dismissable, cardWidth, centered, preferSide, alignEnd, rtl, opaque, dense, onCardMount, ownsScroll, children, decoration, liquid = false }: HostedProps) {
+  const presence = usePopupPresence(open, liquid);
+  const isOpen = useRef(open);
+  isOpen.current = open;
   const [rect, setRect] = useState<Rect | null>(null);
   // The outlet's width, captured alongside the trigger measure; only needed for
   // width-aware (clamped) placement.
@@ -349,10 +432,11 @@ function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, t
   const [sizes, setSizes] = useState<{ content: number | null; viewport: number | null; card: number | null; width: number | null }>({ content: null, viewport: null, card: null, width: null });
   const lastSide = useRef<OverlaySide>("below");
   const report = useMemo(() => ({
-    contentHeight: (content: number) => setSizes((previous) => previous.content === content ? previous : { ...previous, content }),
-    viewportHeight: (viewport: number) => setSizes((previous) => previous.viewport === viewport ? previous : { ...previous, viewport }),
+    contentHeight: (content: number) => { if (isOpen.current) setSizes((previous) => previous.content === content ? previous : { ...previous, content }); },
+    viewportHeight: (viewport: number) => { if (isOpen.current) setSizes((previous) => previous.viewport === viewport ? previous : { ...previous, viewport }); },
   }), []);
   const onCardLayout = useCallback((event: LayoutChangeEvent) => {
+    if (!isOpen.current) return;
     const { height: card, width: cardWidth } = event.nativeEvent.layout;
     setSizes((previous) => previous.card === card && previous.width === cardWidth ? previous : { ...previous, card, width: cardWidth });
   }, []);
@@ -363,13 +447,14 @@ function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, t
   useEffect(() => host.subscribeLayout?.(() => setLayoutRevision((revision) => revision + 1)), [host]);
 
   useEffect(() => {
-    if (!open) {
+    if (!presence.present) {
       setRect(null);
       setOutlet(null);
       setSizes({ content: null, viewport: null, card: null, width: null });
       lastSide.current = "below";
       return;
     }
+    if (!open) return;
     let cancelled = false;
     let raf = 0;
     // Bounded retry: during initial page mount (an overlay that is open on its
@@ -415,7 +500,7 @@ function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, t
       cancelled = true;
       cancelAnimationFrame(raf);
     };
-  }, [open, width, height, host, triggerRef, gap, layoutRevision]);
+  }, [open, presence.present, width, height, host, triggerRef, gap, layoutRevision]);
 
   // A width-aware card never renders wider than its outlet: when the outlet is
   // narrower than the card plus its edge insets (a phone-width screen or docs
@@ -450,27 +535,39 @@ function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, t
     if (open && measured && fittedSide) lastSide.current = fittedSide;
   }, [open, measured, fittedSide]);
   const cappedStyle = fit ? [fittedCardStyle, { maxHeight: Math.min(fit.maxHeight, typeof skinMaxHeight === "number" ? skinMaxHeight : Infinity) }] : fittedCardStyle;
+  const positioned = !!(rect && horizontal && fit);
+  const finishPresence = presence.finish;
+  useEffect(() => {
+    if (!open && !positioned) finishPresence();
+  }, [open, positioned, finishPresence]);
+  const beside = !!(preferSide && rect && horizontal?.top === rect.y && cardLeft != null);
+  const edge: PopupEdge = beside ? cardLeft! >= rect!.x + rect!.width ? "left" : "right" : fit?.side === "above" ? "bottom" : "top";
+  const cardTop = fit?.top ?? (outlet && fit?.bottom != null && sizes.card != null ? outlet.height - fit.bottom - sizes.card : undefined);
+  const anchorY = rect && cardTop != null ? rect.y + rect.height / 2 - cardTop : undefined;
+  const wrapperStyle: ViewStyle = { position: "absolute", left: horizontal?.left, right: horizontal?.right, top: fit?.top, bottom: fit?.bottom };
 
-  if (!open) return null;
+  if (!presence.present) return null;
 
   return (
+    <PortalActivationContext.Provider value={liquid ? presence.opening : null}>
     <Portal>
       {/* The dismiss backdrop only earns its keep when a tap on it can close the
           card; a non-dismissable overlay renders without it so the page under an
           always-open card stays interactive. */}
-      {dismissable ? <Pressable accessible={false} focusable={false} tabIndex={-1} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden aria-hidden style={BACKDROP} onPress={onDismiss} /> : null}
+      {open && dismissable ? <Pressable accessible={false} focusable={false} tabIndex={-1} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden aria-hidden style={BACKDROP} onPress={onDismiss} /> : null}
       {/* Hold the card until the first measurement lands, so it never flashes at
           (0,0). The backdrop above is transparent, so a frame before the card
           shows nothing. */}
       {rect && horizontal && fit ? (
         <OverlaySideContext.Provider value={anchorGeometry}>
           <OverlayScrollContext.Provider value={report}>
-            <Entrance anchor anchorBottom={fit.side === "above"} ready={measured} style={{ position: "absolute", left: horizontal.left, right: horizontal.right, top: fit.top, bottom: fit.bottom }}>
+            {liquid ? <PopupCard open={open} opening={presence.opening} onExited={presence.finish} ready={measured} edge={edge} anchorX={anchorCenter} anchorY={anchorY} wrapperStyle={wrapperStyle} cardStyle={cappedStyle} dense={dense} onMount={onCardMount} ownsScroll={ownsScroll} decoration={decoration} onLayout={onCardLayout} onAccessibilityEscape={onAccessibilityEscape}>{children}</PopupCard> : <Entrance anchor anchorBottom={fit.side === "above"} ready={measured} style={wrapperStyle}>
               <OverlayCard onAccessibilityEscape={onAccessibilityEscape} cardStyle={cappedStyle} opaque={opaque} dense={dense} onMount={onCardMount} ownsScroll={ownsScroll} onLayout={onCardLayout} ready={measured} decoration={decoration}>{children}</OverlayCard>
-            </Entrance>
+            </Entrance>}
           </OverlayScrollContext.Provider>
         </OverlaySideContext.Provider>
       ) : null}
     </Portal>
+    </PortalActivationContext.Provider>
   );
 }

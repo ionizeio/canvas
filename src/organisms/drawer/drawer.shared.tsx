@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
+import { useCallback, useContext, useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
+import { PopupInteractionContext } from "../../style/popup-motion.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { OverlayProvider } from "../../style/portal.js";
 import { Animated, KeyboardAvoidingView, Modal, Platform, StyleSheet } from "react-native";
@@ -106,7 +107,8 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
     // Uncontrolled by default: the trigger opens the drawer and the scrim closes it; a
     // controlled `open` prop overrides this.
     const [internalOpen, setInternalOpen] = useState(false);
-    const open = openProp ?? internalOpen;
+    const parentInteractive = useContext(PopupInteractionContext);
+    const open = parentInteractive && (openProp ?? internalOpen);
     const setOpen = useCallback(
       (next: boolean) => {
         if (openProp === undefined) setInternalOpen(next);
@@ -138,7 +140,11 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
     const [panelH, setPanelH] = useState(0);
     const progress = useRef(new Animated.Value(open ? 1 : 0)).current;
     useEffect(() => {
-      if (open) {
+      if (!parentInteractive) {
+        progress.stopAnimation();
+        progress.setValue(0);
+        setMounted(false);
+      } else if (open) {
         setMounted(true);
         Animated.timing(progress, { toValue: 1, duration: reduced ? 0 : 220, useNativeDriver: supportsNativeDriver }).start();
       } else if (mounted) {
@@ -146,7 +152,7 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
           if (finished) setMounted(false);
         });
       }
-    }, [open, mounted, progress, reduced]);
+    }, [open, mounted, progress, reduced, parentInteractive]);
 
     // Side panels land on the logical start (left) / end (right) edge via flexbox, which mirrors
     // under RTL, so the horizontal slide origin follows the PHYSICAL side the panel ends up on.
@@ -224,7 +230,7 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
           </Button>
         ) : null}
         <Modal
-          visible={mounted}
+          visible={mounted && parentInteractive}
           transparent
           animationType="none"
           onRequestClose={escapeScope.onRequestClose}

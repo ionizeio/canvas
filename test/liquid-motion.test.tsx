@@ -11,12 +11,12 @@ import { layoutElement } from "./entrance-layout.ts";
 
 afterEach(cleanup);
 
-function Probe({ layout, enabled = true, pressed = false, profile = "selection", onCommit }: {
-  layout: LayoutRectangle; enabled?: boolean; pressed?: boolean; profile?: LiquidMotionProfile; onCommit?: () => void;
+function Probe({ layout, enabled = true, pressed = false, profile = "selection", resetKey, testID = "frame", onCommit }: {
+  layout: LayoutRectangle; enabled?: boolean; pressed?: boolean; profile?: LiquidMotionProfile; resetKey?: string | number; testID?: string; onCommit?: () => void;
 }) {
-  const frame = useLiquidMotion(layout, { enabled, pressed, profile });
+  const frame = useLiquidMotion(layout, { enabled, pressed, profile, resetKey });
   useLayoutEffect(() => { onCommit?.(); });
-  return <Animated.View testID="frame" style={[{ position: "absolute", pointerEvents: "none" }, frame]} />;
+  return <Animated.View testID={testID} style={[{ position: "absolute", pointerEvents: "none" }, frame]} />;
 }
 const readFrame = (id = "frame") => {
   const { style } = screen.getByTestId(id);
@@ -25,6 +25,118 @@ const readFrame = (id = "frame") => {
 const start = { x: 3, y: 3, width: 40, height: 28 };
 
 describe("scoped liquid bounds motion", () => {
+  it("transposes stretch, recoil and lift for vertical travel without changing horizontal feel", async () => {
+    const horizontal = { x: 3, y: 3, width: 72, height: 36 };
+    const vertical = { x: 3, y: 3, width: 36, height: 72 };
+    const pair = (moving: boolean) => <>
+      <Probe testID="horizontal" layout={{ ...horizontal, x: moving ? 75 : 3 }} />
+      <Probe testID="vertical" layout={{ ...vertical, y: moving ? 75 : 3 }} />
+    </>;
+    const { rerender, unmount } = render(pair(false));
+    await act(async () => {});
+    const clock = animationClock();
+    try {
+      rerender(pair(true));
+      clock.advance(80);
+      const compare = () => {
+        const across = readFrame("horizontal");
+        const down = readFrame("vertical");
+        expect(down.x).toBeCloseTo(across.y, 4);
+        expect(down.y).toBeCloseTo(across.x, 4);
+        expect(down.width).toBeCloseTo(across.height, 4);
+        expect(down.height).toBeCloseTo(across.width, 4);
+      };
+      compare();
+      expect(readFrame("vertical").height).toBeGreaterThan(vertical.height * 1.15);
+      expect(readFrame("vertical").x).toBeLessThan(0);
+      clock.advance(240);
+      compare();
+      expect(readFrame("vertical").height).toBeLessThan(vertical.height);
+      clock.advance(1200);
+      expect(readFrame("vertical")).toEqual({ ...vertical, y: 75 });
+      expect(readFrame("horizontal")).toEqual({ ...horizontal, x: 75 });
+    } finally { unmount(); clock.restore(); }
+  });
+
+  it("shares diagonal deformation across both axes and settles without rotating the host", async () => {
+    const square = { x: 3, y: 3, width: 40, height: 40 };
+    const { rerender, unmount } = render(<Probe layout={square} />);
+    await act(async () => {});
+    const clock = animationClock();
+    try {
+      rerender(<Probe layout={{ ...square, x: 83, y: 83 }} />);
+      clock.advance(80);
+      const airborne = readFrame();
+      expect(airborne.width).toBeGreaterThan(square.width);
+      expect(airborne.width).toBeCloseTo(airborne.height, 4);
+      expect(airborne.x).toBeCloseTo(airborne.y, 4);
+      expect(screen.getByTestId("frame").style.transform).toBe("");
+      clock.advance(1600);
+      expect(readFrame()).toEqual({ ...square, x: 83, y: 83 });
+    } finally { unmount(); clock.restore(); }
+  });
+
+  it("retargets an in-flight horizontal selection vertically without a shape or position snap", async () => {
+    const { rerender, unmount } = render(<Probe layout={start} />);
+    await act(async () => {});
+    const clock = animationClock();
+    try {
+      rerender(<Probe layout={{ ...start, x: 100 }} />);
+      clock.advance(80);
+      const before = readFrame();
+      const target = { x: 100, y: 120, width: 60, height: 32 };
+      rerender(<Probe layout={target} />);
+      const after = readFrame();
+      for (const axis of ["x", "y", "width", "height"] as const) expect(after[axis]).toBeCloseTo(before[axis], 4);
+      clock.advance(80);
+      const turning = readFrame();
+      expect(turning.y).toBeGreaterThan(before.y);
+      expect(turning.width).toBeGreaterThan(0);
+      expect(turning.height).toBeGreaterThan(0);
+      clock.advance(1600);
+      expect(readFrame()).toEqual(target);
+    } finally { unmount(); clock.restore(); }
+  });
+
+  it("resizes in place without introducing a travel impulse or lift", async () => {
+    const { rerender, unmount } = render(<Probe layout={start} />);
+    await act(async () => {});
+    const clock = animationClock();
+    try {
+      rerender(<Probe layout={{ ...start, width: 80 }} />);
+      clock.advance(80);
+      const resized = readFrame();
+      expect(resized.width).toBeGreaterThan(start.width);
+      expect(resized.width).toBeLessThan(80);
+      expect(resized.x).toBeCloseTo(start.x, 4);
+      expect(resized.y).toBe(start.y);
+      expect(resized.height).toBe(start.height);
+      clock.advance(1600);
+      expect(readFrame()).toEqual({ ...start, width: 80 });
+    } finally { unmount(); clock.restore(); }
+  });
+
+  it("cancels into structural relayout bounds then resumes motion on the next selection", async () => {
+    const { rerender, unmount } = render(<Probe layout={start} resetKey={0} />);
+    await act(async () => {});
+    const clock = animationClock();
+    try {
+      rerender(<Probe layout={{ ...start, x: 100 }} resetKey={0} />);
+      clock.advance(80);
+      const reflow = { x: 30, y: 45, width: 96, height: 18 };
+      rerender(<Probe layout={reflow} resetKey={1} />);
+      expect(readFrame()).toEqual(reflow);
+      clock.advance(400);
+      expect(readFrame()).toEqual(reflow);
+      const target = { ...reflow, y: 100 };
+      rerender(<Probe layout={target} resetKey={1} />);
+      clock.advance(80);
+      expect(readFrame().height).toBeGreaterThan(reflow.height);
+      clock.advance(1600);
+      expect(readFrame()).toEqual(target);
+    } finally { unmount(); clock.restore(); }
+  });
+
   it("commits a dragged thumb center with its value before passive effects run", async () => {
     const committedCenters: number[] = [];
     const onCommit = () => {

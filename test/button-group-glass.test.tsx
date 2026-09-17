@@ -7,7 +7,7 @@ import { ButtonGroup as IOSGroup } from "../src/atoms/button-group/button-group.
 import { ButtonGroup as AndroidGroup } from "../src/atoms/button-group/button-group.android.tsx";
 import { GlassSelection } from "../src/atoms/button-group/button-group-glass.tsx";
 import { animationClock } from "./liquid-motion-clock.ts";
-import { layoutEntrance } from "./entrance-layout.ts";
+import { layoutElement, layoutEntrance } from "./entrance-layout.ts";
 
 afterEach(cleanup);
 
@@ -56,6 +56,24 @@ describe("ButtonGroup theme material", () => {
       fireEvent.click(screen.getByRole("tab", { name: "Month" }));
       expect(screen.getByRole("tab", { name: "Month" }).getAttribute("aria-disabled")).toBe("true");
       expect(selected).toEqual(["Week"]);
+    });
+
+    it(`${platform} paints the selected material when entering glass without a new layout event`, async () => {
+      const control = (glass: boolean) => <ThemeProvider glass={glass} solid={!glass}>
+        <Group items={items} active={1} testID="group" />
+      </ThemeProvider>;
+      const { rerender } = render(control(false));
+      await act(async () => {});
+      const selected = screen.getByRole("tab", { name: "Week" });
+      layoutElement(selected.parentElement!, { width: 84, height: 36 });
+      expect(screen.queryByTestId("group-selection")).toBeNull();
+      rerender(control(true));
+      const material = screen.getByTestId("group-selection");
+      expect(material.parentElement!.style.width).toBe("84px");
+      expect(material.parentElement!.style.height).toBe("36px");
+      expect(screen.getByRole("tab", { name: "Week" })).toBe(selected);
+      expect(selected.getAttribute("aria-selected")).toBe("true");
+      expect(material.parentElement!.getAttribute("aria-hidden")).toBe("true");
     });
 
     it(`${platform} keeps controlled icon selection and detached action semantics`, () => {

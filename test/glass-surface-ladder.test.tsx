@@ -255,7 +255,8 @@ describe("GlassBox structure (real material path)", () => {
       </GlassBox>,
     );
     const outer = screen.getByTestId("gbox") as HTMLElement;
-    const clip = outer.firstElementChild as HTMLElement;
+    const materialFrame = outer.firstElementChild as HTMLElement;
+    const clip = screen.getByText("material-layer").parentElement as HTMLElement;
     // Keep layout geometry while the material supplies the visible edge.
     expect(outer.style.borderWidth).toBe("1px");
     expect(outer.style.borderColor).toMatch(/rgba\(0, ?0, ?0, ?0/);
@@ -267,6 +268,8 @@ describe("GlassBox structure (real material path)", () => {
     // sizing. (react-native-web expands `overflow` to the two axis longhands.)
     expect(clip.style.overflowX).toBe("hidden");
     expect(clip.style.overflowY).toBe("hidden");
+    // The frame can carry moving elevation outside the rounded material clip.
+    expect(materialFrame.style.overflowX).not.toBe("hidden");
     expect(outer.style.padding).toBe("8px");
     expect(clip.style.padding).toBe("");
     expect(screen.getByText("surface content").parentElement).toBe(outer);

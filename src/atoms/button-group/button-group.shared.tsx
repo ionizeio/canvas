@@ -1,6 +1,6 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { type GestureResponderEvent, type LayoutChangeEvent, type LayoutRectangle } from "react-native";
 import { View, Pressable, Text, RippleClip, cornerRadii, useHugStyle, useSizing, useControllableState, AnchoredOverlay, useOverlayHost, useMeasuredWidth, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, type MeasureProps, stepOf } from "../../style/index.js";
 import { Icon, type IconName } from "../icon/icon.js";
@@ -503,6 +503,16 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     const { tokens, surface } = theme;
     const glass = surface === "glass";
     const [segmentLayouts, setSegmentLayouts] = useState<Record<number, LayoutRectangle>>({});
+    // Keep measurement installed through material changes. RNW does not replay
+    // unchanged layout merely because an onLayout callback appears in glass mode.
+    const segmentMeasurements = useMemo(() => Array.from({ length: items.length }, (_, i) => (e: LayoutChangeEvent) => {
+      const layout = e.nativeEvent.layout;
+      setSegmentLayouts((previous) => {
+        const old = previous[i];
+        if (old && old.x === layout.x && old.y === layout.y && old.width === layout.width && old.height === layout.height) return previous;
+        return { ...previous, [i]: layout };
+      });
+    }), [items.length]);
     const [pressedSegment, setPressedSegment] = useState<number | null>(null);
     const kind = kindOf(props);
     useEffect(() => {
@@ -618,14 +628,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
         }}
         onPressIn={glass ? () => setPressedSegment(i) : undefined}
         onPressOut={glass ? () => setPressedSegment((current) => current === i ? null : current) : undefined}
-        onLayout={glass ? (e) => {
-          const layout = e.nativeEvent.layout;
-          setSegmentLayouts((previous) => {
-            const old = previous[i];
-            if (old && old.x === layout.x && old.y === layout.y && old.width === layout.width && old.height === layout.height) return previous;
-            return { ...previous, [i]: layout };
-          });
-        } : undefined}
+        onLayout={segmentMeasurements[i]}
       />
     ));
     // The segments are a single mutually-exclusive control, so the row is a

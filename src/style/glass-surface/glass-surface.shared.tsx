@@ -8,7 +8,8 @@
 // clip contains only decoration, preserving shadow, focus and child identity.
 
 import { createContext, useContext, type ReactNode, type RefObject } from "react";
-import { View, StyleSheet, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
+import { Animated, View, StyleSheet, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
+import { MaterialMotionContext } from "../popup-motion.js";
 import { type ColorTokens, type GlassTokens } from "../tokens.js";
 import { alpha, composite, contrastRatio, inkOn } from "../color.js";
 
@@ -306,15 +307,25 @@ export function GlassBox({
   style, children, pointerEvents, testID, role, onLayout, onAccessibilityEscape,
   material, solid = false,
 }: GlassSurfaceProps & { material: ReactNode; solid?: boolean }) {
+  const motion = useContext(MaterialMotionContext);
   const flat = (StyleSheet.flatten(style) ?? {}) as Record<string, unknown>;
   const clear: Record<string, unknown> = { backgroundColor: "transparent", borderColor: "transparent" };
+  const movingShadow: Record<string, unknown> = {};
+  const clearedShadow: Record<string, unknown> = {};
+  if (motion && !solid) {
+    for (const key of ["shadowColor", "shadowOffset", "shadowOpacity", "shadowRadius", "elevation", "boxShadow"]) {
+      if (flat[key] == null) continue;
+      movingShadow[key] = flat[key];
+      clearedShadow[key] = key === "boxShadow" ? "none" : key === "shadowColor" ? "transparent" : key === "shadowOffset" ? { width: 0, height: 0 } : 0;
+    }
+  }
   for (const key of Object.keys(flat)) {
     if (key.startsWith("border") && key.endsWith("Color")) clear[key] = "transparent";
   }
   return (
-    <View style={[style, solid ? null : clear as ViewStyle, pointerEvents ? { pointerEvents } : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={onAccessibilityEscape ? false : undefined}>
-      {material ? <View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[materialFill(style), { overflow: "hidden", zIndex: -1 }]}>{material}</View> : null}
-      {children}
+    <View style={[style, solid ? null : clear as ViewStyle, clearedShadow as ViewStyle, pointerEvents ? { pointerEvents } : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={onAccessibilityEscape ? false : undefined}>
+      {material ? <Animated.View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[materialFill(style), { zIndex: -1 }, movingShadow as ViewStyle, motion]}><View style={[materialFill(style), { overflow: "hidden" }]}>{material}</View></Animated.View> : null}
+      <MaterialMotionContext.Provider value={null}>{children}</MaterialMotionContext.Provider>
     </View>
   );
 }

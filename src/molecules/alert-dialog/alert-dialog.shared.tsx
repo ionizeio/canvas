@@ -1,6 +1,7 @@
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useHardwareBack } from "../../style/use-hardware-back.js";
-import { type ReactNode, useId, useState } from "react";
+import { type ReactNode, useContext, useId, useState } from "react";
+import { PopupInteractionContext } from "../../style/popup-motion.js";
 import { KeyboardAvoidingView, Platform } from "react-native";
 import { Entrance, GlassSurface, Portal, Pressable, RippleClip, Text, View, cornerRadii, type StyleProp, type ViewStyle, useDialogFocus, useTheme } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
@@ -135,7 +136,8 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
     // Uncontrolled by default: the trigger opens the dialog and an action closes
     // it; a controlled `open` prop overrides this.
     const [internalOpen, setInternalOpen] = useState(false);
-    const open = openProp ?? internalOpen;
+    const parentInteractive = useContext(PopupInteractionContext);
+    const open = parentInteractive && (openProp ?? internalOpen);
     const setOpen = (next: boolean) => {
       if (openProp === undefined) setInternalOpen(next);
       onOpenChange?.(next);

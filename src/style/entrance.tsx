@@ -9,6 +9,7 @@ import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect.js";
 import { Animated, type LayoutChangeEvent, type StyleProp, type ViewStyle } from "react-native";
 import { EntranceReadinessContext } from "./entrance-readiness.js";
 import { useReducedMotion, supportsNativeDriver } from "./motion.js";
+import { PopupInteractionContext, StationaryEntranceContext } from "./popup-motion.js";
 
 // Anchored menus pop from 85%; dialog panels ease in from 96% (barely a scale, just a
 // settle). The menu spring carries a slight overshoot (the liquid feel); the panel
@@ -95,7 +96,10 @@ function createEntranceGraph(startScale: number) {
 }
 
 export function Entrance({ anchor, anchorBottom = false, ready = true, style, children }: EntranceProps) {
-  const reduced = useReducedMotion();
+  const reducedMotion = useReducedMotion();
+  const stationary = useContext(StationaryEntranceContext);
+  const interactive = useContext(PopupInteractionContext);
+  const reduced = reducedMotion || stationary;
   const inheritedReadiness = useContext(EntranceReadinessContext);
   const graphRef = useRef<ReturnType<typeof createEntranceGraph> | null>(null);
   if (graphRef.current === null) graphRef.current = createEntranceGraph(anchor ? MENU_START_SCALE : PANEL_START_SCALE);
@@ -182,14 +186,14 @@ export function Entrance({ anchor, anchorBottom = false, ready = true, style, ch
   return (
     <EntranceReadinessContext.Provider value={inheritedReadiness && !held}>
       <Animated.View
-        pointerEvents={held ? "none" : "auto"}
-        accessibilityElementsHidden={held}
-        importantForAccessibility={held ? "no-hide-descendants" : "auto"}
-        aria-hidden={held}
+        pointerEvents={held || !interactive ? "none" : "auto"}
+        accessibilityElementsHidden={held || !interactive}
+        importantForAccessibility={held || !interactive ? "no-hide-descendants" : "auto"}
+        aria-hidden={held || !interactive}
         style={[style, graph.visualStyle]}
         onLayout={onLayout}
       >
-        <>{children}</>
+        <StationaryEntranceContext.Provider value={false}>{children}</StationaryEntranceContext.Provider>
       </Animated.View>
     </EntranceReadinessContext.Provider>
   );
