@@ -126,6 +126,24 @@ states[OVERLAY_STATE.toast] = {
   element: null,
 };
 
+// Keep the lifted material visible in regression evidence. The selection must
+// extend beyond its track without stretching labels or clipping nearby rows.
+states["button-group-held"] = {
+  prepare: async (page: Page) => {
+    // Lookout normally requests Reduce Motion. This state explicitly verifies
+    // the interactive lift; the rest capture still checks the reduced version.
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await stage(page).getByRole("tab", { name: "Week", exact: true }).first().hover();
+    await page.mouse.down();
+    await page.waitForTimeout(400);
+  },
+  restore: async (page: Page) => {
+    await page.mouse.up();
+    await page.emulateMedia({ reducedMotion: "reduce" });
+  },
+  element: "[data-preview-card]",
+};
+
 // ---------------------------------------------------------------------------
 
 const config: LookoutConfig = {
@@ -150,7 +168,7 @@ const config: LookoutConfig = {
         path: `/components/${slug}`,
         name: `${slug}-glass`,
         element: "[data-preview-card]",
-        states: OVERLAY_STATE[slug] ? [OVERLAY_STATE[slug]!] : [],
+        states: slug === "button-group" ? ["button-group-held"] : OVERLAY_STATE[slug] ? [OVERLAY_STATE[slug]!] : [],
       })),
     },
   ],

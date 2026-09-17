@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, spyOn } from "bun:test";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { AccessibilityInfo } from "react-native";
+import { AccessibilityInfo, Animated } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { ButtonGroup as WebGroup } from "../src/atoms/button-group/button-group.tsx";
 import { ButtonGroup as IOSGroup } from "../src/atoms/button-group/button-group.ios.tsx";
@@ -13,6 +13,47 @@ afterEach(cleanup);
 const items = ["Day", "Week", "Month"];
 const materialLayers = (root: HTMLElement) => [...root.querySelectorAll<HTMLElement>("[style]")]
   .filter((node) => node.style.backdropFilter);
+
+// Drive RN's real springs through their frame callbacks. This tests the painted
+// bounds without replacing Animated.spring with a mock that jumps to its target.
+function animationClock() {
+  // RNW selects AnimatedMock under NODE_ENV=test. Opt this scope back into
+  // the production engine, and restore both methods before another test runs.
+  const engine = require("react-native-web/dist/vendor/react-native/Animated/AnimatedImplementation").default as typeof Animated;
+  const spring = spyOn(Animated, "spring").mockImplementation(engine.spring);
+  const parallel = spyOn(Animated, "parallel").mockImplementation(engine.parallel);
+  let now = Date.now();
+  let nextId = 0;
+  const frames = new Map<number, FrameRequestCallback>();
+  const time = spyOn(Date, "now").mockImplementation(() => now);
+  const raf = spyOn(globalThis, "requestAnimationFrame").mockImplementation((callback) => {
+    frames.set(++nextId, callback);
+    return nextId;
+  });
+  const cancel = spyOn(globalThis, "cancelAnimationFrame").mockImplementation((id) => { frames.delete(id); });
+  return {
+    advance(milliseconds: number) {
+      for (let elapsed = 0; elapsed < milliseconds; elapsed += 16) {
+        act(() => {
+          now += 16;
+          const callbacks = [...frames.values()];
+          frames.clear();
+          callbacks.forEach((callback) => callback(now));
+        });
+      }
+    },
+    restore() { time.mockRestore(); raf.mockRestore(); cancel.mockRestore(); spring.mockRestore(); parallel.mockRestore(); },
+  };
+}
+
+function selectionFrame() {
+  const frame = screen.getByTestId("selection").parentElement!;
+  return {
+    left: parseFloat(frame.style.left), top: parseFloat(frame.style.top),
+    width: parseFloat(frame.style.width), height: parseFloat(frame.style.height),
+    transform: frame.style.transform,
+  };
+}
 
 describe("ButtonGroup theme material", () => {
   for (const [platform, Group] of [["web", WebGroup], ["ios", IOSGroup], ["android", AndroidGroup]] as const) {
@@ -96,6 +137,62 @@ describe("ButtonGroup theme material", () => {
     } finally {
       reduced.mockRestore();
     }
+  });
+
+  it("stretches outside the track, recoils, and settles exactly on the selected segment", async () => {
+    const start = { x: 3, y: 3, width: 72, height: 36 };
+    const { rerender, unmount } = render(<ThemeProvider glass><GlassSelection testID="selection" layout={start} /></ThemeProvider>);
+    await act(async () => {});
+    const clock = animationClock();
+    try {
+      // Equal-width tabs expose actual deformation, not an animated width change.
+      rerender(<ThemeProvider glass><GlassSelection testID="selection" layout={{ ...start, x: 75 }} /></ThemeProvider>);
+      clock.advance(80);
+      const airborne = selectionFrame();
+      expect(airborne.width).toBeGreaterThan(start.width * 1.15);
+      expect(airborne.top).toBeLessThan(0);
+      expect(airborne.top + airborne.height).toBeGreaterThan(42);
+      expect(airborne.transform).toBe("");
+      clock.advance(240);
+      expect(selectionFrame().width).toBeLessThan(start.width);
+      clock.advance(1200);
+      expect(selectionFrame()).toEqual({ left: 75, top: 3, width: 72, height: 36, transform: "" });
+    } finally { unmount(); clock.restore(); }
+  });
+
+  it("retargets a reversing switch without snapping and lands on unequal bounds", async () => {
+    const start = { x: 160, y: 3, width: 96, height: 40 };
+    const { rerender, unmount } = render(<ThemeProvider glass><GlassSelection testID="selection" layout={start} /></ThemeProvider>);
+    await act(async () => {});
+    const clock = animationClock();
+    try {
+      rerender(<ThemeProvider glass><GlassSelection testID="selection" layout={{ x: 3, y: 3, width: 56, height: 36 }} /></ThemeProvider>);
+      clock.advance(64);
+      const before = selectionFrame();
+      rerender(<ThemeProvider glass><GlassSelection testID="selection" layout={start} /></ThemeProvider>);
+      const after = selectionFrame();
+      expect(after.left).toBeCloseTo(before.left, 4);
+      expect(after.width).toBeCloseTo(before.width, 4);
+      clock.advance(1600);
+      expect(selectionFrame()).toEqual({ left: 160, top: 3, width: 96, height: 40, transform: "" });
+    } finally { unmount(); clock.restore(); }
+  });
+
+  it("keeps a held pill outside the track and settles on release without changing its hit target", async () => {
+    const layout = { x: 3, y: 3, width: 72, height: 36 };
+    const { rerender, unmount } = render(<ThemeProvider glass><GlassSelection testID="selection" layout={layout} /></ThemeProvider>);
+    await act(async () => {});
+    const clock = animationClock();
+    try {
+      rerender(<ThemeProvider glass><GlassSelection testID="selection" layout={layout} pressed /></ThemeProvider>);
+      clock.advance(1000);
+      expect(selectionFrame().height).toBeCloseTo(54, 1);
+      expect(selectionFrame().top).toBeLessThan(0);
+      expect(screen.getByTestId("selection").style.pointerEvents).toBe("none");
+      rerender(<ThemeProvider glass><GlassSelection testID="selection" layout={layout} /></ThemeProvider>);
+      clock.advance(1600);
+      expect(selectionFrame()).toEqual({ left: 3, top: 3, width: 72, height: 36, transform: "" });
+    } finally { unmount(); clock.restore(); }
   });
 
   it("keeps opaque glass surfaces with contrast edges under Increase Contrast", async () => {

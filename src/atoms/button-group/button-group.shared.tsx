@@ -1,5 +1,5 @@
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { type GestureResponderEvent, type LayoutChangeEvent, type LayoutRectangle } from "react-native";
 import { View, Pressable, Text, RippleClip, cornerRadii, useHugStyle, useSizing, useTheme, useControllableState, AnchoredOverlay, useOverlayHost, useMeasuredWidth, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, type MeasureProps, stepOf } from "../../style/index.js";
 import { Icon, type IconName } from "../icon/icon.js";
@@ -219,10 +219,12 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     size: Size;
     disabled?: boolean;
     onPress?: (event: GestureResponderEvent) => void;
+    onPressIn?: () => void;
+    onPressOut?: () => void;
     onLayout?: (event: LayoutChangeEvent) => void;
   }
 
-  function Segment({ label, icon, iconOnly, selected, selectable, corners, leading, standalone, block, size, disabled, onPress, onLayout }: SegmentProps) {
+  function Segment({ label, icon, iconOnly, selected, selectable, corners, leading, standalone, block, size, disabled, onPress, onPressIn, onPressOut, onLayout }: SegmentProps) {
     const { tokens, surface } = useTheme();
     const glass = surface === "glass";
     const iconColor = glass ? (selected && selectable ? "primary" : "foreground") : skin.segmentIconColor(selected && selectable);
@@ -255,6 +257,8 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
       <Pressable
         style={({ pressed }) => [container, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
         onPress={onPress}
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
         onLayout={standalone || glass ? undefined : onLayout}
         disabled={disabled}
         aria-disabled={!!disabled}
@@ -496,7 +500,11 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     const { tokens, surface } = useTheme();
     const glass = surface === "glass";
     const [segmentLayouts, setSegmentLayouts] = useState<Record<number, LayoutRectangle>>({});
+    const [pressedSegment, setPressedSegment] = useState<number | null>(null);
     const kind = kindOf(props);
+    useEffect(() => {
+      if (!glass || disabled || kind !== "segmented") setPressedSegment(null);
+    }, [glass, disabled, kind]);
     const size = sizeOf(props);
     // HUG, or FILL under `block` or a measure step (the segmented/spaced kinds
     // only; see below). Under either the segments flex to equal shares of the row.
@@ -605,6 +613,8 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
           setActive(i);
           onSelect?.(i, itemLabelOf(item), e);
         }}
+        onPressIn={glass ? () => setPressedSegment(i) : undefined}
+        onPressOut={glass ? () => setPressedSegment((current) => current === i ? null : current) : undefined}
         onLayout={glass ? (e) => {
           const layout = e.nativeEvent.layout;
           setSegmentLayouts((previous) => {
@@ -619,11 +629,12 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     // `tablist` grouping its `tab` segments (matching the Tabs precedent). The
     // sizing nature (HUG, or FILL under `block`) lands AFTER the skin wrap.
     if (glass) {
+      const selectionLayout = segmentLayouts[disabled ? active : pressedSegment ?? active];
       return (
         <View accessibilityRole="tablist" accessibilityLabel={props.accessibilityLabel} aria-label={props.accessibilityLabel} style={[s.glassSegmentedContainer, sizing, style]} testID={testID}>
           <GroupGlass testID={testID ? `${testID}-glass` : undefined} />
-          {active >= 0 && active < count && segmentLayouts[active] ? (
-            <GlassSelection layout={segmentLayouts[active]} disabled={disabled} testID={testID ? `${testID}-selection` : undefined} />
+          {active >= 0 && active < count && selectionLayout ? (
+            <GlassSelection layout={selectionLayout} pressed={pressedSegment !== null} disabled={disabled} testID={testID ? `${testID}-selection` : undefined} />
           ) : null}
           {row}
         </View>
