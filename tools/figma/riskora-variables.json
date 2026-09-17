@@ -123,7 +123,7 @@
         "dark": { "solved": "stroke/soft-200 dark is a 28% alpha of #2b303b; the kit carries opaque tokens, so this is that alpha composited over the card and lifted a step so it reads on the page too" }
       },
       "input": { "solved": "WCAG 1.4.11: the control boundary must clear 3:1 on the page, a card and a muted panel; the source's field border (stroke/sub-300, 1.7:1) does not, so the value is the lightest one on the neutral hue that does" },
-      "field-border": { "solved": "not a Riskora role: the iOS field skins' RESTING border, taken verbatim from the iOS Mobile Input Fields kit (Figma N8TScrzAPwpmwxFS1032my, Border/Default: gray-300 light, systemGray4 dark). Deliberately below the 3:1 control floor `input` holds; the trade-off is disclosed in src/style/tokens.ts" },
+      "field-border": { "solved": "not a Riskora role: the web and iOS field skins' RESTING border, taken verbatim from the iOS Mobile Input Fields kit (Figma N8TScrzAPwpmwxFS1032my, Border/Default: gray-300 light, systemGray4 dark). Deliberately below the 3:1 control floor `input` holds; the trade-off is disclosed in src/style/tokens.ts" },
       "ring": { "variable": "sky/400", "mode": "light", "tolerance": 0, "note": "one value in both schemes" },
       "primary-text": {
         "light": { "solved": "sky/400 is 2.7:1 on white; the same hue deepened until link text clears 4.5:1 on the page, a card and a muted panel" },

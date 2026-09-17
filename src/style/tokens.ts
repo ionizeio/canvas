@@ -34,12 +34,14 @@ export interface ColorTokens {
   border: string;
   input: string;
   /**
-   * The RESTING border of a text field on the iOS skins (Input, Textarea, Select,
-   * Autocomplete, PhoneInput), and only there: a gray-300 hairline on a white box,
-   * the iOS field look the design source draws, which sits BELOW the 3:1 control
-   * floor `input` holds (see `fieldBorder` in src/style/field-colors.ts for the
-   * disclosed trade-off). Focus and error still paint `ring` and `destructive`.
-   * Omit in legacy maps to rest on `input`.
+   * The RESTING border of a text field on the web and iOS skins (Input, Textarea,
+   * Select, Autocomplete, InputOTP, Stepper, PhoneInput, the Command trigger), and
+   * only there: a gray-300 hairline on a white box, the iOS field look the design
+   * source draws, which sits BELOW the 3:1 control floor `input` holds (see
+   * `fieldBorder` in src/style/field-colors.ts for the disclosed trade-off). Focus
+   * and error still paint `ring` and `destructive`, and every non-field control
+   * (checkbox, radio, switch, pagination, the outline button) keeps `input`. Omit
+   * in legacy maps to rest on `input`.
    */
   "field-border"?: string;
   ring: string;
@@ -119,10 +121,12 @@ export const lightColors: ColorTokens = {
   // (file N8TScrzAPwpmwxFS1032my, Border/Default): Tailwind gray-300 on a white box,
   // 1.47:1 against `card`. This is a DELIBERATE, disclosed departure from the 3:1
   // boundary `input` holds (WCAG 1.4.11), chosen on 2026-09-16 so the iOS fields
-  // read as the iOS reference rather than as the web's heavier outline. Only the
-  // iOS field skins' resting state reads it (through `fieldBorder`); focus and
-  // error keep their full-strength `ring` / `destructive` borders, and the white
-  // `card` box on the tinted page carries the rest of the boundary read.
+  // read as the iOS reference rather than as the web's heavier outline, and
+  // extended to the web field skins the same day at the user's request (the 3:1
+  // outline read as a white frame on the dark card). Only the field skins' resting
+  // state reads it (through `fieldBorder`); focus and error keep their
+  // full-strength `ring` / `destructive` borders, the non-field controls keep
+  // `input`, and the `card` box on the tinted page carries the rest of the read.
   "field-border": "#d1d5db",
   ring: "#3da3f5", // one ring value in both schemes; see colors.css
   "chart-1": "#3da3f5", // Riskora sky/400

@@ -150,7 +150,7 @@ export const webSkin: SelectSkin = {
     ...TRIGGER_ROW,
     borderRadius: shape.web.field,
     borderWidth: 1,
-    borderColor: t.input,
+    borderColor: fieldBorder(t),
     backgroundColor: t.card,
     paddingHorizontal: 16,
     height: WEB_TRIGGER_BOX[size],

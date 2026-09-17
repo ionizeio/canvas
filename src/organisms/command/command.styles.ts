@@ -1,5 +1,6 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, surfaceRipple, shape } from "../../style/index.js";
+import { fieldBorder } from "../../style/field-colors.js";
 
 // Co-located Command skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so they follow light/dark and the glass surface, since
@@ -53,6 +54,10 @@ export interface CommandSkin {
   /** The collapsed trigger row's minimum tap height (px): the HIG/M3 minimum on
    *  the native rows (44pt iOS, 48dp Android), the web look on web. */
   triggerMinHeight: number;
+  /** The collapsed trigger row's resting border: the search-field hairline
+   *  (`field-border`, see src/style/field-colors.ts) on web and iOS, where the
+   *  trigger reads as a field; the 3:1 `input` boundary on Android. */
+  triggerBorder: (t: ColorTokens) => string;
   /** A single result row layout (gap, padding, min height). */
   rowBase: ViewStyle;
   /** The active/pressed row fill (the brand accent surface on every platform). */
@@ -143,7 +148,6 @@ export function triggerRow(tokens: ColorTokens): ViewStyle {
     justifyContent: "flex-start",
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: tokens.input,
     backgroundColor: "transparent",
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -219,6 +223,7 @@ export const webSkin: CommandSkin = {
   cardShape: { borderRadius: shape.web.menu },
   // 40px rows, the Riskora menu row.
   triggerMinHeight: 40,
+  triggerBorder: (t) => fieldBorder(t),
   rowBase: {
     flexDirection: "row",
     alignItems: "center",
@@ -273,6 +278,7 @@ export const iosSkin: CommandSkin = {
   cardShape: { borderRadius: 16, borderCurve: "continuous" },
   // HIG minimum interactive target 44x44pt.
   triggerMinHeight: 44,
+  triggerBorder: (t) => fieldBorder(t),
   rowBase: {
     flexDirection: "row",
     alignItems: "center",
@@ -327,6 +333,7 @@ export const androidSkin: CommandSkin = {
   cardShape: { borderRadius: 8 },
   // M3 minimum touch target 48x48dp.
   triggerMinHeight: 48,
+  triggerBorder: (t) => t.input,
   rowBase: {
     flexDirection: "row",
     alignItems: "center",

@@ -124,6 +124,16 @@ describe("the iOS glyph follows the field state", () => {
   });
 });
 
+describe("the web field box rests on the same hairline", () => {
+  const t = lightColors;
+  it("rests on `field-border`, focuses on `ring`, errors on `destructive`", () => {
+    expect(webSkin.bareField(t, "input", false, false).borderColor).toBe(t["field-border"]);
+    expect(webSkin.groupContainer(t, "input", false, false).borderColor).toBe(t["field-border"]);
+    expect(webSkin.bareField(t, "ring", true, false).borderColor).toBe(t.ring);
+    expect(webSkin.bareField(t, "destructive", false, true).borderColor).toBe(t.destructive);
+  });
+});
+
 describe("the iOS field box", () => {
   const t = lightColors;
   it("rests on `field-border`, focuses on `ring`, errors on `destructive` with the wash", () => {

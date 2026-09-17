@@ -89,13 +89,13 @@ export function minHeight(rows?: number): TextStyle {
 // ---------- Web: the Riskora dashboard field ----------
 // Full width, a white (`card`) box with the 12px field corner and a full 1px
 // border, 16px inset, with the foreground text color. Border resolves error >
-// focus(ring) > default input (the 3:1 control boundary; see input.styles.ts).
+// focus(ring) > the resting `field-border` hairline (see src/style/field-colors.ts).
 export const webSkin: TextareaSkin = {
   field: (t, st) => ({
     width: "100%",
     borderRadius: shape.web.field,
     borderWidth: 1,
-    borderColor: st.error ? t.destructive : st.focused ? t.ring : t.input,
+    borderColor: st.error ? t.destructive : st.focused ? t.ring : fieldBorder(t),
     backgroundColor: t.card,
     paddingHorizontal: 16,
     paddingVertical: 12,

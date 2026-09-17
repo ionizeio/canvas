@@ -30,7 +30,7 @@
      panel); `border` only separates surfaces. Solve, do not eyeball. Why in
      src/style/tokens.ts. Dark below is solved the same way. */
   --input:oklch(0.65 0.012 262);
-  /* iOS field RESTING hairline only, below 3:1 on purpose; why in tokens.ts. */
+  /* Field RESTING hairline (web + iOS), below 3:1 on purpose; why in tokens.ts. */
   --field-border:oklch(0.871 0.009 257);
   /* One ring value in both schemes: it reads on a light page and a dark page. */
   --ring:oklch(0.694 0.152 246.867);

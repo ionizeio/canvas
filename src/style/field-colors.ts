@@ -1,20 +1,24 @@
 import type { ColorTokens } from "./tokens.js";
 import { mixOklab } from "./color.js";
 
-// The colours the iOS field skins (Input, Textarea, Select, Autocomplete, PhoneInput)
-// share for the two states the semantic set has no single token for: the RESTING
-// border and the ERROR fill. Both come from the "iOS Mobile Input Fields" Figma kit
+// The colours the field skins share for the two states the semantic set has no
+// single token for: the RESTING border (web and iOS: Input, Textarea, Select,
+// Autocomplete, InputOTP, Stepper, PhoneInput, the Command trigger) and the ERROR
+// fill (iOS). Both come from the "iOS Mobile Input Fields" Figma kit
 // (N8TScrzAPwpmwxFS1032my), the iOS reference the fields are drawn to.
 
 /**
- * The resting border of an iOS field: the `field-border` token (gray-300 light,
+ * The resting border of a field: the `field-border` token (gray-300 light,
  * systemGray4 dark), falling back to `input` for a legacy token map that omits it.
  *
  * DISCLOSED TRADE-OFF. `input` is held to WCAG 1.4.11's 3:1 boundary floor; this
  * value is ~1.5:1 on the field's own fill, which is the iOS reference's hairline. It
- * is read ONLY for the resting state of the iOS field skins; focus (`ring`) and
- * error (`destructive`) borders are unchanged, and the white `card` box on the
- * tinted page still gives the field an edge. The web and Android skins keep `input`.
+ * is read ONLY for the resting state of the web and iOS field skins (the user asked
+ * for the web to follow iOS: the 3:1 outline read as a white frame on the dark
+ * card); focus (`ring`) and error (`destructive`) borders are unchanged, the `card`
+ * box on the tinted page still gives the field an edge, the non-field controls
+ * (checkbox, radio, switch, pagination, outline button) keep `input`, and Android's
+ * M3 fields draw their underline, not this.
  */
 export function fieldBorder(tokens: ColorTokens): string {
   return tokens["field-border"] ?? tokens.input;

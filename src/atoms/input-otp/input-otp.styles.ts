@@ -174,7 +174,7 @@ export const webSkin: InputOTPSkin = {
       borderBottomWidth: 1,
       borderEndWidth: 1,
       borderStartWidth: groupStart ? 1 : 0,
-      borderColor: active ? t.ring : t.input,
+      borderColor: active ? t.ring : fieldBorder(t),
       // Only a run's outer corners are rounded (its first cell's left, its last cell's right).
       borderTopStartRadius: groupStart ? WEB_RADIUS : 0,
       borderBottomStartRadius: groupStart ? WEB_RADIUS : 0,

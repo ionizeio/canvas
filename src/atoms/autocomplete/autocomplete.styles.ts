@@ -121,7 +121,7 @@ export const webSkin: AutocompleteSkin = {
     justifyContent: "space-between",
     borderRadius: shape.web.field,
     borderWidth: 1,
-    borderColor: t.input,
+    borderColor: fieldBorder(t),
     backgroundColor: t.card,
     paddingHorizontal: 16,
     height: WEB_FIELD_BOX[size],

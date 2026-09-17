@@ -375,7 +375,7 @@ export function createCommand(skin: CommandSkin) {
           accessibilityRole="button"
           accessibilityState={{ expanded: open }}
           aria-expanded={open}
-          style={[s.triggerRow(tokens), { minHeight: skin.triggerMinHeight }]}
+          style={[s.triggerRow(tokens), { minHeight: skin.triggerMinHeight, borderColor: skin.triggerBorder(tokens) }]}
           onPress={() => setOpen(!open)}
         >
           <Icon search muted size={14} />

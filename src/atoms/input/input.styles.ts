@@ -19,10 +19,9 @@ import { type ColorTokens, FOCUS_RESET, activeIndicator, shape, type FloatingLab
 //     rest -> 2dp `ring` on focus, `destructive` on error), ~56dp tall; the
 //     action suffix uses android_ripple; disabled opacity 0.38.
 //   Web: the Riskora dashboard field — a white (`card`) box with the 12px control
-//     corner and a full 1px border (error > focus > input), 48 tall at the base
-//     size (40 small, 56 large), 16px inset, opacity 0.5 disabled, action press
-//     opacity 0.9. The resting border stays the 3:1 `input` boundary rather than the
-//     source's 1.5:1 hairline (WCAG 1.4.11; see src/style/tokens.ts).
+//     corner and a full 1px border (error > focus > the resting `field-border`
+//     hairline, see src/style/field-colors.ts), 48 tall at the base size (40 small,
+//     56 large), 16px inset, opacity 0.5 disabled, action press opacity 0.9.
 
 export type Size = "small" | "base" | "large";
 
@@ -96,6 +95,13 @@ function webText(_t: ColorTokens, size: Size): TextStyle {
 }
 
 // ---------- Web: the Riskora dashboard field ----------
+// The border by state, shared by the web and iOS boxes: the shell resolves the token
+// KEY (error > focus > input); at rest the box reads the `field-border` hairline
+// instead of the 3:1 `input` boundary (the disclosed trade-off in field-colors.ts).
+function fieldEdge(t: ColorTokens, borderColor: keyof ColorTokens): string {
+  return borderColor === "input" ? fieldBorder(t) : (t[borderColor] ?? t.input);
+}
+
 export const webSkin: InputSkin = {
   text: webText,
   bareBox: (size) => ({ height: size === "large" ? 56 : size === "small" ? 40 : 48 }),
@@ -104,7 +110,7 @@ export const webSkin: InputSkin = {
     width: "100%",
     borderRadius: shape.web.field,
     borderWidth: 1,
-    borderColor: t[borderColor],
+    borderColor: fieldEdge(t, borderColor),
     backgroundColor: t.card,
     paddingHorizontal: 16,
     paddingVertical: 0,
@@ -115,7 +121,7 @@ export const webSkin: InputSkin = {
     alignItems: "stretch",
     width: "100%",
     borderWidth: 1,
-    borderColor: t[borderColor],
+    borderColor: fieldEdge(t, borderColor),
     borderRadius: shape.web.field,
     overflow: "hidden",
     backgroundColor: t.card,
@@ -199,12 +205,6 @@ function iosText(_t: ColorTokens, size: Size): TextStyle {
   return { fontSize: 16, lineHeight: 24 };
 }
 
-// The border by state: the shell resolves the token KEY (error > focus > input);
-// at rest the iOS box reads the reference's hairline instead of the 3:1 `input`.
-function iosEdge(t: ColorTokens, borderColor: keyof ColorTokens): string {
-  return borderColor === "input" ? fieldBorder(t) : (t[borderColor] ?? t.input);
-}
-
 // The box fill: `card`, washed with the destructive hue in the error state.
 function iosFill(t: ColorTokens, error: boolean): string {
   return error ? fieldErrorFill(t) : t.card;
@@ -225,7 +225,7 @@ export const iosSkin: InputSkin = {
     borderRadius: shape.ios.field,
     borderCurve: "continuous",
     borderWidth: 1,
-    borderColor: iosEdge(t, borderColor),
+    borderColor: fieldEdge(t, borderColor),
     backgroundColor: iosFill(t, error),
     ...iosWebFieldReset(t),
     paddingHorizontal: IOS_INSET,
@@ -240,7 +240,7 @@ export const iosSkin: InputSkin = {
     borderRadius: shape.ios.field,
     borderCurve: "continuous",
     borderWidth: 1,
-    borderColor: iosEdge(t, borderColor),
+    borderColor: fieldEdge(t, borderColor),
     overflow: "hidden",
     backgroundColor: iosFill(t, error),
   }),

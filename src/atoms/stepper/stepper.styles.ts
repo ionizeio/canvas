@@ -1,5 +1,6 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { alpha, type ColorTokens } from "../../style/index.js";
+import { fieldBorder } from "../../style/field-colors.js";
 import { type StepperSkin, type Size } from "./stepper.shared.js";
 
 // Co-located Stepper skins, one per platform, all driven by the brand tokens
@@ -46,7 +47,7 @@ export const webSkin: StepperSkin = {
     alignItems: "stretch",
     height: WEB_HEIGHT[size],
     borderWidth: 1,
-    borderColor: t.input,
+    borderColor: fieldBorder(t),
     borderRadius: 6,
     backgroundColor: t.background,
     overflow: "hidden",

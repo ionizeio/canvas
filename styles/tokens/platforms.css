@@ -27,8 +27,9 @@
   --p-field-radius:12px;--p-field-height:48px;--p-field-height-sm:40px;--p-field-height-lg:56px;
   --p-field-fill:var(--card);--p-field-pad-x:16px;--p-field-font:14px;--p-field-lh:20px;
   --p-field-border-width:1px;--p-field-underline:0px;--p-field-radius-bottom:12px;
-  /* The resting border: the 3:1 `input` boundary on web; iOS rests on the reference's hairline. */
-  --p-field-border:var(--input);--p-label-color:var(--foreground);--p-field-icon:16px;
+  /* The resting border: the field hairline on web and iOS (below the 3:1 `input` boundary on purpose;
+     why in src/style/field-colors.ts); Android draws its M3 underline instead. */
+  --p-field-border:var(--field-border);--p-label-color:var(--foreground);--p-field-icon:16px;
   /* Only M3 draws a darker active indicator; web/iOS keep the bottom edge the same hairline. */
   --p-field-underline-color:var(--input);
   --p-label-weight:500;--p-label-tracking:0px;
