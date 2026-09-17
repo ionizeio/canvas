@@ -41,3 +41,10 @@ export const statusHues: Record<StatusTone, Hue> = {
   error: "red",
   info: "blue",
 };
+
+// The alpha of a hue's 500 step painted as a WASH under the glass material: the
+// tinted pane of an Alert, a status Badge, a coloured Chip. Dense enough to read as
+// the hue over the page and over a content pane, sheer enough that the material still
+// shows the backdrop through it. The label over the wash steps one deeper than the
+// solid recipe's (800 in light, 300 in dark) to hold 4.5:1 on every hue.
+export const HUE_WASH = { light: 0.28, dark: 0.3 } as const;

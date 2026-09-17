@@ -2,7 +2,7 @@ import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js
 import { forwardRef, useId, useRef } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { type Role } from "react-native";
-import { View, Pressable, Text, useTheme, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, GlassPane, isGlass } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the option-list
@@ -146,7 +146,8 @@ export function createSelect(skin: SelectSkin) {
     const items: SelectOption[] = options.map((o) =>
       typeof o === "string" ? { value: o, label: o } : o,
     );
-    const { tokens } = useTheme();
+    const theme = useTheme();
+    const { tokens } = theme;
     // A Select's content is its value, so a bare Column in a Row (the `.col-auto`
     // toolbar cell) hugs it legitimately: no hugging-cell warning.
     const widthCap = useFillStyle("Select", props, { hugsInCell: true });
@@ -209,7 +210,15 @@ export function createSelect(skin: SelectSkin) {
     const inline = hasLabel && !!props.inline;
     const floating = hasLabel && !inline && skin.floatingLabel;
     const above = hasLabel && !inline && !floating;
-    const triggerHeight = asNum((skin.trigger(tokens, size, open) as { height?: unknown }).height, 56);
+    const triggerShape = skin.trigger(tokens, size, open);
+    const triggerHeight = asNum((triggerShape as { height?: unknown }).height, 56);
+    // Under glass the trigger is a CONTROL-layer puck: a GlassPane paints the material
+    // behind the row (the Pressable keeps its tap, ripple and dim), the box drops its
+    // fill and resting hairline, and keeps only its OPEN border (the iOS/web `ring`)
+    // as state; the Android skin's bottom indicator is a side colour, which the
+    // shorthand reset leaves alone. Solid mode is untouched.
+    const glass = isGlass(theme);
+    const glassTrigger: ViewStyle | null = glass ? { backgroundColor: "transparent", borderColor: open ? triggerShape.borderColor : "transparent" } : null;
     // Floating label owns the resting placeholder: show nothing until the menu opens
     // (matching the M3 Input); a selected value always shows.
     const selected = items.find((o) => o.value === value);
@@ -230,12 +239,13 @@ export function createSelect(skin: SelectSkin) {
             which its same-node overflow:"hidden" cannot clip. See src/style/ripple-clip.
             `alignSelf:"stretch"` keeps the wrapper (and the trigger inside it) filling the
             field's standard width, which lives on the root View. */}
-        <RippleClip shape={cornerRadii(skin.trigger(tokens, size, open))} style={{ alignSelf: "stretch" }}>
+        <RippleClip shape={cornerRadii(triggerShape)} style={{ alignSelf: "stretch" }}>
         <Pressable
           ref={hostRef}
           onLayout={onTriggerLayout}
           style={({ pressed }) => [
-            skin.trigger(tokens, size, open),
+            triggerShape,
+            glassTrigger,
             disabled ? { opacity: skin.disabledOpacity } : null,
             skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
           ]}
@@ -257,6 +267,7 @@ export function createSelect(skin: SelectSkin) {
           // (RNW forwards aria-labelledby to the DOM) as the trigger's name too.
           aria-labelledby={inline && !props.accessibilityLabel && !required ? labelId : undefined}
         >
+          <GlassPane layer="control" shape={triggerShape} interactive />
           <View
             style={[
               skin.triggerValue,

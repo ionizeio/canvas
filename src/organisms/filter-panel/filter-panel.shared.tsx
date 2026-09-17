@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { View, Text, Pressable, useTheme, useControllableState, useBreakpoint, breakpoints, RippleClip, cornerRadii, type BreakpointKey, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, useControllableState, useBreakpoint, breakpoints, RippleClip, cornerRadii, type BreakpointKey, type StyleProp, type ViewStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { CheckboxIndicator as WebCheckbox } from "../../atoms/checkbox/indicator/index.js";
@@ -159,7 +159,9 @@ export function createFilterPanel(
 
   return function FilterPanel(props: FilterPanelProps) {
     const { groups, activeCount, onClear, onChange, onSelectionChange, bordered, testID, style } = props;
-    const { tokens } = useTheme();
+    const theme = useTheme();
+    const { tokens } = theme;
+    const glass = isGlass(theme);
     const density = densityOf(props);
 
     // Each option's stable key: its explicit `value`, else its group/option index.
@@ -206,6 +208,11 @@ export function createFilterPanel(
       !!props.responsive && bucket !== "base" && breakpoints[bucket] <= breakpoints[props.drawerBreakpoint ?? "sm"];
     const [panelOpen, setPanelOpen] = useControllableState<boolean>(props.open, props.defaultOpen ?? false, props.onOpenChange);
 
+    // Under glass the bordered panel is a CONTENT-layer pane (a GlassPane behind the
+    // groups; the chrome's fill and hairline drop, the material and rim carry them).
+    // Inside the Drawer the drawer's own material is the surface, so the chrome only
+    // drops there and no second pane is painted.
+    const chrome = bordered ? skin.borderedSurface(tokens) : null;
     const panel = (
       <View
         testID={asDrawer ? undefined : testID}
@@ -214,13 +221,14 @@ export function createFilterPanel(
           // `bordered` wraps it as a rounded card with a border and a card fill;
           // the bare panel keeps the same width but drops the chrome. The radius
           // comes from the skin (per-OS); the border/fill follow the tokens so it
-          // tracks light/dark (the card fill stays solid under glass).
-          bordered ? skin.borderedSurface(tokens) : null,
+          // tracks light/dark.
+          chrome ? paneStyle(glass, chrome) : null,
           skin.panelPad[density],
           skin.panelStack[density],
           style,
         ]}
       >
+        {chrome && !asDrawer ? <GlassPane layer="content" shape={chrome} /> : null}
         <View style={skin.headerRow}>
           <View style={skin.titleCluster}>
             <Text style={skin.titleText(tokens)}>Filters</Text>

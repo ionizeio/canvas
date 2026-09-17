@@ -49,7 +49,7 @@ export function GlassSurface({ style, children, pointerEvents, testID, role, onL
   // (the Slider knob), else the `brand` colour of a tinted puck, else the LAYER's own
   // glass tint. It is never the `popover` token: popover is the opaque fill of a menu
   // card, and borrowing it here is what once made every popover see-through in glass mode.
-  const underFill = surfaceUnderFill(glass, layer, brand, tint);
+  const underFill = surfaceUnderFill(glass, layer, brand, tint, tokens.background);
   const intensity = surfaceIntensity(layer, sheer);
 
   if (surface !== "glass") {
@@ -75,6 +75,11 @@ export function GlassSurface({ style, children, pointerEvents, testID, role, onL
   // functional-layer glass must stay legible) while the GlassView still refracts through
   // the remaining translucency. (The `GlassView &&` also narrows it for the JSX below;
   // liquidGlassAvailable() does the safe availability check.)
+  //
+  // A BRAND puck hands its colour to the GlassView's own `tintColor` instead: Apple's
+  // tinted Liquid Glass is the prominent-button material (the colour saturates the
+  // glass and the system keeps its ink legible), so the brand under-fill the lens and
+  // frost paths need is dropped here, where layering both read as an opaque capsule.
   if (GlassView && liquidGlassAvailable()) {
     return (
       <GlassBox
@@ -86,7 +91,7 @@ export function GlassSurface({ style, children, pointerEvents, testID, role, onL
         onAccessibilityEscape={onAccessibilityEscape}
         material={
           <>
-            <View style={[materialFill(style), { backgroundColor: underFill, opacity: sheer ? SHEER_FILL_OPACITY : 1, pointerEvents: "none" }]} />
+            {brand == null || tint != null ? <View style={[materialFill(style), { backgroundColor: underFill, opacity: sheer ? SHEER_FILL_OPACITY : 1, pointerEvents: "none" }]} /> : null}
             <GlassView glassEffectStyle="regular" isInteractive={interactive} tintColor={brand} colorScheme={dark ? "dark" : "light"} style={materialFill(style)} />
           </>
         }

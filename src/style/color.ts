@@ -95,3 +95,47 @@ export function mixOklab(base: string, over: string, t: number): string {
   const [r, g, bl] = srgbOf([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]);
   return `rgb(${r}, ${g}, ${bl})`;
 }
+
+// --- WCAG contrast -----------------------------------------------------------
+// The kit tunes its translucent fills (the brand-tinted glass puck) against the ink
+// they carry, so the legibility floor is computed where the fill is chosen rather than
+// pinned by hand per token. `rgba(...)`, `rgb(...)` and hex all parse; anything else
+// (a "transparent", a named colour) yields null and the caller keeps its default.
+
+/** A colour's sRGB channels and alpha, or null when it is not a hex or rgb(a) string. */
+export function channelsOf(color: string): [number, number, number, number] | null {
+  const hex = hexChannels(color);
+  if (hex) return [hex[0], hex[1], hex[2], 1];
+  const m = /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)$/.exec(color.trim());
+  if (!m) return null;
+  return [Number(m[1]), Number(m[2]), Number(m[3]), m[4] == null ? 1 : Number(m[4])];
+}
+
+/** `tint` composited over the opaque `base` (source-over), as an `rgb(...)` string. */
+export function composite(tint: string, base: string): string {
+  const t = channelsOf(tint);
+  const b = channelsOf(base);
+  if (!t || !b) return base;
+  const a = t[3];
+  const ch = (x: number, y: number) => Math.round(x * a + y * (1 - a));
+  return `rgb(${ch(t[0], b[0])}, ${ch(t[1], b[1])}, ${ch(t[2], b[2])})`;
+}
+
+/** WCAG 2 relative luminance of an opaque colour (alpha is ignored). */
+export function relativeLuminance(color: string): number {
+  const c = channelsOf(color);
+  if (!c) return 0;
+  return 0.2126 * toLinear(c[0]) + 0.7152 * toLinear(c[1]) + 0.0722 * toLinear(c[2]);
+}
+
+/** WCAG 2 contrast ratio between two opaque colours (1 when either does not parse). */
+export function contrastRatio(a: string, b: string): number {
+  if (!channelsOf(a) || !channelsOf(b)) return 1;
+  const [hi, lo] = [relativeLuminance(a), relativeLuminance(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+/** The ink a colour carries best: white or near-black, whichever contrasts more. */
+export function inkOn(color: string): string {
+  return contrastRatio("#ffffff", color) >= contrastRatio("#0a0a0a", color) ? "#ffffff" : "#0a0a0a";
+}

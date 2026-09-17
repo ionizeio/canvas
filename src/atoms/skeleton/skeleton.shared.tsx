@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Animated } from "react-native";
-import { View, useTheme, useReducedMotion, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { View, useTheme, useReducedMotion, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, isGlass, innerFill } from "../../style/index.js";
 
 // Shared Skeleton shell. The structure (a single muted shape — text line, avatar,
 // button — or a composite card / list / table scaffold built from one muted fill,
@@ -87,9 +87,11 @@ const innerHidden = {
 // --- platform-neutral fill + layout fragments -------------------------------
 
 // The muted fill every placeholder shares (was `bg-muted`); a color, so it reads
-// the active token and follows light/dark/glass.
-function fill(tokens: ColorTokens): ViewStyle {
-  return { backgroundColor: tokens.muted };
+// the active token and follows light/dark. Under glass it is an ink tint, so a
+// placeholder on a glass pane reads as a translucent block over the material rather
+// than an opaque patch (the fill the loaded content's own inner fills take).
+function fill(theme: Parameters<typeof innerFill>[0]): ViewStyle {
+  return { backgroundColor: innerFill(theme, "muted", "soft") };
 }
 
 // Line height per size; the default line reads like a single row of text.
@@ -124,6 +126,9 @@ const lineBase: ViewStyle = { height: 14, width: "100%" };
 function cardSurface(tokens: ColorTokens): ViewStyle {
   return { borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 16 };
 }
+// Under glass the card placeholder renders the same CONTENT-layer material the loaded
+// Card takes (a GlassPane behind the node, which keeps its loading role and label), so
+// the swap stays seamless there too.
 
 // The card's identity row (avatar + two lines). `flex-row items-center gap-3 mb-4`.
 const cardRow: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 16 };
@@ -214,31 +219,33 @@ export function createSkeleton(skin: SkeletonSkin) {
   // The muted fill + the line base (`h-3.5 w-full`) + the skin's line radius, then
   // any width/margin overrides the caller layers on.
   function Line({ animate, style }: { animate?: boolean; style?: StyleProp<ViewStyle> }) {
-    const { tokens } = useTheme();
-    return <Pulse animate={animate} style={[fill(tokens), lineBase, { borderRadius: skin.lineRadius }, style]} />;
+    const theme = useTheme();
+    return <Pulse animate={animate} style={[fill(theme), lineBase, { borderRadius: skin.lineRadius }, style]} />;
   }
 
   return function Skeleton(props: SkeletonProps) {
     const { animate, accessibilityLabel, testID, style } = props;
-    const { tokens } = useTheme();
+    const theme = useTheme();
+    const { tokens } = theme;
     const shape = shapeOf(props);
     const a11y = loadingA11y(accessibilityLabel);
 
     if (shape === "avatar") {
       const d = avatarDiameter(props);
-      return <Pulse animate={animate} {...a11y} testID={testID} style={[fill(tokens), { width: d, height: d, borderRadius: skin.avatarRadius }, style]} />;
+      return <Pulse animate={animate} {...a11y} testID={testID} style={[fill(theme), { width: d, height: d, borderRadius: skin.avatarRadius }, style]} />;
     }
 
     if (shape === "button") {
       const { height, width } = buttonSize(props);
-      return <Pulse animate={animate} {...a11y} testID={testID} style={[fill(tokens), { height, width, borderRadius: skin.buttonRadius }, style]} />;
+      return <Pulse animate={animate} {...a11y} testID={testID} style={[fill(theme), { height, width, borderRadius: skin.buttonRadius }, style]} />;
     }
 
     if (shape === "card") {
       return (
-        <View {...a11y} {...innerHidden} testID={testID} style={[cardSurface(tokens), { borderRadius: skin.cardRadius }, style]}>
+        <View {...a11y} {...innerHidden} testID={testID} style={[paneStyle(isGlass(theme), cardSurface(tokens)), { borderRadius: skin.cardRadius }, style]}>
+          <GlassPane layer="content" shape={{ borderRadius: skin.cardRadius }} />
           <View style={cardRow}>
-            <Pulse animate={animate} style={[fill(tokens), cardAvatar, { borderRadius: skin.avatarRadius }]} />
+            <Pulse animate={animate} style={[fill(theme), cardAvatar, { borderRadius: skin.avatarRadius }]} />
             <View style={flexFill}>
               <Line animate={animate} style={cardLine70} />
               <Line animate={animate} style={cardLine40} />
@@ -253,7 +260,7 @@ export function createSkeleton(skin: SkeletonSkin) {
     if (shape === "list") {
       const Row = ({ a, b }: { a: StyleProp<ViewStyle>; b: StyleProp<ViewStyle> }) => (
         <View style={listRow}>
-          <Pulse animate={animate} style={[fill(tokens), listAvatar, { borderRadius: skin.avatarRadius }]} />
+          <Pulse animate={animate} style={[fill(theme), listAvatar, { borderRadius: skin.avatarRadius }]} />
           <View style={flexFill}>
             <Line animate={animate} style={[listLineGap, a]} />
             <Line animate={animate} style={b} />
@@ -290,6 +297,6 @@ export function createSkeleton(skin: SkeletonSkin) {
     // Default: a single text line spanning the parent; `long` / `short` shorten it
     // so a stack of lines reads like a wrapped paragraph.
     const length = props.short ? "60%" : props.long ? "80%" : "100%";
-    return <Pulse animate={animate} {...a11y} testID={testID} style={[fill(tokens), lineHeight(props), { width: length, borderRadius: skin.lineRadius }, style]} />;
+    return <Pulse animate={animate} {...a11y} testID={testID} style={[fill(theme), lineHeight(props), { width: length, borderRadius: skin.lineRadius }, style]} />;
   };
 }

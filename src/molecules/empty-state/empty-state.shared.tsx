@@ -1,5 +1,5 @@
 import { cloneElement, isValidElement, type ComponentType, type ReactElement } from "react";
-import { View, Text, useTheme, type StyleProp, type ViewStyle, type LayoutStyle, useFillStyle, GlassSurface } from "../../style/index.js";
+import { View, Text, useTheme, type StyleProp, type ViewStyle, type LayoutStyle, useFillStyle, GlassSurface, withInnerFill } from "../../style/index.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
 import * as s from "./empty-state.styles.js";
@@ -84,7 +84,8 @@ export type ButtonComponent = ComponentType<ButtonProps>;
 export function createEmptyState(skin: EmptyStateSkin, Button: ButtonComponent = WebButton) {
   return function EmptyState(props: EmptyStateProps) {
     const { icon, title, description, actionLabel, onAction, bordered, compact, testID, style } = props;
-    const { tokens } = useTheme();
+    const theme = useTheme();
+    const { tokens } = theme;
     // FILL: the state spans the parent it is given.
     const fill = useFillStyle("EmptyState");
     const tone: Tone = toneOf(props);
@@ -109,7 +110,9 @@ export function createEmptyState(skin: EmptyStateSkin, Button: ButtonComponent =
           // assistive tech. react-native-web does not forward
           // accessibilityElementsHidden to the DOM, so add the aria-hidden alias.
           <View
-            style={[skin.discBase, s.discTone(tokens, tone)]}
+            // The muted disc becomes an ink tint under glass (a wash over the pane); the
+            // success wash is translucent already and stays.
+            style={[skin.discBase, tone === "success" ? s.discTone(tokens, tone) : withInnerFill(theme, s.discTone(tokens, tone), "soft")]}
             accessibilityElementsHidden
             importantForAccessibility="no-hide-descendants"
             aria-hidden

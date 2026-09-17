@@ -1,7 +1,7 @@
 import { useInputEscapeBridge } from "../../style/escape-layer.js";
 import { forwardRef, useId, useState } from "react";
 import { type TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from "react-native";
-import { View, Text, TextInput, useTheme, useFillStyle, FloatingLabel, LabelContent, FOCUS_RESET, type MeasureProps, type SizingKey, type StyleProp, type TextStyle, type ViewStyle } from "../../style/index.js";
+import { View, Text, TextInput, useTheme, useFillStyle, FloatingLabel, LabelContent, FOCUS_RESET, type MeasureProps, type SizingKey, type StyleProp, type TextStyle, type ViewStyle, GlassPane, isGlass, alpha, PANE_SIBLING_INPUT } from "../../style/index.js";
 import { type TextEntryProps } from "../input/input.shared.js";
 import { type TextareaSkin, type Size, sizeText, minHeight } from "./textarea.styles.js";
 
@@ -101,7 +101,11 @@ export function createTextarea(skin: TextareaSkin) {
     const { value, onChangeText, placeholder, label, required, rows, disabled, flush, showCount, style } = props;
     const size = sizeOf(props);
     const [focused, setFocused] = useState(false);
-    const { tokens } = useTheme();
+    const theme = useTheme();
+    const { tokens } = theme;
+    // Under glass the field box is a CONTROL-layer puck (see input.shared.tsx): a
+    // GlassPane behind the native input, the box keeping only its state border.
+    const glass = isGlass(theme);
     const onKeyPress = useInputEscapeBridge(props.onKeyPress);
     // FILL: the field takes the bounds its parent provides; a flush textarea sits
     // inside a framed container (a toolbar Card) whose frame IS the field edge.
@@ -203,8 +207,11 @@ export function createTextarea(skin: TextareaSkin) {
     // The base field surface, shared by every path (width/style/disabled dim move
     // to the wrapper in the labeled paths so the label dims with the field). Typed
     // as an array (not StyleProp) so the floating path can spread it with the reserve.
+    const fieldShape = skin.field(tokens, { error: isError, focused });
+    const fieldPane = <GlassPane layer="control" shape={fieldShape} tint={isError ? alpha(tokens.destructive, 0.18) : undefined} />;
     const fieldStyle: StyleProp<TextStyle>[] = [
-      skin.field(tokens, { error: isError, focused }),
+      fieldShape,
+      glass ? { ...PANE_SIBLING_INPUT, backgroundColor: "transparent", borderColor: focused || isError ? (fieldShape.borderColor as string) : "transparent" } : null,
       skin.text ? skin.text(size) : sizeText(size),
       minHeight(rows),
       // Flush: strip the field's own border + radius so it sits flush inside a
@@ -236,6 +243,7 @@ export function createTextarea(skin: TextareaSkin) {
     if (floating) {
       return (
         <View style={[{ position: "relative" }, disabledDim, widthCap, style]}>
+          {fieldPane}
           <TextInput
             ref={ref}
             multiline
@@ -277,19 +285,36 @@ export function createTextarea(skin: TextareaSkin) {
           <Text nativeID={labelId} style={aboveLabelStyle}>
             <LabelContent label={label!} required={required} starColor={tokens.destructive} />
           </Text>
-          <TextInput ref={ref} multiline textAlignVertical="top" placeholder={placeholder} style={fieldStyle} {...common} />
+          {glass ? (
+            <View>
+              {fieldPane}
+              <TextInput ref={ref} multiline textAlignVertical="top" placeholder={placeholder} style={fieldStyle} {...common} />
+            </View>
+          ) : (
+            <TextInput ref={ref} multiline textAlignVertical="top" placeholder={placeholder} style={fieldStyle} {...common} />
+          )}
           {countNode}
         </View>
       );
     }
 
-    // No label but a count line: wrap the field so the count sits under it. The
-    // wrapper carries width/style and the disabled dim (so the count dims with
-    // the field); the field fills it via its skin's width:100%.
-    if (countNode) {
+    // No label but a count line (or the glass pane to host): wrap the field so the
+    // count sits under it. The wrapper carries width/style and the disabled dim (so
+    // the count dims with the field); the field fills it via its skin's width:100%.
+    if (countNode || glass) {
       return (
         <View style={[disabledDim, widthCap, style]}>
-          <TextInput ref={ref} multiline textAlignVertical="top" placeholder={placeholder} style={fieldStyle} {...common} />
+          {glass && countNode ? (
+            <View>
+              {fieldPane}
+              <TextInput ref={ref} multiline textAlignVertical="top" placeholder={placeholder} style={fieldStyle} {...common} />
+            </View>
+          ) : (
+            <>
+              {fieldPane}
+              <TextInput ref={ref} multiline textAlignVertical="top" placeholder={placeholder} style={fieldStyle} {...common} />
+            </>
+          )}
           {countNode}
         </View>
       );

@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { type GestureResponderEvent } from "react-native";
-import { Text, useHugStyle, useTheme, MONO_FONT, type StyleProp, type TextStyle } from "../../style/index.js";
+import { Text, useHugStyle, useTheme, MONO_FONT, type StyleProp, type TextStyle, innerFill } from "../../style/index.js";
 import {
   type Role,
   type Tone,
@@ -201,7 +201,8 @@ function decorationOf(p: TypographyProps): Decoration | null {
 export function createTypography(skin: TypographySkin) {
   return function Typography(props: TypographyProps) {
     const { children, testID, style } = props;
-    const { tokens, dark } = useTheme();
+    const theme = useTheme();
+    const { tokens, dark } = theme;
     const role = roleOf(props);
     const tone = toneOf(props);
     const weight = weightOf(props);
@@ -237,6 +238,10 @@ export function createTypography(skin: TypographySkin) {
         style={[
           skin.roleType[role],
           roleColor(tokens, role),
+          // The code pill is a Text node, which cannot host a material sibling, so under
+          // glass its `muted` fill becomes an ink tint that lets the pane it sits on show
+          // through (the same translucent emphasis a glass table's header band takes).
+          role === "code" ? { backgroundColor: innerFill(theme, "muted", "soft") } : null,
           tone ? toneColor(tokens, dark, tone) : null,
           weight ? weightStyle(weight) : null,
           // After the role, whose line height it overrides; the skin's own scale is the

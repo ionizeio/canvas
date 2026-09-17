@@ -1,5 +1,5 @@
 import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
-import { View, Text, Pressable, RippleClip, cornerRadii, useHugStyle, useTheme, useControllableState, surfaceRipple, pressDim, palette, statusHues, type Hue, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Text, Pressable, RippleClip, cornerRadii, useHugStyle, useTheme, useControllableState, surfaceRipple, pressDim, palette, statusHues, HUE_WASH, type Hue, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle, GlassPane, isGlass, alpha } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
 
 // Shared Chip shell. The interactive/removable pill, so no call site hand-composes
@@ -124,11 +124,14 @@ export interface ChipProps {
   style?: LayoutStyle;
 }
 
-// The three colors a chip paints with: container fill, border, and label/glyph text.
+// The three colors a chip paints with: container fill, border, and label/glyph text,
+// plus the hue wash a coloured chip's glass pane takes under glass (a neutral or
+// outline chip leaves it unset and takes the plain control material).
 interface Appearance {
   bg: string;
   border: string;
   text: string;
+  glassTint?: string;
 }
 
 // The chosen hue from the color axis. Status names alias a hue (matching Badge);
@@ -150,15 +153,23 @@ function colorOf(p: ChipProps): { hue: Hue | null; mutedGray: boolean } {
 // A chromatic hue's soft tint: a light 50 fill + 200 border + 700 text in light, a
 // deep 950 fill + 800 border + 400 text in dark (Badge's status recipe). `outline`
 // drops the fill for a border-only chip in the same hue.
-function hueTint(hue: Hue, dark: boolean, outline: boolean): Appearance {
+//
+// Under glass the soft fill becomes a WASH of the hue's mid step under the material
+// (the Alert's recipe) and the label steps one deeper (800 in light, 300 in dark): the
+// wash over the page, a content pane or a control puck is darker than the 50/950 fill,
+// and the deeper ink is what keeps every hue's label at 4.5:1 there (the 700/400 ink
+// drops to ~3.4:1 on orange and indigo; test/glass-controls.test.tsx pins the floor).
+function hueTint(hue: Hue, dark: boolean, outline: boolean, glass: boolean): Appearance {
+  const text = glass ? (dark ? palette[`${hue}-300`] : palette[`${hue}-800`]) : dark ? palette[`${hue}-400`] : palette[`${hue}-700`];
   if (outline) {
     return dark
-      ? { bg: "transparent", border: palette[`${hue}-700`], text: palette[`${hue}-400`] }
-      : { bg: "transparent", border: palette[`${hue}-300`], text: palette[`${hue}-700`] };
+      ? { bg: "transparent", border: palette[`${hue}-700`], text }
+      : { bg: "transparent", border: palette[`${hue}-300`], text };
   }
+  const glassTint = glass ? alpha(palette[`${hue}-500`], dark ? HUE_WASH.dark : HUE_WASH.light) : undefined;
   return dark
-    ? { bg: palette[`${hue}-950`], border: palette[`${hue}-800`], text: palette[`${hue}-400`] }
-    : { bg: palette[`${hue}-50`], border: palette[`${hue}-200`], text: palette[`${hue}-700`] };
+    ? { bg: palette[`${hue}-950`], border: palette[`${hue}-800`], text, glassTint }
+    : { bg: palette[`${hue}-50`], border: palette[`${hue}-200`], text, glassTint };
 }
 
 // The neutral (uncolored) chip: the default soft-secondary tag, a muted-gray tag
@@ -174,7 +185,13 @@ function neutralTint(tokens: ColorTokens, outline: boolean, mutedGray: boolean):
 export function createChip(skin: ChipSkin) {
   return function Chip(props: ChipProps) {
     const { children, icon, trailing, onPress, onRemove, disabled, accessibilityLabel, testID, style } = props;
-    const { tokens, dark } = useTheme();
+    const theme = useTheme();
+    const { tokens, dark } = theme;
+    // Under glass the chip is a CONTROL-layer puck: a GlassPane paints the material
+    // behind its content (a coloured chip washes it with its hue), and the pill drops
+    // its fill and hairline (the pane's material and rim carry them). The pressable
+    // shell keeps its tap, ripple and dim over it.
+    const glass = isGlass(theme);
     // HUG: content width inside a stretching Column, content-sized in a Row.
     const hug = useHugStyle();
 
@@ -209,11 +226,11 @@ export function createChip(skin: ChipSkin) {
     // pick the tint, and `primary` maps to the indigo accent.
     let appearance: Appearance;
     if (selectedActive) {
-      appearance = hueTint(hue ?? "indigo", dark, false);
+      appearance = hueTint(hue ?? "indigo", dark, false, glass);
     } else if (hue) {
-      appearance = hueTint(hue, dark, outline);
+      appearance = hueTint(hue, dark, outline, glass);
     } else if (accent) {
-      appearance = hueTint("indigo", dark, outline);
+      appearance = hueTint("indigo", dark, outline, glass);
     } else {
       appearance = neutralTint(tokens, outline, mutedGray);
     }
@@ -237,6 +254,7 @@ export function createChip(skin: ChipSkin) {
         // state); the borderWidth stays so the box doesn't shift between states.
         borderColor: selectedCheck != null ? "transparent" : appearance.border,
       },
+      glass ? { backgroundColor: "transparent", borderColor: "transparent" } : null,
       skin.sidePadding
         ? {
             paddingStart: hasLeading ? skin.sidePadding.icon : skin.sidePadding.text,
@@ -261,6 +279,7 @@ export function createChip(skin: ChipSkin) {
 
     // The chip's content minus the remove control: the leading check/icon, the
     // label, and any trailing element.
+    const pane = <GlassPane layer="control" shape={skin.base} tint={appearance.glassTint} interactive={!!(onPress || selectable)} />;
     const bodyContent = (
       <>
         {selectedCheck != null ? (
@@ -308,6 +327,7 @@ export function createChip(skin: ChipSkin) {
       const bodyGap = (skin.base as { gap?: number }).gap;
       return (
         <View style={container} testID={testID}>
+          {pane}
           <Pressable
             onPress={handlePress}
             disabled={disabled}
@@ -355,6 +375,7 @@ export function createChip(skin: ChipSkin) {
             android_ripple={surfaceRipple(tokens)}
             style={({ pressed }) => [container, pressDim(pressed, 0.85)]}
           >
+            {pane}
             {bodyContent}
           </Pressable>
         </RippleClip>
@@ -365,6 +386,7 @@ export function createChip(skin: ChipSkin) {
     // non-interactive container, so there is no nesting to resolve.
     return (
       <View style={container} testID={testID} accessibilityLabel={accessibilityLabel}>
+        {pane}
         {bodyContent}
         {removeButton}
       </View>

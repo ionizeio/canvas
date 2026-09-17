@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Text, useTheme, type ColorTokens, type ViewStyle } from "../../../style/index.js";
+import { View, Text, useTheme, type ColorTokens, type ViewStyle, GlassPane, paneStyle, isGlass } from "../../../style/index.js";
 import type { CheckboxSkin, Size } from "../checkbox.shared.js";
 
 // Shared by the interactive Checkbox and its private decorative counterpart, so
@@ -29,8 +29,14 @@ export function CheckboxIndicatorBox({ skin, tokens, size, checked, indeterminat
   nudge: boolean;
 }) {
   const filled = !!(indeterminate || checked);
+  // Under glass the box is a CONTROL-layer puck: a GlassPane paints the material
+  // behind the glyph (BRAND-tinted while filled) and the box drops its fill and
+  // outline (the pane's material and rim carry them).
+  const glass = isGlass(useTheme());
+  const box = skin.box(tokens, filled, size, nudge);
   return (
-    <View style={skin.box(tokens, filled, size, nudge)}>
+    <View style={paneStyle(glass, box)}>
+      <GlassPane layer="control" shape={box} brand={filled ? tokens.primary : undefined} interactive />
       {filled ? (
         <View style={GLYPH_LAYER}>
           <Text style={skin.glyph(tokens, size)}>{indeterminate ? "–" : "✓"}</Text>

@@ -57,3 +57,12 @@ export function paneStyle(glass: boolean, style: StyleProp<ViewStyle>): StylePro
   if (!glass) return style;
   return [style, { backgroundColor: "transparent", borderColor: "transparent" }];
 }
+
+/**
+ * The style a TextInput takes when it sits beside a GlassPane. React Native Web
+ * leaves a text input unpositioned (its View and Text are `position: relative`), and
+ * CSS paints positioned boxes after in-flow ones, so the absolutely positioned pane
+ * would paint OVER the input's text on the web; positioning the input restores the
+ * sibling order. Native paints siblings in order regardless, so this is a no-op there.
+ */
+export const PANE_SIBLING_INPUT: ViewStyle = { position: "relative" };

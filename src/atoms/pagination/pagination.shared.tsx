@@ -1,4 +1,4 @@
-import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, type StyleProp, type ViewStyle, type ColorTokens, type LayoutStyle } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, type StyleProp, type ViewStyle, type ColorTokens, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import * as s from "./pagination.styles.js";
 import { type Size, type PaginationSkin } from "./pagination.styles.js";
 
@@ -123,6 +123,18 @@ function pageWindow(current: number, total: number): number[] {
   return list;
 }
 
+// Under glass a cell that paints a surface of its own (the web's bordered tile, the
+// iOS/M3 selector pill, every skin's selected page) is a CONTROL-layer puck: a
+// GlassPane paints the material behind its label (the Pressable keeps its tap,
+// ripple and dim) and the cell drops its fill and hairline (the pane's material and
+// rim carry them). The selected page is BRAND-tinted glass with its label in
+// `primary-foreground`; a hollow cell (the iOS/M3 chevrons and resting pages) stays
+// bare, as it is in solid mode.
+function surfaced(box: ViewStyle): boolean {
+  const bg = box.backgroundColor;
+  return (bg != null && bg !== "transparent") || (box.borderWidth ?? 0) > 0;
+}
+
 /** Build a Pagination component from a platform skin. */
 export function createPagination(skin: PaginationSkin) {
   const ripple = skin.ripple;
@@ -138,14 +150,16 @@ export function createPagination(skin: PaginationSkin) {
 
   // A Prev/Next chevron control. Reads as a square page button without a number.
   function Control({ glyph, size, tokens, disabled, accessibilityLabel, onPress }: ControlProps) {
+    const box = skin.controlBox(tokens);
+    const puck = isGlass(useTheme()) && surfaced(box);
     return (
       // The rounded cell's bounded Android ripple is clipped to its corners by this RippleClip
       // parent (no-op on iOS/web). A same-node overflow:"hidden" cannot clip a node's own
       // ripple. See src/style/ripple-clip.
-      <RippleClip shape={cornerRadii(skin.controlBox(tokens))}>
+      <RippleClip shape={cornerRadii(box)}>
         <Pressable
           style={({ pressed }) => [
-            skin.controlBox(tokens),
+            paneStyle(puck, box),
             s.itemSize[size],
             skin.focusOutlineReset,
             disabled ? { opacity: 0.5 } : null,
@@ -160,6 +174,7 @@ export function createPagination(skin: PaginationSkin) {
           accessibilityState={{ disabled }}
           aria-disabled={disabled}
         >
+          {puck ? <GlassPane layer="control" shape={box} interactive /> : null}
           <Text style={[skin.controlLabel(tokens), s.labelSize[size]]}>{glyph}</Text>
         </Pressable>
       </RippleClip>
@@ -170,7 +185,11 @@ export function createPagination(skin: PaginationSkin) {
     const { onChange, disabled, testID, style } = props;
     const size = sizeOf(props);
     const variant = variantOf(props);
-    const { tokens } = useTheme();
+    const theme = useTheme();
+    const { tokens } = theme;
+    const glass = isGlass(theme);
+    const selectorBox = skin.selectorBox(tokens);
+    const selectorPuck = glass && surfaced(selectorBox);
 
     // Clamp inputs so the control never renders an out-of-range current page.
     const total = Math.max(1, Math.floor(props.total ?? 1));
@@ -258,10 +277,10 @@ export function createPagination(skin: PaginationSkin) {
             <Text style={[skin.mutedLabel(tokens), s.labelSize[size]]}>Rows per page</Text>
             {/* The selector cell's bounded Android ripple is clipped to its corners by this
                 RippleClip parent (no-op on iOS/web). See src/style/ripple-clip. */}
-            <RippleClip shape={cornerRadii(skin.selectorBox(tokens))}>
+            <RippleClip shape={cornerRadii(selectorBox)}>
               <Pressable
                 style={({ pressed }) => [
-                  skin.selectorBox(tokens),
+                  paneStyle(selectorPuck, selectorBox),
                   s.itemSize[size],
                   skin.focusOutlineReset,
                   disabled ? { opacity: 0.5 } : null,
@@ -276,6 +295,7 @@ export function createPagination(skin: PaginationSkin) {
                 accessibilityState={{ disabled: !!disabled }}
                 aria-disabled={!!disabled}
               >
+                {selectorPuck ? <GlassPane layer="control" shape={selectorBox} interactive /> : null}
                 <Text style={[skin.controlLabel(tokens), s.labelSize[size]]}>{pageSize}</Text>
                 <Text style={[skin.mutedLabel(tokens), s.labelSize[size]]}>▾</Text>
               </Pressable>
@@ -311,14 +331,16 @@ export function createPagination(skin: PaginationSkin) {
             );
           }
           const selected = p === current;
+          const pageBox = skin.pageBox(tokens, selected);
+          const pagePuck = glass && surfaced(pageBox);
           return (
             // The page cell's bounded Android ripple is clipped to its corners by this
             // RippleClip parent (no-op on iOS/web). The list `key` rides the outer node.
             // See src/style/ripple-clip.
-            <RippleClip key={`page-${p}`} shape={cornerRadii(skin.pageBox(tokens, selected))}>
+            <RippleClip key={`page-${p}`} shape={cornerRadii(pageBox)}>
               <Pressable
                 style={({ pressed }) => [
-                  skin.pageBox(tokens, selected),
+                  paneStyle(pagePuck, pageBox),
                   s.itemSize[size],
                   skin.focusOutlineReset,
                   disabled ? { opacity: 0.5 } : null,
@@ -334,7 +356,8 @@ export function createPagination(skin: PaginationSkin) {
                 aria-current={selected ? "page" : undefined}
                 aria-disabled={!!disabled}
               >
-                <Text style={[skin.pageLabel(tokens, selected), s.labelSize[size]]}>{p}</Text>
+                {pagePuck ? <GlassPane layer="control" shape={pageBox} brand={selected ? tokens.primary : undefined} interactive /> : null}
+                <Text style={[skin.pageLabel(tokens, selected), s.labelSize[size], pagePuck && selected ? { color: tokens["primary-foreground"] } : null]}>{p}</Text>
               </Pressable>
             </RippleClip>
           );

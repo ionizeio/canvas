@@ -77,6 +77,17 @@ function anchoredCard(container: HTMLElement, contentSelector: string): HTMLElem
 const materialLayers = (card: HTMLElement) => card.querySelectorAll("[style*='backdrop-filter']").length;
 const specularLayers = (card: HTMLElement) =>
   Array.from(card.querySelectorAll("*")).filter((n) => (n.getAttribute("style") ?? "").includes("box-shadow: inset")).length;
+// The same two signatures, minus those inside a control (a button, a switch) the
+// surface contains: under the layered glass model every control is a glass puck of
+// its own, so a surface that carries none of the material itself still holds theirs.
+const outsideControls = (card: HTMLElement, nodes: Element[]) =>
+  nodes.filter((n) => {
+    const control = n.closest('[role="button"], [role="switch"], [role="checkbox"]');
+    return control == null || !card.contains(control) || control === card;
+  }).length;
+const ownMaterialLayers = (card: HTMLElement) => outsideControls(card, Array.from(card.querySelectorAll("[style*='backdrop-filter']")));
+const ownSpecularLayers = (card: HTMLElement) =>
+  outsideControls(card, Array.from(card.querySelectorAll("*")).filter((n) => (n.getAttribute("style") ?? "").includes("box-shadow: inset")));
 
 // The alpha of a rendered CSS color. react-native-web normalizes every fill to
 // `rgba(r, g, b, a)`, so a see-through card is one whose card fill has a < 1.
@@ -244,8 +255,11 @@ describe("AlertDialog and Toast are opaque surfaces under glass", () => {
       // panel is the first filled box INSIDE it.
       const panel = filledBox(dialog);
       expect(alphaOf(panel.style.backgroundColor)).toBe(1);
-      expect(materialLayers(panel)).toBe(0);
-      expect(specularLayers(panel)).toBe(0);
+      // The panel's OWN material: the action buttons inside it are control-layer
+      // glass pucks in their own right (the layered model), so the material they
+      // carry is theirs, not the panel's.
+      expect(ownMaterialLayers(panel)).toBe(0);
+      expect(ownSpecularLayers(panel)).toBe(0);
     } finally {
       restore();
     }

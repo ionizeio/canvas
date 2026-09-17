@@ -81,7 +81,7 @@ export function GlassSurface({ style, children, pointerEvents, testID, role, onL
   // (the Slider knob), else the `brand` colour of a tinted puck, else the LAYER's own
   // glass tint. It is never the `popover` token: popover is the opaque fill of a menu
   // card, and borrowing it here is what once made every popover see-through in glass mode.
-  const underFill = surfaceUnderFill(glass, layer, brand, tint);
+  const underFill = surfaceUnderFill(glass, layer, brand, tint, tokens.background);
   const intensity = surfaceIntensity(layer, sheer);
   // The Android blur target (see GlassBlurTargetContext in the shared file):
   // non-null only where blurring it is native-sibling-safe — inside an

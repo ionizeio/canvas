@@ -5,7 +5,7 @@ import {
   type TextInput as RNTextInput,
   type TextInputProps as RNTextInputProps,
 } from "react-native";
-import { View, Pressable, Text, TextInput, useTheme, useFillStyle, FloatingLabel, LabelContent, FOCUS_RESET, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useTheme, useFillStyle, FloatingLabel, LabelContent, FOCUS_RESET, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, isGlass, withInnerFill, alpha, PANE_SIBLING_INPUT } from "../../style/index.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { Icon, type IconName } from "../icon/icon.js";
 import { type InputSkin, type Size } from "./input.styles.js";
@@ -215,7 +215,13 @@ export function createInput(skin: InputSkin) {
     const [focused, setFocused] = useState(false);
     // The password toggle's own state: masked until the eye is pressed.
     const [revealed, setRevealed] = useState(false);
-    const { tokens } = useTheme();
+    const theme = useTheme();
+    const { tokens } = theme;
+    // Under glass the field box is a CONTROL-layer puck: a GlassPane paints the
+    // material behind the native input, the box keeps only its STATE border (focus
+    // ring, error) over it, and an errored box tints the pane with the destructive
+    // hue instead of painting the skin's wash. Solid mode is untouched.
+    const glass = isGlass(theme);
     const onKeyPress = useInputEscapeBridge(props.onKeyPress);
     const widthCap = useFillStyle("Input", props);
     // The clear button empties the NATIVE field too (an uncontrolled field keeps its
@@ -259,6 +265,10 @@ export function createInput(skin: InputSkin) {
     const hasClear = !!clearable && populated && !disabled && !readOnly;
     const hasAddons = prefix != null || suffix != null || !!leadingIcon || !!trailingIcon || !!action || hasEye || !!clearable;
     const labelGap: ViewStyle = { gap: skin.labelGap };
+    // Under glass the box drops its fill and its resting hairline (the pane's material
+    // and rim carry them) and keeps the focus ring / error border as its state.
+    const glassBox: ViewStyle = { ...PANE_SIBLING_INPUT, backgroundColor: "transparent", borderColor: focused || isError ? (tokens[borderColor] ?? tokens.input) : "transparent" };
+    const paneTint = isError ? alpha(tokens.destructive, 0.18) : undefined;
 
     const common = {
       value,
@@ -338,8 +348,11 @@ export function createInput(skin: InputSkin) {
       // redundant and, over the filled Android skin, reads as a blue rectangle on
       // top of the indicator. No-op on native; matches the grouped path and the
       // Autocomplete/Textarea/Stepper shells.
-      const bareStyle = [skin.bareField(tokens, borderColor, focused, isError), skin.bareBox(size), text, FOCUS_RESET];
+      const bareShape = skin.bareField(tokens, borderColor, focused, isError);
+      const bareStyle = [bareShape, skin.bareBox(size), text, FOCUS_RESET, glass ? glassBox : null];
       const disabledDim = disabled ? { opacity: skin.disabledOpacity } : null;
+      // The puck behind a bare field (nothing in solid mode).
+      const barePane = <GlassPane layer="control" shape={bareShape} tint={paneTint} />;
 
       // Android M3 floating label: the field reserves top space for the floated
       // label, the animated label overlays it, and the placeholder is gated to the
@@ -349,6 +362,7 @@ export function createInput(skin: InputSkin) {
       if (floating) {
         return (
           <View style={[{ position: "relative" }, disabledDim, widthCap, style]}>
+            {barePane}
             <TextInput
               ref={hostRef}
               style={[...bareStyle, skin.labelReserve!(size)]}
@@ -378,6 +392,24 @@ export function createInput(skin: InputSkin) {
         return (
           <View style={[labelGap, disabledDim, widthCap, style]}>
             {aboveLabel}
+            {glass ? (
+              <View>
+                {barePane}
+                <TextInput ref={hostRef} style={bareStyle} textAlignVertical="center" {...common} />
+              </View>
+            ) : (
+              <TextInput ref={hostRef} style={bareStyle} textAlignVertical="center" {...common} />
+            )}
+          </View>
+        );
+      }
+
+      // No label under glass: a wrapper hosts the pane behind the native field (the
+      // width cap, the composition style and the dim ride the wrapper).
+      if (glass) {
+        return (
+          <View style={[disabledDim, widthCap, style]}>
+            {barePane}
             <TextInput ref={hostRef} style={bareStyle} textAlignVertical="center" {...common} />
           </View>
         );
@@ -414,18 +446,21 @@ export function createInput(skin: InputSkin) {
       handleChangeText("");
       fieldRef.current?.focus();
     };
+    const groupShape = skin.groupContainer(tokens, borderColor, focused, isError);
     const groupedField = (
       <View
         style={[
-          skin.groupContainer(tokens, borderColor, focused, isError),
+          groupShape,
           { minHeight: height },
+          glass ? glassBox : null,
           above ? null : disabled ? { opacity: skin.disabledOpacity } : null,
           above ? null : widthCap,
           above ? null : style,
         ]}
       >
+        <GlassPane layer="control" shape={groupShape} tint={paneTint} />
         {prefix != null ? (
-          <View style={skin.addonBox(tokens, "left", state)}>
+          <View style={withInnerFill(theme, skin.addonBox(tokens, "left", state), "soft")}>
             <Text style={[skin.addonText(tokens), text]}>{prefix}</Text>
           </View>
         ) : null}
@@ -445,6 +480,7 @@ export function createInput(skin: InputSkin) {
               trailingGlyphs > 1 ? { paddingEnd: asNum(skin.groupField(tokens, { leadingIcon: false, trailingIcon: true, hasPrefix: false, hasSuffix: false }).paddingEnd, 0) + (trailingGlyphs - 1) * (skin.iconSize + ACTION_GAP) } : null,
               text,
               FOCUS_RESET,
+              glass ? PANE_SIBLING_INPUT : null,
             ]}
             textAlignVertical="center"
             {...common}
@@ -491,7 +527,7 @@ export function createInput(skin: InputSkin) {
           action ? (
             <Pressable
               style={({ pressed }) => [
-                skin.addonBox(tokens, "right", state),
+                withInnerFill(theme, skin.addonBox(tokens, "right", state), "soft"),
                 skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
               ]}
               onPress={onActionPress}
@@ -502,7 +538,7 @@ export function createInput(skin: InputSkin) {
               <Text style={[skin.actionText(tokens), text]}>{suffix}</Text>
             </Pressable>
           ) : (
-            <View style={skin.addonBox(tokens, "right", state)}>
+            <View style={withInnerFill(theme, skin.addonBox(tokens, "right", state), "soft")}>
               <Text style={[skin.addonText(tokens), text]}>{suffix}</Text>
             </View>
           )

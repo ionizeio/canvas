@@ -1,5 +1,6 @@
 import { forwardRef, useId, useState, type ReactNode } from "react";
 import {
+  StyleSheet,
   TextInput,
   type AccessibilityActionEvent,
   type NativeSyntheticEvent,
@@ -22,6 +23,10 @@ import {
   type ViewStyle,
   type TextStyle,
   type LayoutStyle,
+  GlassPane,
+  paneStyle,
+  isGlass,
+  PANE_SIBLING_INPUT,
 } from "../../style/index.js";
 import { clamp } from "../../style/math.js";
 import { Icon } from "../icon/icon.js";
@@ -167,11 +172,23 @@ export function createStepper(skin: StepperSkin) {
       disabled,
       style,
     } = props;
-    const { tokens } = useTheme();
+    const theme = useTheme();
+    const { tokens } = theme;
     // HUG: the control keeps its content width inside a stretching Column (whichever
     // node is the root: the bare control, or the labeled wrapper).
     const hug = useHugStyle();
     const size = sizeOf(props);
+    // Under glass the stepper's surface is a CONTROL-layer puck. Whichever node
+    // paints the surface takes the material: the web box / iOS capsule group holds a
+    // GlassPane (the buttons ride inside it), while the Android skin's bare row keeps
+    // no material and each outlined M3 circle becomes its own puck. The node drops
+    // its fill and outline under glass (the pane's material and rim carry them).
+    const glass = isGlass(theme);
+    const groupShape = skin.group(tokens, size, !!disabled);
+    const groupSurfaced = (StyleSheet.flatten(groupShape) as ViewStyle).backgroundColor != null;
+    const groupStyle = paneStyle(glass, groupShape);
+    const groupPane = groupSurfaced ? <GlassPane layer="control" shape={groupShape} interactive /> : null;
+    const buttonPane = (shape: ViewStyle) => (groupSurfaced ? null : <GlassPane layer="control" shape={shape} interactive />);
 
     // Collision-free ids so the group can name itself from the visible label and be
     // described by the description (unconditional hooks: the ids are cheap and always
@@ -301,10 +318,11 @@ export function createStepper(skin: StepperSkin) {
           android_ripple={ripple}
           hitSlop={hitSlop}
           style={({ pressed }) => [
-            skin.button(tokens, size, "left", atMin, pressed),
+            groupSurfaced ? skin.button(tokens, size, "left", atMin, pressed) : paneStyle(glass, skin.button(tokens, size, "left", atMin, pressed)),
             skin.pressedOpacity != null && pressed && !atMin ? { opacity: skin.pressedOpacity } : null,
           ]}
         >
+          {buttonPane(skin.button(tokens, size, "left", atMin, false))}
           <Icon minus {...glyphColorProps(glyph.color, atMin)} size={glyph.size} />
         </Pressable>
       </RippleClip>
@@ -322,10 +340,11 @@ export function createStepper(skin: StepperSkin) {
           android_ripple={ripple}
           hitSlop={hitSlop}
           style={({ pressed }) => [
-            skin.button(tokens, size, "right", atMax, pressed),
+            groupSurfaced ? skin.button(tokens, size, "right", atMax, pressed) : paneStyle(glass, skin.button(tokens, size, "right", atMax, pressed)),
             skin.pressedOpacity != null && pressed && !atMax ? { opacity: skin.pressedOpacity } : null,
           ]}
         >
+          {buttonPane(skin.button(tokens, size, "right", atMax, false))}
           <Icon plus {...glyphColorProps(glyph.color, atMax)} size={glyph.size} />
         </Pressable>
       </RippleClip>
@@ -351,7 +370,7 @@ export function createStepper(skin: StepperSkin) {
         // Required is surfaced programmatically (aria-required), matching Input;
         // omitted entirely when optional so no aria-required="false" is emitted.
         aria-required={required || undefined}
-        style={[skin.field(tokens, size, !!disabled), FOCUS_RESET]}
+        style={[skin.field(tokens, size, !!disabled), FOCUS_RESET, glass ? PANE_SIBLING_INPUT : null]}
       />
     );
 
@@ -388,14 +407,16 @@ export function createStepper(skin: StepperSkin) {
         {skin.fieldOnLeft ? (
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             {Field}
-            <View style={skin.group(tokens, size, !!disabled)}>
+            <View style={groupStyle}>
+              {groupPane}
               {MinusButton}
               {makeDivider("d")}
               {PlusButton}
             </View>
           </View>
         ) : (
-          <View style={skin.group(tokens, size, !!disabled)}>
+          <View style={groupStyle}>
+            {groupPane}
             {MinusButton}
             {makeDivider("d1")}
             {Field}

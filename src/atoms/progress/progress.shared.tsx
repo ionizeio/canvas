@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { Animated, Easing, type LayoutChangeEvent } from "react-native";
-import { View, Text, useTheme, useFillStyle, useReducedMotion, supportsNativeDriver, palette, type ColorTokens, type LayoutStyle, type MeasureProps, type ViewStyle, type TextStyle, type StyleProp } from "../../style/index.js";
+import { View, Text, useTheme, useFillStyle, useReducedMotion, supportsNativeDriver, palette, type ColorTokens, type LayoutStyle, type MeasureProps, type ViewStyle, type TextStyle, type StyleProp, GlassPane, isGlass, innerFill } from "../../style/index.js";
 
 // Shared Progress shell. Uses React Native's primitives DIRECTLY (no engine className
 // layer) and reads the active brand tokens via useTheme, so the track/fill colors follow
@@ -162,15 +162,21 @@ export interface ProgressParts {
 export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
   return function Progress(props: ProgressProps) {
     const { value, indeterminate, children, description, accessibilityLabel, testID, style } = props;
-    const { tokens, dark } = useTheme();
+    const theme = useTheme();
+    const { tokens, dark } = theme;
     const size = sizeOf(props);
     const tone = toneOf(props);
+    // Under glass the rail is a CONTROL-layer puck: the continuous track paints a
+    // GlassPane in place of its opaque fill (the brand fill slides over the material),
+    // and the segmented M3 inactive track, which must keep its gap from the active
+    // edge, becomes an ink tint instead of a second material.
+    const glass = isGlass(theme);
     // FILL, appended after the skin's width:"100%" (the row-sharing pair).
     const widthStyle = useFillStyle("Progress", props);
 
     const height = skin.height[size];
     const radius = skin.radius[size];
-    const trackColor = skin.trackColor(tokens);
+    const trackColor = glass ? innerFill(theme, "muted", "soft") : skin.trackColor(tokens);
     // The active fill: the skin's brand `primary` by default, or the semantic tone color
     // (amber/red) when `warning`/`danger` is set. Every fill render path below reads this one
     // value, so the tone flows through the continuous, segmented, indeterminate, and stop-dot
@@ -354,11 +360,12 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
           // the inactive track as the container fill; the segmented (M3) structure draws its
           // own track segment, so the container stays transparent there.
           { width: "100%", height, borderRadius: radius, overflow: "hidden" as const },
-          segmented ? null : { backgroundColor: trackColor },
+          segmented || glass ? null : { backgroundColor: trackColor },
           hasHeader ? null : widthStyle,
           hasHeader ? null : style,
         ]}
       >
+        {segmented ? null : <GlassPane layer="control" shape={{ borderRadius: radius }} />}
         {indeterminate ? (
           <Animated.View
             style={{

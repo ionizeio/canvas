@@ -15,7 +15,7 @@
 import { createContext, useContext, type ReactNode, type RefObject } from "react";
 import { View, StyleSheet, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
 import { type ColorTokens, type GlassTokens } from "../tokens.js";
-import { alpha } from "../color.js";
+import { alpha, composite, contrastRatio, inkOn } from "../color.js";
 
 /**
  * The layer of the glass model a surface belongs to, which picks its tint (see
@@ -190,16 +190,33 @@ export const GLASS_INTENSITY = 80;
 // aurora keep some shape through the pane.
 export const CONTENT_INTENSITY = 64;
 
-// The alpha at which a `brand` colour becomes the under-fill of a brand-tinted puck
-// on the lens and frost paths: sky-400 at this alpha over the page still carries the
-// dark `primary-foreground` ink at 4.5:1 in both schemes (test/glass-tint.test.tsx).
+// The alpha at which a `brand` colour becomes the under-fill of a brand-tinted puck on
+// the lens and frost paths: as sheer as legibility allows. The puck carries the brand's
+// own ink (white on the sky primary and the red destructive; `inkOn` picks the same ink
+// the tokens pair with each fill), and that ink must keep WCAG 4.5:1 over the puck as
+// it composites on the PAGE, so `brandTint` starts at this floor and densifies the
+// colour in small steps until the ink clears the bar: sky-400 stays at the floor in
+// both schemes, the light-scheme destructive red (3.2:1 at the floor) climbs to 0.9.
+// (test/glass-tint.test.tsx pins both.)
 export const BRAND_TINT_ALPHA = 0.66;
+export const BRAND_TINT_STEP = 0.02;
+export const BRAND_INK_CONTRAST = 4.5;
+
+/** The brand colour as a translucent under-fill whose ink stays legible over `page`. */
+export function brandTint(brand: string, page: string): string {
+  const ink = inkOn(brand);
+  for (let a = BRAND_TINT_ALPHA; a < 1; a += BRAND_TINT_STEP) {
+    const fill = alpha(brand, Math.round(a * 100) / 100);
+    if (contrastRatio(composite(fill, page), ink) >= BRAND_INK_CONTRAST) return fill;
+  }
+  return alpha(brand, 1);
+}
 
 /** The under-fill a surface paints beneath its material: `tint`, else the `brand`
- *  colour at BRAND_TINT_ALPHA, else the layer's own token. */
-export function surfaceUnderFill(glass: GlassTokens, layer: GlassLayer, brand?: string, tint?: string): string {
+ *  colour tinted for legibility over the page, else the layer's own token. */
+export function surfaceUnderFill(glass: GlassTokens, layer: GlassLayer, brand?: string, tint?: string, page?: string): string {
   if (tint != null) return tint;
-  if (brand != null) return alpha(brand, BRAND_TINT_ALPHA);
+  if (brand != null) return page != null ? brandTint(brand, page) : alpha(brand, BRAND_TINT_ALPHA);
   switch (layer) {
     case "content": return glass["glass-tint-content"];
     case "control": return glass["glass-tint-control"];

@@ -2,7 +2,7 @@ import { forwardRef, type ReactNode } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { type GestureResponderEvent } from "react-native";
-import { Pressable, View, Text, useTheme, useControllableState, useMinTargetSlop, type ColorTokens, type StyleProp, type ViewStyle, type TouchTargetSkin, type LayoutStyle } from "../../style/index.js";
+import { Pressable, View, Text, useTheme, useControllableState, useMinTargetSlop, type ColorTokens, type StyleProp, type ViewStyle, type TouchTargetSkin, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 
 // Shared Switch shell. Uses React Native's primitives DIRECTLY (no engine className
 // layer) and reads the active brand tokens via useTheme, so colors follow light/dark.
@@ -69,8 +69,13 @@ export function createSwitch(skin: SwitchSkin) {
   const Switch = forwardRef<View, SwitchProps>(function Switch(props, ref) {
     const hostRef = useComposedRefs(ref);
     const { onChange, onValueChange, disabled, children, description, accessibilityLabel, style } = props;
-    const { tokens, dark } = useTheme();
+    const theme = useTheme();
+    const { tokens, dark } = theme;
     const size = sizeOf(props);
+    // Under glass the track is a CONTROL-layer puck: a GlassPane paints the material
+    // behind the thumb (BRAND-tinted while checked) and the track drops its fill and
+    // outline (the pane's material and rim carry them). The thumb stays a solid knob.
+    const glass = isGlass(theme);
 
     // Controlled when `checked` is provided, self-managed otherwise, so a bare
     // <Switch /> toggles out of the box (the standard library contract).
@@ -128,7 +133,8 @@ export function createSwitch(skin: SwitchSkin) {
             ) : null}
           </View>
         ) : null}
-        <View style={skin.track(tokens, dark, checked, size)}>
+        <View style={paneStyle(glass, skin.track(tokens, dark, checked, size))}>
+          <GlassPane layer="control" shape={skin.track(tokens, dark, checked, size)} brand={checked ? tokens.primary : undefined} interactive />
           <View style={skin.thumb(tokens, checked, size)} />
         </View>
       </Pressable>

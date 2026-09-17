@@ -1,6 +1,7 @@
 import { Fragment, forwardRef, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import {
   Animated,
+  StyleSheet,
   type NativeSyntheticEvent,
   type TextInput as RNTextInput,
   type TextInputSelectionChangeEventData,
@@ -19,6 +20,8 @@ import {
   type ViewStyle,
   type TextStyle,
   type LayoutStyle,
+  GlassPane,
+  isGlass,
 } from "../../style/index.js";
 
 // Shared InputOTP shell. The whole structure, state, and accessibility live here
@@ -119,6 +122,10 @@ const DIGITS_ONLY = /\D/g;
 // em dash, which is what reads as a pause between two halves of a code.
 const SEPARATOR = "–";
 
+// One run of cells: a row of the skin's cells (the connected web run shares its
+// borders and sets no gap; the separated skins pass the row gap in).
+const RUN: ViewStyle = { flexDirection: "row", alignItems: "center" };
+
 // Digits only unless `alphanumeric`, and never longer than the cell count.
 function cleanCode(raw: string, length: number, alphanumeric?: boolean): string {
   return (alphanumeric ? raw : raw.replace(DIGITS_ONLY, "")).slice(0, length);
@@ -170,7 +177,14 @@ export function createInputOTP(skin: InputOTPSkin) {
       style,
     } = props;
     const size = sizeOf(props);
-    const { tokens } = useTheme();
+    const theme = useTheme();
+    const { tokens } = theme;
+    // Under glass the code field is a CONTROL-layer puck per box: each separated iOS /
+    // M3 cell takes its own GlassPane, while a connected web run (cells sharing their
+    // borders) takes ONE pane across the run, so it still reads as a single field box.
+    // A cell drops its fill and resting border under glass (the pane's material and
+    // rim carry them) and keeps only its ACTIVE border and ring as state.
+    const glass = isGlass(theme);
     // HUG: the cell row keeps its content width inside a stretching Column.
     const hug = useHugStyle();
     const [focused, setFocused] = useState(false);
@@ -242,6 +256,14 @@ export function createInputOTP(skin: InputOTPSkin) {
     // The active cell is where the next character lands: value.length, clamped to the
     // last cell so a full code keeps the last cell highlighted while focused.
     const activeIndex = Math.min(value.length, length - 1);
+    // The cells, grouped into runs: one unbroken run, or `groups`-sized runs with a
+    // separator between them. A run is one connected field box on the web skin and a
+    // set of separated cells on iOS/M3; either way it is the unit the glass pane spans.
+    const runs: number[][] = [];
+    for (let index = 0; index < length; index++) {
+      if (index === 0 || (groupSize ? index % groupSize === 0 : false)) runs.push([]);
+      runs[runs.length - 1]!.push(index);
+    }
 
     return (
       <View
@@ -259,20 +281,23 @@ export function createInputOTP(skin: InputOTPSkin) {
             ...(skin.connected ? null : { gap }),
           }}
         >
-          {Array.from({ length }).map((_, index) => {
-            const char = value[index];
-            const filled = char != null;
-            const active = focused && !disabled && index === activeIndex;
-            const showCaret = active && !filled;
-            // A separator starts a NEW connected run, so the cell after it draws its own
-            // left edge and rounds it; without that the web skin's shared-border seam
-            // would leave the run open on its left.
-            const groupStart = index === 0 || (groupSize ? index % groupSize === 0 : false);
-            const groupEnd =
-              index === length - 1 || (groupSize ? (index + 1) % groupSize === 0 : false);
+          {runs.map((run, r) => {
+            // A connected run's pane takes the run's outer corners: its first cell's
+            // start radii and its last cell's end radii (the inner seams are square).
+            const first = StyleSheet.flatten(skin.cell(tokens, size, { active: false, filled: false, groupStart: true, groupEnd: run.length === 1 })) as ViewStyle;
+            const last = StyleSheet.flatten(skin.cell(tokens, size, { active: false, filled: false, groupStart: run.length === 1, groupEnd: true })) as ViewStyle;
+            const runShape: ViewStyle = {
+              borderTopStartRadius: first.borderTopStartRadius,
+              borderBottomStartRadius: first.borderBottomStartRadius,
+              borderTopEndRadius: last.borderTopEndRadius,
+              borderBottomEndRadius: last.borderBottomEndRadius,
+            };
             return (
-              <Fragment key={index}>
-                {groupStart && index > 0 ? (
+              <Fragment key={r}>
+                {r > 0 ? (
+                  // The dash between two runs: a separator starts a NEW connected run, so
+                  // the cell after it draws its own left edge and rounds it; without that
+                  // the web skin's shared-border seam would leave the run open on its left.
                   <Text
                     style={[skin.separator(tokens, size), { pointerEvents: "none" }]}
                     accessibilityElementsHidden
@@ -281,23 +306,40 @@ export function createInputOTP(skin: InputOTPSkin) {
                     {SEPARATOR}
                   </Text>
                 ) : null}
-                <View
-                  style={[
-                    skin.cell(tokens, size, { active, filled, groupStart, groupEnd }),
-                    { pointerEvents: "none" },
-                  ]}
-                  // The cells are decorative; the TextInput carries the a11y role/label.
-                  accessibilityElementsHidden
-                  importantForAccessibility="no-hide-descendants"
-                >
-                  {filled ? (
-                    // U+25CF BLACK CIRCLE, not the U+2022 text bullet: at the digit font
-                    // size the text bullet paints as a tiny dot, while BLACK CIRCLE reads
-                    // at secure-entry weight (the iOS/Android password-dot idiom).
-                    <Text style={skin.digit(tokens, size)}>{masked ? "●" : char}</Text>
-                  ) : showCaret ? (
-                    <Caret blink={skin.caretBlink} style={skin.caret(tokens, size)} />
-                  ) : null}
+                <View style={[RUN, skin.connected ? null : { gap }]}>
+                  {skin.connected ? <GlassPane layer="control" shape={runShape} /> : null}
+                  {run.map((index) => {
+                    const char = value[index];
+                    const filled = char != null;
+                    const active = focused && !disabled && index === activeIndex;
+                    const showCaret = active && !filled;
+                    const groupStart = index === run[0];
+                    const groupEnd = index === run[run.length - 1];
+                    const cellShape = skin.cell(tokens, size, { active, filled, groupStart, groupEnd });
+                    return (
+                      <View
+                        key={index}
+                        style={[
+                          cellShape,
+                          glass ? { backgroundColor: "transparent", borderColor: active ? cellShape.borderColor : "transparent" } : null,
+                          { pointerEvents: "none" },
+                        ]}
+                        // The cells are decorative; the TextInput carries the a11y role/label.
+                        accessibilityElementsHidden
+                        importantForAccessibility="no-hide-descendants"
+                      >
+                        {skin.connected ? null : <GlassPane layer="control" shape={cellShape} />}
+                        {filled ? (
+                          // U+25CF BLACK CIRCLE, not the U+2022 text bullet: at the digit font
+                          // size the text bullet paints as a tiny dot, while BLACK CIRCLE reads
+                          // at secure-entry weight (the iOS/Android password-dot idiom).
+                          <Text style={skin.digit(tokens, size)}>{masked ? "●" : char}</Text>
+                        ) : showCaret ? (
+                          <Caret blink={skin.caretBlink} style={skin.caret(tokens, size)} />
+                        ) : null}
+                      </View>
+                    );
+                  })}
                 </View>
               </Fragment>
             );

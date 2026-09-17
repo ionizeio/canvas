@@ -1,6 +1,6 @@
 import { primaryText } from "../../style/primary-text.js";
 import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
-import { View, Text, useTheme, alpha, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Text, useTheme, alpha, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle, innerFill } from "../../style/index.js";
 import { type EmblemSkin } from "./emblem.styles.js";
 
 // Shared Emblem shell. The tinted rounded square (or circle) that holds a single
@@ -55,8 +55,10 @@ function sizeOf(p: EmblemProps): EmblemSize {
 }
 
 // Tinted surface fill per tone (a soft wash of the tone color; `muted` uses the
-// solid muted token).
-function tintBg(tokens: ColorTokens, tone: Tone): string {
+// solid muted token, which under glass becomes an ink tint so the tile stays a wash
+// over the pane it sits on, like the tone washes already are).
+function tintBg(theme: Parameters<typeof innerFill>[0], tone: Tone): string {
+  const { tokens } = theme;
   switch (tone) {
     case "primary":
       return alpha(tokens.primary, 0.12);
@@ -67,7 +69,7 @@ function tintBg(tokens: ColorTokens, tone: Tone): string {
     case "warning":
       return alpha(tokens.warning, 0.12);
     case "muted":
-      return tokens.muted;
+      return innerFill(theme, "muted", "soft");
   }
 }
 
@@ -100,7 +102,8 @@ function labelColor(tokens: ColorTokens, tone: Tone): string {
 export function createEmblem(skin: EmblemSkin) {
   return function Emblem(props: EmblemProps) {
     const { children, label, circle, testID, style } = props;
-    const { tokens } = useTheme();
+    const theme = useTheme();
+    const { tokens } = theme;
     const tone = toneOf(props);
     const size = sizeOf(props);
     const box = skin.box[size];
@@ -130,7 +133,7 @@ export function createEmblem(skin: EmblemSkin) {
             width: box,
             height: box,
             borderRadius: circle ? 9999 : skin.radius[size],
-            backgroundColor: tintBg(tokens, tone),
+            backgroundColor: tintBg(theme, tone),
           },
           skin.shape,
           style,

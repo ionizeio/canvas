@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Text, useHugStyle, useTheme, palette, statusHues, MONO_FONT, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Text, useHugStyle, useTheme, palette, statusHues, HUE_WASH, MONO_FONT, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle, GlassPane, isGlass, alpha } from "../../style/index.js";
 
 // Shared Badge shell. The structure (a metadata pill, or a status pill with a leading
 // dot), the boolean-prop axes, and the semantic color logic live here once; a platform
@@ -114,9 +114,12 @@ function statusContainer(tokens: ColorTokens, dark: boolean, status: Status): Vi
     : { borderColor: palette[`${hue}-200`], backgroundColor: palette[`${hue}-50`] };
 }
 
-function statusLabel(tokens: ColorTokens, dark: boolean, status: Status): TextStyle {
+// Under glass the label steps one deeper (800 light / 300 dark): the hue wash the
+// pane takes is darker than the 50/950 fill, and the deeper ink holds 4.5:1 there.
+function statusLabel(tokens: ColorTokens, dark: boolean, status: Status, glass: boolean): TextStyle {
   if (status === "neutral") return { color: tokens["muted-foreground"] };
   const hue = statusHues[status];
+  if (glass) return { color: dark ? palette[`${hue}-300`] : palette[`${hue}-800`] };
   return { color: dark ? palette[`${hue}-400`] : palette[`${hue}-700`] };
 }
 
@@ -125,10 +128,28 @@ function statusDotColor(tokens: ColorTokens, status: Status): string {
   return palette[`${statusHues[status]}-500`];
 }
 
+// Under glass a badge is a CONTROL-layer puck: a GlassPane paints the material behind
+// the label and the box drops its fill and hairline (the pane's material and rim carry
+// them). The brand fills (`default`, `destructive`) are BRAND-tinted glass with their
+// foreground on top; a status badge washes the material with its hue's mid step (the
+// Alert's recipe) under the same 700/400 label; the rest take the plain control material.
+const GLASS_BOX: ViewStyle = { backgroundColor: "transparent", borderColor: "transparent" };
+
+function metaBrand(tokens: ColorTokens, tone: Tone): string | undefined {
+  return tone === "default" ? tokens.primary : tone === "destructive" ? tokens.destructive : undefined;
+}
+
+function statusTint(dark: boolean, status: Status): string | undefined {
+  if (status === "neutral") return undefined;
+  return alpha(palette[`${statusHues[status]}-500`], dark ? HUE_WASH.dark : HUE_WASH.light);
+}
+
 export function createBadge(skin: BadgeSkin) {
   return function Badge(props: BadgeProps) {
     const { children, mono, style, accessibilityLabel, testID } = props;
-    const { tokens, dark } = useTheme();
+    const theme = useTheme();
+    const { tokens, dark } = theme;
+    const glass = isGlass(theme);
     // HUG: content width inside a stretching Column, content-sized in a Row.
     const hug = useHugStyle();
 
@@ -152,7 +173,7 @@ export function createBadge(skin: BadgeSkin) {
       const role = statusName == null ? null : children == null ? "img" : "group";
       return (
         <View
-          style={[skin.statusBase, statusContainer(tokens, dark, tone), hug, style]}
+          style={[skin.statusBase, statusContainer(tokens, dark, tone), glass ? GLASS_BOX : null, hug, style]}
           testID={testID}
           {...(role === "img"
             ? { accessibilityRole: "image" as const, role: "img" as const }
@@ -162,9 +183,10 @@ export function createBadge(skin: BadgeSkin) {
           accessibilityLabel={statusName}
           aria-label={statusName}
         >
+          <GlassPane layer="control" shape={skin.statusBase} tint={statusTint(dark, tone)} />
           <View style={{ height: skin.dotSize, width: skin.dotSize, borderRadius: 9999, backgroundColor: statusDotColor(tokens, tone) }} />
           {children != null ? (
-            <Text style={[skin.labelType, statusLabel(tokens, dark, tone)]}>{children}</Text>
+            <Text style={[skin.labelType, statusLabel(tokens, dark, tone, glass)]}>{children}</Text>
           ) : null}
         </View>
       );
@@ -176,7 +198,8 @@ export function createBadge(skin: BadgeSkin) {
     const monoStyle = mono ? { fontFamily: MONO_FONT } : null;
 
     return (
-      <View style={[skin.metaBase, metaContainer(tokens, tone), hug, style]} testID={testID}>
+      <View style={[skin.metaBase, metaContainer(tokens, tone), glass ? GLASS_BOX : null, hug, style]} testID={testID}>
+        <GlassPane layer="control" shape={skin.metaBase} brand={metaBrand(tokens, tone)} />
         {children != null ? (
           <Text style={[skin.labelType, metaLabel(tokens, tone), monoStyle]}>{children}</Text>
         ) : null}

@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { primaryText } from "../../style/primary-text.js";
-import { Pressable, RippleClip, Text, useMinTargetSlop, useSizing, useTheme, type LayoutStyle, type MeasureProps } from "../../style/index.js";
+import { Pressable, RippleClip, Text, useMinTargetSlop, useSizing, useTheme, type LayoutStyle, type MeasureProps, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import { type ButtonSkin, type Intent, type Size, FG_TOKEN } from "./button.styles.js";
 
 // Shared Button shell. The structure (Pressable + optional loading spinner +
@@ -126,13 +126,22 @@ export function createButton(skin: ButtonSkin) {
   const Button = forwardRef<View, ButtonProps>(function Button(props, ref) {
     const hostRef = useComposedRefs(ref);
     const { children, iconLeft, iconRight, accessibilityLabel, onPress, href, hrefAttrs, onHoverIn, onHoverOut, onFocus, onBlur, loading, disabled, block, icon, testID, style } = props;
-    const { tokens } = useTheme();
+    const theme = useTheme();
+    const { tokens } = theme;
     const intent = intentOf(props);
     const size = sizeOf(props);
 
     const opts = { icon: !!icon, block: !!block, dim: !!(disabled || loading) };
     const sizing = useSizing(props);
     const container = skin.container(tokens, intent, size, opts);
+    // Under glass a filled button is a CONTROL-layer puck: a GlassPane paints the
+    // material behind the label (the Pressable keeps its tap, ripple and dim), and the
+    // container drops its fill and outline (the pane's material and rim carry them).
+    // `primary` and `destructive` are BRAND-tinted glass (the intent colour under the
+    // material, the intent's foreground on top); `secondary` and `outline` take the
+    // plain control material; `ghost` and `link` have no surface and stay bare.
+    const puck = isGlass(theme) && intent !== "ghost" && intent !== "link";
+    const brand = intent === "primary" ? tokens.primary : intent === "destructive" ? tokens.destructive : undefined;
     const ripple = skin.ripple ? skin.ripple(tokens, intent) : undefined;
     // The rounded shape the ripple is clipped to (Android only; undefined on iOS/web). A bounded
     // android_ripple bleeds past rounded corners unless a rounded overflow:"hidden" PARENT clips
@@ -182,10 +191,11 @@ export function createButton(skin: ButtonSkin) {
           aria-haspopup={props.haspopup}
           android_ripple={ripple}
           style={({ pressed }) => [
-            container,
+            paneStyle(puck, container),
             skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
           ]}
         >
+          {puck ? <GlassPane layer="control" shape={container} brand={brand} interactive /> : null}
           {loading ? <ActivityIndicator size="small" color={intent === "link" ? primaryText(tokens) : tokens[FG_TOKEN[intent]]} /> : null}
           {!loading && iconLeft != null ? iconLeft : null}
           {children != null ? <Text style={skin.label(tokens, intent, size)}>{children}</Text> : null}

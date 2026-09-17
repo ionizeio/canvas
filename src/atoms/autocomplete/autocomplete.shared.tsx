@@ -1,7 +1,7 @@
 import { consumeEscapeKey, EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { forwardRef, useEffect, useId, useRef, useState } from "react";
 import { Platform, type Role, type TextInput as RNTextInput } from "react-native";
-import { View, Pressable, Text, TextInput, useTheme, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useTheme, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, isGlass, PANE_SIBLING_INPUT } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useActiveOptionScroll } from "../../style/use-active-option-scroll.js";
 import { AccessibilityReturnBoundary, accessibilitySelectionProps, useAccessibilityReturn } from "../../style/use-accessibility-return.js";
@@ -145,7 +145,8 @@ export function createAutocomplete(skin: AutocompleteSkin) {
       style,
     } = props;
     const size = sizeOf(props);
-    const { tokens } = useTheme();
+    const theme = useTheme();
+    const { tokens } = theme;
     const widthCap = useFillStyle("Autocomplete", props);
     // One collision-free id for the label so the floated label carries a nativeID.
     const labelId = useId();
@@ -241,7 +242,15 @@ export function createAutocomplete(skin: AutocompleteSkin) {
     const floating = hasLabel && skin.floatingLabel;
     const above = hasLabel && !floating;
     const populated = fieldValue !== "";
-    const fieldHeight = asNum((skin.field(tokens, size, open) as { height?: unknown }).height, 56);
+    const fieldShape = skin.field(tokens, size, open);
+    const fieldHeight = asNum((fieldShape as { height?: unknown }).height, 56);
+    // Under glass the field box is a CONTROL-layer puck: a GlassPane paints the material
+    // behind the native input and its toggle, the box drops its fill and resting
+    // hairline and keeps only its OPEN border (the iOS/web `ring`) as state; the
+    // Android skin's bottom indicator is a side colour, which the shorthand reset
+    // leaves alone. Solid mode is untouched.
+    const glass = isGlass(theme);
+    const glassField: ViewStyle | null = glass ? { backgroundColor: "transparent", borderColor: open ? fieldShape.borderColor : "transparent" } : null;
 
     return (
       <View style={[wrapper, open && !host ? wrapperLifted : null, widthCap, style]}>
@@ -254,10 +263,12 @@ export function createAutocomplete(skin: AutocompleteSkin) {
           ref={fieldRef}
           onLayout={onTriggerLayout}
           style={[
-            skin.field(tokens, size, open),
+            fieldShape,
+            glassField,
             disabled ? { opacity: skin.disabledOpacity } : null,
           ]}
         >
+          <GlassPane layer="control" shape={fieldShape} />
           <TextInput
             ref={accessibilityReturn.inputRef}
             // The field paints its own focus state (the skin's open border), so
@@ -266,6 +277,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
             style={[
               skin.fieldText(tokens, size, false),
               fieldInput,
+              glass ? PANE_SIBLING_INPUT : null,
               // Android floating label: the reserve (top padding that lets the value
               // clear the floated label, mirroring the M3 Input) belongs to the VALUE
               // field only, not the whole row. Stretched to full height, the field

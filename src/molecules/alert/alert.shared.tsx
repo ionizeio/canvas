@@ -160,9 +160,12 @@ function titleColor(tokens: ColorTokens, dark: boolean, tone: Tone): TextStyle {
   return { color: dark ? palette[`${hue}-200`] : palette[`${hue}-800`] };
 }
 
-// Body color. Light: 700; dark: 300. Neutral: muted-foreground.
-function bodyColor(tokens: ColorTokens, dark: boolean, tone: Tone): TextStyle {
+// Body color. Light: 700; dark: 300. Neutral: muted-foreground. Under glass the body
+// steps to the title's 800/200: the hue wash over the page (and over a content pane) is
+// darker than the 50/950 fill, and 700/300 slips under 4.5:1 on green and amber there.
+function bodyColor(tokens: ColorTokens, dark: boolean, tone: Tone, glass: boolean): TextStyle {
   if (tone === "neutral") return { color: tokens["muted-foreground"] };
+  if (glass) return titleColor(tokens, dark, tone);
   const hue = statusHues[tone];
   return { color: dark ? palette[`${hue}-300`] : palette[`${hue}-700`] };
 }
@@ -233,7 +236,7 @@ export function createAlert(skin: AlertSkin) {
             <Text style={[skin.titleType, titleColor(tokens, dark, tone)]}>{title}</Text>
           ) : null}
           {description != null && description !== "" ? (
-            <Text style={[skin.bodyType, bodyColor(tokens, dark, tone)]}>{description}</Text>
+            <Text style={[skin.bodyType, bodyColor(tokens, dark, tone, glass)]}>{description}</Text>
           ) : null}
           {children}
           {actions != null ? <View style={skin.actions}>{actions}</View> : null}

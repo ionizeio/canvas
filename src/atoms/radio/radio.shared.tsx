@@ -2,7 +2,7 @@ import { forwardRef, type ReactNode } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, useTheme, surfaceRipple, RippleClip, cornerRadii, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, surfaceRipple, RippleClip, cornerRadii, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, GlassPane, paneStyle, isGlass, alpha } from "../../style/index.js";
 import { useRadioGroup } from "./radio-context.js";
 
 // Shared Radio shell. Uses React Native's primitives DIRECTLY and reads the active
@@ -112,7 +112,13 @@ export function createRadio(skin: RadioSkin) {
   const Radio = forwardRef<View, RadioProps>(function Radio(props, ref) {
     const { checked, selected, onChange, children, description, card, style } = props;
     const size = sizeOf(props);
-    const { tokens } = useTheme();
+    const theme = useTheme();
+    const { tokens } = theme;
+    // Under glass the ring is a CONTROL-layer puck: a GlassPane paints the material
+    // behind the dot (BRAND-tinted while checked, with the dot in `primary-foreground`
+    // over it) and the ring drops its outline (the pane's rim carries it). A card-mode
+    // radio is a CONTENT-layer pane like a selectable Card, tinted while checked.
+    const glass = isGlass(theme);
     // Whether the control carries any text at all (title and/or description).
     const hasText = children != null || description != null;
 
@@ -174,7 +180,7 @@ export function createRadio(skin: RadioSkin) {
         style={({ pressed }) => [
           ROW,
           // Card mode: the pressable IS the card surface (border, radius, fill, padding).
-          cardChrome,
+          cardChrome ? paneStyle(glass, cardChrome) : null,
           disabled ? { opacity: skin.disabledOpacity } : null,
           skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
           // In card mode the outer layout `style` rides the RippleClip wrapper (the
@@ -182,8 +188,10 @@ export function createRadio(skin: RadioSkin) {
           card ? null : style,
         ]}
       >
-        <View style={skin.ring(tokens, size, isChecked, hasText)}>
-          {isChecked ? <View style={skin.dot(tokens, size)} /> : null}
+        {cardChrome ? <GlassPane layer="content" shape={cardChrome} tint={isChecked ? alpha(tokens.primary, 0.22) : undefined} interactive /> : null}
+        <View style={paneStyle(glass, skin.ring(tokens, size, isChecked, hasText))}>
+          <GlassPane layer="control" shape={skin.ring(tokens, size, isChecked, hasText)} brand={isChecked ? tokens.primary : undefined} interactive />
+          {isChecked ? <View style={[skin.dot(tokens, size), glass ? { backgroundColor: tokens["primary-foreground"] } : null]} /> : null}
         </View>
         {hasText ? (
           description != null ? (

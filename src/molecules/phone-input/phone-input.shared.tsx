@@ -19,6 +19,10 @@ import {
   type LayoutStyle,
   type MeasureProps,
   type ViewStyle,
+  GlassPane,
+  isGlass,
+  withInnerFill,
+  alpha,
 } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
@@ -130,7 +134,13 @@ export function createPhoneInput(skin: PhoneInputSkin) {
     } = props;
     const isError = !!(props.error || props.invalid);
     const size = sizeOf(props);
-    const { tokens } = useTheme();
+    const theme = useTheme();
+    const { tokens } = theme;
+    // Under glass the box is a CONTROL-layer puck like the grouped Input: a GlassPane
+    // paints the material behind the country segment and the native input, the box
+    // keeps only its STATE border (focus, error) over it, an errored box tints the
+    // pane, and the country segment's `muted` fill becomes an ink tint.
+    const glass = isGlass(theme);
     const widthCap = useFillStyle("PhoneInput", props);
     const labelId = useId();
     const listId = `${labelId}-countries`;
@@ -176,16 +186,19 @@ export function createPhoneInput(skin: PhoneInputSkin) {
     const segmentName = selected ? `Country, ${selected.name} ${selected.dialCode}` : "Country";
     const ripple = field.ripple ? field.ripple(tokens) : undefined;
 
+    const boxShape = field.groupContainer(tokens, borderColor, active, isError);
+    const glassBox: ViewStyle | null = glass ? { backgroundColor: "transparent", borderColor: active || isError ? tokens[borderColor] : "transparent" } : null;
     const box = (
       <View
         ref={boxRef}
         onLayout={onBoxLayout}
-        style={[field.groupContainer(tokens, borderColor, active, isError), { minHeight: field.groupedHeight(size) }]}
+        style={[boxShape, { minHeight: field.groupedHeight(size) }, glassBox]}
       >
+        <GlassPane layer="control" shape={boxShape} tint={isError ? alpha(tokens.destructive, 0.18) : undefined} />
         <Pressable
           onPress={() => setOpen(!open)}
           disabled={!editable}
-          style={({ pressed }) => [skin.country(tokens, state), field.pressedOpacity != null && pressed ? { opacity: field.pressedOpacity } : null]}
+          style={({ pressed }) => [withInnerFill(theme, skin.country(tokens, state), "soft"), field.pressedOpacity != null && pressed ? { opacity: field.pressedOpacity } : null]}
           android_ripple={ripple}
           accessibilityRole="button"
           accessibilityLabel={segmentName}
