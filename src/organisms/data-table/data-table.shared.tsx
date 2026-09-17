@@ -2,7 +2,7 @@ import { Fragment, type ComponentType, type ReactNode, useEffect, useMemo, useRe
 import { consumeEscapeKey } from "../../style/escape-layer.js";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 import { FlatList, StyleSheet, ScrollView, type ViewProps, type ViewStyle as RNViewStyle } from "react-native";
-import { View, Pressable, Text, TextInput, useTheme, useControllableState, controlRipple, devWarn, breakpoints, useMeasuredWidth, tabularNums, type StyleProp, type TextStyle, type ViewStyle, type LayoutStyle, useFillStyle } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useTheme, useControllableState, controlRipple, devWarn, breakpoints, useMeasuredWidth, tabularNums, type StyleProp, type TextStyle, type ViewStyle, type LayoutStyle, useFillStyle, GlassSurface, isGlass, withInnerFill } from "../../style/index.js";
 import { type CheckboxProps } from "../../atoms/checkbox/checkbox.shared.js";
 import { type PaginationProps } from "../../atoms/pagination/pagination.shared.js";
 import { type SkeletonProps } from "../../atoms/skeleton/skeleton.shared.js";
@@ -353,7 +353,11 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
   return function DataTable(props: DataTableProps) {
     const { columns, rows, striped, bordered, selectable, onRowPress, onRowEdit, onRowDelete, inlineEdit, rowKey, virtualized, loading, emptyMessage, paginated, testID, style } = props;
     const density = densityOf(props);
-    const { tokens } = useTheme();
+    const theme = useTheme();
+    const { tokens } = theme;
+    // Under glass the table is a CONTENT-layer pane and its header band, stripes and
+    // pressed/selected rows are ink tints over the material (src/style/glass-fill.ts).
+    const glass = isGlass(theme);
     const fill = useFillStyle("DataTable");
 
     const cols = useMemo(() => normalizeColumns(columns), [columns]);
@@ -625,7 +629,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
 
     const table = (
       <>
-        <View style={[skin.headerRow(tokens), skin.headerPad[density]]} role="row">
+        <View style={[withInnerFill(theme, skin.headerRow(tokens), "soft"), skin.headerPad[density]]} role="row">
           {selectable ? (
             <View style={skin.selectCol} role="columnheader">
               <Checkbox
@@ -658,12 +662,14 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       </>
     );
 
+    const Root = glass ? GlassSurface : View;
     return (
-      <View
+      <Root
         testID={testID}
         style={wrap}
         role={pans ? undefined : "table"}
         onLayout={onMeasureLayout}
+        {...(glass ? { layer: "content" as const } : null)}
       >
         {pans ? (
           <ScrollView {...scrollFocus} horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.panContent}>
@@ -699,7 +705,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
             />
           </View>
         ) : null}
-      </View>
+      </Root>
     );
 
     // A header cell: a plain labeled box, or (sortable) a pressable label +
@@ -828,8 +834,8 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       // skin's press fill: M3's primary state layer on Android, the system fill
       // on iOS, accent on web) wins over it, and the edit wash marks the row
       // whose pencil editor is open.
-      const stripe = striped && (viewPos.get(r) ?? 0) % 2 === 1 ? skin.stripeTint(tokens) : null;
-      const selectedTint = isSelected ? skin.pressTint(tokens) : null;
+      const stripe = striped && (viewPos.get(r) ?? 0) % 2 === 1 ? withInnerFill(theme, skin.stripeTint(tokens), "faint") : null;
+      const selectedTint = isSelected ? withInnerFill(theme, skin.pressTint(tokens), "firm") : null;
       const editWash = rowEditing ? skin.editTint(tokens) : null;
       // Row press: an explicit action when given; otherwise a selectable row
       // toggles itself (the checkbox alone carries the a11y semantics there, so
@@ -857,7 +863,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
             style={({ pressed }) => [
               ROW_PRESS_AREA,
               // Android ripples; iOS/web tint the pressed area fill.
-              skin.ripple == null && pressed ? skin.pressTint(tokens) : null,
+              skin.ripple == null && pressed ? withInnerFill(theme, skin.pressTint(tokens), "firm") : null,
             ]}
           >
             {selectCell}
@@ -915,7 +921,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
             stripe,
             selectedTint,
             // Android ripples; iOS/web tint the row fill on press.
-            skin.ripple == null && pressed ? skin.pressTint(tokens) : null,
+            skin.ripple == null && pressed ? withInnerFill(theme, skin.pressTint(tokens), "firm") : null,
           ]}
         >
           {cells}

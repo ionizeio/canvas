@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useRef, useState, useCallback } from "react";
-import { Animated, LayoutAnimation } from "react-native";
+import { Animated, LayoutAnimation, StyleSheet } from "react-native";
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import {
   type TextStyle,
   type LayoutStyle,
   useFillStyle,
+  GlassSurface,
 } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 
@@ -189,8 +190,12 @@ export function createCollapsible(skin: CollapsibleSkin) {
     // A sensible accessibility label when only a custom trigger is given.
     const a11yLabel = title ?? "Toggle section";
 
+    // The container is a CONTENT-layer pane under glass when it paints a surface of its
+    // own (the card variant, the iOS inset group); a borderless list stays bare.
+    const surfaced = (StyleSheet.flatten([skin.container(tokens), card ? skin.cardContainer(tokens) : null]) as ViewStyle | undefined)?.backgroundColor != null;
+    const Root = surfaced ? GlassSurface : View;
     return (
-      <View testID={testID} style={[skin.container(tokens), card ? skin.cardContainer(tokens) : null, fill, style]}>
+      <Root testID={testID} style={[skin.container(tokens), card ? skin.cardContainer(tokens) : null, fill, style]} {...(surfaced ? { layer: "content" as const } : null)}>
         <Pressable
           onPress={disabled ? undefined : toggle}
           disabled={disabled}
@@ -239,7 +244,7 @@ export function createCollapsible(skin: CollapsibleSkin) {
             )}
           </View>
         ) : null}
-      </View>
+      </Root>
     );
   };
 }

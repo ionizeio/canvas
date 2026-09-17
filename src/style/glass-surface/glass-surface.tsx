@@ -22,10 +22,10 @@ import {
   frostMethodProps,
   specularRim,
   GlassBlurTargetContext,
-  GLASS_INTENSITY,
-  SHEER_INTENSITY,
   SHEER_FILL_OPACITY,
   materialFill,
+  surfaceUnderFill,
+  surfaceIntensity,
   type GlassSurfaceProps,
 } from "./glass-surface.shared.js";
 
@@ -75,13 +75,14 @@ function GlassLensLayer({ style }: { style: StyleProp<ViewStyle> }) {
   return <View onLayout={onLayout} style={[style, { backdropFilter: filter, pointerEvents: "none" } as unknown as ViewStyle]} />;
 }
 
-export function GlassSurface({ style, children, pointerEvents, testID, role, onLayout, onAccessibilityEscape, sheer, tint }: GlassSurfaceProps) {
+export function GlassSurface({ style, children, pointerEvents, testID, role, onLayout, onAccessibilityEscape, sheer, tint, brand, layer = "functional" }: GlassSurfaceProps) {
   const { surface, dark, tokens, glass, reducedTransparency, increasedContrast } = useTheme();
   // The under-fill behind the material: the caller's `tint` for a bright glass control
-  // (the Slider knob), else the glass material's OWN fill, `glass-tint`. It is not the
-  // `popover` token: popover is the opaque fill of a menu/select/dialog card, and
-  // borrowing it here is what made every one of those surfaces see-through in glass mode.
-  const underFill = tint ?? glass["glass-tint"];
+  // (the Slider knob), else the `brand` colour of a tinted puck, else the LAYER's own
+  // glass tint. It is never the `popover` token: popover is the opaque fill of a menu
+  // card, and borrowing it here is what once made every popover see-through in glass mode.
+  const underFill = surfaceUnderFill(glass, layer, brand, tint);
+  const intensity = surfaceIntensity(layer, sheer);
   // The Android blur target (see GlassBlurTargetContext in the shared file):
   // non-null only where blurring it is native-sibling-safe — inside an
   // OverlayProvider's outlet or an RN Modal bridged by GlassModalBlurTarget.
@@ -148,7 +149,7 @@ export function GlassSurface({ style, children, pointerEvents, testID, role, onL
     <>
       <View style={[materialFill(style), { backgroundColor: underFill, opacity: sheer ? SHEER_FILL_OPACITY : 1, pointerEvents: "none" }]} />
       <BlurView
-        intensity={sheer ? SHEER_INTENSITY : GLASS_INTENSITY}
+        intensity={intensity}
         tint={dark ? "dark" : "light"}
         {...frostMethodProps(supportsBlurTarget, blurTarget)}
         style={materialFill(style)}

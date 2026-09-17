@@ -1,7 +1,7 @@
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { type GestureResponderEvent, type View as RNView, type ScrollView as RNScrollView } from "react-native";
-import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useControllableState, AnchoredOverlay, useMeasuredWidth, FILL, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useControllableState, AnchoredOverlay, useMeasuredWidth, FILL, type StyleProp, type ViewStyle, type LayoutStyle, GlassSurface } from "../../style/index.js";
 import { ButtonGroup } from "../../atoms/button-group/button-group.js";
 import { type CalendarSkin, type DayState, type Density } from "./calendar.styles.js";
 import { calendarDayAccessibility } from "./calendar.accessibility.js";
@@ -665,7 +665,7 @@ export function createCalendar(skin: CalendarSkin) {
     if (view === "day") {
       const label = `${WEEKDAYS_FULL[weekdayOf(anchor)]}, ${monthName} ${anchor}`;
       return (
-        <View testID={testID} style={[skin.containerBase, skin.containerSurface(tokens), ROOT, style]}>
+        <GlassSurface layer="content" testID={testID} style={[skin.containerBase, skin.containerSurface(tokens), ROOT, style]}>
           {header(label)}
           {formatToggle}
           {timeScroller(
@@ -678,14 +678,14 @@ export function createCalendar(skin: CalendarSkin) {
             </View>,
           )}
           {hoverCard()}
-        </View>
+        </GlassSurface>
       );
     }
 
     if (view === "week") {
       const weekDays = Array.from({ length: 7 }, (_, i) => weekStart + i);
       return (
-        <View testID={testID} style={[skin.containerBase, skin.containerSurface(tokens), ROOT, style]}>
+        <GlassSurface layer="content" testID={testID} style={[skin.containerBase, skin.containerSurface(tokens), ROOT, style]}>
           {header(month)}
           {formatToggle}
           {/* Week strip: weekday label over the selectable day cell, aligned to the timeline columns below. */}
@@ -719,13 +719,13 @@ export function createCalendar(skin: CalendarSkin) {
             )}
           </View>
           {hoverCard()}
-        </View>
+        </GlassSurface>
       );
     }
 
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
     return (
-      <View testID={testID} onLayout={onMonthLayout} style={[skin.containerBase, skin.containerSurface(tokens), ROOT, style]}>
+      <GlassSurface layer="content" testID={testID} onLayout={onMonthLayout} style={[skin.containerBase, skin.containerSurface(tokens), ROOT, style]}>
         {header(month)}
 
         {/* Weekday label row. */}
@@ -746,7 +746,7 @@ export function createCalendar(skin: CalendarSkin) {
         </View>
 
         {dayPeekOverlay()}
-      </View>
+      </GlassSurface>
     );
   };
 }

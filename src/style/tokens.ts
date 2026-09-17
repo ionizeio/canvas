@@ -187,23 +187,35 @@ export const colorsByScheme: Record<ColorScheme, ColorTokens> = {
 };
 
 /**
- * The glass MATERIAL's own tokens, per scheme. Glass follows Apple's Liquid Glass
- * model: it is a material for the FUNCTIONAL layer (bars, sidebars, sheets, and the
- * overlays that float above content), deliberately NOT applied to the content layer
- * (Apple: "don't use Liquid Glass in the content layer").
+ * The glass MATERIAL's own tokens, per scheme, one tint per LAYER. Glass is a
+ * theming-level surface mode, and when it is on EVERY surface renders through the
+ * material (the user's direction of 2026-09-16, which supersedes the earlier
+ * functional-layer-only model and Apple's "don't use Liquid Glass in the content
+ * layer"): the layers differ by how dense their tint is, so nested glass still reads
+ * as distinct planes and text keeps its contrast over whatever sits behind it.
  *
- * The material carries its OWN fill, `glass-tint`, and that fill is the only thing
- * glass mode contributes. Glass does NOT reach into the semantic color set: `popover`
- * stays opaque in both schemes, exactly as the web hand-off ships it, so a menu, a
- * select list, or an alert dialog is an opaque card whatever the surface mode; `card`
- * stays opaque too, so content surfaces never turn to glass. Nothing that paints a
- * semantic surface token goes translucent because the theme went to glass. Only the
- * surfaces that render through the GlassSurface primitive (src/style/glass-surface)
- * take this tint, and they take it UNDER the real material: Apple's native Liquid
- * Glass via expo-glass-effect on iOS 26+, the SVG lens on Chromium web, an expo-blur
- * frost elsewhere. The tint is what keeps such a panel legible when the material is
- * near-clear (and the whole fill when no material module is available); the material
- * is what makes it glass.
+ *   glass-tint          the FUNCTIONAL layer: bars, sidebars, tab bars, sheets,
+ *                       drawers, popovers, dialogs, the command palette. The
+ *                       thinnest tint; the material does most of the read.
+ *   glass-tint-content  CONTENT panes: cards, tables, lists, tiles, feeds, the
+ *                       calendar, chart frames, the docs stages. Dense enough
+ *                       that `foreground` text clears 4.5:1 over the page and
+ *                       over the aurora backdrop (test/glass-tint.test.tsx).
+ *   glass-tint-control  CONTROLS: fields, buttons, segmented controls, chips,
+ *                       badges, pills, the check and switch pucks. A brighter
+ *                       "puck" than the pane it sits on, in both schemes.
+ *   glass-tint-dense    the surfaces the user READS rows or a verdict from: option
+ *                       lists (dropdown, select, autocomplete, row menus), alert
+ *                       dialogs, toasts. The densest tint, so the page's own rows
+ *                       and rules never read between the menu's.
+ *
+ * The material carries its OWN fill; glass mode swaps NO semantic color token
+ * (`card` and `popover` stay opaque in the token set, and a surface that opts out of
+ * the material keeps its opaque fill). Every surface takes its tint UNDER the real
+ * material: Apple's native Liquid Glass via expo-glass-effect on iOS 26+, the SVG
+ * lens on Chromium web, an expo-blur frost elsewhere. The tint is what keeps a panel
+ * legible when the material is near-clear (and the whole fill when no material
+ * module is available); the material is what makes it glass.
  *
  * Keys are the CSS custom-property names verbatim (`glass-tint` is `--glass-tint` in
  * styles/tokens/colors.css, the WEB hand-off these values are read from, never
@@ -213,19 +225,33 @@ export const colorsByScheme: Record<ColorScheme, ColorTokens> = {
  * react-native-web.
  */
 export interface GlassTokens {
-  /** The translucent fill painted UNDER the glass material. */
+  /** The functional layer's under-fill (bars, sheets, popovers, dialogs). */
   "glass-tint": string;
+  /** The content pane's under-fill (cards, tables, lists, tiles, stages). */
+  "glass-tint-content": string;
+  /** The control puck's under-fill (fields, buttons, chips, badges, pills). */
+  "glass-tint-control": string;
+  /** The densest under-fill (option lists, alert dialogs, toasts). */
+  "glass-tint-dense": string;
 }
 
 export const lightGlass: GlassTokens = {
   "glass-tint": "rgba(255, 255, 255, 0.20)",
+  "glass-tint-content": "rgba(255, 255, 255, 0.62)",
+  "glass-tint-control": "rgba(255, 255, 255, 0.70)",
+  "glass-tint-dense": "rgba(255, 255, 255, 0.88)",
 };
 
 export const darkGlass: GlassTokens = {
   // Dark glass: less light behind it to bend, so the tint drops dimmer rather than
   // brighter, and the rim carries more of the read (see --glass-tint in the .dark
-  // block of styles/tokens/colors.css).
+  // block of styles/tokens/colors.css). The content and dense panes deepen the same
+  // ink; the control puck is the one LIGHT tint, so a field or button lifts off its
+  // dark pane the way a lit glass control does.
   "glass-tint": "rgba(22, 22, 28, 0.30)",
+  "glass-tint-content": "rgba(22, 22, 28, 0.55)",
+  "glass-tint-control": "rgba(255, 255, 255, 0.12)",
+  "glass-tint-dense": "rgba(22, 22, 28, 0.84)",
 };
 
 export const glassByScheme: Record<ColorScheme, GlassTokens> = {

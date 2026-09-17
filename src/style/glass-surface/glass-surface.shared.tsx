@@ -14,9 +14,32 @@
 
 import { createContext, useContext, type ReactNode, type RefObject } from "react";
 import { View, StyleSheet, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
-import { type ColorTokens } from "../tokens.js";
+import { type ColorTokens, type GlassTokens } from "../tokens.js";
+import { alpha } from "../color.js";
+
+/**
+ * The layer of the glass model a surface belongs to, which picks its tint (see
+ * GlassTokens): `functional` (bars, sheets, popovers, dialogs; the default),
+ * `content` (cards, tables, lists, tiles, stages), `control` (fields, buttons,
+ * chips, badges, pucks) and `dense` (option lists, alert dialogs, toasts).
+ */
+export type GlassLayer = "functional" | "content" | "control" | "dense";
 
 export interface GlassSurfaceProps {
+  /**
+   * Which layer of the glass model this surface is, so it takes that layer's tint
+   * and blur: nested glass reads as distinct planes only because a control puck is
+   * brighter than the content pane it sits on, and a pane denser than the bar
+   * floating over it. Defaults to `functional`.
+   */
+  layer?: GlassLayer;
+  /**
+   * Tint the material with a colour: the brand-tinted glass of a primary control (a
+   * sky-tinted puck). On iOS 26 it is passed to the native Liquid Glass as its
+   * tintColor; on the lens and frost paths it becomes the under-fill (the colour at
+   * a legible alpha), and it wins over the layer tint. `tint` still wins over both.
+   */
+  brand?: string;
   /** The skin's shape + fill style (radius, padding, border, shadow, and the skin's
    *  own opaque fill). The fill is stripped under glass; the material supplies its own
    *  (the `glass-tint` token, or `tint` below). */
@@ -161,6 +184,35 @@ export function frostMethodProps(
 // expo-blur supplies its own light/dark tint at this intensity, so no extra tint
 // overlay is layered on top (that would double-darken the material).
 export const GLASS_INTENSITY = 80;
+
+// A content pane blurs a touch less than the functional layer: its tint is denser,
+// so the same blur would flatten the backdrop to a wash; the lighter blur lets the
+// aurora keep some shape through the pane.
+export const CONTENT_INTENSITY = 64;
+
+// The alpha at which a `brand` colour becomes the under-fill of a brand-tinted puck
+// on the lens and frost paths: sky-400 at this alpha over the page still carries the
+// dark `primary-foreground` ink at 4.5:1 in both schemes (test/glass-tint.test.tsx).
+export const BRAND_TINT_ALPHA = 0.66;
+
+/** The under-fill a surface paints beneath its material: `tint`, else the `brand`
+ *  colour at BRAND_TINT_ALPHA, else the layer's own token. */
+export function surfaceUnderFill(glass: GlassTokens, layer: GlassLayer, brand?: string, tint?: string): string {
+  if (tint != null) return tint;
+  if (brand != null) return alpha(brand, BRAND_TINT_ALPHA);
+  switch (layer) {
+    case "content": return glass["glass-tint-content"];
+    case "control": return glass["glass-tint-control"];
+    case "dense": return glass["glass-tint-dense"];
+    default: return glass["glass-tint"];
+  }
+}
+
+/** The frost blur strength for a layer (a sheer surface stays lighter still). */
+export function surfaceIntensity(layer: GlassLayer, sheer: boolean | undefined): number {
+  if (sheer) return SHEER_INTENSITY;
+  return layer === "content" ? CONTENT_INTENSITY : GLASS_INTENSITY;
+}
 
 // The SHEER frost (GlassSurfaceProps.sheer): a lighter blur plus a thinner tint (the
 // fill layer is drawn at SHEER_FILL_OPACITY, so the glass tint's effective alpha drops

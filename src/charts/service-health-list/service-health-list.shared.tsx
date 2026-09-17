@@ -1,4 +1,4 @@
-import { View, Text, Pressable, useTheme, surfaceRipple, pressDim, devWarn, tabularNums, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, surfaceRipple, pressDim, devWarn, tabularNums, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, isGlass } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
 import { CHART_ROOT } from "../shared/chart-frame.js";
@@ -64,7 +64,9 @@ function itemStatus(item: ServiceHealthItem): PeriodStatus {
 export function createServiceHealthList(skin: ChartSkin) {
   return function ServiceHealthList(props: ServiceHealthListProps) {
     const { items, title, testID, style } = props;
-    const { tokens } = useTheme();
+    const theme = useTheme();
+    const { tokens } = theme;
+    const glass = isGlass(theme);
     const compact = !!props.compact;
 
     devWarn(items.length === 0, "[canvas] <ServiceHealthList />: `items` is empty; the list renders with no rows.");
@@ -74,12 +76,14 @@ export function createServiceHealthList(skin: ChartSkin) {
         {...(title != null && title !== "" ? { role: "group" as const, accessibilityLabel: `${title} chart`, "aria-label": `${title} chart` } : {})}
         testID={testID}
         style={[
-          props.plain ? null : s.surface(tokens, skin.surfaceRadius),
+          props.plain ? null : s.surface(tokens, skin.surfaceRadius, glass),
           props.plain ? null : compact ? s.surfacePadCompact : s.surfacePadDefault,
           CHART_ROOT,
           style,
         ]}
       >
+        {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
+        <GlassPane layer="content" shape={{ borderRadius: skin.surfaceRadius }} />
         {title != null && title !== "" ? (
           <Text style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}>{title}</Text>
         ) : null}

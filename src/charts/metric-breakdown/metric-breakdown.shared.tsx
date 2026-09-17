@@ -1,4 +1,4 @@
-import { View, Text, useTheme, palette, statusHues, devWarn, tabularNums, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Text, useTheme, palette, statusHues, devWarn, tabularNums, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, isGlass } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
 import { CHART_ROOT } from "../shared/chart-frame.js";
@@ -107,7 +107,9 @@ function captionStyle(tokens: ColorTokens) {
 export function createMetricBreakdown(skin: ChartSkin) {
   return function MetricBreakdown(props: MetricBreakdownProps) {
     const { value, label, rate, rateLabel, sparkUnit, breakdown, chips, chipsLabel, testID, style } = props;
-    const { tokens } = useTheme();
+    const theme = useTheme();
+    const { tokens } = theme;
+    const glass = isGlass(theme);
     const compact = !!props.compact;
     const formatValue = props.formatValue ?? formatCompact;
 
@@ -139,13 +141,15 @@ export function createMetricBreakdown(skin: ChartSkin) {
         aria-label={label}
         testID={testID}
         style={[
-          props.plain ? null : s.surface(tokens, skin.surfaceRadius),
+          props.plain ? null : s.surface(tokens, skin.surfaceRadius, glass),
           props.plain ? null : compact ? s.surfacePadCompact : s.surfacePadDefault,
           CHART_ROOT,
           { gap: sectionGap },
           style,
         ]}
       >
+        {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
+        <GlassPane layer="content" shape={{ borderRadius: skin.surfaceRadius }} />
         {/* Header: headline + caption left, rate + caption right. */}
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", gap: 12 }}>
           <View style={{ flexShrink: 1, gap: 2 }}>

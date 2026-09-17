@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useRef, useState, useCallback } from "react";
-import { Animated, LayoutAnimation } from "react-native";
+import { Animated, LayoutAnimation, StyleSheet } from "react-native";
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import {
   type TextStyle,
   type LayoutStyle,
   FILL,
+  GlassSurface,
 } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 
@@ -300,8 +301,12 @@ export function createAccordion(skin: AccordionSkin) {
       [open, multiple, controlled, onValueChange, reduced],
     );
 
+    // The container is a CONTENT-layer pane under glass when it paints a surface of its
+    // own (the card variant, the iOS inset group); a borderless list stays bare.
+    const surfaced = (StyleSheet.flatten([skin.container(tokens), card ? skin.cardContainer(tokens) : null]) as ViewStyle | undefined)?.backgroundColor != null;
+    const Root = surfaced ? GlassSurface : View;
     return (
-      <View testID={testID} style={[FILL, skin.container(tokens), card ? skin.cardContainer(tokens) : null, style]}>
+      <Root testID={testID} style={[FILL, skin.container(tokens), card ? skin.cardContainer(tokens) : null, style]} {...(surfaced ? { layer: "content" as const } : null)}>
         {items.map((item, i) => (
           <Row
             key={item.key}
@@ -313,7 +318,7 @@ export function createAccordion(skin: AccordionSkin) {
             onToggle={() => toggle(item.key)}
           />
         ))}
-      </View>
+      </Root>
     );
   };
 }

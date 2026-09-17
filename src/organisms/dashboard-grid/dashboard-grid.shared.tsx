@@ -11,6 +11,7 @@ import {
   type Responsive,
   type StyleProp,
   type ViewStyle,
+  withInnerFill,
 } from "../../style/index.js";
 // KIT-INTERNAL, so it comes in by path rather than through the style barrel (the
 // `useDragActive` precedent): it gates a client-only read out of the hydration render.
@@ -248,7 +249,8 @@ export function createDashboardGrid(skin: DashboardGridSkin, parts: DashboardGri
   // never the order state above it. The SAME row renders in both modes, so toggling
   // customize mode changes the paint and the drag wiring, not the arrangement.
   function DashboardCells({ items, unlocked, compact, onDrop }: CellsProps) {
-    const { tokens } = useTheme();
+    const theme = useTheme();
+    const { tokens } = theme;
     const gap = skin.gap(compact);
     // One container query serves both jobs: `value` is the tier the spans resolve against,
     // `width` is the px the cell arithmetic divides. Unmeasured (width 0) the cells carry no
@@ -280,7 +282,7 @@ export function createDashboardGrid(skin: DashboardGridSkin, parts: DashboardGri
               style={cell}
             >
               <Draggable id={widget.id} data={widget} label={widget.title} style={FILL}>
-                <View style={[skin.editCell(tokens), FILL]}>
+                <View style={[withInnerFill(theme, skin.editCell(tokens), "soft"), FILL]}>
                   <View style={skin.gripRow}>
                     <DragHandle label={`Reorder ${widget.title}`} />
                   </View>

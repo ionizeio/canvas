@@ -14,10 +14,10 @@ import {
   PlainSurface,
   degradedGlassSurface,
   specularRim,
-  GLASS_INTENSITY,
-  SHEER_INTENSITY,
   SHEER_FILL_OPACITY,
   materialFill,
+  surfaceUnderFill,
+  surfaceIntensity,
   type GlassSurfaceProps,
 } from "./glass-surface.shared.js";
 
@@ -43,13 +43,14 @@ try {
   BlurView = undefined;
 }
 
-export function GlassSurface({ style, children, pointerEvents, testID, role, onLayout, onAccessibilityEscape, interactive = false, sheer, tint }: GlassSurfaceProps) {
+export function GlassSurface({ style, children, pointerEvents, testID, role, onLayout, onAccessibilityEscape, interactive = false, sheer, tint, brand, layer = "functional" }: GlassSurfaceProps) {
   const { surface, dark, tokens, glass, reducedTransparency, increasedContrast } = useTheme();
   // The under-fill behind the material: the caller's `tint` for a bright glass control
-  // (the Slider knob), else the glass material's OWN fill, `glass-tint`. It is not the
-  // `popover` token: popover is the opaque fill of a menu/select/dialog card, and
-  // borrowing it here is what made every one of those surfaces see-through in glass mode.
-  const underFill = tint ?? glass["glass-tint"];
+  // (the Slider knob), else the `brand` colour of a tinted puck, else the LAYER's own
+  // glass tint. It is never the `popover` token: popover is the opaque fill of a menu
+  // card, and borrowing it here is what once made every popover see-through in glass mode.
+  const underFill = surfaceUnderFill(glass, layer, brand, tint);
+  const intensity = surfaceIntensity(layer, sheer);
 
   if (surface !== "glass") {
     return (
@@ -86,7 +87,7 @@ export function GlassSurface({ style, children, pointerEvents, testID, role, onL
         material={
           <>
             <View style={[materialFill(style), { backgroundColor: underFill, opacity: sheer ? SHEER_FILL_OPACITY : 1, pointerEvents: "none" }]} />
-            <GlassView glassEffectStyle="regular" isInteractive={interactive} colorScheme={dark ? "dark" : "light"} style={materialFill(style)} />
+            <GlassView glassEffectStyle="regular" isInteractive={interactive} tintColor={brand} colorScheme={dark ? "dark" : "light"} style={materialFill(style)} />
           </>
         }
       >
@@ -110,7 +111,7 @@ export function GlassSurface({ style, children, pointerEvents, testID, role, onL
         material={
           <>
             <View style={[materialFill(style), { backgroundColor: underFill, opacity: sheer ? SHEER_FILL_OPACITY : 1, pointerEvents: "none" }]} />
-            <BlurView intensity={sheer ? SHEER_INTENSITY : GLASS_INTENSITY} tint={dark ? "dark" : "light"} style={materialFill(style)} />
+            <BlurView intensity={intensity} tint={dark ? "dark" : "light"} style={materialFill(style)} />
             {/* Specular edge (below the content): a lit rim that supplies the surface's
                 edge now that skin borders are stripped under glass. iOS 26's native
                 GlassView above is never decorated. */}

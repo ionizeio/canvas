@@ -14,6 +14,9 @@ import {
   type LayoutStyle,
   type ViewStyle,
   type TextStyle,
+  GlassPane,
+  isGlass,
+  alpha,
 } from "../../style/index.js";
 
 // Shared Alert shell. The structure (a leading icon glyph, a bold title, a
@@ -127,6 +130,14 @@ function toneOf(p: AlertProps): Tone {
 
 // Container border + fill. Light: 200 border / 50 surface; dark: 800 / 950.
 // Neutral: semantic card surface with the border token.
+// The under-fill of a toned alert's glass pane: the hue at a tint that keeps the tone
+// readable over the material (neutral takes the content layer's own tint).
+function paneTint(tokens: ColorTokens, dark: boolean, tone: Tone): string | undefined {
+  if (tone === "neutral") return undefined;
+  const hue = statusHues[tone];
+  return alpha(palette[`${hue}-${dark ? 500 : 400}`], dark ? 0.28 : 0.30);
+}
+
 function containerColor(tokens: ColorTokens, dark: boolean, tone: Tone): ViewStyle {
   if (tone === "neutral") return { borderColor: tokens.border, backgroundColor: tokens.card };
   const hue = statusHues[tone];
@@ -163,7 +174,9 @@ export function createAlert(skin: AlertSkin) {
 
   return function Alert(props: AlertProps) {
     const { title, description, icon, children, actions, dismissible, onDismiss, testID, style } = props;
-    const { tokens, dark } = useTheme();
+    const theme = useTheme();
+    const { tokens, dark } = theme;
+    const glass = isGlass(theme);
     const tone = toneOf(props);
     const fill = useFillStyle("Alert");
 
@@ -202,8 +215,12 @@ export function createAlert(skin: AlertSkin) {
         accessibilityRole="alert"
         accessibilityLiveRegion={live}
         aria-live={live}
-        style={[skin.container, containerColor(tokens, dark, tone), fill, style]}
+        style={[skin.container, glass ? { ...containerColor(tokens, dark, tone), backgroundColor: "transparent" } : containerColor(tokens, dark, tone), fill, style]}
       >
+        {/* Under glass the alert is a CONTENT-layer pane (a toned alert tints it with its
+            hue) painted behind the live-region root, which keeps its semantics and its
+            tone-coloured edge. Renders nothing in solid mode. */}
+        <GlassPane layer="content" shape={skin.container} tint={paneTint(tokens, dark, tone)} />
         {icon != null ? (
           tintedIcon != null ? (
             <View style={iconSlot}>{tintedIcon}</View>

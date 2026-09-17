@@ -11,6 +11,7 @@ import {
   useMeasuredWidth,
   type StyleProp,
   type ViewStyle,
+  GlassSurface,
 } from "../../style/index.js";
 import { Card as WebCard } from "../../molecules/card/card.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
@@ -219,15 +220,19 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
         {columns.map((col) => {
           const colItems = list.filter((it) => it.columnId === col.id);
           return (
-            <DropZone key={col.id} id={col.id} label={col.label} onDrop={onDrop} style={[skin.column(tokens, compact), { width: laneWidth }]}>
-              <View style={skin.columnHeader}>
-                <Text style={skin.columnLabel(tokens)}>{col.label}</Text>
-                <Badge secondary>{col.badge ?? String(colItems.length)}</Badge>
-              </View>
-              <View style={skin.cardList(compact)}>
-                {colItems.map(renderCard)}
-                {colItems.length === 0 ? <Text style={skin.emptyLabel(tokens)}>{emptyLabel}</Text> : null}
-              </View>
+            <DropZone key={col.id} id={col.id} label={col.label} onDrop={onDrop} style={{ width: laneWidth }}>
+              {/* The lane is a CONTENT-layer pane under glass (the plain column View in
+                  solid mode); the drop zone keeps the lane's width and drop target. */}
+              <GlassSurface layer="content" style={skin.column(tokens, compact)}>
+                <View style={skin.columnHeader}>
+                  <Text style={skin.columnLabel(tokens)}>{col.label}</Text>
+                  <Badge secondary>{col.badge ?? String(colItems.length)}</Badge>
+                </View>
+                <View style={skin.cardList(compact)}>
+                  {colItems.map(renderCard)}
+                  {colItems.length === 0 ? <Text style={skin.emptyLabel(tokens)}>{emptyLabel}</Text> : null}
+                </View>
+              </GlassSurface>
             </DropZone>
           );
         })}

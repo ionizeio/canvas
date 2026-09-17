@@ -12,6 +12,7 @@ import {
   type StyleProp,
   type ViewStyle,
   type TextStyle,
+  GlassSurface,
 } from "../../style/index.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { type AvatarProps } from "../../atoms/avatar/avatar.shared.js";
@@ -264,7 +265,7 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
         ) : (
           items.map((item, index) => <Fragment key={keyOf(item, index)}>{renderRow(item, index)}</Fragment>)
         );
-      return <View testID={testID} style={[skin.cardSurface(tokens), fill, style]}>{body}</View>;
+      return <GlassSurface layer="content" testID={testID} style={[skin.cardSurface(tokens), fill, style]}>{body}</GlassSurface>;
     }
 
     // Connector lead: a bordered node per row with a vertical line linking each
@@ -331,6 +332,7 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
         items.map((item, index) => <Fragment key={keyOf(item, index)}>{renderRow(item, index)}</Fragment>)
       );
 
-    return <View testID={testID} style={[skin.cardSurface(tokens), skin.connectorPad(compact), fill, style]}>{body}</View>;
+    // The feed card is a CONTENT-layer pane under glass (GlassSurface is the plain View in solid mode).
+    return <GlassSurface layer="content" testID={testID} style={[skin.cardSurface(tokens), skin.connectorPad(compact), fill, style]}>{body}</GlassSurface>;
   };
 }

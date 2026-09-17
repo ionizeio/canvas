@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Svg, { Line, Path } from "react-native-svg";
-import { View, Text, useTheme, alpha, devWarn, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Text, useTheme, alpha, devWarn, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, isGlass } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type Tone } from "../shared/charts.styles.js";
 import { type ChartSeries, type ChartSkin } from "../shared/types.js";
@@ -66,7 +66,9 @@ const LABEL_W = 84;
 export function createRadarChart(skin: ChartSkin) {
   return function RadarChart(props: RadarChartProps) {
     const { axes, series, title, testID, style } = props;
-    const { tokens } = useTheme();
+    const theme = useTheme();
+    const { tokens } = theme;
+    const glass = isGlass(theme);
     const compact = !!props.compact;
     const formatValue = props.formatValue ?? formatCompact;
     const plot = compact ? PLOT.compact : PLOT.default;
@@ -109,12 +111,14 @@ export function createRadarChart(skin: ChartSkin) {
         {...(title != null && title !== "" ? { role: "group" as const, accessibilityLabel: `${title} chart`, "aria-label": `${title} chart` } : {})}
         testID={testID}
         style={[
-          s.surface(tokens, skin.surfaceRadius),
+          s.surface(tokens, skin.surfaceRadius, glass),
           compact ? s.surfacePadCompact : s.surfacePadDefault,
           CHART_ROOT,
           style,
         ]}
       >
+        {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
+        <GlassPane layer="content" shape={{ borderRadius: skin.surfaceRadius }} />
         {title != null && title !== "" ? (
           <Text style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}>{title}</Text>
         ) : null}

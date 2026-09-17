@@ -64,6 +64,8 @@
      that filter (the page supplies #cds-glass-lens), `--glass-frost` the fallback where SVG
      backdrop filters are unavailable. Why, and the per-platform build: src/style/glass-surface. */
   --glass-tint:rgba(255,255,255,0.20);
+  /* One tint per LAYER: content panes, control pucks, and the dense lists/alerts. Why in tokens.ts. */
+  --glass-tint-content:rgba(255,255,255,0.62);--glass-tint-control:rgba(255,255,255,0.70);--glass-tint-dense:rgba(255,255,255,0.88);
   --glass-blur:28px;
   --glass-frost:blur(28px) saturate(190%) /* @kind other */;
   --glass-lens:url(#cds-glass-lens) /* @kind other */;
@@ -109,6 +111,7 @@
   /* Dark glass: less light behind it to bend, so the tint drops further and the rim carries more
      of the read. Apple's dark material is dimmer, not brighter. */
   --glass-tint:rgba(22,22,28,0.30);
+  --glass-tint-content:rgba(22,22,28,0.55);--glass-tint-control:rgba(255,255,255,0.12);--glass-tint-dense:rgba(22,22,28,0.84);
   --glass-frost:blur(28px) saturate(200%) /* @kind other */;
   --glass-illumination:radial-gradient(130% 130% at 50% 50%,rgba(255,255,255,0) 54%,rgba(255,255,255,0.05) 88%,rgba(255,255,255,0.13) 100%) /* @kind other */;
   --glass-edge:rgba(255,255,255,0.20);

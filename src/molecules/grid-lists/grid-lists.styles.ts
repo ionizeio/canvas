@@ -79,7 +79,7 @@ export const actions: ViewStyle = { flexDirection: "row", gap: 8, marginTop: 8 }
 // Resolve a color name (a semantic token key like "primary" or a Tailwind
 // palette key like "blue-500") to its hex. Falls back to the muted-foreground
 // token for an unknown name, so any tint composes safely.
-function resolveColor(tokens: ColorTokens, color: string): string {
+export function resolveColor(tokens: ColorTokens, color: string): string {
   if (color === "primary-text") return primaryText(tokens);
   if (color === "destructive-text") return destructiveText(tokens);
   if (color in tokens) return tokens[color as keyof ColorTokens] ?? tokens["muted-foreground"];

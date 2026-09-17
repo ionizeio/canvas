@@ -20,6 +20,10 @@ import {
   type ViewStyle,
   type TextStyle,
   type LayoutStyle,
+  GlassSurface,
+  GlassPane,
+  paneStyle,
+  isGlass,
 } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
@@ -165,7 +169,9 @@ export function createCarousel(skin: CarouselSkin) {
     disabled: boolean;
     onPress: () => void;
   }) {
-    const { tokens } = useTheme();
+    const theme = useTheme();
+    const { tokens } = theme;
+    const glass = isGlass(theme);
     const edge = side === "prev" ? { start: skin.arrowInset } : { end: skin.arrowInset };
     return (
       <View style={[arrowLayerStyles.layer, edge]}>
@@ -179,11 +185,13 @@ export function createCarousel(skin: CarouselSkin) {
           accessibilityState={{ disabled }}
           aria-disabled={disabled}
           style={({ pressed }) => [
-            skin.arrow(tokens),
+            paneStyle(glass, skin.arrow(tokens)),
             disabled ? DISABLED_DIM : null,
             skin.pressedOpacity != null && pressed && !disabled ? { opacity: skin.pressedOpacity } : null,
           ]}
         >
+          {/* The arrow is a CONTROL puck under glass (nothing in solid mode). */}
+          <GlassPane layer="control" shape={skin.arrow(tokens)} interactive />
           {side === "prev" ? (
             <Icon chevronLeft muted size={skin.arrowIconSize} />
           ) : (
@@ -353,7 +361,7 @@ export function createCarousel(skin: CarouselSkin) {
               initialScrollIndex={current}
               onMomentumScrollEnd={onMomentumScrollEnd}
               renderItem={({ item }) => (
-                <View style={[{ width }, skin.slide(tokens)]}>{slideBody(item)}</View>
+                <GlassSurface layer="content" style={[{ width }, skin.slide(tokens)]}>{slideBody(item)}</GlassSurface>
               )}
             />
           ) : items[current] ? (
@@ -363,7 +371,7 @@ export function createCarousel(skin: CarouselSkin) {
             // a positive width lands; the arrows/dots already page by swapping `current`.
             // Guarded on a present item so an empty `items=[]` renders an empty
             // viewport instead of dereferencing `undefined.content`.
-            <View style={skin.slide(tokens)}>{slideBody(items[current])}</View>
+            <GlassSurface layer="content" style={skin.slide(tokens)}>{slideBody(items[current])}</GlassSurface>
           ) : null}
 
           {arrowsVisible && count > 1 ? (

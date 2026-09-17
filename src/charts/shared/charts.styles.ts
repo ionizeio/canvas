@@ -17,15 +17,17 @@ export type Tone = "primary" | "success" | "destructive";
 // --- surface ----------------------------------------------------------------
 
 // The bordered, shadowed card surface (rounded-lg border border-border bg-card
-// shadow-sm), mirroring the docs `cardCls`. backgroundColor is tokens.card, which
-// stays opaque in glass mode, so this surface stays solid (it is not frosted). The
+// shadow-sm), mirroring the docs `cardCls`. In solid mode the fill is the opaque
+// `card`; under glass (`glass` true) the chart frame is a CONTENT-layer pane whose
+// material a GlassPane paints behind the chart, so the fill and the hairline drop here
+// (the pane's tint and rim carry them) while the width keeps the box identical. The
 // corner radius is supplied by the skin (8 everywhere; Chart is Shared).
-export function surface(tokens: ColorTokens, radius: number): ViewStyle {
+export function surface(tokens: ColorTokens, radius: number, glass = false): ViewStyle {
   return {
     borderRadius: radius,
     borderWidth: 1,
-    borderColor: tokens.border,
-    backgroundColor: tokens.card,
+    borderColor: glass ? "transparent" : tokens.border,
+    backgroundColor: glass ? "transparent" : tokens.card,
     ...shadow("sm"),
   };
 }

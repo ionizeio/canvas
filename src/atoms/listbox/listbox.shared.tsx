@@ -1,6 +1,6 @@
 import { useState, type ComponentType } from "react";
 import { type Role } from "react-native";
-import { View, Pressable, Text, useTheme, useControllableState, useFillStyle, useRovingFocus, isRTL, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useControllableState, useFillStyle, useRovingFocus, isRTL, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassSurface, withInnerFill, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 
 // Shared Listbox shell. An inline, selectable list of options rendered directly
 // (not a popover). Each row is a Pressable. Two selection modes, mutually
@@ -134,7 +134,8 @@ export function createListbox(skin: ListboxSkin, CheckboxIndicator: ComponentTyp
     const mode = modeOf(props);
     const size = sizeOf(props);
     const accessibleName = props.accessibilityLabel?.trim() || "Options";
-    const { tokens } = useTheme();
+    const theme = useTheme();
+    const { tokens } = theme;
     // FILL, applied to the root list View (see the note above the interface).
     const widthCap = useFillStyle("Listbox", props);
 
@@ -185,7 +186,7 @@ export function createListbox(skin: ListboxSkin, CheckboxIndicator: ComponentTyp
       // parent rather than collapsing to content the way a width-less View would);
       // FILL below adds the row-sharing pair.
       { width: "100%" },
-      bordered ? skin.containerBordered(tokens) : null,
+      bordered ? paneStyle(isGlass(theme), skin.containerBordered(tokens)) : null,
       disabled ? { opacity: 0.5 } : null,
       widthCap,
       style,
@@ -197,6 +198,8 @@ export function createListbox(skin: ListboxSkin, CheckboxIndicator: ComponentTyp
     return (
       <View style={container} role={mode === "multi" ? "group" : LISTBOX} testID={props.testID}
         accessibilityLabel={accessibleName} aria-label={accessibleName}>
+        {/* A bordered list is a CONTENT-layer pane under glass (nothing in solid mode). */}
+        {bordered ? <GlassPane layer="content" shape={skin.containerBordered(tokens)} /> : null}
         {items.map((item, index) => {
           const selected = selectedArr.includes(index);
           // Name the row from its data so the title and detail stay separated,
@@ -207,7 +210,7 @@ export function createListbox(skin: ListboxSkin, CheckboxIndicator: ComponentTyp
           const rowBase: StyleProp<ViewStyle> = [
             skin.rowBase,
             skin.rowSize[size],
-            mode === "single" && selected ? skin.rowSelected(tokens) : null,
+            mode === "single" && selected ? withInnerFill(theme, skin.rowSelected(tokens), "firm") : null,
           ];
 
           // Pressable owns Enter activation on keyup. Handling it here as well
@@ -243,7 +246,7 @@ export function createListbox(skin: ListboxSkin, CheckboxIndicator: ComponentTyp
               android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
               style={({ pressed }) => [
                 rowBase,
-                !disabled && pressed ? skin.rowSelected(tokens) : null,
+                !disabled && pressed ? withInnerFill(theme, skin.rowSelected(tokens), "firm") : null,
                 skin.pressedOpacity != null && !disabled && pressed ? { opacity: skin.pressedOpacity } : null,
               ]}
               onPress={disabled ? undefined : () => press(index)}

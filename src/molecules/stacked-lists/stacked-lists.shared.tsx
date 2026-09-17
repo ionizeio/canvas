@@ -1,6 +1,6 @@
 import { Fragment, type ComponentType, type ReactNode } from "react";
 import { FlatList, StyleSheet, type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, devWarn, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, devWarn, type StyleProp, type ViewStyle, type LayoutStyle, GlassSurface, withInnerFill } from "../../style/index.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
@@ -207,7 +207,8 @@ export function createStackedList(
   return function StackedList(props: StackedListProps) {
     const { items = [], title, action, addAction, rowMenu, onPressItem, onPressItemMenu, flush, virtualized, reorderable, onReorder, testID, style } = props;
     const variant = variantOf(props);
-    const { tokens } = useTheme();
+    const theme = useTheme();
+    const { tokens } = theme;
 
     // The Android ripple over the component's own pressable rows / overflow menu;
     // null on iOS/web where pressed opacity carries the feedback instead.
@@ -275,7 +276,7 @@ export function createStackedList(
       // button, so no outer layout moves to the wrapper.
       <RippleClip shape={cornerRadii(skin.menuButton)}>
         <Pressable
-          style={({ pressed }) => [skin.menuButton, pressed ? skin.pressedSurface(tokens) : null, pressFeedback(pressed)]}
+          style={({ pressed }) => [skin.menuButton, pressed ? withInnerFill(theme, skin.pressedSurface(tokens), "firm") : null, pressFeedback(pressed)]}
           hitSlop={skin.menuHitSlop}
           android_ripple={ripple}
           onPress={(event) => onPressItemMenu?.(index, event)}
@@ -351,7 +352,7 @@ export function createStackedList(
             <View style={skin.rowBase}>
               {grip}
               <Pressable
-                style={({ pressed }) => [rowFill, pressed ? skin.pressedSurface(tokens) : null, pressFeedback(pressed)]}
+                style={({ pressed }) => [rowFill, pressed ? withInnerFill(theme, skin.pressedSurface(tokens), "firm") : null, pressFeedback(pressed)]}
                 android_ripple={ripple}
                 onPress={(event) => onPressItem?.(index, event)}
                 accessibilityRole="button"
@@ -370,7 +371,7 @@ export function createStackedList(
         }
         return (
           <Pressable
-            style={({ pressed }) => [skin.rowBase, pressed ? skin.pressedSurface(tokens) : null, pressFeedback(pressed)]}
+            style={({ pressed }) => [skin.rowBase, pressed ? withInnerFill(theme, skin.pressedSurface(tokens), "firm") : null, pressFeedback(pressed)]}
             android_ripple={ripple}
             onPress={(event) => onPressItem?.(index, event)}
             accessibilityRole="button"
@@ -466,10 +467,19 @@ export function createStackedList(
     );
 
     return (
-      <View testID={testID} style={[s.outer, framed ? skin.cardSurface(tokens) : null, style]}>
-        {header}
-        {body}
-      </View>
+      // A framed list is a CONTENT-layer pane under glass (GlassSurface is the plain
+      // View in solid mode); a bare list paints no surface of its own in either mode.
+      framed ? (
+        <GlassSurface layer="content" testID={testID} style={[s.outer, skin.cardSurface(tokens), style]}>
+          {header}
+          {body}
+        </GlassSurface>
+      ) : (
+        <View testID={testID} style={[s.outer, style]}>
+          {header}
+          {body}
+        </View>
+      )
     );
   };
 }

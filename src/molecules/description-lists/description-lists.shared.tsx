@@ -1,6 +1,6 @@
 import { type ComponentType, useState } from "react";
 import { consumeEscapeKey } from "../../style/escape-layer.js";
-import { View, Text, TextInput, useTheme, useResponsive, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle } from "../../style/index.js";
+import { View, Text, TextInput, useTheme, useResponsive, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle, GlassSurface } from "../../style/index.js";
 import { Avatar as WebAvatar, AvatarGroup as WebAvatarGroup } from "../../atoms/avatar/avatar.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
@@ -356,8 +356,11 @@ export function createDescriptionList(
       );
     });
 
+    // A card list is a CONTENT-layer pane under glass (GlassSurface is the plain View
+    // in solid mode); a bare list paints no surface of its own in either mode.
+    const Root = card ? GlassSurface : View;
     return (
-      <View testID={testID} style={container}>
+      <Root testID={testID} style={container} {...(card ? { layer: "content" as const } : null)}>
         {hasHeader ? (
           <View style={s.headerBand(tokens, skin)}>
             <Text style={skin.headerTitleType(tokens)}>{title}</Text>
@@ -365,7 +368,7 @@ export function createDescriptionList(
           </View>
         ) : null}
         {hasHeader ? <View style={s.rowsWrap(skin)}>{rows}</View> : rows}
-      </View>
+      </Root>
     );
   };
 }

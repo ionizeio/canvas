@@ -1,34 +1,34 @@
 /* Surface: the glass theming axis. Glass is NOT a per-component look: it is a
    theming-level surface mode (`solid` | `glass`), the same kind of switch as the
-   light/dark scheme, and it applies to the FUNCTIONAL layer only.
+   light/dark scheme.
 
      <html data-surface="glass">          <!-- force glass -->
      <html>                               <!-- solid (the default) -->
      <html class="dark" data-surface="glass">
 
-   Functional layer = the floating shells and overlays that take the material:
-   popovers, dialogs, drawers, action sheets, the command palette, navbars and
-   tab bars. Those paint the `--glass-*` family below.
+   When it is on, EVERY surface renders through the material, LAYERED: the
+   functional shells and overlays (popovers, dialogs, drawers, action sheets, the
+   command palette, navbars, tab bars) paint `--glass-tint`; content panes (cards,
+   tables, lists, tiles, feeds, the calendar, chart frames) paint the denser
+   `--glass-tint-content`; controls (fields, buttons, segmented controls, chips,
+   badges, the check and switch pucks) paint the bright `--glass-tint-control`;
+   and the surfaces the user reads rows or a verdict from (option lists, alert
+   dialogs, toasts) paint the densest `--glass-tint-dense`, so the page's own
+   rows never read between a menu's. Fills INSIDE a glass surface (a hovered row,
+   a selected tab) are translucent tints, never opaque patches. This supersedes the
+   earlier functional-layer-only model (Apple's "don't use Liquid Glass in the
+   content layer") at the kit owner's direction, 2026-09-16; the layering is what
+   keeps a pane legible where a single sheer material read as a hole.
 
-   The OPTION-LIST MENUS and the prompt/status surfaces do NOT: dropdowns,
-   selects, autocompletes, avatar menus and alert dialogs stay OPAQUE and keep
-   painting `--popover`, and the toast capsule keeps painting its own opaque
-   `--p-toast-fill`, in glass mode exactly as in solid mode. A menu or a
-   destructive confirmation is a card of rows the user reads and acts on, and a
-   see-through one lets the page's own rows and rules read straight between
-   them. Chart tooltips are opaque for the same reason. Content surfaces
-   (cards, lists, tables, calendars, charts) stay solid too, per Apple's "don't
-   use Liquid Glass in the content layer".
+   The mode still swaps NO semantic color token: `--popover` and `--card` are the
+   same opaque colors under `data-surface="glass"` as without it, and a surface
+   that opts out of the material keeps its opaque fill. (Glass once worked by
+   overriding `--popover` translucent here, which dragged every popover-filled
+   surface into a see-through state with no material behind it.) Nothing takes
+   glass per instance either: there is no per-component `glass` prop, in the CSS
+   or in the kit.
 
-   So this mode swaps NO semantic color token. `--popover` and `--card` are the
-   same opaque colors under `data-surface="glass"` as without it; only the
-   `--glass-*` material below, painted by the surfaces that opt into it, is new.
-   (Glass once worked by overriding `--popover` translucent here, which is
-   precisely what dragged every popover-filled surface, menus included, into the
-   material.) Nothing takes glass per instance either: there is no per-component
-   `glass` prop, in the CSS or in the kit.
-
-   The material itself (`--glass-tint`, `--glass-lens`, `--glass-frost`,
+   The material itself (`--glass-tint*`, `--glass-lens`, `--glass-frost`,
    `--glass-specular`) lives in colors.css. This file only decides WHEN it is on,
    and gives the page a backdrop worth bending: over a flat fill a lens renders
    flat. */
@@ -45,18 +45,19 @@
 /* Accessibility and media fallbacks. Translucency is decorative: it drops the
    moment it would cost legibility, and it means nothing on paper.
 
-   `--glass-tint:var(--popover)` is what turns the material OFF here. It reads
-   the same opaque `--popover` a menu paints (this file no longer rewrites it),
-   so with the lens and the frost set to none a glass panel collapses to a flat,
-   fully opaque card, the web counterpart of the accessibility rungs
-   GlassSurface applies natively (src/style/glass-surface). While glass swapped
-   `--popover` translucent, this line resolved to that translucent value and the
-   "reduce transparency" panel stayed see-through. */
+   Pointing every `--glass-tint*` at an opaque token is what turns the material
+   OFF here: the functional and dense layers read the opaque `--popover`, the
+   content and control layers the opaque `--card`, so with the lens and the frost
+   set to none each glass pane collapses to a flat, fully opaque card, the web
+   counterpart of the accessibility rungs GlassSurface applies natively
+   (src/style/glass-surface). While glass swapped `--popover` translucent, this
+   line resolved to that translucent value and the "reduce transparency" panel
+   stayed see-through. */
 @media (prefers-reduced-transparency:reduce){
-  [data-surface="glass"]{--glass-tint:var(--popover);--glass-frost:none /* @kind other */;--glass-lens:none /* @kind other */;--glass-specular:var(--shadow-lg) /* @kind shadow */}
+  [data-surface="glass"]{--glass-tint:var(--popover);--glass-tint-content:var(--card);--glass-tint-control:var(--card);--glass-tint-dense:var(--popover);--glass-frost:none /* @kind other */;--glass-lens:none /* @kind other */;--glass-specular:var(--shadow-lg) /* @kind shadow */}
 }
 @media (prefers-contrast:more){
-  [data-surface="glass"]{--glass-tint:var(--popover);--glass-frost:none /* @kind other */;--glass-lens:none /* @kind other */}
+  [data-surface="glass"]{--glass-tint:var(--popover);--glass-tint-content:var(--card);--glass-tint-control:var(--card);--glass-tint-dense:var(--popover);--glass-frost:none /* @kind other */;--glass-lens:none /* @kind other */}
 }
 @media print{
   [data-surface="glass"]{--glass-tint:var(--card);--glass-frost:none /* @kind other */;--glass-lens:none /* @kind other */;--glass-specular:none /* @kind shadow */;--surface-backdrop:none /* @kind other */}

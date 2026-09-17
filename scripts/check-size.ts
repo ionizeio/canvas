@@ -32,6 +32,12 @@ const CORE_FILE_GZIP_OVERRIDES: Record<string, number> = {
   // tokens, tight enough to catch a doubling. It also trips before the 30KB total does,
   // so a regression names the file rather than the whole layer.
   "styles/tokens/platforms.css": 20_480,
+  // colors.css carries the glass MATERIAL family, and the layered glass model (every
+  // surface renders through the material, one tint per layer: functional, content,
+  // control, dense) adds three rgba tints per scheme to it. Measured at 2,086B gzip
+  // after the addition against the 2,048B rule; 2,304B (2.25KB) leaves room for the
+  // same again while still tripping before the file could double.
+  "styles/tokens/colors.css": 2_304,
 };
 
 // The shipped JavaScript budget: the whole kit, bundled with react / react-native /

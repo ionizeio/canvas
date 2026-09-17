@@ -1,6 +1,6 @@
 import { Fragment, type ComponentType } from "react";
 import { FlatList, StyleSheet, type DimensionValue } from "react-native";
-import { View, Pressable, Text, useTheme, useContainerBreakpoint, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useContainerBreakpoint, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, GlassSurface, alpha } from "../../style/index.js";
 import { Card as WebCard } from "../card/card.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
@@ -167,8 +167,11 @@ export function createGridList(
     const inner = (
       <>
         {/* Square color block. A single translucent tint stands in for the legacy
-            gradient swatch. */}
-        <View
+            gradient swatch; under glass it is a CONTENT-layer pane carrying the item
+            colour as its tint (GlassSurface is the plain View in solid mode). */}
+        <GlassSurface
+          layer="content"
+          tint={item.color != null ? alpha(s.resolveColor(tokens, item.color), 0.32) : undefined}
           style={[
             s.galleryBlock,
             { borderRadius: skin.galleryRadius, ...(skin.galleryCurve ? { borderCurve: skin.galleryCurve } : null) },

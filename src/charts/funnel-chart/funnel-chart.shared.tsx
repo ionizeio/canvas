@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { StyleSheet } from "react-native";
 import Svg, { Path } from "react-native-svg";
-import { View, Text, Pressable, useTheme, useControllableState, devWarn, tabularNums, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, useControllableState, devWarn, tabularNums, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, isGlass } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
 import { type StackedSegment } from "../shared/types.js";
@@ -57,7 +57,9 @@ const styles = StyleSheet.create({ passthrough: { pointerEvents: "none" } });
 export function createFunnelChart(skin: ChartSkin) {
   return function FunnelChart(props: FunnelChartProps) {
     const { stages, title, testID, style } = props;
-    const { tokens } = useTheme();
+    const theme = useTheme();
+    const { tokens } = theme;
+    const glass = isGlass(theme);
     const compact = !!props.compact;
     const formatValue = props.formatValue ?? formatCompact;
 
@@ -102,12 +104,14 @@ export function createFunnelChart(skin: ChartSkin) {
         {...(title != null && title !== "" ? { role: "group" as const, accessibilityLabel: `${title} chart`, "aria-label": `${title} chart` } : {})}
         testID={testID}
         style={[
-          s.surface(tokens, skin.surfaceRadius),
+          s.surface(tokens, skin.surfaceRadius, glass),
           compact ? s.surfacePadCompact : s.surfacePadDefault,
           CHART_ROOT,
           style,
         ]}
       >
+        {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
+        <GlassPane layer="content" shape={{ borderRadius: skin.surfaceRadius }} />
         {title != null && title !== "" ? (
           <Text style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}>{title}</Text>
         ) : null}

@@ -1,5 +1,5 @@
 import { cloneElement, isValidElement, type ComponentType, type ReactElement } from "react";
-import { View, Text, useTheme, type StyleProp, type ViewStyle, type LayoutStyle, useFillStyle } from "../../style/index.js";
+import { View, Text, useTheme, type StyleProp, type ViewStyle, type LayoutStyle, useFillStyle, GlassSurface } from "../../style/index.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
 import * as s from "./empty-state.styles.js";
@@ -89,6 +89,9 @@ export function createEmptyState(skin: EmptyStateSkin, Button: ButtonComponent =
     const fill = useFillStyle("EmptyState");
     const tone: Tone = toneOf(props);
 
+    // A bordered state is a CONTENT-layer pane under glass (GlassSurface is the plain
+    // View in solid mode); a bare state paints no surface of its own.
+    const Root = bordered ? GlassSurface : View;
     const container: StyleProp<ViewStyle> = [
       skin.container,
       bordered ? skin.borderedBase : null,
@@ -99,7 +102,7 @@ export function createEmptyState(skin: EmptyStateSkin, Button: ButtonComponent =
     ];
 
     return (
-      <View testID={testID} style={container}>
+      <Root testID={testID} style={container} {...(bordered ? { layer: "content" as const } : null)}>
         {icon != null ? (
           // The disc glyph is purely decorative; the title carries the meaning.
           // Emoji announce their own accessible name, so hide the disc from
@@ -134,7 +137,7 @@ export function createEmptyState(skin: EmptyStateSkin, Button: ButtonComponent =
             </Button>
           </View>
         ) : null}
-      </View>
+      </Root>
     );
   };
 }

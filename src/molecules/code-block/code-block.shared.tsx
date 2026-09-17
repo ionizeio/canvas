@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { type GestureResponderEvent, StyleSheet } from "react-native";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
-import { View, Pressable, Text, ScrollView, useTheme, useControllableState, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, devWarn, useMinTargetSlop, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type TouchTargetSkin, type LayoutStyle } from "../../style/index.js";
+import { View, Pressable, Text, ScrollView, useTheme, useControllableState, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, devWarn, useMinTargetSlop, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type TouchTargetSkin, type LayoutStyle, GlassSurface, isGlass, withInnerFill } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { MONO, type Variant } from "./code-block.styles.js";
 import { tokenize, syntaxColor, type CodeToken } from "./tokenize.js";
@@ -475,7 +475,8 @@ export function createCodeBlock(skin: CodeBlockSkin) {
     } = props;
     const variant = variantOf(props);
     const scrollFocus = useHorizontalScrollFocus();
-    const { tokens, dark } = useTheme();
+    const theme = useTheme();
+    const { tokens, dark } = theme;
 
     // Tabs: the active tab supplies code/language/filename, falling back to the
     // block-level props. Raw props go into the hook (controlled iff provided).
@@ -693,12 +694,13 @@ export function createCodeBlock(skin: CodeBlockSkin) {
       </View>
     );
 
+    const glass = isGlass(theme);
     return (
-      <View testID={testID} style={[RELATIVE, style]}>
+      <GlassSurface layer="content" testID={testID} style={[RELATIVE, glass ? skin.surface(tokens) : null, glass ? { padding: 0 } : null, style]}>
         {hasHeader ? (
           <View
             style={[
-              skin.headerBar(tokens),
+              glass ? withInnerFill(theme, { ...skin.headerBar(tokens), borderWidth: 0, borderBottomWidth: 0 }, "soft") : skin.headerBar(tokens),
               tabList ? skin.headerBarWithTabs : null,
               attached ? skin.attachedTop : null,
             ]}
@@ -720,7 +722,7 @@ export function createCodeBlock(skin: CodeBlockSkin) {
         ) : null}
         <View
           style={[
-            skin.surface(tokens),
+            glass ? { ...skin.surface(tokens), backgroundColor: "transparent", borderWidth: 0, borderTopWidth: 0, borderRadius: 0 } : skin.surface(tokens),
             hasHeader ? skin.surfaceUnderHeader : null,
             !hasHeader && attached ? skin.attachedTop : null,
           ]}
@@ -782,7 +784,7 @@ export function createCodeBlock(skin: CodeBlockSkin) {
             <CopyChip dark={false} floating copied={copied} onPress={handleCopy} />
           </View>
         ) : null}
-      </View>
+      </GlassSurface>
     );
   };
 }

@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle, GlassSurface, isGlass } from "../../style/index.js";
 import { Sparkline } from "../../charts/sparkline/sparkline.js";
 import { StackedBar } from "../../charts/stacked-bar/stacked-bar.js";
 import { type StackedSegment } from "../../charts/shared/types.js";
@@ -167,7 +167,11 @@ function accentOf(item: StatItem): string | null {
 export function createStats(skin: StatsSkin) {
   // One metric: label, value, optional delta. Tappable when an onPress is given.
   function StatItemView({ item, surface, framed, onPress }: { item: StatItem; surface: Surface; framed?: boolean; onPress?: () => void }): ReactNode {
-    const { tokens, dark } = useTheme();
+    const theme = useTheme();
+    const { tokens, dark } = theme;
+    // Under glass a card-surface metric is a CONTENT-layer pane (the material rides
+    // inside the pressable so the tap, ripple and dim stay on the Pressable).
+    const glass = isGlass(theme);
     // Split the surface shape (radius/border/fill/padding) from the outer flex sizing:
     // the shape stays on the tappable node, the sizing rides the RippleClip wrapper.
     const cardShape = surface === "card" ? skin.cardSurface(tokens) : null;
@@ -221,14 +225,14 @@ export function createStats(skin: StatsSkin) {
             accessibilityRole="button"
             onPress={onPress}
             android_ripple={android_ripple}
-            style={({ pressed }) => [cardShape, pressed && skin.pressedOpacity != null ? { opacity: skin.pressedOpacity } : null]}
+            style={({ pressed }) => [glass && cardShape ? null : cardShape, pressed && skin.pressedOpacity != null ? { opacity: skin.pressedOpacity } : null]}
           >
-            {inner}
+            {glass && cardShape ? <GlassSurface layer="content" style={cardShape}>{inner}</GlassSurface> : inner}
           </Pressable>
         </RippleClip>
       );
     }
-    return <View style={container}>{inner}</View>;
+    return cardShape ? <GlassSurface layer="content" style={container}>{inner}</GlassSurface> : <View style={container}>{inner}</View>;
   }
 
   return function Stats(props: StatsProps) {
@@ -242,16 +246,20 @@ export function createStats(skin: StatsSkin) {
     const isPlain = surface === "plain";
     // FILL: the group spans the parent it is given; the items flex-wrap inside it.
     const fill = useFillStyle("Stats");
+    // The plain surface's shared parent card is a CONTENT-layer pane under glass
+    // (GlassSurface is the plain View in solid mode); the card surface lays its own
+    // panes per metric and the group itself paints nothing.
+    const Root = isPlain ? GlassSurface : View;
 
     return (
-      <View testID={testID} style={[isPlain ? skin.plainContainer(tokens) : null, fill, style]}>
+      <Root testID={testID} style={[isPlain ? skin.plainContainer(tokens) : null, fill, style]} {...(isPlain ? { layer: "content" as const } : null)}>
         {title != null && title !== "" ? <Text style={skin.title(tokens, surface)}>{title}</Text> : null}
         <View style={[row, skin.rowGap[surface]]}>
           {items.map((item, i) => (
             <StatItemView key={i} item={item} surface={surface} framed={props.framed} onPress={onPressItem ? () => onPressItem(i) : undefined} />
           ))}
         </View>
-      </View>
+      </Root>
     );
   };
 }

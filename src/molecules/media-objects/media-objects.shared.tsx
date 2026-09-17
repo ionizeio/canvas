@@ -1,6 +1,6 @@
 import { type ComponentType, type ReactNode } from "react";
 import { StyleSheet } from "react-native";
-import { View, Pressable, Text, useTheme, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle, GlassSurface, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { type AvatarProps } from "../../atoms/avatar/avatar.shared.js";
 import { type Align, type Direction, DIRECTION_ROW, ALIGN_ITEMS } from "./media-objects.styles.js";
@@ -183,7 +183,9 @@ function borderedColors(tokens: ColorTokens, skin: MediaObjectSkin): ViewStyle {
 export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent = WebAvatar) {
   return function MediaObject(props: MediaObjectProps) {
     const { title, description, body, meta, avatar, src, icon, action, truncate, testID, style } = props;
-    const { tokens } = useTheme();
+    const theme = useTheme();
+    const { tokens } = theme;
+    const glass = isGlass(theme);
     // FILL: the identity row spans the parent it is given, so a long body wraps.
     const fill = useFillStyle("MediaObject");
     const align = alignOf(props);
@@ -273,14 +275,20 @@ export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent
             onPress={props.onPress}
             testID={testID}
             android_ripple={surfaceRipple(tokens)}
-            style={({ pressed }) => [surface, minTarget, elevZero, pressDim(pressed, skin.pressedOpacity)]}
+            style={({ pressed }) => [paneStyle(glass && !!props.bordered, surface), minTarget, elevZero, pressDim(pressed, skin.pressedOpacity)]}
           >
+            {props.bordered ? <GlassPane layer="content" shape={skin.borderedSurface} /> : null}
             {inner}
           </Pressable>
         </RippleClip>
       );
     }
 
-    return <View testID={testID} style={[surface, fill, style]}>{inner}</View>;
+    // A bordered row is a CONTENT-layer pane under glass (GlassSurface is the plain View in solid mode).
+    return props.bordered ? (
+      <GlassSurface layer="content" testID={testID} style={[surface, fill, style]}>{inner}</GlassSurface>
+    ) : (
+      <View testID={testID} style={[surface, fill, style]}>{inner}</View>
+    );
   };
 }

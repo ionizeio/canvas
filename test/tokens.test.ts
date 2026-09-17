@@ -110,7 +110,9 @@ describe("glassByScheme (the glass material's own tokens)", () => {
     // opaque would have made the bars opaque with it. The material carries its own
     // fill now; the semantic set is untouched.
     for (const scheme of ["light", "dark"] as const) {
-      expect(Object.keys(glassByScheme[scheme])).toEqual(["glass-tint"]);
+      // One tint per LAYER of the glass model (functional, content, control, dense),
+      // and nothing that names a semantic surface.
+      expect(Object.keys(glassByScheme[scheme])).toEqual(["glass-tint", "glass-tint-content", "glass-tint-control", "glass-tint-dense"]);
       expect(glassByScheme[scheme]).not.toHaveProperty("popover");
       expect(glassByScheme[scheme]).not.toHaveProperty("card");
     }
