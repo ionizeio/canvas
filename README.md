@@ -8,7 +8,7 @@
 
 **Try it live:** the [component catalog](https://canvas.nannier.com/components) renders the full library (atoms, molecules, organisms, and charts) in the browser, with dark mode, the glass surface, and density switchable site-wide.
 
-Write your screen once and it runs everywhere. Canvas is built from React Native primitives, React Native SVG, and its own components, so the same tree renders on device and in the browser with each platform's skin. Components are styled with semantic boolean props, are accessible by default (roles and state exposed to assistive tech on all three platforms), and are authored desktop-first so they scale down cleanly to phone. On iOS 26 the functional layer (overlays and bars) renders in real Liquid Glass; on Chromium browsers it renders as a real lens (an SVG displacement filter that refracts the backdrop at the rim); elsewhere it falls back to a genuine frost or a solid surface.
+Write your screen once and it runs everywhere. Canvas is built from React Native primitives, React Native SVG, and its own components, so the same tree renders on device and in the browser with each platform's skin. Components are styled with semantic boolean props, expose accessibility roles and state on all three platforms, and are authored desktop-first so they scale down cleanly to phone. Shared material rendering integrates native iOS Liquid Glass, native frost and browser-specific effects where supported. Appearance, material capability and interaction behavior are verified separately on each runtime.
 
 ## Install
 
@@ -145,7 +145,7 @@ this check on the exact sealed tarball before it can be published.
 `ThemeProvider` reads the OS color scheme by default and exposes the resolved tokens to every Canvas component through the `useTheme` hook. Optional props control it:
 
 - `dark` / `light` (booleans): the scheme axis, spelled like every other Canvas axis (`dark` wins if both are passed). Omit both to follow the OS appearance. The legacy `scheme` value prop (`"light" | "dark"`) stays supported for code that already holds a scheme value.
-- `glass` / `solid` (booleans): the surface axis, spelled like every other Canvas axis. Omit both for the platform default (Liquid Glass on iOS 26+, solid everywhere else); pass `glass` to force the translucent functional-layer material, `solid` to force flat. `glass` wins if both are passed. The legacy `surface` value prop (`"solid" | "glass"`) stays supported for config-driven code holding a `Surface` value.
+- `glass` / `solid` (booleans): the surface axis, spelled like every other Canvas axis. Omit both for the platform default (glass on supported iOS 26+, solid elsewhere); `glass` requests the material treatment, and `solid` requests complete opaque surfaces. Accessibility preferences and runtime capability determine the rendered material. `glass` wins if both are passed. The legacy `surface` value prop (`"solid" | "glass"`) stays supported for config-driven code holding a `Surface` value.
 - `tokens`: brand token overrides merged over the active scheme, so you can rebrand without forking the token files. Pass a flat `Partial<ColorTokens>` to apply to both schemes, or `{ light, dark }` to override each separately. Use a stable reference (a module constant or memoized object).
 
 ```jsx
@@ -171,6 +171,15 @@ palette keep that palette independently of semantic token overrides.
 Custom colors still need contrast checks against the surfaces where you use them.
 The default text contrast checks cover solid and tonal surfaces. Glass materials
 depend on the content behind them and need verification in the rendered app.
+
+The material contract distinguishes stable glass content surfaces from functional
+Liquid Glass, while labels, images, chart marks and layout wrappers remain sharp
+and unpainted. Native Liquid Glass does not require custom wobble. Explicit solid
+mode and material fallbacks must restore opaque fill, foreground, boundary and
+elevation without losing input focus or application state. Android blur needs a
+safe live backdrop target; a tint-only path does not establish native blur support.
+The maintained [material inventory](tools/materials/README.md) records intended
+coverage and verification obligations, not completed runtime evidence.
 
 CSS hand-off consumers should override both `--primary` and `--primary-text` when
 rebranding. To retain the previous single-color behavior, set

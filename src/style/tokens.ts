@@ -187,12 +187,12 @@ export const colorsByScheme: Record<ColorScheme, ColorTokens> = {
 };
 
 /**
- * The glass MATERIAL's own tokens, per scheme, one tint per LAYER. Glass is a
- * theming-level surface mode, and when it is on EVERY surface renders through the
- * material (the user's direction of 2026-09-16, which supersedes the earlier
- * functional-layer-only model and Apple's "don't use Liquid Glass in the content
- * layer"): the layers differ by how dense their tint is, so nested glass still reads
- * as distinct planes and text keeps its contrast over whatever sits behind it.
+ * The glass material's own tokens, per scheme, one tint per density layer.
+ * These densities do not choose static versus liquid material or custom motion.
+ * The role-based contract uses intentional static content panes and functional
+ * liquid surfaces, with unpainted layout, foreground content and data ink.
+ * Readability must be verified on actual composed backgrounds, not inferred from
+ * a token or a passing contrast check against one backdrop.
  *
  *   glass-tint          the FUNCTIONAL layer: bars, sidebars, tab bars, sheets,
  *                       drawers, popovers, dialogs, the command palette. The
@@ -212,10 +212,11 @@ export const colorsByScheme: Record<ColorScheme, ColorTokens> = {
  * The material carries its OWN fill; glass mode swaps NO semantic color token
  * (`card` and `popover` stay opaque in the token set, and a surface that opts out of
  * the material keeps its opaque fill). Every surface takes its tint UNDER the real
- * material: Apple's native Liquid Glass via expo-glass-effect on iOS 26+, the SVG
- * lens on Chromium web, an expo-blur frost elsewhere. The tint is what keeps a panel
- * legible when the material is near-clear (and the whole fill when no material
- * module is available); the material is what makes it glass.
+ * material selected by the shared renderer for the role and available capability.
+ * Native Liquid Glass, static frost and the web lens are distinct material paths.
+ * A tint alone is neither proof of real blur nor a complete solid fallback.
+ * Missing or unsafe material capability requires the original opaque fill,
+ * foreground, boundary and elevation; layout and semantic state must survive.
  *
  * Keys are the CSS custom-property names verbatim (`glass-tint` is `--glass-tint` in
  * styles/tokens/colors.css, the WEB hand-off these values are read from, never

@@ -68,6 +68,7 @@
     "validate-tokens": "bun scripts/validate-tokens.ts",
     "check-size": "bun scripts/check-size.ts",
     "check:interactions": "bun scripts/check-interaction-coverage.ts",
+    "check:materials": "bun scripts/check-material-coverage.ts",
     "check-parity": "bun scripts/check-handoff-parity.ts",
     "check-parity:check": "bun scripts/check-handoff-parity.ts --check",
     "check-figma": "bun scripts/check-figma-parity.ts",

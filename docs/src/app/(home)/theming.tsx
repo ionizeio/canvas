@@ -165,21 +165,18 @@ export default function ThemingScreen() {
 
         <Section title="Glass Surface">
           <P>
-            Glass is a layered model. Every surface renders through the same material, and each layer has its own under-fill so the
-            stack stays legible: the functional layer (navbars, tab bars, the sidebar, dialogs, action sheets, drawers, popovers, the
-            command palette) takes the sheer tint; the content layer (cards, lists, tables, calendars, charts, alerts) takes a denser
-            one so its text keeps its contrast; the controls (fields, buttons, tabs, chips, badges, switches, checkboxes) are bright
-            glass pucks, brand-tinted where their fill is the brand; and the surfaces you read and act on (dropdowns, selects, row
-            menus, alert dialogs, toasts, tooltips) take the densest tint so nothing reads through their rows. It is a theming-level
-            switch (the ThemeProvider turns on the material's own layer fills and rewrites no semantic token), not a per-component
-            prop. Every surface renders through Canvas's GlassSurface primitive, which paints the real material per
-            platform: Apple's native Liquid Glass on iOS 26+ (via expo-glass-effect), a real lens on Chromium browsers (an SVG
-            displacement filter that refracts the backdrop at the rim, where the glass bends most; the centre stays optically flat), a
-            genuine frosted blur on non-Chromium web and Android (via expo-blur), and a translucent fallback when no material is
-            available. It defaults to the platform:{" "}
-            glass on iOS 26+ (matching the OS) and solid everywhere else, when you pass neither boolean. Force it with <InlineCode>glass</InlineCode> /{" "}
-            <InlineCode>solid</InlineCode> on <InlineCode>ThemeProvider</InlineCode>; that holds on the web too, where components read
-            the surface from the provider, not from CSS.
+            Glass is a theme preference, not a prop to add to every component. The material contract distinguishes stable content
+            glass from functional Liquid Glass. Reading surfaces and text-entry wells stay still; floating navigation, controls
+            and overlays can use liquid material where their role calls for it. Labels, images, chart marks and layout wrappers
+            do not become separate glass panels. Tint density and custom motion are separate decisions, and native Liquid Glass
+            does not need added wobble.
+          </P>
+          <P>
+            Omit both surface booleans to follow the platform default: glass on supported iOS 26+ and solid elsewhere. Use{" "}
+            <InlineCode>glass</InlineCode> or <InlineCode>solid</InlineCode> on <InlineCode>ThemeProvider</InlineCode> to choose an
+            appearance. Solid means opaque fill, readable foreground, boundaries and elevation. Accessibility preferences and
+            available native or browser material determine the rendered result. Switching appearance must preserve focus,
+            values, open controls and scrolling. Components read this preference from the provider, not from CSS.
           </P>
           <CodeBlock code={GLASS} />
           <Row flush>
@@ -193,10 +190,11 @@ export default function ThemingScreen() {
           </Row>
           <H3>What changes</H3>
           <Column tight>
-            <Bullet>Every surface renders the material via GlassSurface (or a GlassPane behind a node that owns its own interaction): native Liquid Glass on iOS 26+, an SVG displacement lens on Chromium web, a frosted blur elsewhere on web and on Android; the layer it belongs to sets how dense its tint is</Bullet>
+            <Bullet>Shared GlassSurface and GlassPane rendering owns material selection and clipping. Native Liquid Glass, static frost and browser lens effects are different capabilities; a browser preview of an iOS skin does not prove native rendering</Bullet>
             <Bullet>No semantic token changes: popover and card keep the same opaque values they carry in solid mode. Glass adds its own fills, glass-tint, glass-tint-content, glass-tint-control and glass-tint-dense, painted under the material by the surfaces of each layer</Bullet>
-            <Bullet>A brand fill (a primary button, a checked switch, a selected tab) is brand-tinted glass kept as sheer as its ink's 4.5:1 allows; a hue wash (a status badge, a coloured chip) steps its label one deeper; fills inside a surface (a hovered row, a header band) become ink tints so they never sit as opaque patches on the material</Bullet>
-            <Bullet>Surfaces drop their skin fill and hairline and the material paints its own white-alpha specular rim; a state border (a focus ring, an error edge) stays</Bullet>
+            <Bullet>Brand and status meanings remain readable in every material. Check contrast against actual backgrounds, including scrolling content; a tint token or a decorative rim alone does not establish it</Bullet>
+            <Bullet>Solid surfaces retain their full opaque treatment without glass capture or droplet animation. Reduce Transparency and Increase Contrast require readable opaque treatment; Reduce Motion removes nonessential movement without requiring opacity by itself</Bullet>
+            <Bullet>Android blur needs a safe live backdrop target. Tint without blur is not native frost, and a missing or unsafe material needs a complete solid fallback</Bullet>
             <Bullet>The page background does not change by itself; these docs mount the kit's Backdrop scene behind the shell in glass mode so the frost has something to refract, an app-level choice</Bullet>
           </Column>
           <H3>Web helpers</H3>

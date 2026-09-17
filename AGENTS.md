@@ -123,8 +123,8 @@ applied together.
 
 Glass is NOT a per-component axis: it is a theming-level surface mode, like the
 light/dark scheme, and the `ThemeProvider` spells it in the same boolean grammar as
-every component axis: `<ThemeProvider glass>` forces it on (the lens or frost
-material on non-iOS-26 platforms), `<ThemeProvider solid>` forces the flat look, and passing neither
+every component axis: `<ThemeProvider glass>` requests the role-appropriate material
+where supported, `<ThemeProvider solid>` requests the complete opaque appearance, and passing neither
 resolves to the PLATFORM DEFAULT: **glass on iOS 26+** (Apple makes Liquid Glass the
 system material for the functional layer there, so a Canvas app matches the OS), and
 **solid everywhere else** (web, Android, iOS < 26, Reduce Transparency). `glass`
@@ -134,26 +134,39 @@ helper is `setSurface("glass")` / `setSurface("solid")`. The scheme axis speaks 
 same grammar: `<ThemeProvider dark>` / `<ThemeProvider light>` force a scheme
 (`dark` wins if both are passed), omitting both follows the OS appearance, and the
 legacy `scheme` value prop is likewise supported. The platform default is computed from
-`liquidGlassAvailable()` (exported from the kit). Following Apple's Liquid Glass model,
-glass is the material for the FUNCTIONAL layer only: overlays (popovers, menus,
-dropdowns, selects, autocompletes, dialogs, alert dialogs, sheets, drawers, command)
-and the bar/sidebar shells (navbars, sidebar) read as glass. The `card` token stays
-SOLID, so content surfaces (cards, lists, tables, calendars, charts) do NOT go glass
-(Apple: "don't use Liquid Glass in the content layer").
+`liquidGlassAvailable()` (exported from the kit).
 
-Those functional-layer surfaces render through the shared `GlassSurface` primitive
-(`src/style/glass-surface`), which paints the active material per platform: Apple's
-real native Liquid Glass via `expo-glass-effect` on iOS 26+, a real LENS on Chromium
-web (an SVG displacement filter applied as the material's backdrop-filter, refraction
-concentrated at the rim; `glass-lens.ts`, no module needed), a genuine frosted blur
-via `expo-blur` on non-Chromium web, Android, and iOS < 26, and the translucent
-`popover` fill as a fallback when no material is available. So glass mode IS real iOS
-Liquid Glass on iOS, a real lens on Chromium web, and a real frost elsewhere, not a
-per-component effect.
-Do not add a per-component `glass` prop and do NOT hand-paint glass (backdrop-filter,
-specular edges) onto individual components: route any new functional-layer surface
-through `GlassSurface` (pass it the skin's shape style; it strips the fill and
-supplies the material), and leave content-layer surfaces solid.
+The material contract is role-based, not component-name-based. In glass mode,
+intentional content panels and text-entry wells use stable static glass; functional
+controls, navigation and overlays may use Liquid Glass. Persistent content, text,
+icons, images and chart marks never acquire liquid deformation. Layout wrappers and
+deliberately unfilled variants inherit their surroundings without another pane.
+The semantic `card` and `popover` tokens stay opaque in every mode; shared material
+rendering owns glass fills instead of rewriting those tokens.
+
+Route owned surfaces through `GlassSurface`, or `GlassPane` behind a semantic host
+that must retain its input, focus or live-region behavior. Keep role, density,
+renderer capability and motion separate. Use supported native Liquid Glass through
+`expo-glass-effect` on iOS where appropriate, supported native frost through
+`expo-blur`, and the shared web material paths. Android blur requires safe live
+backdrop ownership; no material may sample itself. A browser skin preview is not
+native evidence, and tint without blur is not proof of a native material.
+
+Solid is a complete primary appearance and fallback: opaque fill, matching
+foreground/state colors, boundaries and elevation. A resolved solid surface mounts
+no glass capture, refraction, specular layer or droplet animation. Missing or unsafe
+material capability must restore that complete treatment, preserving layout, refs,
+focus, input values, open state and scroll position in both mode directions.
+Reduce Transparency and Increase Contrast require readable opaque treatment;
+Reduce Motion removes nonessential fluid motion without requiring opacity by itself.
+
+Prefer native feedback. Native Liquid Glass may remain still; custom press swelling
+or connected splitting/merging is not implied by a click handler. Keep selected
+motion profiles scoped and preserve solid-mode native feedback. Do not add a
+per-component `glass` prop or hand-paint blur and specular edges in a component.
+`tools/materials/manifest.ts` records the intended role and verification obligation
+of every public renderable. `bun run check:materials` reconciles it with exports and
+docs routes; inventory coverage is not an implementation or runtime-verification pass.
 
 ### Conflicts
 

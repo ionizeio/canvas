@@ -11,12 +11,13 @@ import { SsrBreakpointContext } from "./responsive.js";
 import { liquidGlassAvailable } from "./glass-surface/liquid-glass.js";
 import { useReducedTransparency, useIncreasedContrast } from "./a11y-preferences.js";
 
-// Surface treatment. "glass" makes the functional layer render through the glass
-// MATERIAL (see glassByScheme, and GlassSurface which paints it); "solid" is flat.
+// Surface preference. "glass" requests role-appropriate material through shared
+// renderers; "solid" requests the complete opaque skin. Content/static material,
+// functional/liquid material, density and interaction motion are separate choices.
 // It is a theming dimension, like the color scheme, not a per-component prop. The
 // ThemeProvider spells it as a boolean axis (`<ThemeProvider glass>` /
 // `<ThemeProvider solid>`); when neither is passed the PLATFORM DEFAULT applies:
-// glass on iOS 26+ (Apple makes Liquid Glass the system material for that layer),
+// glass on iOS 26+ (where native Liquid Glass supports the functional layer),
 // solid everywhere else. This value type remains the resolved form the theme
 // carries, and the provider's legacy `surface` prop still accepts it.
 export type Surface = "solid" | "glass";
@@ -133,10 +134,10 @@ export interface ThemeProviderProps {
   // native system material for that layer, solid elsewhere). The theming-level
   // glass switch, spelled like every other Canvas axis; there is no per-component
   // glass prop. `glass` wins when both are passed.
-  /** Force the glass material on for the functional layer (bars, sidebars, sheets,
-   *  popovers). Content surfaces stay solid, and so do the semantic tokens. */
+  /** Request role-appropriate glass: stable content material and functional
+   *  Liquid Glass where supported. Semantic tokens remain opaque. */
   glass?: boolean;
-  /** Force the flat, material-free functional layer, even on iOS 26+. */
+  /** Request complete opaque surfaces without glass effects, even on iOS 26+. */
   solid?: boolean;
   /**
    * Legacy value form of the surface axis ("solid" | "glass"), kept for

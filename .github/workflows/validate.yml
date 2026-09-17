@@ -87,6 +87,9 @@ jobs:
       - name: Validate interaction evidence registry
         run: bun scripts/check-interaction-coverage.ts
 
+      - name: Validate material coverage against public exports and docs
+        run: bun run check:materials
+
       # Runs docgen ONCE for the whole pipeline and fails on ANY drift under
       # docs/src/core (tracked or untracked), so a breaking prop change or a forgotten
       # `bun run docs:gen` is caught here, and the docs steps below consume a validated
