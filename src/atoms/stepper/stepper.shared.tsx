@@ -28,6 +28,7 @@ import {
   PANE_SIBLING_INPUT,
 } from "../../style/index.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
+import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { clamp } from "../../style/math.js";
 import { Icon } from "../icon/icon.js";
 import { addDecimal } from "./stepper.math.js";
@@ -100,6 +101,8 @@ export interface StepperProps {
 // The fill/structure stay the brand on every OS; the skin never injects a platform
 // default color (no iOS system blue, no M3 default).
 export interface StepperSkin {
+  /** Clear Liquid Glass text entry on the web appearance. */
+  liquid?: boolean;
   /** The outer group container (the [ − | value | + ] shell shape). */
   group: (t: ColorTokens, size: Size, disabled: boolean) => ViewStyle;
   /** One ± button cell; `side` lets the skin round the matching outer corner. */
@@ -172,7 +175,8 @@ export function createStepper(skin: StepperSkin) {
       disabled,
       style,
     } = props;
-    const theme = useMaterialTheme({ static: true, layer: "control" });
+    const entryMaterial = useTextEntryMaterial(!!skin.liquid);
+    const { theme } = entryMaterial;
     const actionTheme = useMaterialTheme({ layer: "control" });
     const { tokens } = theme;
     // HUG: the control keeps its content width inside a stretching Column (whichever
@@ -191,7 +195,7 @@ export function createStepper(skin: StepperSkin) {
     const liquidActions = !groupSurfaced && isGlass(actionTheme);
     const disabledInk = liquidActions && disabled ? { opacity: 0.5 } : null;
     const groupStyle = groupSurfaced ? paneStyle(theme, groupShape) : groupShape;
-    const groupPane = groupSurfaced ? <GlassPane static layer="control" shape={groupShape} /> : null;
+    const groupPane = groupSurfaced ? <GlassPane {...entryMaterial.paneProps} shape={groupShape} /> : null;
     const buttonPane = (shape: ViewStyle, inactive: boolean) => (groupSurfaced ? null : <GlassPane layer="control" shape={shape} interactive={!inactive} />);
 
     // Collision-free ids so the group can name itself from the visible label and be

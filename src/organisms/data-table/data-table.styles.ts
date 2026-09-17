@@ -43,6 +43,8 @@ export type Density = "compact" | "regular" | "comfortable";
 // skin maps tokens and density to RN style objects and declares its press mode
 // (iOS/web tint the row fill, Android ripples).
 export interface DataTableSkin {
+  /** Web cell editors use clear Liquid Glass without changing field geometry. */
+  liquidTextEntry?: boolean;
   /** The outer wrap (clips the rounded corners). */
   wrap: ViewStyle;
   /** The `bordered` rounded outline around the whole table. */
@@ -163,6 +165,7 @@ const DATA_CELL: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%" };
 // outline or an `attached` parent it squares up, so the frame's corners are the
 // only rounded ones and no fill peeks out under the band's bottom corners.
 export const webSkin: DataTableSkin = {
+  liquidTextEntry: true,
   wrap: WRAP,
   borderedOutline: (t) => ({ borderRadius: shape.web.card, borderWidth: 1, borderColor: t.border }),
   headerRow: (t) => ({ flexDirection: "row", backgroundColor: t.muted, borderRadius: 10 }),

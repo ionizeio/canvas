@@ -1,4 +1,5 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
+import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { consumeEscapeKey, EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { forwardRef, useEffect, useId, useRef, useState } from "react";
 import { Platform, type Role, type TextInput as RNTextInput } from "react-native";
@@ -146,7 +147,8 @@ export function createAutocomplete(skin: AutocompleteSkin) {
       style,
     } = props;
     const size = sizeOf(props);
-    const theme = useMaterialTheme({ static: true, layer: "control" });
+    const entryMaterial = useTextEntryMaterial(!!skin.liquid);
+    const { theme } = entryMaterial;
     const menuTheme = useMaterialTheme({ layer: "dense" });
     const { tokens } = theme;
     const widthCap = useFillStyle("Autocomplete", props);
@@ -246,13 +248,11 @@ export function createAutocomplete(skin: AutocompleteSkin) {
     const populated = fieldValue !== "";
     const fieldShape = skin.field(tokens, size, open);
     const fieldHeight = asNum((fieldShape as { height?: unknown }).height, 56);
-    // Under glass the field box is a static pane at control density: a GlassPane paints the material
-    // behind the native input and its toggle, the box drops its fill and resting
-    // hairline and keeps only its OPEN border (the iOS/web `ring`) as state; the
-    // Android skin's bottom indicator is a side colour, which the shorthand reset
-    // leaves alone. Solid mode is untouched.
+    // GlassPane paints behind the editor and toggle. Clear web fields paint the
+    // open-state outline in the foreground, outside the lens's sampled backdrop.
+    // Native fields keep their original border or bottom indicator.
     const glass = isGlass(theme);
-    const glassField: ViewStyle | null = glass ? { backgroundColor: "transparent", borderColor: open ? fieldShape.borderColor : "transparent" } : null;
+    const glassField: ViewStyle | null = glass ? { backgroundColor: "transparent", borderColor: open && !entryMaterial.foregroundStateBorder ? fieldShape.borderColor : "transparent" } : null;
 
     return (
       <View style={[wrapper, open && !host ? wrapperLifted : null, widthCap, style]}>
@@ -270,7 +270,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
             disabled ? { opacity: skin.disabledOpacity } : null,
           ]}
         >
-          <GlassPane static layer="control" shape={fieldShape} />
+          <GlassPane {...entryMaterial.paneProps} shape={fieldShape} />
           <TextInput
             ref={accessibilityReturn.inputRef}
             // The field paints its own focus state (the skin's open border), so
@@ -412,6 +412,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
               height={fieldHeight}
             />
           ) : null}
+          {entryMaterial.stateBorder(fieldShape, open)}
         </View>
 
         <AnchoredOverlay

@@ -154,6 +154,13 @@ export default function ThemingScreen() {
               onSelect={(i) => setScheme(i === 0 ? "light" : "dark")}
             />
           </Row>
+          <H3>Clear text fields</H3>
+          <P>
+            In glass mode, web Input, Textarea, Autocomplete, InputOTP, Stepper, PhoneInput and DataTable editors
+            use a clear material with a light tint and minimal blur. Text, selection and the caret stay sharp.
+            The fields stay still when clicked or typed into. Native fields keep their platform material.
+            Bare and underlined editors retain their existing shape.
+          </P>
           <H3>Web helpers</H3>
           <CodeBlock code={JS_THEME} />
           <H3>Respecting system preference</H3>

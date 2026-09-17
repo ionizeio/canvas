@@ -69,6 +69,8 @@ const HI = 200;
 const MID = 128;
 const BLUR = 6;
 const SATURATE = 1.9;
+const CLEAR_BLUR = 0.65;
+const CLEAR_SATURATE = 1.15;
 // The region inflation past the border box, so outward rim samples resolve to
 // real backdrop instead of transparent black.
 const INFLATE = 0.12;
@@ -77,6 +79,7 @@ const INFLATE = 0.12;
  *  yet (first frame before layout): the lens's own blur + saturation grade,
  *  so the swap to the sized def only adds the rim bend. */
 export const GLASS_LENS_PENDING_FILTER = `blur(${BLUR}px) saturate(${SATURATE * 100}%)`;
+export const CLEAR_GLASS_LENS_PENDING_FILTER = `blur(${CLEAR_BLUR}px) saturate(${CLEAR_SATURATE * 100}%)`;
 
 /** The displacement-map image for a w x h surface, as a data URI. Exported for
  *  tests, which assert the band geometry instead of eyeballing pixels. */
@@ -129,7 +132,7 @@ export function sharedLensFilterSpec(id: string): LensFilterSpec {
 }
 
 /** The full sized-filter spec. Pure and exported for tests. */
-export function sizedLensFilterSpec(id: string, w: number, h: number): LensFilterSpec {
+export function sizedLensFilterSpec(id: string, w: number, h: number, clear = false): LensFilterSpec {
   // Tiny surfaces (chips, knobs) shrink the rim so the flat centre survives.
   const rimX = Math.max(1, Math.min(RIM_PX, Math.floor(w / 3)));
   const rimY = Math.max(1, Math.min(RIM_PX, Math.floor(h / 3)));
@@ -142,12 +145,15 @@ export function sizedLensFilterSpec(id: string, w: number, h: number): LensFilte
     attrs: { id, ...region, filterUnits: "userSpaceOnUse", "color-interpolation-filters": "sRGB" },
     children: [
       { tag: "feImage", attrs: { href: lensMapDataUri(w, h, rimX, rimY, rx, ry), ...region, result: "map" } },
+      // Clear glass reveals discontinuities in the banded normal map. Smooth the
+      // optical normals before displacement, keeping the sampled backdrop sharp.
+      ...(clear ? [{ tag: "feGaussianBlur", attrs: { in: "map", stdDeviation: Math.min(rimX, rimY) / 3, result: "smooth-map" } }] : []),
       {
         tag: "feDisplacementMap",
-        attrs: { in: "SourceGraphic", in2: "map", scale: SCALE, xChannelSelector: "R", yChannelSelector: "G", result: "bent" },
+        attrs: { in: "SourceGraphic", in2: clear ? "smooth-map" : "map", scale: SCALE, xChannelSelector: "R", yChannelSelector: "G", result: "bent" },
       },
-      { tag: "feGaussianBlur", attrs: { in: "bent", stdDeviation: BLUR, result: "soft" } },
-      { tag: "feColorMatrix", attrs: { in: "soft", type: "saturate", values: SATURATE } },
+      { tag: "feGaussianBlur", attrs: { in: "bent", stdDeviation: clear ? CLEAR_BLUR : BLUR, result: "soft" } },
+      { tag: "feColorMatrix", attrs: { in: "soft", type: "saturate", values: clear ? CLEAR_SATURATE : SATURATE } },
     ],
   };
 }
@@ -230,9 +236,9 @@ const sizedDefs = new Map<string, SizedDef>();
 /** Acquire (create if absent) the sized lens def for a w x h surface. Returns
  *  its key and url, or null when no document is available. Pair every acquire
  *  with a release. */
-export function acquireSizedGlassLens(w: number, h: number): { key: string; url: string } | null {
+export function acquireSizedGlassLens(w: number, h: number, clear = false): { key: string; url: string } | null {
   if (typeof document === "undefined" || w < 1 || h < 1) return null;
-  const key = `${GLASS_LENS_ID}-${w}x${h}`;
+  const key = `${GLASS_LENS_ID}-${w}x${h}${clear ? "-clear" : ""}`;
   const existing = sizedDefs.get(key);
   if (existing) {
     existing.refs += 1;
@@ -240,7 +246,7 @@ export function acquireSizedGlassLens(w: number, h: number): { key: string; url:
   }
   const host = defsHost();
   if (!host) return null;
-  const el = buildLensFilter(sizedLensFilterSpec(key, w, h));
+  const el = buildLensFilter(sizedLensFilterSpec(key, w, h, clear));
   host.appendChild(el);
   sizedDefs.set(key, { el, refs: 1 });
   return { key, url: `url(#${key})` };
@@ -309,16 +315,16 @@ export function useGlassLens(glass: boolean): boolean {
  * size, swaps on resize, releases on unmount, and returns the pending grade
  * until the def exists.
  */
-export function useSizedGlassLens(width: number, height: number): string {
+export function useSizedGlassLens(width: number, height: number, clear = false): string {
   const w = Math.round(width);
   const h = Math.round(height);
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
-    const def = acquireSizedGlassLens(w, h);
+    const def = acquireSizedGlassLens(w, h, clear);
     setUrl(def ? def.url : null);
     return () => {
       if (def) releaseSizedGlassLens(def.key);
     };
-  }, [w, h]);
-  return url ?? GLASS_LENS_PENDING_FILTER;
+  }, [w, h, clear]);
+  return url ?? (clear ? CLEAR_GLASS_LENS_PENDING_FILTER : GLASS_LENS_PENDING_FILTER);
 }

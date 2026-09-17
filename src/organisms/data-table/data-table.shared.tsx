@@ -1,9 +1,10 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
+import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { Fragment, type ComponentType, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { consumeEscapeKey } from "../../style/escape-layer.js";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
-import { FlatList, StyleSheet, ScrollView, type ViewProps, type ViewStyle as RNViewStyle } from "react-native";
-import { View, Pressable, Text, TextInput, useControllableState, controlRipple, devWarn, breakpoints, useMeasuredWidth, tabularNums, type StyleProp, type TextStyle, type ViewStyle, type LayoutStyle, useFillStyle, GlassSurface, withInnerFill } from "../../style/index.js";
+import { FlatList, StyleSheet, ScrollView, type TextInputProps, type ViewProps, type ViewStyle as RNViewStyle } from "react-native";
+import { View, Pressable, Text, TextInput, useControllableState, controlRipple, devWarn, breakpoints, useMeasuredWidth, tabularNums, type StyleProp, type TextStyle, type ViewStyle, type LayoutStyle, useFillStyle, GlassSurface, GlassPane, paneStyle, PANE_SIBLING_INPUT, withInnerFill } from "../../style/index.js";
 import { type CheckboxProps } from "../../atoms/checkbox/checkbox.shared.js";
 import { type PaginationProps } from "../../atoms/pagination/pagination.shared.js";
 import { type SkeletonProps } from "../../atoms/skeleton/skeleton.shared.js";
@@ -359,6 +360,20 @@ export interface DataTableParts {
 /** Build a DataTable component from a platform skin plus its platform parts. */
 export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
   const { Checkbox, Pagination, Skeleton } = parts;
+  // The editor type is created once per skin, so typing and material changes
+  // retain the same input host, selection and commit/cancel handlers.
+  function CellEditor(props: TextInputProps) {
+    const material = useTextEntryMaterial(!!skin.liquidTextEntry);
+    const shape = skin.editInput(material.theme.tokens);
+    if (!skin.liquidTextEntry) return <TextInput {...props} style={[shape, props.style]} />;
+    return (
+      <View style={{ alignSelf: "stretch" }}>
+        <GlassPane {...material.paneProps} shape={shape} />
+        <TextInput {...props} style={[paneStyle(material.theme, shape), props.style, PANE_SIBLING_INPUT]} />
+      </View>
+    );
+  }
+
   return function DataTable(props: DataTableProps) {
     const { columns, rows, striped, bordered, attached, selectable, onRowPress, onRowEdit, onRowDelete, inlineEdit, rowKey, virtualized, loading, emptyMessage, paginated, testID, style } = props;
     const density = densityOf(props);
@@ -985,7 +1000,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
           ? visibleColumns.map((vc) => cols.indexOf(vc)).find((i) => typeof row[i] === "string")
           : c;
         content = (
-          <TextInput
+          <CellEditor
             value={rowEditing ? (draft[c] ?? "") : cellEdit!.value}
             onChangeText={(next) =>
               rowEditing ? setDraft((d) => ({ ...d, [c]: next })) : setCellEdit({ row: r, col: c, value: next })
@@ -1007,7 +1022,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
             }}
             accessibilityLabel={`Edit ${col.label} for ${name}`}
             aria-label={`Edit ${col.label} for ${name}`}
-            style={[skin.editInput(tokens), alignText]}
+            style={alignText}
           />
         );
       } else {

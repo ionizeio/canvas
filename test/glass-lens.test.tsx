@@ -84,6 +84,33 @@ describe("shared CSS-token def", () => {
 });
 
 describe("sized lens defs", () => {
+  it("keeps clear and regular grades independent at the same geometry", () => {
+    const before = sizedGlassLensCount();
+    const regular = acquireSizedGlassLens(321, 48)!;
+    const clear = acquireSizedGlassLens(321, 48, true)!;
+    const shared = acquireSizedGlassLens(321, 48, true)!;
+    expect(clear.key).not.toBe(regular.key);
+    expect(shared.key).toBe(clear.key);
+    expect(sizedGlassLensCount()).toBe(before + 2);
+    const regularDef = document.getElementById(regular.key)!;
+    const clearDef = document.getElementById(clear.key)!;
+    expect(Number(clearDef.querySelector('feGaussianBlur[in="bent"]')!.getAttribute("stdDeviation"))).toBeLessThan(1);
+    expect(Number(regularDef.querySelector("feGaussianBlur")!.getAttribute("stdDeviation"))).toBe(6);
+    expect(Number(clearDef.querySelector('feGaussianBlur[in="map"]')!.getAttribute("stdDeviation"))).toBeGreaterThan(0);
+    expect(clearDef.querySelector("feDisplacementMap")!.getAttribute("in2")).toBe("smooth-map");
+    expect(clearDef.querySelector("feDisplacementMap")!.getAttribute("scale"))
+      .toBe(regularDef.querySelector("feDisplacementMap")!.getAttribute("scale"));
+    expect(clearDef.querySelector("feImage")!.getAttribute("href"))
+      .toBe(regularDef.querySelector("feImage")!.getAttribute("href"));
+    releaseSizedGlassLens(clear.key);
+    expect(document.getElementById(clear.key)).not.toBeNull();
+    releaseSizedGlassLens(shared.key);
+    expect(document.getElementById(clear.key)).toBeNull();
+    expect(document.getElementById(regular.key)).not.toBeNull();
+    releaseSizedGlassLens(regular.key);
+    expect(sizedGlassLensCount()).toBe(before);
+  });
+
   it("acquire creates the def, equal sizes share it, release removes it", () => {
     const before = sizedGlassLensCount();
     const a = acquireSizedGlassLens(1200, 56)!;

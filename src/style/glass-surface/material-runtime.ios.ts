@@ -5,7 +5,7 @@ import { liquidGlassAvailable } from "./liquid-glass.js";
 
 interface FrostProps { intensity: number; tint: "light" | "dark"; style: StyleProp<ViewStyle> }
 interface LiquidProps {
-  glassEffectStyle: "regular";
+  glassEffectStyle: "regular" | "clear";
   isInteractive: boolean;
   tintColor?: string;
   colorScheme: "light" | "dark";

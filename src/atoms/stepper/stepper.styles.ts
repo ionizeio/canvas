@@ -42,6 +42,7 @@ const WEB_BTN_W: Record<Size, number> = { small: 32, base: 36, large: 40 };
 const WEB_FIELD_W: Record<Size, number> = { small: 48, base: 56, large: 64 };
 
 export const webSkin: StepperSkin = {
+  liquid: true,
   group: (t, size) => ({
     flexDirection: "row",
     alignItems: "stretch",

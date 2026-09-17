@@ -1,4 +1,4 @@
-import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
+import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { forwardRef, useId, useRef, useState } from "react";
 import { type Role, type TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from "react-native";
@@ -135,10 +135,12 @@ export function createPhoneInput(skin: PhoneInputSkin) {
     } = props;
     const isError = !!(props.error || props.invalid);
     const size = sizeOf(props);
-    const theme = useMaterialTheme({ static: true });
+    const entryMaterial = useTextEntryMaterial(!!skin.field.liquid);
+    const { theme } = entryMaterial;
     const { tokens } = theme;
-    // Under glass the box is a CONTROL-layer puck like the grouped Input: a GlassPane
-    // paints the material behind the country segment and the native input, the box
+    // GlassPane paints behind the country segment and editor. Clear web fields
+    // paint their active/error outline in the foreground, outside the lens's
+    // sampled backdrop. Native fields retain the original border owner. The box
     // keeps only its STATE border (focus, error) over it, an errored box tints the
     // pane, and the country segment's `muted` fill becomes an ink tint.
     const glass = isGlass(theme);
@@ -188,14 +190,14 @@ export function createPhoneInput(skin: PhoneInputSkin) {
     const ripple = field.ripple ? field.ripple(tokens) : undefined;
 
     const boxShape = field.groupContainer(tokens, borderColor, active, isError);
-    const glassBox: ViewStyle | null = glass ? { backgroundColor: "transparent", borderColor: active || isError ? tokens[borderColor] : "transparent" } : null;
+    const glassBox: ViewStyle | null = glass ? { backgroundColor: "transparent", borderColor: (active || isError) && !entryMaterial.foregroundStateBorder ? tokens[borderColor] : "transparent" } : null;
     const box = (
       <View
         ref={boxRef}
         onLayout={onBoxLayout}
         style={[paneStyle(theme, boxShape), { minHeight: field.groupedHeight(size) }, glassBox]}
       >
-        <GlassPane static layer="control" shape={boxShape} tint={isError ? alpha(tokens.destructive, 0.18) : undefined} />
+        <GlassPane {...entryMaterial.paneProps} shape={boxShape} tint={isError ? alpha(tokens.destructive, 0.18) : undefined} />
         <Pressable
           onPress={() => setOpen(!open)}
           disabled={!editable}
@@ -261,6 +263,7 @@ export function createPhoneInput(skin: PhoneInputSkin) {
             aria-describedby={props["aria-describedby"]}
           />
         </View>
+        {entryMaterial.stateBorder(boxShape, active || isError)}
       </View>
     );
 

@@ -30,6 +30,8 @@ export interface GlassSurfaceProps {
   layer?: GlassLayer;
   /** Stable frost independent of density. Content defaults to static material. */
   static?: boolean;
+  /** Clear refractive material with restrained tint and minimal frost. */
+  clear?: boolean;
   /**
    * Tint the material with a colour: the brand-tinted glass of a primary control (a
    * sky-tinted puck). On iOS 26 it is passed to the native Liquid Glass as its
@@ -172,6 +174,12 @@ export const GLASS_INTENSITY = 80;
 // so the same blur would flatten the backdrop to a wash; the lighter blur lets the
 // aurora keep some shape through the pane.
 export const CONTENT_INTENSITY = 64;
+export const CLEAR_INTENSITY = 4;
+
+/** A clear surface retains a light neutral veil while letting the backdrop read. */
+export function clearSurfaceTint(tokens: ColorTokens, dark: boolean): string {
+  return alpha(tokens.card, dark ? 0.28 : 0.22);
+}
 
 // The alpha at which a `brand` colour becomes the under-fill of a brand-tinted puck on
 // the lens and frost paths: as sheer as legibility allows. The puck carries the brand's

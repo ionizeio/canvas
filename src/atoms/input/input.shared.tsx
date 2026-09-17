@@ -1,4 +1,4 @@
-import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
+import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { useInputEscapeBridge } from "../../style/escape-layer.js";
 import { forwardRef, useId, useRef, useState } from "react";
 import {
@@ -216,12 +216,11 @@ export function createInput(skin: InputSkin) {
     const [focused, setFocused] = useState(false);
     // The password toggle's own state: masked until the eye is pressed.
     const [revealed, setRevealed] = useState(false);
-    const theme = useMaterialTheme({ static: true, layer: "control" });
+    const { theme, paneProps, foregroundStateBorder, stateBorder } = useTextEntryMaterial(!!skin.liquid);
     const { tokens } = theme;
-    // Under glass the field box is a static pane at control density: a GlassPane paints the
-    // material behind the native input, the box keeps only its STATE border (focus
-    // ring, error) over it, and an errored box tints the pane with the destructive
-    // hue instead of painting the skin's wash. Solid mode is untouched.
+    // GlassPane paints behind the editor. A grouped clear web field moves its
+    // focus/error outline above the material so the lens cannot sample it.
+    // Bare editors and native fields retain their existing state-border owner.
     const glass = isGlass(theme);
     const onKeyPress = useInputEscapeBridge(props.onKeyPress);
     const widthCap = useFillStyle("Input", props);
@@ -353,7 +352,7 @@ export function createInput(skin: InputSkin) {
       const bareStyle = [paneStyle(theme, bareShape), skin.bareBox(size), text, FOCUS_RESET, glass ? glassBox : null];
       const disabledDim = disabled ? { opacity: skin.disabledOpacity } : null;
       // The puck behind a bare field (nothing in solid mode).
-      const barePane = <GlassPane static layer="control" shape={bareShape} tint={paneTint} />;
+      const barePane = <GlassPane {...paneProps} shape={bareShape} tint={paneTint} />;
 
       // Android M3 floating label: the field reserves top space for the floated
       // label, the animated label overlays it, and the placeholder is gated to the
@@ -438,12 +437,13 @@ export function createInput(skin: InputSkin) {
           paneStyle(theme, groupShape),
           { minHeight: height },
           glass ? glassBox : null,
+          foregroundStateBorder ? { borderColor: "transparent" } : null,
           above ? null : disabled ? { opacity: skin.disabledOpacity } : null,
           above ? null : widthCap,
           above ? null : style,
         ]}
       >
-        <GlassPane static layer="control" shape={groupShape} tint={paneTint} />
+        <GlassPane {...paneProps} shape={groupShape} tint={paneTint} />
         {prefix != null ? (
           <View style={withInnerFill(theme, skin.addonBox(tokens, "left", state), "soft")}>
             <Text style={[skin.addonText(tokens), text]}>{prefix}</Text>
@@ -528,6 +528,7 @@ export function createInput(skin: InputSkin) {
             </View>
           )
         ) : null}
+        {stateBorder(groupShape, focused || isError)}
       </View>
     );
 

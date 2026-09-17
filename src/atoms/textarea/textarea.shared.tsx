@@ -1,4 +1,4 @@
-import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
+import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { useInputEscapeBridge } from "../../style/escape-layer.js";
 import { forwardRef, useId, useState } from "react";
 import { type TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from "react-native";
@@ -14,6 +14,23 @@ const LABEL_GAP: ViewStyle = { gap: 6 };
 // 4px gap from the control. The count line is part of the component's own
 // anatomy (the component owns its layout + type), never a call-site shim.
 const COUNT_ROW: ViewStyle = { flexDirection: "row", justifyContent: "flex-end", marginTop: 4 };
+
+const FLUSH_SHAPE: TextStyle = {
+  borderWidth: 0,
+  borderTopWidth: 0,
+  borderBottomWidth: 0,
+  borderLeftWidth: 0,
+  borderRightWidth: 0,
+  borderRadius: 0,
+  borderTopLeftRadius: 0,
+  borderTopRightRadius: 0,
+  borderBottomLeftRadius: 0,
+  borderBottomRightRadius: 0,
+  borderTopStartRadius: 0,
+  borderTopEndRadius: 0,
+  borderBottomStartRadius: 0,
+  borderBottomEndRadius: 0,
+};
 
 // Read a numeric style value (the resolved min height), falling back when absent.
 const asNum = (v: unknown, fallback: number): number => (typeof v === "number" ? v : fallback);
@@ -102,10 +119,11 @@ export function createTextarea(skin: TextareaSkin) {
     const { value, onChangeText, placeholder, label, required, rows, disabled, flush, showCount, style } = props;
     const size = sizeOf(props);
     const [focused, setFocused] = useState(false);
-    const theme = useMaterialTheme({ static: true, layer: "control" });
+    const entryMaterial = useTextEntryMaterial(!!skin.liquid);
+    const { theme } = entryMaterial;
     const { tokens } = theme;
-    // Under glass the field box is a static pane at control density (see input.shared.tsx): a
-    // GlassPane behind the native input, the box keeping only its state border.
+    // The platform skin selects the text-entry material. The editor keeps its
+    // state border and foreground above the decorative material.
     const glass = isGlass(theme);
     const onKeyPress = useInputEscapeBridge(props.onKeyPress);
     // FILL: the field takes the bounds its parent provides; a flush textarea sits
@@ -208,19 +226,17 @@ export function createTextarea(skin: TextareaSkin) {
     // The base field surface, shared by every path (width/style/disabled dim move
     // to the wrapper in the labeled paths so the label dims with the field). Typed
     // as an array (not StyleProp) so the floating path can spread it with the reserve.
-    const fieldShape = skin.field(tokens, { error: isError, focused });
-    const fieldPane = <GlassPane static layer="control" shape={fieldShape} tint={isError ? alpha(tokens.destructive, 0.18) : undefined} />;
+    const fieldShape = {
+      ...skin.field(tokens, { error: isError, focused }),
+      // Flush material shares the editor's square, borderless shape.
+      ...(flush ? FLUSH_SHAPE : null),
+    };
+    const fieldPane = <GlassPane {...entryMaterial.paneProps} shape={fieldShape} tint={isError ? alpha(tokens.destructive, 0.18) : undefined} />;
     const fieldStyle: StyleProp<TextStyle>[] = [
       paneStyle(theme, fieldShape),
       glass ? { ...PANE_SIBLING_INPUT, backgroundColor: "transparent", borderColor: focused || isError ? (fieldShape.borderColor as string) : "transparent" } : null,
       skin.text ? skin.text(size) : sizeText(size),
       minHeight(rows),
-      // Flush: strip the field's own border + radius so it sits flush inside a
-      // framed container (a toolbar Card). Zero every edge so it works whether
-      // the skin draws a full border or a bottom underline.
-      flush
-        ? { borderWidth: 0, borderTopWidth: 0, borderBottomWidth: 0, borderLeftWidth: 0, borderRightWidth: 0, borderRadius: 0 }
-        : null,
       FOCUS_RESET,
     ];
     const disabledDim = disabled ? { opacity: 0.5 } : null;

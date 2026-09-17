@@ -159,6 +159,7 @@ const WEB_RADIUS = shape.web.field;
 const WEB_SIZE: Record<Size, number> = { small: 40, base: 48, large: 56 };
 
 export const webSkin: InputOTPSkin = {
+  liquid: true,
   gap: () => 0,
   connected: true,
   cell: (t, size, { active, groupStart, groupEnd }) => {

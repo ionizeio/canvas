@@ -8,6 +8,8 @@ import { Badge } from "../src/atoms/badge/badge.tsx";
 import { Chip } from "../src/atoms/chip/chip.tsx";
 import { Checkbox } from "../src/atoms/checkbox/checkbox.tsx";
 import { Input } from "../src/atoms/input/input.tsx";
+import { Input as InputIOS } from "../src/atoms/input/input.ios.tsx";
+import { Input as InputAndroid } from "../src/atoms/input/input.android.tsx";
 import { Textarea } from "../src/atoms/textarea/textarea.tsx";
 import { Kbd } from "../src/atoms/kbd/kbd.tsx";
 import { Radio } from "../src/atoms/radio/radio.tsx";
@@ -47,29 +49,45 @@ const materials = (root: ParentNode) => [...root.querySelectorAll<HTMLElement>("
 const mode = (children: ReactNode, glass: boolean) => <ThemeProvider light glass={glass} solid={!glass}>{children}</ThemeProvider>;
 
 describe("atom surface roles and capability fallback", () => {
-  it("keeps editing wells and inline metadata solid when only liquid refraction is available", () => {
+  it("uses liquid for web fields while native wells and metadata remain solid when frost is unavailable", () => {
     capabilities({ lens: true, frost: false });
     render(mode(<>
       <Input label="Name" testID="name" />
+      <InputIOS label="iOS name" testID="ios-name" />
+      <InputAndroid label="Android name" testID="android-name" />
       <Badge testID="badge">Member</Badge>
       <Checkbox testID="check" defaultChecked>Consent</Checkbox>
       <Button primary testID="action">Save</Button>
     </>, true));
-    expect(materials(screen.getByTestId("name").parentElement!)).toHaveLength(0);
+    expect(materials(screen.getByTestId("name").parentElement!)).toHaveLength(1);
+    for (const id of ["ios-name", "android-name"]) {
+      expect(materials(screen.getByTestId(id).parentElement!)).toHaveLength(0);
+      expect(screen.getByTestId(id).style.backgroundColor).not.toContain("0.00");
+    }
     expect(materials(screen.getByTestId("badge"))).toHaveLength(0);
     expect(materials(screen.getByTestId("check"))).toHaveLength(0);
     expect(materials(screen.getByTestId("action"))).toHaveLength(1);
-    expect(screen.getByTestId("name").style.backgroundColor).not.toContain("0.00");
     expect(screen.getByTestId("badge").style.backgroundColor).not.toBe("");
   });
 
-  it("uses stable frost for wells even on a browser that supports the liquid lens", () => {
-    capabilities({ lens: true, frost: true });
-    render(mode(<Input label="Name" testID="name" />, true));
-    const painted = materials(screen.getByTestId("name").parentElement!);
-    expect(painted).toHaveLength(1);
-    expect(painted[0].style.backdropFilter).toMatch(/^blur\(/);
-    expect(painted[0].style.backdropFilter).not.toContain("url(");
+  it("keeps web fields clear and native appearance wells frosted on a frost-only browser", () => {
+    capabilities({ lens: false, frost: true });
+    render(mode(<>
+      <Input label="Name" testID="name" />
+      <InputIOS label="iOS name" testID="ios-name" />
+      <InputAndroid label="Android name" testID="android-name" />
+    </>, true));
+    const blur = (id: string) => {
+      const painted = materials(screen.getByTestId(id).parentElement!);
+      expect(painted).toHaveLength(1);
+      expect(painted[0].style.backdropFilter).toMatch(/^blur\(/);
+      expect(painted[0].style.backdropFilter).not.toContain("url(");
+      return Number(painted[0].style.backdropFilter.match(/^blur\(([\d.]+)/)![1]);
+    };
+    const clear = blur("name");
+    expect(clear).toBeGreaterThan(0);
+    expect(clear).toBeLessThan(blur("ios-name"));
+    expect(clear).toBeLessThan(blur("android-name"));
   });
 
   it("preserves complete solid fill and boundaries when no material can render", () => {

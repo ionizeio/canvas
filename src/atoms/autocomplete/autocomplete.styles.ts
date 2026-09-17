@@ -30,6 +30,8 @@ export type Size = "small" | "default" | "large";
 // objects. The skin owns shape, fill, border/underline, popover elevation, the
 // row layout, and the press-feedback channel (iOS/web opacity vs Android ripple).
 export interface AutocompleteSkin extends FloatingLabelStyles<Size> {
+  /** Clear Liquid Glass text entry on the web appearance. */
+  liquid?: boolean;
   /** Type scale per size; the field text and the option rows share it. */
   text: (size: Size) => TextStyle;
   /** Stacked (above-field) label type, used on iOS + web (`floatingLabel: false`).
@@ -113,6 +115,7 @@ const WEB_FIELD_BOX: Record<Size, number> = { small: 40, default: 48, large: 56 
 
 // ---------- Web: the Riskora dashboard field + menu ----------
 export const webSkin: AutocompleteSkin = {
+  liquid: true,
   text: webText,
   label: (t, size) => ({ marginBottom: 6, fontWeight: "500", color: t.foreground, ...TEXT_SIZE[size] }),
   field: (t, size) => ({

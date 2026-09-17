@@ -37,6 +37,8 @@ export interface TextareaFieldState {
 // `minHeight` are shared (the brand type scale and the rows math are identical
 // across platforms), so the shell composes them around the skin.
 export interface TextareaSkin extends FloatingLabelStyles<Size> {
+  /** Clear Liquid Glass text entry on the web appearance. */
+  liquid?: boolean;
   field: (tokens: ColorTokens, state: TextareaFieldState) => TextStyle;
   /** The value's type scale per size; a skin that omits it reads the shared `sizeText`. */
   text?: (size: Size) => TextStyle;
@@ -91,6 +93,7 @@ export function minHeight(rows?: number): TextStyle {
 // border, 16px inset, with the foreground text color. Border resolves error >
 // focus(ring) > the resting `field-border` hairline (see src/style/field-colors.ts).
 export const webSkin: TextareaSkin = {
+  liquid: true,
   field: (t, st) => ({
     width: "100%",
     borderRadius: shape.web.field,

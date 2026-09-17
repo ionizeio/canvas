@@ -36,6 +36,8 @@ export interface FieldState {
 // them to RN style objects. `borderColor` is a token key (error > focus > input)
 // the shell already resolved; the skin reads tokens[borderColor].
 export interface InputSkin extends FloatingLabelStyles<Size> {
+  /** Clear material for the web skin. */
+  liquid?: boolean;
   /** Type scale per size; the field and its addons share it so they line up. */
   text: (t: ColorTokens, size: Size) => TextStyle;
   /** Height of the single-line bare field. */
@@ -103,6 +105,7 @@ function fieldEdge(t: ColorTokens, borderColor: keyof ColorTokens): string {
 }
 
 export const webSkin: InputSkin = {
+  liquid: true,
   text: webText,
   bareBox: (size) => ({ height: size === "large" ? 56 : size === "small" ? 40 : 48 }),
   groupedHeight: (size) => (size === "large" ? 56 : size === "small" ? 40 : 48),

@@ -8,15 +8,15 @@ import { NativeCaptureFrost } from "./capture-runtime.js";
 import { useReadyCaptureTarget, useCaptureDemand } from "./capture-target.js";
 import { resolveMaterial } from "./material-resolution.js";
 import {
-  GlassBox, contrastBorder, frostMethodProps, specularRim, GlassBlurTargetContext,
+  GlassBox, CLEAR_INTENSITY, clearSurfaceTint, contrastBorder, frostMethodProps, specularRim, GlassBlurTargetContext,
   SHEER_FILL_OPACITY, materialFill, surfaceUnderFill, surfaceIntensity, type GlassSurfaceProps,
 } from "./glass-surface.shared.js";
 
 const EMPTY_TARGET = { current: null };
 
-function GlassLensLayer({ style }: { style: StyleProp<ViewStyle> }) {
+function GlassLensLayer({ style, clear }: { style: StyleProp<ViewStyle>; clear?: boolean }) {
   const [size, setSize] = useState({ w: 0, h: 0 });
-  const filter = useSizedGlassLens(size.w, size.h);
+  const filter = useSizedGlassLens(size.w, size.h, clear);
   const onLayout = (e: LayoutChangeEvent) => {
     const w = Math.round(e.nativeEvent.layout.width);
     const h = Math.round(e.nativeEvent.layout.height);
@@ -29,20 +29,20 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const theme = useTheme();
   const requestedTarget = useContext(GlassBlurTargetContext);
   const target = useReadyCaptureTarget(requestedTarget);
-  const { layer = "functional", sheer, tint, brand, style } = props;
+  const { layer = "functional", sheer, tint, brand, style, clear } = props;
   const resolved = resolveMaterial(theme, props, materialCapabilities(), target !== null);
   const solid = resolved.renderer === "solid";
   useCaptureDemand(requestedTarget ?? EMPTY_TARGET, !solid && NativeCaptureFrost !== undefined);
   // Sheer is a content-only treatment. It must never thin a menu or error verdict.
   const translucent = sheer && layer === "content";
-  const intensity = surfaceIntensity(layer, translucent);
+  const intensity = clear ? CLEAR_INTENSITY : surfaceIntensity(layer, translucent);
   const fill = materialFill(style);
-  const frost = `blur(${intensity * 0.2}px) saturate(150%)`;
+  const frost = `blur(${intensity * 0.2}px) saturate(${clear ? 115 : 150}%)`;
   const nativeCapture = NativeCaptureFrost !== undefined && target !== null && !solid;
-  const tintLayer = <View style={[fill, { backgroundColor: surfaceUnderFill(theme.glass, layer, brand, tint, theme.tokens.background), opacity: translucent ? SHEER_FILL_OPACITY : 1 }]} />;
+  const tintLayer = <View style={[fill, { backgroundColor: surfaceUnderFill(theme.glass, layer, brand, tint ?? (clear && brand == null ? clearSurfaceTint(theme.tokens, theme.dark) : undefined), theme.tokens.background), opacity: translucent ? SHEER_FILL_OPACITY : 1 }]} />;
   const material = solid ? null : <>
     {nativeCapture ? null : tintLayer}
-    {resolved.renderer === "lens" ? <GlassLensLayer style={fill} />
+    {resolved.renderer === "lens" ? <GlassLensLayer style={fill} clear={clear} />
       : Platform.OS === "web" ? <View style={[fill, { backdropFilter: frost, WebkitBackdropFilter: frost } as ViewStyle]} />
       : NativeCaptureFrost && target ? <NativeCaptureFrost targetRef={target} intensity={intensity} tint={theme.dark ? "dark" : "light"} style={fill} />
       : FrostView ? <FrostView intensity={intensity} tint={theme.dark ? "dark" : "light"} {...frostMethodProps(requiresBlurTarget, target)} style={fill} /> : null}

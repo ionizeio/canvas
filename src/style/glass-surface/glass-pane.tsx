@@ -19,6 +19,8 @@ export interface GlassPaneProps {
   layer?: GlassLayer;
   /** Stable frost independent of control/content density. */
   static?: boolean;
+  /** Clear refraction with minimal frost instead of the usual material haze. */
+  clear?: boolean;
   /** The parent's shape style: its corner radii shape the pane's clip and rim. */
   shape?: StyleProp<ViewStyle>;
   /** A `tint` override for the under-fill (see GlassSurface). */
@@ -31,7 +33,7 @@ export interface GlassPaneProps {
   testID?: string;
 }
 
-export function GlassPane({ layer = "control", shape, tint, brand, interactive, testID, static: stable }: GlassPaneProps) {
+export function GlassPane({ layer = "control", shape, tint, brand, interactive, testID, static: stable, clear }: GlassPaneProps) {
   const theme = useTheme();
   if (!isGlass(theme)) return null;
   const flat = (StyleSheet.flatten(shape) ?? {}) as ViewStyle;
@@ -54,7 +56,7 @@ export function GlassPane({ layer = "control", shape, tint, brand, interactive, 
   for (const [key, value] of Object.entries(flat)) {
     if (key.startsWith("border")) (radii as Record<string, unknown>)[key] = value;
   }
-  return <GlassSurface static={stable} layer={layer} tint={tint} brand={brand} interactive={interactive} pointerEvents="none" testID={testID} style={[StyleSheet.absoluteFill, radii, { zIndex: -1 }]} />;
+  return <GlassSurface static={stable} clear={clear} layer={layer} tint={tint} brand={brand} interactive={interactive} pointerEvents="none" testID={testID} style={[StyleSheet.absoluteFill, radii, { zIndex: -1 }]} />;
 }
 
 /**
