@@ -165,13 +165,14 @@ export default function ThemingScreen() {
 
         <Section title="Glass Surface">
           <P>
-            Following Apple's Liquid Glass model, glass is the material for the functional layer, and for the floating shells and
-            overlays inside it: popovers, dialogs, action sheets, the command palette, navbars, tab bars and the sidebar read as
-            glass, while content surfaces (cards, lists, tables) stay solid ("don't use glass in the content layer"). The option-list
-            menus opt out too: a dropdown, select, autocomplete or avatar menu stays an opaque card, and so do alert dialogs, toasts
-            and chart tooltips, because a surface whose rows you read and act on has to stay legible over whatever it opens over. It
-            is a theming-level switch (the ThemeProvider turns on the material's own glass-tint fill and rewrites no semantic
-            token), not a per-component prop. The glass surfaces render through Canvas's GlassSurface primitive, which paints the real material per
+            Glass is a layered model. Every surface renders through the same material, and each layer has its own under-fill so the
+            stack stays legible: the functional layer (navbars, tab bars, the sidebar, dialogs, action sheets, drawers, popovers, the
+            command palette) takes the sheer tint; the content layer (cards, lists, tables, calendars, charts, alerts) takes a denser
+            one so its text keeps its contrast; the controls (fields, buttons, tabs, chips, badges, switches, checkboxes) are bright
+            glass pucks, brand-tinted where their fill is the brand; and the surfaces you read and act on (dropdowns, selects, row
+            menus, alert dialogs, toasts, tooltips) take the densest tint so nothing reads through their rows. It is a theming-level
+            switch (the ThemeProvider turns on the material's own layer fills and rewrites no semantic token), not a per-component
+            prop. Every surface renders through Canvas's GlassSurface primitive, which paints the real material per
             platform: Apple's native Liquid Glass on iOS 26+ (via expo-glass-effect), a real lens on Chromium browsers (an SVG
             displacement filter that refracts the backdrop at the rim, where the glass bends most; the centre stays optically flat), a
             genuine frosted blur on non-Chromium web and Android (via expo-blur), and a translucent fallback when no material is
@@ -192,10 +193,10 @@ export default function ThemingScreen() {
           </Row>
           <H3>What changes</H3>
           <Column tight>
-            <Bullet>The glass surfaces (popovers, dialogs, action sheets, the command palette, navbars, tab bars, the sidebar) render the material via GlassSurface: native Liquid Glass on iOS 26+, an SVG displacement lens on Chromium web, a frosted blur elsewhere on web and on Android; content cards, lists, and tables stay solid</Bullet>
-            <Bullet>No semantic token changes: popover and card keep the same opaque values they carry in solid mode. Glass adds its own fill, glass-tint, painted under the material by the surfaces that take it</Bullet>
-            <Bullet>The option-list menus (dropdown, select, autocomplete, avatar menu), alert dialogs, toasts and chart tooltips stay opaque in glass mode. A menu is a card of rows the reader picks from, and the Chromium lens keeps the centre of a pane optically flat by design, so a translucent menu shows the page straight through between its rows</Bullet>
-            <Bullet>Glass surfaces drop their skin border and the material paints its own white-alpha specular rim</Bullet>
+            <Bullet>Every surface renders the material via GlassSurface (or a GlassPane behind a node that owns its own interaction): native Liquid Glass on iOS 26+, an SVG displacement lens on Chromium web, a frosted blur elsewhere on web and on Android; the layer it belongs to sets how dense its tint is</Bullet>
+            <Bullet>No semantic token changes: popover and card keep the same opaque values they carry in solid mode. Glass adds its own fills, glass-tint, glass-tint-content, glass-tint-control and glass-tint-dense, painted under the material by the surfaces of each layer</Bullet>
+            <Bullet>A brand fill (a primary button, a checked switch, a selected tab) is brand-tinted glass kept as sheer as its ink's 4.5:1 allows; a hue wash (a status badge, a coloured chip) steps its label one deeper; fills inside a surface (a hovered row, a header band) become ink tints so they never sit as opaque patches on the material</Bullet>
+            <Bullet>Surfaces drop their skin fill and hairline and the material paints its own white-alpha specular rim; a state border (a focus ring, an error edge) stays</Bullet>
             <Bullet>The page background does not change by itself; these docs mount the kit's Backdrop scene behind the shell in glass mode so the frost has something to refract, an app-level choice</Bullet>
           </Column>
           <H3>Web helpers</H3>

@@ -288,8 +288,8 @@ export default function ColorsScreen() {
 
         <TokenSection
           title="Glass"
-          description="Glass is a theming-level surface mode, not a per-component prop: pass glass on the ThemeProvider and the floating shells and overlays take the material together, or solid to force the flat look; neither means the platform default."
-          anatomy={`Glass publishes its OWN fill instead of rewriting a semantic one: the material paints glass-tint, ${glassByScheme.light["glass-tint"]} in light and ${glassByScheme.dark["glass-tint"]} in dark. popover keeps its opaque value in BOTH schemes, so an option-list menu, a select panel, an alert dialog, a toast and a chart tooltip stay the same opaque cards in glass mode as in solid; card stays opaque too, so content surfaces (cards, lists, tables, charts) never frost. Only the surfaces that render through GlassSurface (popovers, dialogs, drawers, action sheets, the command palette, navbars, tab bars, the sidebar) take the tint, and they take it UNDER the real material.`}
+          description="Glass is a theming-level surface mode, not a per-component prop: pass glass on the ThemeProvider and every surface takes the material together, layered, or solid to force the flat look; neither means the platform default."
+          anatomy={`Glass publishes its OWN fills instead of rewriting a semantic one, one per layer of the model: the functional shells paint glass-tint (${glassByScheme.light["glass-tint"]} in light, ${glassByScheme.dark["glass-tint"]} in dark), the content panes the denser glass-tint-content (${glassByScheme.light["glass-tint-content"]} / ${glassByScheme.dark["glass-tint-content"]}), the controls the bright glass-tint-control puck (${glassByScheme.light["glass-tint-control"]} / ${glassByScheme.dark["glass-tint-control"]}), and the read-and-act surfaces (menus, alert dialogs, toasts, tooltips) the densest glass-tint-dense (${glassByScheme.light["glass-tint-dense"]} / ${glassByScheme.dark["glass-tint-dense"]}). popover and card keep their opaque values in BOTH schemes, so solid mode is untouched and the fills stay independent; every surface takes its tint UNDER the real material.`}
         >
           <Column cozy>
             {/* A live material sample: the bar floats over content, which is the only
@@ -331,7 +331,7 @@ export default function ColorsScreen() {
               </GlassSurface>
             </GradientFill>
             <Typography tiny muted>
-              Glass forms a distinct functional layer that floats above content. Navigation and overlays live in it; content surfaces stay solid. Spend it sparingly: the material exists to draw attention to what is beneath it, so using it everywhere defeats it.
+              Glass is layered. Navigation and overlays float in the sheer functional layer; the content panes beneath them take a denser tint so text keeps its contrast; the controls on those panes are bright pucks, brand-tinted where their fill is the brand; and the surfaces you read and act on (a menu, an alert, a toast) take the densest tint so nothing reads through their rows. Each layer bends the one beneath it.
             </Typography>
             <Typography tiny muted>
               GlassSurface paints the real material per platform: Apple's Liquid Glass through expo-glass-effect on iOS 26+, a real lens on Chromium web (an SVG displacement filter that refracts the backdrop at the rim while the centre stays optically flat), a genuine frosted blur through expo-blur on non-Chromium web and Android, and the glass-tint fill above on its own as the final fallback. It is never a hand-painted blur on one component, and it never reaches into the semantic color set.
@@ -340,7 +340,7 @@ export default function ColorsScreen() {
               It only reads over something worth bending. Over a flat fill it renders flat, so a glass bar has to have content passing behind it.
             </Typography>
             <Typography tiny muted>
-              The option-list menus are the deliberate exception. A dropdown, select, autocomplete or avatar menu is a card of rows the reader picks from, and the Chromium lens keeps the centre of a pane optically flat by design, so a translucent menu shows the page straight through between its rows. Those, plus alert dialogs, toasts and chart tooltips, keep painting their opaque fill in glass mode exactly as in solid.
+              Fills inside a surface (a hovered row, a header band, a code pill) become ink tints under glass so they never sit as opaque patches on the material, and the inverse surfaces (a tooltip bubble, the Material snackbar) tint with the ink at the dense alpha so their inverse text keeps its contrast. Under Reduce Transparency or Increase Contrast every layer degrades to its opaque token.
             </Typography>
           </Column>
         </TokenSection>

@@ -1,5 +1,6 @@
 import { type ReactNode } from "react";
-import { View, Text, Column, useTheme } from "@ionizeio/canvas";
+import { View, Text, Column, useTheme, type StyleProp, type ViewStyle } from "@ionizeio/canvas";
+import { DocsSurface } from "./surface";
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
 import { sans, geistMono } from "./fonts";
 import { alpha } from "./color";
@@ -71,10 +72,11 @@ export function TokenSection({ title, description, anatomy, children }: {
 // A monospace inline pill — `.code` chip: muted fill, bordered, radius-sm.
 export function Chip({ children }: { children: ReactNode }) {
   const { tokens } = useTheme();
+  // A docs content surface under glass (the muted pill takes the pane material).
   return (
-    <View style={{ borderRadius: 4, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.muted, paddingHorizontal: 7, paddingVertical: 2 }}>
+    <DocsSurface fill="muted" style={{ borderRadius: 4, borderWidth: 1, borderColor: tokens.border, paddingHorizontal: 7, paddingVertical: 2 }}>
       <Text style={{ fontFamily: geistMono("400"), fontSize: 11.5, color: tokens.foreground }}>{children}</Text>
-    </View>
+    </DocsSurface>
   );
 }
 
@@ -132,10 +134,10 @@ export function Grid({ children, cols, gap = 16 }: { children: ReactNode[]; cols
 // A bordered card surface (radius-xl 12, border, card bg, padding) used by the
 // typography font cards, "how theming works" code cards, etc.
 export function Surface({ children, padding = 20, style }: { children: ReactNode; padding?: number; style?: object }) {
-  const { tokens } = useTheme();
+  // The docs content pane (glass under glass, the opaque card in solid mode).
   return (
-    <View style={[{ borderRadius: 12, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding }, style]}>
+    <DocsSurface bordered style={[{ padding }, style as StyleProp<ViewStyle>]}>
       {children}
-    </View>
+    </DocsSurface>
   );
 }

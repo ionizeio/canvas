@@ -213,34 +213,76 @@ light/dark scheme, and the `ThemeProvider` spells it in the same boolean grammar
 every component axis: `<ThemeProvider glass>` forces it on (the lens or frost
 material on non-iOS-26 platforms), `<ThemeProvider solid>` forces the flat look, and passing neither
 resolves to the PLATFORM DEFAULT: **glass on iOS 26+** (Apple makes Liquid Glass the
-system material for the functional layer there, so a Canvas app matches the OS), and
-**solid everywhere else** (web, Android, iOS < 26, Reduce Transparency). `glass`
-wins if both are passed. The legacy `surface="solid" | "glass"` value prop remains
-supported for config-driven code holding a `Surface` value, and on the web the DOM
-helper is `setSurface("glass")` / `setSurface("solid")`. The scheme axis speaks the
-same grammar: `<ThemeProvider dark>` / `<ThemeProvider light>` force a scheme
-(`dark` wins if both are passed), omitting both follows the OS appearance, and the
-legacy `scheme` value prop is likewise supported. The platform default is computed from
-`liquidGlassAvailable()` (exported from the kit). Following Apple's Liquid Glass model,
-glass is the material for the FUNCTIONAL layer only: overlays (popovers, menus,
-dropdowns, selects, autocompletes, dialogs, alert dialogs, sheets, drawers, command)
-and the bar/sidebar shells (navbars, sidebar) read as glass. The `card` token stays
-SOLID, so content surfaces (cards, lists, tables, calendars, charts) do NOT go glass
-(Apple: "don't use Liquid Glass in the content layer").
+system material there, so a Canvas app matches the OS), and **solid everywhere else**
+(web, Android, iOS < 26, Reduce Transparency). `glass` wins if both are passed. The
+legacy `surface="solid" | "glass"` value prop remains supported for config-driven code
+holding a `Surface` value, and on the web the DOM helper is `setSurface("glass")` /
+`setSurface("solid")`. The scheme axis speaks the same grammar: `<ThemeProvider dark>` /
+`<ThemeProvider light>` force a scheme (`dark` wins if both are passed), omitting both
+follows the OS appearance, and the legacy `scheme` value prop is likewise supported.
+The platform default is computed from `liquidGlassAvailable()` (exported from the kit).
 
-Those functional-layer surfaces render through the shared `GlassSurface` primitive
+Under glass EVERY surface renders through the material, layered. The model has four
+layers, each with its own under-fill token (`glass-tint*` in `src/style/tokens.ts`,
+`--glass-tint*` in `styles/tokens/colors.css`), from sheer to dense:
+
+- **Functional** (`glass-tint`, the sheer tint): the floating shells and overlays,
+  Navbar, TabBar, Sidebar, Dialog, ActionSheet, Drawer, Popover, Command, the
+  calendar peek, and a Tabs track. They float above everything else.
+- **Content** (`glass-tint-content`, denser, "legible first"): the panes, Card,
+  DataTable, the lists, feeds, stats, description lists, grid-list tiles, board
+  columns, calendars, code blocks, carousels, alerts, empty states, the charts, the
+  bordered FilterPanel, and the docs stage. A tinted pane (a selected Card, a toned
+  Alert) passes a `tint`.
+- **Control** (`glass-tint-control`, the bright "puck"): every control that paints a
+  surface of its own, the field boxes (Input, Textarea, Select, Autocomplete,
+  PhoneInput, Stepper, InputOTP), Button, ButtonGroup, Tabs pills, Pagination cells,
+  Chip, Badge, Kbd, Switch tracks, Checkbox boxes, Radio rings, Progress rails, Steps
+  circles, the Slider knob, the Avatar. A BRAND fill (a primary or destructive Button,
+  a checked Switch or Checkbox, a selected tab, page, day or step) is brand-tinted
+  glass: `brand={tokens.primary}`, whose under-fill `brandTint` keeps as sheer as its
+  ink's WCAG 4.5:1 allows (on iOS 26 it is the GlassView's own `tintColor`). A HUE
+  wash (a status Badge, a coloured Chip) is the hue's 500 step at `HUE_WASH` with the
+  label one step deeper than the solid recipe. A control with no surface of its own
+  (a ghost or link Button, the iOS pagination chevrons) stays bare.
+- **Dense** (`glass-tint-dense`, the densest tint): the surfaces a user reads and
+  acts on, the option lists (Dropdown, Select, Autocomplete, RowMenu, the SplitButton
+  overflow, the PhoneInput country list, AvatarMenu), AlertDialog, Toast, Tooltip, the
+  chart value flag. AnchoredOverlay selects it with `dense`. The two INVERSE surfaces
+  (the Tooltip bubble, the M3 snackbar) take `inverseDenseTint`, the ink at the dense
+  alpha, so their inverse text keeps its contrast.
+
+Those surfaces render through the shared `GlassSurface` primitive
 (`src/style/glass-surface`), which paints the active material per platform: Apple's
 real native Liquid Glass via `expo-glass-effect` on iOS 26+, a real LENS on Chromium
 web (an SVG displacement filter applied as the material's backdrop-filter, refraction
 concentrated at the rim; `glass-lens.ts`, no module needed), a genuine frosted blur
-via `expo-blur` on non-Chromium web, Android, and iOS < 26, and the translucent
-`popover` fill as a fallback when no material is available. So glass mode IS real iOS
-Liquid Glass on iOS, a real lens on Chromium web, and a real frost elsewhere, not a
-per-component effect.
+via `expo-blur` on non-Chromium web, Android, and iOS < 26, and the layer's tint fill
+as a fallback when no material is available. Pass it the skin's shape style (it
+strips the fill and border and supplies the material) and its `layer`. Where the node
+that paints the surface also owns something else (a Pressable's tap, ripple and dim,
+a live region, a native TextInput), keep that node and render a `GlassPane` (the same
+material as a sibling BEHIND its content, `layer` + `shape` + optional `tint` /
+`brand`) as its first child, with `paneStyle` dropping the node's own fill and border
+under glass; a TextInput beside a pane takes `PANE_SIBLING_INPUT`. Fills INSIDE a
+glass surface (a hovered or selected row, a header band, a stripe, a code pill, a
+placeholder) go through `innerFill` / `withInnerFill`, which turn the opaque `muted` /
+`secondary` / `accent` roles into ink tints under glass so they never sit as opaque
+patches on the material. A state border (a focus ring, an error edge, an open
+trigger, the current step) stays over the pane; a resting hairline drops, the
+material's rim is the edge. In solid mode every one of these renders nothing extra:
+`GlassSurface` is the plain box, `GlassPane` renders null, `paneStyle` and the inner
+fills return the skin's own style, so the solid tree is byte-identical to the
+pre-glass one. Under Reduce Transparency or Increase Contrast every layer degrades to
+its opaque token (`styles/tokens/surface.css` and the accessibility ladder in
+`glass-surface.shared.tsx`).
+
 Do not add a per-component `glass` prop and do NOT hand-paint glass (backdrop-filter,
-specular edges) onto individual components: route any new functional-layer surface
-through `GlassSurface` (pass it the skin's shape style; it strips the fill and
-supplies the material), and leave content-layer surfaces solid.
+specular edges, a translucent fill of your own) onto individual components: route a
+new surface through `GlassSurface` or `GlassPane` with the layer it belongs to, and
+its inner fills through `innerFill`. `test/glass-tint.test.tsx`,
+`test/glass-controls.test.tsx` and `test/dense-overlays.test.tsx` pin the layers, the
+legibility floors and the solid-mode byte identity.
 
 ### Conflicts
 

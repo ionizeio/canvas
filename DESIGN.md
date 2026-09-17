@@ -370,12 +370,18 @@ series out never renumbers the rest.
 **Glass is a theming mode, not a component prop.** `<ThemeProvider glass>` forces the
 material on, `<ThemeProvider solid>` forces the flat look, and passing neither resolves
 to the platform default: glass on iOS 26 and above, where Apple makes Liquid Glass the
-system material, and solid everywhere else. It applies to the FUNCTIONAL layer only,
-which is overlays and bars: popovers, dialogs, sheets, drawers, the command palette,
-navbars and the tab bar. Content surfaces stay solid, per Apple's own guidance not to
-use Liquid Glass in the content layer, so cards, lists, tables, calendars and charts do
-not go glass. There is no per-component `glass` prop, and hand-painting the material
-onto a component is not a supported way to get one.
+system material, and solid everywhere else. Under glass every surface renders through
+the material, layered, each layer with its own under-fill: the functional shells and
+overlays (navbars, the tab bar, the sidebar, dialogs, sheets, drawers, popovers, the
+command palette) take the sheer `glass-tint`; the content panes (cards, lists, tables,
+calendars, charts, alerts) the denser `glass-tint-content`, so their text keeps its
+contrast; the controls (fields, buttons, tabs, chips, badges, switches, checkboxes)
+the bright `glass-tint-control` puck, brand-tinted where the fill is the brand; and
+the surfaces a user reads and acts on (menus, selects, alert dialogs, toasts, tooltips)
+the densest `glass-tint-dense`. Fills inside a surface become ink tints, a brand
+puck stays as sheer as its ink's 4.5:1 allows, and solid mode is untouched. There is
+no per-component `glass` prop, and hand-painting the material onto a component is not
+a supported way to get one.
 
 ## Typography
 

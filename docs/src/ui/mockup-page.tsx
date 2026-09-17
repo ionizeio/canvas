@@ -2,6 +2,7 @@ import { View, Text, useTheme, useResponsive } from "@ionizeio/canvas";
 import { Page } from "./page";
 import { H2 } from "./prose";
 import { PageNav } from "./page-nav";
+import { DocsSurface } from "./surface";
 import { Callout } from "./tokens-kit";
 import { Mockup } from "./mockup";
 import { sans } from "./fonts";
@@ -34,9 +35,10 @@ export function MockupDocPage({ name, description, sections }: { name: string; d
               <Text style={{ fontFamily: sans("400"), fontSize: 13, lineHeight: 20, color: tokens["muted-foreground"], maxWidth: 640 }}>{s.description}</Text>
             ) : null}
             {s.anatomy ? <Callout label="Anatomy.">{s.anatomy}</Callout> : null}
-            <View style={{ borderWidth: 1, borderColor: tokens.border, borderRadius: 12, backgroundColor: tokens.card, padding: stagePadding }}>
+            {/* The section stage is a docs CONTENT surface: the same pane the component stages take. */}
+            <DocsSurface bordered style={{ padding: stagePadding }}>
               {s.render ? s.render() : s.html ? <Mockup html={s.html} /> : null}
-            </View>
+            </DocsSurface>
           </View>
         ))}
 

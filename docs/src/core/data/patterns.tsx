@@ -291,13 +291,13 @@ const density = getDensity(); // "compact" | "regular" | "comfy"
   {
     slug: "glass",
     name: "Glass Surface",
-    description: "A translucent material for the floating shells and overlays of the functional layer, never content cards and never the menus a reader picks rows from. A theming-level surface mode: <ThemeProvider glass> forces it on, <ThemeProvider solid> forces flat, and omitting both gives the platform default (glass on iOS 26+, solid elsewhere).",
+    description: "A translucent material every surface renders through, layered: the sheer functional shells and overlays, the denser content panes, the bright control pucks, and the densest read-and-act surfaces (menus, alerts, toasts). A theming-level surface mode: <ThemeProvider glass> forces it on, <ThemeProvider solid> forces flat, and omitting both gives the platform default (glass on iOS 26+, solid elsewhere).",
     sections: [
       {
         title: "What 'glass' means in Canvas",
-        description: "Glass follows Apple's Liquid Glass model: it is a material for the FUNCTIONAL layer, the shells and overlays that float above content, never the content layer. It swaps NO semantic token: the material carries its own fill, glass-tint, and only the surfaces that opt into it take it. Popovers, dialogs, action sheets, the command palette, navbars, tab bars and the sidebar take the material (the drawer panel is opaque here, which is a tracked divergence from the hand-off rather than a rule); the option-list menus (dropdown, select, autocomplete, avatar menu), alert dialogs, toasts and chart tooltips stay opaque, and content surfaces (cards, lists, tables, calendars, charts) stay solid. The glass ones render through the shared GlassSurface primitive, which paints the platform's real material.",
+        description: "Glass is a LAYERED model. Every surface renders through the same material, and each layer has its own under-fill so the stack stays legible: the functional layer (navbars, tab bars, the sidebar, dialogs, action sheets, drawers, popovers, the command palette) takes the sheer glass-tint; the content layer (cards, lists, tables, calendars, charts, alerts, the docs stage) takes the denser glass-tint-content; the controls (fields, buttons, tabs, chips, badges, switches, checkboxes) take the bright glass-tint-control puck, brand-tinted where the fill is the brand; and the read-and-act surfaces (dropdowns, selects, autocompletes, row menus, alert dialogs, toasts, tooltips, chart flags) take the densest glass-tint-dense. It swaps NO semantic token: the material carries its own fills, and every surface renders through the shared GlassSurface primitive (or a GlassPane behind a node that owns its own interaction), which paints the platform's real material.",
         anatomy: "Toggle with the Solid / Glass switch in the topbar, or pass the boolean to the provider: <ThemeProvider glass> forces glass, <ThemeProvider solid> forces flat, and omitting both picks the platform default (glass on iOS 26+ via liquidGlassAvailable(), solid elsewhere).",
-        html: `<div class="section-card" style="padding:1.25rem"><p style="margin:0;font-size:13.5px;color:var(--muted-foreground);line-height:1.6">Components never change for glass, and Canvas never hand-paints glass per component. Glass mode rewrites no semantic token at all: --popover and --card keep the same opaque values they carry in solid mode. What glass adds is the material's own fill, --glass-tint, painted by the surfaces that route through the GlassSurface primitive, which supplies the platform's own material: real Apple Liquid Glass via expo-glass-effect on iOS 26+, an SVG displacement lens on Chromium web (refraction at the rim, optically flat centre), a genuine frosted blur via expo-blur elsewhere on web and on Android, and the glass-tint fill on its own when neither optional peer is installed. Glass used to work by overriding --popover translucent, which is exactly what dragged every popover-filled surface, menus included, into the material.</p></div>`,
+        html: `<div class="section-card" style="padding:1.25rem"><p style="margin:0;font-size:13.5px;color:var(--muted-foreground);line-height:1.6">Components never change for glass, and Canvas never hand-paints glass per component. Glass mode rewrites no semantic token at all: --popover and --card keep the same opaque values they carry in solid mode. What glass adds is the material's own fills, one per layer (--glass-tint, --glass-tint-content, --glass-tint-control, --glass-tint-dense), painted under the material by every surface that renders through the GlassSurface primitive, which supplies the platform's own material: real Apple Liquid Glass via expo-glass-effect on iOS 26+, an SVG displacement lens on Chromium web (refraction at the rim, optically flat centre), a genuine frosted blur via expo-blur elsewhere on web and on Android, and the layer's tint fill on its own when neither optional peer is installed. Fills inside a surface (a hovered row, a header band) become ink tints so they never sit as opaque patches on the material, and a brand fill (a primary button, a checked switch) is brand-tinted glass kept as sheer as its ink's 4.5:1 allows.</p></div>`,
       },
       {
         title: "The four ingredients",
@@ -327,7 +327,7 @@ const density = getDensity(); // "compact" | "regular" | "comfy"
       },
       {
         title: "Surface inventory",
-        description: "Which surfaces take the material. Only the functional layer changes, and not all of it: a surface whose rows are read and acted on stays opaque, because a see-through card lets the page behind it read straight between those rows.",
+        description: "Which layer each surface takes. Every surface renders through the material; the layer sets how dense its tint is, from the sheer functional shells to the densest read-and-act cards, so a menu's rows never have the page reading between them while the card still refracts it at the rim.",
         html: `<div style="font-size:13px">
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--border);border-radius:var(--radius-md,8px);overflow:hidden">
     <div style="padding:8px 12px;font-weight:600;background:color-mix(in oklch, var(--muted) 30%, transparent);border-bottom:1px solid var(--border)">Surface</div>
@@ -342,21 +342,24 @@ const density = getDensity(); // "compact" | "regular" | "comfy"
     <div style="padding:8px 12px;border-bottom:1px solid var(--border)">Popover / Command palette</div>
     <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Functional</div>
     <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Glass, via GlassSurface</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border)">Dropdown / Select / Autocomplete / Avatar menu</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Functional</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Opaque: keeps painting popover</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border)">Alert dialog / Toast / Chart tooltip</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Functional</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Opaque: a prompt or a status bar has to stay legible</div>
-    <div style="padding:8px 12px">Card / List / Table / Calendar / Chart</div>
-    <div style="padding:8px 12px;color:var(--muted-foreground)">Content</div>
-    <div style="padding:8px 12px;color:var(--muted-foreground)">Stays solid</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border)">Dropdown / Select / Autocomplete / Row menu / Avatar menu</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Dense</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Glass under the densest tint (glass-tint-dense)</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border)">Alert dialog / Toast / Tooltip / Chart flag</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Dense</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Glass under the densest tint; the inverse ones (tooltip, M3 snackbar) tint with the ink</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border)">Card / List / Table / Calendar / Chart / Alert</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Content</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Glass under the content tint (glass-tint-content), legible first</div>
+    <div style="padding:8px 12px">Field / Button / Tabs / Chip / Badge / Switch / Checkbox</div>
+    <div style="padding:8px 12px;color:var(--muted-foreground)">Control</div>
+    <div style="padding:8px 12px;color:var(--muted-foreground)">A bright glass puck (glass-tint-control); brand fills are brand-tinted glass</div>
   </div>
 </div>`,
       },
       {
         title: "Live comparison",
-        description: "An illustrative pair: the same panel drawn opaque and with a frosted material over a colorful backdrop. In the kit only functional-layer surfaces ever take the material (a real stat card stays solid); the Solid / Glass toggle in the topbar switches the whole docs shell at once.",
+        description: "An illustrative pair: the same panel drawn opaque and with a frosted material over a colorful backdrop. In the kit a real stat card takes the content layer's denser tint; the Solid / Glass toggle in the topbar switches the whole docs shell at once.",
         html: `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;border-radius:12px;padding:20px;background:radial-gradient(120% 120% at 0% 0%, hsl(262 83% 58% / 0.25), transparent 50%), radial-gradient(120% 120% at 100% 100%, hsl(190 90% 50% / 0.2), transparent 50%), var(--background)">
   <div>
     <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted-foreground);margin-bottom:8px">Solid</div>
@@ -392,7 +395,7 @@ const density = getDensity(); // "compact" | "regular" | "comfy"
       },
       {
         title: "Implementation",
-        description: "The ThemeProvider resolves the surface: pass the glass or solid boolean (glass wins if both are set), or omit both for the platform default, reported by liquidGlassAvailable(). When glass is active the provider overrides no semantic token: it publishes the material's own glass-tint fill, and the surfaces that opted into the material render through the shared GlassSurface primitive, which paints the real material per platform over that tint. The option-list menus, alert dialogs, toasts and chart tooltips opt out and paint their opaque fill unchanged. When the OS asks for Reduce Transparency or Increase Contrast, GlassSurface renders the opaque path instead. On the web, setSurface(\"glass\") persists the choice and stamps data-surface on the root element as a broadcast hook; no shipped CSS reads that attribute, so the app reads it back with getSurface() and syncs it into its ThemeProvider, the way the docs shell does.",
+        description: "The ThemeProvider resolves the surface: pass the glass or solid boolean (glass wins if both are set), or omit both for the platform default, reported by liquidGlassAvailable(). When glass is active the provider overrides no semantic token: it publishes the material's own layer fills, and every surface renders through the shared GlassSurface primitive (or a GlassPane behind a node that owns its own interaction), which paints the real material per platform over the tint of its layer. When the OS asks for Reduce Transparency or Increase Contrast, every layer degrades to its opaque token instead. On the web, setSurface(\"glass\") persists the choice and stamps data-surface on the root element as a broadcast hook; no shipped CSS reads that attribute, so the app reads it back with getSurface() and syncs it into its ThemeProvider, the way the docs shell does.",
         html: `<div style="max-width:680px;font-family:var(--font-mono);font-size:12px;background:color-mix(in oklch, var(--muted) 40%, transparent);border:1px solid var(--border);border-radius:8px;padding:1rem;white-space:pre;overflow:auto;color:var(--foreground)">// The surface axis is boolean, like every other Canvas axis.
 &lt;ThemeProvider glass&gt;...&lt;/ThemeProvider&gt;  // force the material on the glass surfaces
 &lt;ThemeProvider solid&gt;...&lt;/ThemeProvider&gt;  // force flat
