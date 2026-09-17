@@ -88,6 +88,13 @@ export default defineConfig({
   },
 
   projects: [
+    {
+      // Motion evidence needs the actual spring frames. Keep the deterministic
+      // projects below on their existing Reduce Motion baseline.
+      name: "motion",
+      testDir: "./e2e/motion",
+      use: { contextOptions: { reducedMotion: "no-preference" }, video: "on" },
+    },
     { name: "smoke", testDir: "./e2e/smoke" },
     { name: "responsive", testDir: "./e2e/responsive" },
     { name: "behavior", testDir: "./e2e/behavior" },
