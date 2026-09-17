@@ -17,6 +17,8 @@ import {
   cornerRadii,
   StyleSheet,
   useTheme,
+  GlassSurface,
+  inverseDenseTint,
   type ColorTokens,
   type StyleProp,
   type ViewStyle,
@@ -29,14 +31,16 @@ import { Icon } from "../../atoms/icon/icon.js";
 //
 //   1. The presentational <Toast>, the skinned notification capsule: an optional
 //      intent icon, a message + optional description, an optional trailing action,
-//      and an optional dismiss (x). It is an OPAQUE capsule on every platform and
-//      on every theming surface: each skin paints its own solid fill (the web
-//      hand-off's `--p-toast-fill`) on a plain box, in glass mode exactly as in
-//      solid mode. A toast is a status message that lands over whatever the user
-//      was reading, and a see-through one lets that page read straight through its
-//      own text; the Android M3 snackbar has no glass idiom at all (a material
-//      would strip its inverse fill and leave its inverse text illegible). Glass
-//      is for the bar/sheet/palette overlays instead.
+//      and an optional dismiss (x). Under glass it takes the DENSE layer of the
+//      glass model: the material under the model's densest tint. A toast is a
+//      status message that lands over whatever the user was reading, and under the
+//      functional layer's sheer tint that page read straight through its own text;
+//      the dense tint keeps the text legible while the capsule still takes the
+//      material. The Android M3 snackbar paints the INVERSE surface (the scheme's
+//      ink as its fill, the page colour as its text), so its dense tint is the ink
+//      at the dense alpha (`inverseDenseTint`) and the bar keeps its inverse read.
+//      In solid mode GlassSurface is the plain box wearing the skin's own fill (the
+//      web hand-off's `--p-toast-fill`).
 //
 //   2. The imperative runtime — <ToastProvider> + useToast(). The provider owns a
 //      queue of live toasts, auto-dismisses each after its duration, and renders the
@@ -209,7 +213,8 @@ export function createToastSystem(skin: ToastSkin) {
   // which assistive tech misses).
   function ToastCapsule(props: Omit<ToastProps, "testID" | "style">) {
     const { message, description, action, icon, onDismiss } = props;
-    const { tokens } = useTheme();
+    const theme = useTheme();
+    const { tokens } = theme;
     const intent = intentOf(props);
 
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
@@ -274,10 +279,15 @@ export function createToastSystem(skin: ToastSkin) {
       </>
     );
 
-    // A plain box wearing the skin's own opaque fill, whatever the theming
-    // surface: no skin routes the capsule through the glass material (see the
-    // header note above).
-    return <View style={containerStyle}>{content}</View>;
+    // The dense layer under glass, the plain box wearing the skin's own fill in solid
+    // mode (see the header note above). A skin whose fill is the scheme's ink (the M3
+    // inverse snackbar) takes the inverse dense tint so its inverse text stays legible.
+    const inverse = (StyleSheet.flatten(containerStyle) as ViewStyle).backgroundColor === tokens.foreground;
+    return (
+      <GlassSurface layer="dense" tint={inverse ? inverseDenseTint(theme) : undefined} style={containerStyle}>
+        {content}
+      </GlassSurface>
+    );
   }
 
   function Toast(props: ToastProps) {

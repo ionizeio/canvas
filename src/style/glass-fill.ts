@@ -1,6 +1,6 @@
 import type { ViewStyle } from "react-native";
 import type { ThemeValue } from "./theme.js";
-import { alpha } from "./color.js";
+import { alpha, channelsOf } from "./color.js";
 
 // Fills INSIDE a glass surface. A pane that renders through GlassSurface is a
 // translucent material, so an opaque `muted` row hover, a `secondary` selected tab or
@@ -45,4 +45,16 @@ export function isGlass(theme: Pick<ThemeValue, "surface" | "reducedTransparency
 export function withInnerFill(theme: Pick<ThemeValue, "tokens" | "surface" | "dark">, style: ViewStyle, strength: InnerFillStrength = "soft"): ViewStyle {
   if (theme.surface !== "glass" || style.backgroundColor == null) return style;
   return { ...style, backgroundColor: innerFill(theme, "muted", strength) };
+}
+
+/**
+ * The dense-layer tint for an INVERSE surface: a tooltip bubble or the M3 snackbar,
+ * which paint the scheme's ink as their fill and the page colour as their text. The
+ * dense token is the page colour at the dense alpha, so on those it would put light
+ * text on a light pane; this is the ink at the same alpha instead, so the surface
+ * keeps its inverse reading and its text its contrast while it takes the material.
+ */
+export function inverseDenseTint(theme: Pick<ThemeValue, "tokens" | "glass">): string {
+  const dense = channelsOf(theme.glass["glass-tint-dense"]);
+  return alpha(theme.tokens.foreground, dense ? dense[3] : 0.88);
 }

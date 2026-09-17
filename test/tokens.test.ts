@@ -103,12 +103,12 @@ describe("glassByScheme (the glass material's own tokens)", () => {
     expect(glassByScheme.dark["glass-tint"]).toBe("rgba(22, 22, 28, 0.30)");
   });
 
-  it("overrides NO semantic token, so an opaque menu and a glass bar are independent", () => {
+  it("overrides NO semantic token, so a dense menu and a sheer bar are independent", () => {
     // The regression this shape exists to prevent: glass used to swap `popover`
     // translucent, so every popover-filled surface (menus, select lists, alert
-    // dialogs) went see-through the moment glass turned on, and making one of them
-    // opaque would have made the bars opaque with it. The material carries its own
-    // fill now; the semantic set is untouched.
+    // dialogs) went see-through the moment glass turned on, and densifying one of
+    // them would have densified the bars with it. The material carries its own
+    // fills now, one per layer; the semantic set is untouched.
     for (const scheme of ["light", "dark"] as const) {
       // One tint per LAYER of the glass model (functional, content, control, dense),
       // and nothing that names a semantic surface.

@@ -20,12 +20,16 @@
 // Surface: an anchored card is a functional-layer overlay, so by default it
 // renders through GlassSurface and takes the active material (real Liquid Glass
 // on iOS 26+, the lens on Chromium web, a frost elsewhere) whenever the theme's
-// surface mode is glass. The OPTION-LIST MENUS opt out with `opaque`: a
-// dropdown / select / autocomplete / row menu / split-button overflow menu is a
-// card of content rows, and a see-through card lets the page's own rows and
-// rules read straight between them. Those paint their skin's own `popover` fill
-// on a plain box, in glass mode exactly as in solid mode. Popovers, the command
-// palette, and the calendar peek keep the material.
+// surface mode is glass. The OPTION-LIST MENUS ask for the DENSE layer with
+// `dense`: a dropdown / select / autocomplete / row menu / split-button overflow
+// menu is a card of content rows the user reads and picks from, and the
+// functional layer's sheer tint let the page's own rows and rules read straight
+// between them. The dense layer is the same material under the model's densest
+// tint (glass-tint-dense), so the rows stay legible and the card still refracts
+// the page at its rim. Popovers, the command palette, and the calendar peek keep
+// the functional layer. `opaque` remains for a consumer that wants the plain
+// surface outright: the skin's own `popover` fill on a plain box, in glass mode
+// exactly as in solid mode.
 
 import { createContext, type ReactNode, type RefObject, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { View, Pressable, StyleSheet, useWindowDimensions, type LayoutChangeEvent, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
@@ -109,18 +113,24 @@ export interface AnchoredOverlayProps {
   /**
    * Paint the card as an OPAQUE surface: the skin's own `popover` fill on a
    * plain box, with NO glass material, in glass mode exactly as in solid mode.
-   *
-   * For the anchored surfaces that are option lists (Dropdown, Select,
-   * Autocomplete, RowMenu, SplitButton's overflow menu, and so the AvatarMenu
-   * built on Dropdown). Those cards carry rows the user reads and picks from,
-   * and under a material the page behind them reads through between the rows.
-   * This is NOT a per-component glass prop and it does not paint any glass: it
-   * selects which of the kit's two existing surfaces (the material one or the
-   * plain one) the card is drawn on, the same choice AlertDialog and Toast make
-   * by rendering their own opaque box. Defaults to false, so a Popover, the
-   * Command palette and the Calendar peek keep the material.
+   * The kit's own option lists take the dense layer instead (`dense`); this stays
+   * for a consumer that wants the plain surface outright. Not a per-component
+   * glass prop and no hand-painted glass: it selects the kit's plain surface.
    */
   opaque?: boolean;
+  /**
+   * Paint the card on the DENSE layer of the glass model: the same material as
+   * every anchored card, under the densest tint (`glass-tint-dense`), for the
+   * anchored surfaces that are option lists (Dropdown, Select, Autocomplete,
+   * RowMenu, SplitButton's overflow menu, the PhoneInput country list, and so the
+   * AvatarMenu built on Dropdown). Those cards carry rows the user reads and picks
+   * from, and under the functional layer's sheer tint the page behind them read
+   * through between the rows; the dense tint keeps them legible while the card
+   * still takes the material. Not a per-component glass prop and no hand-painted
+   * glass: it selects the layer, and in solid mode it changes nothing. `opaque`
+   * wins when both are passed.
+   */
+  dense?: boolean;
   /**
    * Fired once per opening after the card's children mount and its measured
    * placement is committed. `open` flipping true is not that moment on the hosted
@@ -153,6 +163,7 @@ export function AnchoredOverlay({
   alignEnd = false,
   rtl = false,
   opaque = false,
+  dense = false,
   onCardMount,
   ownsScroll = false,
 }: AnchoredOverlayProps) {
@@ -164,7 +175,7 @@ export function AnchoredOverlay({
   if (!host) {
     return open ? (
       <Entrance anchor style={inlineStyle}>
-        <OverlayCard onAccessibilityEscape={onAccessibilityEscape} cardStyle={cardStyle} opaque={opaque} onMount={onCardMount} ownsScroll={ownsScroll} decoration={decoration}>{children}</OverlayCard>
+        <OverlayCard onAccessibilityEscape={onAccessibilityEscape} cardStyle={cardStyle} opaque={opaque} dense={dense} onMount={onCardMount} ownsScroll={ownsScroll} decoration={decoration}>{children}</OverlayCard>
       </Entrance>
     ) : null;
   }
@@ -185,6 +196,7 @@ export function AnchoredOverlay({
       alignEnd={alignEnd}
       rtl={rtl}
       opaque={opaque}
+      dense={dense}
       onCardMount={onCardMount}
       ownsScroll={ownsScroll}
       decoration={decoration}
@@ -201,6 +213,7 @@ export function AnchoredOverlay({
 function OverlayCard({
   cardStyle,
   opaque,
+  dense,
   onMount,
   children,
   decoration,
@@ -211,6 +224,7 @@ function OverlayCard({
 }: {
   cardStyle?: StyleProp<ViewStyle>;
   opaque?: boolean;
+  dense?: boolean;
   onMount?: () => void;
   children: ReactNode;
   decoration?: ReactNode;
@@ -240,7 +254,7 @@ function OverlayCard({
   // theming surface, and no glass is hand-painted anywhere.
   const content = ownsScroll ? children : <OverlayScrollView>{children}</OverlayScrollView>;
   if (opaque) return <PlainSurface style={cardStyle} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape}>{decoration}{content}</PlainSurface>;
-  return <GlassSurface style={cardStyle} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape}>{decoration}{content}</GlassSurface>;
+  return <GlassSurface layer={dense ? "dense" : "functional"} style={cardStyle} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape}>{decoration}{content}</GlassSurface>;
 }
 
 interface HostedProps {
@@ -258,6 +272,7 @@ interface HostedProps {
   alignEnd?: boolean;
   rtl?: boolean;
   opaque?: boolean;
+  dense?: boolean;
   onCardMount?: () => void;
   ownsScroll?: boolean;
   children: ReactNode;
@@ -324,7 +339,7 @@ export function placeOverlay(
   return { left: Math.max(CLAMP_INSET, x), top: below.top };
 }
 
-function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, triggerRef, gap, cardStyle, dismissable, cardWidth, centered, preferSide, alignEnd, rtl, opaque, onCardMount, ownsScroll, children, decoration }: HostedProps) {
+function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, triggerRef, gap, cardStyle, dismissable, cardWidth, centered, preferSide, alignEnd, rtl, opaque, dense, onCardMount, ownsScroll, children, decoration }: HostedProps) {
   const [rect, setRect] = useState<Rect | null>(null);
   // The outlet's width, captured alongside the trigger measure; only needed for
   // width-aware (clamped) placement.
@@ -451,7 +466,7 @@ function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, t
         <OverlaySideContext.Provider value={anchorGeometry}>
           <OverlayScrollContext.Provider value={report}>
             <Entrance anchor anchorBottom={fit.side === "above"} ready={measured} style={{ position: "absolute", left: horizontal.left, right: horizontal.right, top: fit.top, bottom: fit.bottom }}>
-              <OverlayCard onAccessibilityEscape={onAccessibilityEscape} cardStyle={cappedStyle} opaque={opaque} onMount={onCardMount} ownsScroll={ownsScroll} onLayout={onCardLayout} ready={measured} decoration={decoration}>{children}</OverlayCard>
+              <OverlayCard onAccessibilityEscape={onAccessibilityEscape} cardStyle={cappedStyle} opaque={opaque} dense={dense} onMount={onCardMount} ownsScroll={ownsScroll} onLayout={onCardLayout} ready={measured} decoration={decoration}>{children}</OverlayCard>
             </Entrance>
           </OverlayScrollContext.Provider>
         </OverlaySideContext.Provider>

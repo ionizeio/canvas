@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, type ComponentType, type Reac
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { OverlayProvider } from "../../style/portal.js";
 import { Animated, KeyboardAvoidingView, Modal, Platform, StyleSheet } from "react-native";
-import { GlassModalBlurTarget, Pressable, View, isRTL, useTheme, useReducedMotion, useHardwareBack, supportsNativeDriver, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { GlassModalBlurTarget, GlassSurface, Pressable, View, isRTL, useTheme, useReducedMotion, useHardwareBack, supportsNativeDriver, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { SafeAreaProvider, SafeAreaView } from "../../style/safe-area.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
@@ -12,6 +12,11 @@ import { type Edge, type DrawerSkin } from "./drawer.styles.js";
 // The trigger Button type, so each platform can pass its own resolved Button
 // (web base by default) without widening to `any`.
 export type ButtonComponent = ComponentType<ButtonProps>;
+
+// The safe-area content box inside the panel surface: grows and shrinks with an AUTO
+// basis so it fills a sized side drawer and wraps a sheet's content (a basis of 0 would
+// collapse a content-sized sheet on native, see splitSurfaceStyle).
+const PANEL_CONTENT: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "auto" };
 
 // Shared Drawer shell. The structure (a full-screen Modal whose scrim lays an
 // opaque panel against an edge), the public boolean-prop API, the edge
@@ -25,9 +30,9 @@ export type ButtonComponent = ComponentType<ButtonProps>;
 // menu, an action sheet), distinct from the inline Overlay/Dialog used for docs
 // previews. It is built on React Native's Modal, which react-native-web
 // implements on the web, so the same drawer renders on iOS, Android, and the
-// web. The panel is an opaque card surface (not glass): it sits directly over
-// page content, so a translucent panel would bleed the content through;
-// legibility wins over the glass look for a full-screen takeover.
+// web. The panel is a FUNCTIONAL-layer surface: it renders through GlassSurface
+// and takes the material under glass (the same sheet material as ActionSheet and
+// Dialog, over the dimming scrim), and is the plain `card` panel in solid mode.
 //
 // Open state mirrors the kit's other overlays: pass `trigger` for an uncontrolled
 // drawer that renders its own button and manages itself, or drive `open` /
@@ -180,19 +185,25 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
 
     // A no-op press inside the panel keeps taps from falling through to the scrim; it is a pure
     // event-capture wrapper, hidden from assistive tech. onLayout measures a sheet's height
-    // for its slide. SafeAreaView pads the panel content clear of the device insets on iOS (a
-    // bottom sheet clears the home indicator, a side drawer the notch/status bar); the opaque
-    // `card` fill still reaches the screen edge, and insets resolve to 0 elsewhere.
+    // for its slide. The panel surface renders through GlassSurface (the functional layer's
+    // material under glass, the skin's own `card` panel in solid mode); inside it SafeAreaView
+    // pads the content clear of the device insets on iOS (a bottom sheet clears the home
+    // indicator, a side drawer the notch/status bar) while the surface itself still reaches
+    // the screen edge, and insets resolve to 0 elsewhere. The SafeAreaView fills a sized
+    // panel (a side drawer's full height) and wraps its content in a sheet, the same
+    // auto-basis recipe the surface's own clip box uses.
     const panel = (
       <Pressable accessible={false} focusable={false} tabIndex={-1} importantForAccessibility="no" style={[s.panelPos[edge], sheetCap]} onPress={() => {}} onLayout={isVertical ? (e) => setPanelH(e.nativeEvent.layout.height) : undefined}>
-        <SafeAreaView
-          edges={isVertical ? [edge as "top" | "bottom", "left", "right"] : ["top", "bottom", physicalRight ? "right" : "left"]}
-          style={[skin.panelShape(edge, width, tokens), style]}
-        >
-          {edge === "bottom" ? handleNode : null}
-          {children}
-          {edge === "top" ? handleNode : null}
-        </SafeAreaView>
+        <GlassSurface style={[skin.panelShape(edge, width, tokens), style]}>
+          <SafeAreaView
+            edges={isVertical ? [edge as "top" | "bottom", "left", "right"] : ["top", "bottom", physicalRight ? "right" : "left"]}
+            style={PANEL_CONTENT}
+          >
+            {edge === "bottom" ? handleNode : null}
+            {children}
+            {edge === "top" ? handleNode : null}
+          </SafeAreaView>
+        </GlassSurface>
       </Pressable>
     );
 

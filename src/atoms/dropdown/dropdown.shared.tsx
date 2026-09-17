@@ -1,6 +1,6 @@
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { View, Pressable, Text, useHugStyle, useTheme, AnchoredOverlay, useOverlayHost, useMeasuredWidth, useRovingFocus, isRTL, RippleClip, cornerRadii, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useHugStyle, useTheme, AnchoredOverlay, useOverlayHost, useMeasuredWidth, useRovingFocus, isRTL, RippleClip, cornerRadii, type StyleProp, type ViewStyle, withInnerFill } from "../../style/index.js";
 import { Button } from "../button/button.js";
 import { Icon, type IconName } from "../icon/icon.js";
 import { wrapper, wrapperLifted, customTrigger, type DropdownSkin } from "./dropdown.styles.js";
@@ -132,7 +132,8 @@ const menuAnchorEnd = (gap: number): ViewStyle => ({ position: "absolute", top: 
 export function createDropdown(skin: DropdownSkin) {
   return function Dropdown(props: DropdownProps) {
     const { trigger, children, triggerLabel, label, title, description, items, open: openProp, onOpenChange, onSelect, alignEnd, disabled, testID, style } = props;
-    const { tokens, dark } = useTheme();
+    const theme = useTheme();
+    const { tokens, dark } = theme;
     // HUG: the trigger keeps its content width inside a stretching Column.
     const hug = useHugStyle();
     // Uncontrolled by default (Headless-UI style): the trigger opens/closes the
@@ -285,11 +286,12 @@ export function createDropdown(skin: DropdownSkin) {
           gap={skin.menuGap}
           cardStyle={[skin.menuCard(tokens), { minWidth: Math.max(triggerWidth, MENU_MIN_WIDTH) }]}
           inlineStyle={alignEnd ? menuAnchorEnd(skin.menuGap) : menuAnchor(skin.menuGap)}
-          // A menu is a card of action rows, so it stays an OPAQUE card in glass
-          // mode too (the skin's own `popover` fill, no material): under a glass
-          // material the page's own rules and rows read straight between the
-          // items. The bar/sheet/palette overlays are the kit's glass surfaces.
-          opaque
+          // A menu is a card of action rows, so under glass it takes the DENSE
+          // layer: the material under the model's densest tint, so the rows a user
+          // reads and picks from stay legible (the functional layer's sheer tint let
+          // the page's own rules and rows read straight between the items) while the
+          // card still refracts the page at its rim.
+          dense
           // Same logical alignment on the hosted path: the portal places the card
           // by the trigger's trailing edge instead of its leading one, mirrored
           // in a right-to-left locale.
@@ -362,7 +364,7 @@ export function createDropdown(skin: DropdownSkin) {
                   style={({ pressed }) => [
                     skin.itemRow,
                     // iOS/web tint the row on press here; Android uses the ripple instead.
-                    skin.itemPressed != null && pressed ? skin.itemPressed(tokens) : null,
+                    skin.itemPressed != null && pressed ? withInnerFill(theme, skin.itemPressed(tokens), "firm") : null,
                     skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
                     item.disabled ? { opacity: skin.disabledOpacity } : null,
                   ]}

@@ -256,11 +256,12 @@ describe("Drawer (full-screen Modal overlay)", () => {
     );
     // A side (default left) drawer slides in over an animated dim, behind a TRANSPARENT
     // tap-to-close scrim (accessible={false} — a backdrop, not a labelled control). Reach the
-    // scrim structurally from the panel content — Text -> SafeAreaView -> panelPos -> slide
-    // wrapper -> scrim — and confirm a "0, 0, 0" dim backdrop is its sibling, so a structural
-    // drift fails loudly here instead of silently.
+    // scrim structurally from the panel content — Text -> SafeAreaView -> the panel surface
+    // (GlassSurface, one plain box in solid mode) -> panelPos -> slide wrapper -> scrim — and
+    // confirm a "0, 0, 0" dim backdrop is its sibling, so a structural drift fails loudly
+    // here instead of silently.
     const panel = screen.getByText("Drawer body");
-    const scrim = panel.parentElement!.parentElement!.parentElement!.parentElement!;
+    const scrim = panel.parentElement!.parentElement!.parentElement!.parentElement!.parentElement!;
     const dim = scrim.parentElement!.firstElementChild as HTMLElement;
     expect(dim.style.backgroundColor).toContain("0, 0, 0");
     fireEvent.click(scrim);

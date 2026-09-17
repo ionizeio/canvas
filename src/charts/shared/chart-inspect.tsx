@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { AccessibilityInfo, StyleSheet } from "react-native";
-import { View, Text, useTheme, shadow, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Text, useTheme, shadow, GlassPane, paneStyle, isGlass, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { estimateTextWidth } from "./chart-math.js";
 
 // Press-to-inspect support shared by the Chart family: the in-plot value flag
@@ -52,7 +52,8 @@ export interface ChartValueFlagProps {
 }
 
 export function ChartValueFlag({ title, rows, x, plotW }: ChartValueFlagProps) {
-  const { tokens } = useTheme();
+  const theme = useTheme();
+  const { tokens } = theme;
   const w = flagWidth(title, rows);
   // Prefer sitting to the right of the datum; flip left when it would clip,
   // then clamp to the plot as a last resort (narrow plots).
@@ -60,19 +61,20 @@ export function ChartValueFlag({ title, rows, x, plotW }: ChartValueFlagProps) {
   if (left + w > plotW) left = x - 8 - w;
   if (left < 0) left = Math.max(0, Math.min(plotW - w, x - w / 2));
 
+  // Under glass the flag is a DENSE-layer pane (a value the reader inspects must stay
+  // legible over the plot), riding behind the node so the flag keeps its touch
+  // passthrough; the card fill and hairline drop, the material and rim carry them.
+  const shape: ViewStyle = { borderRadius: 12, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card };
   return (
     <View
       style={[
         styles.passthrough,
+        paneStyle(isGlass(theme), shape),
         {
           position: "absolute",
           top: 4,
           left,
           width: w,
-          borderRadius: 12,
-          borderWidth: 1,
-          borderColor: tokens.border,
-          backgroundColor: tokens.card,
           paddingVertical: PAD - 4,
           paddingHorizontal: PAD,
           gap: 2,
@@ -80,6 +82,7 @@ export function ChartValueFlag({ title, rows, x, plotW }: ChartValueFlagProps) {
         },
       ]}
     >
+      <GlassPane layer="dense" shape={shape} />
       {title ? (
         <Text numberOfLines={1} style={{ fontSize: TEXT, lineHeight: LINE, fontWeight: "600", color: tokens["card-foreground"] }}>
           {title}

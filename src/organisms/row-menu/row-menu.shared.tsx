@@ -1,6 +1,6 @@
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useRef, useState } from "react";
-import { View, Pressable, Text, useTheme, AnchoredOverlay, useOverlayHost, useMeasuredWidth, RippleClip, cornerRadii, useMinTargetSlop, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, AnchoredOverlay, useOverlayHost, useMeasuredWidth, RippleClip, cornerRadii, useMinTargetSlop, type StyleProp, type ViewStyle, type LayoutStyle, withInnerFill } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { anchorLifted, type RowMenuItem, type RowMenuSkin } from "./row-menu.styles.js";
 
@@ -61,7 +61,8 @@ export function createRowMenu(skin: RowMenuSkin) {
     // What the menu is called when it opens. The section label names it when there is
     // one; otherwise the trigger's own label does, which is what the user pressed.
     const menuName = sectionLabel ?? triggerLabel;
-    const { tokens, dark } = useTheme();
+    const theme = useTheme();
+    const { tokens, dark } = theme;
     // Uncontrolled by default: the ⋯ trigger toggles the menu (closed), a select
     // closes it; a controlled `open` prop overrides this.
     const [internalOpen, setInternalOpen] = useState(false);
@@ -127,11 +128,11 @@ export function createRowMenu(skin: RowMenuSkin) {
           gap={4}
           cardStyle={[skin.menuCard(tokens), { minWidth: Math.max(triggerWidth, skin.menuMinWidth) }]}
           inlineStyle={MENU_ANCHOR}
-          // A row menu is a card of action rows, so it stays an OPAQUE card in
-          // glass mode too (the skin's own `popover` fill, no material): it opens
-          // over the very table row it acts on, which would otherwise read
-          // straight through it.
-          opaque
+          // A row menu is a card of action rows, so under glass it takes the DENSE
+          // layer: the material under the model's densest tint. It opens over the
+          // very table row it acts on, which read straight through the functional
+          // layer's sheer tint.
+          dense
           // A controlled `open` with no onOpenChange can never actually close, so
           // the hosted dismiss backdrop is skipped (it would only block the page).
           dismissable={props.open === undefined || onOpenChange !== undefined}
@@ -164,7 +165,7 @@ export function createRowMenu(skin: RowMenuSkin) {
                   skin.itemRow,
                   // Web/iOS tint the row on press here; Android uses the ripple instead. A
                   // disabled row never enters the pressed state, so no tint applies.
-                  skin.ripple == null && pressed ? skin.itemPressed(tokens) : null,
+                  skin.ripple == null && pressed ? withInnerFill(theme, skin.itemPressed(tokens), "firm") : null,
                   // A disabled row dims to read as unavailable (the kit's disabled-opacity
                   // convention, matching Slider/Button); the icon and label dim with it.
                   item.disabled ? { opacity: 0.5 } : null,

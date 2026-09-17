@@ -1,7 +1,7 @@
 import { consumeEscapeKey, EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { forwardRef, useEffect, useId, useRef, useState } from "react";
 import { Platform, type Role, type TextInput as RNTextInput } from "react-native";
-import { View, Pressable, Text, TextInput, useTheme, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, isGlass, PANE_SIBLING_INPUT } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useTheme, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, isGlass, PANE_SIBLING_INPUT, withInnerFill } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useActiveOptionScroll } from "../../style/use-active-option-scroll.js";
 import { AccessibilityReturnBoundary, accessibilitySelectionProps, useAccessibilityReturn } from "../../style/use-accessibility-return.js";
@@ -424,11 +424,11 @@ export function createAutocomplete(skin: AutocompleteSkin) {
           gap={4}
           cardStyle={[skin.popover(tokens), { minWidth: triggerWidth }]}
           inlineStyle={POPOVER_ANCHOR}
-          // The filtered option list is a card of rows, so it stays an OPAQUE
-          // card in glass mode too (the skin's own `popover` fill, no material):
-          // matches a user reads and picks from must not have the page showing
-          // through between them.
-          opaque
+          // The filtered option list is a card of rows, so under glass it takes
+          // the DENSE layer: the material under the model's densest tint, so matches
+          // a user reads and picks from never have the page showing through between
+          // them while the card still takes the material.
+          dense
           // A controlled `open` with no onOpenChange can never actually close, so
           // the hosted dismiss backdrop is skipped (it would only block the page).
           dismissable={openProp === undefined || onOpenChange !== undefined}
@@ -469,8 +469,8 @@ export function createAutocomplete(skin: AutocompleteSkin) {
                           style={({ pressed }) => [
                             skin.row,
                             separator,
-                            selected ? skin.rowSelected(tokens) : null,
-                            pressed || index === activeIndex ? skin.rowPressed(tokens) : null,
+                            selected ? withInnerFill(theme, skin.rowSelected(tokens) ?? {}, "firm") : null,
+                            pressed || index === activeIndex ? withInnerFill(theme, skin.rowPressed(tokens) ?? {}, "firm") : null,
                           ]}
                           onPress={() => selectOption(option)}
                           {...accessibilitySelectionProps(() => accessibilityReturn.activate(() => selectOption(option, true)))}

@@ -385,11 +385,11 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
           cardStyle={[menuCard, { minWidth: Math.max(triggerWidth, menuMinWidth) }]}
           inlineStyle={menuAnchor}
           // The overflow menu is an option list (role="menu" over menuitem rows,
-          // and all three skins paint it with the `popover` fill), so it stays an
-          // OPAQUE card in glass mode too, exactly like Dropdown, Select,
-          // Autocomplete and RowMenu: under a material the page's own rows and
-          // rules read straight between the items.
-          opaque
+          // and all three skins paint it with the `popover` fill), so under glass it
+          // takes the DENSE layer exactly like Dropdown, Select, Autocomplete and
+          // RowMenu: the material under the model's densest tint, so the items stay
+          // legible over the page.
+          dense
         >
           <EscapeLayerProvider scope={escapeScope}>
           {/* role="menu" gives the menuitem rows a valid ARIA parent; without it

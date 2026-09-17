@@ -2,7 +2,7 @@ import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js
 import { forwardRef, useId, useRef } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { type Role } from "react-native";
-import { View, Pressable, Text, useTheme, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, GlassPane, isGlass } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, GlassPane, isGlass, withInnerFill } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the option-list
@@ -36,8 +36,8 @@ const optionScroll: ViewStyle = { flexShrink: 1 };
 // Platform.OS branch. With no provider it falls back to an inline card positioned
 // absolutely below the trigger (the kit's pre-portal behavior). AnchoredOverlay
 // owns the card surface, so the listbox is passed to it directly; the panel asks
-// for the OPAQUE one (`opaque`), an option list being a card of rows rather than
-// one of the kit's glass overlays.
+// for the DENSE layer (`dense`), an option list being a card of rows that must stay
+// legible over the page rather than a sheer functional-layer overlay.
 
 /**
  * An option whose stored value differs from the text shown for it, for lists
@@ -316,11 +316,11 @@ export function createSelect(skin: SelectSkin) {
           gap={4}
           cardStyle={[skin.panel(tokens), { minWidth: triggerWidth }]}
           inlineStyle={PANEL_ANCHOR}
-          // An option list is a card of rows, so the panel stays an OPAQUE card
-          // in glass mode too (the skin's own `popover` fill, no material):
-          // options a user reads and picks from must not have the page showing
-          // through between them.
-          opaque
+          // An option list is a card of rows, so under glass the panel takes the
+          // DENSE layer: the material under the model's densest tint, so options a
+          // user reads and picks from never have the page showing through between
+          // them while the card still takes the material.
+          dense
           // A controlled `open` with no onOpenChange can never actually close, so
           // the hosted dismiss backdrop is skipped (it would only block the page).
           dismissable={props.open === undefined || onOpenChange !== undefined}
@@ -339,12 +339,12 @@ export function createSelect(skin: SelectSkin) {
                 <Pressable
                   key={option.value}
                   style={({ pressed }) => [
-                    skin.optionRow(tokens, selected),
+                    withInnerFill(theme, skin.optionRow(tokens, selected), "firm"),
                     // iOS draws a hairline group separator between rows (not above the
                     // first); a skin that omits rowSeparator keeps every row borderless.
                     i > 0 && skin.rowSeparator ? skin.rowSeparator(tokens) : null,
                     // Web/iOS tint the row on press here; Android uses the ripple instead.
-                    skin.ripple == null && pressed ? skin.optionPressed(tokens) : null,
+                    skin.ripple == null && pressed ? withInnerFill(theme, skin.optionPressed(tokens), "firm") : null,
                   ]}
                   onPress={() => selectOption(option.value)}
                   disabled={disabled}

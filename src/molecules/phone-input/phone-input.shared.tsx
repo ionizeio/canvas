@@ -273,7 +273,8 @@ export function createPhoneInput(skin: PhoneInputSkin) {
         gap={4}
         cardStyle={[skin.menu.panel(tokens), { minWidth: boxWidth }]}
         inlineStyle={PANEL_ANCHOR}
-        opaque
+        // The country list is an option list: the DENSE layer under glass, like Select's.
+        dense
       >
         <EscapeLayerProvider scope={escapeScope}>
           <OverlayScrollView style={optionScroll} bounces={false}>
