@@ -6,19 +6,17 @@
      <html>                               <!-- solid (the default) -->
      <html class="dark" data-surface="glass">
 
-   When it is on, EVERY surface renders through the material, LAYERED: the
-   functional shells and overlays (popovers, dialogs, drawers, action sheets, the
-   command palette, navbars, tab bars) paint `--glass-tint`; content panes (cards,
-   tables, lists, tiles, feeds, the calendar, chart frames) paint the denser
-   `--glass-tint-content`; controls (fields, buttons, segmented controls, chips,
-   badges, the check and switch pucks) paint the bright `--glass-tint-control`;
-   and the surfaces the user reads rows or a verdict from (option lists, alert
-   dialogs, toasts) paint the densest `--glass-tint-dense`, so the page's own
-   rows never read between a menu's. Fills INSIDE a glass surface (a hovered row,
-   a selected tab) are translucent tints, never opaque patches. This supersedes the
-   earlier functional-layer-only model (Apple's "don't use Liquid Glass in the
-   content layer") at the kit owner's direction, 2026-09-16; the layering is what
-   keeps a pane legible where a single sheer material read as a hole.
+   A surface's role and context choose its material: content and reading panes
+   use stable frost; functional floating shells and controls can use Liquid
+   Glass. Labels, chart marks, unfilled variants, and layout-only wrappers inherit
+   the surrounding surface instead of gaining their own pane. Custom motion is
+   separate from the material and is never implied by a tint token.
+
+   Tint density is independent of that choice. Functional shells use
+   `--glass-tint`, content panes use `--glass-tint-content`, surfaced controls use
+   `--glass-tint-control`, and reading overlays use `--glass-tint-dense`. Dense
+   menus retain enough coverage to separate their rows from the page behind.
+   Internal state fills retain their semantic meaning and readable contrast.
 
    The mode still swaps NO semantic color token: `--popover` and `--card` are the
    same opaque colors under `data-surface="glass"` as without it, and a surface
@@ -54,11 +52,11 @@
    line resolved to that translucent value and the "reduce transparency" panel
    stayed see-through. */
 @media (prefers-reduced-transparency:reduce){
-  [data-surface="glass"]{--glass-tint:var(--popover);--glass-tint-content:var(--card);--glass-tint-control:var(--card);--glass-tint-dense:var(--popover);--glass-frost:none /* @kind other */;--glass-lens:none /* @kind other */;--glass-specular:var(--shadow-lg) /* @kind shadow */}
+  [data-surface="glass"]{--glass-tint:var(--popover);--glass-tint-content:var(--card);--glass-tint-control:var(--card);--glass-tint-dense:var(--popover);--glass-frost:none /* @kind other */;--glass-lens:none /* @kind other */;--glass-illumination:none /* @kind other */;--glass-edge:var(--border);--glass-specular:var(--shadow-lg) /* @kind shadow */}
 }
 @media (prefers-contrast:more){
-  [data-surface="glass"]{--glass-tint:var(--popover);--glass-tint-content:var(--card);--glass-tint-control:var(--card);--glass-tint-dense:var(--popover);--glass-frost:none /* @kind other */;--glass-lens:none /* @kind other */}
+  [data-surface="glass"]{--glass-tint:var(--popover);--glass-tint-content:var(--card);--glass-tint-control:var(--card);--glass-tint-dense:var(--popover);--glass-frost:none /* @kind other */;--glass-lens:none /* @kind other */;--glass-illumination:none /* @kind other */;--glass-edge:var(--input);--glass-specular:var(--shadow-lg) /* @kind shadow */}
 }
 @media print{
-  [data-surface="glass"]{--glass-tint:var(--card);--glass-frost:none /* @kind other */;--glass-lens:none /* @kind other */;--glass-specular:none /* @kind shadow */;--surface-backdrop:none /* @kind other */}
+  [data-surface="glass"]{--glass-tint:var(--popover);--glass-tint-content:var(--card);--glass-tint-control:var(--card);--glass-tint-dense:var(--popover);--glass-frost:none /* @kind other */;--glass-lens:none /* @kind other */;--glass-illumination:none /* @kind other */;--glass-edge:var(--border);--glass-specular:none /* @kind shadow */;--surface-backdrop:none /* @kind other */}
 }

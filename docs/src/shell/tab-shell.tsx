@@ -36,12 +36,12 @@ export function TabShell({ section: _section }: { section: "home" | "components"
         headerShown: true,
         headerTransparent: ios,
         headerTitleAlign: "left",
+        headerTintColor: tokens.foreground,
         contentStyle: { backgroundColor: tokens.background },
         ...(ios
           ? {}
           : {
               headerStyle: { backgroundColor: tokens.background },
-              headerTintColor: tokens.foreground,
               headerShadowVisible: false,
             }),
       }}

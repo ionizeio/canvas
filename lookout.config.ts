@@ -5,10 +5,9 @@
  * the component routes from nav.config.json, which check-nav-sync holds 1:1 with
  * the docs core, so this list cannot drift out from under the sweep.
  *
- * Canonical judging runs on the SOLID surface (?surface=solid pinned via the
- * target query): glass frosts are GPU-nondeterministic and would churn the
- * judge's hash cache. The 14 functional-layer components get a separate
- * glass-target pass. Scheme switches ride the docs' launch-URL seeding
+ * Solid remains the canonical pixel baseline. The separate glass pass covers
+ * every route in the maintained material manifest, including inherited surfaces
+ * whose unpainted anatomy must survive the theme change. Scheme switches use launch-URL seeding
  * (?scheme=dark|light), which also powers native light capture
  * (canvas:///components/button?scheme=light).
  *
@@ -18,7 +17,9 @@
 import type { LookoutConfig, RouteDef, StateRecipe } from "@nannier-com/lookout";
 import type { Page } from "playwright";
 import navConfig from "./docs/src/data/nav.config.json";
-import { OVERLAY_RECIPES, TOAST_RECIPE } from "./e2e/support/overlay-recipes.ts";
+import { MATERIAL_OVERLAY_RECIPES, TOAST_RECIPE } from "./e2e/support/overlay-recipes.ts";
+import { MATERIAL_ROUTES, nativeMaterialRoutes, nativeMaterialTarget } from "./e2e/support/material-routes.ts";
+import { fitElementForScreenshot } from "./e2e/support/docs.ts";
 
 // ---------------------------------------------------------------------------
 // Routes: every component page, element-shot on the preview card (the 3-up
@@ -32,16 +33,7 @@ const sidebar = (navConfig as {
 
 /** Overlay routes and the state that opens them (see states below). */
 const OVERLAY_STATE: Record<string, string> = {
-  dialog: "open-dialog",
-  "alert-dialog": "open-alert-dialog",
-  dropdown: "open-dropdown",
-  popover: "open-popover",
-  "action-sheet": "open-action-sheet",
-  drawer: "open-drawer",
-  "row-menu": "open-row-menu",
-  select: "open-select",
-  autocomplete: "open-autocomplete",
-  command: "open-command",
+  ...Object.fromEntries(MATERIAL_OVERLAY_RECIPES.map(({ slug }) => [slug, `open-${slug}`])),
   toast: "show-toast",
 };
 
@@ -68,25 +60,6 @@ const componentRoutes: RouteDef[] = sidebar.flatMap((group) =>
   }),
 );
 
-/** Functional-layer components: the ones that render the glass material. */
-const FUNCTIONAL_LAYER = [
-  "button-group",
-  "dialog",
-  "alert-dialog",
-  "dropdown",
-  "select",
-  "autocomplete",
-  "popover",
-  "tooltip",
-  "action-sheet",
-  "drawer",
-  "command",
-  "row-menu",
-  "navbars",
-  "sidebar",
-  "toast",
-];
-
 // ---------------------------------------------------------------------------
 // Overlay recipes. The list itself lives in e2e/support/overlay-recipes.ts, shared
 // with the end-to-end suite, because keeping two copies is what let four of these go
@@ -97,15 +70,16 @@ const FUNCTIONAL_LAYER = [
 // overlay portals to a stage-level outlet OUTSIDE the preview card.
 // ---------------------------------------------------------------------------
 
-const stage = (page: Page) => page.locator("[data-preview-stage]").first();
+const stage = (page: Page) => page.locator("[data-preview-stage]").filter({ has: page.locator("[data-preview-card]") }).first();
 
 const states: Record<string, StateRecipe> = Object.fromEntries(
-  OVERLAY_RECIPES.map((recipe) => [
+  MATERIAL_OVERLAY_RECIPES.map((recipe) => [
     OVERLAY_STATE[recipe.slug],
     {
       prepare: async (page: Page) => {
         await recipe.open(page, stage(page));
-        await page.waitForTimeout(400);
+        const host = recipe.atDocumentRoot ? page : stage(page).locator("..");
+        await host.getByRole(recipe.role).last().waitFor({ state: "visible" });
       },
       restore: async (page: Page) => {
         await page.keyboard.press("Escape");
@@ -115,6 +89,25 @@ const states: Record<string, StateRecipe> = Object.fromEntries(
     } satisfies StateRecipe,
   ]),
 );
+
+// Keep the fixed-viewport rest shot and add complete component evidence. Tall
+// preview cards live inside a docs scrollport, so Chromium cannot paint their
+// offscreen rows merely by requesting an element crop beyond the viewport.
+const contentViewports = new WeakMap<Page, { width: number; height: number }>();
+states["full-content"] = {
+  description: "Complete preview at the same width, with viewport height fitted to the content",
+  prepare: async (page: Page) => {
+    const viewport = page.viewportSize();
+    if (viewport) contentViewports.set(page, viewport);
+    await fitElementForScreenshot(page, page.locator("[data-preview-card]").first());
+  },
+  restore: async (page: Page) => {
+    const viewport = contentViewports.get(page);
+    if (viewport) await page.setViewportSize(viewport);
+    contentViewports.delete(page);
+  },
+  element: "[data-preview-card]",
+};
 
 // Toasts auto-dismiss, so they are shot right after the trigger with no restore. The
 // live region is already on the page and empty; the trigger fills it.
@@ -158,19 +151,30 @@ const config: LookoutConfig = {
       routes: componentRoutes,
     },
     {
-      // Glass regression pass: the functional-layer components under the
-      // glass material, judged for glass-specific defects only.
+      // Browser skin previews prove browser rendering, never native materials.
       name: "glass",
       url: "http://localhost:8081",
       startHint: "cd docs && bun run dev",
       query: { surface: "glass" },
-      routes: FUNCTIONAL_LAYER.map((slug) => ({
-        path: `/components/${slug}`,
+      routes: MATERIAL_ROUTES.map(({ path, slug }) => ({
+        path,
         name: `${slug}-glass`,
         element: "[data-preview-card]",
-        states: slug === "button-group" ? ["button-group-held"] : OVERLAY_STATE[slug] ? [OVERLAY_STATE[slug]!] : [],
+        states: ["full-content", ...(slug === "button-group" ? ["button-group-held"] : OVERLAY_STATE[slug] ? [OVERLAY_STATE[slug]!] : [])],
       })),
     },
+    ...(["glass", "solid"] as const).map((surface) => ({
+      name: `native-${surface}`,
+      url: "http://localhost:8081",
+      startHint: "cd docs && bun run dev; boot a simulator or emulator with the Canvas docs app installed",
+      // Native capture currently supports resting deep links only. Browser state
+      // recipes cannot establish an opened native overlay or native liquid motion.
+      routes: nativeMaterialRoutes(surface).map(({ path, slug }) => ({
+        path,
+        name: `${slug}-native-${surface}`,
+        platforms: ["ios", "android"] as ("ios" | "android")[],
+      })),
+    })),
   ],
 
   // The docs seed theme state from the launch URL (docs-theme.tsx).
@@ -208,13 +212,21 @@ const config: LookoutConfig = {
   },
 
   native: {
-    target: "docs",
-    ios: { deepLinkScheme: "canvas", bundleId: "com.nannier.canvas", appearanceParam: "scheme" },
+    // Default native run captures glass. For the matching solid run set
+    // CANVAS_LOOKOUT_NATIVE_SURFACE=solid and select --targets native-solid.
+    target: nativeMaterialTarget(),
+    ios: {
+      deepLinkScheme: "canvas",
+      bundleId: "com.nannier.canvas",
+      appearanceParam: "scheme",
+      startHint: "Boot an iOS simulator with com.nannier.canvas installed, then run cd docs && bun run dev",
+    },
     android: {
       deepLinkScheme: "canvas",
       bundleId: "com.nannier.canvas",
       appearanceParam: "scheme",
       settleMs: 14000,
+      startHint: "Boot an Android emulator with com.nannier.canvas installed; set ADB to the SDK adb path if needed; run cd docs && bun run dev",
     },
   },
 };

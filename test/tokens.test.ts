@@ -1,4 +1,6 @@
 import { describe, it, expect } from "bun:test";
+import { readFileSync } from "node:fs";
+import { CSSMediaRule, CSSStyleRule, Window } from "happy-dom";
 import { lightColors, darkColors, colorsByScheme, glassByScheme, brandColors, palette } from "../src/style/tokens.ts";
 import { statusHues } from "../src/style/status-hue.ts";
 
@@ -131,6 +133,69 @@ describe("glassByScheme (the glass material's own tokens)", () => {
       for (const key of Object.keys(glassByScheme[scheme])) expect(key).toMatch(/^glass-[a-z-]+$/);
     }
   });
+});
+
+describe("CSS material handoff fallbacks", () => {
+  // Parse the shipping stylesheets through CSSOM. Resolve their real aliases so
+  // an omitted layer cannot pass by checking just the first tint or blur token.
+  const cssWindow = new Window();
+  const sheet = new cssWindow.CSSStyleSheet();
+  sheet.replaceSync(["colors", "shadows", "surface"].map((name) =>
+    readFileSync(new URL(`../styles/tokens/${name}.css`, import.meta.url), "utf8"),
+  ).join("\n"));
+
+  function materialValues(dark: boolean, media?: string) {
+    const values = new Map<string, string>();
+    const apply = (rule: CSSStyleRule) => {
+      for (let i = 0; i < rule.style.length; i++) {
+        const key = rule.style.item(i);
+        values.set(key, rule.style.getPropertyValue(key).trim());
+      }
+    };
+    for (const rule of sheet.cssRules) {
+      if (rule instanceof CSSStyleRule && [":root", ...(dark ? [".dark"] : []), '[data-surface="glass"]'].includes(rule.selectorText)) apply(rule);
+      if (rule instanceof CSSMediaRule && rule.conditionText === media) {
+        for (const nested of rule.cssRules) {
+          if (nested instanceof CSSStyleRule && nested.selectorText === '[data-surface="glass"]') apply(nested);
+        }
+      }
+    }
+    function resolve(key: string, seen = new Set<string>()): string {
+      if (seen.has(key)) throw new Error(`Circular CSS token: ${key}`);
+      seen.add(key);
+      const value = values.get(key);
+      if (value === undefined) throw new Error(`Missing CSS token: ${key}`);
+      return value.replace(/var\((--[a-z-]+)\)/g, (_, alias: string) => resolve(alias, new Set(seen)));
+    }
+    return resolve;
+  }
+
+  for (const dark of [false, true]) {
+    const scheme = dark ? "dark" : "light";
+    it(`retains translucent ${scheme} material when no fallback is active`, () => {
+      const value = materialValues(dark);
+      for (const tint of Object.keys(glassByScheme[scheme])) expect(value(`--${tint}`)).toMatch(/^rgba\(.+,0\.\d+\)$/);
+      expect(value("--glass-frost")).toContain("blur(");
+      expect(value("--glass-lens")).toContain("url(");
+    });
+
+    for (const media of ["(prefers-reduced-transparency:reduce)", "(prefers-contrast:more)", "print"]) {
+      it(`restores every ${scheme} material layer to an opaque skin for ${media}`, () => {
+        const value = materialValues(dark, media);
+        for (const tint of Object.keys(glassByScheme[scheme])) {
+          const fill = value(`--${tint}`);
+          expect([value("--card"), value("--popover")]).toContain(fill);
+          expect(fill).toMatch(/^oklch\([^/]+\)$/);
+        }
+        for (const effect of ["--glass-frost", "--glass-lens", "--glass-illumination"]) expect(value(effect)).toBe("none");
+        expect([value("--border"), value("--input")]).toContain(value("--glass-edge"));
+        expect(value("--glass-specular")).toBe(media === "print" ? "none" : value("--shadow-lg"));
+        if (media === "print") expect(value("--surface-backdrop")).toBe("none");
+        // Material fallback must not recolor the content placed above it.
+        expect(value("--foreground")).toBe(materialValues(dark)("--foreground"));
+      });
+    }
+  }
 });
 
 /**

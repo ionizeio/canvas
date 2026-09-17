@@ -58,11 +58,11 @@
   --delta-up:#1a7544;
   --delta-down:#d02533;
 
-  /* Glass: the FUNCTIONAL layer's material (bars, sheets, popovers, controls) floating above
-     the content layer, which stays solid. It is a LENS, not a frost: the bend concentrates at
-     the RIM, so a pane's centre is flat and the highlight rings the edge. `--glass-lens` is
-     that filter (the page supplies #cds-glass-lens), `--glass-frost` the fallback where SVG
-     backdrop filters are unavailable. Why, and the per-platform build: src/style/glass-surface. */
+  /* Browser material handoff. Reading/content panes use static frost; functional
+     surfaces can use the lens where supported, with refraction at the rim.
+     Density does not select material or motion. `--glass-lens` requires the page's
+     #cds-glass-lens filter; `--glass-frost` supplies stable browser blur. Native
+     rendering resolves its own capabilities in src/style/glass-surface. */
   --glass-tint:rgba(255,255,255,0.20);
   /* One tint per LAYER: content panes, control pucks, and the dense lists/alerts. Why in tokens.ts. */
   --glass-tint-content:rgba(255,255,255,0.62);--glass-tint-control:rgba(255,255,255,0.70);--glass-tint-dense:rgba(255,255,255,0.88);

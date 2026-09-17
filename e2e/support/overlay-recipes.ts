@@ -144,6 +144,21 @@ export const OVERLAY_RECIPES: OverlayRecipe[] = [
   },
 ];
 
+/** Country menus join material evidence without changing the Linux solid baselines. */
+export const PHONE_INPUT_RECIPE: OverlayRecipe = {
+  slug: "phone-input",
+  open: async (_page, stage) => {
+    await stage.getByRole("button", { name: /^Country(?:,|$)/ }).last().click();
+  },
+  trigger: (_page, stage) => stage.getByRole("button", { name: /^Country(?:,|$)/ }).last(),
+  role: "listbox",
+  adds: 1,
+  expands: true,
+};
+
+/** Material captures share these exact input recipes with Lookout. */
+export const MATERIAL_OVERLAY_RECIPES: OverlayRecipe[] = [...OVERLAY_RECIPES, PHONE_INPUT_RECIPE];
+
 /**
  * Toast is not an overlay you open and close: it is an announcement written into a
  * live region already standing on the page, and it removes itself.

@@ -32,8 +32,10 @@ class matches; cite them as "M3 <value> (canvas rubric)":
 - Touch targets at least 44pt.
 - Alerts are centered with stacked or paired actions; sheets slide from the
   bottom with a grabber.
-- Liquid Glass belongs to the FUNCTIONAL layer only (overlays, bars); content
-  surfaces (cards, lists, tables) stay solid.
+- Functional floating surfaces can use native Liquid Glass. Surfaced content
+  panes use static frost in glass mode, with crisp unwarped content; unfilled
+  anatomy inherits its host. Solid appearance and accessibility fallbacks stay
+  fully opaque. A browser skin preview does not establish native fidelity.
 
 ## Platform reference: Web rows
 

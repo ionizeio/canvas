@@ -1,8 +1,11 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Appearance, Platform, useColorScheme } from "react-native";
 import { useGlobalSearchParams } from "expo-router";
+import * as Linking from "expo-linking";
+import { StatusBar } from "expo-status-bar";
 import { ThemeProvider, type Surface } from "@ionizeio/canvas";
 import { CANVAS_FONTS } from "../ui/fonts";
+import { subscribeThemeLinks, themeFromParams, themeFromURL } from "./theme-links";
 
 // The docs' theme controls. Canvas's ThemeProvider is driven by the dark/light
 // and glass/solid boolean axes; this holds that state and exposes setters to the toggles, so the
@@ -32,25 +35,14 @@ export function useDocsTheme(): DocsThemeContext {
 export function DocsThemeProvider({ children }: { children: ReactNode }) {
   const system = useColorScheme();
   const systemScheme: Scheme = system === "dark" ? "dark" : "light";
-  // Launch-URL seeding: ?scheme=dark|light and ?surface=solid|glass on the
-  // opening URL (web address bar, or a native deep link such as
-  // canvas:///components/button?scheme=light) pick the INITIAL look. The docs
-  // stay session-only (no storage, by privacy declaration); this reads the
-  // one-shot launch state so shared links and capture tooling can open a
-  // specific look on every platform. Captured once via ref: later
-  // navigations must not fight the in-app toggles.
+  // Web links seed the first render. On native, Expo's synchronous launch URL
+  // also covers the interval before the router publishes its first params.
+  // Later in-app navigation keeps the user's manual appearance choices.
   const params = useGlobalSearchParams<{ scheme?: string; surface?: string }>();
-  const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
-  const seed = useRef({
-    scheme: ((): Scheme | null => {
-      const v = first(params.scheme);
-      return v === "light" || v === "dark" ? v : null;
-    })(),
-    surface: ((): Surface | null => {
-      const v = first(params.surface);
-      return v === "solid" || v === "glass" ? v : null;
-    })(),
-  }).current;
+  const [seed] = useState(() => {
+    const url = Platform.OS === "web" ? null : Linking.getLinkingURL();
+    return { ...themeFromParams(params), ...themeFromURL(url), url };
+  });
   // The docs DEFAULT to dark on every platform (the Canvas Universe is the brand
   // stage and reads best in deep space). The web topbar sun/moon and the native
   // Appearance controls (the iOS header menu rows, the Android overflow-sheet
@@ -78,6 +70,17 @@ export function DocsThemeProvider({ children }: { children: ReactNode }) {
     if (Platform.OS !== "web") Appearance.setColorScheme(s ?? "unspecified");
   }, []);
 
+  // Opening an external preview link is a new explicit appearance request,
+  // including when the native app is already running. Missing axes preserve
+  // their current choice. No router-param effect can reset ordinary navigation.
+  useEffect(() => {
+    if (Platform.OS === "web") return;
+    return subscribeThemeLinks(Linking, seed.url, (next) => {
+      if (next.scheme) setScheme(next.scheme);
+      if (next.surface) setSurface(next.surface);
+    });
+  }, [seed, setScheme]);
+
   const value = useMemo<DocsThemeContext>(
     () => ({
       scheme,
@@ -96,7 +99,12 @@ export function DocsThemeProvider({ children }: { children: ReactNode }) {
           expressions: both are explicit because the docs never want the
           platform default (the Glass/Solid toggle owns the choice). */}
       {/* `fonts` hands the kit the Urbanist faces the docs registered (docs/src/ui/fonts.ts). */}
-      <ThemeProvider dark={scheme === "dark"} light={scheme === "light"} glass={surface === "glass"} solid={surface === "solid"} fonts={CANVAS_FONTS}>{children}</ThemeProvider>
+      <ThemeProvider dark={scheme === "dark"} light={scheme === "light"} glass={surface === "glass"} solid={surface === "solid"} fonts={CANVAS_FONTS}>
+        {/* Expo config uses app-wide status-bar ownership on iOS. Its StatusBar
+            wraps the RN managed stack on native and is a no-op on web. */}
+        <StatusBar style={scheme === "dark" ? "light" : "dark"} />
+        {children}
+      </ThemeProvider>
     </Ctx.Provider>
   );
 }

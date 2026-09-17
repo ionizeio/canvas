@@ -8,7 +8,10 @@ import { PageNav } from "../../ui/page-nav";
 const INSTALL = `npm install @ionizeio/canvas react react-native react-native-svg`;
 
 const OPTIONAL_INSTALL = `# add only the ones whose feature you use
-npm install react-native-qrcode-svg react-native-safe-area-context expo-blur expo-glass-effect expo-clipboard`;
+npm install react-native-qrcode-svg react-native-safe-area-context expo-blur expo-glass-effect expo-clipboard
+
+# Android 12+ capture support in an Expo SDK 57 native build
+npm install @ionizeio/canvas-blur`;
 
 const QUICK_START = `import { ThemeProvider, Button } from "@ionizeio/canvas";
 
@@ -168,12 +171,17 @@ export default function IntegrationScreen() {
             without it, <InlineCode>QRCode</InlineCode> shows an empty labeled frame.
           </P>
           <P muted>
-            <InlineCode>expo-glass-effect</InlineCode>: real iOS 26 Liquid Glass for overlays and bars; without it, glass
-            mode falls back to a translucent fill.
+            <InlineCode>expo-glass-effect</InlineCode>: native Liquid Glass for eligible functional surfaces on supported
+            iOS 26+. Without it, shared rendering uses available frost or the complete opaque solid skin.
           </P>
           <P muted>
-            <InlineCode>expo-blur</InlineCode>: a real frosted blur for glass mode on web, Android, and iOS &lt; 26;
-            without it, glass mode falls back to a translucent fill.
+            <InlineCode>expo-blur</InlineCode>: static frost on iOS, including content below iOS 26 Liquid Glass, and
+            supported legacy Android frost. Browser frost and lenses are built in and do not need this peer.
+          </P>
+          <P muted>
+            <InlineCode>@ionizeio/canvas-blur</InlineCode>: optional Android 12+ capture and frost for Expo SDK 57 native
+            builds, using a safe live backdrop target. Install it in the native app and rebuild so Expo autolinks the module.
+            Capture runs only while needed. Missing or unsafe material restores the complete opaque solid skin.
           </P>
           <P muted>
             <InlineCode>react-native-safe-area-context</InlineCode>: safe-area insets for the overlays that use them
@@ -234,10 +242,10 @@ export default function IntegrationScreen() {
           <H3>Theme, surface, density helpers</H3>
           <P muted>
             <InlineCode>setTheme</InlineCode> and <InlineCode>toggleTheme</InlineCode> toggle the{" "}
-            <InlineCode>.dark</InlineCode> class, the one hook the token layer reads, so they restyle the page by
-            themselves. <InlineCode>setSurface</InlineCode> and <InlineCode>setDensity</InlineCode> persist a preference
-            and stamp a <InlineCode>data-*</InlineCode> attribute that no shipped CSS reads: read the choice back
-            (<InlineCode>getSurface</InlineCode>, <InlineCode>getDensity</InlineCode>) and sync it into your{" "}
+            <InlineCode>.dark</InlineCode> class to update the CSS color tokens. <InlineCode>setSurface</InlineCode> and
+            <InlineCode>setDensity</InlineCode> persist preferences and set the CSS handoff attributes for material mode,
+            page backdrop, and supported card/table spacing. Read the choices back
+            (<InlineCode>getSurface</InlineCode>, <InlineCode>getDensity</InlineCode>) and sync them into your{" "}
             <InlineCode>ThemeProvider</InlineCode> and component props, the way the hook above syncs the scheme. All four
             are web-only (they touch <InlineCode>document</InlineCode> and <InlineCode>localStorage</InlineCode>).
           </P>

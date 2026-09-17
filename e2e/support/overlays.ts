@@ -7,7 +7,7 @@
  * since the Do/Don't cards carry the same attribute) and the locators the specs read.
  */
 import { type Locator, type Page } from "@playwright/test";
-import { OVERLAY_RECIPES, TOAST_RECIPE, type OverlayRecipe } from "./overlay-recipes";
+import { OVERLAY_RECIPES, MATERIAL_OVERLAY_RECIPES, TOAST_RECIPE, type OverlayRecipe } from "./overlay-recipes";
 import { stage } from "./docs";
 
 export interface BoundOverlay {
@@ -44,6 +44,7 @@ function bind(recipe: OverlayRecipe): BoundOverlay {
 }
 
 export const OVERLAYS: BoundOverlay[] = OVERLAY_RECIPES.map(bind);
+export const MATERIAL_OVERLAYS: BoundOverlay[] = MATERIAL_OVERLAY_RECIPES.map(bind);
 
 export const TOAST = {
   slug: TOAST_RECIPE.slug,

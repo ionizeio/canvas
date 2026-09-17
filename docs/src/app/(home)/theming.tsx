@@ -9,8 +9,8 @@ import { sans } from "../../ui/fonts";
 import { useDocsTheme } from "../../theme/docs-theme";
 
 // The page's teaching snippets. The helper ones mirror src/theme.ts behavior
-// exactly: the data-* attributes persist and broadcast a choice, no shipped CSS
-// reads them, and only the .dark class restyles anything on its own.
+// exactly: the CSS handoff reads .dark and data-* attributes. React Native
+// components receive the same choices through their provider and semantic props.
 const NATIVE_PROVIDER = `import { ThemeProvider } from "@ionizeio/canvas";
 
 // Wrap the app once. ThemeProvider follows the OS appearance by default;
@@ -62,8 +62,8 @@ getSurface();            // "solid" | "glass", the persisted choice
 setSurface("glass");     // persists it, and sets data-surface="glass" on <html>
 setSurface("solid");     // persists it, and removes the attribute
 
-// No shipped CSS reads data-surface. The attribute is a broadcast hook for your
-// own code: read the choice back and pass it to ThemeProvider, as above.`;
+// The CSS handoff reads data-surface for the material mode and page backdrop.
+// Also pass the choice to ThemeProvider so React Native components follow it.`;
 const DENSITY = `// Density is per component, on every platform; omit both for the default.
 <Card compact>...</Card>
 <Card comfortable>...</Card>
@@ -74,8 +74,8 @@ getDensity();            // "compact" | "regular" | "comfy", the persisted prefe
 setDensity("compact");   // persists it, and sets data-density="compact" on <html>
 setDensity("regular");   // persists it, and removes the attribute
 
-// No shipped CSS reads data-density. Store the app-wide preference here, then
-// map it to component booleans (compact / comfortable) in your own code.`;
+// The CSS handoff adjusts supported card and table spacing tokens. Map the
+// preference to component booleans (compact / comfortable) for React Native.`;
 const COMBINING = `// One provider carries scheme and surface; density rides each component.
 <ThemeProvider dark glass>
   <Card compact>...</Card>
@@ -83,8 +83,8 @@ const COMBINING = `// One provider carries scheme and surface; density rides eac
 const JS_COMBINE = `import { setTheme, setSurface, setDensity } from "@ionizeio/canvas";
 
 setTheme("dark");       // flips .dark on <html>: the CSS token layer re-themes
-setSurface("glass");    // persists; sync it into <ThemeProvider glass>
-setDensity("compact");  // persists; map it to component booleans`;
+setSurface("glass");    // updates CSS handoff; also sync into ThemeProvider
+setDensity("compact");  // updates CSS spacing; also map to component booleans`;
 
 function Bullet({ children }: { children: React.ReactNode }) {
   const { tokens } = useTheme();
@@ -104,7 +104,7 @@ export default function ThemingScreen() {
       <View style={{ gap: 28 }}>
         <PageHeader
           title="Theming"
-          description="Three theming axes (light/dark, glass surface, density) on one model: ThemeProvider carries scheme and glass on every platform; on the web, the .dark class drives the CSS token layer and small helpers persist the rest."
+          description="Three theming axes (light/dark, glass surface, density) on one model: ThemeProvider carries scheme and glass on every platform; on the web, helpers persist all three choices and update the CSS handoff attributes."
         />
 
         <Section title="Native (ThemeProvider)">
@@ -121,8 +121,8 @@ export default function ThemingScreen() {
           <CodeBlock code={USE_THEME} />
           <Callout label="Density">
             is a per-component choice, not a provider prop: pass a density boolean to the components that support it (for example
-            {" <Card compact> or <Card comfortable>"}). That holds on the web too; the setDensity helper below only persists a
-            preference.
+            {" <Card compact> or <Card comfortable>"}). That holds for React Native Web components too; the setDensity helper
+            also updates spacing tokens in the separate CSS handoff.
           </Callout>
           <Callout label="Server rendering (SSR/SSG)">
             When the app server-renders (Next.js and the like) and the client scheme can differ from the server default (a stored
@@ -138,7 +138,7 @@ export default function ThemingScreen() {
         <Section title="Light / Dark Mode">
           <P>
             Light mode is the default. On the web, dark mode is the <InlineCode>dark</InlineCode> class on <InlineCode>{"<html>"}</InlineCode>,
-            the one attribute the shipped CSS reads for theming; the helpers toggle it and the token layer flips every color token for
+            which the helpers toggle so the token layer flips every color token for
             anything styled with the CSS variables. Mirror the class into <InlineCode>ThemeProvider</InlineCode>&apos;s{" "}
             <InlineCode>scheme</InlineCode> so the components follow (the Integration page shows the hook; the value form exists
             exactly for a held value like that). (On native, pass the{" "}
@@ -194,11 +194,11 @@ export default function ThemingScreen() {
             <Bullet>No semantic token changes: popover and card keep the same opaque values they carry in solid mode. Glass adds its own fills, glass-tint, glass-tint-content, glass-tint-control and glass-tint-dense, painted under the material by the surfaces of each layer</Bullet>
             <Bullet>Brand and status meanings remain readable in every material. Check contrast against actual backgrounds, including scrolling content; a tint token or a decorative rim alone does not establish it</Bullet>
             <Bullet>Solid surfaces retain their full opaque treatment without glass capture or droplet animation. Reduce Transparency and Increase Contrast require readable opaque treatment; Reduce Motion removes nonessential movement without requiring opacity by itself</Bullet>
-            <Bullet>Android blur needs a safe live backdrop target. Tint without blur is not native frost, and a missing or unsafe material needs a complete solid fallback</Bullet>
-            <Bullet>The page background does not change by itself; these docs mount the kit's Backdrop scene behind the shell in glass mode so the frost has something to refract, an app-level choice</Bullet>
+            <Bullet>Android blur needs a safe live backdrop target. The optional @ionizeio/canvas-blur integration on Android 12+ with Expo SDK 57 enables capture only while glass needs it. OverlayProvider supplies safe overlay targets; BackdropHost can supply a separate decorative scene to inline surfaces. Missing or unsafe material uses the complete solid skin</Bullet>
+            <Bullet>These docs mount the kit's Backdrop scene behind the shell in glass mode. Separately, the CSS handoff uses data-surface to apply a decorative page backdrop; neither mechanism supplies native material by itself</Bullet>
           </Column>
           <H3>Web helpers</H3>
-          <P muted>The helpers persist the choice; they restyle nothing by themselves. The provider, fed as above, is what re-themes the components.</P>
+          <P muted>The helpers persist the choice and update the CSS handoff attributes. Feed the same choice to ThemeProvider so React Native components follow it.</P>
           <CodeBlock code={JS_SURFACE} />
         </Section>
 
@@ -208,15 +208,15 @@ export default function ThemingScreen() {
           <P>
             Density controls spacing in content areas and data tables, and it is a per-component choice on every platform: pass the{" "}
             <InlineCode>compact</InlineCode> or <InlineCode>comfortable</InlineCode> boolean to the components that support it (for
-            example <InlineCode>Card</InlineCode> and <InlineCode>DataTable</InlineCode>). There is no app-wide density switch: no
-            shipped CSS reads a density attribute, on the web or anywhere else.
+            example <InlineCode>Card</InlineCode> and <InlineCode>DataTable</InlineCode>). The separate CSS handoff supports an
+            app-wide density attribute for the card and table spacing tokens it defines.
           </P>
           <CodeBlock code={DENSITY} />
           <H3>Web helpers</H3>
           <P muted>
             The helpers persist an app-wide preference (compact, regular, comfy) and set <InlineCode>data-density</InlineCode> on{" "}
-            <InlineCode>{"<html>"}</InlineCode>, which nothing in the shipped CSS reads. Read the stored value back and map it to
-            component booleans yourself.
+            <InlineCode>{"<html>"}</InlineCode>, which the CSS handoff reads. Read the stored value back and map it to component
+            booleans to apply that preference to React Native components.
           </P>
           <CodeBlock code={JS_DENSITY} />
         </Section>
@@ -226,9 +226,9 @@ export default function ThemingScreen() {
         <Section title="Combining Axes">
           <P>
             All three axes are independent and composable. Scheme and surface are <InlineCode>ThemeProvider</InlineCode> props on
-            every platform, with the web's <InlineCode>dark</InlineCode> class driving the CSS token layer alongside; density is per
-            component. The web helpers persist all three choices, but only <InlineCode>setTheme</InlineCode> restyles anything by
-            itself.
+            every platform; density is per component. The web helpers persist all three choices and update the CSS handoff through
+            the <InlineCode>dark</InlineCode> class, <InlineCode>data-surface</InlineCode>, and <InlineCode>data-density</InlineCode>.
+            Keep provider state and component booleans in sync with those choices.
           </P>
           <CodeBlock code={COMBINING} />
           <CodeBlock code={JS_COMBINE} />

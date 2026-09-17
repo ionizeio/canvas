@@ -188,10 +188,25 @@ export async function fitElementForScreenshot(page: Page, frame: Locator): Promi
   if (!viewport) throw new Error("An element screenshot requires a configured viewport");
   const bannerLocator = page.getByRole("banner").first();
   const banner = await bannerLocator.count() ? await bannerLocator.boundingBox() : null;
-  const inset = Math.ceil(banner?.height ?? 0);
+  const scrollLocator = page.locator("[data-page-scroll]").first();
+  const scrollport = await scrollLocator.count() ? await scrollLocator.boundingBox() : null;
+  // The phone bottom navigation is outside the scrollport and can be taller
+  // than the overlaid banner. Account for both rather than assuming symmetry.
+  const chrome = scrollport ? viewport.height - scrollport.height : 0;
+  const inset = Math.ceil(Math.max(banner?.height ?? 0, chrome));
   const height = Math.max(viewport.height, box.height + 2 * inset);
   if (height !== viewport.height) await page.setViewportSize({ ...viewport, height });
-  await frame.scrollIntoViewIfNeeded();
+  // A preceding element capture may leave the card just beneath a fixed banner.
+  // Center explicitly, since scrollIntoViewIfNeeded ignores that occluding bar.
+  await frame.evaluate((node) => node.scrollIntoView({ block: "center", inline: "nearest" }));
+  if (scrollport && banner) {
+    // Centering is relative to the nested scrollport, whose top can sit behind
+    // the banner. Align against the measured exposed edge of that scrollport.
+    await frame.evaluate((node, top) => {
+      const scroller = node.closest<HTMLElement>("[data-page-scroll]");
+      if (scroller) scroller.scrollTop += node.getBoundingClientRect().top - top;
+    }, Math.max(scrollport.y, banner.y + banner.height));
+  }
   const fitted = await settledBox(frame);
   expect(fitted.width, "the element exceeds the screenshot viewport width").toBeLessThanOrEqual(viewport.width);
   expect(fitted.height, "the element exceeds the screenshot viewport height").toBeLessThanOrEqual(height);
