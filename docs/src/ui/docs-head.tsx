@@ -1,3 +1,4 @@
+import { Platform } from "react-native";
 import Head from "expo-router/head";
 import { usePathname } from "expo-router";
 import { useHydrated } from "../lib/hydrated";
@@ -11,9 +12,13 @@ export const SITE_NAME = "Canvas";
 // page for every route (a crawler read that as "every page is a copy of /"). The root
 // layout mounts one with no title, so a page that names none still has a document
 // title and a canonical link; a page header or component reference mounts another
-// with its title, and the nearer one wins. On iOS the same tags feed Handoff and
-// Spotlight through expo-router's head module (the plugin's `origin` names the site);
-// on Android Head renders nothing.
+// with its title, and the nearer one wins.
+//
+// Web only: a document head is a web thing. On iOS expo-router's Head is the Handoff
+// and Spotlight bridge instead, and it reads the site origin out of the NATIVE build's
+// embedded config, so any installed app built before the router plugin named that
+// origin throws a render error on every screen that mounts one. Nothing here needs
+// Handoff, so the head is not rendered off the web at all rather than tied to a rebuild.
 //
 // The document also says when it is live: every page paints its pre-rendered markup
 // before the bundle runs, so "painted" no longer means "interactive". Once hydrated,
@@ -23,6 +28,7 @@ export const SITE_NAME = "Canvas";
 export function DocsHead({ title }: { title?: string }) {
   const pathname = usePathname();
   const hydrated = useHydrated();
+  if (Platform.OS !== "web") return null;
   const canonical = `${SITE_ORIGIN}${pathname === "/" ? "/" : pathname.replace(/\/+$/, "")}`;
   return (
     <Head>
