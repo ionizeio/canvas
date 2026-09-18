@@ -67,7 +67,19 @@ const CORE_FILE_GZIP_OVERRIDES: Record<string, number> = {
 // 194,645 / 196,615B (web / iOS / Android), 7 bytes over the old cap on Android.
 // 208KB restores ~6% headroom over the measured figure, the same slack the 192KB
 // cap started with.
-export const JS_MAX_GZIP = 212_992; // 208 KB
+//
+// Raised again from 208KB for the liquid motion foundation: the directional
+// selection engine (src/style/liquid-motion.ts, liquid-motion-geometry.ts,
+// measured-selection.tsx), the popup material lifecycle (popup-motion.tsx, the
+// retained PopupCard in anchored-overlay.tsx, portal activation ordering in
+// portal.tsx) and the Tabs/TabBar moving selections. Measured before at 207,745 /
+// 208,276 / 210,071B (web / iOS / Android) and after at 212,411 / 212,852 /
+// 214,493B, so ~4.5KB gzip on every platform, 1.5KB over the old cap on Android.
+// 224KB restores ~7% headroom over the measured figure; the popup consumers that
+// follow (Dropdown, Select, Popover, RowMenu, Autocomplete, PhoneInput, Command)
+// add imports, not modules, and the remaining moving selections (Navbar, Sidebar,
+// Pagination, Calendar, Carousel) are expected inside that slack.
+export const JS_MAX_GZIP = 229_376; // 224 KB
 
 export interface JavaScriptBudget {
   label: string;
@@ -110,14 +122,24 @@ export interface JavaScriptBudget {
 // ~3.5-4KB gzip on web and Android and ~2.4KB on iOS, where the lens does not ship.
 // The ceilings moved to 8,704 / 39,936 / 46,080B for that deliberate growth (7-9%
 // headroom over the measured figures); StackedList already carried the stack.
+// Button was 8,669 / 6,684 / 8,611B and StackedList 52,665 / 50,954 / 52,755B before
+// the liquid motion foundation. Every glass surface now carries the material motion
+// seam in GlassBox (glass-surface.shared.tsx: the material rides an Animated.View
+// that reads MaterialMotionContext and takes the skin's shadow with it) plus the
+// four popup contexts, +345 and +165 minified bytes in the Button consumer, measured
+// after at 8,878 / 6,891 / 8,816B (~210B gzip). StackedList also carries the popup
+// lifecycle its row menu opens through (usePopupMotion, usePopupPresence, the
+// retained PopupCard, portal activation), measured after at 54,536 / 52,879 /
+// 54,614B (~1.9KB gzip). The ceilings moved to 9,728 and 58,368B for that
+// deliberate growth (9% and 7% headroom); Input and DataTable keep theirs.
 // Fixed ceilings leave room for deliberate growth while catching a heavy import.
 // These are independent budgets, not a combined total: shared modules legitimately
 // occur in more than one consumer. Changes require a fresh measurement and rationale.
 export const NAMED_IMPORT_BUDGETS: readonly JavaScriptBudget[] = [
-  { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 8_704, requiredExports: ["Button", "ThemeProvider"] },
+  { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 9_728, requiredExports: ["Button", "ThemeProvider"] },
   { label: "Input + ThemeProvider", entry: "scripts/size-fixtures/input.ts", maxGzip: 39_936, requiredExports: ["Input", "ThemeProvider"] },
   { label: "DataTable + ThemeProvider", entry: "scripts/size-fixtures/data-table.ts", maxGzip: 46_080, requiredExports: ["DataTable", "ThemeProvider"] },
-  { label: "StackedList + ThemeProvider", entry: "scripts/size-fixtures/stacked-list.ts", maxGzip: 53_248, requiredExports: ["StackedList", "ThemeProvider"] },
+  { label: "StackedList + ThemeProvider", entry: "scripts/size-fixtures/stacked-list.ts", maxGzip: 58_368, requiredExports: ["StackedList", "ThemeProvider"] },
 ];
 
 export interface JavaScriptSize extends JavaScriptBudget {
