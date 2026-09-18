@@ -173,3 +173,155 @@ describe("AvatarMenu inherits the Dropdown policy", () => {
     } finally { view.unmount(); clock.restore(); measure.mockRestore(); }
   });
 });
+
+// Phase 3 owners share the mechanism, but each is verified through its own
+// trigger and content role: the material conceals the content until it settles,
+// and a close retires the content at once while the material leaves.
+import { Popover } from "../src/atoms/popover/popover.tsx";
+import { RowMenu } from "../src/organisms/row-menu/row-menu.tsx";
+import { Command } from "../src/organisms/command/command.tsx";
+import { Autocomplete } from "../src/atoms/autocomplete/autocomplete.tsx";
+import { PhoneInput } from "../src/molecules/phone-input/phone-input.tsx";
+import { ButtonGroup } from "../src/atoms/button-group/button-group.tsx";
+
+const owners: Array<{ name: string; render: () => ReactNode; open: () => void; role: string; close: () => void }> = [
+  {
+    name: "Popover (triggered)",
+    render: () => <Popover trigger="Details" title="Information" actionLabel="Done" />,
+    open: () => fireEvent.click(screen.getByRole("button", { name: "Details" })),
+    role: "dialog",
+    close: () => fireEvent.click(screen.getByRole("button", { name: "Details" })),
+  },
+  {
+    name: "RowMenu",
+    render: () => <RowMenu items={[{ label: "Edit" }, { label: "Delete", destructive: true }]} />,
+    open: () => fireEvent.click(screen.getByRole("button", { name: "More options" })),
+    role: "menu",
+    close: () => fireEvent.click(screen.getByRole("button", { name: "More options" })),
+  },
+  {
+    name: "Command (triggered)",
+    render: () => <Command trigger groups={[{ heading: "Actions", items: [{ label: "New file" }, { label: "Open" }] }]} />,
+    open: () => fireEvent.click(screen.getByRole("button", { name: /Search/ })),
+    role: "listbox",
+    close: () => fireEvent.click(screen.getByRole("button", { name: /Search/ })),
+  },
+  {
+    name: "split ButtonGroup",
+    render: () => <ButtonGroup split items={["Save"]} menu={["Save copy"]} />,
+    open: () => fireEvent.click(screen.getByRole("button", { name: "More actions" })),
+    role: "menu",
+    close: () => fireEvent.click(screen.getByRole("button", { name: "More actions" })),
+  },
+  {
+    name: "PhoneInput country list",
+    render: () => <PhoneInput label="Phone" />,
+    open: () => fireEvent.click(screen.getByRole("button", { name: /^Country/ })),
+    role: "listbox",
+    close: () => fireEvent.click(screen.getByRole("button", { name: /^Country/ })),
+  },
+];
+
+describe("phase 3 owners on the liquid popup policy", () => {
+  for (const owner of owners) {
+    it(`${owner.name}: conceals until settled, retires at once on close, unmounts after the exit`, async () => {
+      const measure = bounds();
+      const view = render(glass(owner.render()));
+      await act(async () => {});
+      const clock = animationClock();
+      try {
+        owner.open();
+        clock.advance(32);
+        const content = await screen.findByRole(owner.role, { hidden: true });
+        const nodes = hostedEntranceParts(content);
+        layoutHostedEntrance(content, SIZE);
+        expect(heldBack(content)).toBe(true);
+        clock.advance(1600);
+        expect(heldBack(content)).toBe(false);
+        owner.close();
+        expect(screen.queryByRole(owner.role)).toBeNull();
+        expect(content.isConnected).toBe(true);
+        expect(retired(nodes.entrance)).toBe(true);
+        clock.advance(1600);
+        expect(content.isConnected).toBe(false);
+      } finally { view.unmount(); clock.restore(); measure.mockRestore(); }
+    });
+  }
+
+  it("Autocomplete: the suggestion list follows the same lifecycle around the live editor", async () => {
+    const measure = bounds();
+    const view = render(glass(<Autocomplete label="Fruit" options={["Apple", "Apricot"]} />));
+    await act(async () => {});
+    const clock = animationClock();
+    try {
+      const field = screen.getByRole("combobox") as HTMLInputElement;
+      fireEvent.click(screen.getByRole("button", { name: "Toggle options" }));
+      clock.advance(32);
+      const list = await screen.findByRole("listbox", { hidden: true });
+      const nodes = hostedEntranceParts(list);
+      layoutHostedEntrance(list, SIZE);
+      expect(heldBack(list)).toBe(true);
+      clock.advance(1600);
+      expect(heldBack(list)).toBe(false);
+      fireEvent.click(within(list).getByRole("option", { name: "Apricot" }));
+      expect(field.value).toBe("Apricot");
+      expect(field.isConnected).toBe(true);
+      expect(retired(nodes.entrance)).toBe(true);
+      clock.advance(1600);
+      expect(list.isConnected).toBe(false);
+      expect(screen.getByRole("combobox")).toBe(field);
+    } finally { view.unmount(); clock.restore(); measure.mockRestore(); }
+  });
+
+  it("Popover: the inline card stays a static in-flow panel", async () => {
+    const view = render(glass(<Popover inline title="Information" actionLabel="Done">Always here</Popover>));
+    await act(async () => {});
+    expect(screen.getByText("Always here").closest('[aria-hidden="true"]')).toBeNull();
+    view.unmount();
+  });
+});
+
+describe("owners closing their menu when editing is disallowed", () => {
+  it("split ButtonGroup: disabling the group while its menu is open closes it and nothing selects afterwards", async () => {
+    const measure = bounds();
+    const picked: string[] = [];
+    const page = (disabled: boolean) => glass(<ButtonGroup split items={["Save"]} menu={["Save copy"]} disabled={disabled} onSelect={(_, item) => picked.push(item)} />);
+    const view = render(page(false));
+    await act(async () => {});
+    const clock = animationClock();
+    try {
+      fireEvent.click(screen.getByRole("button", { name: "More actions" }));
+      clock.advance(32);
+      const menu = await screen.findByRole("menu", { hidden: true });
+      layoutHostedEntrance(menu, SIZE);
+      clock.advance(1600);
+      const row = within(menu).getByRole("menuitem", { name: "Save copy" });
+      view.rerender(page(true));
+      expect(screen.queryByRole("menuitem", { name: "Save copy" })).toBeNull();
+      fireEvent.click(row);
+      clock.advance(1600);
+      expect(picked).toEqual([]);
+      expect(row.isConnected).toBe(false);
+    } finally { view.unmount(); clock.restore(); measure.mockRestore(); }
+  });
+
+  it("PhoneInput: turning read-only while the country list is open closes it", async () => {
+    const measure = bounds();
+    const page = (readOnly: boolean) => glass(<PhoneInput label="Phone" readOnly={readOnly} />);
+    const view = render(page(false));
+    await act(async () => {});
+    const clock = animationClock();
+    try {
+      fireEvent.click(screen.getByRole("button", { name: /^Country/ }));
+      clock.advance(32);
+      const list = await screen.findByRole("listbox", { hidden: true });
+      layoutHostedEntrance(list, SIZE);
+      clock.advance(1600);
+      expect(screen.getByRole("listbox")).toBe(list);
+      view.rerender(page(true));
+      expect(screen.queryByRole("listbox")).toBeNull();
+      clock.advance(1600);
+      expect(list.isConnected).toBe(false);
+    } finally { view.unmount(); clock.restore(); measure.mockRestore(); }
+  });
+});

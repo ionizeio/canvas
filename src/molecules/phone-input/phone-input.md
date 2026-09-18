@@ -2,6 +2,13 @@
 
 A phone number field: the Input's box with a country segment at its start (the chosen country's flag and a caret, which open a list of countries with their names and dial codes) and that country's dial code inline before the number. The number and the country are each controlled (`value` / `country`) or self-managed (`defaultValue` / `defaultCountry`), the segment defaults to the kit's curated `PHONE_COUNTRIES` list (pass `countries` for a full or localized one), and the number field asks for the phone keypad. Pass `label` (and `required`) to name it; `error` paints the whole box, segment included, and Field delegates its label, required mark and error into it. On iOS the field is drawn to the iOS input-field reference: the white box, the flag and gray caret segment with its state-coloured divider, the dial code in the placeholder gray.
 
+In glass mode the country list grows out of the field's edge, recoils and
+settles, and stays visible briefly on close while its rows are already inert;
+the number editor, its caret and the dial code never move, and a pick commits the
+country and returns focus to the number at once. A field that becomes disabled or
+read-only while the list is open closes it. Reduce Motion settles at once; solid
+mode keeps the ordinary entrance.
+
 ## Usage
 
 ```tsx

@@ -3,7 +3,12 @@ import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { consumeEscapeKey, EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { forwardRef, useEffect, useId, useRef, useState } from "react";
 import { Platform, type Role, type TextInput as RNTextInput } from "react-native";
-import { View, Pressable, Text, TextInput, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, isGlass, PANE_SIBLING_INPUT, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useControllableState, useFillStyle, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, isGlass, PANE_SIBLING_INPUT, withInnerFill } from "../../style/index.js";
+// The kit-owned popup policy for the suggestion list: under glass the material grows out of
+// the anchor edge, recoils and settles, and stays visible briefly on close while
+// the rows are already inert. Solid mode and Reduce Motion keep the ordinary
+// entrance. Internal, never a public prop.
+import { LiquidAnchoredOverlay } from "../../style/liquid-anchored-overlay.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useActiveOptionScroll } from "../../style/use-active-option-scroll.js";
 import { AccessibilityReturnBoundary, accessibilitySelectionProps, useAccessibilityReturn } from "../../style/use-accessibility-return.js";
@@ -415,7 +420,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
           {entryMaterial.stateBorder(fieldShape, open)}
         </View>
 
-        <AnchoredOverlay
+        <LiquidAnchoredOverlay
           onAccessibilityEscape={escapeScope.onAccessibilityEscape}
           ownsScroll
           open={open}
@@ -499,7 +504,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
               </OverlayScrollView>
             </EscapeLayerProvider>
           </AccessibilityReturnBoundary>
-        </AnchoredOverlay>
+        </LiquidAnchoredOverlay>
 
         {helperText != null && helperText !== "" ? (
           <Text style={skin.helper(tokens)}>{helperText}</Text>

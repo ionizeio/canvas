@@ -2,6 +2,13 @@
 
 Text input + dropdown: searchable single-select. Pass `label` (and `required`) to name the field: iOS and web render the label above the field, while Android floats the Material 3 in-container label once the list opens or a value fills the field. The field fills the parent it is given; a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container step sets its measure.
 
+In glass mode the suggestion list grows out of the field's edge, recoils and
+settles, and stays visible briefly on close while the suggestions are already
+inert; the field, its caret, floating label and toggle never move, and picking a
+suggestion commits the value at once. Filtering re-shapes the material without
+replaying the opening. Reduce Motion settles at once; solid mode keeps the
+ordinary entrance.
+
 Arrow Down and Arrow Up open the list and highlight an option while focus stays in the text field. Navigation stops at the first and last matches. Home and End jump to those limits once an option is highlighted; otherwise they retain their text-editing behavior. Enter chooses the highlighted option, Escape closes the list without changing the query, and Tab closes it while moving focus. Typing resets the highlight. Confirming an input-method candidate does not select an option or submit a surrounding Form.
 
 Use `value` with `onValueChange` to control the selection, and use `""` for a controlled empty value. The callback reports selections and clearing the field. `onSelect` remains a selection-only notification. The independent `query`/`onQueryChange` pair controls filtering; choosing an option resets the query to `""`.

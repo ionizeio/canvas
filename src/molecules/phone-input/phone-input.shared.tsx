@@ -1,6 +1,6 @@
 import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
-import { forwardRef, useId, useRef, useState } from "react";
+import { forwardRef, useEffect, useId, useRef, useState } from "react";
 import { type Role, type TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from "react-native";
 import {
   View,
@@ -9,7 +9,6 @@ import {
   TextInput,
   useControllableState,
   useFillStyle,
-  AnchoredOverlay,
   useMeasuredWidth,
   LabelContent,
   RippleClip,
@@ -25,6 +24,11 @@ import {
   withInnerFill,
   alpha,
 } from "../../style/index.js";
+// The kit-owned popup policy for the country list: under glass the material grows out of
+// the anchor edge, recoils and settles, and stays visible briefly on close while
+// the rows are already inert. Solid mode and Reduce Motion keep the ordinary
+// entrance. Internal, never a public prop.
+import { LiquidAnchoredOverlay } from "../../style/liquid-anchored-overlay.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { root, rootLifted, PANEL_ANCHOR } from "../../atoms/select/select.styles.js";
@@ -178,6 +182,11 @@ export function createPhoneInput(skin: PhoneInputSkin) {
     const { width: boxWidth, onLayout: onBoxLayout } = useMeasuredWidth();
 
     const close = () => setOpen(false);
+    // A field that becomes disabled or read-only while its country list is open
+    // closes the list: the rows go inert with the field, never after a pick.
+    useEffect(() => {
+      if (!editable) setOpen(false);
+    }, [editable]);
     const escapeScope = useEscapeLayer(open, close);
     const pick = (next: PhoneCountry) => {
       setCode(next.code);
@@ -268,7 +277,7 @@ export function createPhoneInput(skin: PhoneInputSkin) {
     );
 
     const list = (
-      <AnchoredOverlay
+      <LiquidAnchoredOverlay
         onAccessibilityEscape={escapeScope.onAccessibilityEscape}
         ownsScroll
         open={open}
@@ -318,7 +327,7 @@ export function createPhoneInput(skin: PhoneInputSkin) {
             </RippleClip>
           </OverlayScrollView>
         </EscapeLayerProvider>
-      </AnchoredOverlay>
+      </LiquidAnchoredOverlay>
     );
 
     const dim = disabled ? { opacity: field.disabledOpacity } : null;

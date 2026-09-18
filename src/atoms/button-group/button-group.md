@@ -74,6 +74,12 @@ Contrast use the shared material's opaque fallbacks.
 <ButtonGroup split items={["Save"]} menu={["Save as draft", "Save and close", "Save a copy"]} />
 ```
 
+In glass mode the split menu grows out of the chevron's edge, recoils and settles,
+and stays visible briefly on close while its rows are already inert; the primary
+action and the chevron stay two fixed targets over the shared group material, and
+a group disabled while its menu is open closes it. Reduce Motion settles at once;
+solid mode keeps the ordinary entrance.
+
 ### Icon segments
 
 An item may pair its label with a kit glyph (`{ label, icon }`); `iconsOnly`

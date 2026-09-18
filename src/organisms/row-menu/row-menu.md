@@ -2,6 +2,13 @@
 
 Vertical action menu items and navigation links.
 
+In glass mode the menu material grows out of the trigger's edge, recoils and
+settles, and stays visible briefly on close while its rows are already inert and
+out of the accessibility tree; the icon trigger itself never gains a surface.
+A row's callback fires the moment it is pressed. Reduce Motion settles at once;
+solid mode keeps the ordinary entrance. Board's card menus are RowMenus and behave
+the same.
+
 ## Usage
 
 ```tsx

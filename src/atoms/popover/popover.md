@@ -2,6 +2,13 @@
 
 Floating panel with a title, supporting text, rich content such as form fields, and a single follow-up action, anchored to its trigger. Pass children to host custom content in the panel body, between the description and the action.
 
+In glass mode the triggered card grows out of its trigger's edge (or up from it
+when it fits above) with a bounded contour overshoot, recoils and settles, and
+stays visible briefly on close while its content is already out of reach; focus
+enters only once the material covers the panel, and the `inline` card is a
+static in-flow panel that never animates. Reduce Motion settles at once; solid
+mode keeps the ordinary entrance.
+
 ## Usage
 
 ```tsx

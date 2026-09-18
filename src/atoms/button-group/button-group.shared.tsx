@@ -2,7 +2,12 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { type GestureResponderEvent, type LayoutChangeEvent, type LayoutRectangle } from "react-native";
-import { View, Pressable, Text, RippleClip, cornerRadii, useHugStyle, useSizing, useControllableState, AnchoredOverlay, useOverlayHost, useMeasuredWidth, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, type MeasureProps, stepOf } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useHugStyle, useSizing, useControllableState, useOverlayHost, useMeasuredWidth, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, type MeasureProps, stepOf } from "../../style/index.js";
+// The kit-owned popup policy for the split menu: under glass the material grows out of
+// the anchor edge, recoils and settles, and stays visible briefly on close while
+// the rows are already inert. Solid mode and Reduce Motion keep the ordinary
+// entrance. Internal, never a public prop.
+import { LiquidAnchoredOverlay } from "../../style/liquid-anchored-overlay.js";
 import { Icon, type IconName } from "../icon/icon.js";
 import { primaryText } from "../../style/primary-text.js";
 import * as s from "./button-group.styles.js";
@@ -324,6 +329,11 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     const glass = surface === "glass";
     const hug = useHugStyle();
     const [open, setOpen] = useState(false);
+    // A group disabled while its menu is open cannot keep live rows: close it, so
+    // the retained exit retires the rows at once and nothing selects afterwards.
+    useEffect(() => {
+      if (disabled) setOpen(false);
+    }, [disabled]);
     const escapeScope = useEscapeLayer(open, () => setOpen(false));
     const triggerHeight = s.sizeHeight[size];
     // Measure the split control so the dropdown can match its width and never
@@ -377,7 +387,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
             </View>
           </Pressable>
         </RippleClip>
-        <AnchoredOverlay
+        <LiquidAnchoredOverlay
           onAccessibilityEscape={escapeScope.onAccessibilityEscape}
           open={open}
           onDismiss={() => setOpen(false)}
@@ -400,7 +410,11 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
               <Pressable
                 key={`${item}-${i}`}
                 style={({ pressed }) => [s.splitMenuItem, pressed ? skin.splitMenuItemPressed(tokens) : null]}
+                // A row that outlives its logical menu (the retained material's exit,
+                // a group disabled while open) is inert: it never selects.
+                disabled={disabled}
                 onPress={(e) => {
+                  if (!open || disabled) return;
                   onSelect?.(i + 1, item, e);
                   setOpen(false);
                 }}
@@ -411,7 +425,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
             ))}
           </View>
           </EscapeLayerProvider>
-        </AnchoredOverlay>
+        </LiquidAnchoredOverlay>
       </View>
     );
   }

@@ -1,7 +1,12 @@
 import { consumeEscapeKey, EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useId, useRef, useState } from "react";
 import { type Role, type TextInput as RNTextInput, type TextStyle } from "react-native";
-import { View, Text, TextInput, Pressable, useTheme, useControllableState, AnchoredOverlay, useOverlayHost, GlassSurface, FOCUS_RESET, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, TextInput, Pressable, useTheme, useControllableState, useOverlayHost, GlassSurface, FOCUS_RESET, type StyleProp, type ViewStyle } from "../../style/index.js";
+// The kit-owned popup policy for the triggered palette: under glass the material grows out of
+// the anchor edge, recoils and settles, and stays visible briefly on close while
+// the rows are already inert. Solid mode and Reduce Motion keep the ordinary
+// entrance. Internal, never a public prop.
+import { LiquidAnchoredOverlay } from "../../style/liquid-anchored-overlay.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useActiveOptionScroll } from "../../style/use-active-option-scroll.js";
 
@@ -384,7 +389,7 @@ export function createCommand(skin: CommandSkin) {
           <Text style={s.triggerLabel(tokens)}>Search...</Text>
           <Kbd keys="⌘ K" style={s.triggerKbd} />
         </Pressable>
-        <AnchoredOverlay
+        <LiquidAnchoredOverlay
           onAccessibilityEscape={escapeScope.onAccessibilityEscape}
           ownsScroll
           onCardMount={() => searchRef.current?.focus?.()}
@@ -402,7 +407,7 @@ export function createCommand(skin: CommandSkin) {
           <EscapeLayerProvider scope={escapeScope}>
           {cardContent}
         </EscapeLayerProvider>
-        </AnchoredOverlay>
+        </LiquidAnchoredOverlay>
       </View>
     );
   };

@@ -4,6 +4,12 @@ Cmd+K search: navigation, actions, recent items. The search row is a real
 input: typing filters the grouped rows to the matching labels, and a query
 that matches nothing shows a muted "No results" row.
 
+In glass mode the triggered palette grows out of the search trigger's edge,
+recoils and settles, and stays visible briefly on close while its rows are
+already inert; the search editor keeps focus and typing re-shapes the material
+without replaying the opening. The bare inline palette never animates. Reduce
+Motion settles at once; solid mode keeps the ordinary entrance.
+
 The search placeholder names the input and its result list. Supply `accessibilityLabel` when a more specific purpose is needed. `defaultActive={-1}` starts without a highlighted result: Enter selects nothing until navigation or hovering chooses a row. Either arrow key starts at the first result from this state. Controlled indices above the visible result count clamp to the last match; negative, fractional and non-finite indices leave no active result.
 
 ## Usage

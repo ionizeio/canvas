@@ -2,7 +2,12 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useCallback, useContext, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { type Role } from "react-native";
-import { View, Text, GlassSurface, AnchoredOverlay, useOverlayHost, useMeasuredWidth, usePopoverFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, GlassSurface, useOverlayHost, useMeasuredWidth, usePopoverFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
+// The kit-owned popup policy for the floating card: under glass the material grows out of
+// the anchor edge, recoils and settles, and stays visible briefly on close while
+// the rows are already inert. Solid mode and Reduce Motion keep the ordinary
+// entrance. Internal, never a public prop.
+import { LiquidAnchoredOverlay } from "../../style/liquid-anchored-overlay.js";
 import { Button } from "../button/button.js";
 import { type PopoverSkin, type Placement } from "./popover.styles.js";
 import * as s from "./popover.styles.js";
@@ -202,7 +207,7 @@ export function createPopover(skin: PopoverSkin) {
         {/* Hosted cards may flip above when space below is insufficient. The
             beak then follows the actual upper placement. Otherwise `top`
             retains its documented decoration-only behavior. */}
-        <AnchoredOverlay
+        <LiquidAnchoredOverlay
           onAccessibilityEscape={escapeScope.onAccessibilityEscape}
           open={open}
           onDismiss={() => setOpen(false)}
@@ -230,7 +235,7 @@ export function createPopover(skin: PopoverSkin) {
             {panelBody}
           </PopoverFocusPanel>
         </EscapeLayerProvider>
-        </AnchoredOverlay>
+        </LiquidAnchoredOverlay>
       </View>
     );
   };

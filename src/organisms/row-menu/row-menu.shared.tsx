@@ -1,7 +1,12 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useRef, useState } from "react";
-import { View, Pressable, Text, AnchoredOverlay, useOverlayHost, useMeasuredWidth, RippleClip, cornerRadii, useMinTargetSlop, type StyleProp, type ViewStyle, type LayoutStyle, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, useOverlayHost, useMeasuredWidth, RippleClip, cornerRadii, useMinTargetSlop, type StyleProp, type ViewStyle, type LayoutStyle, withInnerFill } from "../../style/index.js";
+// The kit-owned popup policy for the dense menu: under glass the material grows out of
+// the anchor edge, recoils and settles, and stays visible briefly on close while
+// the rows are already inert. Solid mode and Reduce Motion keep the ordinary
+// entrance. Internal, never a public prop.
+import { LiquidAnchoredOverlay } from "../../style/liquid-anchored-overlay.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { anchorLifted, type RowMenuItem, type RowMenuSkin } from "./row-menu.styles.js";
 
@@ -121,7 +126,7 @@ export function createRowMenu(skin: RowMenuSkin) {
         </Pressable>
         </RippleClip>
 
-        <AnchoredOverlay
+        <LiquidAnchoredOverlay
           onAccessibilityEscape={escapeScope.onAccessibilityEscape}
           open={open}
           onDismiss={() => setOpen(false)}
@@ -194,7 +199,7 @@ export function createRowMenu(skin: RowMenuSkin) {
           </View>
           </RippleClip>
         </EscapeLayerProvider>
-        </AnchoredOverlay>
+        </LiquidAnchoredOverlay>
       </View>
     );
   };
