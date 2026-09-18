@@ -1,8 +1,10 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { type GestureResponderEvent, type View as RNView, type ScrollView as RNScrollView } from "react-native";
-import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useControllableState, AnchoredOverlay, useMeasuredWidth, FILL, type StyleProp, type ViewStyle, type LayoutStyle, GlassSurface, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { StyleSheet, type GestureResponderEvent, type LayoutRectangle, type View as RNView, type ScrollView as RNScrollView } from "react-native";
+import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useControllableState, useMeasuredWidth, FILL, type StyleProp, type ViewStyle, type LayoutStyle, GlassSurface, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import { LiquidAnchoredOverlay } from "../../style/liquid-anchored-overlay.js";
+import { MeasuredSelection } from "../../style/measured-selection.js";
 import { ButtonGroup } from "../../atoms/button-group/button-group.js";
 import { type CalendarSkin, type DayState, type Density } from "./calendar.styles.js";
 import { calendarDayAccessibility } from "./calendar.accessibility.js";
@@ -256,6 +258,9 @@ export function createCalendar(skin: CalendarSkin) {
     const peekAnchorRef = useRef<RNView | null>(null);
     const hoverAnchorRef = useRef<RNView | null>(null);
     const hoverEventRef = useRef<CalendarEvent | null>(null);
+    // What the day peek and the hover card showed while open, kept for their exits.
+    const lastPeek = useRef<{ key: number; content: ReactNode } | null>(null);
+    const lastHover = useRef<{ key: string; content: ReactNode } | null>(null);
     const scrollRef = useRef<RNScrollView | null>(null);
     // Which view's scroller has been positioned on its initial window.
     const scrollInitFor = useRef<string | null>(null);
@@ -303,6 +308,69 @@ export function createCalendar(skin: CalendarSkin) {
     const anchor = Math.min(Math.max(selected ?? today ?? 1, 1), daysInMonth);
     // Day-of-month the anchor's week starts on; ≤ 0 in a leading-blank first week.
     const weekStart = anchor - weekdayOf(anchor);
+
+    // Under glass the selected day's brand puck (and, in range mode, each
+    // endpoint's puck) travels as a measured control-layer surface through the
+    // month grid or the week strip while the numbers and event dots stay still.
+    // Cells are keyed by day number INSIDE one scope: the view, the month, the
+    // density, the fluid cell size and the strip's week make up the structure,
+    // and a change of any of them re-measures and resets the surfaces in place
+    // (the 12th of May and the 12th of June are different targets). Travel between
+    // days of one grid follows the geometry's direction, so a diagonal move
+    // stretches along both axes without rotating. The range endpoints are two
+    // independent identities: the start surface travels when the start is picked
+    // again, the end surface appears in place when the range completes and
+    // withdraws when the pick restarts, and a one-day range leaves both on the
+    // same cell. The day view has no cells and no surface.
+    const structure = JSON.stringify([view, month, density, fluidCell, lead, daysInMonth, view === "week" ? weekStart : 0]);
+    const spaceRef = useRef<RNView>(null);
+    const dayNodes = useRef(new Map<number, RNView>());
+    const latestStructure = useRef(structure);
+    latestStructure.current = structure;
+    const [dayRects, setDayRects] = useState<{ structure: string; rects: Record<number, LayoutRectangle>; revision: number }>({ structure, rects: {}, revision: 0 });
+    const recordDay = (dayNum: number, layout: LayoutRectangle) => {
+      if (latestStructure.current !== structure || layout.width <= 0 || layout.height <= 0) return;
+      setDayRects((previous) => {
+        const rects = previous.structure === structure ? previous.rects : {};
+        const old = rects[dayNum];
+        if (old && old.x === layout.x && old.y === layout.y && old.width === layout.width && old.height === layout.height) return previous;
+        // A cell that moved under an unchanged scope (the grid re-flowed) resets
+        // the surfaces in place instead of animating from stale geometry.
+        return { structure, rects: { ...rects, [dayNum]: layout }, revision: previous.revision + (old ? 1 : 0) };
+      });
+    };
+    // Cells report against the measurement space (the grid or the strip row): the
+    // strip's cells sit inside per-column views, so a cell's own layout event is
+    // only a trigger to measure it in the space.
+    const measureDay = (dayNum: number) => {
+      const space = spaceRef.current;
+      const node = dayNodes.current.get(dayNum);
+      if (!space || !node) return;
+      node.measureLayout(space, (x, y, width, height) => recordDay(dayNum, { x, y, width, height }), () => {});
+    };
+    useLayoutEffect(() => {
+      for (const dayNum of dayNodes.current.keys()) measureDay(dayNum);
+      // A scope change re-measures every cell; a selection change travels on the rects held.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [structure]);
+    const measuredDays = dayRects.structure === structure ? dayRects.rects : {};
+    const carried = new Set<number>();
+    const surfaces: ReactNode[] = [];
+    if (dayGlass && view !== "day") {
+      const roles: Array<[string, number | undefined]> = props.range
+        ? [["start", range?.start], ["end", range?.end]]
+        : [["selected", selected]];
+      for (const [role, dayNum] of roles) {
+        const layout = dayNum == null ? undefined : measuredDays[dayNum];
+        if (dayNum == null || layout == null) continue;
+        carried.add(dayNum);
+        surfaces.push(
+          <MeasuredSelection key={role} layout={layout} enabled resetKey={`${structure}:${dayRects.revision}`} testID={testID ? `${testID}-${role}-motion` : undefined}>
+            <GlassSurface static layer="control" interactive brand={tokens.primary} style={[StyleSheet.absoluteFill, { borderRadius: skin.dayCellBase.borderRadius }]} testID={testID ? `${testID}-${role}-surface` : undefined} />
+          </MeasuredSelection>,
+        );
+      }
+    }
 
     const pick = (dayNum: number) => {
       setSelected(dayNum);
@@ -419,8 +487,9 @@ export function createCalendar(skin: CalendarSkin) {
       const count = eventsOn(dayNum).length;
       // Under glass the SELECTED day is a BRAND-tinted CONTROL-layer puck (a GlassPane
       // behind the label; the cell drops its brand fill). An unselected today keeps its
-      // soft tint, which is translucent already and reads as a wash on the pane.
-      const selectedPuck = dayGlass && isSelected;
+      // soft tint, which is translucent already and reads as a wash on the pane. Once
+      // the cell is measured the travelling surface carries the puck instead.
+      const selectedPuck = dayGlass && isSelected && !carried.has(dayNum);
       const daySurface = [skin.dayCellBase, skin.dayCellState(tokens, state)];
       const rangeNote = r?.isStart ? ", start of range" : r?.isEnd ? ", end of range" : r?.between ? ", in range" : "";
       const band =
@@ -433,7 +502,15 @@ export function createCalendar(skin: CalendarSkin) {
           />
         ) : null;
       return (
-        <View key={dayNum} style={{ position: "relative" }}>
+        <View
+          key={dayNum}
+          style={{ position: "relative" }}
+          ref={(node) => {
+            if (node) dayNodes.current.set(dayNum, node);
+            else dayNodes.current.delete(dayNum);
+          }}
+          onLayout={() => measureDay(dayNum)}
+        >
           {band}
           <RippleClip shape={cornerRadii(skin.dayCellBase)}>
             <Pressable
@@ -592,16 +669,36 @@ export function createCalendar(skin: CalendarSkin) {
     );
 
     // The floating detail card for the hovered timeline block (pointer platforms;
-    // no backdrop, so the page stays interactive and hover-out hides it).
+    // no backdrop, so the page stays interactive and hover-out hides it). The card
+    // rides the liquid popup policy, so it stays mounted through its exit showing
+    // the snapshot of what it showed while open; a hover onto another block keys
+    // a fresh card.
     const hoverCard = () => {
-      if (hoverKey == null || hoverEventRef.current == null) return null;
-      const e = hoverEventRef.current;
-      const [start, end] = spanOf(e);
+      if (hoverKey != null && hoverEventRef.current != null) {
+        const e = hoverEventRef.current;
+        const [start, end] = spanOf(e);
+        lastHover.current = {
+          key: hoverKey,
+          content: (
+            <EscapeLayerProvider scope={hoverEscapeScope}>
+            <Text style={skin.peekTitle(tokens)}>{e.title ?? "Event"}</Text>
+            <Text style={[skin.eventTime(tokens), { marginTop: 2 }]}>
+              {`${WEEKDAYS_FULL[weekdayOf(e.day)]}, ${monthName} ${e.day} · ${formatHour(start, hour24)} – ${formatHour(end, hour24)}`}
+            </Text>
+            {e.description != null ? (
+              <Text style={[skin.peekBody(tokens), { marginTop: 6 }]}>{e.description}</Text>
+            ) : null}
+          </EscapeLayerProvider>
+          ),
+        };
+      }
+      const shown = lastHover.current;
+      if (shown == null) return null;
       return (
-        <AnchoredOverlay
+        <LiquidAnchoredOverlay
           onAccessibilityEscape={hoverEscapeScope.onAccessibilityEscape}
-          key={hoverKey}
-          open
+          key={shown.key}
+          open={hoverKey != null}
           onDismiss={() => setHoverKey(null)}
           triggerRef={hoverAnchorRef}
           gap={6}
@@ -611,37 +708,58 @@ export function createCalendar(skin: CalendarSkin) {
           cardStyle={[skin.peekCard(tokens), { width: tm.peekWidth }]}
           inlineStyle={{ position: "absolute", top: "100%", left: 0 }}
         >
-          <EscapeLayerProvider scope={hoverEscapeScope}>
-          <Text style={skin.peekTitle(tokens)}>{e.title ?? "Event"}</Text>
-          <Text style={[skin.eventTime(tokens), { marginTop: 2 }]}>
-            {`${WEEKDAYS_FULL[weekdayOf(e.day)]}, ${monthName} ${e.day} · ${formatHour(start, hour24)} – ${formatHour(end, hour24)}`}
-          </Text>
-          {e.description != null ? (
-            <Text style={[skin.peekBody(tokens), { marginTop: 6 }]}>{e.description}</Text>
-          ) : null}
-        </EscapeLayerProvider>
-        </AnchoredOverlay>
+          {shown.content}
+        </LiquidAnchoredOverlay>
       );
     };
 
     // The anchored day peek: the pressed day's timeline in a floating overlay
     // card. Untimed events list as title rows; timed events render the same
-    // hour-slice timeline the day view draws, bounded to the day's events.
+    // hour-slice timeline the day view draws, bounded to the day's events. On the
+    // liquid popup policy the card stays mounted through its exit, showing the
+    // snapshot of the day it showed while open (a month swap closes it, so the
+    // leaving card never re-titles itself); pressing another event day keys a
+    // fresh card on that cell.
     const dayPeekOverlay = () => {
-      if (peekDay == null) return null;
-      const dayEvents = eventsOn(peekDay);
-      const timedDay = dayEvents.filter((e) => e.start != null);
-      const untimed = dayEvents.filter((e) => e.start == null);
-      // Bound the slice to this day's events (min two hours so a lone half-hour
-      // event still reads as a timeline).
-      const rs = timedDay.length ? Math.max(0, Math.floor(Math.min(...timedDay.map((e) => spanOf(e)[0])))) : 0;
-      const re = timedDay.length ? Math.min(24, Math.max(Math.ceil(Math.max(...timedDay.map((e) => spanOf(e)[1]))), rs + 2)) : 0;
-      const peekHours = Array.from({ length: re - rs }, (_, i) => rs + i);
+      if (peekDay != null) {
+        const dayEvents = eventsOn(peekDay);
+        const timedDay = dayEvents.filter((e) => e.start != null);
+        const untimed = dayEvents.filter((e) => e.start == null);
+        // Bound the slice to this day's events (min two hours so a lone half-hour
+        // event still reads as a timeline).
+        const rs = timedDay.length ? Math.max(0, Math.floor(Math.min(...timedDay.map((e) => spanOf(e)[0])))) : 0;
+        const re = timedDay.length ? Math.min(24, Math.max(Math.ceil(Math.max(...timedDay.map((e) => spanOf(e)[1]))), rs + 2)) : 0;
+        const peekHours = Array.from({ length: re - rs }, (_, i) => rs + i);
+        lastPeek.current = {
+          key: peekDay,
+          content: (
+            <EscapeLayerProvider scope={escapeScope}>
+            <Text style={skin.peekTitle(tokens)}>{`${WEEKDAYS_FULL[weekdayOf(peekDay)]}, ${monthName} ${peekDay}`}</Text>
+            {untimed.map((e, i) => (
+              <View key={`untimed-${i}`} style={{ marginTop: 6 }}>
+                <Text numberOfLines={1} style={skin.eventTitle(tokens)}>{e.title ?? "Event"}</Text>
+              </View>
+            ))}
+            {timedDay.length > 0 ? (
+              <View style={{ flexDirection: "row", marginTop: 8 }}>
+                {axisFor(peekHours)}
+                <View style={{ flex: 1 }}>
+                  {slotsFor(peekHours)}
+                  {eventLayer(peekDay, true, rs, re, false)}
+                </View>
+              </View>
+            ) : null}
+          </EscapeLayerProvider>
+          ),
+        };
+      }
+      const shown = lastPeek.current;
+      if (shown == null) return null;
       return (
-        <AnchoredOverlay
+        <LiquidAnchoredOverlay
           onAccessibilityEscape={escapeScope.onAccessibilityEscape}
-          key={peekDay}
-          open
+          key={shown.key}
+          open={peekDay != null}
           onDismiss={() => setPeekDay(null)}
           triggerRef={peekAnchorRef}
           gap={6}
@@ -650,24 +768,8 @@ export function createCalendar(skin: CalendarSkin) {
           cardStyle={[skin.peekCard(tokens), { width: tm.peekWidth }]}
           inlineStyle={{ position: "absolute", top: "100%", left: 0 }}
         >
-          <EscapeLayerProvider scope={escapeScope}>
-          <Text style={skin.peekTitle(tokens)}>{`${WEEKDAYS_FULL[weekdayOf(peekDay)]}, ${monthName} ${peekDay}`}</Text>
-          {untimed.map((e, i) => (
-            <View key={`untimed-${i}`} style={{ marginTop: 6 }}>
-              <Text numberOfLines={1} style={skin.eventTitle(tokens)}>{e.title ?? "Event"}</Text>
-            </View>
-          ))}
-          {timedDay.length > 0 ? (
-            <View style={{ flexDirection: "row", marginTop: 8 }}>
-              {axisFor(peekHours)}
-              <View style={{ flex: 1 }}>
-                {slotsFor(peekHours)}
-                {eventLayer(peekDay, true, rs, re, false)}
-              </View>
-            </View>
-          ) : null}
-        </EscapeLayerProvider>
-        </AnchoredOverlay>
+          {shown.content}
+        </LiquidAnchoredOverlay>
       );
     };
 
@@ -698,7 +800,8 @@ export function createCalendar(skin: CalendarSkin) {
           {header(month)}
           {formatToggle}
           {/* Week strip: weekday label over the selectable day cell, aligned to the timeline columns below. */}
-          <View style={{ flexDirection: "row" }}>
+          <View ref={spaceRef} style={{ flexDirection: "row" }}>
+            {surfaces}
             <View style={{ width: tm.axisWidth }} />
             {weekDays.map((dayNum, i) => (
               <View key={`strip-${i}`} style={{ flex: 1, alignItems: "center" }}>
@@ -747,7 +850,8 @@ export function createCalendar(skin: CalendarSkin) {
         </View>
 
         {/* Day grid: leading blanks, then one cell per day. */}
-        <View style={[skin.grid, { width: m.gridWidth }]}>
+        <View ref={spaceRef} style={[skin.grid, { width: m.gridWidth }]}>
+          {surfaces}
           {Array.from({ length: lead }, (_, i) => (
             <View key={`blank-${i}`} style={[skin.headCell, m.cell]} />
           ))}
