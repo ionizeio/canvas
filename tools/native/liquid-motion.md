@@ -114,12 +114,33 @@ work), so these are observations, not a revision-specific pass.
 | 2026-09-18 | Dropdown popup open, close, reopen mid-exit (popup profile: travel 650/42 open, 720/42 close, contour 320/15) | Chromium headed via the repo's Playwright, 1280x800, light glass, 20 fps sampling, machine load average 36 to 60 during the run | d811052b + the Dropdown/Select policy switch (dirty) | unchanged | 7.8 / 11.8 / 267 over 530 frames (one stall) | Rows are concealed until the material settles and retire the instant Escape is pressed (focus ring back on the trigger in the same frame) while the pane lingers; the reopen mid-exit grew from the retained pane in one visible partial frame. The first open and the first close showed no intermediate frames at 50 ms sampling and the pane lingered 350 ms static before leaving: consistent with the 267 ms JS stall under load, not with the springs. The second close took 100 ms with one shrinking frame. At 50 ms sampling the open reads as a fast pop with the 5.5% contour stretch invisible; a re-tune of the travel springs needs a quiet machine and is pending. | `/tmp/canvas-liquid-motion-2026-09-18/web-dropdown-01` (strips 464-475, 490-501, `mid.png`, `close1.png`, `trace.json`) |
 | 2026-09-18 | Navbar active link travel (`navigation` profile; iOS skin carries the brand capsule as glass, web/Android their tinted tile) | Chromium headed via the repo's Playwright on `components/navbars`, dark glass, 20 fps sampling, load average about 16 | 865f67a6 (clean) | unchanged | not sampled | Three hops (Dashboard, Users, Settings, Dashboard) on the iOS example: the capsule stretches horizontally between links for one to two frames and settles under the destination label; no growth into the label lane; labels and the bar stay still; inactive iOS capsules keep their fill. | `/tmp/canvas-liquid-motion-2026-09-18/web-navbar-01` (`coarse.png` at 100 ms) |
 | 2026-09-18 | Sidebar active row travel (`selection` profile) on the docs shell's own Sidebar | Chromium headed on `components/navbars`, dark glass, 20 fps sampling | 865f67a6 (clean) | unchanged | not sampled | Board, Carousel, ActionSheet in turn: the surface stretches vertically across the rows between source and destination (one visible mid-travel frame per hop at 150 ms sampling), then settles on the destination row; icons, labels and the section header stay still. | `/tmp/canvas-liquid-motion-2026-09-18/web-sidebar-01` (`coarse.png` at 150 ms) |
+| 2026-09-18 | Pagination numbered selection travel (`selection` profile), the window-shift rule: travel when the page the puck sits on keeps its frame, reset when it moves or leaves | Chromium headed via the repo's Playwright on `components/pagination` (the web-skin preview row), dark glass, 20 fps sampling, load average about 6 | 0303e0fe (clean) | unchanged | not sampled | 2 to 3 (window grows to `1 2 3 4 … 12`): one held frame with the "3" label already in selected ink, then the puck stretches from 2 across to 3 and lands in about 200 ms (frames 61 to 64 of `strip-056-071.png`); 3 to 2 and 2 to 1 (window shrinks): the same held frame then a glide back (`strip-076-087.png`); 1 to 12 (`1 2 … 12` to `1 … 11 12`, page 1 keeps its frame): a travel across the gap, the puck stretched over two slots mid-flight (`strip-120-131.png`); 12 to 11 and 11 to 10 (page 12 moves a slot): the puck appears on the new page at once, no travel. The row re-centres as the window grows, so every cell moves on screen but not inside the row, which is the space the cells are measured in. An in-page sampler (probe-hold2) put the first surface movement 10 to 20 ms after the click; the first recording's apparent 400 ms hold was the recorder clicking the iOS compare preview's cells and its clip drifting, not the component. | `/tmp/canvas-liquid-motion-2026-09-18/web-pagination-01` (`strip-056-071.png`, `strip-076-087.png`, `strip-120-131.png`, `zoom-060-063.png`), `actions-pagination.mjs` |
+| 2026-09-18 | Pagination numbered selection travel and window-shift resets on the native material | iPhone 17 Pro simulator, iOS 26.3, dark glass, docs dev app on Metro, taps through the simulator tool, 20 fps sampling of a simctl recording | 0303e0fe (clean) | unchanged | not sampled (the docs app's JS thread is usable again since c78c2b76) | 1 to 2 and 2 to 3 (window grows each time): the tinted GlassView puck holds one frame on the old page, then stretches across to the new page with the selection profile's lift (about 1.5x the cell height at the peak) and settles in about 250 ms (`strip-071-078.png`, `strip-108-115.png`); 3 to 12, 12 to 11 and 11 to 1 (the anchored page leaves or moves): the puck appears on the new page in the next frame with no travel. Labels, chevrons and the ellipsis never move. | `/tmp/canvas-liquid-motion-2026-09-18/ios-pagination-01` |
 
 Not covered by these runs: Android, Reduce Motion, a sealed candidate build, the
 pressed lift and drag profiles, and the popup profile on iOS (the docs app's JS
-thread runs near 3 frames per second there until its idle CPU is fixed). The native frame-interval trace exists but is
+thread ran near 3 frames per second there until c78c2b76 fixed its idle CPU; the
+Pagination iOS row above is the first native run since). The native frame-interval trace exists but is
 dominated by the docs shell (see the iOS row); a clean native number needs the
 smoke app rebuilt with this fixture, which has no shell.
+
+### Recording the docs pages in Playwright's headed Chromium
+
+Since the docs gained the animated Backdrop, a component page opened in
+Playwright's headed Chromium keeps its "Loading the examples" skeleton: the docs
+chunk arrives (a 200 in the network log) but React never re-renders the Suspense
+boundary until some other state update lands. Verified 2026-09-18: the skeleton
+stayed for 60 s, `requestIdleCallback` only fired at its 3 s timeout while
+`setTimeout`, `MessageChannel` and rAF were prompt, the page loaded at once under
+`reducedMotion: "reduce"` (the Backdrop still), and the desktop app's own browser
+pane and the headless shell load the same page fine. Treat it as a recording
+quirk of that Chromium under the Backdrop's per-frame style writes (about 8,400
+inline-style mutations a second at 100 fps): the actions module nudges the
+Solid/Glass toggle until the examples are on the page
+(`actions-pagination.mjs`), and clicks go through `page.mouse` at the cell's
+centre because `locator.click()` scrolled the page to "reveal" a cell and moved
+the clip. Anchor a row on an element handle: a locator anchored on a page number
+drifts to another row once the window changes.
 
 ## Idle CPU of the docs app on iOS, 2026-09-18 (native-driver loops)
 
