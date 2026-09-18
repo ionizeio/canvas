@@ -7,7 +7,7 @@
 // The content host keeps its layout in every mode. A separate absolute material
 // clip contains only decoration, preserving shadow, focus and child identity.
 
-import { createContext, useContext, type ReactNode, type RefObject } from "react";
+import { createContext, useContext, type ReactNode, type Ref, type RefObject } from "react";
 import { Animated, View, StyleSheet, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
 import { MaterialMotionContext } from "../popup-motion.js";
 import { type ColorTokens, type GlassTokens } from "../tokens.js";
@@ -31,6 +31,13 @@ export interface GlassSurfaceProps {
   layer?: GlassLayer;
   /** Stable frost independent of density. Content defaults to static material. */
   static?: boolean;
+  /**
+   * The host node: the outer View that carries the layout, role and testID. A
+   * moving selection measures its targets against this node when the surface
+   * itself is the coordinate space (a Sidebar column). Internal; the material
+   * never sits on this ref and the solid box exposes the same node.
+   */
+  hostRef?: Ref<View>;
   /** Clear refractive material with restrained tint and minimal frost. */
   clear?: boolean;
   /**
@@ -304,7 +311,7 @@ export function splitSurfaceStyle(style: StyleProp<ViewStyle>): Split {
 // clipped; content, focus rings, hit targets and the exterior shadow keep the
 // skin's own layout and overflow policy. Switching modes never reparents children.
 export function GlassBox({
-  style, children, pointerEvents, testID, role, onLayout, onAccessibilityEscape,
+  style, children, pointerEvents, testID, role, onLayout, onAccessibilityEscape, hostRef,
   material, solid = false,
 }: GlassSurfaceProps & { material: ReactNode; solid?: boolean }) {
   const motion = useContext(MaterialMotionContext);
@@ -323,7 +330,7 @@ export function GlassBox({
     if (key.startsWith("border") && key.endsWith("Color")) clear[key] = "transparent";
   }
   return (
-    <View style={[style, solid ? null : clear as ViewStyle, clearedShadow as ViewStyle, pointerEvents ? { pointerEvents } : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={onAccessibilityEscape ? false : undefined}>
+    <View ref={hostRef} style={[style, solid ? null : clear as ViewStyle, clearedShadow as ViewStyle, pointerEvents ? { pointerEvents } : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={onAccessibilityEscape ? false : undefined}>
       {material ? <Animated.View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[materialFill(style), { zIndex: -1 }, movingShadow as ViewStyle, motion]}><View style={[materialFill(style), { overflow: "hidden" }]}>{material}</View></Animated.View> : null}
       <MaterialMotionContext.Provider value={null}>{children}</MaterialMotionContext.Provider>
     </View>
@@ -332,9 +339,9 @@ export function GlassBox({
 
 // The no-glass / no-module fallback: one plain View identical to the pre-portal
 // surface (keeps the skin's own opaque fill from `style`).
-export function PlainSurface({ style, children, pointerEvents, testID, role, onLayout, onAccessibilityEscape }: GlassSurfaceProps) {
+export function PlainSurface({ style, children, pointerEvents, testID, role, onLayout, onAccessibilityEscape, hostRef }: GlassSurfaceProps) {
   return (
-    <View style={[style, pointerEvents ? { pointerEvents } : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={onAccessibilityEscape ? false : undefined}>
+    <View ref={hostRef} style={[style, pointerEvents ? { pointerEvents } : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={onAccessibilityEscape ? false : undefined}>
       {children}
     </View>
   );

@@ -2,6 +2,14 @@
 
 App navigation rail with collapsible sections and active highlighting. The sidebar on the left of this page is a thin adapter over this very `Sidebar` component: it feeds the docs' nav tree in and gets the same collapse, accordion, and active-highlight behavior back.
 
+In glass mode the active row's fill travels between rows as one measured surface,
+across sections and through the scroll body, with vertical stretch, recoil and
+settle; icons, labels, badges, `aria-current`, focus and hit targets stay fixed.
+A row hidden inside a closed section withdraws the surface until the section
+opens again, the rail collapse and a density change re-measure and reset it in
+place, and the drill-down drawer keeps its own row treatment. Reduce Motion
+selects the final bounds at once; solid mode keeps the skin's own row fill.
+
 Add `responsive` to make it adapt across breakpoints: it stays the accordion rail on desktop, and at and below the `lg` breakpoint (1024px) it becomes a start-edge (left, RTL-aware) **navigation drawer** that drills through the same `sections` one level at a time (tap a group to slide in to its rows, back to return). Drive the drawer's open state with `open` / `onOpenChange` from your own hamburger button; the `header` and `footer` slots pin above and below the drill-down, just as in the rail. The drawer slides from the start (left) edge by default; `drawerRight`, `drawerTop`, and `drawerBottom` change which edge it slides in from. (This page's own left nav does exactly this: an accordion rail here, a drill-down drawer on a phone.)
 
 ## Usage
