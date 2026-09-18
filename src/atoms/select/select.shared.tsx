@@ -3,7 +3,12 @@ import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js
 import { forwardRef, useId, useRef } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { type Role } from "react-native";
-import { View, Pressable, Text, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, GlassPane, paneStyle, isGlass, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, useControllableState, useFillStyle, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, GlassPane, paneStyle, isGlass, withInnerFill } from "../../style/index.js";
+// The kit-owned popup policy: the menu material grows from its anchor edge with a
+// bounded contour overshoot, recoils and settles, and stays visible briefly on
+// close while its rows are already inert. Solid mode and Reduce Motion keep the
+// ordinary entrance. Internal, never a public prop.
+import { LiquidAnchoredOverlay } from "../../style/liquid-anchored-overlay.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the option-list
@@ -317,7 +322,7 @@ export function createSelect(skin: SelectSkin) {
         </Pressable>
         </RippleClip>
 
-        <AnchoredOverlay
+        <LiquidAnchoredOverlay
           onAccessibilityEscape={escapeScope.onAccessibilityEscape}
           ownsScroll
           open={open}
@@ -387,7 +392,7 @@ export function createSelect(skin: SelectSkin) {
             </RippleClip>
             </OverlayScrollView>
         </EscapeLayerProvider>
-        </AnchoredOverlay>
+        </LiquidAnchoredOverlay>
       </View>
     );
   });

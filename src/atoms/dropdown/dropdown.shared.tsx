@@ -1,7 +1,12 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { View, Pressable, Text, useHugStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, useRovingFocus, isRTL, RippleClip, cornerRadii, type StyleProp, type ViewStyle, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, useHugStyle, useOverlayHost, useMeasuredWidth, useRovingFocus, isRTL, RippleClip, cornerRadii, type StyleProp, type ViewStyle, withInnerFill } from "../../style/index.js";
+// The kit-owned popup policy: the menu material grows from its anchor edge with a
+// bounded contour overshoot, recoils and settles, and stays visible briefly on
+// close while its rows are already inert. Solid mode and Reduce Motion keep the
+// ordinary entrance. Internal, never a public prop.
+import { LiquidAnchoredOverlay } from "../../style/liquid-anchored-overlay.js";
 import { Button } from "../button/button.js";
 import { Icon, type IconName } from "../icon/icon.js";
 import { wrapper, wrapperLifted, customTrigger, type DropdownSkin } from "./dropdown.styles.js";
@@ -278,7 +283,7 @@ export function createDropdown(skin: DropdownSkin) {
           </Button>
         )}
 
-        <AnchoredOverlay
+        <LiquidAnchoredOverlay
           onAccessibilityEscape={escapeScope.onAccessibilityEscape}
           open={open}
           onDismiss={() => setOpen(false)}
@@ -393,7 +398,7 @@ export function createDropdown(skin: DropdownSkin) {
             </View>
             </RippleClip>
         </EscapeLayerProvider>
-        </AnchoredOverlay>
+        </LiquidAnchoredOverlay>
       </View>
     );
   };

@@ -2,6 +2,14 @@
 
 Native select restyled to match Canvas inputs. Pass `label` (and `required`) to name the field: iOS and web render the label above the trigger, while Android floats the Material 3 in-container label once the menu opens or a value is selected. The trigger fills the parent it is given; a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container step sets its measure.
 
+In glass mode the option panel grows out of the trigger's edge (or up from it
+when it flips above), with a bounded contour overshoot, recoil and an exact
+settle to the fitted panel; on close it stays visible briefly while the options
+are already inert. The displayed value, placeholder, floating label and chevron
+never move, and the chosen value and expanded state commit immediately, ahead of
+the material. Reduce Motion settles at once; solid mode keeps the ordinary
+entrance.
+
 The label also names the option list. Use `accessibilityLabel` to provide an explicit purpose when the visible label or placeholder is insufficient; it overrides both accessible names. A required field announces "required" with the button name and marks the option list as required. The selected value never replaces the field's purpose.
 
 Pass `ref` to access the interactive trigger, preserving overlay measurement. Use `useRef<ComponentRef<typeof Select>>(null)` from React, or `useRef<View>(null)` with React Native's `View` type. Object and callback refs are supported and detach on unmount. Calling `ref.current?.focus()` or `.blur()` delegates to the host without activating the control. Browser focus is supported; native focus depends on the platform and React Native version, and is separate from accessibility focus.

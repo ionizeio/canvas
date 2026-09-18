@@ -64,6 +64,9 @@ A lone avatar as the account trigger: on iOS the circle is interactive Liquid Gl
 
 ### Account menu
 
+Built on Dropdown, so in glass mode the menu takes Dropdown's liquid opening and
+closing while the identity capsule, photo and name stay fixed.
+
 The whole account control in one component. `AvatarMenu` renders a single capsule trigger (the avatar, the name over the muted email, a chevron that turns as the menu opens) and the account menu itself, with `name` and `email` repeated as the menu's own identity header. One press target covers the capsule, so nothing beside it has to be wired up.
 
 ```tsx

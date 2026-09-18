@@ -2,6 +2,15 @@
 
 Floating menus triggered by a button: actions, options, navigation.
 
+In glass mode the menu material grows out of the trigger's edge with a bounded
+contour overshoot, recoils and settles to the measured menu shape, and stays
+visible briefly on close while its rows are already out of reach and out of the
+accessibility tree. The rows, headers and the trigger never move or scale; a
+selection commits and the menu closes logically the moment a row is pressed.
+Reopening during the exit continues from the current material. Reduce Motion
+settles at once; solid mode keeps the ordinary entrance. AvatarMenu and the
+collapsed Navbar menu are built on Dropdown and behave the same.
+
 ## Usage
 
 ```tsx
