@@ -6,6 +6,8 @@ node_modules/
 # Expo
 .expo/
 dist/
+# Lighthouse reports written by `bun run lighthouse`
+.lighthouse/
 web-build/
 expo-env.d.ts
 

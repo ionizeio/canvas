@@ -19,6 +19,15 @@
  *      "whenever a dependency that touches the DOM is added or upgraded" into a
  *      thing CI does on every push.
  *
+ * Two Cloudflare behaviours are mirrored so a measurement here predicts the
+ * deployment: text responses are gzip-compressed when the client accepts it
+ * (Lighthouse sizes its simulated network from transfer bytes, and an
+ * uncompressed 4 MB bundle would overstate every timing five-fold), and a route
+ * path resolves like Pages' clean URLs do, `/x` to `x.html` or `x/index.html`,
+ * with a root `404.html` answering a miss. None of that changes a single-page
+ * export, which has no such files; it is what a static export (`web.output:
+ * "static"`, one HTML document per route) needs to be served correctly.
+ *
  * It is plain node:http with no dependencies, so both bun (the webServer
  * command) and node (anything Playwright's own loader runs) execute it.
  */
@@ -28,6 +37,7 @@ import { execFileSync } from "node:child_process";
 import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { extname, join, normalize, resolve, sep } from "node:path";
+import { gzipSync } from "node:zlib";
 
 // Content types for everything the docs export ships. Anything unlisted is served
 // as a byte stream, which is correct for a download and wrong for nothing we have.
@@ -65,6 +75,8 @@ export interface ServerOptions {
   spa?: boolean;
   /** Serve HTTPS with a disposable loopback certificate, without changing system trust. */
   https?: boolean;
+  /** Gzip text responses for clients that accept it, as the deployment does. Defaults to true. */
+  compress?: boolean;
 }
 
 export interface RunningServer {
@@ -134,9 +146,23 @@ export async function startStaticServer(options: ServerOptions): Promise<Running
     ? parseBaselineHeaders((await readIfFile(join(root, "_headers")))?.toString("utf8") ?? "")
     : {};
 
-  const send = (res: ServerResponse, status: number, body: Buffer | string, type: string) => {
-    res.writeHead(status, { ...baseline, "Content-Type": type, "Content-Length": Buffer.byteLength(body) });
-    res.end(body);
+  const compress = options.compress !== false;
+
+  // Compress the text types (markup, scripts, styles, maps, fonts as TTF, JSON);
+  // images and woff2 are already packed. Cloudflare negotiates the same way.
+  const compressible = (type: string) =>
+    /^(text\/|application\/(javascript|json|xml)|image\/svg|font\/ttf|font\/otf)/.test(type);
+
+  const send = (req: IncomingMessage, res: ServerResponse, status: number, body: Buffer | string, type: string) => {
+    const accepts = /\bgzip\b/.test(String(req.headers["accept-encoding"] ?? ""));
+    const payload = compress && accepts && compressible(type) ? gzipSync(body) : body;
+    res.writeHead(status, {
+      ...baseline,
+      "Content-Type": type,
+      "Content-Length": Buffer.byteLength(payload),
+      ...(payload !== body ? { "Content-Encoding": "gzip", Vary: "Accept-Encoding" } : {}),
+    });
+    res.end(payload);
   };
 
   const handle = async (req: IncomingMessage, res: ServerResponse) => {
@@ -150,7 +176,7 @@ export async function startStaticServer(options: ServerOptions): Promise<Running
         return;
       }
       if (!pathname.startsWith(base + "/")) {
-        send(res, 404, "Not found", "text/plain; charset=utf-8");
+        send(req, res, 404, "Not found", "text/plain; charset=utf-8");
         return;
       }
       pathname = pathname.slice(base.length);
@@ -158,20 +184,28 @@ export async function startStaticServer(options: ServerOptions): Promise<Running
 
     const target = resolveWithin(root, pathname);
     if (target === null) {
-      send(res, 400, "Bad path", "text/plain; charset=utf-8");
+      send(req, res, 400, "Bad path", "text/plain; charset=utf-8");
       return;
     }
 
-    // A real file wins, then a directory's index.html (that is how the baked
-    // /privacy page shadows the expo-router route in production too).
+    // A real file wins, then Pages' clean-URL forms of a route path: `x.html`,
+    // then a directory's index.html (that is how the baked /privacy page shadows
+    // the expo-router route in production too).
     const direct = await readIfFile(target);
     if (direct) {
-      send(res, 200, direct, MIME[extname(target)] ?? "application/octet-stream");
+      send(req, res, 200, direct, MIME[extname(target)] ?? "application/octet-stream");
       return;
+    }
+    if (extname(pathname) === "") {
+      const asPage = await readIfFile(target + ".html");
+      if (asPage) {
+        send(req, res, 200, asPage, MIME[".html"]);
+        return;
+      }
     }
     const asIndex = await readIfFile(join(target, "index.html"));
     if (asIndex) {
-      send(res, 200, asIndex, MIME[".html"]);
+      send(req, res, 200, asIndex, MIME[".html"]);
       return;
     }
 
@@ -180,12 +214,20 @@ export async function startStaticServer(options: ServerOptions): Promise<Running
     if (spa && extname(pathname) === "") {
       const shell = await readIfFile(join(root, "index.html"));
       if (shell) {
-        send(res, 200, shell, MIME[".html"]);
+        send(req, res, 200, shell, MIME[".html"]);
         return;
       }
     }
 
-    send(res, 404, "Not found", "text/plain; charset=utf-8");
+    // Pages serves a root 404.html (a static export's +not-found page) with a real
+    // 404 status, so the not-found route renders without pretending to be a hit.
+    const notFound = await readIfFile(join(root, "404.html"));
+    if (notFound && extname(pathname) === "") {
+      send(req, res, 404, notFound, MIME[".html"]);
+      return;
+    }
+
+    send(req, res, 404, "Not found", "text/plain; charset=utf-8");
   };
 
   // WebKit enforces upgrade-insecure-requests even on loopback HTTP. Use the

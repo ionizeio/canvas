@@ -32,6 +32,7 @@
   "devDependencies": {
     "@types/node": "^25.9.3",
     "@types/react": "~19.2.2",
+    "lighthouse": "^13.5.0",
     "typescript": "~6.0.3"
   },
   "scripts": {
@@ -46,6 +47,7 @@
     "typecheck": "tsc --noEmit",
     "check:nav": "bun scripts/check-nav-sync.ts",
     "check:skins": "bun scripts/check-platform-skins.ts",
+    "lighthouse": "bun scripts/lighthouse.ts",
     "eas-build-pre-install": "bun install --cwd .. --frozen-lockfile"
   },
   "patchedDependencies": {
