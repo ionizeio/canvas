@@ -388,6 +388,26 @@ styling escape hatches":
 those ban rebuilding a component's look; this bans rebuilding a component's
 anatomy around it.
 
+## Visual effects and motion: the tuning harness
+
+Effects judged by eye (the liquid motion, glass and its lens, gradients, parallax,
+any spring or gesture) go through the global `tuning-harness` skill: harness first,
+iterate against recordings and numeric traces, log the run, docs screenshot last.
+In this repo the harness is the hidden `/testing/*` routes under
+`docs/src/app/(home)/testing/`, rendering the fixture bodies in
+`examples/starter/smoke/fixtures/` (shared with the sealed smoke app); the liquid
+glass one is `/testing/materials` and its isolated probe is
+`/testing/materials?geometry=1`. The tunables live in one table per effect
+(`PROFILES` and the spring constants in `src/style/liquid-motion.ts`), never in a
+public value prop. The evidence log is `tools/native/liquid-motion.md`, and
+`.tuning-harness.json` at the repo root tells the global push gate which files are
+tunables (`src/style/liquid-motion*.ts`, `src/style/popup-motion.tsx`,
+`src/style/motion.ts`, `src/style/glass-surface/glass-lens.ts`): a push whose newest
+tunable change has no evidence row in or after it is refused. A pure refactor of
+those files with no visual change carries the commit trailer
+`Tuning-evidence: unchanged`. Why: a single screenshot cannot show whether a spring
+overshoots or a recoil lands on time; only the recorded loop converges.
+
 ## Preview links on every completed piece of work
 
 Whenever a piece of work is complete, end the report with a "Preview" block of three
