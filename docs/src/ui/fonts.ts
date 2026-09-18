@@ -1,17 +1,20 @@
 import { Platform } from "react-native";
 import { FontDisplay, useFonts } from "expo-font";
-import {
-  Urbanist_400Regular,
-  Urbanist_500Medium,
-  Urbanist_600SemiBold,
-  Urbanist_700Bold,
-} from "@expo-google-fonts/urbanist";
-import {
-  GeistMono_400Regular,
-  GeistMono_500Medium,
-  GeistMono_600SemiBold,
-} from "@expo-google-fonts/geist-mono";
 import type { ThemeFonts } from "@ionizeio/canvas";
+
+// The seven faces, cut down to the glyphs the docs can show by scripts/subset-fonts.mjs
+// from the full files the @expo-google-fonts packages carry (those packages are dev
+// dependencies now, the subsetter's input). Every face is on the first paint's
+// critical path, since each pre-rendered page preloads them all, and the full files
+// held Greek, Cyrillic and Vietnamese the docs never render: the subsets are about
+// 140 KB over the wire for all seven against 245 KB.
+const Urbanist_400Regular = require("../../assets/fonts/Urbanist_400Regular.ttf");
+const Urbanist_500Medium = require("../../assets/fonts/Urbanist_500Medium.ttf");
+const Urbanist_600SemiBold = require("../../assets/fonts/Urbanist_600SemiBold.ttf");
+const Urbanist_700Bold = require("../../assets/fonts/Urbanist_700Bold.ttf");
+const GeistMono_400Regular = require("../../assets/fonts/GeistMono_400Regular.ttf");
+const GeistMono_500Medium = require("../../assets/fonts/GeistMono_500Medium.ttf");
+const GeistMono_600SemiBold = require("../../assets/fonts/GeistMono_600SemiBold.ttf");
 
 // Every face is loaded as a FontResource rather than a bare module id so it can carry
 // `display: swap`. Without it the browser default is `auto`, which hides text until the
