@@ -1,4 +1,3 @@
-import { useWindowDimensions } from "react-native";
 import {
   View,
   Text,
@@ -20,8 +19,7 @@ import {
   Typography,
   type ColorTokens,
   type StatusTone,
-  Grid,
-} from "@ionizeio/canvas";
+  Grid, useResponsive } from "@ionizeio/canvas";
 import { Page } from "../../../ui/page";
 import { PageNav } from "../../../ui/page-nav";
 import { CodeBlock } from "../../../ui/code-block";
@@ -182,8 +180,8 @@ function colorValue(tokens: ColorTokens, key: keyof ColorTokens): string {
 
 export default function ColorsScreen() {
   const { tokens } = useTheme();
-  const { width } = useWindowDimensions();
-  const wide = width >= 760;
+  // Two columns above md (768), by the kit's viewport bucket (desktop on the server).
+  const wide = useResponsive({ base: true, md: false });
 
   // The reference table carries both schemes in both notations, which is where the
   // density belongs once the samples above are calm.

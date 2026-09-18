@@ -306,16 +306,36 @@ describe("frozen release transaction", () => {
 
 test("shared Pages preparation makes vendor fonts uploadable before browser validation", () => {
   const dist = root();
+  const page = '<link rel="preload" as="font" href="/assets/node_modules/font/a.ttf"><div id="root"></div>';
   fs.mkdirSync(path.join(dist, "assets/node_modules/font"), { recursive: true });
   fs.mkdirSync(path.join(dist, "privacy"));
-  for (const name of ["_redirects", "_headers", "privacy/index.html"]) fs.writeFileSync(path.join(dist, name), "fixture");
+  fs.mkdirSync(path.join(dist, "components/button-group"), { recursive: true });
+  // The exporter's route-group copy and literal dynamic-segment document, both unreachable.
+  fs.mkdirSync(path.join(dist, "(components)/components/button-group"), { recursive: true });
+  // The baked privacy page is plain HTML (no app root, no fonts) and outranks the
+  // rendered privacy route beside it.
+  for (const name of ["_headers", "privacy/index.html"]) fs.writeFileSync(path.join(dist, name), "fixture");
+  for (const name of ["index.html", "privacy.html", "+not-found.html", "components/button-group/index.html", "components/[slug].html", "(components)/components/button-group/index.html"]) {
+    fs.writeFileSync(path.join(dist, name), page);
+  }
   fs.writeFileSync(path.join(dist, "assets/node_modules/font/a.ttf"), "font bytes");
-  fs.writeFileSync(path.join(dist, "index.html"), '<link rel="preload" as="font" href="/assets/node_modules/font/a.ttf">');
   fs.writeFileSync(path.join(dist, "app.js"), 'const font="/assets/node_modules/font/a.ttf";');
   preparePages(dist);
   preparePages(dist);
   expect(fs.readFileSync(path.join(dist, "app.js"), "utf8")).toContain("assets/vendor");
+  expect(fs.readFileSync(path.join(dist, "components/button-group/index.html"), "utf8")).toContain("assets/vendor");
   expect(fs.existsSync(path.join(dist, "assets/node_modules"))).toBe(false);
+  // Pages serves 404.html for a miss; the exporter's +not-found page is renamed to it.
+  expect(fs.existsSync(path.join(dist, "404.html"))).toBe(true);
+  expect(fs.existsSync(path.join(dist, "+not-found.html"))).toBe(false);
+  expect(fs.existsSync(path.join(dist, "(components)"))).toBe(false);
+  expect(fs.existsSync(path.join(dist, "components/[slug].html"))).toBe(false);
+  expect(fs.existsSync(path.join(dist, "privacy.html"))).toBe(false);
+  expect(fs.readFileSync(path.join(dist, "privacy/index.html"), "utf8")).toBe("fixture");
+  // The old SPA catch-all would answer every miss with the home page; it is refused.
+  fs.writeFileSync(path.join(dist, "_redirects"), "/* /index.html 200");
+  expect(() => preparePages(dist)).toThrow("_redirects");
+  fs.rmSync(path.join(dist, "_redirects"));
   fs.rmSync(path.join(dist, "assets/vendor/font/a.ttf"));
   expect(() => preparePages(dist)).toThrow();
 });

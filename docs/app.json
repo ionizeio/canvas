@@ -23,12 +23,12 @@
       }
     },
     "web": {
-      "output": "single",
+      "output": "static",
       "bundler": "metro",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router",
+      ["expo-router", { "origin": "https://canvas.nannier.com", "sitemap": false }],
       "expo-font",
       "expo-status-bar"
     ],

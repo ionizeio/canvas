@@ -76,7 +76,14 @@ export interface GotoOptions {
 }
 
 /**
- * Open a docs route in a known look and wait until it has painted in that look.
+ * Open a docs route in a known look and wait until it is live and has painted in
+ * that look.
+ *
+ * Every page is pre-rendered, so it paints (in the server's dark glass) before its
+ * bundle has run; the app marks the document `data-hydrated` once React has taken
+ * over (docs/src/ui/docs-head.tsx), and that is the moment a click means anything.
+ * The seeded look is applied one commit after hydration, so the paint check comes
+ * after the marker.
  *
  * `emulateMedia` matters for exactly one page: the baked static /privacy export
  * follows prefers-color-scheme, since it is plain HTML and never sees the seed.
@@ -89,6 +96,10 @@ export async function gotoDocs(page: Page, route: string, options: GotoOptions =
   const query = `scheme=${scheme}&surface=${surface}`;
   const separator = route.includes("?") ? "&" : "?";
   await page.goto(`${BASE_PATH}${route}${separator}${query}`, { waitUntil: "load" });
+  // The baked /privacy page is plain HTML with no app root and nothing to hydrate.
+  if ((await page.locator("#root").count()) > 0) {
+    await page.locator("html[data-hydrated]").waitFor({ state: "attached", timeout: 20_000 });
+  }
   await expect
     .poll(() => readScheme(page), {
       timeout: 20_000,

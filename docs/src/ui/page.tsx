@@ -4,6 +4,7 @@ import { ScrollView, View, OverlayProvider, useTheme } from "@ionizeio/canvas";
 import { CONTENT_TOP_INSET } from "../shell/topbar";
 import { ScreenFrame } from "../shell/native-header";
 import { H1, Lead } from "./prose";
+import { DocsHead } from "./docs-head";
 
 // The standard scrollable content frame, mirroring `.app-content` (max-width 1400,
 // the 24/28/80 padding, centered). ScreenFrame adds the native header + search overlay
@@ -60,6 +61,7 @@ export function Page({ children, viewportOverlays = false }: { children: ReactNo
 export function PageHeader({ title, description }: { title: string; description?: string }) {
   return (
     <View style={{ gap: 6 }}>
+      <DocsHead title={title} />
       <H1>{title}</H1>
       {description ? <Lead>{description}</Lead> : null}
     </View>

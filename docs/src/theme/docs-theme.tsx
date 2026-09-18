@@ -6,6 +6,7 @@ import { StatusBar } from "expo-status-bar";
 import { ThemeProvider, type Surface } from "@ionizeio/canvas";
 import { CANVAS_FONTS } from "../ui/fonts";
 import { subscribeThemeLinks, themeFromParams, themeFromURL } from "./theme-links";
+import { useHydrated } from "../lib/hydrated";
 
 // The docs' theme controls. Canvas's ThemeProvider is driven by the dark/light
 // and glass/solid boolean axes; this holds that state and exposes setters to the toggles, so the
@@ -26,6 +27,17 @@ interface DocsThemeContext {
 
 const Ctx = createContext<DocsThemeContext | null>(null);
 
+// The appearance every pre-rendered page ships with (app.json `web.output: "static"`):
+// the docs default to dark on every platform (the Canvas Universe is the brand stage
+// and reads best in deep space) and to glass everywhere, not just iOS 26.
+const SERVER_SCHEME: Scheme = "dark";
+const SERVER_SURFACE: Surface = "glass";
+
+// A link's `?scheme=light&surface=solid` is a fact only the browser knows, so the
+// hydration render must reproduce the server's dark glass (src/lib/hydrated.ts) and
+// the seed lands one commit later, instead of React finding markup the server never
+// sent and rebuilding the page.
+
 export function useDocsTheme(): DocsThemeContext {
   const c = useContext(Ctx);
   if (!c) throw new Error("useDocsTheme must be used inside <DocsThemeProvider>");
@@ -43,21 +55,21 @@ export function DocsThemeProvider({ children }: { children: ReactNode }) {
     const url = Platform.OS === "web" ? null : Linking.getLinkingURL();
     return { ...themeFromParams(params), ...themeFromURL(url), url };
   });
-  // The docs DEFAULT to dark on every platform (the Canvas Universe is the brand
-  // stage and reads best in deep space). The web topbar sun/moon and the native
-  // Appearance controls (the iOS header menu rows, the Android overflow-sheet
-  // footer) change it; choosing System restores live OS tracking.
-  const [override, setOverride] = useState<Scheme | null>(seed.scheme ?? "dark");
-  const scheme: Scheme = override ?? systemScheme;
-  // Glass is the DEFAULT surface on every platform, not just iOS 26. The
-  // Solid/Glass toggle (shown where glass is not the OS material) flips it.
-  const [surface, setSurface] = useState<Surface>(seed.surface ?? "glass");
+  // The web topbar sun/moon and the native Appearance controls (the iOS header menu
+  // rows, the Android overflow-sheet footer) change the scheme; choosing System
+  // restores live OS tracking. The Solid/Glass toggle (shown where glass is not the
+  // OS material) flips the surface. Until hydrated, both read as the server's.
+  const hydrated = useHydrated();
+  const [override, setOverride] = useState<Scheme | null>(seed.scheme ?? SERVER_SCHEME);
+  const scheme: Scheme = hydrated ? (override ?? systemScheme) : SERVER_SCHEME;
+  const [surfaceChoice, setSurface] = useState<Surface>(seed.surface ?? SERVER_SURFACE);
+  const surface: Surface = hydrated ? surfaceChoice : SERVER_SURFACE;
 
   // Sync the native system chrome (the iOS Liquid Glass bars, Android's Material
   // bars) to the initial scheme once at startup, since the initial override is
   // set without going through setScheme.
   useEffect(() => {
-    if (Platform.OS !== "web") Appearance.setColorScheme(seed.scheme ?? "dark");
+    if (Platform.OS !== "web") Appearance.setColorScheme(seed.scheme ?? SERVER_SCHEME);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- launch-time seed, runs once
   }, []);
 

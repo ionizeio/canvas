@@ -124,7 +124,14 @@ function WebNav() {
       {glass ? <CanvasUniverse /> : null}
       <Row flush fill>
         {wide ? (
-          <View>
+          // The rail column is marked for the document root's one pre-hydration rule
+          // (docs/src/app/+html.tsx): a pre-rendered page always carries the desktop
+          // shell, because a server cannot measure a window, and on a phone that rail
+          // would squeeze the content into the remaining 170px until the bundle ran.
+          // The rule hides it below the desktop cut; after hydration the rail is
+          // simply not rendered there, so the rule matches nothing. (A web-only
+          // attribute, spread through a cast the way page.tsx marks its scroller.)
+          <View {...({ dataSet: { shellRail: "" } } as object)}>
             <Sidebar collapsed={collapsed} collapsible onToggleCollapse={() => setCollapsed((c) => !c)} />
           </View>
         ) : null}

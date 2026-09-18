@@ -1,5 +1,4 @@
-import { useWindowDimensions } from "react-native";
-import { View, Text, Row, Column, Typography, useTheme } from "@ionizeio/canvas";
+import { View, Text, Row, Column, Typography, useTheme, useResponsive } from "@ionizeio/canvas";
 import { Page } from "../../../ui/page";
 import { PageNav } from "../../../ui/page-nav";
 import { sans, geistMono } from "../../../ui/fonts";
@@ -147,9 +146,10 @@ function WeightRow({ row, i }: { row: typeof WEIGHTS[number]; i: number }) {
 
 export default function TypographyScreen() {
   const { tokens } = useTheme();
-  const { width } = useWindowDimensions();
-  const c2 = width >= 760 ? 2 : 1;
-  const cScale = width >= 620 ? 2 : 1;
+  // Column counts by the kit's viewport bucket (desktop on the server and for the
+  // hydration render): two columns above md (768), the scale in two above sm (640).
+  const c2 = useResponsive({ base: 2, md: 1 });
+  const cScale = useResponsive({ base: 2, sm: 1 });
 
   return (
     <Page>

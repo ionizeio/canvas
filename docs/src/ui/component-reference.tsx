@@ -12,6 +12,7 @@ import { PageNav } from "./page-nav";
 import { stripHtml } from "../lib/html";
 import { variantSlug } from "../lib/variant";
 import { sans } from "./fonts";
+import { DocsHead } from "./docs-head";
 
 // The generic component reference page, shared by the default route
 // (components/[slug]/index) and the deep-linked variant route
@@ -53,6 +54,7 @@ export function ComponentReference() {
 
   return (
     <Page>
+      <DocsHead title={comp.name} />
       {/* Component pages use a larger title (28/700) than the generic page header. */}
       <View style={{ gap: 6 }}>
         <Text accessibilityRole="header" aria-level={1} style={{ fontFamily: sans("700"), fontSize: 28, letterSpacing: -0.42, color: tokens.foreground }}>{comp.name}</Text>

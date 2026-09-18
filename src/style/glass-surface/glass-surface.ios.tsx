@@ -1,7 +1,7 @@
 // Native iOS: intentional content frost and functional Apple Liquid Glass.
 import { View } from "react-native";
 import { useTheme } from "../theme.js";
-import { FrostView, LiquidView, materialCapabilities } from "./material-runtime.ios.js";
+import { FrostView, LiquidView, useMaterialCapabilities } from "./material-runtime.ios.js";
 import { resolveMaterial } from "./material-resolution.js";
 import {
   GlassBox, CLEAR_INTENSITY, clearSurfaceTint, contrastBorder, specularRim, SHEER_FILL_OPACITY, materialFill,
@@ -11,7 +11,7 @@ import {
 export function GlassSurface(props: GlassSurfaceProps) {
   const theme = useTheme();
   const { style, layer = "functional", brand, tint, clear, interactive = false } = props;
-  const resolved = resolveMaterial(theme, props, materialCapabilities(), false);
+  const resolved = resolveMaterial(theme, props, useMaterialCapabilities(), false);
   const solid = resolved.renderer === "solid";
   const translucent = props.sheer && layer === "content";
   const fill = materialFill(style);

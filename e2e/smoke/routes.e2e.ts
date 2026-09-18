@@ -69,7 +69,8 @@ for (const variant of VARIANTS) {
       });
     }
 
-    test("an unknown route shows the not-found page", async ({ page }) => {
+    test("an unknown route shows the not-found page", async ({ page, problems }) => {
+      problems.expectNotFound = true;
       await gotoDocs(page, "/definitely-not-a-route", {
         scheme: variant.scheme,
         viewport: variant.viewport,

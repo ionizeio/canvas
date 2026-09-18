@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
-import { useWindowDimensions, Linking, Platform } from "react-native";
+import { Linking, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Text, Pressable, Button, ScrollView, Row, Column, Icon, useTheme } from "@ionizeio/canvas";
+import { View, Text, Pressable, Button, ScrollView, Row, Column, Icon, useTheme, useFormFactor, useResponsive } from "@ionizeio/canvas";
 import { useRouter } from "expo-router";
 import { COMPONENTS } from "../core/data/components";
 import { CanvasMark } from "../brand/canvas-mark";
@@ -148,14 +148,20 @@ function SectionHead({ eyebrow, title, desc, titleSize }: { eyebrow: string; tit
 
 export function Home() {
   const { tokens, surface } = useTheme();
-  const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const go = (to: string) => router.push(to as never);
   const version = useLatestVersion();
 
-  const wide = width > 920;
-  const levelStack = width <= 760;
+  // Viewport decisions go through the kit's bucket hooks, never a raw window read:
+  // they resolve to desktop on the server and for the hydration render, so every
+  // pre-rendered page ships the desktop layout and hydrates against exactly that
+  // (a raw width is 0 there, which stacked the whole hero and drew a collapsed orbit),
+  // and they re-render only when the bucket changes. Side by side above the tablet
+  // tier (width > lg, 1024); the four principles stack at and below md (768).
+  const formFactor = useFormFactor();
+  const wide = formFactor === "desktop";
+  const levelStack = useResponsive({ base: false, md: true });
 
   // The "Three native looks" comparison is DESKTOP WEB ONLY, and deliberately so.
   //
@@ -167,10 +173,10 @@ export function Home() {
   // App Review rejected build 7 under Guideline 2.3.10 for exactly that framing:
   // "the app or metadata includes information about third-party platforms". A phone
   // browser is the surface most likely to be mistaken for the app, so the section is
-  // gated on real desktop width rather than merely on the shots existing. Its own
-  // threshold, not `wide`, so a future tweak to `wide` cannot silently re-expose it.
-  const DESKTOP_LOOKS_MIN_WIDTH = 920;
-  const showThreeLooks = LOOKS_AVAILABLE && width >= DESKTOP_LOOKS_MIN_WIDTH;
+  // gated on the kit's desktop tier (width above lg, 1024) rather than merely on the
+  // shots existing. Its own comparison, not `wide`, so a future tweak to `wide` cannot
+  // silently re-expose it.
+  const showThreeLooks = LOOKS_AVAILABLE && formFactor === "desktop";
   const h1Size = useFluidType(36, 58, 0.05);
   const sectionTitle = useFluidType(26, 36, 0.034);
   const ctaTitle = useFluidType(28, 42, 0.04);

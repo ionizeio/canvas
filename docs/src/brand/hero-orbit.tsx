@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import { useWindowDimensions, Animated, Easing, AccessibilityInfo } from "react-native";
-import { View, useTheme, alpha } from "@ionizeio/canvas";
+import { Animated, Easing, AccessibilityInfo } from "react-native";
+import { View, useTheme, alpha, useFormFactor, useResponsive, useContainerWidth } from "@ionizeio/canvas";
 import Svg, { Circle, Path, Defs, RadialGradient, Stop, Mask, Rect, G, Filter, FeGaussianBlur, FeColorMatrix } from "react-native-svg";
 import { CanvasMark } from "./canvas-mark";
 import { AppleLogo, ReactLogo, TypeScriptLogo, AndroidLogo, Html5Logo, TailwindLogo } from "./brand-logos";
@@ -58,7 +58,6 @@ function useReducedMotion() {
 
 export function HeroOrbit() {
   const { tokens } = useTheme();
-  const { width } = useWindowDimensions();
   const reduced = useReducedMotion();
 
   const badgeSpin = useRef(new Animated.Value(0)).current;
@@ -90,14 +89,20 @@ export function HeroOrbit() {
     return () => { b.stop(); g.stop(); p.stop(); };
   }, [reduced, badgeSpin, glowSpin, glowPulse]);
 
-  // Desktop (the side-by-side hero, width > 920) keeps the fixed orbit next to the copy.
-  // The stacked phone/tablet hero scales the WHOLE orbit (ring, disc, glow, badges) to fill the
-  // available width, so on a phone it is the screen's centerpiece instead of a small medallion.
-  const stacked = width <= 920;
-  const badge = width <= 400 ? 56 : 60;
-  // Fill the viewport width (small side margin), capped so a big tablet does not get an
+  // Desktop (the side-by-side hero, the kit's desktop tier: width > lg, 1024) keeps the
+  // fixed orbit next to the copy. The stacked phone/tablet hero scales the WHOLE orbit
+  // (ring, disc, glow, badges) to fill the available width, so on a phone it is the
+  // screen's centerpiece instead of a small medallion. The tier and the badge size come
+  // from the kit's bucket hooks (desktop on the server and for the hydration render, so
+  // the pre-rendered page carries the fixed geometry rather than a collapsed orbit drawn
+  // from a window width of 0), and the stacked width from the column this sits in,
+  // measured by the probe below (the window until the first layout, once hydrated).
+  const stacked = useFormFactor() !== "desktop";
+  const badge = useResponsive({ base: 60, sm: 56 });
+  const column = useContainerWidth();
+  // Fill the column width (small side margin), capped so a big tablet does not get an
   // oversized orbit. The box is square when stacked, so it fills vertically too.
-  const boxW = stacked ? Math.min(width - 40, 440) : 380;
+  const boxW = stacked && column.width > 0 ? Math.min(column.width - 40, 440) : 380;
   const r = stacked ? Math.round((boxW - badge - 20) / 2) : 150;
   const core = stacked ? Math.round(r * 0.78) : 116;
   // Stacked: trim the ring's vertical margin (badges nearly touch the box edges) so the orbit
@@ -123,6 +128,7 @@ export function HeroOrbit() {
   const glowRotate = glowSpin.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "360deg"] });
 
   return (
+    <View onLayout={column.onLayout} style={{ width: "100%", alignItems: "center" }}>
     <View style={{ width: boxW, height: boxH, alignSelf: "center", position: "relative" }}>
       {/* Dashed orbit ring */}
       <Svg width={boxW} height={boxH} style={{ position: "absolute", top: 0, left: 0 }}>
@@ -222,6 +228,7 @@ export function HeroOrbit() {
           );
         })}
       </Animated.View>
+    </View>
     </View>
   );
 }

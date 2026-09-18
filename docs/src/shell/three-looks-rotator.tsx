@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Animated, Platform, useWindowDimensions } from "react-native";
-import { View, Text, Button, Row, Icon, Image, useTheme, useReducedMotion } from "@ionizeio/canvas";
+import { Animated, Platform } from "react-native";
+import { View, Text, Button, Row, Icon, Image, useTheme, useReducedMotion, useResponsive } from "@ionizeio/canvas";
 import { useRouter } from "expo-router";
 import { COMPONENTS } from "../core/data/components";
 import { COMPONENT_DOCS } from "../core/registry";
@@ -59,7 +59,6 @@ export function ThreeLooksRotator() {
 
 function Rotator() {
   const { tokens } = useTheme();
-  const { width } = useWindowDimensions();
   const reducedMotion = useReducedMotion();
   const router = useRouter();
   const [index, setIndex] = useState(0);
@@ -67,7 +66,8 @@ function Rotator() {
   // back: having the stage jump out from under someone who just took manual control is
   // the whole problem being fixed here.
   const [manual, setManual] = useState(false);
-  const columns = width > 760;
+  // Three columns above md (768), by the kit's viewport bucket (desktop on the server).
+  const columns = useResponsive({ base: true, md: false });
 
   const atom = ATOMS[index % ATOMS.length];
   const shots = LOOKS_SHOTS[atom.slug];

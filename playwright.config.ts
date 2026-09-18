@@ -13,8 +13,9 @@
  *                     a DEV build, so React's own development warnings reach the
  *                     console gate.
  *   otherwise         The web export in docs/dist, served by e2e/support/serve-dist.ts
- *                     with the SPA rewrite and the production Content-Security-Policy
- *                     from docs/public/_headers. This is the canonical run: it tests
+ *                     the way Pages serves it (one document per route, a real 404 for a
+ *                     miss) with the production Content-Security-Policy from
+ *                     docs/public/_headers. This is the canonical run: it tests
  *                     the bytes that ship. Build it with `cd docs && bun run build:web`.
  *
  * There are no retries on purpose. A test that only passes sometimes is a defect in

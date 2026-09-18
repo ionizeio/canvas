@@ -1,4 +1,4 @@
-// Inline the exported stylesheet into index.html instead of linking it.
+// Inline the exported stylesheet into every page instead of linking it.
 //
 // The export ships one small stylesheet, expo-router's native-tabs module (~2.5 KB). It
 // is render-blocking: the browser will not paint until it has been fetched, which cost a
@@ -18,35 +18,43 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { htmlPages } from "./html-pages.mjs";
 
 const dist = process.argv[2] ?? "dist";
-const htmlPath = path.join(dist, "index.html");
-let html = fs.readFileSync(htmlPath, "utf8");
 
+// The export also emits a preload for the stylesheet it links; once the rules are
+// inline that preload would fetch a file nothing references.
 const LINK = /<link[^>]*rel="stylesheet"[^>]*href="([^"]+)"[^>]*>/g;
-const found = [...html.matchAll(LINK)];
-if (!found.length) {
-  console.log("inline-css: no stylesheet links found; nothing to do");
-  process.exit(0);
-}
+const PRELOAD = /<link[^>]*rel="preload"[^>]*href="([^"]+)"[^>]*as="style"[^>]*>\s*/g;
 
-let inlined = 0;
-for (const [tag, href] of found) {
-  const file = path.join(dist, href.replace(/^\//, ""));
-  if (!fs.existsSync(file)) throw new Error(`inline-css: stylesheet not found in artifact: ${href}`);
-  const css = fs.readFileSync(file, "utf8");
-  // Only inline what is genuinely small. A large stylesheet is better left cacheable as a
-  // separate file than duplicated into every HTML response.
-  if (css.length > 16_000) {
-    console.log(`inline-css: skipping ${href} (${css.length} bytes, over the inline budget)`);
-    continue;
+const inlined = new Map();
+function inlineInto(page) {
+  let html = fs.readFileSync(page, "utf8");
+  const found = [...html.matchAll(LINK)];
+  if (!found.length) return 0;
+  let count = 0;
+  for (const [tag, href] of found) {
+    if (!inlined.has(href)) {
+      const file = path.join(dist, href.replace(/^\//, ""));
+      if (!fs.existsSync(file)) throw new Error(`inline-css: stylesheet not found in artifact: ${href}`);
+      const css = fs.readFileSync(file, "utf8");
+      // </style> inside the CSS would close the block early; there is none today, but a
+      // future rule containing that sequence would silently break the page.
+      if (css.includes("</style")) throw new Error(`inline-css: ${href} contains a closing style tag`);
+      // Only inline what is genuinely small. A large stylesheet is better left cacheable as
+      // a separate file than duplicated into every HTML response.
+      inlined.set(href, css.length > 16_000 ? null : css);
+      if (inlined.get(href) === null) console.log(`inline-css: skipping ${href} (${css.length} bytes, over the inline budget)`);
+    }
+    const css = inlined.get(href);
+    if (css === null) continue;
+    html = html.replace(tag, `<style>${css}</style>`).replace(PRELOAD, (preload, preloaded) => (preloaded === href ? "" : preload));
+    count += 1;
   }
-  // </style> inside the CSS would close the block early; there is none today, but a future
-  // rule containing that sequence would silently break the page.
-  if (css.includes("</style")) throw new Error(`inline-css: ${href} contains a closing style tag`);
-  html = html.replace(tag, `<style>${css}</style>`);
-  inlined += 1;
+  fs.writeFileSync(page, html);
+  return count;
 }
 
-fs.writeFileSync(htmlPath, html);
-console.log(`inline-css: inlined ${inlined} of ${found.length} stylesheet(s) into index.html`);
+const pages = htmlPages(dist);
+const total = pages.reduce((sum, page) => sum + inlineInto(page), 0);
+console.log(`inline-css: inlined ${inlined.size} stylesheet(s) into ${total} of ${pages.length} page(s)`);

@@ -1,6 +1,6 @@
-import { FontDisplay } from "expo-font";
+import { Platform } from "react-native";
+import { FontDisplay, useFonts } from "expo-font";
 import {
-  useFonts,
   Urbanist_400Regular,
   Urbanist_500Medium,
   Urbanist_600SemiBold,
@@ -29,8 +29,25 @@ const swap = (uri: number) => ({ uri, display: FontDisplay.SWAP });
 // prop below and worn by the docs' own chrome too; Geist Mono sets the code. Custom fonts
 // in RN don't auto-map fontWeight, so each weight is its own family and is selected
 // explicitly (the kit does it through `fonts`, the chrome via sans()).
+//
+// `useFonts` comes from expo-font itself, not from the @expo-google-fonts re-export. The
+// re-export is a plain client hook that starts false and flips in an effect, and effects
+// never run in a static render, so every pre-rendered page came out EMPTY behind the
+// root layout's font gate. expo-font's hook knows about the server: there it registers
+// each face so the exporter writes the @font-face rules and the preload links into the
+// page's head.
+//
+// On the web the gate is reported open outright. The document owns the faces there:
+// the pre-rendered head preloads them and declares them, so they are loading before
+// the bundle has even arrived, and the server always renders the tree. Asking the hook
+// instead would make the hydration render depend on the browser's CSSOM: expo-font
+// decides a face is loaded by comparing the @font-face rule's `fontFamily` string, and
+// Firefox serialises that name with quotes, so it answered "not loaded" there, the
+// hydration render produced an empty tree against a full page, and React rebuilt the
+// whole document. On iOS and Android the answer is the real one: the faces are read
+// from the bundle, and the tree waits for them.
 export function useDocsFonts(): [boolean, Error | null] {
-  return useFonts({
+  const [loaded, error] = useFonts({
     Urbanist_400Regular: swap(Urbanist_400Regular),
     Urbanist_500Medium: swap(Urbanist_500Medium),
     Urbanist_600SemiBold: swap(Urbanist_600SemiBold),
@@ -39,6 +56,7 @@ export function useDocsFonts(): [boolean, Error | null] {
     GeistMono_500Medium: swap(GeistMono_500Medium),
     GeistMono_600SemiBold: swap(GeistMono_600SemiBold),
   });
+  return [Platform.OS === "web" || loaded, error];
 }
 
 export type SansWeight = "400" | "500" | "600" | "700";

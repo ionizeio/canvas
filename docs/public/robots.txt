@@ -1,13 +1,12 @@
 # Canvas docs. Everything here is public documentation, so crawl all of it.
 #
-# This file has to exist as a real file. docs/public/_redirects rewrites every
-# unmatched path to index.html with a 200, so without it /robots.txt answers with
-# the HTML shell, and a crawler parses that markup as directives: Lighthouse read
-# it as 74 malformed rules. A missing file is silent here in a way it is not on a
-# host that would simply 404.
+# This file has to exist as a real file. It dates from the single-page export, when
+# a _redirects catch-all rewrote every unmatched path to index.html with a 200, so
+# without it /robots.txt answered with the HTML shell and a crawler parsed that markup
+# as directives: Lighthouse read it as 74 malformed rules. The export is static now
+# and a miss is a real 404, but a real file is still the right answer.
 #
-# No Sitemap line on purpose: there is no sitemap.xml to point at, and naming one
-# would recreate the same problem, since the catch-all would answer that URL with
-# HTML too. Add the directive in the same commit that starts generating the file.
+# No Sitemap line on purpose: there is no sitemap.xml to point at. Add the directive
+# in the same commit that starts generating the file.
 User-agent: *
 Allow: /

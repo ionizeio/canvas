@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
-import { Platform, useWindowDimensions } from "react-native";
-import { View, Text, Icon, Column, alpha, breakpoints, palette, useTheme, type StyleProp, type ViewStyle } from "@ionizeio/canvas";
+import { Platform } from "react-native";
+import { View, Text, Icon, Column, alpha, palette, useTheme, useResponsive, type StyleProp, type ViewStyle } from "@ionizeio/canvas";
 import { buildScopes } from "../core/build-scopes";
 import type { DocDontPair } from "../core/scope";
 import { CodeBlock } from "./code-block";
@@ -77,7 +77,6 @@ export function DoDontCard(props: DoDontCardProps) {
 // (stacked on a phone), matching the component page's donts-grid.
 export function Donts({ donts }: { donts: DocDontPair[] }) {
   const { tokens } = useTheme();
-  const { width } = useWindowDimensions();
   // A pair sits side by side only when each card can actually HOLD its example.
   // Examples are authored up to 560 wide; a card adds 20 of padding either side, the
   // pair adds a 16 gap, and the page adds 28 of padding either side, so two of them
@@ -85,8 +84,10 @@ export function Donts({ donts }: { donts: DocDontPair[] }) {
   // be 768, which gave each card about 348 of inner width and silently CLIPPED the
   // right-hand side of every chart, table and wide row in the section: the page's
   // scroller is overflow-hidden, so nothing scrolled to reveal it and nothing warned.
-  // Below this the pair stacks and each card gets the full column.
-  const wide = width >= breakpoints.xl;
+  // At and below the xl bucket (1280) the pair stacks and each card gets the full
+  // column; the kit's bucket hook, not a raw window read, so the server and the
+  // hydration render agree on the desktop layout.
+  const wide = useResponsive({ base: true, xl: false });
   const previews = buildScopes(tokens);
   const scope = previews[previews.length - 1].scope;
 

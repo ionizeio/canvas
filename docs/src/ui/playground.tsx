@@ -1,6 +1,6 @@
 import { Component, Fragment, type ReactNode, useEffect, useState } from "react";
-import { Platform, useWindowDimensions } from "react-native";
-import { ScrollView, View, Text, Row, Column, Tabs, Input, ButtonGroup, BackdropHost, OverlayProvider, BreakpointOverride, useMeasuredWidth, useTheme, type IconName, type BreakpointKey } from "@ionizeio/canvas";
+import { Platform } from "react-native";
+import { ScrollView, View, Text, Row, Column, Tabs, Input, ButtonGroup, BackdropHost, OverlayProvider, BreakpointOverride, useMeasuredWidth, useTheme, type IconName, type BreakpointKey, useResponsive } from "@ionizeio/canvas";
 import { buildScopes } from "../core/build-scopes";
 import { IconSearchContext } from "../core/live-state";
 import type { DocExample, ExampleScope } from "../core/scope";
@@ -154,8 +154,9 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
   onSelect?: (index: number) => void;
 }) {
   const { tokens } = useTheme();
-  const { width } = useWindowDimensions();
-  const wide = width >= 1024;
+  // The wide stage above the tablet tier (width > lg, 1024), through the kit's bucket
+  // hook so the server and the hydration render agree on the desktop layout.
+  const wide = useResponsive({ base: true, lg: false });
   const [selectedState, setSelectedState] = useState(0);
   const selected = selectedProp ?? selectedState;
   const setSelected = onSelectProp ?? setSelectedState;

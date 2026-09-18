@@ -3,7 +3,7 @@
  * hero (.github/assets/hero.png, 1200x880) into the 1200x630 canvas the Open Graph /
  * Twitter summary_large_image spec expects:
  *
- *   docs/public/og.png  referenced absolutely by docs/public/index.html's og:image
+ *   docs/public/og.png  referenced absolutely by the og:image in docs/src/app/+html.tsx
  *
  * Run: bun run og:gen  (re-run whenever the hero is regenerated)
  *

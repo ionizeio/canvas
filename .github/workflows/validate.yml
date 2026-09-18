@@ -178,9 +178,9 @@ jobs:
 
       # Kept per-push: it is the only check that catches CI-only Metro/export bugs
       # before a Pages deploy trips over them. `build:web` is what deploy.yml runs, so
-      # this exercises the shipping configuration exactly, including the two
-      # post-processors (font preloads, inlined stylesheet) that `expo export` alone
-      # never reaches. It used to export under EXPO_BASE_URL=/canvas to match a Pages
+      # this exercises the shipping configuration exactly, including the three
+      # post-processors (inlined stylesheet, Pages preparation, paint-first loader)
+      # that `expo export` alone never reaches. It used to export under EXPO_BASE_URL=/canvas to match a Pages
       # deploy that no longer exists: deploy.yml sets no base URL, since the site is
       # served from the root of canvas.nannier.com, so CI was validating a build nobody
       # ships. Node comes from the runner image.

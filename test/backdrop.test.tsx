@@ -2,6 +2,8 @@ import { describe, it, expect, afterEach, spyOn } from "bun:test";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { render, cleanup, waitFor, act } from "@testing-library/react";
+import { renderToString } from "react-dom/server";
+import { hydrateRoot, type Root } from "react-dom/client";
 import { AccessibilityInfo, type Animated } from "react-native";
 import { Backdrop, BackdropHost } from "../src/organisms/backdrop/backdrop.tsx";
 import { backdropClock, resetBackdropClocks } from "../src/organisms/backdrop/backdrop-clock.ts";
@@ -98,6 +100,35 @@ describe("BackdropHost", () => {
   it("renders inline when there is no host, so an unhosted consumer still works", async () => {
     const { container } = render(wrap(<Scene />));
     await waitFor(() => expect(surface(container)).not.toBeNull());
+  });
+
+  // A claim is published from an effect, which a server render never runs, so a host
+  // alone would ship a page with no floor under dark-scheme text. The claimant paints
+  // inline in the server markup instead, hydration reproduces that exactly, and the
+  // host takes the surface over in the commit after.
+  it("paints the surface in the server markup and hands it to the host after hydration", async () => {
+    const app = wrap(<BackdropHost><Scene /></BackdropHost>);
+    const html = renderToString(app);
+    const container = document.createElement("div");
+    container.innerHTML = html;
+    document.body.appendChild(container);
+    expect(surface(container), "the server markup carries the surface").not.toBeNull();
+    const recovered: string[] = [];
+    let root!: Root;
+    try {
+      act(() => {
+        root = hydrateRoot(container, app, { onRecoverableError: (error) => { recovered.push(String(error)); } });
+      });
+      expect(recovered).toEqual([]);
+      // Exactly one surface at every moment: the host's, once it holds the claim.
+      await waitFor(() => expect(container.querySelectorAll('[aria-hidden="true"]').length).toBe(1));
+      // The host renders its surface before the app, the claimant rendered its inline
+      // one inside the app: after the hand-over the surface is the host's, the first child.
+      expect(container.firstElementChild?.getAttribute("aria-hidden")).toBe("true");
+    } finally {
+      act(() => root.unmount());
+      container.remove();
+    }
   });
 });
 

@@ -5,6 +5,7 @@ import { GlassBlurTargetContext } from "../../style/glass-surface/glass-surface.
 import { GlassBackdropTarget } from "../../style/glass-surface/glass-backdrop-target.js";
 import { useWindowDimensions } from "react-native";
 import { View } from "../../style/index.js";
+import { useHydrated } from "../../style/use-hydrated.js";
 import { backdropClock, retainBackdropClock, releaseBackdropClock, type Energy } from "./backdrop-clock.js";
 import { type Layer } from "./backdrop-layers.js";
 import { SvgBackdrop, BackdropFloor } from "./renderers/svg-backdrop.js";
@@ -56,9 +57,20 @@ const HostContext = createContext<Registry | null>(null);
 let nextKey = 1;
 
 /** Publish a scene to the nearest host. Returns false when there is no host, in
- *  which case the caller renders the surface itself. */
+ *  which case the caller renders the surface itself.
+ *
+ *  A claim is published from an effect, and effects never run in a server render,
+ *  so a host has nothing to paint in the markup it ships: the page would arrive
+ *  without its floor, dark-scheme text on a white document until the bundle ran.
+ *  So the claimant also answers "not hosted" for the server render and for the
+ *  hydration render (which must reproduce the server markup), painting its surface
+ *  inline there; the host takes over in the commit right after, when the claim
+ *  lands. The two surfaces are the same absolutely positioned box, so the hand-over
+ *  moves nothing. Native and plain client renders are hydrated from the first
+ *  render and never take the inline path. */
 export function useBackdropClaim(value: BackdropClaim): boolean {
   const registry = useContext(HostContext);
+  const hydrated = useHydrated();
   const key = useRef<number>(0);
   if (key.current === 0) key.current = nextKey++;
 
@@ -73,7 +85,7 @@ export function useBackdropClaim(value: BackdropClaim): boolean {
     return () => registry.release(k);
   }, [registry]);
 
-  return registry !== null;
+  return registry !== null && hydrated;
 }
 
 export interface BackdropHostProps {

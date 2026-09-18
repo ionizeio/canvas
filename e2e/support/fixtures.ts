@@ -22,6 +22,15 @@ export interface PageProblems {
   cspViolations: string[];
   badResponses: string[];
   failedRequests: string[];
+  /**
+   * Set by a test that navigates to a route which does not exist. The export is
+   * static, so a miss is a real 404 document (Pages serves 404.html with that status)
+   * carrying the not-found page: the gate then requires that status instead of
+   * refusing it, so a server that quietly answered 200 would fail the test too.
+   */
+  expectNotFound: boolean;
+  /** The status of the last document (navigation) response, for the gate above. */
+  documentStatus: number | null;
 }
 
 /**
@@ -37,10 +46,15 @@ async function watchForProblems(page: Page): Promise<PageProblems> {
     cspViolations: [],
     badResponses: [],
     failedRequests: [],
+    expectNotFound: false,
+    documentStatus: null,
   };
 
   page.on("console", (message) => {
-    if (message.type() === "error") problems.consoleErrors.push(message.text());
+    if (message.type() !== "error") return;
+    // Chrome logs the 404 of an expected not-found document as a console error too.
+    if (problems.expectNotFound && /status of 404/.test(message.text())) return;
+    problems.consoleErrors.push(message.text());
   });
   page.on("pageerror", (error) => {
     problems.pageErrors.push(error.message);
@@ -51,6 +65,9 @@ async function watchForProblems(page: Page): Promise<PageProblems> {
     // 127.0.0.1 is what keeps the gate armed when E2E_BASE_URL points the suite at a
     // running Metro on localhost, which is the documented way to run it locally.
     const origin = new URL(page.url() === "about:blank" ? response.url() : page.url()).origin;
+    const isDocument = response.request().isNavigationRequest() && response.request().resourceType() === "document";
+    if (isDocument) problems.documentStatus = response.status();
+    if (isDocument && response.status() === 404 && problems.expectNotFound) return;
     if (response.status() >= 400 && response.url().startsWith(origin)) {
       problems.badResponses.push(`${response.status()} ${response.url()}`);
     }
@@ -119,6 +136,9 @@ export const test = base.extend<{ problems: PageProblems; registry: void }>({
       if (testInfo.status !== testInfo.expectedStatus) return;
       const lines = describe(problems);
       expect(lines, `the page reported ${lines.length} problem(s):\n  ${lines.join("\n  ")}`).toEqual([]);
+      if (problems.expectNotFound) {
+        expect(problems.documentStatus, "an unknown route must be a real 404, not a 200 with the not-found page in it").toBe(404);
+      }
     },
     { auto: true },
   ],

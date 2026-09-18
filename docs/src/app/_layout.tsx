@@ -2,6 +2,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { BackdropHost, OverlayProvider, ToastProvider } from "@ionizeio/canvas";
 import { DocsThemeProvider } from "../theme/docs-theme";
 import { useDocsFonts } from "../ui/fonts";
+import { DocsHead } from "../ui/docs-head";
 import { Navbar } from "../shell/navbar";
 
 // On native the bottom tab triggers are declared (in nav.config.json's mobile.tabs order)
@@ -26,10 +27,20 @@ export const unstable_settings = { initialRouteName: "(home)" };
 // score went DOWN, 75 to 70. Removing this gate is only safe alongside a metric-matched
 // fallback face (size-adjust / ascent-override), which React Native Web cannot express
 // today because it emits a bare `font-family` with no fallback chain.
+//
+// On the web that gate is now open by construction: the export pre-renders every route
+// (app.json `web.output: "static"`), the exporter writes the @font-face rules and preload
+// links into each page's head, and useDocsFonts reports the web loaded outright, so the
+// server render, the hydration render and every later render agree (docs/src/ui/fonts.ts).
+// The measured Cumulative Layout Shift of that pre-rendered page is 0: the preloads start
+// with the document and the faces arrive before the first frame on any ordinary connection.
+// The gate still does its work on iOS and Android, where the faces are read from the bundle
+// before the first frame.
 export default function RootLayout() {
   const [fontsLoaded] = useDocsFonts();
   return (
     <SafeAreaProvider>
+      <DocsHead />
       <DocsThemeProvider>
         {fontsLoaded ? (
           <BackdropHost>

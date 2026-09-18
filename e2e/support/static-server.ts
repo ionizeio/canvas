@@ -1,32 +1,31 @@
 /**
  * The static server the end-to-end suite runs against.
  *
- * The docs app ships as a single-page web export (docs/app.json sets
- * `web.output: "single"`), so every deep route has to be answered with the same
- * index.html and resolved client-side by expo-router. On Cloudflare that is
- * docs/public/_redirects (`/*  /index.html  200`); here it is the fallback below.
+ * The docs app ships as a static web export (docs/app.json sets `web.output:
+ * "static"`): one HTML document per route, served the way Cloudflare Pages serves
+ * it. A route path resolves like Pages' clean URLs do, `/x` to `x.html` or
+ * `x/index.html`, and a miss is answered by the root `404.html` (expo-router's
+ * not-found page, renamed by docs/scripts/prepare-pages.mjs) with a real 404
+ * status. Text responses are gzip-compressed when the client accepts it, because
+ * Lighthouse sizes its simulated network from transfer bytes and an uncompressed
+ * bundle would overstate every timing five-fold.
  *
- * Two deliberate differences from Cloudflare's rule:
+ * A single-page export (no per-route documents, no 404.html) still works: the
+ * `spa` fallback answers extension-less misses with index.html, which is what the
+ * old `_redirects` catch-all did on Cloudflare.
  *
- *   1. The fallback fires ONLY for extension-less paths. Cloudflare answers a
- *      missing font or script with a 200 and an HTML body, which is exactly the
- *      blank-site failure docs/public/_headers documents. Here a missing asset
- *      stays a 404, so the smoke suite's failed-request gate sees it.
+ * Two deliberate strictnesses:
+ *
+ *   1. A miss that names a file extension is always a plain 404. Cloudflare's old
+ *      catch-all answered a missing font or script with a 200 and an HTML body,
+ *      which is exactly the blank-site failure docs/public/_headers documents; here
+ *      the smoke suite's failed-request gate sees it.
  *   2. `--headers` replays the `/*` block of docs/public/_headers onto every
- *      response, so the strict Content-Security-Policy (script-src 'self', no
- *      unsafe-eval, require-trusted-types-for 'script') is enforced in the
+ *      response, so the strict Content-Security-Policy (hashed inline scripts only,
+ *      no unsafe-eval, require-trusted-types-for 'script') is enforced in the
  *      browser during the run. That turns the route sweep _headers asks for
  *      "whenever a dependency that touches the DOM is added or upgraded" into a
  *      thing CI does on every push.
- *
- * Two Cloudflare behaviours are mirrored so a measurement here predicts the
- * deployment: text responses are gzip-compressed when the client accepts it
- * (Lighthouse sizes its simulated network from transfer bytes, and an
- * uncompressed 4 MB bundle would overstate every timing five-fold), and a route
- * path resolves like Pages' clean URLs do, `/x` to `x.html` or `x/index.html`,
- * with a root `404.html` answering a miss. None of that changes a single-page
- * export, which has no such files; it is what a static export (`web.output:
- * "static"`, one HTML document per route) needs to be served correctly.
  *
  * It is plain node:http with no dependencies, so both bun (the webServer
  * command) and node (anything Playwright's own loader runs) execute it.
@@ -71,7 +70,7 @@ export interface ServerOptions {
   base?: string;
   /** Replay the `/*` block of `<root>/_headers` onto every response. */
   headers?: boolean;
-  /** Answer extension-less misses with index.html (the expo-router SPA rewrite). */
+  /** Answer extension-less misses with index.html (a single-page export's rewrite) when there is no 404.html. */
   spa?: boolean;
   /** Serve HTTPS with a disposable loopback certificate, without changing system trust. */
   https?: boolean;
@@ -209,22 +208,22 @@ export async function startStaticServer(options: ServerOptions): Promise<Running
       return;
     }
 
-    // The SPA rewrite, for route paths only. A miss that names a file extension
-    // is a genuine 404 and must read as one.
-    if (spa && extname(pathname) === "") {
-      const shell = await readIfFile(join(root, "index.html"));
+    // Route-path misses only from here on: a miss that names a file extension is a
+    // genuine 404 and must read as one.
+    if (extname(pathname) === "") {
+      // Pages serves a root 404.html (a static export's not-found page) with a real
+      // 404 status, so the not-found route renders without pretending to be a hit.
+      const notFound = await readIfFile(join(root, "404.html"));
+      if (notFound) {
+        send(req, res, 404, notFound, MIME[".html"]);
+        return;
+      }
+      // The SPA rewrite of a single-page export.
+      const shell = spa ? await readIfFile(join(root, "index.html")) : null;
       if (shell) {
         send(req, res, 200, shell, MIME[".html"]);
         return;
       }
-    }
-
-    // Pages serves a root 404.html (a static export's +not-found page) with a real
-    // 404 status, so the not-found route renders without pretending to be a hit.
-    const notFound = await readIfFile(join(root, "404.html"));
-    if (notFound && extname(pathname) === "") {
-      send(req, res, 404, notFound, MIME[".html"]);
-      return;
     }
 
     send(req, res, 404, "Not found", "text/plain; charset=utf-8");
