@@ -24,9 +24,10 @@ import { type ColorScheme, type ColorTokens, alpha, customShadow, shadow, shape 
 //     opaque `card` panel with a 1px `border` hairline on its inner edge (a 16
 //     rounded-top bottom sheet), no shadow, over a 0.5 black scrim.
 //
-// The fill is the SOLID `card` token, not a glass material, on every platform: a
-// full-screen drawer sits directly over page content, so a translucent panel
-// would bleed the content through. An opaque panel keeps it legible.
+// The skins paint the SOLID `card` fill; under glass the shell renders the panel
+// through GlassSurface as a FUNCTIONAL-layer surface (the sheet material over the
+// dimming scrim, the same as ActionSheet and Dialog), and the fill here is what the
+// solid mode, Reduce Transparency and Increase Contrast fall back to.
 
 // Edge the panel is anchored to. `left`/`right` are full-height side drawers;
 // `bottom`/`top` are sheets that span the width and rise from the bottom / drop from the top.
@@ -89,9 +90,10 @@ export const panelPos: Record<Edge, ViewStyle> = {
   top: { width: "100%" },
 };
 
-// Shared panel base: the opaque SOLID `card` fill and clipped corners. The skin
-// adds the per-edge geometry (width/height), the border (or none), the radius,
-// and the elevation on top of this.
+// Shared panel base: the solid `card` fill (dropped under glass, where the
+// functional material carries the panel) and clipped corners. The skin adds the
+// per-edge geometry (width/height), the border (or none), the radius, and the
+// elevation on top of this.
 function panelBase(t: ColorTokens): ViewStyle {
   return { backgroundColor: t.card, overflow: "hidden" };
 }

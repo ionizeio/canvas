@@ -2,6 +2,14 @@
 
 On / off switch, isolated or grouped in a settings list.
 
+In glass mode the knob is a liquid control: on a toggle it travels across the
+track as one measured surface with the `toggle` profile (a horizontal stretch
+toward the far end, a squash and recoil on arrival, then a settle on the exact
+resting bounds), and while it is held it lifts slightly; the track, the label,
+the description and the hit target never move, and the checked state flips at
+once. Reduce Motion places the knob on its final bounds immediately; a
+disabled switch is inert; solid mode keeps the skin's own knob.
+
 Pass `ref` to access the interactive switch row, including its label. Use `useRef<ComponentRef<typeof Switch>>(null)` from React, or `useRef<View>(null)` with React Native's `View` type. Object and callback refs are supported and detach on unmount. Calling `ref.current?.focus()` or `.blur()` delegates to the host without activating the control. Browser focus is supported; native focus depends on the platform and React Native version, and is separate from accessibility focus.
 
 On the web, Space activates the focused control on key release, and Enter also activates it. Holding Space does not repeat the change. Moving focus away, disabling the control, or composing text cancels a pending Space press.

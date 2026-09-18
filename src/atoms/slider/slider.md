@@ -12,6 +12,16 @@ Name the setting with string `children`, or pass `accessibilityLabel` when the v
 <Slider accessibilityLabel="Volume" defaultValue={60} />
 ```
 
+In glass mode the handle follows the pointer or finger through the `drag`
+profile: its position is the authoritative value at every frame (a controlled
+value or a release can never lag behind the rail), and only its shape has
+inertia, stretching along the direction of travel with the speed of the drag,
+squashing and recoiling on a stop and lifting while it is held. Tapping the
+track puts the handle on the tapped value at once, its shape reacting as it
+would to a fast drag. The rail, the filled range, the value label and the hit
+target stay fixed. Reduce Motion moves the handle without lift or stretch; a
+disabled slider is inert; solid mode keeps the skin's own handle.
+
 On iOS 26 the handle is a real Apple Liquid Glass control: a bright knob that springs up as you drag, with the material's edge-lensing and specular showing on a physical device (the OS "transforms controls into liquid glass during interaction"). This is automatic from the glass surface, the platform default there, so there is no prop to set; under a solid surface, Reduce Transparency, or Increase Contrast the handle falls back to a solid knob. The Android and web handles keep their own native look.
 
 ## Variants

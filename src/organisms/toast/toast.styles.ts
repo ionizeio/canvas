@@ -4,10 +4,11 @@ import { type ColorTokens, alpha, darkColors, lightColors, shadow, shape } from 
 import { type ToastSkin } from "./toast.shared.js";
 
 // Co-located Toast skins, one per platform, all driven by the brand tokens (passed
-// in from useTheme so they follow light/dark). The capsule is an OPAQUE bar on every
-// theming surface, glass included: each skin's own fill IS the surface (the web
+// in from useTheme so they follow light/dark). Each skin's own fill (the web
 // hand-off's `--p-toast-fill`, i.e. the `popover` token, and the M3 inverse-surface
-// bar on Android), painted on a plain box by the shell with no material over it.
+// bar on Android) is the solid-mode bar; under glass the shell renders the capsule
+// through GlassSurface as a DENSE-layer surface, the densest tint so the message
+// stays readable, with the inverse bars taking the inverse dense tint.
 // Toast is a "Full" treatment: the BRAND survives on every platform
 // (the indigo `primary` action tint, the semantic `success`/`error`/`warning` intents),
 // only the native shape, type, and press feedback change per OS:
@@ -22,7 +23,8 @@ import { type ToastSkin } from "./toast.shared.js";
 //     M3 inverse-primary role, kept on-brand), the close x in the inverse on-surface
 //     tone at the 24dp spec size, trailing padding 8dp beside a trailing control,
 //     48dp touch targets via hitSlop, press = ripple in background-family ink. M3
-//     snackbars have no glass idiom, and the inverse fill is the whole read here.
+//     snackbars have no glass idiom of their own, so under glass the bar is the
+//     kit's inverse dense surface, keeping the inverse read.
 //   Web (sonner): a rounded-12 card with shadow-lg, 14px medium message + 13px muted
 //     description, a brand action, an x dismiss. Press = opacity dim.
 
