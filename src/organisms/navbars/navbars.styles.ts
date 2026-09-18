@@ -93,6 +93,7 @@ export const webSkin: NavbarSkin = {
       color: active ? tokens.foreground : tokens["muted-foreground"],
     };
   },
+  linkSelection: "tint",
 
   // flex-row items-center gap-3
   rightGroup() {
@@ -182,6 +183,7 @@ export const iosSkin: NavbarSkin = {
       color: active ? tokens["primary-foreground"] : primaryText(tokens),
     };
   },
+  linkSelection: "brand",
 
   rightGroup() {
     return { flexDirection: "row", alignItems: "center", gap: 8 };
@@ -257,6 +259,7 @@ export const androidSkin: NavbarSkin = {
       color: active ? primaryText(tokens) : tokens["muted-foreground"],
     };
   },
+  linkSelection: "tint",
 
   rightGroup() {
     return { flexDirection: "row", alignItems: "center", gap: 8 };

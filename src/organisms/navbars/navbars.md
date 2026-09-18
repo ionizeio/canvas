@@ -5,8 +5,14 @@ primary app-level navigation. The bar measures its own width: at and below the
 `sm` breakpoint (640) the links row automatically collapses into a menu button
 opening a dropdown of the same links (the active one checkmarked), so links
 never clip off a phone screen; `active` and `onSelect` keep their contract in
-both renderings. In glass mode the collapsed menu is Dropdown's, so it opens and
-closes with Dropdown's liquid material while the bar itself stays still. Either cluster takes a caller-supplied element beside its
+both renderings. In glass mode the active link's fill travels between the links as
+one measured surface with restrained stretch, recoil and settle (the labels,
+`aria-current`, focus and hit targets stay fixed; iOS keeps its inactive capsules and
+carries the brand fill as glass, web and Android carry their tinted tile), the
+collapsed menu is Dropdown's, so it opens and closes with Dropdown's liquid material
+while the bar itself stays still, and a collapse retires the surface until the row
+measures again. Reduce Motion selects the final bounds at once; solid mode keeps
+the skin's own active tile. Either cluster takes a caller-supplied element beside its
 built-in parts: `brandContent` leads the left one with a logo mark (beside or
 instead of the `brand` wordmark) and `actions` leads the right one with
 free-form trailing controls, ahead of `actionLabel` and `avatar`. `links` is

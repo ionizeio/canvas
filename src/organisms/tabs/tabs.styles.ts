@@ -1,7 +1,6 @@
 import { primaryText } from "../../style/primary-text.js";
 import { StyleSheet, type StyleProp, type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, customShadow, alpha, FOCUS_RESET, shape } from "../../style/index.js";
-import { channelsOf } from "../../style/color.js";
 import { type TabsSkin } from "./tabs.shared.js";
 
 // Co-located Tabs skins, one per platform. The shell resolves the look axis
@@ -33,24 +32,10 @@ export const flex1: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%" };
 // opacity-50: the dimmed disabled look the component applies per trigger.
 export const disabledDim: ViewStyle = { opacity: 0.5 };
 
-/** Preserve each skin's selected hue while keeping the track ink readable in flight. */
-export function selectionTint(style: StyleProp<ViewStyle>, dark: boolean): string | undefined {
-  const fill = StyleSheet.flatten(style)?.backgroundColor;
-  if (typeof fill !== "string") return undefined;
-  const channels = channelsOf(fill);
-  if (!channels) return fill;
-  const [red, green, blue, opacity] = channels;
-  return `rgba(${red}, ${green}, ${blue}, ${Math.min(opacity, dark ? 0.46 : 0.72)})`;
-}
-
-/** Only appearance travels; the source trigger keeps its own spacing and hit area. */
-export function selectionSurface(style: ViewStyle): ViewStyle {
-  const surface: Record<string, unknown> = { backgroundColor: style.backgroundColor };
-  for (const [key, value] of Object.entries(style)) {
-    if (key.startsWith("border") || key.startsWith("shadow") || key === "boxShadow" || key === "elevation") surface[key] = value;
-  }
-  return surface as ViewStyle;
-}
+// The selection tint and the travelling surface style live with the other moving
+// selections (Navbar, Sidebar) in src/style/selection-tint.ts; re-exported here so
+// the Tabs tests and skins keep their import.
+export { selectionTint, selectionSurface } from "../../style/selection-tint.js";
 
 export const clearSelectionShadow: ViewStyle = shadow("none");
 

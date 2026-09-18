@@ -39,6 +39,9 @@ test("surface decisions require complete solid, fallback and both-direction expe
   expect(errors).toContain("Missing mode-switch expectation for Field");
   expect(errors).toContain("Missing accessibility-fallback expectation for Field");
   expect(checkMaterialCoverage([api], catalog, [{ ...field, motion: "selection-pilot" }]).errors).toContain("Selection pilot lacks liquid role/motion verification: Field");
+  for (const motion of ["moving-selection", "liquid-popup"] as const) {
+    expect(checkMaterialCoverage([api], catalog, [{ ...field, motion }]).errors).toContain("Liquid profile lacks liquid role/motion verification: Field");
+  }
   const result = checkMaterialCoverage([api], catalog, [field]);
   expect(result.implementationVerified).toBe(false);
   expect(result.runtimeEvidence).toBe("not-recorded");

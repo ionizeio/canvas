@@ -1,5 +1,9 @@
-import { type ComponentType, type ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
+import { StyleSheet, type LayoutRectangle } from "react-native";
 import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, useContainerBreakpoint, GlassSurface, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
+import { MeasuredSelection } from "../../style/measured-selection.js";
+import { selectionSurface, selectionTint } from "../../style/selection-tint.js";
 import { Button } from "../../atoms/button/button.js";
 import { Avatar } from "../../atoms/avatar/avatar.js";
 import { Icon } from "../../atoms/icon/icon.js";
@@ -69,6 +73,14 @@ export interface NavbarSkin {
   linkTile: (t: ColorTokens, active: boolean) => ViewStyle;
   /** A nav link label (weight + active/inactive color). */
   linkLabel: (t: ColorTokens, active: boolean) => TextStyle;
+  /**
+   * How the moving glass selection carries the active tile's fill. `tint` keeps
+   * the skin's hue at a translucent ceiling with the ordinary foreground ink
+   * (web's accent tile, Android's 12% primary pill); `brand` paints the brand
+   * fill as glass whose under-fill is densified until the primary-foreground
+   * ink reads at 4.5:1 (iOS's primary capsule).
+   */
+  linkSelection: "tint" | "brand";
 
   /** The right cluster row (action + avatar). */
   rightGroup: (t: ColorTokens) => ViewStyle;
@@ -119,6 +131,8 @@ export interface NavbarProps {
   style?: StyleProp<ViewStyle>;
 }
 
+const TRAVELLING_TILE: ViewStyle = { backgroundColor: "transparent" };
+
 // Surface precedence when more than one is passed: first match wins.
 function surfaceOf(p: NavbarProps): Surface {
   if (p.bordered) return "bordered";
@@ -139,8 +153,10 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
   const Dropdown = parts.Dropdown ?? WebDropdown;
   return function Navbar(props: NavbarProps) {
     const { brand, brandContent, links = [], actions, actionLabel, onAction, avatar, onSelect, testID, style } = props;
-    const { tokens } = useTheme();
+    const { tokens, dark } = useTheme();
     const surface = surfaceOf(props);
+    const material = useMaterialTheme({ layer: "control" });
+    const glass = material.surface === "glass";
     // Controlled when `active` is provided, self-managed otherwise, so a bare
     // navbar moves the active link to the pressed one instead of ignoring taps.
     const [active, setActive] = useControllableState<number>(props.active, props.defaultActive ?? 0);
@@ -158,6 +174,52 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
     // hamburger opening an empty popover. A trailing `actions` slot is unaffected
     // either way; it is not nav, so it never folds into the menu.
     const hasLinks = links.length > 0;
+    // In glass mode the active tile's fill travels as ONE measured control-layer
+    // surface behind the links (profile "navigation": restrained deformation that
+    // never grows into the neighbouring labels), while the labels, roles,
+    // aria-current and hit targets stay fixed. Each link wrapper reports its frame
+    // in the links row's coordinate space; a structural change (the link set, a
+    // collapse or expansion) re-measures every wrapper and resets the surface in
+    // place instead of travelling. Solid mode keeps the skin's own active fill.
+    const structure = JSON.stringify([collapsed, links]);
+    const rowRef = useRef<View>(null);
+    const linkNodes = useRef<Array<View | null>>([]);
+    const latestStructure = useRef(structure);
+    latestStructure.current = structure;
+    const [measurements, setMeasurements] = useState<{ structure: string; rects: Record<number, LayoutRectangle>; revision: number }>({ structure, rects: {}, revision: 0 });
+    const record = (index: number, layout: LayoutRectangle) => {
+      if (latestStructure.current !== structure || layout.width <= 0 || layout.height <= 0) return;
+      setMeasurements((previous) => {
+        const rects = previous.structure === structure ? previous.rects : {};
+        const old = rects[index];
+        if (old && old.x === layout.x && old.y === layout.y && old.width === layout.width && old.height === layout.height) return previous;
+        return { structure, rects: { ...rects, [index]: layout }, revision: previous.revision + (old ? 1 : 0) };
+      });
+    };
+    useLayoutEffect(() => {
+      const row = rowRef.current;
+      if (!row) return;
+      linkNodes.current.forEach((node, index) => node?.measureLayout(row, (x, y, width, height) => record(index, { x, y, width, height }), () => {}));
+      // Only structural changes re-measure; a selection change travels on the
+      // rects already held.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [structure]);
+    const measured = measurements.structure === structure ? measurements.rects : {};
+    const selectionLayout = measured[active];
+    const movingSelection = glass && !collapsed && selectionLayout != null;
+    const activeTile = StyleSheet.flatten(skin.linkTile(tokens, true)) as ViewStyle;
+    const selection = movingSelection ? (
+      <MeasuredSelection layout={selectionLayout} enabled profile="navigation" resetKey={`${structure}:${measurements.revision}`} testID={testID ? `${testID}-selection-motion` : undefined}>
+        <GlassSurface
+          layer="control"
+          interactive
+          brand={skin.linkSelection === "brand" ? tokens.primary : undefined}
+          tint={skin.linkSelection === "tint" ? selectionTint(activeTile, dark) : undefined}
+          style={[StyleSheet.absoluteFill, selectionSurface(activeTile)]}
+          testID={testID ? `${testID}-selection` : undefined}
+        />
+      </MeasuredSelection>
+    ) : null;
     const menuItems: DropdownItem[] = links.map((link, index) => ({
       label: link,
       // The active link carries the conventional menu checkmark.
@@ -192,15 +254,18 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
               <Icon menu size={20} />
             </Dropdown>
           ) : (
-          <View style={skin.linksRow(tokens)}>
+          <View ref={rowRef} style={skin.linksRow(tokens)}>
+            {selection}
             {links.map((link, index) => {
               const isActive = index === active;
               return (
-                // The bounded Android ripple on a link tile is masked to a rectangle and
-                // cannot clip itself; this RippleClip parent rounds it to the tile's own
-                // corners (Android only; a transparent layout passthrough on iOS/web).
+                // The measurement wrapper reports the tile's frame in the row; the
+                // bounded Android ripple on a link tile is masked to a rectangle and
+                // cannot clip itself, so the RippleClip inside rounds it to the tile's
+                // own corners (Android only; a transparent passthrough on iOS/web).
                 // Link tiles hug their labels, so there is no outer layout to move.
-                <RippleClip key={`${link}-${index}`} shape={cornerRadii(skin.linkTile(tokens, isActive))}>
+                <View key={`${link}-${index}`} ref={(node) => { linkNodes.current[index] = node; }} onLayout={(event) => record(index, event.nativeEvent.layout)}>
+                <RippleClip shape={cornerRadii(skin.linkTile(tokens, isActive))}>
                   <Pressable
                     onPress={() => {
                       setActive(index);
@@ -212,13 +277,16 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
                     aria-current={isActive ? "page" : undefined}
                     style={({ pressed }) => [
                       skin.linkTile(tokens, isActive),
+                      // The travelling surface carries the active fill; the tile drops its own.
+                      movingSelection && isActive ? TRAVELLING_TILE : null,
                       skin.focusOutlineReset,
                       skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
                     ]}
                   >
-                    <Text style={skin.linkLabel(tokens, isActive)}>{link}</Text>
+                    <Text style={[skin.linkLabel(tokens, isActive), movingSelection && isActive && skin.linkSelection === "tint" ? { color: tokens.foreground } : null]}>{link}</Text>
                   </Pressable>
                 </RippleClip>
+                </View>
               );
             })}
           </View>

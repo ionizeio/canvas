@@ -2,7 +2,11 @@
 // tint density, capability resolution, and whether an interaction animates.
 export type MaterialRole = "static" | "liquid" | "inherited";
 export type MaterialTier = "atoms" | "molecules" | "organisms" | "charts" | "style";
-export type MotionProfile = "native-feedback" | "selection-pilot" | "optional-profile" | "inherited";
+// "moving-selection": one measured glass surface travels between the component's
+// own targets (Tabs, TabBar, Navbar). "liquid-popup": the anchored panel opens and
+// closes through the kit's popup material lifecycle. Both are internal profiles
+// that follow the effective material; neither is a public styling axis.
+export type MotionProfile = "native-feedback" | "selection-pilot" | "moving-selection" | "liquid-popup" | "optional-profile" | "inherited";
 
 export interface MaterialCoverageEntry {
   name: string;
