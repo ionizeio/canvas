@@ -9,6 +9,7 @@ import { Autocomplete } from "../src/atoms/autocomplete/autocomplete.tsx";
 import { Button } from "../src/atoms/button/button.tsx";
 import { Checkbox } from "../src/atoms/checkbox/checkbox.tsx";
 import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
+import { Icon } from "../src/atoms/icon/icon.tsx";
 import { Column, Row } from "../src/atoms/layout/layout.tsx";
 import { Listbox } from "../src/atoms/listbox/listbox.tsx";
 import { Radio } from "../src/atoms/radio/radio.tsx";
@@ -20,10 +21,12 @@ import { Typography } from "../src/atoms/typography/typography.tsx";
 import { DescriptionList } from "../src/molecules/description-lists/description-lists.tsx";
 import { AlertDialog } from "../src/molecules/alert-dialog/alert-dialog.tsx";
 import { ActionSheet } from "../src/organisms/action-sheet/action-sheet.tsx";
+import { Backdrop, BackdropHost } from "../src/organisms/backdrop/backdrop.tsx";
 import { Command } from "../src/organisms/command/command.tsx";
 import { DataTable } from "../src/organisms/data-table/data-table.tsx";
 import { Dialog } from "../src/organisms/dialog/dialog.tsx";
 import { Drawer } from "../src/organisms/drawer/drawer.tsx";
+import { TabBar } from "../src/organisms/tab-bar/tab-bar.tsx";
 import { Tabs } from "../src/organisms/tabs/tabs.tsx";
 import { ThemeProvider, useTheme } from "../src/style/theme.tsx";
 import { colorsByScheme } from "../src/style/tokens.ts";
@@ -41,9 +44,9 @@ function fixture<Props extends object>(name: string, exported: string) {
     react: React,
     "react/jsx-runtime": JSX,
     "@nannier-com/canvas": {
-      ActionSheet, AlertDialog, Autocomplete, Button, Checkbox, Column, Command, DataTable,
-      DescriptionList, Dialog, Drawer, Dropdown, Listbox, Radio, RadioGroup,
-      Row, Select, Slider, Switch, Tabs, ThemeProvider, Typography, useTheme,
+      ActionSheet, AlertDialog, Autocomplete, Backdrop, BackdropHost, Button, Checkbox, Column, Command, DataTable,
+      DescriptionList, Dialog, Drawer, Dropdown, Icon, Listbox, Radio, RadioGroup,
+      Row, Select, Slider, Switch, TabBar, Tabs, ThemeProvider, Typography, useTheme,
     },
   };
   const exports: Record<string, React.ComponentType<Props>> = {};
@@ -110,9 +113,13 @@ test("a fresh disabled Tabs scenario preserves its default selection and zero ca
   const view = render(<ThemeProvider><TabsBody key="enabled" /></ThemeProvider>);
   fireEvent.click(screen.getByRole("tab", { name: "Activity" }));
   view.rerender(<ThemeProvider><TabsBody key="disabled" disabled /></ThemeProvider>);
-  for (const tab of screen.getAllByRole("tab")) {
-    expect(tab.getAttribute("aria-disabled")).toBe("true");
-    fireEvent.click(tab);
+  // The workspace tabs and the liquid harness's pill tabs both take the fixture's
+  // disabled flag; the harness TabBar has no disabled state, so it stays out.
+  for (const list of ["workspace-tabs", "liquid-tabs"]) {
+    for (const tab of within(screen.getByTestId(list)).getAllByRole("tab")) {
+      expect(tab.getAttribute("aria-disabled")).toBe("true");
+      fireEvent.click(tab);
+    }
   }
   expect(screen.getByRole("tab", { name: "Overview" }).getAttribute("aria-selected")).toBe("true");
   expect(text("tabs-selection")).toBe("Selected tab: Overview");

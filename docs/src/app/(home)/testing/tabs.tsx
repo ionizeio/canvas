@@ -6,7 +6,7 @@ export default function TabsFixture() {
   const { disabled } = useLocalSearchParams<{ disabled?: string }>();
   return (
     <Page>
-      <PageHeader title="Tabs input checks" description="Inactive and disabled tabs with selection counters." />
+      <PageHeader title="Tabs input checks" description="Inactive and disabled tabs with selection counters, plus the glass liquid selection harness for the pill Tabs and the TabBar." />
       <TabsBody key={String(disabled === "true")} disabled={disabled === "true"} />
     </Page>
   );
