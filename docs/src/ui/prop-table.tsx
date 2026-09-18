@@ -1,10 +1,10 @@
 import { View, Text, Column, Row, Typography, Badge, DataTable, useTheme } from "@ionizeio/canvas";
-import type { PropGroup } from "../core/props";
+import type { PropGroup } from "../core/scope";
 import { DocsSurface } from "./surface";
 import { sans } from "./fonts";
 
 // The generated prop tables for a component page. Data comes from
-// docs/src/core/props.ts (extracted from each component's `*Props` interface by
+// each component's generated docs module (extracted from its `*Props` interface by
 // tools/docgen/extract-props.ts). Rendered with the kit's own DataTable, so the
 // docs dogfood the component they document.
 //

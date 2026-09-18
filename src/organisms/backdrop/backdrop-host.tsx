@@ -161,11 +161,16 @@ export function BackdropSurface({ claim }: { claim: BackdropClaim }) {
   // is usually full-screen and the two agree, but it may equally fill a card or a
   // documentation stage, and sizing to the window there would push most of the field
   // off the visible area. The window is only the pre-measurement fallback, so the
-  // first frame is already close instead of collapsed.
+  // first frame is already close instead of collapsed. That fallback is withheld until
+  // hydrated (the `useContainerWidth` contract): a server has no window, so its markup
+  // carries the floor alone, and the hydration render must reproduce that; the field
+  // lands in the commit after. Drawing it at zero size would only ship a hundred
+  // kilobytes of invisible circles in every pre-rendered page.
   const win = useWindowDimensions();
+  const hydrated = useHydrated();
   const [box, setBox] = useState<{ width: number; height: number } | null>(null);
-  const width = box?.width || win.width;
-  const height = box?.height || win.height;
+  const width = box?.width || (hydrated ? win.width : 0);
+  const height = box?.height || (hydrated ? win.height : 0);
 
   const { energy, still } = claim;
 
@@ -192,15 +197,17 @@ export function BackdropSurface({ claim }: { claim: BackdropClaim }) {
       style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, overflow: "hidden", pointerEvents: "none" }}
     >
       {claim.floor ? <BackdropFloor color={claim.floor} /> : null}
-      <SvgBackdrop
-        layers={claim.layers}
-        width={width}
-        height={height}
-        focus={claim.focus}
-        clock={clock}
-        tint={claim.tint}
-        prominence={claim.prominence}
-      />
+      {width > 0 && height > 0 ? (
+        <SvgBackdrop
+          layers={claim.layers}
+          width={width}
+          height={height}
+          focus={claim.focus}
+          clock={clock}
+          tint={claim.tint}
+          prominence={claim.prominence}
+        />
+      ) : null}
     </View>
   );
 }

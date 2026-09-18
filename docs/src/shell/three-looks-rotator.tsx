@@ -3,7 +3,7 @@ import { Animated, Platform } from "react-native";
 import { View, Text, Button, Row, Icon, Image, useTheme, useReducedMotion, useResponsive } from "@ionizeio/canvas";
 import { useRouter } from "expo-router";
 import { COMPONENTS } from "../core/data/components";
-import { COMPONENT_DOCS } from "../core/registry";
+import { FIRST_EXAMPLE_CODE } from "../core/previews";
 import { LOOKS_SHOTS, LOOKS_ASPECT } from "./looks-shots";
 import { DeviceFrame } from "./device-frames";
 import { sans, geistMono } from "../ui/fonts";
@@ -28,8 +28,11 @@ const PLATFORMS = [
   { key: "web", label: "Web", device: "Chrome" },
 ] as const;
 
+// The code chip quotes each atom's first example from the generated previews map (a
+// few kilobytes of strings) rather than the component docs modules, which are the
+// component pages' own chunks in the web export and have no business on the home page.
 const ATOMS = COMPONENTS.filter((c) => c.category === "Atoms" && LOOKS_SHOTS[c.slug])
-  .map((c) => ({ ...c, entry: COMPONENT_DOCS[c.dir ?? c.slug] }))
+  .map((c) => ({ ...c, code: FIRST_EXAMPLE_CODE[c.dir ?? c.slug] }))
   .sort((a, b) => a.name.localeCompare(b.name));
 
 // False on native, where looks-shots.ts resolves to the empty fallback map: the
@@ -71,7 +74,7 @@ function Rotator() {
 
   const atom = ATOMS[index % ATOMS.length];
   const shots = LOOKS_SHOTS[atom.slug];
-  const code = atom.entry?.examples[0]?.code;
+  const code = atom.code;
 
   // Auto-advance until the reader takes over with the chevrons, or prefers reduced
   // motion. The arrows always work, whether or not the carousel is still cycling.

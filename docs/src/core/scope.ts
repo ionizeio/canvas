@@ -122,3 +122,24 @@ export interface DocEntry {
   examples: DocExample[];
   donts: DocDontPair[];
 }
+
+// One row of a generated prop table, extracted from the component's exported `*Props`
+// interface by tools/docgen/extract-props.ts (the TypeScript checker).
+export interface PropDoc {
+  name: string;
+  type: string;
+  required: boolean;
+  description: string;
+}
+
+export interface PropGroup {
+  name: string;
+  props: PropDoc[];
+}
+
+// Everything a component page needs, generated into one module per component
+// (docs/src/core/examples/<category>/<dir>/<dir>-docs.tsx) and reached through the
+// registry, so the web export can ship it as that page's own chunk.
+export interface ComponentDocs extends DocEntry {
+  props: PropGroup[];
+}

@@ -89,7 +89,53 @@ export function preparePages(dist) {
     }
     preloads = fonts.length;
   }
-  console.log(`Pages artifact ready: ${pages.length} app pages, ${preloads} font preloads each resolve, 404/privacy/headers present, ${pruned} unreachable copies pruned`);
+  const shipped = shipDocsChunks(dist, pages);
+  console.log(`Pages artifact ready: ${pages.length} app pages, ${preloads} font preloads each resolve, 404/privacy/headers present, ${pruned} unreachable copies pruned, ${shipped} component pages ship their docs chunk`);
+}
+
+// A component page's docs (its examples and prop tables) are its own chunk in the
+// export, reached lazily through the registry (docs/src/core/registry.ts). The
+// exporter lists the route's chunks in the page's deferred scripts but not this one,
+// which no route imports statically; without it the page would hydrate, then fetch the
+// chunk, then render its examples a round trip later, and hydration would find the
+// examples missing. So each component page gets its chunk as one more deferred script,
+// before the entry: registered by the time the bundle runs, the registry answers
+// synchronously and the hydration render matches the server. The slug to chunk name
+// map is generated with the modules (docs/src/core/docs-chunks.json); Metro names a
+// chunk after the module's basename up to its first dot, plus a content hash.
+const MANIFEST = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "src", "core", "docs-chunks.json");
+
+function shipDocsChunks(dist, pages) {
+  if (!fs.existsSync(MANIFEST)) throw new Error(`Missing ${MANIFEST}; run docs:gen`);
+  const chunkOf = JSON.parse(fs.readFileSync(MANIFEST, "utf8"));
+  const chunkDir = path.join(dist, "_expo", "static", "js", "web");
+  if (!fs.existsSync(chunkDir)) throw new Error(`Missing ${path.relative(dist, chunkDir)} (no web bundles in the artifact)`);
+  const chunkFiles = fs.readdirSync(chunkDir);
+  let shipped = 0;
+  for (const page of pages) {
+    const relative = path.relative(dist, page).split(path.sep);
+    if (relative[0] !== "components" || relative.length < 3) continue;
+    const slug = relative[1];
+    const basename = chunkOf[slug];
+    if (!basename) continue;
+    const chunkName = new RegExp(`^${basename.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}-[0-9a-f]{32}\\.js$`);
+    const matches = chunkFiles.filter((file) => chunkName.test(file));
+    if (matches.length === 0) {
+      // A single-bundle export (no chunk splitting) has nothing to ship; the registry
+      // then answers from the entry. Only a split export with a missing chunk is wrong.
+      if (chunkFiles.some((file) => file.startsWith("__common-"))) throw new Error(`No docs chunk for ${slug} (${basename}) in the split export`);
+      continue;
+    }
+    if (matches.length > 1) throw new Error(`Several docs chunks match ${basename} for ${slug}: ${matches.join(", ")}`);
+    const src = `/_expo/static/js/web/${matches[0]}`;
+    const html = fs.readFileSync(page, "utf8");
+    if (html.includes(`src="${src}"`)) continue;
+    const entry = /<script src="[^"]*\/entry-[^"]+\.js" defer><\/script>/.exec(html);
+    if (!entry) throw new Error(`No deferred entry script in ${path.relative(dist, page)}`);
+    fs.writeFileSync(page, html.replace(entry[0], `<script src="${src}" defer></script>\n${entry[0]}`));
+    shipped += 1;
+  }
+  return shipped;
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) preparePages(path.resolve(process.argv[2] ?? "dist"));

@@ -13,5 +13,5 @@
       "@ionizeio/canvas": ["../../../src/index.ts"]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx"]
+  "include": ["**/*.ts", "**/*.tsx", "../../types/**/*.d.ts"]
 }

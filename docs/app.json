@@ -28,7 +28,7 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      ["expo-router", { "origin": "https://canvas.nannier.com", "sitemap": false }],
+      ["expo-router", { "origin": "https://canvas.nannier.com", "sitemap": false, "asyncRoutes": { "web": "production" } }],
       "expo-font",
       "expo-status-bar"
     ],

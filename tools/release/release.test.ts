@@ -306,10 +306,14 @@ describe("frozen release transaction", () => {
 
 test("shared Pages preparation makes vendor fonts uploadable before browser validation", () => {
   const dist = root();
-  const page = '<link rel="preload" as="font" href="/assets/node_modules/font/a.ttf"><div id="root"></div>';
+  const page = '<link rel="preload" as="font" href="/assets/node_modules/font/a.ttf"><div id="root"></div><script src="/_expo/static/js/web/entry-abc.js" defer></script>';
   fs.mkdirSync(path.join(dist, "assets/node_modules/font"), { recursive: true });
   fs.mkdirSync(path.join(dist, "privacy"));
   fs.mkdirSync(path.join(dist, "components/button-group"), { recursive: true });
+  // A split export: the shared chunk marks it, and the component's docs chunk is the
+  // one the page must ship before its entry (the real manifest maps button-group to it).
+  fs.mkdirSync(path.join(dist, "_expo/static/js/web"), { recursive: true });
+  for (const name of ["entry-abc.js", "__common-abc.js", "button-group-docs-0123456789abcdef0123456789abcdef.js"]) fs.writeFileSync(path.join(dist, "_expo/static/js/web", name), "");
   // The exporter's route-group copy and literal dynamic-segment document, both unreachable.
   fs.mkdirSync(path.join(dist, "(components)/components/button-group"), { recursive: true });
   // The baked privacy page is plain HTML (no app root, no fonts) and outranks the
@@ -332,6 +336,12 @@ test("shared Pages preparation makes vendor fonts uploadable before browser vali
   expect(fs.existsSync(path.join(dist, "components/[slug].html"))).toBe(false);
   expect(fs.existsSync(path.join(dist, "privacy.html"))).toBe(false);
   expect(fs.readFileSync(path.join(dist, "privacy/index.html"), "utf8")).toBe("fixture");
+  // The docs chunk precedes the entry on the component page, once, and nowhere else.
+  const componentPage = fs.readFileSync(path.join(dist, "components/button-group/index.html"), "utf8");
+  expect(componentPage.indexOf('src="/_expo/static/js/web/button-group-docs-0123456789abcdef0123456789abcdef.js" defer')).toBeGreaterThan(-1);
+  expect(componentPage.indexOf("button-group-docs-0123456789abcdef0123456789abcdef.js")).toBeLessThan(componentPage.indexOf("entry-abc.js"));
+  expect(componentPage.split("button-group-docs-0123456789abcdef0123456789abcdef.js").length).toBe(2);
+  expect(fs.readFileSync(path.join(dist, "index.html"), "utf8")).not.toContain("button-group-docs");
   // The old SPA catch-all would answer every miss with the home page; it is refused.
   fs.writeFileSync(path.join(dist, "_redirects"), "/* /index.html 200");
   expect(() => preparePages(dist)).toThrow("_redirects");

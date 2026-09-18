@@ -113,6 +113,9 @@ describe("BackdropHost", () => {
     container.innerHTML = html;
     document.body.appendChild(container);
     expect(surface(container), "the server markup carries the surface").not.toBeNull();
+    // The floor, and only the floor: a server has no window to lay the field out
+    // against, and a field drawn at zero size is invisible markup by the kilobyte.
+    expect(surface(container)!.children.length).toBe(1);
     const recovered: string[] = [];
     let root!: Root;
     try {

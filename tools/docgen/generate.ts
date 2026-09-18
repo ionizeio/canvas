@@ -3,8 +3,12 @@
 // Reads every component's co-located markdown (src/<category>/<dir>/<dir>.md),
 // parses out the Playground examples and Do/Don't pairs with the shared grammar,
 // and emits, for each fence, a real statically-importable example module under
-// docs/src/core/examples/, plus a single docs/src/core/registry.ts that wires them up with
-// their source strings and labels.
+// docs/src/core/examples/, one `<dir>-docs.tsx` module per component beside them that
+// wires its fences up with their source strings and labels and carries its prop tables,
+// and docs/src/core/registry.ts, which reaches those modules through a
+// `require.context` whose mode follows expo-router's own route loading: synchronous
+// on native and for the static render, lazy (one chunk per component) in the web
+// export, so a component page ships only its own examples.
 //
 // This replaces the previous docs web shell's runtime engine (sucrase transpile + `new
 // Function` against a live scope), which cannot run under React Native's Hermes engine
@@ -16,6 +20,7 @@ import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { splitDoc, scopeNamesFromLiveScope, bannedStyleViolations, widthShimViolations, bareWidthViolations, prosePhantomApiViolations, BARE_WIDTH_MIN, type Example, type DontPair } from "./parse-md.ts";
 import { extractProps, type PropGroup } from "./extract-props.ts";
+import { COMPONENTS } from "../../docs/src/core/data/components.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, "..", "..");
@@ -24,7 +29,8 @@ type Category = (typeof CATEGORIES)[number];
 
 const EXAMPLES_DIR = path.join(REPO, "docs", "src", "core", "examples");
 const REGISTRY_FILE = path.join(REPO, "docs", "src", "core", "registry.ts");
-const PROPS_FILE = path.join(REPO, "docs", "src", "core", "props.ts");
+const CHUNKS_FILE = path.join(REPO, "docs", "src", "core", "docs-chunks.json");
+const PREVIEWS_FILE = path.join(REPO, "docs", "src", "core", "previews.ts");
 
 // `--check` (the pre-push gate) answers "is the generated output in sync with the
 // component markdown?" without touching the working tree: every would-be write and
@@ -244,79 +250,111 @@ function buildEntry(category: Category, dir: string, examples: Example[], donts:
   return { dir, category, examples: exampleRefs, donts: dontRefs };
 }
 
-function renderRegistry(entries: Entry[]): string {
+// The module a component's docs live in, beside its example modules: the DocEntry
+// (its fences with their sources and labels) and its prop tables. Everything a
+// component page needs, and nothing another page's needs, so the web export can
+// ship it as that page's own chunk.
+// Named `<dir>-docs`, one token with no dot: Metro names a split chunk after the part of
+// the module basename before its first dot, and `<dir>` alone collides with the routes
+// that share a component's name (carousel, tabs, listbox, layout, typography).
+const docsModuleFile = (category: Category, dir: string) => path.join(EXAMPLES_DIR, category, dir, `${dir}-docs.tsx`);
+
+function renderDocsModule(e: Entry, props: PropGroup[]): string {
   const imports: string[] = [];
-  for (const e of entries) {
-    for (const ex of e.examples) imports.push(`import ${ex.importName} from "${ex.file}";`);
-    for (const d of e.donts) {
-      imports.push(`import ${d.do.importName} from "${d.do.file}";`);
-      imports.push(`import ${d.dont.importName} from "${d.dont.file}";`);
-    }
+  const local = (file: string) => `./${path.basename(file)}`;
+  for (const ex of e.examples) imports.push(`import ${ex.importName} from "${local(ex.file)}";`);
+  for (const d of e.donts) {
+    imports.push(`import ${d.do.importName} from "${local(d.do.file)}";`);
+    imports.push(`import ${d.dont.importName} from "${local(d.dont.file)}";`);
   }
-
-  const entrySrc = (e: Entry) => {
-    const examples = e.examples
-      .map((ex) => `      { label: ${JSON.stringify(ex.label)}, code: ${JSON.stringify(ex.code)}, render: ${ex.importName} },`)
-      .join("\n");
-    const donts = e.donts
-      .map((d) => {
-        const title = d.title === undefined ? "" : `title: ${JSON.stringify(d.title)}, `;
-        const side = (s: DontRef["do"]) =>
-          `{ caption: ${JSON.stringify(s.caption)}, code: ${JSON.stringify(s.code)}, render: ${s.importName} }`;
-        return `      { ${title}do: ${side(d.do)}, dont: ${side(d.dont)} },`;
-      })
-      .join("\n");
-    return `  ${JSON.stringify(e.dir)}: {
-    dir: ${JSON.stringify(e.dir)},
-    category: ${JSON.stringify(e.category)},
-    examples: [
-${examples}
-    ],
-    donts: [
-${donts}
-    ],
-  },`;
-  };
-
+  const examples = e.examples
+    .map((ex) => `    { label: ${JSON.stringify(ex.label)}, code: ${JSON.stringify(ex.code)}, render: ${ex.importName} },`)
+    .join("\n");
+  const donts = e.donts
+    .map((d) => {
+      const title = d.title === undefined ? "" : `title: ${JSON.stringify(d.title)}, `;
+      const side = (s: DontRef["do"]) =>
+        `{ caption: ${JSON.stringify(s.caption)}, code: ${JSON.stringify(s.code)}, render: ${s.importName} }`;
+      return `    { ${title}do: ${side(d.do)}, dont: ${side(d.dont)} },`;
+    })
+    .join("\n");
   return `${GENERATED_HEADER}
-import type { DocEntry } from "./scope";
+// Source: src/${e.category}/${e.dir}/${e.dir}.md
+import type { ComponentDocs } from "../../../scope";
 ${imports.join("\n")}
 
-// Every documented component, keyed by its source directory (the \`.md\` stem). The
-// consuming page maps a URL slug to its dir via the components data, then renders
-// these examples and Do/Don't pairs with no runtime transpilation.
-export const COMPONENT_DOCS: Record<string, DocEntry> = {
-${entries.map(entrySrc).join("\n")}
+export const docs: ComponentDocs = {
+  dir: ${JSON.stringify(e.dir)},
+  category: ${JSON.stringify(e.category)},
+  examples: [
+${examples}
+  ],
+  donts: [
+${donts}
+  ],
+  // Extracted from the component's exported \`*Props\` interfaces by
+  // tools/docgen/extract-props.ts (the TypeScript checker).
+  props: ${JSON.stringify(props)},
 };
 `;
 }
 
-// Emit docs/src/core/props.ts: the generated prop tables, keyed by dir exactly like
-// COMPONENT_DOCS so the component page can look them up with the same key.
-function renderProps(props: Record<string, PropGroup[]>): string {
-  const keys = Object.keys(props).sort();
-  const body = keys
-    .map((k) => `  ${JSON.stringify(k)}: ${JSON.stringify(props[k])},`)
+// The first fence's source per component, for the pages that quote a component's API
+// without rendering it (the home page's three-looks rotator): a few kilobytes of
+// strings, so no page has to load a component's whole docs chunk for a code chip.
+function renderPreviews(entries: Entry[]): string {
+  const rows = entries
+    .filter((e) => e.examples.length > 0)
+    .map((e) => `  ${JSON.stringify(e.dir)}: ${JSON.stringify(e.examples[0].code)},`)
     .join("\n");
   return `${GENERATED_HEADER}
-// Generated prop tables, extracted from each component's exported \`*Props\` interface
-// by tools/docgen/extract-props.ts (the TypeScript checker), keyed by source dir.
-
-export interface PropDoc {
-  name: string;
-  type: string;
-  required: boolean;
-  description: string;
-}
-
-export interface PropGroup {
-  name: string;
-  props: PropDoc[];
-}
-
-export const COMPONENT_PROPS: Record<string, PropGroup[]> = {
-${body}
+// The verbatim source of each documented component's first (default) example, keyed by
+// its source directory. The full docs (every fence, rendered, plus the prop tables) live
+// in the per-component modules the registry loads; this is the light companion for a
+// page that only quotes the API.
+export const FIRST_EXAMPLE_CODE: Record<string, string> = {
+${rows}
 };
+`;
+}
+
+// The registry reaches every component's docs module through one require.context in
+// lazy mode, the mode expo-router loads its routes with: Metro emits one chunk per
+// module in a split web export, and hands back Expo's async require promise, whose
+// `_result` is the module itself whenever the module is already registered. That is
+// the case on native and in the static render (single bundles) and on a component
+// page that ships its own docs chunk, so those reads are synchronous; only a
+// client-side navigation to a component whose chunk is not on the page waits. (The
+// mode is a literal on purpose: Expo inlines EXPO_ROUTER_IMPORT_MODE as "sync" for
+// every file outside expo-router itself, so following the router's constant would
+// never split.)
+function renderRegistry(entries: Entry[]): string {
+  const keys = entries
+    .map((e) => `  ${JSON.stringify(e.dir)}: ${JSON.stringify(`./${e.category}/${e.dir}/${e.dir}-docs.tsx`)},`)
+    .join("\n");
+  return `${GENERATED_HEADER}
+import type { ComponentDocs } from "./scope";
+
+// The context key of every documented component's docs module, by its source directory
+// (the \`.md\` stem). The consuming page maps a URL slug to its dir via the components
+// data, then loads that module (see loadComponentDocs and use-component-docs.ts).
+export const COMPONENT_DOC_KEYS: Record<string, string> = {
+${keys}
+};
+
+// Lazy on purpose (a split web export gets one chunk per module); the promise carries
+// \`_result\`, the module itself, wherever the module is already registered.
+const context = require.context("./examples", true, /\\/[^/]+-docs\\.tsx$/, "lazy");
+
+export type LoadedComponentDocs = { docs: ComponentDocs };
+export type ComponentDocsRequest = Promise<LoadedComponentDocs> & { _result?: LoadedComponentDocs | Promise<LoadedComponentDocs> };
+
+/** The docs module request for a component dir, or undefined for a dir with no fences. */
+export function loadComponentDocs(dir: string): ComponentDocsRequest | undefined {
+  const key = COMPONENT_DOC_KEYS[dir];
+  if (key === undefined) return undefined;
+  return context(key) as ComponentDocsRequest;
+}
 `;
 }
 
@@ -414,14 +452,27 @@ function main() {
     console.warn(`\n⚠ docs:gen — ${header}\n${lines.join("\n")}\n  (warning only; set DOCGEN_STYLE_STRICT=1 to fail.)\n`);
   }
 
+  const props = extractProps(propSources);
+  for (const e of entries) {
+    const file = docsModuleFile(e.category, e.dir);
+    writeFileIfChanged(file, renderDocsModule(e, props[e.dir] ?? []));
+    writtenExampleFiles.add(file);
+  }
+
   // Drop modules from fences that no longer exist before writing the registry that
-  // imports them, so a stale orphan can't satisfy an import that should have failed.
+  // reaches them, so a stale orphan can't satisfy a key that should have failed.
   pruneOrphans(EXAMPLES_DIR);
 
   writeFileIfChanged(REGISTRY_FILE, renderRegistry(entries));
-
-  const props = extractProps(propSources);
-  writeFileIfChanged(PROPS_FILE, renderProps(props));
+  writeFileIfChanged(PREVIEWS_FILE, renderPreviews(entries));
+  // Which chunk carries each page's docs, for the export's post-processing: a page's
+  // URL slug maps to a docs module basename, which Metro names the chunk after.
+  const chunks: Record<string, string> = {};
+  for (const c of COMPONENTS) {
+    const dir = c.dir ?? c.slug;
+    if (entries.some((e) => e.dir === dir)) chunks[c.slug] = `${dir}-docs`;
+  }
+  writeFileIfChanged(CHUNKS_FILE, `${JSON.stringify(chunks, null, 2)}\n`);
   const propGroupCount = Object.values(props).reduce((n, groups) => n + groups.length, 0);
   const propRowCount = Object.values(props).reduce(
     (n, groups) => n + groups.reduce((m, g) => m + g.props.length, 0),

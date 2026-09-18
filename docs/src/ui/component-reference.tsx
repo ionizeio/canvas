@@ -1,8 +1,9 @@
+import { Suspense } from "react";
 import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
-import { View, Text, useTheme } from "@ionizeio/canvas";
+import { View, Text, Skeleton, useTheme } from "@ionizeio/canvas";
 import { getComponent } from "../core/data/components";
-import { COMPONENT_DOCS } from "../core/registry";
-import { COMPONENT_PROPS } from "../core/props";
+import type { ComponentDoc } from "../core/data/types";
+import { useComponentDocs } from "../core/use-component-docs";
 import { Page } from "./page";
 import { Lead } from "./prose";
 import { Playground } from "./playground";
@@ -24,14 +25,35 @@ import { DocsHead } from "./docs-head";
 export function ComponentReference() {
   const { slug, variant } = useLocalSearchParams<{ slug: string; variant?: string }>();
   const { tokens } = useTheme();
-  const router = useRouter();
 
   const comp = slug ? getComponent(slug) : undefined;
   if (!comp) return <Redirect href="/components" />;
 
-  const key = comp.dir ?? comp.slug;
-  const entry = COMPONENT_DOCS[key];
-  const propGroups = COMPONENT_PROPS[key];
+  return (
+    <Page>
+      <DocsHead title={comp.name} />
+      {/* Component pages use a larger title (28/700) than the generic page header. */}
+      <View style={{ gap: 6 }}>
+        <Text accessibilityRole="header" aria-level={1} style={{ fontFamily: sans("700"), fontSize: 28, letterSpacing: -0.42, color: tokens.foreground }}>{comp.name}</Text>
+        <Lead>{stripHtml(comp.description)}</Lead>
+      </View>
+      {/* The docs module is the page's own chunk in the web export. It is on the page
+          before the bundle runs, so this never suspends on a page load; a client-side
+          navigation to another component fetches that one's chunk, and the stage holds
+          a skeleton for the moment it takes. */}
+      <Suspense fallback={<Skeleton card large animate accessibilityLabel="Loading the examples" />}>
+        <ComponentBody comp={comp} variant={variant} />
+      </Suspense>
+      <PageNav />
+    </Page>
+  );
+}
+
+function ComponentBody({ comp, variant }: { comp: ComponentDoc; variant?: string }) {
+  const { tokens } = useTheme();
+  const router = useRouter();
+  const entry = useComponentDocs(comp.dir ?? comp.slug);
+  const propGroups = entry?.props;
   const examples = entry?.examples ?? [];
 
   // Map the URL variant to an example index. Index 0 is the default, reached by the bare
@@ -53,13 +75,7 @@ export function ComponentReference() {
   };
 
   return (
-    <Page>
-      <DocsHead title={comp.name} />
-      {/* Component pages use a larger title (28/700) than the generic page header. */}
-      <View style={{ gap: 6 }}>
-        <Text accessibilityRole="header" aria-level={1} style={{ fontFamily: sans("700"), fontSize: 28, letterSpacing: -0.42, color: tokens.foreground }}>{comp.name}</Text>
-        <Lead>{stripHtml(comp.description)}</Lead>
-      </View>
+    <>
       {examples.length > 0 ? (
         <Playground examples={examples} stageAlign={comp.stageAlign} singlePreview={comp.singlePreview} selected={selected} onSelect={onSelect} />
       ) : (
@@ -71,7 +87,6 @@ export function ComponentReference() {
       )}
       {propGroups && propGroups.length > 0 ? <PropTables groups={propGroups} /> : null}
       {entry && entry.donts.length > 0 ? <Donts donts={entry.donts} /> : null}
-      <PageNav />
-    </Page>
+    </>
   );
 }

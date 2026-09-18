@@ -12,11 +12,13 @@
   # hydration flag Expo writes into every pre-rendered page
   # (`globalThis.__EXPO_ROUTER_HYDRATE__=true;`); without it the client would throw
   # the server's markup away and render from scratch. The second is the paint-first
-  # loader from docs/scripts/paint-first.mjs, which runs the bundle one frame after the
-  # first paint; that script checks its own digest against this file, so changing the
-  # loader without updating the hash here fails the build rather than the site. The
-  # two eval() sites in the bundle are unreachable in a browser: one is a Node fallback
-  # guarded by `typeof window`, the other is Metro's split-bundle loader.
+  # loader from docs/scripts/paint-first.mjs, which runs the page's scripts after the
+  # first contentful paint; that script checks its own digest against this file, so
+  # changing the loader without updating the hash here fails the build rather than the
+  # site. The two eval() sites in the bundle are unreachable in a browser: one is a Node
+  # fallback guarded by `typeof window`, the other is the development-only fetch-and-eval
+  # path of Metro's chunk loader; the production path injects a script tag (see the
+  # Trusted Types note below).
   #
   # `style-src` DOES need 'unsafe-inline'. React Native Web writes dynamic styles as
   # inline style attributes (a heading arrives as style="font-family: Geist_600SemiBold;
@@ -32,9 +34,15 @@
   # which would throw under Trusted Types, so it was verified before shipping: all 81
   # routes (12 nav pages + 69 component pages) were loaded with this exact policy applied
   # and reported zero violations and zero console errors. The paint-first loader was
-  # written around the same policy: it clones a parser-made script element out of a
+  # written around the same policy: it clones parser-made script elements out of a
   # template instead of assigning a URL string to `script.src`, which is a Trusted
-  # Types sink and would throw. All 5 and all 14 are dependency
+  # Types sink and would throw. The web export is split into chunks (one per route and
+  # one per component's docs), and Expo loads a chunk the page did not ship, on a
+  # client-side navigation, by assigning `script.src`; so the same loader installs the
+  # Trusted Types DEFAULT policy, which admits a script URL only when it is this
+  # origin's /_expo/static/js/web/ directory and throws for anything else. No
+  # `trusted-types` directive names policies here on purpose: it would have to list
+  # "default", and the policy's own validator is the restriction that matters. All 5 and all 14 are dependency
   # code on paths this app never takes (React's dangerouslySetInnerHTML and <script>
   # branches, expo-clipboard's HTML reader, a legacy styleSheet.cssText branch); no Canvas
   # or docs component uses dangerouslySetInnerHTML.
@@ -48,7 +56,7 @@
   # throws exactly as Chromium does. Re-run the route sweep anyway whenever a dependency
   # that touches the DOM is added or upgraded, and note that a violation on an import path
   # is fatal to the entire app rather than merely to one effect.
-  Content-Security-Policy: default-src 'self'; base-uri 'none'; object-src 'none'; script-src 'self' 'sha256-67fhrP0+BkBqmgGGXTtgiVO/9EQs3QruYNU/7fnRkI8=' 'sha256-Tvh7SVKRVepLEJCJq7pCN2DHDK0rlqJVGHv6ZX22RHw='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://registry.npmjs.org; frame-ancestors 'none'; form-action 'self'; require-trusted-types-for 'script'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; base-uri 'none'; object-src 'none'; script-src 'self' 'sha256-67fhrP0+BkBqmgGGXTtgiVO/9EQs3QruYNU/7fnRkI8=' 'sha256-wt96maSwMEEC/nzVPmmPSBYbhFL7cQNXmvWbkn2xlUQ='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://registry.npmjs.org; frame-ancestors 'none'; form-action 'self'; require-trusted-types-for 'script'; upgrade-insecure-requests
 
   # One year, covering this host and anything below it. `includeSubDomains` is scoped to
   # *.canvas.nannier.com and cannot affect nannier.com or its siblings, and no such
