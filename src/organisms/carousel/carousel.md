@@ -13,6 +13,18 @@ current slide and its position in the set; activating the current slide does
 nothing. Picker targets measure at least 24px on web, 44pt on iOS, and 48dp on
 Android, independently of the small painted dots.
 
+In glass mode the active dot's brand mark travels between the dots as one
+measured marker with stretch, recoil and settle, following the committed slide
+(a dot press, the arrows, the keyboard, a controlled `index`, a finished swipe)
+while the dots, their press targets and the slides stay still; the marker is
+ink like the dots and keeps the skin's own active dot size, so the resting strip
+is unchanged and never shows two marks. A loop from the last slide to the first
+travels back along the strip. Dragging is not tracked: the marker moves once a
+slide is committed. A change of the slide set resets the marker in place, and
+the strip's absence (one slide, `showDots={false}`, Android's default) means
+no marker. Reduce Motion selects the final bounds at once; solid mode keeps
+the static dots.
+
 ## Usage
 
 ```tsx
