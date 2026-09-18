@@ -274,6 +274,15 @@ function OverlayCard({
   return <GlassSurface layer={dense ? "dense" : "functional"} style={cardStyle} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape}>{decoration}{content}</GlassSurface>;
 }
 
+// Readiness inside the card is the Entrance's own layout readiness AND the
+// material's: a solid card (no material motion) still waits for its layout
+// before focus enters, exactly as the legacy path did, and a glass card waits
+// for both. Reading the context here, inside the Entrance, keeps its gate.
+function MaterialReadiness({ readable, children }: { readable: boolean; children: ReactNode }) {
+  const entranceReady = useContext(EntranceReadinessContext);
+  return <EntranceReadinessContext.Provider value={entranceReady && readable}>{children}</EntranceReadinessContext.Provider>;
+}
+
 /** A stable foreground host with independently animated decorative material. */
 function PopupCard({
   open, opening, onExited, ready = true, edge = "top", anchorX, anchorY,
@@ -311,7 +320,7 @@ function PopupCard({
     <StationaryEntranceContext.Provider value={liquid}>
       <PopupInteractionContext.Provider value={open}>
       <Entrance anchor anchorBottom={edge === "bottom"} ready={ready} style={wrapperStyle}>
-        <EntranceReadinessContext.Provider value={inheritedReady && motion.readable}>
+        <MaterialReadiness readable={motion.readable}>
           <MaterialMotionContext.Provider value={motion.frame}>
             <OverlayScrollContext.Provider value={visibleReport}>
             <OverlayCard
@@ -329,7 +338,7 @@ function PopupCard({
             </OverlayCard>
             </OverlayScrollContext.Provider>
           </MaterialMotionContext.Provider>
-        </EntranceReadinessContext.Provider>
+        </MaterialReadiness>
       </Entrance>
       </PopupInteractionContext.Provider>
     </StationaryEntranceContext.Provider>

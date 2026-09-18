@@ -234,7 +234,8 @@ describe("GlassSurface lens tier", () => {
       );
       await waitFor(() => {
         const outer = screen.getByTestId("lens-gs") as HTMLElement;
-        const clip = outer.firstElementChild as HTMLElement;
+        // GlassBox anatomy: the host, the material's motion wrapper, the clip box.
+        const clip = outer.firstElementChild!.firstElementChild as HTMLElement;
         // Material order inside the clip box: under-fill, lens layer, specular
         // rim, then the content.
         const lensLayer = clip.children[1] as HTMLElement;

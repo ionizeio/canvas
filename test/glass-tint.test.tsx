@@ -58,11 +58,15 @@ function mockMatchMedia(matching: (query: string) => boolean) {
 
 // The material's first layer: the under-fill, inside the clip box of the two-box glass
 // structure. Returns null when no material rendered at all (a degraded or solid surface).
+// GlassBox anatomy: the outer host, then the material's motion wrapper (the
+// Animated.View the popup lifecycle moves), then the clip box, whose first child
+// is the under-fill the layer tint paints.
 async function underFillOf(testID: string): Promise<HTMLElement | null> {
   let fill: HTMLElement | null = null;
   await waitFor(() => {
     const outer = screen.getByTestId(testID) as HTMLElement;
-    const clip = outer.firstElementChild as HTMLElement | null;
+    const wrapper = outer.firstElementChild as HTMLElement | null;
+    const clip = wrapper?.firstElementChild as HTMLElement | null;
     fill = (clip?.firstElementChild as HTMLElement | null) ?? null;
     expect(clip).not.toBeNull();
   });

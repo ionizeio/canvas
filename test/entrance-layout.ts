@@ -23,6 +23,17 @@ export function layoutEntrance(content: Element, size: FixtureSize): boolean {
   for (let node = content.parentElement; node; node = node.parentElement) {
     if (node.getAttribute("aria-hidden") === "true" &&
         typeof (node as LayoutHost).__reactLayoutHandler === "function") {
+      // A liquid popup (PopupCard) measures its CARD inside the concealed wrapper
+      // before its material can settle and reveal the rows, so the card boundary
+      // (the first layout host above the scroll viewport, or the first one above
+      // the content when the content owns its scrolling) gets the size too. Row
+      // and viewport handlers stay untouched: fixtures stage those deliberately.
+      let viewport: Element | null = null;
+      for (let inner = content.parentElement; inner && inner !== node; inner = inner.parentElement) {
+        const overflow = getComputedStyle(inner).overflowY;
+        if (!viewport && (overflow === "auto" || overflow === "scroll")) { viewport = inner; continue; }
+        if (viewport && typeof (inner as LayoutHost).__reactLayoutHandler === "function") { layoutElement(inner, size); break; }
+      }
       layoutElement(node, size);
       return true;
     }
