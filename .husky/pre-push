@@ -1,5 +1,20 @@
 set -eu
 
+# Tuning evidence gate: the check the tuning-harness skill runs inside Claude Code,
+# applied here to every push from this machine (Codex, a terminal, any agent), so a
+# change to a listed tunable cannot leave without its evidence row. Git hands the
+# pushed refs on stdin; read them first, before the battery below. Where the skill
+# is absent (CI, another machine) this is a no-op.
+gate="${HOME:-}/.claude/skills/tuning-harness/scripts/tuning-gate.mjs"
+if [ -f "$gate" ]; then
+  while read -r local_ref local_sha remote_ref remote_sha; do
+    case "$remote_sha" in
+      *[!0]*) node "$gate" --check --range "$remote_sha..$local_sha" ;;
+      *) : ;; # a branch the remote does not have yet: no base to compare against
+    esac
+  done
+fi
+
 bun run typecheck
 bun run typecheck:e2e
 bun run lint
