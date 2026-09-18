@@ -143,7 +143,7 @@ function cleanCode(raw: string, length: number, alphanumeric?: boolean): string 
 // on the JS driver on web (supportsNativeDriver, src/style/motion.ts): a native loop cannot
 // hold an Animated.sequence or an Animated.delay, and under the New Architecture a
 // JS-driven loop is a shadow-tree commit per frame, so even a 1Hz blink is not free there.
-// Reduce Motion holds the caret solid — the bar alone still marks the insertion point.
+// Reduce Motion holds the caret solid: the bar alone still marks the insertion point.
 const BLINK = keyframes([
   [0, 0],
   [0.38, 0],
