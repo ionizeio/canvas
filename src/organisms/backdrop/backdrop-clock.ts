@@ -1,4 +1,5 @@
 import { Animated, Easing } from "react-native";
+import { supportsNativeDriver, thereAndBack, holdThen } from "../../style/motion.js";
 
 // The Backdrop's animation clock: a small set of general-purpose looping channels
 // that a scene binds its layers to. Every Animated.Value lives at MODULE scope and
@@ -18,9 +19,16 @@ import { Animated, Easing } from "react-native";
 //   - A stopped loop composite cannot be restarted (isFinished latches), so
 //     composites are REBUILT on every start. Building is cheap.
 //
-// Every loop passes useNativeDriver: false, without exception. See src/style/motion.ts:
-// native-driver loops run one pass and freeze on react-native-web and do not advance
-// under the New Architecture on iOS.
+// Every loop runs on the native driver where the platform has one and on the JS driver
+// on web (`supportsNativeDriver`, src/style/motion.ts). This is not an optimisation but
+// the whole frame budget: under the New Architecture a JS-driven frame is a shadow-tree
+// commit per animated view, so the old JS-driven clock saturated the JS thread of an
+// IDLE screen (150% CPU, rAF near 3 frames per second on the iPhone 17 Pro simulator;
+// tools/native/liquid-motion.md). Natively driven, the timings, interpolations and
+// multiplies all live in the native animated module and the JS thread is idle between
+// frames. The native driver cannot loop an `Animated.sequence` or run `Animated.delay`,
+// so every channel is ONE looping timing whose easing carries the cycle's shape: a
+// linear ramp, an out-and-back (`thereAndBack`) or a hold then a sweep (`holdThen`).
 
 export type Energy = "calm" | "default" | "energetic";
 
@@ -66,14 +74,23 @@ export interface BackdropClock {
   event: Animated.Value;
 }
 
+/** A started loop, which is all the clock needs to hold. */
+interface Loop {
+  stop: () => void;
+}
+
 interface Entry {
   clock: BackdropClock;
   mode: "running" | "poster" | null;
   count: number;
-  running: Animated.CompositeAnimation[];
+  running: Loop[];
   /** The master phase survives stops, so toggling a backdrop off and back on
    *  resumes where it left off rather than restarting. */
   phase: number;
+  /** Wall-clock start of the current run, for capturing the phase on stop. A natively
+   *  driven value cannot report its live position to JS, so the phase is bookkept
+   *  from the timing's own wall clock instead. */
+  startedAt: number;
 }
 
 const entries = new Map<Energy, Entry>();
@@ -92,7 +109,7 @@ function makeClock(): BackdropClock {
 function entryFor(energy: Energy): Entry {
   let e = entries.get(energy);
   if (!e) {
-    e = { clock: makeClock(), mode: null, count: 0, running: [], phase: 0 };
+    e = { clock: makeClock(), mode: null, count: 0, running: [], phase: 0, startedAt: 0 };
     entries.set(energy, e);
   }
   return e;
@@ -103,56 +120,62 @@ export function backdropClock(energy: Energy): BackdropClock {
   return entryFor(energy).clock;
 }
 
-const lin = (v: Animated.Value, duration: number) =>
-  Animated.timing(v, { toValue: 1, duration, easing: Easing.linear, useNativeDriver: false });
+const timing = (v: Animated.Value, duration: number, easing: (t: number) => number) =>
+  Animated.timing(v, { toValue: 1, duration, easing, useNativeDriver: supportsNativeDriver });
 
-// Resume a linear 0..1 loop from `phase`: timing starts from the CURRENT value and
-// never resets, so a head timing runs phase -> 1 at the loop's speed, then the loop
-// owns the full passes (its per-iteration reset returns to the constructor value 0).
-function linLoop(v: Animated.Value, period: number, phase: number) {
-  v.setValue(phase);
-  if (phase <= 0) return Animated.loop(lin(v, period));
-  return Animated.sequence([lin(v, Math.round(period * (1 - phase))), Animated.loop(lin(v, period))]);
-}
-
-function breathe(v: Animated.Value, half: number) {
+/** One looping timing 0..1 over `period`, shaped by `easing`; the loop restarts from the
+ *  constructor value 0. Every easing used here returns to a seam-free value at t=1 (0 for
+ *  an out-and-back, 1 for a ramp whose consumers wrap), so the restart is invisible. */
+function cycle(v: Animated.Value, period: number, easing: (t: number) => number): Loop {
   v.setValue(0);
-  return Animated.loop(
-    Animated.sequence([
-      Animated.timing(v, { toValue: 1, duration: half, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
-      Animated.timing(v, { toValue: 0, duration: half, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
-    ]),
-  );
+  const loop = Animated.loop(timing(v, period, easing));
+  loop.start();
+  return loop;
 }
+
+// Resume a linear 0..1 loop from `phase`: a head timing runs phase -> 1 at the loop's
+// speed, then the loop owns the full passes from 0. The head's completion is the one JS
+// callback in the run; a stopped head reports finished:false and hands nothing on.
+function linLoop(v: Animated.Value, period: number, phase: number): Loop {
+  if (phase <= 0) return cycle(v, period, Easing.linear);
+  v.setValue(phase);
+  let current: Animated.CompositeAnimation = timing(v, Math.round(period * (1 - phase)), Easing.linear);
+  current.start(({ finished }) => {
+    if (!finished) return;
+    v.setValue(0);
+    current = Animated.loop(timing(v, period, Easing.linear));
+    current.start();
+  });
+  return { stop: () => current.stop() };
+}
+
+const breatheEasing = thereAndBack(Easing.inOut(Easing.ease));
+
+/** The rare-event cycle: parked for 80% of a flight, then one eased sweep 0..1 over the
+ *  next 22%, so the sweep never lands at the same flight phase twice in a row. */
+const EVENT_HOLD = 0.8;
+const EVENT_SWEEP = 0.22;
+const eventEasing = holdThen(EVENT_HOLD / (EVENT_HOLD + EVENT_SWEEP), Easing.inOut(Easing.ease));
 
 function startAll(e: Entry, energy: Energy) {
   const flight = FLIGHT_PERIOD[energy];
+  e.startedAt = Date.now();
   e.running = [
     linLoop(e.clock.flight, flight, e.phase),
-    breathe(e.clock.twinkle, TWINKLE_HALF[energy]),
-    linLoop(e.clock.scintillate, SCINTILLATE_PERIOD[energy], 0),
-    linLoop(e.clock.drift, 180000, 0),
-    breathe(e.clock.breath, 5500),
-    Animated.loop(
-      Animated.sequence([
-        Animated.delay(Math.round(flight * 0.8)),
-        Animated.timing(e.clock.event, {
-          toValue: 1,
-          duration: Math.round(flight * 0.22),
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: false,
-        }),
-      ]),
-    ),
+    cycle(e.clock.twinkle, TWINKLE_HALF[energy] * 2, breatheEasing),
+    cycle(e.clock.scintillate, SCINTILLATE_PERIOD[energy], Easing.linear),
+    cycle(e.clock.drift, 180000, Easing.linear),
+    cycle(e.clock.breath, 11000, breatheEasing),
+    cycle(e.clock.event, Math.round(flight * (EVENT_HOLD + EVENT_SWEEP)), eventEasing),
   ];
-  e.running.forEach((a) => a.start());
 }
 
-function stopAll(e: Entry) {
-  // stopAnimation's callback is synchronous on the JS driver: capture the live phase.
-  e.clock.flight.stopAnimation((v) => {
-    e.phase = v % 1;
-  });
+function stopAll(e: Entry, energy: Energy) {
+  if (e.running.length > 0) {
+    // Capture the live flight phase from the run's wall clock: the timing is linear and
+    // wall-clock paced on both drivers, so this is the value the loop is showing.
+    e.phase = (e.phase + (Date.now() - e.startedAt) / FLIGHT_PERIOD[energy]) % 1;
+  }
   e.running.forEach((a) => a.stop());
   e.running = [];
 }
@@ -160,8 +183,8 @@ function stopAll(e: Entry) {
 // The composed poster still for Reduce Motion: layers graduated mid-flight (each
 // sawtooth offset spreads the single 0.35), sky at mid-shimmer, slow channels at
 // rest, the rare event parked offscreen.
-function poster(e: Entry) {
-  stopAll(e);
+function poster(e: Entry, energy: Energy) {
+  stopAll(e, energy);
   e.clock.flight.setValue(0.35);
   e.clock.twinkle.setValue(0.5);
   // Mid-ramp, not zero: the bucket offsets fan out from here, so the still frame
@@ -180,10 +203,10 @@ export function retainBackdropClock(energy: Energy, want: "running" | "poster"):
   if (e.mode === want) return;
   e.mode = want;
   if (want === "running") {
-    stopAll(e);
+    stopAll(e, energy);
     startAll(e, energy);
   } else {
-    poster(e);
+    poster(e, energy);
   }
 }
 
@@ -194,13 +217,13 @@ export function releaseBackdropClock(energy: Energy): void {
   if (!e) return;
   e.count = Math.max(0, e.count - 1);
   if (e.count === 0) {
-    stopAll(e);
+    stopAll(e, energy);
     e.mode = null;
   }
 }
 
 /** Test seam: drop every clock so a suite starts from a known state. */
 export function resetBackdropClocks(): void {
-  entries.forEach((e) => stopAll(e));
+  entries.forEach((e, energy) => stopAll(e, energy));
   entries.clear();
 }

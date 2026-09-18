@@ -123,13 +123,14 @@ describe("one icon stroke", () => {
 
 describe("animation length", () => {
   // A transition under 100ms is a jump; over 700ms the interface feels like it is
-  // waiting on something. Loops are a different thing entirely: a spinner revolution
-  // and an indeterminate progress sweep are paced to read as continuous motion, and
-  // a clock driver has no duration of its own.
+  // waiting on something. Loops are a different thing entirely: a spinner revolution,
+  // an indeterminate progress sweep and a caret's blink cycle are paced to read as
+  // continuous motion, and a clock driver has no duration of its own.
   const LOOPS = new Set([
     "src/atoms/spinner/spinner.shared.tsx",
     "src/atoms/progress/progress.shared.tsx",
     "src/atoms/skeleton/skeleton.shared.tsx",
+    "src/atoms/input-otp/input-otp.shared.tsx",
     "src/organisms/backdrop/backdrop-clock.ts",
   ]);
 
@@ -142,6 +143,26 @@ describe("animation length", () => {
           const ms = Number(m[1]);
           if (ms < 100 || ms > 700) offenders.push(`${file}:${i + 1} duration ${ms}ms`);
         }
+      });
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it("every loop runs on the native driver and holds one timing", () => {
+    // Under the New Architecture a JS-driven frame is a Fabric shadow-tree commit per
+    // animated view, priced by the size of the whole tree, so a looping JS animation
+    // saturates the JS thread of an idle screen (the docs app measured 150% CPU and rAF
+    // near 3 frames per second before its loops moved to the native driver; see
+    // src/style/motion.ts). A loop therefore gates its driver on supportsNativeDriver,
+    // never a literal, and shapes its cycle with an easing: React Native refuses an
+    // Animated.sequence inside a native loop and Animated.delay hardcodes the JS driver.
+    const offenders: string[] = [];
+    for (const { file, text } of sources) {
+      if (!text.includes("Animated.loop(")) continue;
+      text.split("\n").forEach((line, i) => {
+        const code = line.replace(/\/\/.*$/, "");
+        if (/useNativeDriver:\s*(true|false)\b/.test(code)) offenders.push(`${file}:${i + 1} literal driver flag in a looping file`);
+        if (/Animated\.(sequence|delay|parallel|stagger)\(/.test(code)) offenders.push(`${file}:${i + 1} composite in a looping file`);
       });
     }
     expect(offenders).toEqual([]);

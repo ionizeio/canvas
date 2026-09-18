@@ -4,9 +4,9 @@ import { join } from "node:path";
 import { render, cleanup, waitFor, act } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
 import { hydrateRoot, type Root } from "react-dom/client";
-import { AccessibilityInfo, type Animated } from "react-native";
+import { AccessibilityInfo, Animated } from "react-native";
 import { Backdrop, BackdropHost } from "../src/organisms/backdrop/backdrop.tsx";
-import { backdropClock, resetBackdropClocks } from "../src/organisms/backdrop/backdrop-clock.ts";
+import { backdropClock, resetBackdropClocks, retainBackdropClock, releaseBackdropClock } from "../src/organisms/backdrop/backdrop-clock.ts";
 import { useGpuBackdrop, refreshBackdropRenderer } from "../src/organisms/backdrop/skia-runtime.ts";
 import { readLayers } from "../src/organisms/backdrop/backdrop-layers.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
@@ -166,6 +166,74 @@ describe("twinkle scintillates rather than shimmering as one", () => {
     const { container } = render(wrap(<Field twinkle={false} />));
     await waitFor(() => expect(surface(container)).not.toBeNull());
     expect(new Set(opacities(container)).size).toBe(1);
+  });
+});
+
+describe("the clock's continuity", () => {
+  // A backdrop that is toggled off and back on resumes mid-flight instead of
+  // restarting. The phase used to be read back from the JS-driven value on stop;
+  // a natively driven value cannot report its position to JS, so the clock keeps
+  // the run's wall clock and derives the phase from it, then resumes through a head
+  // timing that covers the REST of the cycle before the loop takes over. Under
+  // bun test react-native-web swaps in AnimatedMock, which completes every timing
+  // synchronously, so the head is observed through its config rather than its
+  // value: a quarter of the default 32s flight elapsed means a 24s head.
+  // Every timing on the flight value shorter than the full 32s cycle is a resume head.
+  const headFor = (calls: Array<unknown[]>) =>
+    calls
+      .filter((args) => args[0] === backdropClock("default").flight)
+      .map((args) => (args[1] as { duration: number }).duration)
+      .filter((duration) => duration < 32000);
+
+  it("resumes the flight from the phase it was stopped at", () => {
+    let now = 1_000_000;
+    const clock = spyOn(Date, "now").mockImplementation(() => now);
+    const timing = spyOn(Animated, "timing");
+    try {
+      retainBackdropClock("default", "running");
+      now += 8000;
+      releaseBackdropClock("default");
+      timing.mockClear();
+      retainBackdropClock("default", "running");
+      const heads = headFor(timing.mock.calls);
+      expect(heads).toContain(24000);
+      releaseBackdropClock("default");
+    } finally {
+      timing.mockRestore();
+      clock.mockRestore();
+    }
+  });
+
+  it("keeps the captured phase across a poster still", () => {
+    let now = 1_000_000;
+    const clock = spyOn(Date, "now").mockImplementation(() => now);
+    const timing = spyOn(Animated, "timing");
+    try {
+      retainBackdropClock("default", "running");
+      now += 16000;
+      releaseBackdropClock("default");
+      retainBackdropClock("default", "poster");
+      expect(valueOf(backdropClock("default").flight)).toBe(0.35);
+      releaseBackdropClock("default");
+      timing.mockClear();
+      retainBackdropClock("default", "running");
+      expect(headFor(timing.mock.calls)).toContain(16000);
+      releaseBackdropClock("default");
+    } finally {
+      timing.mockRestore();
+      clock.mockRestore();
+    }
+  });
+
+  it("starts from the top of the cycle on the first run", () => {
+    const timing = spyOn(Animated, "timing");
+    try {
+      retainBackdropClock("default", "running");
+      expect(headFor(timing.mock.calls)).toEqual([]);
+      releaseBackdropClock("default");
+    } finally {
+      timing.mockRestore();
+    }
   });
 });
 

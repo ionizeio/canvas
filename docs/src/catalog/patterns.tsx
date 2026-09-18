@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Animated, AccessibilityInfo } from "react-native";
-import { View, Text, Row, Column, useTheme, alpha, Container } from "@ionizeio/canvas";
+import { Animated, Easing, AccessibilityInfo } from "react-native";
+import { View, Text, Row, Column, useTheme, alpha, Container, supportsNativeDriver, thereAndBack } from "@ionizeio/canvas";
 import Svg, { Defs, RadialGradient, Stop, Rect } from "react-native-svg";
 import { sans, geistMono } from "../ui/fonts";
 import { MiniBtn, type CatTile } from "./tile";
@@ -36,11 +36,12 @@ function usePulse() {
       opacity.setValue(1);
       return;
     }
+    // One timing 1 → 0.5 → 1 shaped by a there-and-back easing, on the native driver where
+    // there is one (supportsNativeDriver): a native loop cannot hold an Animated.sequence, and
+    // a JS-driven loop is a shadow-tree commit per frame under the New Architecture, which
+    // this pulse paid for on every route because the Components tab stays mounted.
     const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(opacity, { toValue: 0.5, duration: 1000, useNativeDriver: false }),
-        Animated.timing(opacity, { toValue: 1, duration: 1000, useNativeDriver: false }),
-      ]),
+      Animated.timing(opacity, { toValue: 0.5, duration: 2000, easing: thereAndBack(Easing.inOut(Easing.ease)), useNativeDriver: supportsNativeDriver }),
     );
     loop.start();
     return () => loop.stop();

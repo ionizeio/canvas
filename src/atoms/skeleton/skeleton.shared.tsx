@@ -1,7 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useEffect, useRef } from "react";
-import { Animated } from "react-native";
-import { View, useReducedMotion, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, innerFill } from "../../style/index.js";
+import { Animated, Easing } from "react-native";
+import { View, useReducedMotion, supportsNativeDriver, thereAndBack, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, innerFill } from "../../style/index.js";
 
 // Shared Skeleton shell. The structure (a single muted shape — text line, avatar,
 // button — or a composite card / list / table scaffold built from one muted fill,
@@ -202,11 +202,12 @@ function Pulse({ animate, style, ...rest }: { animate?: boolean; style: StylePro
       opacity.setValue(1);
       return;
     }
+    // One timing 1 → 0.5 → 1 per 1.2s, shaped by a there-and-back easing, on the native
+    // driver where there is one (supportsNativeDriver, src/style/motion.ts): a native loop
+    // cannot hold an Animated.sequence, and a JS-driven loop is a shadow-tree commit per
+    // frame under the New Architecture.
     const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(opacity, { toValue: 0.5, duration: 600, useNativeDriver: false }),
-        Animated.timing(opacity, { toValue: 1, duration: 600, useNativeDriver: false }),
-      ]),
+      Animated.timing(opacity, { toValue: 0.5, duration: 1200, easing: thereAndBack(Easing.inOut(Easing.ease)), useNativeDriver: supportsNativeDriver }),
     );
     loop.start();
     return () => loop.stop();

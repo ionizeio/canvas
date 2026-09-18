@@ -1,6 +1,6 @@
 import { type ReactElement, type ReactNode, useEffect, useRef } from "react";
 import { Animated, Easing } from "react-native";
-import { View, Text, useTheme, type ColorTokens, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Text, useTheme, supportsNativeDriver, type ColorTokens, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { type Tone, TONE_TOKEN } from "./spinner.styles.js";
 
 // Shared Spinner shell. Uses React Native's primitives DIRECTLY (no engine
@@ -119,10 +119,11 @@ export function createSpinner(skin: SpinnerSkin) {
     // One continuous rotation per ~900ms, looping forever. The skins that spin a
     // drawn shape (iOS spokes, Android arc) interpolate this 0..1 value to
     // 0..360deg; the web ActivityIndicator animates itself and ignores it.
-    // The loop runs on the JS driver (useNativeDriver:false) on every platform: the
-    // native driver's looping is unreliable (Animated.loop + useNativeDriver:true runs
-    // one pass then freezes on react-native-web, and does not loop under the New
-    // Architecture on iOS). A 900ms spinner is cheap on the JS thread.
+    // The loop runs on the native driver where there is one and on the JS driver on
+    // web (supportsNativeDriver, src/style/motion.ts): under the New Architecture a
+    // JS-driven frame is a shadow-tree commit per animated view, so a JS loop is never
+    // cheap, and a native loop on the skins' Animated.View wrappers advances (the
+    // frozen native loop of 2026-06 drove a createAnimatedComponent(Svg) root).
     const rotate = useRef(new Animated.Value(0)).current;
     const spins = skin.spins !== false;
     useEffect(() => {
@@ -135,7 +136,7 @@ export function createSpinner(skin: SpinnerSkin) {
           toValue: 1,
           duration: 900,
           easing: Easing.linear,
-          useNativeDriver: false,
+          useNativeDriver: supportsNativeDriver,
         }),
       );
       loop.start();

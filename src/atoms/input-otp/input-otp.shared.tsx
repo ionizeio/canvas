@@ -14,6 +14,8 @@ import {
   useHugStyle,
   useControllableState,
   useReducedMotion,
+  supportsNativeDriver,
+  keyframes,
   FOCUS_RESET,
   type ColorTokens,
   type StyleProp,
@@ -136,11 +138,20 @@ function cleanCode(raw: string, length: number, alphanumeric?: boolean): string 
 // The active-cell caret. Native insertion points blink — the iOS caret and the M3
 // text-field cursor both pulse on a ~1s cycle — so the iOS/Android skins opt in via
 // `caretBlink` and the bar loops its opacity: visible ~380ms, a quick 120ms fade out,
-// hidden ~380ms, a 120ms fade back in (a 1000ms cycle). The loop runs on the JS driver
-// on EVERY platform: Animated.loop + useNativeDriver:true runs one pass then freezes on
-// react-native-web and does not loop under the New Architecture (src/style/motion.ts),
-// and a 1Hz opacity toggle is free on the JS thread. Reduce Motion holds the caret
-// solid — the bar alone still marks the insertion point.
+// hidden ~380ms, a 120ms fade back in (a 1000ms cycle). The cycle is ONE looping timing
+// whose easing is that schedule (keyframes), on the native driver where there is one and
+// on the JS driver on web (supportsNativeDriver, src/style/motion.ts): a native loop cannot
+// hold an Animated.sequence or an Animated.delay, and under the New Architecture a
+// JS-driven loop is a shadow-tree commit per frame, so even a 1Hz blink is not free there.
+// Reduce Motion holds the caret solid — the bar alone still marks the insertion point.
+const BLINK = keyframes([
+  [0, 0],
+  [0.38, 0],
+  [0.5, 1],
+  [0.88, 1],
+  [1, 0],
+]);
+
 function Caret({ blink, style }: { blink: boolean; style: ViewStyle }) {
   const opacity = useRef(new Animated.Value(1)).current;
   const reduced = useReducedMotion();
@@ -150,12 +161,8 @@ function Caret({ blink, style }: { blink: boolean; style: ViewStyle }) {
       opacity.setValue(1);
       return;
     }
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(opacity, { toValue: 0, duration: 120, delay: 380, useNativeDriver: false }),
-        Animated.timing(opacity, { toValue: 1, duration: 120, delay: 380, useNativeDriver: false }),
-      ]),
-    );
+    // From 1 toward 0 along BLINK: 1 while the schedule sits at 0, 0 while it sits at 1.
+    const loop = Animated.loop(Animated.timing(opacity, { toValue: 0, duration: 1000, easing: BLINK, useNativeDriver: supportsNativeDriver }));
     loop.start();
     return () => loop.stop();
   }, [active, opacity]);

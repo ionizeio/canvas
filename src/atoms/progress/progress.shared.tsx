@@ -200,11 +200,11 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
 
     // One sweep (the bar enters from the left edge and exits the right) per ~1100ms,
     // looping forever while in indeterminate mode. Re-armed when the mode or the measured
-    // width changes. The loop runs on the JS driver (useNativeDriver:false) on every
-    // platform: the native driver's looping is unreliable (Animated.loop +
-    // useNativeDriver:true runs one pass then freezes on react-native-web, and does not loop
-    // under the New Architecture on iOS). A slow 1100ms sweep is cheap on the JS thread.
-    // This matches the spinner atom's loop convention.
+    // width changes. The loop runs on the native driver where there is one and on the JS
+    // driver on web (supportsNativeDriver, src/style/motion.ts): the bar moves by
+    // translateX, which the native driver animates off-thread, and under the New
+    // Architecture a JS-driven loop is a shadow-tree commit per frame. This matches the
+    // spinner atom's loop convention.
     useEffect(() => {
       if (!indeterminate || trackWidth <= 0) return;
       progress.setValue(0);
@@ -213,7 +213,7 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
           toValue: 1,
           duration: 1100,
           easing: Easing.inOut(Easing.ease),
-          useNativeDriver: false,
+          useNativeDriver: supportsNativeDriver,
         }),
       );
       loop.start();
