@@ -132,13 +132,19 @@ export interface JavaScriptBudget {
 // retained PopupCard, portal activation), measured after at 54,536 / 52,879 /
 // 54,614B (~1.9KB gzip). The ceilings moved to 9,728 and 58,368B for that
 // deliberate growth (9% and 7% headroom); Input and DataTable keep theirs.
+// DataTable was 44,393 / 42,523 / 44,474B before the numbered Pagination in its
+// footer moved its selected page as a measured liquid surface (MeasuredSelection,
+// useLiquidMotion, the travel geometry and the selection springs ride in with the
+// Pagination now); measured after at 46,652 / 44,809 / 46,738B (~2.3KB gzip), the
+// same motion kernel Tabs, Navbar and Sidebar consumers already carry. The DataTable
+// ceiling moved from 46,080 to 50,176B for that deliberate growth (7% headroom).
 // Fixed ceilings leave room for deliberate growth while catching a heavy import.
 // These are independent budgets, not a combined total: shared modules legitimately
 // occur in more than one consumer. Changes require a fresh measurement and rationale.
 export const NAMED_IMPORT_BUDGETS: readonly JavaScriptBudget[] = [
   { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 9_728, requiredExports: ["Button", "ThemeProvider"] },
   { label: "Input + ThemeProvider", entry: "scripts/size-fixtures/input.ts", maxGzip: 39_936, requiredExports: ["Input", "ThemeProvider"] },
-  { label: "DataTable + ThemeProvider", entry: "scripts/size-fixtures/data-table.ts", maxGzip: 46_080, requiredExports: ["DataTable", "ThemeProvider"] },
+  { label: "DataTable + ThemeProvider", entry: "scripts/size-fixtures/data-table.ts", maxGzip: 50_176, requiredExports: ["DataTable", "ThemeProvider"] },
   { label: "StackedList + ThemeProvider", entry: "scripts/size-fixtures/stacked-list.ts", maxGzip: 58_368, requiredExports: ["StackedList", "ThemeProvider"] },
 ];
 
