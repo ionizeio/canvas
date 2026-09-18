@@ -2,6 +2,13 @@
 
 Bottom app navigation: a row of equal-width destinations, each an icon over a short label, with exactly one active. The mobile idiom (iOS HIG tab bar / Material 3 navigation bar), rendered through the glass functional layer.
 
+In glass mode, web and Android move one measured indicator between icon
+positions. The web pill remains 48 by 28 points and Android's remains 56 by 32;
+restrained deformation stays out of the label area. Icons, labels, destinations
+and safe-area spacing remain fixed. iOS keeps its tint-only selection. Reduce
+Motion uses the final position immediately, and solid mode retains the ordinary
+platform pill.
+
 ## Usage
 
 ```tsx

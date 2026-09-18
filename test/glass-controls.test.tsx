@@ -140,17 +140,17 @@ describe("brand-tinted glass pucks", () => {
     }
   });
 
-  it("the selected pill of a Tabs strip is a brand puck on a functional-layer track, its label in primary-foreground", async () => {
+  it("the selected Tabs material uses its skin tint and stable foreground over a functional-layer track", async () => {
     const { container, restore } = await renderGlass(<Tabs pills tabs={["Overview", "Activity"]} testID="tabs" />);
     try {
       const strip = container.querySelector('[data-testid="tabs"]') as HTMLElement;
       // The track's own pane is the first material; the selected tab's puck follows.
       const fills = Array.from(strip.querySelectorAll("[style*='backdrop-filter']")).map((lens) => rgbaOf((lens.previousElementSibling as HTMLElement).style.backgroundColor));
       expect(fills[0]).toEqual(rgbaOf(LIGHT["glass-tint"]));
-      expect(fills).toContainEqual(rgbaOf(brandTint(lightColors.primary, lightColors.background)));
+      expect(fills).toContainEqual(rgbaOf(alpha(lightColors.primary, 0.14)));
       const selected = strip.querySelector('[aria-selected="true"]') as HTMLElement;
       const label = Array.from(selected.querySelectorAll("*")).find((n) => n.textContent === "Overview" && (n as HTMLElement).style.color) as HTMLElement;
-      expect(rgbaOf(label.style.color)).toEqual(rgbaOf(alpha(lightColors["primary-foreground"], 1)));
+      expect(rgbaOf(label.style.color)).toEqual(rgbaOf(alpha(lightColors.foreground, 1)));
     } finally {
       restore();
     }
