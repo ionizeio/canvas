@@ -65,7 +65,8 @@ export interface SkeletonProps {
 // other two loading indicators (Spinner, Progress). The `aria-busy` alias is
 // mandatory: react-native-web does not forward accessibilityState to the DOM, so
 // without it web screen readers would never hear the busy state. The whole shape
-// announces once as a single node, so the inner muted blocks stay hidden from AT.
+// announces once as a single node: a single shape IS that node, and a composite
+// scaffold keeps its inner muted blocks under a hidden wrapper of their own (below).
 function loadingA11y(label: string | undefined) {
   return {
     accessibilityRole: "progressbar" as const,
@@ -75,10 +76,14 @@ function loadingA11y(label: string | undefined) {
   };
 }
 
-// Hide a composite shape's inner muted blocks from assistive tech: the wrapping
-// element already announces the loading state once, so the nested fills must not
-// surface as anonymous generic nodes. Mirrors the kit's established decorative-hide
-// pattern (breadcrumb, input-otp): the native flags plus the `aria-hidden` web alias.
+// Hide a composite shape's inner muted blocks from assistive tech: the announcing
+// element already carries the loading state once, so the nested fills must not
+// surface as anonymous generic nodes. These flags go on an INNER wrapper View around
+// the blocks, never on the announcing element itself: react-native-web forwards only
+// the `aria-hidden` alias, so an element carrying both would hide its own progressbar
+// (and Android's `no-hide-descendants` hides the host node too). Mirrors the kit's
+// established decorative-hide pattern (Spinner's visual renderer, breadcrumb,
+// input-otp): the native flags plus the `aria-hidden` web alias.
 const innerHidden = {
   accessibilityElementsHidden: true,
   importantForAccessibility: "no-hide-descendants" as const,
@@ -145,8 +150,11 @@ const cardLine70: ViewStyle = { width: "70%" };
 const cardLine40: ViewStyle = { width: "40%", marginTop: 6 };
 const cardLine80: ViewStyle = { width: "80%", marginTop: 6 };
 
-// The list container: FILL (the parent picks the measure). `flex-col gap-4`.
-const listContainer: ViewStyle = { flexDirection: "column", gap: 16, width: "100%", flexShrink: 1, minWidth: 0 };
+// The list container: FILL (the parent picks the measure).
+const listContainer: ViewStyle = { width: "100%", flexShrink: 1, minWidth: 0 };
+
+// The hidden column of list rows inside it. `flex-col gap-4`.
+const listRows: ViewStyle = { flexDirection: "column", gap: 16 };
 
 // A list row. `flex-row items-center gap-3`.
 const listRow: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 12 };
@@ -244,17 +252,19 @@ export function createSkeleton(skin: SkeletonSkin) {
 
     if (shape === "card") {
       return (
-        <View {...a11y} {...innerHidden} testID={testID} style={[paneStyle(theme, cardSurface(tokens)), { borderRadius: skin.cardRadius }, style]}>
+        <View {...a11y} testID={testID} style={[paneStyle(theme, cardSurface(tokens)), { borderRadius: skin.cardRadius }, style]}>
           <GlassPane layer="content" shape={{ borderRadius: skin.cardRadius }} />
-          <View style={cardRow}>
-            <Pulse animate={animate} style={[fill(theme), cardAvatar, { borderRadius: skin.avatarRadius }]} />
-            <View style={flexFill}>
-              <Line animate={animate} style={cardLine70} />
-              <Line animate={animate} style={cardLine40} />
+          <View {...innerHidden}>
+            <View style={cardRow}>
+              <Pulse animate={animate} style={[fill(theme), cardAvatar, { borderRadius: skin.avatarRadius }]} />
+              <View style={flexFill}>
+                <Line animate={animate} style={cardLine70} />
+                <Line animate={animate} style={cardLine40} />
+              </View>
             </View>
+            <Line animate={animate} />
+            <Line animate={animate} style={cardLine80} />
           </View>
-          <Line animate={animate} />
-          <Line animate={animate} style={cardLine80} />
         </View>
       );
     }
@@ -271,9 +281,11 @@ export function createSkeleton(skin: SkeletonSkin) {
         </View>
       );
       return (
-        <View {...a11y} {...innerHidden} testID={testID} style={[listContainer, style]}>
-          <Row a={{ width: "70%" }} b={{ width: "50%" }} />
-          <Row a={{ width: "55%" }} b={{ width: "35%" }} />
+        <View {...a11y} testID={testID} style={[listContainer, style]}>
+          <View {...innerHidden} style={listRows}>
+            <Row a={{ width: "70%" }} b={{ width: "50%" }} />
+            <Row a={{ width: "55%" }} b={{ width: "35%" }} />
+          </View>
         </View>
       );
     }
@@ -288,10 +300,12 @@ export function createSkeleton(skin: SkeletonSkin) {
         </View>
       );
       return (
-        <View {...a11y} {...innerHidden} testID={testID} style={[tableContainer, style]}>
-          <Row a={{ width: "70%" }} b={{ width: "50%" }} />
-          <Row a={{ width: "80%" }} b={{ width: "60%" }} />
-          <Row a={{ width: "65%" }} b={{ width: "45%" }} last />
+        <View {...a11y} testID={testID} style={[tableContainer, style]}>
+          <View {...innerHidden}>
+            <Row a={{ width: "70%" }} b={{ width: "50%" }} />
+            <Row a={{ width: "80%" }} b={{ width: "60%" }} />
+            <Row a={{ width: "65%" }} b={{ width: "45%" }} last />
+          </View>
         </View>
       );
     }
