@@ -120,13 +120,63 @@ work), so these are observations, not a revision-specific pass.
 | 2026-09-18 | Calendar selected day travel on the native material: diagonal and vertical | iPhone 17 Pro simulator, iOS 26.3, dark glass, docs dev app on Metro, taps through the simulator tool, 20 fps sampling of a simctl recording | working tree on 53e8e7c3 | unchanged | not sampled | 24 to 12: the tinted GlassView blob glides diagonally via 21 and 13 to 12 and settles in about 300 ms (`strip-079-086.png`); 3 to 24: down the column through 10 and 17 (`strip-198-205.png`). Two observations for the material owners rather than the motion: the newly selected number flips to `primary-foreground` the moment it is pressed, so it is unreadable on the bare cell for the ~150 ms flight (the same transient as the Pagination and the Navbar's iOS brand skin), and on iOS 26 in the dark scheme the brand-tinted GlassView renders so sheer that the dark `primary-foreground` label sits on a dark teal puck once settled (frames 203 to 205), a legibility gap the pre-liquid selected day already had. | `/tmp/canvas-liquid-motion-2026-09-18/ios-calendar-01` |
 | 2026-09-18 | Carousel dot marker travel (`selection` profile on an ink marker the size of the skin's active dot) | Chromium headed via the repo's Playwright on `components/carousel` (the web-skin preview's dot strip), dark glass, 20 fps sampling | working tree on c5633f93 (the Carousel commit that follows) | unchanged | not sampled | Dot 1 to 3: the 18 px capsule leaves dot 1, stretches to about 26 px as it crosses dot 2 and settles on dot 3 in about 200 ms (`zoom-063-070.png`, frames 63 to 70 stacked); 3 to 2, 2 to 1 and 1 to 3 the same. The dots and the slides never move, and the strip at rest is pixel-for-pixel the skin's static strip (one brand capsule, the dot under it inactive). | `/tmp/canvas-liquid-motion-2026-09-18/web-carousel-01`, `actions-carousel.mjs` |
 | 2026-09-18 | Carousel dot marker travel on iOS (equal-sized 7 pt dots) | iPhone 17 Pro simulator, iOS 26.3, dark glass, docs dev app on Metro, taps through the simulator tool, 20 fps sampling of a simctl recording | working tree on c5633f93 | unchanged | not sampled | Dot 1 to 3: the brand dot glides across dot 2, swelling to about 1.5x on the way, and settles on dot 3 in four frames (`zoom-077-084.png`); 3 to 1 and 1 to 2 the same. | `/tmp/canvas-liquid-motion-2026-09-18/ios-carousel-01` |
+| 2026-09-18 | Dropdown popup open, dismiss, reopen on the native material (popup profile) | iPhone 17 Pro simulator, iOS 26.3, dark glass, docs dev app on Metro, taps through the simulator tool, 20 fps sampling | 459064fa (clean) | unchanged | not sampled | Open: the GlassView material rises from a low pill under the trigger to the full card in four frames (about 200 ms), then the rows appear (`strip-077-084.png`); dismiss: the rows retire at once, the material collapses back toward the trigger over three frames and is gone (`strip-159-166.png`). The first popup evidence on iOS since the docs app's JS thread was freed. | `/tmp/canvas-liquid-motion-2026-09-18/ios-dropdown-01` |
+| 2026-09-18 | Navbar active link travel on the native brand capsule (`navigation` profile) | iPad Pro 11-inch (M5) simulator, iOS 26.3, dark glass, the docs dev app installed from the iPhone's bundle and pointed at Metro (`RCT_jsLocation`), taps through `idb ui tap`, 20 fps sampling | 459064fa (clean) | unchanged | not sampled | Users to Settings: the capsule leaves Users, stretches across to Settings and lands in three frames (`strip-012-019.png`); the Settings label flips to the capsule's ink two frames before the capsule arrives (the known transient). The docs app is portrait-locked, so the iPad's width is what gives the Navbar its links row on iOS. | `/tmp/canvas-liquid-motion-2026-09-18/ios-navbar-01` |
+| 2026-09-18 | Sidebar rail active row travel on the native material, before and after the measured-targets contract | iPad Pro 13-inch (M5) simulator, iOS 26.3 (the 1032 pt portrait width is the desktop form factor, so the AppShell example renders the rail), dark glass, docs dev app on Metro, taps through `idb ui tap`, 20 fps sampling | 459064fa then the working tree of 067d6ba9 | unchanged | not sampled | Before: every selection jumped with no travel (`ios-sidebar-01`, first run): the shell shape measured its rows against a sibling node, which Fabric's measureLayout rejects. With the body made an ancestor, Inbox to Dashboard travels with the vertical stretch (`ios-sidebar-01/strip-046-053.png`) and Inbox to Analytics crosses the Reports header in five frames (`ios-sidebar-02/strip-126-133.png`), but a selection that made the single-open accordion close the section it left still held 300 ms on the old row and then jumped (`ios-sidebar-02/strip-222-229.png`: the reset unmounted the surface and the native material faded out). With the contract (hold, then travel or reset, no unmount) the same Traffic to Dashboard press travels (`ios-sidebar-03/strip-155-162.png`) after a 200 ms pause in which nothing on the rail changes, which the web run of the same sequence does not show (`web-sidebar-02/strip-132-143.png`: the collapse and the travel start on the next frame), so the pause is the dev bundle's re-render cost on the simulator, not the motion logic. | `/tmp/canvas-liquid-motion-2026-09-18/ios-sidebar-01`, `ios-sidebar-02`, `ios-sidebar-03`, `web-sidebar-02`, `actions-sidebar-accordion.mjs` |
 
-Not covered by these runs: Android, Reduce Motion, a sealed candidate build, the
-pressed lift and drag profiles, and the popup profile on iOS (the docs app's JS
-thread ran near 3 frames per second there until c78c2b76 fixed its idle CPU; the
-Pagination iOS row above is the first native run since). The native frame-interval trace exists but is
+Not covered by these runs: Android, Reduce Motion, a sealed candidate build and
+the pressed lift and drag profiles. The popup profile on iOS has the Dropdown row
+above (the docs app's JS thread ran near 3 frames per second there until c78c2b76
+fixed its idle CPU). The native frame-interval trace exists but is
 dominated by the docs shell (see the iOS row); a clean native number needs the
 smoke app rebuilt with this fixture, which has no shell.
+
+### Per-component verification record, 2026-09-18 (end of the phase 6 to 9 run)
+
+A manifest entry is never evidence; each cell names what was actually run. "Logic"
+is the focused test suite on the RNW harness with the real spring engine.
+"Browser motion" and "iOS" are recorded runs in this log (contact sheets and frame
+strips under `/tmp/canvas-liquid-motion-2026-09-18/`). Android was out of this
+run's scope: its skins build and pass the suites but no emulator run was made.
+"AT" is what the suites assert (roles, `aria-current`, `aria-pressed`, the retired
+rows' `aria-hidden` and inert pointer events); no screen reader session was run.
+
+| Component (profile) | Implementation | Logic | Browser motion | iOS material and motion | Android | AT |
+|---|---|---|---|---|---|---|
+| Tabs pills, TabBar (`selection`, `navigation`) | 9da8d06c | `test/tabs-liquid`, `test/tab-bar-liquid` | web-tabs-01 | ios-tabs-01 (JS thread then throttled) | not run | asserted |
+| ButtonGroup segments (`selection`), Switch (`toggle`), Slider (`drag`) | pilots before this run | their suites | run-01 to run-03 (materials fixture) | ios-01 | not run | asserted |
+| Dropdown, Select, AvatarMenu, collapsed Navbar menu (popup) | 977f38a3 and earlier | `test/popup-consumers-liquid` | web-dropdown-01, journeys `navbar-collapsed-menu` | ios-dropdown-01 | not run | asserted |
+| Popover, RowMenu (+Board), split ButtonGroup, Autocomplete, PhoneInput, Command (popup) | 977f38a3 | `test/popup-consumers-liquid` | journeys (`popover-triggered`, `data-table-row-menu`, `board-card-menu`, `command-typed`, `phone-input-country`, `autocomplete-typed`) | not recorded (same policy and material as the Dropdown row) | not run | asserted |
+| Navbar links (`navigation`) | d0faebfd | `test/navbars-liquid` | web-navbar-01 | ios-navbar-01 (iPad 11) | not run | asserted |
+| Sidebar rows (`selection`) | 3fe773a6, fixed in 067d6ba9 | `test/sidebar-liquid` | web-sidebar-01, web-sidebar-02 | ios-sidebar-01 to 03 (iPad 13) | not run | asserted |
+| Pagination numbered (`selection`) | 0303e0fe | `test/pagination-liquid` | web-pagination-01 | ios-pagination-01 | not run | asserted |
+| Calendar selected day and range endpoints (`selection`), day peek and hover card (popup) | c85e2509 | `test/calendar-liquid` | web-calendar-01, journeys `calendar-peek` | ios-calendar-01 | not run | asserted |
+| Carousel dot marker (`selection`, ink) | d20b6f70 | `test/carousel-liquid` | web-carousel-01 | ios-carousel-01 | not run | asserted |
+
+Integration journeys, 2026-09-18 (`journeys.mjs`, headed Chromium, glass, no page
+or console errors in any scenario; screenshots under `journeys/`): the collapsed
+Navbar's Dropdown menu at 390 px opens and closes on Escape; the docs shell's own
+Sidebar drawer at 390 px opens and closes on Escape (the drill-down group could not
+be located by name, so the drill itself was not exercised); a DataTable RowMenu on
+`components/row-menu` opens, its first item picks and the menu retires; a Board
+card's kebab menu opens and closes on Escape; the triggered Popover with a text
+Input keeps the typed value through a solid/glass toggle while open and closes on
+Escape; the triggered Command palette filters nine options on "ne" and retires
+on a pick; the PhoneInput country list and the Autocomplete list open, pick and
+retire; the Calendar day peek opens on the event day and a tap elsewhere dismisses
+it before the next selection; the FilterPanel drawer at 390 px opens with its four
+checkboxes and closes on Escape. Every intermediate frame captured 120 ms after an
+open shows the material alone with its content still concealed (`*-opening.png`),
+and the settled frame the readable content (`*-open.png`); the surface toggle is
+not in the header at phone width, so the mode change during an open drawer was
+only exercised at desktop widths.
+
+Resource check, 2026-09-18: twelve Dropdown open and close cycles on
+`components/dropdown` in headed Chromium, a third of them interrupted mid-entrance
+or mid-exit, left the DOM at 2,647 nodes, 11 SVG lens filters and 60 hidden nodes
+before and after (`probe-leaks.mjs`); the only idle DOM work on the page is the
+docs' Backdrop (about 5,000 inline-style writes a second at Playwright's
+unthrottled frame rate, see the recording note below).
 
 ### Recording the docs pages in Playwright's headed Chromium
 
