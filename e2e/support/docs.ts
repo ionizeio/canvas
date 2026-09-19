@@ -156,28 +156,46 @@ export async function setFormFactor(page: Page, factor: FormFactor): Promise<voi
  *
  * Several components size themselves from a measurement of their own box, and an
  * overlay's container grows AFTER the overlay becomes visible, so a single sample
- * races the layout. Two consecutive agreeing samples is a wait on the settled state
+ * races the layout. Agreeing samples across `holdMs` is a wait on the settled state
  * rather than on a clock, and it is direction-agnostic: a value that is genuinely
  * wrong settles too, and fails on the real number.
  *
  * This is not a nicety. Sampling the page's overflow once produced a test that failed
  * under parallel workers and passed alone; sampling an overlay's stage height once
- * produced a screenshot baseline of a stage that had not finished opening.
+ * produced a screenshot baseline of a stage that had not finished opening. And two
+ * samples 50 ms apart were not enough either: a pre-rendered page paints its static
+ * markup, hydrates, and only then delivers the container measurements its grids and
+ * charts lay out from, one animation frame after another, so on a loaded runner the
+ * DashboardGrid's preview card read 900 px twice, was fitted, and stood at 1,801 px by
+ * the capture. The value now has to hold for the whole window.
  */
-export async function settled<T>(read: () => Promise<T>, timeoutMs = 5_000): Promise<T> {
+export async function settled<T>(read: () => Promise<T>, timeoutMs = 5_000, holdMs = 250): Promise<T> {
   let previous = await read();
+  let heldSince = Date.now();
   const deadline = Date.now() + timeoutMs;
   for (;;) {
     await new Promise((resolve) => setTimeout(resolve, 50));
     const current = await read();
-    if (JSON.stringify(current) === JSON.stringify(previous)) return current;
-    if (Date.now() > deadline) return current;
-    previous = current;
+    const now = Date.now();
+    if (JSON.stringify(current) !== JSON.stringify(previous)) {
+      previous = current;
+      heldSince = now;
+    } else if (now - heldSince >= holdMs) return current;
+    if (now > deadline) return current;
   }
 }
 
-/** The box of a locator, once it has stopped moving. */
+/**
+ * The box of a locator, once it has stopped moving. Two animation frames pass
+ * before the first sample: react-native-web reports a layout through a resize
+ * observer on the frame after the commit, and a measured component re-renders from
+ * it on the next, so a sample taken straight after hydration reads the pre-rendered
+ * markup, not the laid-out component.
+ */
 export async function settledBox(locator: Locator): Promise<{ width: number; height: number }> {
+  await locator.page().evaluate(() => new Promise<void>((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+  }));
   return settled(async () => {
     const box = await locator.boundingBox();
     return { width: Math.round(box?.width ?? -1), height: Math.round(box?.height ?? -1) };
