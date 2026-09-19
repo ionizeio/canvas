@@ -1,7 +1,7 @@
-import { useLayoutEffect, useRef, useState } from "react";
-import { StyleSheet, type LayoutRectangle } from "react-native";
+import { useRef } from "react";
+import { StyleSheet } from "react-native";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { MeasuredSelection } from "../../style/measured-selection.js";
+import { MeasuredSelection, useMeasuredTargets } from "../../style/measured-selection.js";
 import { View, Pressable, Text, RippleClip, cornerRadii, useControllableState, type StyleProp, type ViewStyle, type ColorTokens, type LayoutStyle, GlassPane, GlassSurface, paneStyle, isGlass } from "../../style/index.js";
 import * as s from "./pagination.styles.js";
 import { type Size, type PaginationSkin } from "./pagination.styles.js";
@@ -134,12 +134,6 @@ function pageWindow(current: number, total: number): number[] {
 // rim carry them). The selected page is BRAND-tinted glass with its label in
 // `primary-foreground`; a hollow cell (the iOS/M3 chevrons and resting pages) stays
 // bare, as it is in solid mode.
-// Frames from onLayout and measureLayout describe the same cell in the same
-// row space; half a pixel absorbs their rounding.
-function sameRect(a: LayoutRectangle, b: LayoutRectangle): boolean {
-  return Math.abs(a.x - b.x) < 0.5 && Math.abs(a.y - b.y) < 0.5 && Math.abs(a.width - b.width) < 0.5 && Math.abs(a.height - b.height) < 0.5;
-}
-
 function surfaced(box: ViewStyle): boolean {
   const bg = box.backgroundColor;
   return (bg != null && bg !== "transparent") || (box.borderWidth ?? 0) > 0;
@@ -221,73 +215,21 @@ export function createPagination(skin: PaginationSkin) {
     // numbers, the chevrons and the hit targets stay fixed. Cells are keyed and
     // measured by PAGE NUMBER, never by slot, and beyond seven pages nearly every
     // page change also shifts the window (an ellipsis moves, a number appears or
-    // drops out). A shift re-measures every cell before the surface moves: while
-    // the fresh frames are pending the surface holds its place; then it TRAVELS
-    // when the page it sits on kept its frame (2 to 3 in "1 2 3 4 … 12" glides
-    // like any selection) and RESETS in place when that page moved or left the
-    // window (3 to 12 in "1 … 11 12" appears on 12), so a shift never invents
-    // travel from a stale slot. An ellipsis is never a target. Compact and
-    // with-size variants keep their anatomy; solid mode keeps the selected cell.
+    // drops out): useMeasuredTargets re-measures the cells before the surface
+    // moves, travels when the page it sits on kept its frame (2 to 3 in
+    // "1 2 3 4 … 12" glides like any selection) and resets in place when that
+    // page moved or left the window (3 to 12 in "1 … 11 12" appears on 12). An
+    // ellipsis is never a target. Compact and with-size variants keep their
+    // anatomy; solid mode keeps the selected cell.
     const window = variant === "numbered" ? pageWindow(current, total) : [];
     const structure = JSON.stringify([variant, size, window]);
     const rowRef = useRef<View>(null);
-    const cellNodes = useRef<Record<number, View | null>>({});
-    const latestStructure = useRef(structure);
-    latestStructure.current = structure;
-    const measuredStructure = useRef(structure);
-    // The page the surface sits on and the frame it was given, the anchor a
-    // re-measured window is compared against.
-    const anchor = useRef<{ page: number; layout: LayoutRectangle } | null>(null);
-    const [measurements, setMeasurements] = useState<{ structure: string; rects: Record<number, LayoutRectangle>; settled: boolean; revision: number }>({ structure, rects: {}, settled: true, revision: 0 });
-    const recordCell = (page: number, layout: LayoutRectangle) => {
-      if (latestStructure.current !== structure || layout.width <= 0 || layout.height <= 0) return;
-      setMeasurements((previous) => {
-        const same = previous.structure === structure;
-        const rects = same ? previous.rects : {};
-        const old = rects[page];
-        if (old && sameRect(old, layout)) return previous;
-        // A cell that moved under an unchanged window (the row resized) resets the
-        // surface in place; a cell reporting under a shifted window waits for the
-        // re-measurement to settle.
-        return { structure, rects: { ...rects, [page]: layout }, settled: same ? previous.settled : false, revision: previous.revision + (old ? 1 : 0) };
-      });
-    };
-    useLayoutEffect(() => {
-      if (measuredStructure.current === structure) return;
-      measuredStructure.current = structure;
-      const row = rowRef.current;
-      const cells = Object.entries(cellNodes.current).filter((entry): entry is [string, View] => entry[1] != null);
-      let cancelled = false;
-      const fresh: Record<number, LayoutRectangle> = {};
-      let pending = cells.length;
-      const settle = () => {
-        if (cancelled || --pending > 0) return;
-        setMeasurements((previous) => {
-          const held = anchor.current;
-          const after = held ? fresh[held.page] : undefined;
-          const holds = held != null && after != null && sameRect(held.layout, after);
-          const rects = previous.structure === structure ? { ...previous.rects, ...fresh } : fresh;
-          return { structure, rects, settled: true, revision: previous.revision + (holds ? 0 : 1) };
-        });
-      };
-      if (!row || cells.length === 0) { pending = 1; settle(); return; }
-      for (const [page, node] of cells) {
-        node.measureLayout(row, (x, y, width, height) => {
-          if (width > 0 && height > 0) fresh[Number(page)] = { x, y, width, height };
-          settle();
-        }, settle);
-      }
-      return () => { cancelled = true; };
-      // Only a window change re-measures; a page change travels on the rects held.
-    }, [structure]);
-    const resolved = measurements.structure === structure && measurements.settled;
-    const target = resolved ? measurements.rects[current] : undefined;
-    if (target) anchor.current = { page: current, layout: target };
-    const selectionLayout = target ?? (resolved ? undefined : anchor.current?.layout);
+    const cells = useMeasuredTargets<number>(structure, rowRef);
+    const { layout: selectionLayout, resetKey } = cells.target("selected", current);
     const movingSelection = glass && variant === "numbered" && selectionLayout != null;
     const selectedBox = skin.pageBox(tokens, true);
     const selection = movingSelection ? (
-      <MeasuredSelection layout={selectionLayout} enabled={!disabled} resetKey={measurements.revision} testID={testID ? `${testID}-selection-motion` : undefined}>
+      <MeasuredSelection layout={selectionLayout} enabled={!disabled} resetKey={resetKey} testID={testID ? `${testID}-selection-motion` : undefined}>
         <GlassSurface static layer="control" interactive brand={tokens.primary} style={[StyleSheet.absoluteFill, { borderRadius: selectedBox.borderRadius }]} testID={testID ? `${testID}-selection` : undefined} />
       </MeasuredSelection>
     ) : null;
@@ -424,7 +366,7 @@ export function createPagination(skin: PaginationSkin) {
             // The measurement wrapper reports the cell's frame in the row; the page
             // cell's bounded Android ripple is clipped to its corners by the RippleClip
             // inside it (no-op on iOS/web). See src/style/ripple-clip.
-            <View key={`page-${p}`} ref={(node) => { cellNodes.current[p] = node; }} onLayout={(event) => recordCell(p, event.nativeEvent.layout)}>
+            <View key={`page-${p}`} ref={cells.register(p)} onLayout={(event) => cells.record(p, event.nativeEvent.layout)}>
             <RippleClip shape={cornerRadii(pageBox)}>
               <Pressable
                 style={({ pressed }) => [

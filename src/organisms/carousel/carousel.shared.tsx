@@ -1,11 +1,10 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { type ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
   Platform,
   type Insets,
   type LayoutChangeEvent,
-  type LayoutRectangle,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
   type View as RNView,
@@ -28,7 +27,7 @@ import {
   isGlass,
 } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
-import { MeasuredSelection } from "../../style/measured-selection.js";
+import { MeasuredSelection, useMeasuredTargets } from "../../style/measured-selection.js";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 
 // Shared Carousel shell. The structure (a horizontally paged FlatList of slides
@@ -250,41 +249,16 @@ export function createCarousel(skin: CarouselSkin) {
     // active dot size centred on that target. The dot beneath the marker renders
     // as an inactive dot, so the strip never shows two brand marks in flight. A
     // change of the slide set (count or keys) or of the strip's visibility
-    // re-measures and resets the marker in place; a loop from the last slide to
-    // the first travels back along the strip, over nothing but the dots.
+    // re-measures the targets (useMeasuredTargets) and resets the marker in
+    // place; a loop from the last slide to the first travels back along the
+    // strip, over nothing but the dots.
     const dotsShown = dotsVisible && count > 1;
     const dotsStructure = JSON.stringify([dotsShown, items.map((item) => item.key)]);
     const dotsRowRef = useRef<RNView>(null);
-    const dotTargets = useRef(new Map<number, RNView>());
-    const latestDotsStructure = useRef(dotsStructure);
-    latestDotsStructure.current = dotsStructure;
-    const [dotRects, setDotRects] = useState<{ structure: string; rects: Record<number, LayoutRectangle>; revision: number }>({ structure: dotsStructure, rects: {}, revision: 0 });
-    const recordDot = (i: number, layout: LayoutRectangle) => {
-      if (latestDotsStructure.current !== dotsStructure || layout.width <= 0 || layout.height <= 0) return;
-      setDotRects((previous) => {
-        const rects = previous.structure === dotsStructure ? previous.rects : {};
-        const old = rects[i];
-        if (old && old.x === layout.x && old.y === layout.y && old.width === layout.width && old.height === layout.height) return previous;
-        // A target that moved under an unchanged slide set (the strip wrapped or
-        // re-centred) resets the marker in place instead of animating from stale geometry.
-        return { structure: dotsStructure, rects: { ...rects, [i]: layout }, revision: previous.revision + (old ? 1 : 0) };
-      });
-    };
-    const measureDot = (i: number) => {
-      const row = dotsRowRef.current;
-      const target = dotTargets.current.get(i);
-      if (!row || !target) return;
-      target.measureLayout(row, (x, y, w, h) => recordDot(i, { x, y, width: w, height: h }), () => {});
-    };
-    useLayoutEffect(() => {
-      for (const i of dotTargets.current.keys()) measureDot(i);
-      // A slide-set change re-measures every target; a slide change travels on the rects held.
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dotsStructure]);
+    const dotTargets = useMeasuredTargets<number>(dotsStructure, dotsRowRef);
     const dotGlass = isGlass(theme);
-    const measuredDots = dotRects.structure === dotsStructure ? dotRects.rects : {};
     const activeDot = skin.dot(tokens, true);
-    const currentTarget = measuredDots[current];
+    const { layout: currentTarget, resetKey: markerResetKey } = dotTargets.target("marker", current);
     const markerLayout =
       currentTarget && typeof activeDot.width === "number" && typeof activeDot.height === "number"
         ? {
@@ -296,7 +270,7 @@ export function createCarousel(skin: CarouselSkin) {
         : undefined;
     const markerCarries = dotGlass && dotsShown && markerLayout != null;
     const marker = markerCarries ? (
-      <MeasuredSelection layout={markerLayout} enabled resetKey={`${dotsStructure}:${dotRects.revision}`} testID={testID ? `${testID}-dot-motion` : undefined}>
+      <MeasuredSelection layout={markerLayout} enabled resetKey={markerResetKey} testID={testID ? `${testID}-dot-motion` : undefined}>
         <View style={[StyleSheet.absoluteFill, { borderRadius: activeDot.borderRadius, backgroundColor: activeDot.backgroundColor }]} testID={testID ? `${testID}-dot-marker` : undefined} />
       </MeasuredSelection>
     ) : null;
@@ -457,11 +431,8 @@ export function createCarousel(skin: CarouselSkin) {
             {items.map((item, i) => (
               <Pressable
                 key={item.key}
-                ref={(node) => {
-                  if (node) dotTargets.current.set(i, node);
-                  else dotTargets.current.delete(i);
-                }}
-                onLayout={() => measureDot(i)}
+                ref={dotTargets.register(i)}
+                onLayout={() => dotTargets.measure(i)}
                 onPress={() => goTo(i)}
                 android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
                 accessibilityRole="button"

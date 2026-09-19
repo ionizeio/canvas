@@ -1,10 +1,10 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { StyleSheet, type GestureResponderEvent, type LayoutRectangle, type View as RNView, type ScrollView as RNScrollView } from "react-native";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { StyleSheet, type GestureResponderEvent, type View as RNView, type ScrollView as RNScrollView } from "react-native";
 import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useControllableState, useMeasuredWidth, FILL, type StyleProp, type ViewStyle, type LayoutStyle, GlassSurface, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import { LiquidAnchoredOverlay } from "../../style/liquid-anchored-overlay.js";
-import { MeasuredSelection } from "../../style/measured-selection.js";
+import { MeasuredSelection, useMeasuredTargets } from "../../style/measured-selection.js";
 import { ButtonGroup } from "../../atoms/button-group/button-group.js";
 import { type CalendarSkin, type DayState, type Density } from "./calendar.styles.js";
 import { calendarDayAccessibility } from "./calendar.accessibility.js";
@@ -314,46 +314,21 @@ export function createCalendar(skin: CalendarSkin) {
     // month grid or the week strip while the numbers and event dots stay still.
     // Cells are keyed by day number INSIDE one scope: the view, the month, the
     // density, the fluid cell size and the strip's week make up the structure,
-    // and a change of any of them re-measures and resets the surfaces in place
-    // (the 12th of May and the 12th of June are different targets). Travel between
-    // days of one grid follows the geometry's direction, so a diagonal move
-    // stretches along both axes without rotating. The range endpoints are two
-    // independent identities: the start surface travels when the start is picked
-    // again, the end surface appears in place when the range completes and
-    // withdraws when the pick restarts, and a one-day range leaves both on the
-    // same cell. The day view has no cells and no surface.
+    // and a change of any of them re-measures the cells (useMeasuredTargets) and
+    // resets the surfaces in place (the 12th of May and the 12th of June are
+    // different targets). Travel between days of one grid follows the geometry's
+    // direction, so a diagonal move stretches along both axes without rotating.
+    // The range endpoints are two independent identities: the start surface
+    // travels when the start is picked again, the end surface appears in place
+    // when the range completes and withdraws when the pick restarts, and a
+    // one-day range leaves both on the same cell. The day view has no cells and
+    // no surface.
     const structure = JSON.stringify([view, month, density, fluidCell, lead, daysInMonth, view === "week" ? weekStart : 0]);
     const spaceRef = useRef<RNView>(null);
-    const dayNodes = useRef(new Map<number, RNView>());
-    const latestStructure = useRef(structure);
-    latestStructure.current = structure;
-    const [dayRects, setDayRects] = useState<{ structure: string; rects: Record<number, LayoutRectangle>; revision: number }>({ structure, rects: {}, revision: 0 });
-    const recordDay = (dayNum: number, layout: LayoutRectangle) => {
-      if (latestStructure.current !== structure || layout.width <= 0 || layout.height <= 0) return;
-      setDayRects((previous) => {
-        const rects = previous.structure === structure ? previous.rects : {};
-        const old = rects[dayNum];
-        if (old && old.x === layout.x && old.y === layout.y && old.width === layout.width && old.height === layout.height) return previous;
-        // A cell that moved under an unchanged scope (the grid re-flowed) resets
-        // the surfaces in place instead of animating from stale geometry.
-        return { structure, rects: { ...rects, [dayNum]: layout }, revision: previous.revision + (old ? 1 : 0) };
-      });
-    };
     // Cells report against the measurement space (the grid or the strip row): the
     // strip's cells sit inside per-column views, so a cell's own layout event is
     // only a trigger to measure it in the space.
-    const measureDay = (dayNum: number) => {
-      const space = spaceRef.current;
-      const node = dayNodes.current.get(dayNum);
-      if (!space || !node) return;
-      node.measureLayout(space, (x, y, width, height) => recordDay(dayNum, { x, y, width, height }), () => {});
-    };
-    useLayoutEffect(() => {
-      for (const dayNum of dayNodes.current.keys()) measureDay(dayNum);
-      // A scope change re-measures every cell; a selection change travels on the rects held.
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [structure]);
-    const measuredDays = dayRects.structure === structure ? dayRects.rects : {};
+    const dayTargets = useMeasuredTargets<number>(structure, spaceRef);
     const carried = new Set<number>();
     const surfaces: ReactNode[] = [];
     if (dayGlass && view !== "day") {
@@ -361,11 +336,11 @@ export function createCalendar(skin: CalendarSkin) {
         ? [["start", range?.start], ["end", range?.end]]
         : [["selected", selected]];
       for (const [role, dayNum] of roles) {
-        const layout = dayNum == null ? undefined : measuredDays[dayNum];
+        const { layout, resetKey } = dayTargets.target(role, dayNum);
         if (dayNum == null || layout == null) continue;
         carried.add(dayNum);
         surfaces.push(
-          <MeasuredSelection key={role} layout={layout} enabled resetKey={`${structure}:${dayRects.revision}`} testID={testID ? `${testID}-${role}-motion` : undefined}>
+          <MeasuredSelection key={role} layout={layout} enabled resetKey={resetKey} testID={testID ? `${testID}-${role}-motion` : undefined}>
             <GlassSurface static layer="control" interactive brand={tokens.primary} style={[StyleSheet.absoluteFill, { borderRadius: skin.dayCellBase.borderRadius }]} testID={testID ? `${testID}-${role}-surface` : undefined} />
           </MeasuredSelection>,
         );
@@ -505,11 +480,8 @@ export function createCalendar(skin: CalendarSkin) {
         <View
           key={dayNum}
           style={{ position: "relative" }}
-          ref={(node) => {
-            if (node) dayNodes.current.set(dayNum, node);
-            else dayNodes.current.delete(dayNum);
-          }}
-          onLayout={() => measureDay(dayNum)}
+          ref={dayTargets.register(dayNum)}
+          onLayout={() => dayTargets.measure(dayNum)}
         >
           {band}
           <RippleClip shape={cornerRadii(skin.dayCellBase)}>

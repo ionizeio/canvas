@@ -114,6 +114,29 @@ describe("Sidebar moving glass selection", () => {
     } finally { measure.mockRestore(); }
   });
 
+  it("keeps travelling when the accordion closes the section the surface left", async () => {
+    const measure = mockRowMeasurement();
+    // Single-open accordion: selecting Home closes Admin after the press, a
+    // structural change the surface rides through (Home keeps its frame), never
+    // withdrawing or snapping.
+    const { unmount } = render(<ThemeProvider glass><WebSidebar sections={SECTIONS} defaultActive="billing" defaultOpenSections={["b"]} testID="side" /></ThemeProvider>);
+    await act(async () => {});
+    const clock = animationClock();
+    try {
+      measureRow("Home"); measureRow("Reports"); measureRow("Billing");
+      expect(frame()).toEqual(RECTS.Billing);
+      fireEvent.click(screen.getByRole("button", { name: "Home" }));
+      await act(async () => {});
+      expect(screen.queryByRole("button", { name: "Billing" })).toBeNull();
+      expect(frame().y).toBe(RECTS.Billing.y);
+      clock.advance(80);
+      expect(screen.getByTestId("side-selection-motion")).toBeDefined();
+      expect(frame().y).toBeLessThan(RECTS.Billing.y);
+      clock.advance(1600);
+      expect(frame()).toEqual(RECTS.Home);
+    } finally { unmount(); clock.restore(); measure.mockRestore(); }
+  });
+
   it("measures against the scroll body in the shell shape", async () => {
     const measure = mockRowMeasurement();
     try {

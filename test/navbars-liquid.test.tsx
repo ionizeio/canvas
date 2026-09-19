@@ -87,9 +87,11 @@ describe("Navbar moving glass selection", () => {
     expect(screen.queryByTestId("nav-selection-motion")).toBeNull();
     expect(screen.getByRole("button", { name: "Navigation menu" })).toBeDefined();
     layoutElement(screen.getByTestId("nav"), { width: 1200, height: 56 });
-    await act(async () => {});
-    // The expanded row measures afresh: a changed frame resets the surface in
-    // place (no travel across the collapse) instead of animating from stale bounds.
+    // The expanded row measures afresh (the batch answers on the next macrotask
+    // here, with the test DOM's empty frames): a changed frame then places the
+    // surface in place (no travel across the collapse) instead of animating from
+    // stale bounds.
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 0)); });
     measureLink("Home", { x: 12, y: 0, width: 84, height: 36 });
     expect(frame()).toEqual({ x: 12, y: 0, width: 84, height: 36 });
     unmount();

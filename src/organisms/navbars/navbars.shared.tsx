@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef, useState, type ComponentType, type ReactNode }
 import { StyleSheet, type LayoutRectangle } from "react-native";
 import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, useContainerBreakpoint, GlassSurface, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { MeasuredSelection } from "../../style/measured-selection.js";
+import { MeasuredSelection, useMeasuredTargets } from "../../style/measured-selection.js";
 import { selectionSurface, selectionTint } from "../../style/selection-tint.js";
 import { Button } from "../../atoms/button/button.js";
 import { Avatar } from "../../atoms/avatar/avatar.js";
@@ -179,37 +179,17 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
     // never grows into the neighbouring labels), while the labels, roles,
     // aria-current and hit targets stay fixed. Each link wrapper reports its frame
     // in the links row's coordinate space; a structural change (the link set, a
-    // collapse or expansion) re-measures every wrapper and resets the surface in
-    // place instead of travelling. Solid mode keeps the skin's own active fill.
+    // collapse or expansion) re-measures every wrapper (useMeasuredTargets): the
+    // surface withdraws while the bar is collapsed and comes back in place, never
+    // travelling across the collapse. Solid mode keeps the skin's own active fill.
     const structure = JSON.stringify([collapsed, links]);
     const rowRef = useRef<View>(null);
-    const linkNodes = useRef<Array<View | null>>([]);
-    const latestStructure = useRef(structure);
-    latestStructure.current = structure;
-    const [measurements, setMeasurements] = useState<{ structure: string; rects: Record<number, LayoutRectangle>; revision: number }>({ structure, rects: {}, revision: 0 });
-    const record = (index: number, layout: LayoutRectangle) => {
-      if (latestStructure.current !== structure || layout.width <= 0 || layout.height <= 0) return;
-      setMeasurements((previous) => {
-        const rects = previous.structure === structure ? previous.rects : {};
-        const old = rects[index];
-        if (old && old.x === layout.x && old.y === layout.y && old.width === layout.width && old.height === layout.height) return previous;
-        return { structure, rects: { ...rects, [index]: layout }, revision: previous.revision + (old ? 1 : 0) };
-      });
-    };
-    useLayoutEffect(() => {
-      const row = rowRef.current;
-      if (!row) return;
-      linkNodes.current.forEach((node, index) => node?.measureLayout(row, (x, y, width, height) => record(index, { x, y, width, height }), () => {}));
-      // Only structural changes re-measure; a selection change travels on the
-      // rects already held.
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [structure]);
-    const measured = measurements.structure === structure ? measurements.rects : {};
-    const selectionLayout = measured[active];
+    const linkTargets = useMeasuredTargets<number>(structure, rowRef);
+    const { layout: selectionLayout, resetKey } = linkTargets.target("active", active);
     const movingSelection = glass && !collapsed && selectionLayout != null;
     const activeTile = StyleSheet.flatten(skin.linkTile(tokens, true)) as ViewStyle;
     const selection = movingSelection ? (
-      <MeasuredSelection layout={selectionLayout} enabled profile="navigation" resetKey={`${structure}:${measurements.revision}`} testID={testID ? `${testID}-selection-motion` : undefined}>
+      <MeasuredSelection layout={selectionLayout} enabled profile="navigation" resetKey={resetKey} testID={testID ? `${testID}-selection-motion` : undefined}>
         <GlassSurface
           layer="control"
           interactive
@@ -264,7 +244,7 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
                 // cannot clip itself, so the RippleClip inside rounds it to the tile's
                 // own corners (Android only; a transparent passthrough on iOS/web).
                 // Link tiles hug their labels, so there is no outer layout to move.
-                <View key={`${link}-${index}`} ref={(node) => { linkNodes.current[index] = node; }} onLayout={(event) => record(index, event.nativeEvent.layout)}>
+                <View key={`${link}-${index}`} ref={linkTargets.register(index)} onLayout={(event) => linkTargets.record(index, event.nativeEvent.layout)}>
                 <RippleClip shape={cornerRadii(skin.linkTile(tokens, isActive))}>
                   <Pressable
                     onPress={() => {
