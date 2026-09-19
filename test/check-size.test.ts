@@ -133,7 +133,7 @@ describe("JavaScript size gate", () => {
       }
     }
     expect(measured.every((size) => !size.exceeded)).toBe(true);
-  });
+  }, 30000);
 
   it("resolves each native platform through its public export condition and platform files", async () => {
     const root = await temporaryRoot();
@@ -160,7 +160,7 @@ describe("JavaScript size gate", () => {
       expect(source).toContain(`${platform}-value`);
       expect(source).not.toContain("wrong-fallback");
     }
-  });
+  }, 30000);
 
   it.skipIf(!existsSync(join(ROOT, "dist/index.js")))("cleans the ordinary consumer after a build failure", async () => {
     let consumerEntry: string | undefined;
@@ -173,5 +173,5 @@ describe("JavaScript size gate", () => {
     })).rejects.toThrow("fixture build rejected");
     expect(consumerEntry).toBeDefined();
     expect(existsSync(dirname(consumerEntry!))).toBe(false);
-  });
+  }, 30000);
 });

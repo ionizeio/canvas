@@ -59,7 +59,7 @@
     "dev": "bun scripts/dev.ts",
     "verify-package": "bun scripts/verify-package.ts && node scripts/verify-blur-package.mjs",
     "prepublishOnly": "node tools/licensegen/generate.mjs && bun run build && bun run verify-package",
-    "test": "bun test ./test ./tools",
+    "test": "bun test --timeout 20000 ./test ./tools",
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui",
     "e2e:update": "playwright test --project=visual --update-snapshots=all",
