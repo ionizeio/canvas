@@ -267,10 +267,15 @@ export function OverlayProvider({ children, style, separateWindow = false, viewp
         };
         if (!parent) { measureOwn(cb); return; }
         const measureParent = parent.measureVisibleBounds ?? ((done: (bounds: OverlayBounds) => void) => parent.measureOutlet((x, y, width, height) => done({ x, y, width, height })));
-        measureParent((bounds) => {
-          if (viewport) measureOwn((own) => cb(intersectOverlayBounds(own, bounds)));
-          else cb(bounds);
-        });
+        if (!viewport) { measureParent(cb); return; }
+        // The parent's band and this outlet's box are independent reads, issued
+        // together: react-native-web answers each measureInWindow on a macrotask
+        // of its own, so chaining them would cost a task hop per nesting level.
+        let band: OverlayBounds | null = null;
+        let own: OverlayBounds | null = null;
+        const settle = () => { if (band && own) cb(intersectOverlayBounds(own, band)); };
+        measureParent((bounds) => { band = bounds; settle(); });
+        measureOwn((bounds) => { own = bounds; settle(); });
       },
     };
     hostMetadata.set(host, metadata);
@@ -345,8 +350,12 @@ export function Portal({ children }: PortalProps) {
 
   // Publish the CURRENT children on every render (children is a fresh node each
   // render, so the teleported tree is never stale). Cheap: it sets the provider's
-  // registry, not this component's state.
-  useEffect(() => {
+  // registry, not this component's state. A LAYOUT effect, so the outlet's
+  // re-render is flushed in the same commit sequence as the publisher's: the
+  // teleported tree never lags its owner by a scheduler hop, which on a
+  // measure-then-mount opening (an anchored card) was a hop per step, and a
+  // frame could paint the owner's state (its backdrop) before the outlet's.
+  useIsomorphicLayoutEffect(() => {
     // Registry nodes render in a sibling outlet, so preserve the publisher's
     // resolved theme and entrance readiness. Keep the providers stable across
     // updates to retain foreground state. Capture targets intentionally come
@@ -366,10 +375,14 @@ export function Portal({ children }: PortalProps) {
     );
   });
 
-  // Cleanup runs ONLY on true unmount. Kept separate from the publish effect: a
-  // combined effect would tear down and re-add the node every render (flicker,
-  // lost focus).
-  useEffect(() => {
+  // Cleanup runs ONLY on true unmount, or when the host changes. Kept separate
+  // from the publish effect: a combined effect would tear down and re-add the
+  // node every render (flicker, lost focus). A layout effect like the publish,
+  // so that when a provider swaps its host the retire from the old host (this
+  // cleanup, run in the mutation phase) still precedes the publish to the new
+  // one (the layout phase): the two hosts share the provider's registry, and a
+  // retire landing after the publish would empty the outlet.
+  useIsomorphicLayoutEffect(() => {
     if (!host) return;
     return () => host.unmount(id);
   }, [host, id]);

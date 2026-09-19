@@ -29,17 +29,22 @@ const CYCLE_STEP_MS = 700;
 // The liquid popup harness: the real Autocomplete suggestion list and the real
 // Dropdown menu, opened and closed by controlled drivers so a recording or a
 // native runner can trigger an opening, a close, a reopen mid-exit and a burst of
-// cycles without a precise tap on a chevron. Under glass the popup policy grows
-// the material from a droplet at the anchor with the rows scaling in, and shrinks
-// it back on close; solid mode keeps the ordinary entrance, which the material
-// driver switches between. It starts solid and light unless the route says
-// otherwise, so a recording captures the switches on purpose. The readouts carry
-// test ids so a check reads state instead of pixels.
+// cycles without a precise tap on a chevron. A second menu keeps its own state and
+// opens from its own trigger, the consumer path a tap takes in an app: an opening
+// there re-renders the Dropdown alone, so a run can time the hosted overlay's
+// handshake (click to first painted droplet) without the harness's own re-render
+// in front of it. Under glass the popup policy grows the material from a droplet
+// at the anchor with the rows scaling in, and shrinks it back on close; solid mode
+// keeps the ordinary entrance, which the material driver switches between. It
+// starts solid and light unless the route says otherwise, so a recording captures
+// the switches on purpose. The readouts carry test ids so a check reads state
+// instead of pixels.
 export function PopupBody({ glass: initialGlass = false, dark: initialDark = false }: { glass?: boolean; dark?: boolean }) {
   const [glass, setGlass] = useState(initialGlass);
   const [dark, setDark] = useState(initialDark);
   const [listOpen, setListOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [ownOpen, setOwnOpen] = useState(false);
   const [cycles, setCycles] = useState(0);
   const [cycling, setCycling] = useState(false);
   const cycle = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -115,6 +120,8 @@ export function PopupBody({ glass: initialGlass = false, dark: initialDark = fal
             <Autocomplete label="Fruit" options={fruit} open={listOpen} onOpenChange={setListOpen} testID="popup-autocomplete" />
             <Typography testID="popup-menu-readout">Menu: {menuOpen ? "open" : "closed"}</Typography>
             <Dropdown trigger="Fruit actions" items={actions} open={menuOpen} onOpenChange={setMenuOpen} testID="popup-dropdown" />
+            <Typography testID="popup-own-readout">Own trigger: {ownOpen ? "open" : "closed"}</Typography>
+            <Dropdown trigger="Own trigger" items={actions} onOpenChange={setOwnOpen} testID="popup-dropdown-own" />
             {/* Room for the list below the field, so the fitter keeps it under the
                 anchor instead of flipping it above on a short page. */}
             <Card>

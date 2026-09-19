@@ -43,6 +43,7 @@ import { OverlayScrollContext, OverlayScrollView } from "./overlay-scroll.js";
 import { useMaterialTheme } from "./glass-surface/use-material-theme.js";
 import { MaterialMotionContext, PopupInteractionContext, PopupMotionPolicy, StationaryEntranceContext, restingRadius, usePopupMotion, usePopupPresence, type PopupEdge, type PopupSize } from "./popup-motion.js";
 import { PortalActivationContext } from "./portal-activation.js";
+import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect.js";
 
 const OverlaySideContext = createContext<{ side: OverlaySide; centerX?: number; cardWidth?: number }>({ side: "below" });
 /** The actual collision-resolved edge for a card's directional decoration. */
@@ -445,8 +446,12 @@ function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, t
   const [outletWidth, setOutletWidth] = useState<number | null>(null);
   const [outlet, setOutlet] = useState<{ height: number; visibleTop: number; visibleBottom: number } | null>(null);
   const [layoutRevision, setLayoutRevision] = useState(0);
-  const [sizes, setSizes] = useState<{ content: number | null; viewport: number | null; card: number | null; width: number | null }>({ content: null, viewport: null, card: null, width: null });
+  // `cap` is the height cap the card was wearing when it reported `card`; the
+  // readiness gate below compares it with the cap the fit now applies.
+  const [sizes, setSizes] = useState<{ content: number | null; viewport: number | null; card: number | null; width: number | null; cap: number | null }>({ content: null, viewport: null, card: null, width: null, cap: null });
   const lastSide = useRef<OverlaySide>("below");
+  const appliedCap = useRef<number | null>(null);
+  const revealed = useRef(false);
   const report = useMemo(() => ({
     contentHeight: (content: number) => { if (isOpen.current) setSizes((previous) => previous.content === content ? previous : { ...previous, content }); },
     viewportHeight: (viewport: number) => { if (isOpen.current) setSizes((previous) => previous.viewport === viewport ? previous : { ...previous, viewport }); },
@@ -454,7 +459,8 @@ function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, t
   const onCardLayout = useCallback((event: LayoutChangeEvent) => {
     if (!isOpen.current) return;
     const { height: card, width: cardWidth } = event.nativeEvent.layout;
-    setSizes((previous) => previous.card === card && previous.width === cardWidth ? previous : { ...previous, card, width: cardWidth });
+    const cap = appliedCap.current;
+    setSizes((previous) => previous.card === card && previous.width === cardWidth && previous.cap === cap ? previous : { ...previous, card, width: cardWidth, cap });
   }, []);
   // Re-measure on viewport changes (rotation / resize). Width/height feed the
   // effect deps; the values themselves aren't read.
@@ -462,56 +468,91 @@ function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, t
 
   useEffect(() => host.subscribeLayout?.(() => setLayoutRevision((revision) => revision + 1)), [host]);
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     if (!presence.present) {
       setRect(null);
       setOutlet(null);
-      setSizes({ content: null, viewport: null, card: null, width: null });
+      setSizes({ content: null, viewport: null, card: null, width: null, cap: null });
       lastSide.current = "below";
+      revealed.current = false;
       return;
     }
     if (!open) return;
     let cancelled = false;
+    let landed = false;
     let raf = 0;
+    // The trigger's box, the outlet's box and the visible band are three
+    // independent reads, so they are issued together and joined, not chained:
+    // react-native-web answers every measureInWindow on a macrotask of its own,
+    // so a chain cost three task hops before the card could mount, and Fabric
+    // answers synchronously, so from a layout effect the rect lands inside the
+    // same commit as the opening render and the card mounts in that frame.
+    // Measuring in the layout phase is sound on both: the DOM read forces layout
+    // and Fabric's shadow tree is laid out before layout effects run.
+    //
     // Bounded retry: during initial page mount (an overlay that is open on its
     // very first render, e.g. a docs example pinned open) the measure callbacks
     // can silently not complete, or report a zero-size box for a not-yet-laid-out
-    // trigger — and a one-shot leaves the card unmounted forever. Re-attempt on
-    // the next frame until a real measurement lands, capped so a pathological
-    // case (trigger gone while open) cannot spin indefinitely.
-    let attempts = 0;
-    const MAX_ATTEMPTS = 60;
+    // trigger, and a one-shot leaves the card unmounted forever. Re-attempt on a
+    // later frame until a real measurement lands, capped so a pathological case
+    // (trigger gone while open) cannot spin indefinitely. An attempt whose
+    // answers are still in flight is given a few frames before another is
+    // issued: on the web the answers are macrotasks that a busy main thread can
+    // hold past a frame, and re-issuing every frame meanwhile only piles up
+    // duplicate reads. The first landing wins, so a late answer from an earlier
+    // attempt never re-places the card.
+    let frames = 0;
+    let issuedAt = 0;
+    let unusable = false;
+    const MAX_FRAMES = 60;
+    const PATIENCE = 3;
     const attempt = () => {
-      if (cancelled || attempts >= MAX_ATTEMPTS) return;
-      attempts += 1;
-      let landed = false;
+      if (cancelled || landed) return;
+      issuedAt = frames;
+      unusable = false;
       const trigger = triggerRef.current;
       if (trigger) {
-        // measureInWindow on BOTH the trigger and the outlet, then subtract, gives
-        // the trigger's box relative to the outlet — correct for a screen-level
-        // host and a stage-scoped one alike, with scroll offsets cancelling out.
-        trigger.measureInWindow((tx, ty, tw, th) => {
-          host.measureOutlet((ox, oy, ow, oh) => {
-            if (cancelled || (tw === 0 && th === 0)) return;
-            const finish = (visible: { y: number; height: number }) => {
-              if (cancelled) return;
-              landed = true;
-              setRect({ x: tx - ox, y: ty - oy, width: tw, height: th });
-              setOutletWidth(ow);
-              setOutlet({ height: oh, visibleTop: visible.y - oy, visibleBottom: visible.y + visible.height - oy });
-            };
-            if (host.measureVisibleBounds) host.measureVisibleBounds(finish);
-            else finish({ y: oy, height: oh });
-          });
+        let triggerBox: Rect | null = null;
+        let outletBox: Rect | null = null;
+        let band: { y: number; height: number } | null = null;
+        const settle = () => {
+          if (cancelled || landed || !triggerBox || !outletBox) return;
+          // A host without a visible band is bounded by its outlet.
+          const visible = host.measureVisibleBounds ? band : { y: outletBox.y, height: outletBox.height };
+          if (!visible) return;
+          // A zero box is a trigger that has not been laid out yet: try again next frame.
+          if (triggerBox.width === 0 && triggerBox.height === 0) { unusable = true; return; }
+          landed = true;
+          // measureInWindow on BOTH the trigger and the outlet, then subtract, gives
+          // the trigger's box relative to the outlet, correct for a screen-level
+          // host and a stage-scoped one alike, with scroll offsets cancelling out.
+          setRect({ x: triggerBox.x - outletBox.x, y: triggerBox.y - outletBox.y, width: triggerBox.width, height: triggerBox.height });
+          setOutletWidth(outletBox.width);
+          setOutlet({ height: outletBox.height, visibleTop: visible.y - outletBox.y, visibleBottom: visible.y + visible.height - outletBox.y });
+        };
+        trigger.measureInWindow((x, y, w, h) => {
+          triggerBox = { x, y, width: w, height: h };
+          settle();
         });
-      }
-      raf = requestAnimationFrame(() => {
-        if (!cancelled && !landed) attempt();
-      });
+        host.measureOutlet((x, y, w, h) => {
+          outletBox = { x, y, width: w, height: h };
+          settle();
+        });
+        host.measureVisibleBounds?.((bounds) => {
+          band = bounds;
+          settle();
+        });
+      } else unusable = true;
+      if (!landed) raf = requestAnimationFrame(tick);
     };
-    // First attempt on the next frame, so the trigger is laid out before we
-    // measure (measuring in the same tick as open returns zeros).
-    raf = requestAnimationFrame(attempt);
+    const tick = () => {
+      if (cancelled || landed) return;
+      frames += 1;
+      if (frames >= MAX_FRAMES) return;
+      if (unusable || frames - issuedAt >= PATIENCE) attempt();
+      else raf = requestAnimationFrame(tick);
+    };
+    attempt();
     return () => {
       cancelled = true;
       cancelAnimationFrame(raf);
@@ -535,9 +576,9 @@ function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, t
       : cardStyle;
 
   const chrome = sizes.card !== null && sizes.viewport !== null ? Math.max(0, sizes.card - sizes.viewport) : null;
-  const measured = sizes.content !== null && chrome !== null;
-  const skinMaxHeight = flatCardStyle?.maxHeight;
-  const desiredHeight = measured ? Math.min(sizes.content! + chrome!, typeof skinMaxHeight === "number" ? skinMaxHeight : Infinity) : null;
+  const reported = sizes.content !== null && chrome !== null;
+  const skinMaxHeight = typeof flatCardStyle?.maxHeight === "number" ? flatCardStyle.maxHeight : Infinity;
+  const desiredHeight = reported ? Math.min(sizes.content! + chrome!, skinMaxHeight) : null;
   const horizontal = rect ? placeOverlay(rect, { cardWidth: fittedCardWidth, centered, preferSide, alignEnd, rtl, gap, outletWidth }) : null;
   const renderedCardWidth = sizes.width ?? fittedCardWidth;
   const cardLeft = horizontal?.left ?? (horizontal?.right != null && outletWidth != null && renderedCardWidth != null ? outletWidth - horizontal.right - renderedCardWidth : undefined);
@@ -547,10 +588,31 @@ function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, t
   const fit = rect && outlet ? fitOverlayHeight({ triggerTop: rect.y, triggerHeight: rect.height, outletHeight: outlet.height, visibleTop: outlet.visibleTop, visibleBottom: outlet.visibleBottom, desiredHeight, currentSide: lastSide.current, gap, beside: horizontal?.top === rect.y }) : null;
   const fittedSide = fit?.side;
   const anchorGeometry = useMemo(() => ({ side: fittedSide ?? "below", centerX: anchorCenter, cardWidth: renderedCardWidth }), [fittedSide, anchorCenter, renderedCardWidth]);
+  const cap = fit ? Math.min(fit.maxHeight, skinMaxHeight) : null;
+  // The card mounts under the cap of the side it is first fitted to, and its
+  // reports can move the fit to the other side with a different cap (a list
+  // opened near the bottom of the screen flips above), after which the card
+  // lays out again at another height. Readiness waits for that second layout
+  // when the new cap is bound to change the card's height (the card stands
+  // taller than the new cap, or it was standing at the old cap with content
+  // that wants the room the new one gives), so the material never starts
+  // growing toward a size and edge the card is about to leave. A cap change
+  // that cannot move the card reveals at once, so nothing waits for a layout
+  // that will never come. Once revealed, an opening stays ready: a filter that
+  // flips the side mid-interaction must never hide the card again.
+  const cappedBefore = sizes.cap !== null && sizes.card !== null && Math.abs(sizes.card - sizes.cap) <= 0.5;
+  const willShrink = cap !== null && sizes.card !== null && sizes.card > cap + 0.5;
+  const willGrow = cappedBefore && cap !== null && cap > sizes.cap! + 0.5 && desiredHeight !== null && desiredHeight > sizes.cap! + 0.5;
+  const settled = sizes.cap === cap || !(willShrink || willGrow);
+  const measured = reported && (revealed.current || settled);
+  useIsomorphicLayoutEffect(() => {
+    appliedCap.current = cap;
+    if (open && measured) revealed.current = true;
+  });
   useEffect(() => {
     if (open && measured && fittedSide) lastSide.current = fittedSide;
   }, [open, measured, fittedSide]);
-  const cappedStyle = fit ? [fittedCardStyle, { maxHeight: Math.min(fit.maxHeight, typeof skinMaxHeight === "number" ? skinMaxHeight : Infinity) }] : fittedCardStyle;
+  const cappedStyle = fit ? [fittedCardStyle, { maxHeight: cap! }] : fittedCardStyle;
   const positioned = !!(rect && horizontal && fit);
   const finishPresence = presence.finish;
   useEffect(() => {

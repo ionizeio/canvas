@@ -379,6 +379,21 @@ name: Sealed Canvas native candidate measurement
 - assertVisible:
     id: popup-menu-readout
     text: 'Menu: closed'
+# The uncontrolled menu opens from its own trigger; the second tap lands on the
+# hosted dismiss backdrop, the same way the controlled menu's driver closes it.
+- tapOn:
+    id: popup-dropdown-own
+    retryTapIfNoChange: false
+- assertVisible:
+    id: popup-own-readout
+    text: 'Own trigger: open'
+- assertVisible: Duplicate
+- tapOn:
+    id: popup-dropdown-own
+    retryTapIfNoChange: false
+- assertVisible:
+    id: popup-own-readout
+    text: 'Own trigger: closed'
 - openLink: canvas-smoke:///testing/escape-layers?scenario=drawer
 - tapOn: Open drawer
 - assertVisible: Drawer content
