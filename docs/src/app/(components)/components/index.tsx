@@ -1,6 +1,6 @@
 import { View, Text, useTheme, ScrollView } from "@ionizeio/canvas";
 import { COMPONENTS } from "../../../core/data/components";
-import { CONTENT_TOP_INSET } from "../../../shell/topbar";
+import { CONTENT_TOP_INSET, CONTENT_BOTTOM_INSET } from "../../../shell/topbar";
 import { ScreenFrame } from "../../../shell/native-header";
 import { PageNav } from "../../../ui/page-nav";
 import { H1 } from "../../../ui/prose";
@@ -39,7 +39,7 @@ export default function ComponentsIndex() {
       // reads through (matching the shared Page); the per-category tiles stay solid content cards.
       style={{ flex: 1, backgroundColor: surface === "glass" ? "transparent" : tokens.background }}
       contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={{ paddingTop: CONTENT_TOP_INSET + 24, paddingHorizontal: 28, paddingBottom: 80, gap: 28, width: "100%", maxWidth: 1400, alignSelf: "center" }}
+      contentContainerStyle={{ paddingTop: CONTENT_TOP_INSET + 24, paddingHorizontal: 28, paddingBottom: Math.max(80, CONTENT_BOTTOM_INSET + 24), gap: 28, width: "100%", maxWidth: 1400, alignSelf: "center" }}
     >
       <H1>Components</H1>
       <CatSubBar categories={CATEGORY_IDS} total={total} />

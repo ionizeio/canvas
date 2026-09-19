@@ -13,7 +13,7 @@ import { sans, geistMono } from "../ui/fonts";
 import { alpha } from "../ui/color";
 import { useLatestVersion } from "../ui/use-latest-version";
 import { useFluidType } from "../lib/fluid-type";
-import { CONTENT_TOP_INSET } from "./topbar";
+import { CONTENT_TOP_INSET, CONTENT_BOTTOM_INSET } from "./topbar";
 import { ScreenFrame } from "./native-header";
 
 const REPO_URL = "https://github.com/ionizeio/canvas";
@@ -196,7 +196,7 @@ export function Home() {
       // longer needs to reach the very top itself, since the backdrop fills behind the bar
       // from outside the scroller.
       contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={{ paddingTop: CONTENT_TOP_INSET, paddingBottom: insets.bottom + (Platform.OS === "web" ? 0 : 49) }}
+      contentContainerStyle={{ paddingTop: CONTENT_TOP_INSET, paddingBottom: insets.bottom + (Platform.OS === "web" ? CONTENT_BOTTOM_INSET : 49) }}
     >
       {/* ── Hero ── */}
       <View style={{ paddingTop: wide ? 18 : 8, paddingBottom: 56 }}>

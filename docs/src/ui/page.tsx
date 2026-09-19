@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import { Platform } from "react-native";
 import { ScrollView, View, OverlayProvider, useTheme } from "@ionizeio/canvas";
-import { CONTENT_TOP_INSET } from "../shell/topbar";
+import { CONTENT_TOP_INSET, CONTENT_BOTTOM_INSET } from "../shell/topbar";
 import { ScreenFrame } from "../shell/native-header";
 import { H1, Lead } from "./prose";
 import { DocsHead } from "./docs-head";
@@ -37,7 +37,7 @@ export function Page({ children, viewportOverlays = false }: { children: ReactNo
           // sit under the transparent nav bar.
           paddingTop: CONTENT_TOP_INSET + 24,
           paddingHorizontal: 28,
-          paddingBottom: 80,
+          paddingBottom: Math.max(80, CONTENT_BOTTOM_INSET + 24),
           width: "100%",
           maxWidth: 1400,
           alignSelf: "center",

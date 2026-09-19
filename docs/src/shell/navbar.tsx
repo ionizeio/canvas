@@ -95,6 +95,7 @@ function WebNav() {
   const [collapsed, setCollapsed] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
+  const [barHeight, setBarHeight] = useState(0);
 
   // Global cmd-K / ctrl-K to toggle search (web only; document/window are web globals).
   useEffect(() => {
@@ -138,7 +139,7 @@ function WebNav() {
         <View style={{ flex: 1, minWidth: 0 }}>
           {/* The page content is the main landmark at every width. */}
           <View role="main" style={{ flex: 1 }}>
-            <OverlayProvider viewport viewportInsets={{ top: headerHeight }}>
+            <OverlayProvider viewport viewportInsets={{ top: headerHeight, bottom: wide ? 0 : barHeight }}>
               <Slot />
             </OverlayProvider>
           </View>
@@ -157,7 +158,11 @@ function WebNav() {
         </View>
       </Row>
       {!wide ? (
-        <View role="navigation" accessibilityLabel="Primary" aria-label="Primary">
+        // The bar floats over the page like the iOS 26 tab bar: an absolute overlay along
+        // the bottom, touches passing through its margins to the page beneath, which
+        // scrolls under the capsule's glass and keeps its last row clear of it through
+        // CONTENT_BOTTOM_INSET (docs/src/shell/topbar.tsx).
+        <View role="navigation" accessibilityLabel="Primary" aria-label="Primary" onLayout={(event) => setBarHeight(event.nativeEvent.layout.height)} style={{ position: "absolute", left: 0, right: 0, bottom: 0, pointerEvents: "box-none", zIndex: 10 }}>
           <TabBar
             items={[
               ...MOBILE_SECTIONS.map((s) => ({

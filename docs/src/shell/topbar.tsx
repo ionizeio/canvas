@@ -22,6 +22,13 @@ export const TOPBAR_HEIGHT = 56;
 // content adds nothing (0) and lets iOS place it under the collapsing large title.
 export const CONTENT_TOP_INSET = Platform.OS === "web" ? TOPBAR_HEIGHT : 0;
 
+// Bottom inset content scrollers add for the narrow web shell's floating TabBar, which
+// overlays the page the way the iOS 26 tab bar does (content scrolls beneath its glass):
+// the capsule's 58 plus its 8 of float plus breathing room, so a page's last row can
+// scroll clear of it. Applied on web only; the native tab bars inset their own screens.
+// A desktop page gets the same tail, which is only extra space after its last row.
+export const CONTENT_BOTTOM_INSET = Platform.OS === "web" ? 80 : 0;
+
 function titleize(slug: string): string {
   return slug.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
 }
