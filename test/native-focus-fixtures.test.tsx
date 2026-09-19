@@ -112,6 +112,9 @@ test("Tabs fixture reports the actual inactive selection once and keeps disabled
   expect(text("tabs-change-count")).toBe("Changes: 1");
 });
 
+// The sampler runs for four seconds of real time, so this test's budget is the
+// window plus the render and the readout poll: under bun's default five seconds
+// the render had under a second to finish, and on a loaded machine it did not.
 test("Backdrop fixture parks and resumes its sky and reports the sample it took", async () => {
   await act(async () => { render(<ThemeProvider><BackdropBody /></ThemeProvider>); });
   expect(text("backdrop-mode")).toBe("Backdrop running");
@@ -127,7 +130,7 @@ test("Backdrop fixture parks and resumes its sky and reports the sample it took"
   fireEvent.click(screen.getByRole("button", { name: "Sample 4 s" }));
   expect(text("backdrop-trace")).toBe("Trace: sampling for 4 s");
   await waitFor(() => expect(text("backdrop-trace")).toMatch(/^Frames: \d+; p50 [\d.]+ ms; p95 [\d.]+ ms; max [\d.]+ ms; style writes\/s: (\d+|n\/a); css animations: (\d+|n\/a)$/), { timeout: 6000 });
-});
+}, 15000);
 
 test("a fresh disabled Tabs scenario preserves its default selection and zero callbacks", () => {
   const view = render(<ThemeProvider><TabsBody key="enabled" /></ThemeProvider>);
