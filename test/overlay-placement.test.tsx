@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, spyOn } from "bun:test";
-import { act, cleanup, render } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { useEffect } from "react";
 import { Keyboard, Platform, View, type KeyboardEvent } from "react-native";
 import { fitOverlayHeight } from "../src/style/overlay-layout.ts";
@@ -7,6 +7,9 @@ import { OverlayProvider, useOverlayHost, insetOverlayBounds, intersectOverlayBo
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { entranceTranslation } from "../src/style/entrance.tsx";
 import { popoverArrowOffset } from "../src/atoms/popover/popover.styles.tsx";
+import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
+import { webSkin as dropdownSkin } from "../src/atoms/dropdown/dropdown.styles.ts";
+import { hostedEntranceParts, layoutHostedEntrance } from "./entrance-layout.ts";
 
 afterEach(cleanup);
 const base = { triggerTop: 100, triggerHeight: 40, outletHeight: 600, desiredHeight: 200, gap: 4 };
@@ -169,4 +172,87 @@ describe("overlay window boundaries", () => {
       }
     });
   }
+});
+
+// A CARD OPENED ABOVE ITS TRIGGER ON A SCROLLED HOST.
+//
+// The docs Page mounts its overlay host INSIDE the page scroller, so the outlet is
+// the whole page body and scrolls with it: when the page is scrolled, the outlet's
+// top sits above the window and the trigger's outlet-relative y is larger than its
+// window y. A card that flips above its trigger is pinned by a `bottom` inset,
+// resolved against that outlet, and the card must hug that inset: the wrapper's
+// height has to be the card's own. On iOS and Android it was not (2026-09-19): the
+// scrollport inside the card inherited React Native's ScrollView `flexGrow: 1`, and
+// while Yoga measured the wrapper (no height of its own) it turned the card's
+// maxHeight into an at-most constraint that the growing scrollport filled under the
+// legacy stretch errata React Native keeps on. The wrapper came out as tall as the
+// cap, the card laid out content-sized at its top, and a menu whose bottom should
+// have touched its trigger floated up to the top of the visible band. The numbers
+// here are the iPhone 17 Pro reproduction's, rounded: a 1056pt page body scrolled
+// 80pt under a 874pt window, the trigger 612pt down the window.
+const SCROLLED_HOST = { outletHeight: 1056, visibleTop: 80, visibleBottom: 954, triggerTop: 692, triggerHeight: 38, gap: 4 };
+
+describe("a card opened above its trigger on a scrolled host", () => {
+  it("pins the card's bottom edge to the trigger through the scrolled outlet's own height", () => {
+    // Unmeasured, the card sits below and is capped by the band under the trigger.
+    expect(fitOverlayHeight({ ...SCROLLED_HOST, desiredHeight: null })).toEqual({ side: "below", top: 734, maxHeight: 212 });
+    // Measured taller than that band, it flips above: the inset is the outlet's
+    // height minus the card's bottom edge (the trigger's top less the gap), so the
+    // edge lands on the trigger no matter how far the outlet scrolled.
+    const above = fitOverlayHeight({ ...SCROLLED_HOST, desiredHeight: 245 });
+    expect(above).toEqual({ side: "above", bottom: 368, maxHeight: 600 });
+    expect(SCROLLED_HOST.outletHeight - above.bottom!).toBe(SCROLLED_HOST.triggerTop - SCROLLED_HOST.gap);
+    expect(above.top).toBeUndefined();
+  });
+
+  it("anchors the hosted card by that inset alone and keeps its scrollport from growing into the cap", async () => {
+    const measure = spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (this: Element) {
+      // The window band is the root outlet; the page outlet is the content host
+      // inside the scrolled page; the trigger is the Dropdown's own wrapper.
+      const outlet = getComputedStyle(this).zIndex === "1000";
+      const inPage = this.closest('[data-testid="page"]') !== null;
+      const [x, y, width, height] = this.getAttribute("data-testid") === "edge-menu"
+        ? [28, 612, 119, SCROLLED_HOST.triggerHeight]
+        : outlet && inPage ? [28, -80, 346, SCROLLED_HOST.outletHeight]
+        : outlet ? [0, 0, 402, 874]
+        : [0, 0, 0, 0];
+      return { x, y, width, height, top: y, left: x, right: x + width, bottom: y + height, toJSON: () => ({}) };
+    });
+    try {
+      render(
+        <ThemeProvider>
+          <OverlayProvider>
+            <View testID="page">
+              <OverlayProvider style={{ flexGrow: 0, flexShrink: 0, flexBasis: "auto" }}>
+                <Dropdown testID="edge-menu" trigger="Fruit actions" items={[{ label: "Open" }, { label: "Rename" }, { label: "Duplicate" }, { label: "Archive" }, { label: "Delete", destructive: true }]} />
+              </OverlayProvider>
+            </View>
+          </OverlayProvider>
+        </ThemeProvider>,
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Fruit actions" }));
+      // The portal attaches the card concealed, placed below, until it is measured.
+      const menu = await screen.findByRole("menu", { hidden: true });
+      const parts = hostedEntranceParts(menu);
+      const wrapperStyle = () => parts.entrance.getAttribute("style") ?? "";
+      await waitFor(() => expect(wrapperStyle()).toContain("top: 734px"));
+      // 233pt of rows in a 245pt card: taller than the 212pt below the trigger.
+      layoutHostedEntrance(menu, { width: 200, height: 245 }, { width: 200, height: 233 });
+      await waitFor(() => expect(wrapperStyle()).toContain(`bottom: ${SCROLLED_HOST.outletHeight - (SCROLLED_HOST.triggerTop - dropdownSkin.menuGap)}px`));
+      // Nothing but that inset may size or place the wrapper along the page: no top,
+      // and no height of its own, so it is exactly as tall as the card it wraps.
+      expect(wrapperStyle()).not.toMatch(/(^|; )top:/);
+      expect(wrapperStyle()).not.toMatch(/(^|; )(min-|max-)?height:/);
+      // The card takes the band above the trigger as its cap, and its scrollport
+      // may only shrink to that cap, never grow to it: growth is what let Yoga
+      // inflate the wrapper to the cap on iOS and Android and float the card away
+      // from its trigger.
+      expect(parts.card.getAttribute("style")).toContain("max-height: 600px");
+      const scrollport = parts.viewport.getAttribute("style") ?? "";
+      expect(scrollport).toContain("flex-grow: 0");
+      expect(scrollport).toContain("flex-shrink: 1");
+    } finally {
+      measure.mockRestore();
+    }
+  });
 });
