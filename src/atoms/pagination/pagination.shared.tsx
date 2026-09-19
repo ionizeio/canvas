@@ -1,7 +1,7 @@
 import { useRef } from "react";
-import { StyleSheet } from "react-native";
+import { Animated, StyleSheet } from "react-native";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { MeasuredSelection, useMeasuredTargets } from "../../style/measured-selection.js";
+import { MeasuredSelection, SelectionText, useMeasuredTargets } from "../../style/measured-selection.js";
 import { View, Pressable, Text, RippleClip, cornerRadii, useControllableState, type StyleProp, type ViewStyle, type ColorTokens, type LayoutStyle, GlassPane, GlassSurface, paneStyle, isGlass } from "../../style/index.js";
 import * as s from "./pagination.styles.js";
 import { type Size, type PaginationSkin } from "./pagination.styles.js";
@@ -132,12 +132,18 @@ function pageWindow(current: number, total: number): number[] {
 // GlassPane paints the material behind its label (the Pressable keeps its tap,
 // ripple and dim) and the cell drops its fill and hairline (the pane's material and
 // rim carry them). The selected page is BRAND-tinted glass with its label in
-// `primary-foreground`; a hollow cell (the iOS/M3 chevrons and resting pages) stays
-// bare, as it is in solid mode.
+// `primary-foreground`, and that ink follows the travelling puck rather than the
+// press (useMeasuredTargets.ink): the number keeps the resting ink until the puck
+// is under it. A hollow cell (the iOS/M3 chevrons and resting pages) stays bare, as
+// it is in solid mode.
 function surfaced(box: ViewStyle): boolean {
   const bg = box.backgroundColor;
   return (bg != null && bg !== "transparent") || (box.borderWidth ?? 0) > 0;
 }
+
+// The resting tile's veil sits where the pane sits (behind the label), so the pane
+// keeps its own absolute fill inside it.
+const styles = StyleSheet.create({ veil: { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, zIndex: -1 } });
 
 /** Build a Pagination component from a platform skin. */
 export function createPagination(skin: PaginationSkin) {
@@ -225,11 +231,13 @@ export function createPagination(skin: PaginationSkin) {
     const structure = JSON.stringify([variant, size, window]);
     const rowRef = useRef<View>(null);
     const cells = useMeasuredTargets<number>(structure, rowRef);
-    const { layout: selectionLayout, resetKey } = cells.target("selected", current);
+    // The surface exists in glass mode only, so the target is asked for in glass
+    // mode only: in solid mode the cells paint the selection themselves.
+    const { layout: selectionLayout, resetKey, bounds } = cells.target("selected", glass && variant === "numbered" ? current : undefined);
     const movingSelection = glass && variant === "numbered" && selectionLayout != null;
     const selectedBox = skin.pageBox(tokens, true);
     const selection = movingSelection ? (
-      <MeasuredSelection layout={selectionLayout} enabled={!disabled} resetKey={resetKey} testID={testID ? `${testID}-selection-motion` : undefined}>
+      <MeasuredSelection layout={selectionLayout} enabled={!disabled} resetKey={resetKey} bounds={bounds} testID={testID ? `${testID}-selection-motion` : undefined}>
         <GlassSurface static layer="control" interactive brand={tokens.primary} style={[StyleSheet.absoluteFill, { borderRadius: selectedBox.borderRadius }]} testID={testID ? `${testID}-selection` : undefined} />
       </MeasuredSelection>
     ) : null;
@@ -360,8 +368,22 @@ export function createPagination(skin: PaginationSkin) {
           }
           const selected = p === current;
           const pageBox = skin.pageBox(tokens, selected);
-          // The travelling surface carries the selected puck; the cell keeps its label.
-          const pagePuck = glass && surfaced(pageBox) && !(movingSelection && selected);
+          // The travelling surface carries the selected puck, so under it a cell
+          // paints only its RESTING tile (the web's bordered box; the iOS and M3
+          // resting cells are bare), and that tile yields to the surface as the
+          // surface covers it (`uncovered`), instead of vanishing at the press.
+          // Without a surface the selected cell paints the brand puck itself.
+          const ownBrand = glass && selected && !movingSelection;
+          const paneShape = ownBrand ? pageBox : skin.pageBox(tokens, false);
+          const pagePuck = glass && surfaced(paneShape);
+          // The label's ink: the skin's own per state, except that under glass the
+          // selected surface is a brand puck carrying `primary-foreground` (M3's tonal
+          // fill included), and it follows the surface (see the header).
+          const ink = cells.ink(p, selected, {
+            rest: skin.pageLabel(tokens, false).color as string,
+            covered: glass && surfaced(selectedBox) ? tokens["primary-foreground"] : skin.pageLabel(tokens, true).color as string,
+          });
+          const pane = pagePuck ? <GlassPane static layer="control" shape={paneShape} brand={ownBrand ? tokens.primary : undefined} /> : null;
           return (
             // The measurement wrapper reports the cell's frame in the row; the page
             // cell's bounded Android ripple is clipped to its corners by the RippleClip
@@ -386,8 +408,8 @@ export function createPagination(skin: PaginationSkin) {
                 aria-current={selected ? "page" : undefined}
                 aria-disabled={!!disabled}
               >
-                {pagePuck ? <GlassPane static layer="control" shape={pageBox} brand={selected ? tokens.primary : undefined} /> : null}
-                <Text style={[skin.pageLabel(tokens, selected), s.labelSize[size], glass && surfaced(pageBox) && selected ? { color: tokens["primary-foreground"] } : null]}>{p}</Text>
+                {pane && movingSelection ? <Animated.View pointerEvents="none" style={[styles.veil, { opacity: cells.uncovered(p, selected) }]}>{pane}</Animated.View> : pane}
+                <SelectionText style={[skin.pageLabel(tokens, selected), s.labelSize[size], { color: ink }]}>{p}</SelectionText>
               </Pressable>
             </RippleClip>
             </View>

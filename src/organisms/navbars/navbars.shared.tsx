@@ -1,8 +1,8 @@
 import { useLayoutEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
-import { StyleSheet, type LayoutRectangle } from "react-native";
+import { Animated, StyleSheet, type LayoutRectangle } from "react-native";
 import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, useContainerBreakpoint, GlassSurface, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { MeasuredSelection, useMeasuredTargets } from "../../style/measured-selection.js";
+import { MeasuredSelection, SelectionText, useMeasuredTargets } from "../../style/measured-selection.js";
 import { selectionSurface, selectionTint } from "../../style/selection-tint.js";
 import { Button } from "../../atoms/button/button.js";
 import { Avatar } from "../../atoms/avatar/avatar.js";
@@ -132,6 +132,9 @@ export interface NavbarProps {
 }
 
 const TRAVELLING_TILE: ViewStyle = { backgroundColor: "transparent" };
+// A resting tile's fill while the selection travels: painted by a child that yields
+// to the surface (see `uncovered`), behind the label, in the tile's own shape.
+const RESTING_FILL: ViewStyle = { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, zIndex: -1 };
 
 // Surface precedence when more than one is passed: first match wins.
 function surfaceOf(p: NavbarProps): Surface {
@@ -181,15 +184,25 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
     // in the links row's coordinate space; a structural change (the link set, a
     // collapse or expansion) re-measures every wrapper (useMeasuredTargets): the
     // surface withdraws while the bar is collapsed and comes back in place, never
-    // travelling across the collapse. Solid mode keeps the skin's own active fill.
+    // travelling across the collapse. Solid mode keeps the skin's own active fill,
+    // so the target is asked for in glass mode only. The active label's ink follows
+    // the surface (useMeasuredTargets.ink): on a brand capsule it turns to the
+    // capsule's ink as the capsule arrives, and a tint keeps the ordinary foreground.
     const structure = JSON.stringify([collapsed, links]);
     const rowRef = useRef<View>(null);
     const linkTargets = useMeasuredTargets<number>(structure, rowRef);
-    const { layout: selectionLayout, resetKey } = linkTargets.target("active", active);
+    const { layout: selectionLayout, resetKey, bounds } = linkTargets.target("active", glass && !collapsed ? active : undefined);
     const movingSelection = glass && !collapsed && selectionLayout != null;
     const activeTile = StyleSheet.flatten(skin.linkTile(tokens, true)) as ViewStyle;
+    // A skin whose resting links carry a fill of their own (iOS's neutral capsules)
+    // hands that fill to a veiled child while the selection travels, so the fill
+    // dissolves under the arriving surface and re-forms as it leaves, instead of
+    // popping at the press; web's and M3's resting links are bare.
+    const restingTile = StyleSheet.flatten(skin.linkTile(tokens, false)) as ViewStyle;
+    const restingFill = restingTile.backgroundColor;
+    const veiledResting = movingSelection && restingFill != null && restingFill !== "transparent";
     const selection = movingSelection ? (
-      <MeasuredSelection layout={selectionLayout} enabled profile="navigation" resetKey={resetKey} testID={testID ? `${testID}-selection-motion` : undefined}>
+      <MeasuredSelection layout={selectionLayout} enabled profile="navigation" resetKey={resetKey} bounds={bounds} testID={testID ? `${testID}-selection-motion` : undefined}>
         <GlassSurface
           layer="control"
           interactive
@@ -238,6 +251,10 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
             {selection}
             {links.map((link, index) => {
               const isActive = index === active;
+              const ink = linkTargets.ink(index, isActive, {
+                rest: skin.linkLabel(tokens, false).color as string,
+                covered: glass && skin.linkSelection === "tint" ? tokens.foreground : skin.linkLabel(tokens, true).color as string,
+              });
               return (
                 // The measurement wrapper reports the tile's frame in the row; the
                 // bounded Android ripple on a link tile is masked to a rectangle and
@@ -257,13 +274,15 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
                     aria-current={isActive ? "page" : undefined}
                     style={({ pressed }) => [
                       skin.linkTile(tokens, isActive),
-                      // The travelling surface carries the active fill; the tile drops its own.
-                      movingSelection && isActive ? TRAVELLING_TILE : null,
+                      // The travelling surface carries the active fill; the tile drops its own
+                      // (and every resting fill moves to the veiled child below).
+                      movingSelection && (isActive || veiledResting) ? TRAVELLING_TILE : null,
                       skin.focusOutlineReset,
                       skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
                     ]}
                   >
-                    <Text style={[skin.linkLabel(tokens, isActive), movingSelection && isActive && skin.linkSelection === "tint" ? { color: tokens.foreground } : null]}>{link}</Text>
+                    {veiledResting ? <Animated.View pointerEvents="none" style={[RESTING_FILL, { borderRadius: restingTile.borderRadius, backgroundColor: restingFill, opacity: linkTargets.uncovered(index, isActive) }]} /> : null}
+                    <SelectionText style={[skin.linkLabel(tokens, isActive), { color: ink }]}>{link}</SelectionText>
                   </Pressable>
                 </RippleClip>
                 </View>

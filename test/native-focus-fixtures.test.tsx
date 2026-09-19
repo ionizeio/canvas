@@ -7,6 +7,8 @@ import * as JSX from "react/jsx-runtime";
 import ts from "typescript";
 import { Autocomplete } from "../src/atoms/autocomplete/autocomplete.tsx";
 import { Button } from "../src/atoms/button/button.tsx";
+import { Calendar } from "../src/organisms/calendar/calendar.tsx";
+import { Pagination } from "../src/atoms/pagination/pagination.tsx";
 import { Checkbox } from "../src/atoms/checkbox/checkbox.tsx";
 import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
 import { Icon } from "../src/atoms/icon/icon.tsx";
@@ -44,8 +46,8 @@ function fixture<Props extends object>(name: string, exported: string) {
     react: React,
     "react/jsx-runtime": JSX,
     "@nannier-com/canvas": {
-      ActionSheet, AlertDialog, Autocomplete, Backdrop, BackdropHost, Button, Checkbox, Column, Command, DataTable,
-      DescriptionList, Dialog, Drawer, Dropdown, Icon, Listbox, Radio, RadioGroup,
+      ActionSheet, AlertDialog, Autocomplete, Backdrop, BackdropHost, Button, Calendar, Checkbox, Column, Command, DataTable,
+      DescriptionList, Dialog, Drawer, Dropdown, Icon, Listbox, Pagination, Radio, RadioGroup,
       Row, Select, Slider, Switch, TabBar, Tabs, ThemeProvider, Typography, useTheme,
     },
   };

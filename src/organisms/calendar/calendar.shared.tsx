@@ -1,10 +1,10 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { StyleSheet, type GestureResponderEvent, type View as RNView, type ScrollView as RNScrollView } from "react-native";
+import { Animated, StyleSheet, type GestureResponderEvent, type View as RNView, type ScrollView as RNScrollView } from "react-native";
 import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useControllableState, useMeasuredWidth, FILL, type StyleProp, type ViewStyle, type LayoutStyle, GlassSurface, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import { LiquidAnchoredOverlay } from "../../style/liquid-anchored-overlay.js";
-import { MeasuredSelection, useMeasuredTargets } from "../../style/measured-selection.js";
+import { MeasuredSelection, SelectionText, useMeasuredTargets } from "../../style/measured-selection.js";
 import { ButtonGroup } from "../../atoms/button-group/button-group.js";
 import { type CalendarSkin, type DayState, type Density } from "./calendar.styles.js";
 import { calendarDayAccessibility } from "./calendar.accessibility.js";
@@ -322,7 +322,8 @@ export function createCalendar(skin: CalendarSkin) {
     // travels when the start is picked again, the end surface appears in place
     // when the range completes and withdraws when the pick restarts, and a
     // one-day range leaves both on the same cell. The day view has no cells and
-    // no surface.
+    // no surface. The number and the event dot on a travelling puck take the
+    // puck's ink as the puck covers them (useMeasuredTargets.ink), not at the press.
     const structure = JSON.stringify([view, month, density, fluidCell, lead, daysInMonth, view === "week" ? weekStart : 0]);
     const spaceRef = useRef<RNView>(null);
     // Cells report against the measurement space (the grid or the strip row): the
@@ -331,20 +332,21 @@ export function createCalendar(skin: CalendarSkin) {
     const dayTargets = useMeasuredTargets<number>(structure, spaceRef);
     const carried = new Set<number>();
     const surfaces: ReactNode[] = [];
-    if (dayGlass && view !== "day") {
-      const roles: Array<[string, number | undefined]> = props.range
-        ? [["start", range?.start], ["end", range?.end]]
-        : [["selected", selected]];
-      for (const [role, dayNum] of roles) {
-        const { layout, resetKey } = dayTargets.target(role, dayNum);
-        if (dayNum == null || layout == null) continue;
-        carried.add(dayNum);
-        surfaces.push(
-          <MeasuredSelection key={role} layout={layout} enabled resetKey={resetKey} testID={testID ? `${testID}-${role}-motion` : undefined}>
-            <GlassSurface static layer="control" interactive brand={tokens.primary} style={[StyleSheet.absoluteFill, { borderRadius: skin.dayCellBase.borderRadius }]} testID={testID ? `${testID}-${role}-surface` : undefined} />
-          </MeasuredSelection>,
-        );
-      }
+    // The roles are asked for in every mode (with no day outside glass, where the
+    // cells paint the selection themselves), so the ink contract sees them retire.
+    const moving = dayGlass && view !== "day";
+    const roles: Array<[string, number | undefined]> = props.range
+      ? [["start", moving ? range?.start : undefined], ["end", moving ? range?.end : undefined]]
+      : [["selected", moving ? selected : undefined]];
+    for (const [role, dayNum] of roles) {
+      const { layout, resetKey, bounds } = dayTargets.target(role, dayNum);
+      if (dayNum == null || layout == null) continue;
+      carried.add(dayNum);
+      surfaces.push(
+        <MeasuredSelection key={role} layout={layout} enabled resetKey={resetKey} bounds={bounds} testID={testID ? `${testID}-${role}-motion` : undefined}>
+          <GlassSurface static layer="control" interactive brand={tokens.primary} style={[StyleSheet.absoluteFill, { borderRadius: skin.dayCellBase.borderRadius }]} testID={testID ? `${testID}-${role}-surface` : undefined} />
+        </MeasuredSelection>,
+      );
     }
 
     const pick = (dayNum: number) => {
@@ -466,6 +468,16 @@ export function createCalendar(skin: CalendarSkin) {
       // the cell is measured the travelling surface carries the puck instead.
       const selectedPuck = dayGlass && isSelected && !carried.has(dayNum);
       const daySurface = [skin.dayCellBase, skin.dayCellState(tokens, state)];
+      // The number's and the dot's ink per state, following the puck under glass.
+      const resting: DayState = { selected: false, today: isToday };
+      const labelInk = dayTargets.ink(dayNum, isSelected, {
+        rest: skin.dayLabel(tokens, resting).color as string,
+        covered: skin.dayLabel(tokens, { ...resting, selected: true }).color as string,
+      });
+      const dotInk = dayTargets.ink(dayNum, isSelected, {
+        rest: skin.eventDotColor(tokens, resting).backgroundColor as string,
+        covered: skin.eventDotColor(tokens, { ...resting, selected: true }).backgroundColor as string,
+      });
       const rangeNote = r?.isStart ? ", start of range" : r?.isEnd ? ", end of range" : r?.between ? ", in range" : "";
       const band =
         r && r.spans && (r.isStart || r.isEnd || r.between) ? (
@@ -519,8 +531,8 @@ export function createCalendar(skin: CalendarSkin) {
               {...calendarDayAccessibility(isSelected)}
             >
               {selectedPuck ? <GlassPane layer="control" shape={daySurface} brand={tokens.primary} interactive /> : null}
-              <Text style={[m.label, skin.dayLabel(tokens, state)]}>{dayNum}</Text>
-              {count > 0 ? <View style={[skin.eventDot, skin.eventDotColor(tokens, state)]} /> : null}
+              <SelectionText style={[m.label, skin.dayLabel(tokens, state), { color: labelInk }]}>{dayNum}</SelectionText>
+              {count > 0 ? <Animated.View style={[skin.eventDot, skin.eventDotColor(tokens, state), { backgroundColor: dotInk }]} /> : null}
             </Pressable>
           </RippleClip>
         </View>

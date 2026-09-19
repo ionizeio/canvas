@@ -4,7 +4,7 @@ import { useTheme } from "../theme.js";
 import { FrostView, LiquidView, useMaterialCapabilities } from "./material-runtime.ios.js";
 import { resolveMaterial } from "./material-resolution.js";
 import {
-  GlassBox, CLEAR_INTENSITY, clearSurfaceTint, contrastBorder, specularRim, SHEER_FILL_OPACITY, materialFill,
+  GlassBox, CLEAR_INTENSITY, brandOverMaterial, clearSurfaceTint, contrastBorder, specularRim, SHEER_FILL_OPACITY, materialFill,
   surfaceUnderFill, surfaceIntensity, type GlassSurfaceProps,
 } from "./glass-surface.shared.js";
 
@@ -16,10 +16,16 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const translucent = props.sheer && layer === "content";
   const fill = materialFill(style);
   const native = resolved.renderer === "liquid";
+  // Liquid Glass takes a brand as its own tintColor and paints no fill for it; the
+  // frost paints the fill, a brand one OVER the blur (see brandOverMaterial).
+  const fillLayer = <View style={[fill, { backgroundColor: surfaceUnderFill(theme.glass, layer, brand, tint ?? (clear && brand == null ? clearSurfaceTint(theme.tokens, theme.dark) : undefined), theme.tokens.background), opacity: translucent ? SHEER_FILL_OPACITY : 1 }]} />;
+  const paintsFill = !native || brand == null || tint != null;
+  const over = !native && brandOverMaterial(brand, tint);
   const material = solid ? null : <>
-    {!native || brand == null || tint != null ? <View style={[fill, { backgroundColor: surfaceUnderFill(theme.glass, layer, brand, tint ?? (clear && brand == null ? clearSurfaceTint(theme.tokens, theme.dark) : undefined), theme.tokens.background), opacity: translucent ? SHEER_FILL_OPACITY : 1 }]} /> : null}
+    {paintsFill && !over ? fillLayer : null}
     {native && LiquidView ? <LiquidView glassEffectStyle={clear ? "clear" : "regular"} isInteractive={interactive} tintColor={brand} colorScheme={theme.dark ? "dark" : "light"} style={fill} />
       : FrostView ? <FrostView intensity={clear ? CLEAR_INTENSITY : surfaceIntensity(layer, translucent)} tint={theme.dark ? "dark" : "light"} style={fill} /> : null}
+    {paintsFill && over ? fillLayer : null}
     {!native ? <View style={specularRim(style, theme.dark)} /> : null}
   </>;
   return <GlassBox {...props} style={theme.increasedContrast ? [style, contrastBorder(theme.tokens)] : style} solid={solid} material={material} />;

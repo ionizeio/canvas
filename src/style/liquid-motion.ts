@@ -5,12 +5,37 @@ import { HORIZONTAL_LIQUID_DIRECTION, liquidTravel } from "./liquid-motion-geome
 
 export type LiquidMotionProfile = "selection" | "drag" | "toggle" | "navigation";
 
+/**
+ * The animated centre and size of a moving surface. The hook creates its own set
+ * unless the owner hands one in: a selection whose labels follow the surface
+ * (see `useMeasuredTargets`) keeps the bounds outside the surface so the ink
+ * interpolations of its targets read the same nodes the surface paints from.
+ */
+export interface LiquidBounds {
+  centerX: Animated.Value;
+  centerY: Animated.Value;
+  width: Animated.Value;
+  height: Animated.Value;
+}
+
+/** Fresh bounds resting on `layout`, for an owner that shares them with the surface's targets. */
+export function liquidBounds(layout: LayoutRectangle): LiquidBounds {
+  return {
+    centerX: new Animated.Value(layout.x + layout.width / 2),
+    centerY: new Animated.Value(layout.y + layout.height / 2),
+    width: new Animated.Value(layout.width),
+    height: new Animated.Value(layout.height),
+  };
+}
+
 export interface LiquidMotionOptions {
   enabled: boolean;
   pressed?: boolean;
   profile?: LiquidMotionProfile;
   /** Reconcile structural relayouts directly instead of treating them as selection travel. */
   resetKey?: string | number;
+  /** Owner-held bounds the surface animates instead of its own (see LiquidBounds). */
+  bounds?: LiquidBounds;
 }
 
 const PROFILES = {
@@ -21,6 +46,16 @@ const PROFILES = {
   // the label lane, including the cross-axis recoil after the stretch.
   navigation: { stretch: 1.18, squash: 0.96, recoil: 0.94, recoilCross: 1, liftWidth: 1.02, liftHeight: 1 },
 } as const;
+
+// How a target's ink follows the surface, in the target's own size along each axis:
+// the surface COVERS the target's label once its centre is within `covered` of the
+// target's centre (the stretched puck's leading edge is past the glyphs by then) and
+// CLEARS it beyond `clear` (the edge has not reached the glyphs' near side); between
+// the two the ink cross-fades. Tuned on the /testing/tabs harness against 20 fps
+// strips (tools/native/liquid-motion.md, 2026-09-19): the arriving label turns in the
+// same frame the puck reaches it and the departing label is back to its resting ink
+// in the frame the puck leaves it.
+export const INK_FOLLOW = { covered: 0.4, clear: 0.9 } as const;
 
 /** Maximum decorative reach for a horizontal selection inside a clipped scroller. */
 export function liquidMotionInsets(layout: Pick<LayoutRectangle, "width" | "height">, profile: LiquidMotionProfile = "selection") {
@@ -40,19 +75,19 @@ export function liquidMotionInsets(layout: Pick<LayoutRectangle, "width" | "heig
  */
 export function useLiquidMotion(
   layout: LayoutRectangle,
-  { enabled, pressed = false, profile = "selection", resetKey }: LiquidMotionOptions,
+  { enabled, pressed = false, profile = "selection", resetKey, bounds: shared }: LiquidMotionOptions,
 ) {
   const reducedMotion = useReducedMotion();
   const animate = enabled && !reducedMotion;
-  const previous = useRef({ ...layout, time: Date.now(), pressed, resetKey });
+  // `mounted` is false until the first effect: owner-held bounds may still rest
+  // where an earlier surface left them, so the first effect seats them on this
+  // layout instead of trusting them (the hook's own bounds are born there).
+  const previous = useRef({ ...layout, time: Date.now(), pressed, resetKey, mounted: false });
   const reset = previous.current.resetKey !== resetKey;
   const direction = useRef(HORIZONTAL_LIQUID_DIRECTION);
-  const bounds = useRef({
-    centerX: new Animated.Value(layout.x + layout.width / 2),
-    centerY: new Animated.Value(layout.y + layout.height / 2),
-    width: new Animated.Value(layout.width),
-    height: new Animated.Value(layout.height),
-  }).current;
+  const own = useRef<LiquidBounds | null>(null);
+  if (!shared && !own.current) own.current = liquidBounds(layout);
+  const bounds = shared ?? own.current!;
   // Independent axis channels retain their current painted values on direction
   // changes. Replacing a direction coefficient would snap an in-flight shape.
   const deformation = useRef({ horizontal: new Animated.Value(0), vertical: new Animated.Value(0) }).current;
@@ -106,10 +141,10 @@ export function useLiquidMotion(
   useEffect(() => {
     const old = previous.current;
     const now = Date.now();
-    previous.current = { x, y, width, height, time: now, pressed, resetKey };
+    previous.current = { x, y, width, height, time: now, pressed, resetKey, mounted: true };
     const target = { centerX: x + width / 2, centerY: y + height / 2, width, height };
     const keys = Object.keys(bounds) as (keyof typeof bounds)[];
-    if (!animate || old.resetKey !== resetKey) {
+    if (!animate || old.resetKey !== resetKey || !old.mounted) {
       for (const key of keys) bounds[key].setValue(target[key]);
       deformation.horizontal.setValue(0);
       deformation.vertical.setValue(0);
@@ -166,5 +201,7 @@ export function useLiquidMotion(
     }
     return () => { cancelled = true; animations.forEach((animation) => animation.stop()); };
   }, [animate, lift, x, y, pressed, profile, resetKey]);
-  return animate && !reset ? frame : { left: x, top: y, width, height };
+  // The plain frame on a reset and on the mount render: the bounds are seated in
+  // the effect, so the animated frame would paint from stale values until then.
+  return animate && !reset && previous.current.mounted ? frame : { left: x, top: y, width, height };
 }

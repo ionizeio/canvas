@@ -55,12 +55,18 @@ async function renderGlass(ui: React.ReactElement, solid = false) {
 
 // The material's lens layer is the one node carrying a `backdrop-filter`.
 const materialLayers = (root: HTMLElement) => root.querySelectorAll("[style*='backdrop-filter']").length;
-// The under-fill is the lens layer's previous sibling (layer order: under-fill, lens, rim).
-const underFillOf = (root: HTMLElement): string => {
+// The fill is the lens layer's sibling that paints a background: BEFORE the lens for a
+// layer tint (the material's body), AFTER it for a brand colour, which composites over
+// the material so the colour the ink solver saw is the colour that renders (the rim
+// that follows paints a box shadow, never a background).
+const fillLayerOf = (root: HTMLElement): { fill: HTMLElement | null; over: boolean } => {
   const lens = root.querySelector("[style*='backdrop-filter']") as HTMLElement | null;
-  const fill = lens?.previousElementSibling as HTMLElement | null;
-  return fill?.style.backgroundColor ?? "";
+  const before = lens?.previousElementSibling as HTMLElement | null;
+  if (before?.style.backgroundColor) return { fill: before, over: false };
+  const after = lens?.nextElementSibling as HTMLElement | null;
+  return after?.style.backgroundColor ? { fill: after, over: true } : { fill: null, over: false };
 };
+const underFillOf = (root: HTMLElement): string => fillLayerOf(root).fill?.style.backgroundColor ?? "";
 // react-native-web prints every colour as `rgba(r, g, b, a)` with a two-decimal alpha, and
 // a hex alpha() string prints a bare one, so colours compare as numbers, not strings.
 const rgbaOf = (value: string) => {
@@ -168,6 +174,30 @@ describe("brand-tinted glass pucks", () => {
       expect(rgbaOf(underFillOf(current))).toEqual(rgbaOf(brandTint(lightColors.primary, lightColors.background)));
       const other = Array.from(pages.querySelectorAll('[role="button"]')).find((n) => n.getAttribute("aria-current") == null && n.textContent === "1") as HTMLElement;
       expect(rgbaOf(underFillOf(other))).toEqual(rgbaOf(LIGHT["glass-tint-control"]));
+    } finally {
+      restore();
+    }
+  });
+
+  it("paints a brand fill OVER the material and a layer tint beneath it", async () => {
+    // The solver models the puck as the brand composited on the page. Beneath the
+    // material that model failed: the frost's own scheme tint dyed the fill (expo-blur's
+    // dark BlurView halved the brand's brightness on iOS, 2:1 for the ink) and the blur
+    // pulled the dark surroundings into a small puck (3.4:1 on the web Calendar day).
+    // Over the material the brand composites on the blurred page, as solved.
+    const { container, restore } = await renderGlass(
+      <>
+        <Button primary testID="brand">Save</Button>
+        <Button outline testID="plain">More</Button>
+      </>,
+    );
+    try {
+      const brand = fillLayerOf(container.querySelector('[data-testid="brand"]') as HTMLElement);
+      expect(brand.over).toBe(true);
+      expect(rgbaOf(brand.fill!.style.backgroundColor)).toEqual(rgbaOf(brandTint(lightColors.primary, lightColors.background)));
+      const plain = fillLayerOf(container.querySelector('[data-testid="plain"]') as HTMLElement);
+      expect(plain.over).toBe(false);
+      expect(rgbaOf(plain.fill!.style.backgroundColor)).toEqual(rgbaOf(LIGHT["glass-tint-control"]));
     } finally {
       restore();
     }

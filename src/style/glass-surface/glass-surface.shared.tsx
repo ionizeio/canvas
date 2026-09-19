@@ -43,8 +43,10 @@ export interface GlassSurfaceProps {
   /**
    * Tint the material with a colour: the brand-tinted glass of a primary control (a
    * sky-tinted puck). On iOS 26 it is passed to the native Liquid Glass as its
-   * tintColor; on the lens and frost paths it becomes the under-fill (the colour at
-   * a legible alpha), and it wins over the layer tint. `tint` still wins over both.
+   * tintColor; on the lens and frost paths it is the fill (the colour at a legible
+   * alpha, see `brandTint`), painted OVER the material so the solved colour is the
+   * rendered one (see `brandOverMaterial`), and it wins over the layer tint. `tint`
+   * still wins over both.
    */
   brand?: string;
   /** The skin's shape + fill style (radius, padding, border, shadow, and the skin's
@@ -200,6 +202,22 @@ export function clearSurfaceTint(tokens: ColorTokens, dark: boolean): string {
 export const BRAND_TINT_ALPHA = 0.66;
 export const BRAND_TINT_STEP = 0.02;
 export const BRAND_INK_CONTRAST = 4.5;
+
+/**
+ * Whether a surface's fill is a brand colour that must render OVER its material.
+ * `brandTint` solves the ink's contrast for the brand composited on the page, and
+ * the frost and lens are not colour-neutral over a fill painted beneath them: the
+ * frost's scheme tint dyes it (expo-blur's dark BlurView halved the brand's
+ * brightness on iOS, 2:1 for the ink where the solver promised 4.5:1) and a blur
+ * pulls the surroundings into a small puck. Painted over the material, the brand
+ * composites on the blurred page and the solved colour is the rendered colour;
+ * the material still shows through its 34 percent. Layer tints stay beneath: they
+ * are the material's own body, tuned in place. An explicit `tint` keeps its place
+ * too (an opaque knob does not care; a translucent selection tint was tuned there).
+ */
+export function brandOverMaterial(brand: string | undefined, tint: string | undefined): boolean {
+  return brand != null && tint == null;
+}
 
 /** The brand colour as a translucent under-fill whose ink stays legible over `page`. */
 export function brandTint(brand: string, page: string): string {

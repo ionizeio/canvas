@@ -8,7 +8,7 @@ import { NativeCaptureFrost } from "./capture-runtime.js";
 import { useReadyCaptureTarget, useCaptureDemand } from "./capture-target.js";
 import { resolveMaterial } from "./material-resolution.js";
 import {
-  GlassBox, CLEAR_INTENSITY, clearSurfaceTint, contrastBorder, frostMethodProps, specularRim, GlassBlurTargetContext,
+  GlassBox, CLEAR_INTENSITY, brandOverMaterial, clearSurfaceTint, contrastBorder, frostMethodProps, specularRim, GlassBlurTargetContext,
   SHEER_FILL_OPACITY, materialFill, surfaceUnderFill, surfaceIntensity, type GlassSurfaceProps,
 } from "./glass-surface.shared.js";
 
@@ -40,13 +40,16 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const frost = `blur(${intensity * 0.2}px) saturate(${clear ? 115 : 150}%)`;
   const nativeCapture = NativeCaptureFrost !== undefined && target !== null && !solid;
   const tintLayer = <View style={[fill, { backgroundColor: surfaceUnderFill(theme.glass, layer, brand, tint ?? (clear && brand == null ? clearSurfaceTint(theme.tokens, theme.dark) : undefined), theme.tokens.background), opacity: translucent ? SHEER_FILL_OPACITY : 1 }]} />;
+  // The fill paints beneath the material, except over the Android capture frost
+  // (which samples a separate plane) and for a brand colour (see brandOverMaterial).
+  const over = nativeCapture || brandOverMaterial(brand, tint);
   const material = solid ? null : <>
-    {nativeCapture ? null : tintLayer}
+    {over ? null : tintLayer}
     {resolved.renderer === "lens" ? <GlassLensLayer style={fill} clear={clear} />
       : Platform.OS === "web" ? <View style={[fill, { backdropFilter: frost, WebkitBackdropFilter: frost } as ViewStyle]} />
       : NativeCaptureFrost && target ? <NativeCaptureFrost targetRef={target} intensity={intensity} tint={theme.dark ? "dark" : "light"} style={fill} />
       : FrostView ? <FrostView intensity={intensity} tint={theme.dark ? "dark" : "light"} {...frostMethodProps(requiresBlurTarget, target)} style={fill} /> : null}
-    {nativeCapture ? tintLayer : null}
+    {over ? tintLayer : null}
     <View style={specularRim(style, theme.dark)} />
   </>;
   return <GlassBox {...props} style={theme.increasedContrast ? [style, contrastBorder(theme.tokens)] : style} solid={solid} material={material} />;
