@@ -58,21 +58,24 @@ function overrideUserAgent(value: string) {
   };
 }
 
-// The anchored card: walk up from a node inside the floating content to the child
-// of the absolute `top: 100%` anchor wrapper AnchoredOverlay positions. That child
-// is the card's root box: the GlassBox's outer (shadow) box under the material, the
-// plain View when opaque.
-function anchoredCard(container: HTMLElement, contentSelector: string): HTMLElement {
+// The anchored card and its surface: walk up from a node inside the floating content
+// to the absolute `top: 100%` anchor wrapper AnchoredOverlay positions. The wrapper's
+// child on that path is the card's root box (the plain View when opaque, the semantic
+// host beside its material under the liquid policy); the wrapper itself is the
+// SURFACE, whose subtree holds the material, which a liquid popup paints as a sibling
+// of the card so it can travel outside the card's own clip.
+function anchored(container: HTMLElement, contentSelector: string): { card: HTMLElement; surface: HTMLElement } {
   const content = container.querySelector(contentSelector) as HTMLElement | null;
   if (!content) throw new Error(`no ${contentSelector} rendered`);
   let card: HTMLElement = content;
   for (let node = content.parentElement; node; node = node.parentElement) {
     const style = node.getAttribute("style") ?? "";
-    if (style.includes("position: absolute") && style.includes("top: 100%")) return card;
+    if (style.includes("position: absolute") && style.includes("top: 100%")) return { card, surface: node };
     card = node;
   }
   throw new Error(`no anchored card above ${contentSelector}`);
 }
+const anchoredCard = (container: HTMLElement, contentSelector: string): HTMLElement => anchored(container, contentSelector).card;
 
 // The material's two visible signatures inside a surface: the lens/frost layer (a
 // `backdrop-filter`) and the specular rim (an inset box-shadow), counted OUTSIDE the
@@ -139,14 +142,14 @@ describe("option-list menus are dense glass under glass", () => {
       try {
         const { container } = render(<ThemeProvider glass>{menu.render()}</ThemeProvider>);
         await waitFor(() => expect(container.querySelector(menu.content)).not.toBeNull());
-        const card = anchoredCard(container, menu.content);
+        const { card, surface } = anchored(container, menu.content);
         // The skin's fill is stripped from the card (the material repaints it as the
-        // under-fill), and the material's lens and rim ride inside it.
+        // under-fill), and the material's lens and rim ride on the surface beside it.
         expect(rgbaOf(card.style.backgroundColor)).toEqual([0, 0, 0, 0]);
-        expect(materialLayers(card)).toBe(1);
-        expect(specularLayers(card)).toBe(1);
+        expect(materialLayers(surface)).toBe(1);
+        expect(specularLayers(surface)).toBe(1);
         // The under-fill is the DENSE tint, not the functional layer's sheer one.
-        expect(rgbaOf(underFillOf(card))).toEqual(DENSE);
+        expect(rgbaOf(underFillOf(surface))).toEqual(DENSE);
       } finally {
         restore();
       }
@@ -191,9 +194,9 @@ describe("option-list menus are dense glass under glass", () => {
           </ThemeProvider>,
         );
         await waitFor(() => expect(container.querySelector('[role="menu"]')).not.toBeNull());
-        const card = anchoredCard(container, '[role="menu"]');
-        expect(materialLayers(card)).toBe(1);
-        expect(rgbaOf(underFillOf(card))).toEqual(DENSE);
+        const { surface } = anchored(container, '[role="menu"]');
+        expect(materialLayers(surface)).toBe(1);
+        expect(rgbaOf(underFillOf(surface))).toEqual(DENSE);
         unmount();
       }
     } finally {
@@ -213,10 +216,10 @@ describe("option-list menus are dense glass under glass", () => {
         </ThemeProvider>,
       );
       await waitFor(() => expect(container.querySelector('[role="note"]')).not.toBeNull());
-      const card = anchoredCard(container, '[role="note"]');
+      const { card, surface } = anchored(container, '[role="note"]');
       // The plain box keeps the skin's own opaque fill and takes no material.
       expect(rgbaOf(card.style.backgroundColor)).toEqual(rgbaOf(`rgba(255, 255, 255, 1)`));
-      expect(materialLayers(card)).toBe(0);
+      expect(materialLayers(surface)).toBe(0);
     } finally {
       restore();
     }
@@ -237,9 +240,9 @@ describe("SplitButton's overflow menu is dense glass under glass", () => {
       );
       fireEvent.click(container.querySelector('[aria-label="More actions"]') as HTMLElement);
       await waitFor(() => expect(container.querySelector('[role="menu"]')).not.toBeNull());
-      const card = anchoredCard(container, '[role="menu"]');
-      expect(materialLayers(card)).toBe(1);
-      expect(rgbaOf(underFillOf(card))).toEqual(DENSE);
+      const { surface } = anchored(container, '[role="menu"]');
+      expect(materialLayers(surface)).toBe(1);
+      expect(rgbaOf(underFillOf(surface))).toEqual(DENSE);
     } finally {
       restore();
     }
@@ -352,11 +355,11 @@ describe("the functional-layer overlays keep the sheer tint", () => {
         </ThemeProvider>,
       );
       await waitFor(() => expect(container.querySelector('[role="dialog"]')).not.toBeNull());
-      const card = anchoredCard(container, '[role="dialog"]');
+      const { card, surface } = anchored(container, '[role="dialog"]');
       expect(rgbaOf(card.style.backgroundColor)).toEqual([0, 0, 0, 0]);
-      expect(materialLayers(card)).toBe(1);
-      expect(specularLayers(card)).toBe(1);
-      expect(rgbaOf(underFillOf(card))).toEqual(FUNCTIONAL);
+      expect(materialLayers(surface)).toBe(1);
+      expect(specularLayers(surface)).toBe(1);
+      expect(rgbaOf(underFillOf(surface))).toEqual(FUNCTIONAL);
     } finally {
       restore();
     }
@@ -371,10 +374,10 @@ describe("the functional-layer overlays keep the sheer tint", () => {
         </ThemeProvider>,
       );
       await waitFor(() => expect(container.querySelector('[role="listbox"]')).not.toBeNull());
-      const card = anchoredCard(container, '[role="listbox"]');
+      const { card, surface } = anchored(container, '[role="listbox"]');
       expect(rgbaOf(card.style.backgroundColor)).toEqual([0, 0, 0, 0]);
-      expect(materialLayers(card)).toBe(1);
-      expect(rgbaOf(underFillOf(card))).toEqual(FUNCTIONAL);
+      expect(materialLayers(surface)).toBe(1);
+      expect(rgbaOf(underFillOf(surface))).toEqual(FUNCTIONAL);
     } finally {
       restore();
     }

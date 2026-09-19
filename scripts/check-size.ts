@@ -138,14 +138,26 @@ export interface JavaScriptBudget {
 // Pagination now); measured after at 46,652 / 44,809 / 46,738B (~2.3KB gzip), the
 // same motion kernel Tabs, Navbar and Sidebar consumers already carry. The DataTable
 // ceiling moved from 46,080 to 50,176B for that deliberate growth (7% headroom).
+// Button was 9,188 / 7,242 / 9,130B and StackedList 55,221 / 53,633 / 55,299B before
+// the button-to-menu hand-off (src/style/popup-handoff.tsx): every GlassPane reads the
+// hand-off context and, inside a Dropdown-class trigger, hides in place on the pane's
+// travel and reports its shape; every material paints a second under-fill under a
+// hand-off (the trigger's layer cross-fading with its own); and every liquid popup
+// paints its material as a sibling of its card (the hand-off's origin frame, the
+// shared travel value, the label's fades and the sibling host style in
+// anchored-overlay, popup-handoff and popup-motion ride in with StackedList's row
+// menu). Measured after at Button 9,557 / 7,603 / 9,496B (~370B gzip) and StackedList
+// 56,654 / 54,934 / 56,759B (~1.4KB gzip); Input and DataTable grew by the same ~340B
+// for their pucks. The Button ceiling moved from 9,728 to 10,240B and StackedList's
+// from 58,368 to 60,416B for that deliberate growth (7% and 6% headroom).
 // Fixed ceilings leave room for deliberate growth while catching a heavy import.
 // These are independent budgets, not a combined total: shared modules legitimately
 // occur in more than one consumer. Changes require a fresh measurement and rationale.
 export const NAMED_IMPORT_BUDGETS: readonly JavaScriptBudget[] = [
-  { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 9_728, requiredExports: ["Button", "ThemeProvider"] },
+  { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 10_240, requiredExports: ["Button", "ThemeProvider"] },
   { label: "Input + ThemeProvider", entry: "scripts/size-fixtures/input.ts", maxGzip: 39_936, requiredExports: ["Input", "ThemeProvider"] },
   { label: "DataTable + ThemeProvider", entry: "scripts/size-fixtures/data-table.ts", maxGzip: 50_176, requiredExports: ["DataTable", "ThemeProvider"] },
-  { label: "StackedList + ThemeProvider", entry: "scripts/size-fixtures/stacked-list.ts", maxGzip: 58_368, requiredExports: ["StackedList", "ThemeProvider"] },
+  { label: "StackedList + ThemeProvider", entry: "scripts/size-fixtures/stacked-list.ts", maxGzip: 60_416, requiredExports: ["StackedList", "ThemeProvider"] },
 ];
 
 export interface JavaScriptSize extends JavaScriptBudget {

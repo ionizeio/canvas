@@ -2,11 +2,12 @@ import { afterEach, describe, expect, it, spyOn } from "bun:test";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { useRef, type ReactNode } from "react";
 import { AccessibilityInfo, Animated, Platform, Pressable, Text, TextInput, View } from "react-native";
-import { AnchoredOverlay } from "../src/style/anchored-overlay.tsx";
+import { AnchoredOverlay, popupOrigin } from "../src/style/anchored-overlay.tsx";
 import { OverlayProvider, Portal } from "../src/style/portal.tsx";
 import { EscapeLayerProvider, useEscapeLayer } from "../src/style/escape-layer.ts";
 import { useDialogFocus } from "../src/style/use-dialog-focus.ts";
-import { POPUP_PRESENTATION, PopupInteractionContext, PopupMotionPolicy, restingRadius, usePopupMotion, type PopupEdge, type PopupSize } from "../src/style/popup-motion.tsx";
+import { HANDOFF_RETURN, POPUP_PRESENTATION, PopupInteractionContext, PopupMotionPolicy, handoffAcross, restingRadius, usePopupMotion, type PopupEdge, type PopupOrigin, type PopupSize } from "../src/style/popup-motion.tsx";
+import { PopupHandoffContext, PopupHandoffForeground, usePopupHandoff, shapeRadius, type PopupHandoff, type PopupHandoffValue } from "../src/style/popup-handoff.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { animationClock } from "./liquid-motion-clock.ts";
 import { hostedEntranceParts, layoutElement, layoutHostedEntrance } from "./entrance-layout.ts";
@@ -14,16 +15,19 @@ import { hostedEntranceParts, layoutElement, layoutHostedEntrance } from "./entr
 afterEach(cleanup);
 
 const SIZE = { width: 240, height: 160 };
-function Probe({ open, enabled = true, ready = true, size = SIZE, edge = "top", radius, onExited = () => {} }: {
-  open: boolean; enabled?: boolean; ready?: boolean; size?: PopupSize; edge?: PopupEdge; radius?: number; onExited?: () => void;
+function Probe({ open, enabled = true, ready = true, size = SIZE, edge = "top", radius, origin, progress, onExited = () => {} }: {
+  open: boolean; enabled?: boolean; ready?: boolean; size?: PopupSize; edge?: PopupEdge; radius?: number;
+  origin?: PopupOrigin; progress?: Animated.Value; onExited?: () => void;
 }) {
-  const motion = usePopupMotion({ open, enabled, ready, size, edge, anchorX: 30, anchorY: 40, radius, onExited });
+  const motion = usePopupMotion({ open, enabled, ready, size, edge, anchorX: 30, anchorY: 40, radius, origin, progress, onExited });
   return <>
     <Animated.View testID="motion-frame" style={[{ left: 0, top: 0, ...size }, motion.frame]} />
     <Animated.View testID="motion-content" style={[{ opacity: 1 }, motion.content]} />
+    {motion.blend ? <Animated.View testID="motion-blend" style={{ opacity: motion.blend.trigger }} /> : null}
     <Text testID="motion-readable">{motion.readable ? "readable" : "held"}</Text>
   </>;
 }
+const triggerFill = () => parseFloat(screen.getByTestId("motion-blend").style.opacity);
 function frame() {
   const { style } = screen.getByTestId("motion-frame");
   return { left: parseFloat(style.left), top: parseFloat(style.top), width: parseFloat(style.width), height: parseFloat(style.height) };
@@ -209,6 +213,191 @@ describe("popup decorative spring", () => {
       clock.advance(80);
       expect(frame()).toEqual({ left: 0, top: 0, ...SIZE });
     } finally { unmount(); clock.restore(); listener.mockRestore(); }
+  });
+});
+
+// The trigger's side of the hand-off: the material and label opacities the trigger's
+// subtree paints from, read back off the DOM as the owner-held travel value moves.
+function HandoffProbe({ active = true, onChannel }: { active?: boolean; onChannel: (handoff: PopupHandoff, context: PopupHandoffValue | null) => void }) {
+  const { handoff, context } = usePopupHandoff(active);
+  onChannel(handoff, context);
+  return (
+    <PopupHandoffContext.Provider value={context}>
+      {context ? <Animated.View testID="handoff-material" style={{ opacity: context.material }} /> : <Text testID="handoff-none">none</Text>}
+      <PopupHandoffForeground><Text testID="handoff-label">label</Text></PopupHandoffForeground>
+    </PopupHandoffContext.Provider>
+  );
+}
+const materialOpacity = () => parseFloat(screen.getByTestId("handoff-material").style.opacity);
+const labelOpacity = () => parseFloat((screen.getByTestId("handoff-label").parentElement as HTMLElement).style.opacity);
+
+describe("the button-to-menu hand-off", () => {
+  // A pill 100 by 32 whose top sits 40 above the card, its own corner 16.
+  const ORIGIN: PopupOrigin = { x: 20, y: -40, width: 100, height: 32, radius: 16 };
+  const { seed, handoff } = POPUP_PRESENTATION;
+
+  it("is the trigger's pill at progress 0, a pill-wide droplet at the seed, and the card at rest", async () => {
+    const { rerender, unmount } = render(ui(<Probe open={false} radius={16} origin={ORIGIN} />));
+    await act(async () => {});
+    const clock = animationClock();
+    try {
+      // Closed: the material sits exactly on the pill, wearing its corner and the
+      // trigger's own under-fill.
+      expect(frame()).toEqual({ left: 20, top: -40, width: 100, height: 32 });
+      expect(corner()).toBe(16);
+      expect(triggerFill()).toBe(1);
+      rerender(ui(<Probe open radius={16} origin={ORIGIN} />));
+      // The first paint: the pill's width held (the seed is under `widen`), a share
+      // of the way down to the card's height, centred where the pill was, rounder
+      // than either the pill or the card, with the rows scaled from the pill's centre.
+      const droplet = frame();
+      expect(handoffAcross(seed)).toBe(0);
+      expect(droplet.width).toBe(100);
+      expect(droplet.height).toBeCloseTo(32 + (SIZE.height - 32) * seed, 4);
+      expect(droplet.left).toBe(20);
+      const centreY = -24 + (SIZE.height / 2 + 24) * seed;
+      expect(droplet.top).toBeCloseTo(centreY - droplet.height / 2, 4);
+      expect(corner()).toBeCloseTo(Math.max(16, 0.5 * Math.min(100, droplet.height)), 4);
+      expect(content().transform).toContain(`scale(${seed})`);
+      expect(content().transform).toContain(`translateX(${(70 - SIZE.width / 2) * (1 - seed)}px)`);
+      // The under-fill is still mostly the trigger's at the seed and the pane's own once past `tint`.
+      expect(triggerFill()).toBeCloseTo(1 - seed / handoff.tint, 4);
+      expect(readable()).toBe(false);
+      clock.advance(1600);
+      expect(frame()).toEqual({ left: 0, top: 0, ...SIZE });
+      expect(corner()).toBe(16);
+      expect(triggerFill()).toBe(0);
+      expect(content().transform).toMatch(/^translateX\(-?0px\) translateY\(-?0px\) scale\(1\)$/);
+      expect(readable()).toBe(true);
+    } finally { unmount(); clock.restore(); }
+  });
+
+  it("narrows to the pill before its height is gone on close, re-forms the pill exactly, and hands back at 0", async () => {
+    let exits = 0;
+    const progress = new Animated.Value(0);
+    const onExited = () => { exits++; };
+    const { rerender, unmount } = render(ui(<Probe open={false} radius={16} origin={ORIGIN} progress={progress} onExited={onExited} />));
+    await act(async () => {});
+    exits = 0;
+    const clock = animationClock();
+    try {
+      rerender(ui(<Probe open radius={16} origin={ORIGIN} progress={progress} onExited={onExited} />));
+      clock.advance(1600);
+      expect((progress as unknown as { __getValue: () => number }).__getValue()).toBe(1);
+      rerender(ui(<Probe open={false} radius={16} origin={ORIGIN} progress={progress} onExited={onExited} />));
+      // Somewhere in the close the pane is the pill's width (give or take the
+      // contour's squash) while still taller than the pill: the drop hanging under
+      // the button, absorbing upward.
+      let drop = false;
+      let widest = 0;
+      for (let step = 0; step < 60 && exits === 0; step++) {
+        clock.advance(16);
+        const moving = frame();
+        widest = Math.max(widest, moving.width);
+        if (Math.abs(moving.width - 100) < 3 && moving.height > 40) drop = true;
+        // The material never paints its return before the snap: the trigger's own
+        // material is only back at exactly 0.
+        const value = (progress as unknown as { __getValue: () => number }).__getValue();
+        if (value > 0) expect(value).toBeGreaterThan(HANDOFF_RETURN);
+      }
+      expect(widest).toBeGreaterThan(100);
+      expect(drop).toBe(true);
+      expect(exits).toBe(1);
+      expect((progress as unknown as { __getValue: () => number }).__getValue()).toBe(0);
+      // At the hand-back the travel is exactly the pill; the contour's last recoil is
+      // within a tenth of a pixel of it and settles on its own.
+      const handed = frame();
+      expect(Math.abs(handed.width - 100)).toBeLessThan(0.2);
+      expect(Math.abs(handed.height - 32)).toBeLessThan(0.2);
+      clock.advance(1600);
+      expect(frame()).toEqual({ left: 20, top: -40, width: 100, height: 32 });
+      expect(corner()).toBe(16);
+    } finally { unmount(); clock.restore(); }
+  });
+
+  it("gives the trigger a material that is 1 only at rest and a label that returns over it once the pane has left", async () => {
+    let channel: PopupHandoff | null = null;
+    render(<HandoffProbe onChannel={(value) => { channel = value; }} />);
+    await act(async () => {});
+    // The label's return is a timed fade; drive the real engine's timing through the
+    // clock (the test mock would finish it in the same tick as the snap).
+    const clock = animationClock();
+    const engine = require("react-native-web/dist/vendor/react-native/Animated/AnimatedImplementation").default as typeof Animated;
+    const timing = spyOn(Animated, "timing").mockImplementation(engine.timing);
+    try {
+      const travel = channel!.progress;
+      expect(channel!.fromTrigger).toBe(true);
+      expect(materialOpacity()).toBe(1);
+      expect(labelOpacity()).toBe(1);
+      // The pane exists: the material is gone at once, the label over its short
+      // fade (the droplet covers it; the native glass can trail the commit a frame).
+      act(() => travel.setValue(seed));
+      expect(materialOpacity()).toBe(0);
+      expect(labelOpacity()).toBe(1);
+      clock.advance(handoff.label.hideMs + 32);
+      expect(labelOpacity()).toBe(0);
+      act(() => travel.setValue(1));
+      expect(materialOpacity()).toBe(0);
+      expect(labelOpacity()).toBe(0);
+      act(() => travel.setValue(0.3));
+      expect(labelOpacity()).toBe(0);
+      // The tail of a close: anything above the snap keeps both hidden, even 8e-6.
+      act(() => travel.setValue(0.001));
+      expect(materialOpacity()).toBe(0);
+      act(() => travel.setValue(8e-6));
+      expect(materialOpacity()).toBe(0);
+      expect(labelOpacity()).toBe(0);
+      // The snap: the material is back at once, the label starts its fade from 0 and
+      // is back over `returnMs`, never showing over the standing-in pane.
+      act(() => travel.setValue(0));
+      expect(materialOpacity()).toBe(1);
+      expect(labelOpacity()).toBe(0);
+      clock.advance(handoff.label.returnMs / 2);
+      const midway = labelOpacity();
+      expect(midway).toBeGreaterThan(0);
+      expect(midway).toBeLessThan(1);
+      clock.advance(handoff.label.returnMs);
+      expect(labelOpacity()).toBe(1);
+      expect(materialOpacity()).toBe(1);
+      // A reopen while the label is still returning turns it back out.
+      act(() => travel.setValue(0));
+      act(() => travel.setValue(seed));
+      clock.advance(handoff.label.hideMs + 32);
+      expect(labelOpacity()).toBe(0);
+    } finally { timing.mockRestore(); clock.restore(); }
+  });
+
+  it("keeps the largest reported shape as the pill and renders nothing of its own when inactive", () => {
+    let channel: PopupHandoff | null = null;
+    let value: PopupHandoffValue | null = null;
+    const { rerender } = render(<HandoffProbe onChannel={(h, c) => { channel = h; value = c; }} />);
+    // An account capsule reports its avatar's disc as well as the capsule: the capsule wins by area.
+    value!.report({ radius: 12, width: 24, height: 24, layer: "control" });
+    value!.report({ radius: 9999, width: 120, height: 36, layer: "control" });
+    value!.report({ radius: 4, width: 10, height: 10, layer: "content" });
+    expect(channel!.shape.current).toEqual({ radius: 9999, area: 120 * 36, layer: "control" });
+    const before = channel!.progress;
+    rerender(<HandoffProbe active={false} onChannel={(h, c) => { channel = h; value = c; }} />);
+    // The travel value outlives the activation, so a pane that is out keeps driving it.
+    expect(channel!.progress).toBe(before);
+    expect(channel!.fromTrigger).toBe(false);
+    expect(value).toBeNull();
+    expect(screen.getByTestId("handoff-none")).toBeDefined();
+    // Without a hand-off the fader is a fragment: the label's parent carries no opacity.
+    expect((screen.getByTestId("handoff-label").parentElement as HTMLElement).style.opacity).toBe("");
+  });
+
+  it("reads a trigger's corner from its shape and caps the origin at the capsule the box allows", () => {
+    expect(shapeRadius({ borderRadius: 9999 })).toBe(9999);
+    expect(shapeRadius([{ borderRadius: 8 }, { borderTopLeftRadius: 12 }])).toBe(12);
+    expect(shapeRadius({ padding: 4 })).toBe(0);
+    const rect = { x: 100, y: 50, width: 120, height: 36 };
+    expect(popupOrigin(rect, 100, 90, 9999)).toEqual({ x: 0, y: -40, width: 120, height: 36, radius: 18 });
+    expect(popupOrigin(rect, 40, 90, 8)).toEqual({ x: 60, y: -40, width: 120, height: 36, radius: 8 });
+    expect(popupOrigin(rect, 100, 90, undefined)!.radius).toBe(18);
+    expect(popupOrigin(rect, undefined, 90, 8)).toBeUndefined();
+    expect(popupOrigin(rect, 100, undefined, 8)).toBeUndefined();
+    expect(popupOrigin(null, 100, 90, 8)).toBeUndefined();
   });
 });
 

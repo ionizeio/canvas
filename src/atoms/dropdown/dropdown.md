@@ -2,14 +2,22 @@
 
 Floating menus triggered by a button: actions, options, navigation.
 
-In glass mode the menu material grows out of the trigger's edge with a bounded
-contour overshoot, recoils and settles to the measured menu shape, and stays
-visible briefly on close while its rows are already out of reach and out of the
-accessibility tree. The rows, headers and the trigger never move or scale; a
-selection commits and the menu closes logically the moment a row is pressed.
-Reopening during the exit continues from the current material. Reduce Motion
-settles at once; solid mode keeps the ordinary entrance. AvatarMenu and the
-collapsed Navbar menu are built on Dropdown and behave the same.
+In glass mode the menu opens the way the iOS 26 menu behind a toolbar button
+does: the trigger's glass pill hands off to the menu. Its material and label
+vanish as the menu's material forms on the pill's own frame, pill-wide, with the
+rows already inside it small and faint, then grows past its resting size and
+settles while the rows sharpen; the menu stays visible briefly on close while its
+rows are already out of reach and out of the accessibility tree, narrows back to
+the pill's width, absorbs upward into the pill's frame and re-forms the pill,
+whose label fades back as it does. The rows and headers never move on their own;
+the trigger stays where it is and keeps its press and its accessible name and
+state throughout; a selection commits and the menu closes logically the moment a
+row is pressed. Reopening during the exit continues from the current material.
+Reduce Motion settles at once with the pill untouched; solid mode keeps the
+ordinary entrance. AvatarMenu and the collapsed Navbar menu are built on Dropdown
+and hand off the same way (the account capsule and the hamburger); the field
+popups (Select, Autocomplete) never do, because a field must stay visible while it
+is typed in.
 
 ## Usage
 

@@ -35,13 +35,14 @@ import { createContext, type ReactNode, type RefObject, useCallback, useContext,
 import { Animated, View, Pressable, StyleSheet, useWindowDimensions, type LayoutChangeEvent, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
 import { Portal, useOverlayHost, type OverlayHost } from "./portal.js";
 import { GlassSurface } from "./glass-surface/glass-surface.js";
-import { PlainSurface } from "./glass-surface/glass-surface.shared.js";
+import { MaterialOriginContext, PlainSurface, hostStyleBesideMaterial, materialShapeStyle, type GlassLayer } from "./glass-surface/glass-surface.shared.js";
 import { Entrance } from "./entrance.js";
 import { EntranceReadinessContext } from "./entrance-readiness.js";
 import { fitOverlayHeight, type OverlaySide } from "./overlay-layout.js";
 import { OverlayScrollContext, OverlayScrollView } from "./overlay-scroll.js";
 import { useMaterialTheme } from "./glass-surface/use-material-theme.js";
-import { MaterialMotionContext, PopupInteractionContext, PopupMotionPolicy, StationaryEntranceContext, restingRadius, usePopupMotion, usePopupPresence, type PopupEdge, type PopupSize } from "./popup-motion.js";
+import { MaterialMotionContext, PopupInteractionContext, PopupMotionPolicy, StationaryEntranceContext, restingRadius, usePopupMotion, usePopupPresence, type PopupEdge, type PopupOrigin, type PopupSize } from "./popup-motion.js";
+import type { PopupHandoff } from "./popup-handoff.js";
 import { PortalActivationContext } from "./portal-activation.js";
 import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect.js";
 
@@ -148,6 +149,13 @@ export interface AnchoredOverlayProps {
   onCardMount?: () => void;
   /** Internal scroll ownership: children always mount one OverlayScrollView. */
   ownsScroll?: boolean;
+  /**
+   * The button-to-menu hand-off channel of a Dropdown-class owner (popup-handoff.tsx):
+   * the pane's travel value shared with the trigger, and, while `fromTrigger`, the
+   * trigger's measured frame as the material's origin. Hosted only: the inline
+   * fallback has no measured trigger frame and keeps the anchor-edge bloom. Internal.
+   */
+  handoff?: PopupHandoff;
 }
 
 export function AnchoredOverlay({
@@ -170,6 +178,7 @@ export function AnchoredOverlay({
   dense = false,
   onCardMount,
   ownsScroll = false,
+  handoff,
 }: AnchoredOverlayProps) {
   const parentInteractive = useContext(PopupInteractionContext);
   const open = requestedOpen && parentInteractive;
@@ -214,6 +223,7 @@ export function AnchoredOverlay({
       ownsScroll={ownsScroll}
       decoration={decoration}
       liquid={liquid}
+      handoff={handoff}
     >
       {body}
     </HostedAnchoredOverlay>
@@ -228,6 +238,7 @@ function OverlayCard({
   cardStyle,
   opaque,
   dense,
+  beside = false,
   onMount,
   children,
   decoration,
@@ -241,6 +252,12 @@ function OverlayCard({
   cardStyle?: StyleProp<ViewStyle>;
   opaque?: boolean;
   dense?: boolean;
+  /**
+   * The card's material is painted by a sibling (a liquid popup's, see PopupCard):
+   * the host is the plain box with the fill, the border colours and the shadow the
+   * material carries dropped, exactly the host GlassSurface would render.
+   */
+  beside?: boolean;
   onMount?: () => void;
   children: ReactNode;
   decoration?: ReactNode;
@@ -272,6 +289,7 @@ function OverlayCard({
   // theming surface, and no glass is hand-painted anywhere.
   const content = ownsScroll ? children : <OverlayScrollView>{children}</OverlayScrollView>;
   if (opaque) return <PlainSurface style={cardStyle} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape}>{decoration}{content}</PlainSurface>;
+  if (beside) return <PlainSurface style={hostStyleBesideMaterial(cardStyle)} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape}>{decoration}{content}</PlainSurface>;
   return <GlassSurface layer={dense ? "dense" : "functional"} style={cardStyle} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape}>{decoration}{content}</GlassSurface>;
 }
 
@@ -284,14 +302,22 @@ function MaterialReadiness({ readable, children }: { readable: boolean; children
   return <EntranceReadinessContext.Provider value={entranceReady && readable}>{children}</EntranceReadinessContext.Provider>;
 }
 
-/** A stable foreground host with independently animated decorative material. */
+/**
+ * A stable foreground host with independently animated decorative material. Under
+ * glass the material is a SIBLING of the semantic card, filling the card's box in the
+ * same wrapper: the card keeps its own clip for its rows (an iOS menu clips its
+ * pressed rows to its corners) while the material is free to travel outside the box,
+ * which a hand-off needs when it re-forms the trigger's pill above the card.
+ */
 function PopupCard({
-  open, opening, onExited, ready = true, edge = "top", anchorX, anchorY,
+  open, opening, onExited, ready = true, edge = "top", anchorX, anchorY, origin, originLayer, progress,
   wrapperStyle, cardStyle, dense, onMount, ownsScroll, decoration,
   children, onLayout, onAccessibilityEscape,
 }: {
   open: boolean; opening: number; onExited: () => void; ready?: boolean;
   edge?: PopupEdge; anchorX?: number; anchorY?: number;
+  /** The trigger's frame, and the layer of the material it hands off (none for a bare trigger, which keeps the pane's own fill throughout). */
+  origin?: PopupOrigin; originLayer?: GlassLayer; progress?: Animated.Value;
   wrapperStyle?: StyleProp<ViewStyle>; cardStyle?: StyleProp<ViewStyle>;
   dense?: boolean; onMount?: () => void; ownsScroll?: boolean; decoration?: ReactNode;
   children: ReactNode; onLayout?: (event: LayoutChangeEvent) => void;
@@ -306,7 +332,7 @@ function PopupCard({
   // The droplet the pane opens from eases into the card's own corner; a card with
   // per-corner radii keeps them throughout.
   const radius = restingRadius(cardStyle);
-  const motion = usePopupMotion({ open, enabled: liquid, ready: ready && inheritedReady, size, edge, anchorX, anchorY, radius, onExited });
+  const motion = usePopupMotion({ open, enabled: liquid, ready: ready && inheritedReady, size, edge, anchorX, anchorY, radius, origin, progress, onExited });
   const measure = (event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
     if (open && width > 0 && height > 0) setSize(old => old.width === width && old.height === height ? old : { width, height });
@@ -324,28 +350,38 @@ function PopupCard({
     contentHeight: (height: number) => { if (!frozen.current) report.contentHeight(height); },
     viewportHeight: (height: number) => { if (!frozen.current) report.viewportHeight(height); },
   } : null, [report]);
+  // The trigger's layer cross-fades with the pane's own while the pane stands in for
+  // the trigger's pill; a trigger with no material of its own (a bare icon) has no
+  // layer to blend from, so the pane keeps its own fill throughout.
+  const blend = useMemo(() => motion.blend && originLayer ? { layer: originLayer, blend: motion.blend } : null, [motion.blend, originLayer]);
+  const material = liquid ? (
+    <MaterialMotionContext.Provider value={motion.frame}>
+      <MaterialOriginContext.Provider value={blend}>
+        <GlassSurface layer={dense ? "dense" : "functional"} pointerEvents="none" style={[StyleSheet.absoluteFill, materialShapeStyle(cardStyle)]} />
+      </MaterialOriginContext.Provider>
+    </MaterialMotionContext.Provider>
+  ) : null;
   return (
     <StationaryEntranceContext.Provider value={liquid}>
       <PopupInteractionContext.Provider value={open}>
       <Entrance anchor anchorBottom={edge === "bottom"} ready={ready} style={wrapperStyle}>
         <MaterialReadiness readable={motion.readable}>
-          <MaterialMotionContext.Provider value={motion.frame}>
-            <OverlayScrollContext.Provider value={visibleReport}>
-            <OverlayCard
-              cardStyle={[cardStyle, freeze ? { width: size.width, height: size.height } : null]}
-              dense={dense} onMount={onMount} opening={opening} open={open}
-              ownsScroll={ownsScroll} decoration={decoration} onLayout={measure}
-              onAccessibilityEscape={open && motion.readable ? onAccessibilityEscape : undefined}
-            >
-              <Animated.View
-                style={[{ flexShrink: 1, display: freeze ? "none" : "flex", pointerEvents: motion.readable ? "auto" : "none" }, motion.content ?? { opacity: motion.readable ? 1 : 0 }]}
-                accessibilityElementsHidden={!motion.readable}
-                importantForAccessibility={motion.readable ? "auto" : "no-hide-descendants"}
-                aria-hidden={!motion.readable}
-              >{children}</Animated.View>
-            </OverlayCard>
-            </OverlayScrollContext.Provider>
-          </MaterialMotionContext.Provider>
+          {material}
+          <OverlayScrollContext.Provider value={visibleReport}>
+          <OverlayCard
+            cardStyle={[cardStyle, freeze ? { width: size.width, height: size.height } : null]}
+            dense={dense} beside={liquid} onMount={onMount} opening={opening} open={open}
+            ownsScroll={ownsScroll} decoration={decoration} onLayout={measure}
+            onAccessibilityEscape={open && motion.readable ? onAccessibilityEscape : undefined}
+          >
+            <Animated.View
+              style={[{ flexShrink: 1, display: freeze ? "none" : "flex", pointerEvents: motion.readable ? "auto" : "none" }, motion.content ?? { opacity: motion.readable ? 1 : 0 }]}
+              accessibilityElementsHidden={!motion.readable}
+              importantForAccessibility={motion.readable ? "auto" : "no-hide-descendants"}
+              aria-hidden={!motion.readable}
+            >{children}</Animated.View>
+          </OverlayCard>
+          </OverlayScrollContext.Provider>
         </MaterialReadiness>
       </Entrance>
       </PopupInteractionContext.Provider>
@@ -374,6 +410,7 @@ interface HostedProps {
   ownsScroll?: boolean;
   children: ReactNode;
   decoration?: ReactNode;
+  handoff?: PopupHandoff;
 }
 
 interface Rect {
@@ -436,7 +473,19 @@ export function placeOverlay(
   return { left: Math.max(CLAMP_INSET, x), top: below.top };
 }
 
-function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, triggerRef, gap, cardStyle, dismissable, cardWidth, centered, preferSide, alignEnd, rtl, opaque, dense, onCardMount, ownsScroll, children, decoration, liquid = false }: HostedProps) {
+/**
+ * The trigger's frame in the card's coordinates for a hand-off (pure, so the geometry
+ * is testable): the measured trigger rect less the card's outlet position, with the
+ * corner the trigger reported, capped at the capsule the box allows. Undefined until
+ * the card's position is known, or when the popup does not take the trigger as origin.
+ */
+export function popupOrigin(rect: Rect | null, cardLeft: number | undefined, cardTop: number | undefined, radius: number | undefined): PopupOrigin | undefined {
+  if (!rect || cardLeft == null || cardTop == null) return undefined;
+  const capsule = Math.min(rect.width, rect.height) / 2;
+  return { x: rect.x - cardLeft, y: rect.y - cardTop, width: rect.width, height: rect.height, radius: Math.min(radius ?? capsule, capsule) };
+}
+
+function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, triggerRef, gap, cardStyle, dismissable, cardWidth, centered, preferSide, alignEnd, rtl, opaque, dense, onCardMount, ownsScroll, children, decoration, liquid = false, handoff }: HostedProps) {
   const presence = usePopupPresence(open, liquid);
   const isOpen = useRef(open);
   isOpen.current = open;
@@ -623,6 +672,14 @@ function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, t
   const cardTop = fit?.top ?? (outlet && fit?.bottom != null && sizes.card != null ? outlet.height - fit.bottom - sizes.card : undefined);
   const anchorY = rect && cardTop != null ? rect.y + rect.height / 2 - cardTop : undefined;
   const wrapperStyle: ViewStyle = { position: "absolute", left: horizontal?.left, right: horizontal?.right, top: fit?.top, bottom: fit?.bottom };
+  // The hand-off's origin: the trigger's box in the card's coordinates, wearing the
+  // pill's corner (never past a capsule's). Memoised on its numbers so the motion
+  // graph is not rebuilt by a render that moved nothing.
+  const origin = useMemo<PopupOrigin | undefined>(
+    () => popupOrigin(handoff?.fromTrigger ? rect : null, cardLeft, cardTop, handoff?.shape.current?.radius),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [handoff?.fromTrigger, rect?.x, rect?.y, rect?.width, rect?.height, cardLeft, cardTop],
+  );
 
   if (!presence.present) return null;
 
@@ -639,7 +696,7 @@ function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, t
       {rect && horizontal && fit ? (
         <OverlaySideContext.Provider value={anchorGeometry}>
           <OverlayScrollContext.Provider value={report}>
-            {liquid ? <PopupCard open={open} opening={presence.opening} onExited={presence.finish} ready={measured} edge={edge} anchorX={anchorCenter} anchorY={anchorY} wrapperStyle={wrapperStyle} cardStyle={cappedStyle} dense={dense} onMount={onCardMount} ownsScroll={ownsScroll} decoration={decoration} onLayout={onCardLayout} onAccessibilityEscape={onAccessibilityEscape}>{children}</PopupCard> : <Entrance anchor anchorBottom={fit.side === "above"} ready={measured} style={wrapperStyle}>
+            {liquid ? <PopupCard open={open} opening={presence.opening} onExited={presence.finish} ready={measured} edge={edge} anchorX={anchorCenter} anchorY={anchorY} origin={origin} originLayer={origin ? handoff?.shape.current?.layer : undefined} progress={handoff?.progress} wrapperStyle={wrapperStyle} cardStyle={cappedStyle} dense={dense} onMount={onCardMount} ownsScroll={ownsScroll} decoration={decoration} onLayout={onCardLayout} onAccessibilityEscape={onAccessibilityEscape}>{children}</PopupCard> : <Entrance anchor anchorBottom={fit.side === "above"} ready={measured} style={wrapperStyle}>
               <OverlayCard onAccessibilityEscape={onAccessibilityEscape} cardStyle={cappedStyle} opaque={opaque} dense={dense} onMount={onCardMount} ownsScroll={ownsScroll} onLayout={onCardLayout} ready={measured} decoration={decoration}>{children}</OverlayCard>
             </Entrance>}
           </OverlayScrollContext.Provider>

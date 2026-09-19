@@ -9,7 +9,7 @@ import { useReadyCaptureTarget, useCaptureDemand } from "./capture-target.js";
 import { resolveMaterial } from "./material-resolution.js";
 import {
   GlassBox, CLEAR_INTENSITY, brandOverMaterial, clearSurfaceTint, contrastBorder, frostMethodProps, GlassBlurTargetContext,
-  SHEER_FILL_OPACITY, materialFill, surfaceUnderFill, surfaceIntensity, useMaterialFill, useSpecularRim, type GlassSurfaceProps,
+  MaterialOriginContext, SHEER_FILL_OPACITY, materialFill, surfaceUnderFill, surfaceIntensity, useMaterialFill, useSpecularRim, type GlassSurfaceProps,
 } from "./glass-surface.shared.js";
 
 const EMPTY_TARGET = { current: null };
@@ -44,17 +44,22 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const frostFill = materialFill(style);
   const frost = `blur(${intensity * 0.2}px) saturate(${clear ? 115 : 150}%)`;
   const nativeCapture = NativeCaptureFrost !== undefined && target !== null && !solid;
-  const tintLayer = <Animated.View style={[fill, { backgroundColor: surfaceUnderFill(theme.glass, layer, brand, tint ?? (clear && brand == null ? clearSurfaceTint(theme.tokens, theme.dark) : undefined), theme.tokens.background), opacity: translucent ? SHEER_FILL_OPACITY : 1 }]} />;
+  // A hand-off pane paints its trigger's layer as a second under-fill, the two
+  // cross-fading on the popup's travel (a sheer surface is content-only, so the
+  // sheer opacity and the blend never meet).
+  const origin = useContext(MaterialOriginContext);
+  const tintLayer = <Animated.View style={[fill, { backgroundColor: surfaceUnderFill(theme.glass, layer, brand, tint ?? (clear && brand == null ? clearSurfaceTint(theme.tokens, theme.dark) : undefined), theme.tokens.background), opacity: origin ? origin.blend.own : translucent ? SHEER_FILL_OPACITY : 1 }]} />;
+  const originLayer = origin ? <Animated.View style={[fill, { backgroundColor: surfaceUnderFill(theme.glass, origin.layer, undefined, undefined, theme.tokens.background), opacity: origin.blend.trigger }]} /> : null;
   // The fill paints beneath the material, except over the Android capture frost
   // (which samples a separate plane) and for a brand colour (see brandOverMaterial).
   const over = nativeCapture || brandOverMaterial(brand, tint);
   const material = solid ? null : <>
-    {over ? null : tintLayer}
+    {over ? null : <>{tintLayer}{originLayer}</>}
     {resolved.renderer === "lens" ? <GlassLensLayer style={fill} clear={clear} />
       : Platform.OS === "web" ? <Animated.View style={[fill, { backdropFilter: frost, WebkitBackdropFilter: frost } as ViewStyle]} />
       : NativeCaptureFrost && target ? <NativeCaptureFrost targetRef={target} intensity={intensity} tint={theme.dark ? "dark" : "light"} style={frostFill} />
       : FrostView ? <FrostView intensity={intensity} tint={theme.dark ? "dark" : "light"} {...frostMethodProps(requiresBlurTarget, target)} style={frostFill} /> : null}
-    {over ? tintLayer : null}
+    {over ? <>{tintLayer}{originLayer}</> : null}
     <Animated.View style={rim} />
   </>;
   return <GlassBox {...props} style={theme.increasedContrast ? [style, contrastBorder(theme.tokens)] : style} solid={solid} material={material} />;

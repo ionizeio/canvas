@@ -9,7 +9,7 @@
 
 import { createContext, useContext, type ReactNode, type Ref, type RefObject } from "react";
 import { Animated, View, StyleSheet, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
-import { MaterialMotionContext } from "../popup-motion.js";
+import { MaterialMotionContext, type PopupBlend } from "../popup-motion.js";
 import { type ColorTokens, type GlassTokens } from "../tokens.js";
 import { alpha, composite, contrastRatio, inkOn } from "../color.js";
 
@@ -326,6 +326,16 @@ export function splitSurfaceStyle(style: StyleProp<ViewStyle>): Split {
 }
 
 /**
+ * A hand-off pane's second under-fill: the TRIGGER's layer (the bright control puck
+ * its pill was) cross-fading out as the pane's own layer fades in, on the popup's
+ * travel (see POPUP_PRESENTATION.handoff.tint). Provided by PopupCard around the
+ * pane's material while it stands in for the trigger; null everywhere else, where a
+ * surface paints its own layer's fill alone.
+ */
+export interface MaterialOrigin { layer: GlassLayer; blend: PopupBlend }
+export const MaterialOriginContext = createContext<MaterialOrigin | null>(null);
+
+/**
  * The corner radius the material's layers wear this frame: null for the skin's own
  * radii, or the popup motion's radius while a pane opens as a droplet and settles
  * into the skin's corner (see usePopupMotion). GlassBox provides it to its material
@@ -349,30 +359,65 @@ export function useSpecularRim(style: StyleProp<ViewStyle>, dark: boolean): Anim
 // A stable content host for every appearance. Only the decorative material is
 // clipped; content, focus rings, hit targets and the exterior shadow keep the
 // skin's own layout and overflow policy. Switching modes never reparents children.
+// The shadow keys a surface may carry. While a material moves, the shadow moves with
+// it (the host's is erased and the material wrapper wears it); a host whose material
+// is a sibling erases it for good.
+const SHADOW_KEYS = ["shadowColor", "shadowOffset", "shadowOpacity", "shadowRadius", "elevation", "boxShadow"] as const;
+
+/** A style's shadow keys, and the style that erases them. */
+export function splitShadow(style: StyleProp<ViewStyle>): { shadow: ViewStyle; cleared: ViewStyle } {
+  const flat = (StyleSheet.flatten(style) ?? {}) as Record<string, unknown>;
+  const shadow: Record<string, unknown> = {};
+  const cleared: Record<string, unknown> = {};
+  for (const key of SHADOW_KEYS) {
+    if (flat[key] == null) continue;
+    shadow[key] = flat[key];
+    cleared[key] = key === "boxShadow" ? "none" : key === "shadowColor" ? "transparent" : key === "shadowOffset" ? { width: 0, height: 0 } : 0;
+  }
+  return { shadow: shadow as ViewStyle, cleared: cleared as ViewStyle };
+}
+
+/** The fill and border colours of a style turned transparent: what the material supplies instead. */
+function clearedPaint(style: StyleProp<ViewStyle>): ViewStyle {
+  const flat = (StyleSheet.flatten(style) ?? {}) as Record<string, unknown>;
+  const clear: Record<string, unknown> = { backgroundColor: "transparent", borderColor: "transparent" };
+  for (const key of Object.keys(flat)) {
+    if (key.startsWith("border") && key.endsWith("Color")) clear[key] = "transparent";
+  }
+  return clear as ViewStyle;
+}
+
+/**
+ * The host style of a box whose material a SIBLING paints (a liquid popup's card):
+ * the skin's style with its fill, border colours and shadow handed to the material,
+ * byte for byte what GlassBox gives its own host while its material moves.
+ */
+export function hostStyleBesideMaterial(style: StyleProp<ViewStyle>): StyleProp<ViewStyle> {
+  return [style, clearedPaint(style), splitShadow(style).cleared];
+}
+
+/** The part of a skin's style a sibling material wears: its corners and its shadow. */
+export function materialShapeStyle(style: StyleProp<ViewStyle>): ViewStyle {
+  const flat = (StyleSheet.flatten(style) ?? {}) as Record<string, unknown>;
+  const shape: Record<string, unknown> = {};
+  for (const key of [...RADIUS_KEYS, "borderCurve", ...SHADOW_KEYS]) {
+    if (flat[key] != null) shape[key] = flat[key];
+  }
+  return shape as ViewStyle;
+}
+
 export function GlassBox({
   style, children, pointerEvents, testID, role, onLayout, onAccessibilityEscape, hostRef,
   material, solid = false,
 }: GlassSurfaceProps & { material: ReactNode; solid?: boolean }) {
   const motion = useContext(MaterialMotionContext);
   const shape = motion?.borderRadius ?? null;
-  const flat = (StyleSheet.flatten(style) ?? {}) as Record<string, unknown>;
-  const clear: Record<string, unknown> = { backgroundColor: "transparent", borderColor: "transparent" };
-  const movingShadow: Record<string, unknown> = {};
-  const clearedShadow: Record<string, unknown> = {};
-  if (motion && !solid) {
-    for (const key of ["shadowColor", "shadowOffset", "shadowOpacity", "shadowRadius", "elevation", "boxShadow"]) {
-      if (flat[key] == null) continue;
-      movingShadow[key] = flat[key];
-      clearedShadow[key] = key === "boxShadow" ? "none" : key === "shadowColor" ? "transparent" : key === "shadowOffset" ? { width: 0, height: 0 } : 0;
-    }
-  }
-  for (const key of Object.keys(flat)) {
-    if (key.startsWith("border") && key.endsWith("Color")) clear[key] = "transparent";
-  }
+  const clear = clearedPaint(style);
+  const { shadow: movingShadow, cleared: clearedShadow } = motion && !solid ? splitShadow(style) : { shadow: {}, cleared: {} };
   return (
-    <View ref={hostRef} style={[style, solid ? null : clear as ViewStyle, clearedShadow as ViewStyle, pointerEvents ? { pointerEvents } : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={onAccessibilityEscape ? false : undefined}>
+    <View ref={hostRef} style={[style, solid ? null : clear, clearedShadow, pointerEvents ? { pointerEvents } : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={onAccessibilityEscape ? false : undefined}>
       {material ? (
-        <Animated.View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[materialFill(style), { zIndex: -1 }, movingShadow as ViewStyle, motion]}>
+        <Animated.View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[materialFill(style), { zIndex: -1 }, movingShadow, motion]}>
           {/* The clip shapes the layers. While a popup opens it wears the droplet's
               radius and hands it down, so the layers draw the edge the clip cuts. */}
           <Animated.View style={[materialFill(style), { overflow: "hidden" }, shape == null ? null : { borderRadius: shape }]}>

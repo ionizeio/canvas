@@ -5,6 +5,7 @@ import { AccessibilityInfo } from "react-native";
 import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
 import { Select } from "../src/atoms/select/select.tsx";
 import { AvatarMenu } from "../src/atoms/avatar/avatar.tsx";
+import { Navbar } from "../src/organisms/navbars/navbars.tsx";
 import { OverlayProvider } from "../src/style/portal.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { animationClock } from "./liquid-motion-clock.ts";
@@ -122,6 +123,151 @@ describe("Dropdown on the liquid popup policy", () => {
       view.unmount();
     } finally { measureAgain.mockRestore(); }
   });
+});
+
+// The button-to-menu hand-off (popup-handoff.tsx): under glass a Dropdown-class
+// trigger's pill and label yield to the menu's material, which is the pill at
+// progress 0, and are back once the pane has re-formed the pill. The trigger's
+// material is hidden in place, never at a partial opacity, and never unmounted.
+// The card's sizes go through `layoutChain` (every layout boundary above the rows),
+// so the checks do not depend on catching the entrance before RNW's own mount
+// measurement lands, which a loaded machine reorders.
+const inlineOpacity = (node: Element | null): string => (node as HTMLElement | null)?.style.opacity ?? "";
+// The fader: the nearest ancestor of a trigger carrying an inline opacity.
+const faderOf = (trigger: Element): HTMLElement => {
+  for (let node = trigger.parentElement; node; node = node.parentElement) {
+    if (node.style.opacity !== "") return node;
+  }
+  throw new Error("the trigger has no hand-off fader above it");
+};
+// A GlassPane under a hand-off sits in a wrapper whose opacity is the material curve.
+const paneOf = (trigger: Element): HTMLElement => trigger.firstElementChild as HTMLElement;
+const layoutRoot = (root: HTMLElement, size: { width: number; height: number }) => {
+  const node = Array.from(root.querySelectorAll("*")).find((n) => typeof (n as Element & { __reactLayoutHandler?: unknown }).__reactLayoutHandler === "function");
+  if (!node) throw new Error("no layout host in the fixture");
+  layoutElement(node, size);
+};
+const openMenu = async (trigger: Element, clock: ReturnType<typeof animationClock>, role = "menu") => {
+  fireEvent.click(trigger);
+  clock.advance(32);
+  const content = await screen.findByRole(role, { hidden: true }, { timeout: 8000 });
+  layoutChain(content, SIZE);
+  clock.advance(32);
+  return content;
+};
+// These cases step the springs frame by frame through act(); on a loaded machine
+// that is slower than bun's default per-test budget.
+const HANDOFF_TIMEOUT = 60000;
+
+describe("the button-to-menu hand-off", () => {
+  it("Dropdown: the pill and its label vanish as the pane opens and are back, material first, once it has re-formed the pill", async () => {
+    const measure = bounds();
+    const view = render(glass(<Dropdown trigger="Account" items={[{ label: "Profile" }]} />));
+    await act(async () => {});
+    const clock = animationClock();
+    try {
+      const button = screen.getByRole("button", { name: "Account" });
+      const pane = paneOf(button);
+      const fader = faderOf(button);
+      expect(inlineOpacity(pane)).toBe("1");
+      expect(inlineOpacity(fader)).toBe("1");
+      const menu = await openMenu(button, clock);
+      // The pane's material has the trigger's frame: the pill is hidden in place
+      // (still in the tree) and the label is gone (the test engine finishes its
+      // short fade in the seed's own tick).
+      expect(pane.isConnected).toBe(true);
+      expect(inlineOpacity(pane)).toBe("0");
+      expect(inlineOpacity(fader)).toBe("0");
+      clock.advance(1600);
+      expect(heldBack(menu)).toBe(false);
+      expect(inlineOpacity(pane)).toBe("0");
+      fireEvent.click(within(menu).getByRole("menuitem", { name: "Profile" }));
+      // The close: the pane narrows back to the pill with both hidden; the material
+      // is back only at the end, never in between, and the label never shows while
+      // the material is hidden (it would sit under the standing-in pane's glass).
+      let hidden = 0;
+      for (let step = 0; step < 120 && inlineOpacity(pane) !== "1"; step++) {
+        clock.advance(16);
+        const material = parseFloat(inlineOpacity(pane));
+        expect(material === 0 || material === 1).toBe(true);
+        if (material === 0) { hidden++; expect(parseFloat(inlineOpacity(fader))).toBe(0); }
+      }
+      expect(hidden).toBeGreaterThan(3);
+      expect(inlineOpacity(pane)).toBe("1");
+      // The test engine finishes the label's timed return in the snap's own tick.
+      expect(inlineOpacity(fader)).toBe("1");
+      expect(pane.isConnected).toBe(true);
+    } finally { view.unmount(); clock.restore(); measure.mockRestore(); }
+  }, HANDOFF_TIMEOUT);
+
+  it("AvatarMenu and the collapsed Navbar menu inherit it; Select's field never hands off", async () => {
+    const measure = bounds();
+    const clock = animationClock();
+    try {
+      const account = render(glass(<AvatarMenu name="Rachel Chen" email="rachel@example.com" items={[{ label: "Profile" }]} />));
+      await act(async () => {});
+      const capsule = screen.getByRole("button", { name: "Rachel Chen, rachel@example.com" });
+      // The fader wraps the whole custom trigger; the capsule's pane and the
+      // avatar's own disc are the wrappers at opacity 1 inside it, and both hide.
+      const fader = capsule.firstElementChild as HTMLElement;
+      expect(inlineOpacity(fader)).toBe("1");
+      const panes = Array.from(fader.querySelectorAll("*")).filter((n) => (n as HTMLElement).style.opacity === "1" && (n as HTMLElement).style.zIndex === "-1");
+      expect(panes.length).toBe(2);
+      await openMenu(capsule, clock);
+      expect(inlineOpacity(fader)).toBe("0");
+      for (const pane of panes) expect(inlineOpacity(pane)).toBe("0");
+      account.unmount();
+
+      const bar = render(glass(<Navbar brand="Canvas" links={["Home", "Docs"]} />));
+      await act(async () => {});
+      // Collapse the bar: its container breakpoint reads its own width.
+      layoutRoot(bar.container, { width: 320, height: 56 });
+      await act(async () => {});
+      const hamburger = await screen.findByRole("button", { name: "Navigation menu" });
+      const iconFader = hamburger.firstElementChild as HTMLElement;
+      expect(inlineOpacity(iconFader)).toBe("1");
+      await openMenu(hamburger, clock);
+      expect(inlineOpacity(iconFader)).toBe("0");
+      bar.unmount();
+
+      const select = render(glass(<Select label="Region" options={["Americas", "Europe"]} />));
+      await act(async () => {});
+      const field = screen.getByRole("button", { name: "Region" });
+      expect(() => faderOf(field)).toThrow();
+      await openMenu(field, clock, "listbox");
+      // The field keeps its material and its label: nothing in it is at opacity 0.
+      const hidden = Array.from(select.container.querySelectorAll("*")).filter((n) => (n as HTMLElement).style.opacity === "0");
+      expect(hidden).toEqual([]);
+      select.unmount();
+    } finally { clock.restore(); measure.mockRestore(); }
+  }, HANDOFF_TIMEOUT);
+
+  it("does not run under Reduce Motion or in solid mode: the trigger's tree is the plain one", async () => {
+    const measure = bounds();
+    const reduced = spyOn(AccessibilityInfo, "isReduceMotionEnabled").mockResolvedValue(true);
+    try {
+      const view = render(glass(<Dropdown trigger="Account" items={[{ label: "Profile" }]} />));
+      await act(async () => {});
+      const button = screen.getByRole("button", { name: "Account" });
+      expect(() => faderOf(button)).toThrow();
+      // The pane is the plain GlassSurface host, not a hand-off wrapper.
+      expect(inlineOpacity(paneOf(button))).toBe("");
+      fireEvent.click(button);
+      const menu = await screen.findByRole("menu", { hidden: true }, { timeout: 8000 });
+      layoutChain(menu, SIZE);
+      await act(async () => {});
+      expect(inlineOpacity(paneOf(button))).toBe("");
+      view.unmount();
+    } finally { reduced.mockRestore(); measure.mockRestore(); }
+    const measureAgain = bounds();
+    try {
+      const view = render(solid(<Dropdown trigger="Account" items={[{ label: "Profile" }]} />));
+      await act(async () => {});
+      const button = screen.getByRole("button", { name: "Account" });
+      expect(() => faderOf(button)).toThrow();
+      view.unmount();
+    } finally { measureAgain.mockRestore(); }
+  }, HANDOFF_TIMEOUT);
 });
 
 describe("Select on the liquid popup policy", () => {

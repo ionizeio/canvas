@@ -14,6 +14,15 @@ export const MaterialMotionContext = createContext<Animated.WithAnimatedValue<Vi
 
 export type PopupEdge = "top" | "bottom" | "left" | "right";
 export interface PopupSize { width: number; height: number }
+/**
+ * The trigger's frame in the card's own coordinates and the corner its material wears:
+ * the shape the pane's material is at progress 0 when a popup hands off with its
+ * trigger (see popup-handoff.tsx). Above a card that opens below its trigger, `y` is
+ * negative.
+ */
+export interface PopupOrigin { x: number; y: number; width: number; height: number; radius: number }
+/** The opacities of the two under-fills a hand-off pane paints: the trigger's layer's and its own. */
+export interface PopupBlend { trigger: Animated.AnimatedInterpolation<number>; own: Animated.AnimatedInterpolation<number> }
 
 /**
  * The presentation of a liquid popup, in one table. Modelled on the iOS 26 menu
@@ -53,9 +62,61 @@ export const POPUP_PRESENTATION = {
     stretch: { recoil: 0.98, peak: 1.055 },
     squash: { recoil: 1.018, peak: 0.975 },
   },
+  /**
+   * The button-to-menu hand-off of a Dropdown-class trigger (popup-handoff.tsx): the
+   * pane's material IS the trigger's pill at progress 0 and the resting card at 1, so
+   * the pill vanishes into the droplet on open and the pane re-forms the pill on close.
+   * Modelled on the native menu's dismiss (frames 169 to 176 of the reference): the
+   * pane narrows to the button first, the drop left under it absorbs upward, and the
+   * button's icons fade back while the last of the drop is still merging.
+   */
+  handoff: {
+    /**
+     * The pane keeps the trigger's extent ACROSS the anchor axis until this progress
+     * and widens to the card's from there, so the droplet is pill-wide and a closing
+     * pane is the pill's width before its height is gone.
+     */
+    widen: 0.45,
+    /**
+     * The trigger's label: out over `hideMs` from the frame the pane exists (the
+     * droplet takes its place; a beat rather than a cut, because the native glass
+     * can trail the label's commit by a frame and a bare pill for that frame reads
+     * as a flash), and back over `returnMs` once the pane has re-formed the pill and
+     * left. The pane sits above the trigger (the overlay outlet), so a label fading
+     * in under the pane's glass would read dimmed and blurred through it; the native
+     * menu's icons fade over the last hundred milliseconds of its merge, and this is
+     * the same fade a beat later, on the trigger's own material.
+     */
+    label: { hideMs: 50, returnMs: 140 },
+    /**
+     * The material's under-fill is the TRIGGER's layer (the bright control puck) at
+     * progress 0 and the pane's own (the dense menu tint) from this progress on,
+     * cross-fading between: the pill that vanishes and the pill that re-forms are
+     * the trigger's material, not a menu-tinted copy of it.
+     */
+    tint: 0.55,
+    /** The close back onto the trigger: slower than a plain close, so the pill re-forms readably. */
+    close: { stiffness: 520, damping: 40 },
+  },
 } as const;
 
-const { travel: TRAVEL, seed: SEED, across: ACROSS, radius: RADIUS, content: CONTENT, contour: CONTOUR } = POPUP_PRESENTATION;
+const { travel: TRAVEL, seed: SEED, across: ACROSS, radius: RADIUS, content: CONTENT, contour: CONTOUR, handoff: HANDOFF } = POPUP_PRESENTATION;
+
+/**
+ * The progress below which a hand-off trigger's own material is back. The material
+ * must never sit at a partial opacity (a native glass ancestor at a fractional alpha
+ * may not paint; a web backdrop under one loses its sampling root), and the close
+ * spring is clamped: it crosses 0 with velocity and is snapped to exactly 0 on the
+ * frame it does, so the last value it paints before that can be arbitrarily small (a
+ * web run painted 8e-6). The step is therefore as sharp as the interpolation allows:
+ * anything above this reads as 0, and only the snapped 0 itself reads as 1.
+ */
+export const HANDOFF_RETURN = 1e-9;
+
+/** The across extent's share of its travel at `progress` under the hand-off (held at the trigger's until `widen`). */
+export function handoffAcross(progress: number): number {
+  return progress <= HANDOFF.widen ? 0 : Math.min(1, (progress - HANDOFF.widen) / (1 - HANDOFF.widen));
+}
 
 /**
  * A card's resting corner radius when it is one uniform value, the only shape the
@@ -94,7 +155,7 @@ export function usePopupPresence(open: boolean, enabled: boolean) {
  * and stays inert, hidden from assistive tech, until the pane has settled.
  */
 export function usePopupMotion({
-  open, enabled, ready, size, edge = "top", anchorX, anchorY, radius, onExited,
+  open, enabled, ready, size, edge = "top", anchorX, anchorY, radius, origin, progress: shared, onExited,
 }: {
   open: boolean;
   enabled: boolean;
@@ -105,11 +166,24 @@ export function usePopupMotion({
   anchorY?: number;
   /** The card's resting corner radius when uniform (see `restingRadius`); the droplet eases into it. */
   radius?: number;
+  /**
+   * The trigger's frame and corner in card coordinates: with it the material is the
+   * trigger's pill at progress 0 instead of a sliver on the anchor edge (the hand-off).
+   */
+  origin?: PopupOrigin;
+  /**
+   * The travel value an owner shares with its trigger (see `usePopupHandoff`), so the
+   * trigger's material and label read the same node the pane paints from. The hook
+   * owns a value of its own otherwise.
+   */
+  progress?: Animated.Value;
   onExited: () => void;
 }) {
   const reduced = useReducedMotion();
   const animate = enabled && !reduced;
-  const progress = useRef(new Animated.Value(0)).current;
+  const own = useRef<Animated.Value | null>(null);
+  if (!shared && !own.current) own.current = new Animated.Value(0);
+  const progress = shared ?? own.current!;
   const contour = useRef(new Animated.Value(0)).current;
   const [readable, setReadable] = useState(!animate);
   const lifecycle = useRef(0);
@@ -156,7 +230,7 @@ export function usePopupMotion({
     if (open && current <= 0) progress.setValue(SEED);
     const travel = Animated.spring(progress, {
       toValue: open ? 1 : 0,
-      ...(open ? TRAVEL.open : TRAVEL.close), mass: 1,
+      ...(open ? TRAVEL.open : origin ? HANDOFF.close : TRAVEL.close), mass: 1,
       // The opening overshoots on purpose (the native menu's bounce); a close never undershoots.
       overshootClamping: !open, restDisplacementThreshold: 0.001,
       restSpeedThreshold: 0.01, useNativeDriver: false, isInteraction: false,
@@ -178,6 +252,7 @@ export function usePopupMotion({
     });
     shape.start();
     return () => { lifecycle.current++; travel.stop(); shape.stop(); };
+    // The origin only picks the close's spring; a hand-off never changes it mid-flight.
   }, [animate, open, ready, measured, progress, contour]);
 
   useEffect(() => {
@@ -201,44 +276,88 @@ export function usePopupMotion({
   const horizontal = edge === "left" || edge === "right";
   const xFraction = Math.max(0, Math.min(1, (anchorX ?? width / 2) / Math.max(width, 1)));
   const yFraction = Math.max(0, Math.min(1, (anchorY ?? height / 2) / Math.max(height, 1)));
-  const { frame, content } = useMemo(() => {
-    // The pane's extent along the anchor axis is progress itself; across it the
-    // pane starts at the droplet's width. Both let the opening's overshoot through.
-    const along = progress.interpolate({ inputRange: [0, 1], outputRange: [0, 1], extrapolateLeft: "clamp", extrapolateRight: "extend" });
-    const across = progress.interpolate({ inputRange: [0, 1], outputRange: [ACROSS, 1], extrapolateLeft: "clamp", extrapolateRight: "extend" });
+  const { frame, content, blend } = useMemo(() => {
     const stretch = contour.interpolate({ inputRange: [-1, 0, 1], outputRange: [CONTOUR.stretch.recoil, 1, CONTOUR.stretch.peak], extrapolate: "clamp" });
     const squash = contour.interpolate({ inputRange: [-1, 0, 1], outputRange: [CONTOUR.squash.recoil, 1, CONTOUR.squash.peak], extrapolate: "clamp" });
-    const w = Animated.multiply(width, Animated.multiply(horizontal ? along : across, horizontal ? stretch : squash));
-    const h = Animated.multiply(height, Animated.multiply(horizontal ? across : along, horizontal ? squash : stretch));
-    const frame: Animated.WithAnimatedValue<ViewStyle> = {
-      position: "absolute",
-      left: Animated.multiply(Animated.subtract(width, w), horizontal ? edge === "right" ? 1 : 0 : xFraction),
-      top: Animated.multiply(Animated.subtract(height, h), horizontal ? yFraction : edge === "bottom" ? 1 : 0),
-      right: undefined, bottom: undefined, width: w, height: h,
-    };
-    if (radius != null && Number.isFinite(radius)) {
-      // The droplet is as round as its shorter side allows; the skin's corner is
-      // back by the time the pane has nearly filled out.
-      const seedWidth = width * (horizontal ? SEED : ACROSS + (1 - ACROSS) * SEED);
-      const seedHeight = height * (horizontal ? ACROSS + (1 - ACROSS) * SEED : SEED);
-      const droplet = Math.max(radius, RADIUS.droplet * Math.min(seedWidth, seedHeight));
-      frame.borderRadius = progress.interpolate({ inputRange: [SEED, RADIUS.settled], outputRange: [droplet, radius], extrapolate: "clamp" });
-    }
-    // The rows scale with the pane's extent along the anchor axis, sit centred
-    // across it, and cross-fade in. Every term is linear in the remaining travel,
-    // so at rest the foreground is exactly the identity.
+    // The pane's extent along the anchor axis is progress itself (the opening's
+    // overshoot passes through); across it the pane starts at the droplet's width, or
+    // under a hand-off holds the trigger's width until `widen` and never overshoots
+    // (the along axis carries the bounce, as the native menu's does).
+    const along = progress.interpolate({ inputRange: [0, 1], outputRange: [0, 1], extrapolateLeft: "clamp", extrapolateRight: "extend" });
+    const across = origin
+      ? progress.interpolate({ inputRange: [0, HANDOFF.widen, 1], outputRange: [0, 0, 1], extrapolate: "clamp" })
+      : progress.interpolate({ inputRange: [0, 1], outputRange: [ACROSS, 1], extrapolateLeft: "clamp", extrapolateRight: "extend" });
     const scale = progress.interpolate({ inputRange: [0, 1], outputRange: [0, 1], extrapolate: "clamp" });
     const remaining = progress.interpolate({ inputRange: [0, 1], outputRange: [1, 0], extrapolate: "clamp" });
-    const alongShift = ((horizontal ? width : height) / 2) * ((horizontal ? edge === "right" : edge === "bottom") ? 1 : -1);
-    const acrossShift = (horizontal ? height : width) * (1 - ACROSS) * ((horizontal ? yFraction : xFraction) - 0.5);
-    const translateX = Animated.multiply(remaining, horizontal ? alongShift : acrossShift);
-    const translateY = Animated.multiply(remaining, horizontal ? acrossShift : alongShift);
+    let frame: Animated.WithAnimatedValue<ViewStyle>;
+    let translateX: Animated.AnimatedNode;
+    let translateY: Animated.AnimatedNode;
+    if (origin) {
+      // The material travels between two boxes: the trigger's (progress 0) and the
+      // card's (progress 1), each extent on its own curve, the centre following the
+      // extent so the drop stays under the pill while the pill's width is held.
+      const wShare = horizontal ? along : across;
+      const hShare = horizontal ? across : along;
+      const w = Animated.multiply(Animated.add(origin.width, Animated.multiply(wShare, width - origin.width)), horizontal ? stretch : squash);
+      const h = Animated.multiply(Animated.add(origin.height, Animated.multiply(hShare, height - origin.height)), horizontal ? squash : stretch);
+      const originX = origin.x + origin.width / 2;
+      const originY = origin.y + origin.height / 2;
+      const centreX = Animated.add(originX, Animated.multiply(wShare, width / 2 - originX));
+      const centreY = Animated.add(originY, Animated.multiply(hShare, height / 2 - originY));
+      frame = {
+        position: "absolute",
+        left: Animated.subtract(centreX, Animated.divide(w, 2)),
+        top: Animated.subtract(centreY, Animated.divide(h, 2)),
+        right: undefined, bottom: undefined, width: w, height: h,
+      };
+      if (radius != null && Number.isFinite(radius)) {
+        // The corner is the trigger's at the pill, the droplet's at the seed (as round
+        // as the seed shape's shorter side allows), and the skin's once settled.
+        const seedWidth = origin.width + (width - origin.width) * (horizontal ? SEED : handoffAcross(SEED));
+        const seedHeight = origin.height + (height - origin.height) * (horizontal ? handoffAcross(SEED) : SEED);
+        const droplet = Math.max(radius, RADIUS.droplet * Math.min(seedWidth, seedHeight));
+        frame.borderRadius = progress.interpolate({ inputRange: [0, SEED, RADIUS.settled], outputRange: [origin.radius, droplet, radius], extrapolate: "clamp" });
+      }
+      // The rows scale from the trigger's centre.
+      translateX = Animated.multiply(remaining, originX - width / 2);
+      translateY = Animated.multiply(remaining, originY - height / 2);
+    } else {
+      const w = Animated.multiply(width, Animated.multiply(horizontal ? along : across, horizontal ? stretch : squash));
+      const h = Animated.multiply(height, Animated.multiply(horizontal ? across : along, horizontal ? squash : stretch));
+      frame = {
+        position: "absolute",
+        left: Animated.multiply(Animated.subtract(width, w), horizontal ? edge === "right" ? 1 : 0 : xFraction),
+        top: Animated.multiply(Animated.subtract(height, h), horizontal ? yFraction : edge === "bottom" ? 1 : 0),
+        right: undefined, bottom: undefined, width: w, height: h,
+      };
+      if (radius != null && Number.isFinite(radius)) {
+        // The droplet is as round as its shorter side allows; the skin's corner is
+        // back by the time the pane has nearly filled out.
+        const seedWidth = width * (horizontal ? SEED : ACROSS + (1 - ACROSS) * SEED);
+        const seedHeight = height * (horizontal ? ACROSS + (1 - ACROSS) * SEED : SEED);
+        const droplet = Math.max(radius, RADIUS.droplet * Math.min(seedWidth, seedHeight));
+        frame.borderRadius = progress.interpolate({ inputRange: [SEED, RADIUS.settled], outputRange: [droplet, radius], extrapolate: "clamp" });
+      }
+      // The rows scale with the pane's extent along the anchor axis, sit centred
+      // across it, and cross-fade in. Every term is linear in the remaining travel,
+      // so at rest the foreground is exactly the identity.
+      const alongShift = ((horizontal ? width : height) / 2) * ((horizontal ? edge === "right" : edge === "bottom") ? 1 : -1);
+      const acrossShift = (horizontal ? height : width) * (1 - ACROSS) * ((horizontal ? yFraction : xFraction) - 0.5);
+      translateX = Animated.multiply(remaining, horizontal ? alongShift : acrossShift);
+      translateY = Animated.multiply(remaining, horizontal ? acrossShift : alongShift);
+    }
     const content: Animated.WithAnimatedValue<ViewStyle> = {
       opacity: progress.interpolate({ inputRange: [CONTENT.fadeFrom, CONTENT.fadeTo], outputRange: [0, 1], extrapolate: "clamp" }),
       transform: [{ translateX }, { translateY }, { scale }],
     };
-    return { frame, content };
-  }, [progress, contour, width, height, horizontal, edge, xFraction, yFraction, radius]);
+    // Under a hand-off the material's under-fill is the trigger's at the pill and the
+    // pane's own from `tint` on (see MaterialOriginContext).
+    const blend: PopupBlend | null = origin ? {
+      trigger: progress.interpolate({ inputRange: [0, HANDOFF.tint], outputRange: [1, 0], extrapolate: "clamp" }),
+      own: progress.interpolate({ inputRange: [0, HANDOFF.tint], outputRange: [0, 1], extrapolate: "clamp" }),
+    } : null;
+    return { frame, content, blend };
+  }, [progress, contour, width, height, horizontal, edge, xFraction, yFraction, radius, origin]);
   const moving = animate && measured;
-  return { frame: moving ? frame : null, content: moving ? content : null, readable: open && ready && (!animate || readable), animate };
+  return { frame: moving ? frame : null, content: moving ? content : null, blend: moving ? blend : null, readable: open && ready && (!animate || readable), animate };
 }
