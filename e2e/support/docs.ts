@@ -201,9 +201,13 @@ export async function fitElementForScreenshot(page: Page, frame: Locator): Promi
   const banner = await bannerLocator.count() ? await bannerLocator.boundingBox() : null;
   const scrollLocator = page.locator("[data-page-scroll]").first();
   const scrollport = await scrollLocator.count() ? await scrollLocator.boundingBox() : null;
-  // The phone bottom navigation is outside the scrollport and can be taller
-  // than the overlaid banner. Account for both rather than assuming symmetry.
-  const chrome = scrollport ? viewport.height - scrollport.height : 0;
+  // The phone bottom navigation floats OVER the scrollport (the iOS 26 capsule) and can
+  // be taller than the overlaid banner, so measure it directly; the docked case, where
+  // the scrollport stops above the bar, still counts through the height difference.
+  // Account for both rather than assuming symmetry.
+  const navigationLocator = page.getByRole("navigation", { name: "Primary", exact: true }).first();
+  const navigation = await navigationLocator.count() ? await navigationLocator.boundingBox() : null;
+  const chrome = Math.max(scrollport ? viewport.height - scrollport.height : 0, navigation?.height ?? 0);
   const inset = Math.ceil(Math.max(banner?.height ?? 0, chrome));
   const height = Math.max(viewport.height, box.height + 2 * inset);
   if (height !== viewport.height) await page.setViewportSize({ ...viewport, height });
