@@ -13,7 +13,8 @@
     "routes": [
       "/testing/materials",
       "/testing/materials?geometry=1",
-      "/testing/backdrop"
+      "/testing/backdrop",
+      "/testing/tabs"
     ],
     "fixtures": "examples/starter/smoke/fixtures",
     "notes": "bun run dev in docs/ starts Metro on 8081 and the native opener on 8790. Web motion evidence: E2E_BASE_URL=http://localhost:8081 bunx playwright test --project motion --workers 1 (records video). Native: the installed docs dev app on a booted simulator or emulator, recorded with the skill's record-motion.mjs."
