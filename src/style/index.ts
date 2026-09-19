@@ -34,6 +34,7 @@ export * from "./use-hardware-back.js";
 export * from "./use-dialog-focus.js";
 export * from "./use-roving-focus.js";
 export * from "./motion.js";
+export * from "./loop.js";
 export * from "./a11y-preferences.js";
 export * from "./pointer.js";
 export * from "./primitives.js";
