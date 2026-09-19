@@ -342,6 +342,43 @@ name: Sealed Canvas native candidate measurement
     id: tabs-change-count
     text: 'Changes: 0'
 - takeScreenshot: tabs-all-disabled-inert
+# The liquid popup harness: the controlled drivers open and close the real
+# Autocomplete list and Dropdown menu; the readouts confirm the state each step
+# leaves behind. The menu closes through the hosted dismiss backdrop, which is
+# what the second tap on its driver lands on while the menu is open.
+- openLink: canvas-smoke:///testing/popup
+- assertVisible: Liquid popup checks
+- assertVisible:
+    id: popup-list-readout
+    text: 'List: closed; cycles: 0'
+- tapOn:
+    id: popup-open-list
+    retryTapIfNoChange: false
+- assertVisible:
+    id: popup-list-readout
+    text: 'List: open; cycles: 0'
+- assertVisible: Apple
+- takeScreenshot: popup-list-open
+- tapOn:
+    id: popup-close-list
+    retryTapIfNoChange: false
+- assertVisible:
+    id: popup-list-readout
+    text: 'List: closed; cycles: 0'
+- tapOn:
+    id: popup-toggle-menu
+    retryTapIfNoChange: false
+- assertVisible:
+    id: popup-menu-readout
+    text: 'Menu: open'
+- assertVisible: Rename
+- takeScreenshot: popup-menu-open
+- tapOn:
+    id: popup-toggle-menu
+    retryTapIfNoChange: false
+- assertVisible:
+    id: popup-menu-readout
+    text: 'Menu: closed'
 - openLink: canvas-smoke:///testing/escape-layers?scenario=drawer
 - tapOn: Open drawer
 - assertVisible: Drawer content

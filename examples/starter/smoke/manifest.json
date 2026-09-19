@@ -9,6 +9,7 @@
     "form-autocomplete",
     "listbox",
     "materials",
+    "popup",
     "tabs"
   ],
   "routes": [
@@ -21,6 +22,7 @@
     "form-autocomplete",
     "listbox",
     "materials",
+    "popup",
     "tabs"
   ]
 }
