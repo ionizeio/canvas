@@ -74,12 +74,15 @@ export interface MaterialMotionFrame {
  * not GPU allocation or native capture resources.
  *
  * Sampling starts before the action and runs for at least `sampleMs`, then
- * continues until the material has been still for `settleFrames` consecutive
- * frames or `maxMs` has elapsed. The action's own duration is not fixed (a press
- * is held until its lift is observed, a drag steps the pointer), and on a slow
- * runner it can eat most of a fixed window, so the recording ends when the
- * motion is over rather than at a guessed time; a material that never settles
- * still ends at `maxMs` and fails the stillness assertions.
+ * continues until the material's last `settleFrames` frames all lie within half
+ * a pixel on every axis, or `maxMs` has elapsed. The action's own duration is
+ * not fixed (a press is held until its lift is observed, a drag steps the
+ * pointer), and on a slow runner it can eat most of a fixed window, so the
+ * recording ends when the motion is over rather than at a guessed time; a
+ * material that never settles still ends at `maxMs` and fails the stillness
+ * assertions. The window is judged by its range, not frame to frame: a spring's
+ * tail can creep a fraction of a pixel per frame and still drift more than a
+ * pixel across ten, which a pairwise check waved through (1.125 px on the runner).
  */
 export async function captureMaterialMotion(
   page: Page,
@@ -115,13 +118,16 @@ export async function captureMaterialMotion(
     let previous = started;
     const record = { done: false, actionDone: false, frames, definitionsAtStart: lenses(), definitionsAdded: 0 };
     state[key] = record;
-    const still = (a: { x: number; y: number; width: number; height: number }, b: typeof a) =>
-      Math.abs(a.x - b.x) < 0.5 && Math.abs(a.y - b.y) < 0.5 && Math.abs(a.width - b.width) < 0.5 && Math.abs(a.height - b.height) < 0.5;
-    let stillRun = 0;
+    const stillWindow = () => {
+      if (frames.length < settleFrames) return false;
+      const window = frames.slice(-settleFrames).map((frame) => frame.material);
+      return (["x", "y", "width", "height"] as const).every((axis) => {
+        const values = window.map((box) => box[axis]);
+        return Math.max(...values) - Math.min(...values) <= 0.5;
+      });
+    };
     function sample(now: number) {
       const material = rect(root);
-      const last = frames.at(-1);
-      stillRun = last && still(last.material, material) ? stillRun + 1 : 0;
       frames.push({
         elapsedMs: now - started,
         frameIntervalMs: now - previous,
@@ -132,7 +138,7 @@ export async function captureMaterialMotion(
       });
       previous = now;
       const elapsed = now - started;
-      const settled = record.actionDone && elapsed >= sampleMs && stillRun >= settleFrames;
+      const settled = record.actionDone && elapsed >= sampleMs && stillWindow();
       if (!settled && elapsed < maxMs) requestAnimationFrame(sample);
       else {
         observer.disconnect();
