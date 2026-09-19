@@ -32,7 +32,7 @@
 // exactly as in solid mode.
 
 import { createContext, type ReactNode, type RefObject, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { View, Pressable, StyleSheet, useWindowDimensions, type LayoutChangeEvent, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
+import { Animated, View, Pressable, StyleSheet, useWindowDimensions, type LayoutChangeEvent, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
 import { Portal, useOverlayHost, type OverlayHost } from "./portal.js";
 import { GlassSurface } from "./glass-surface/glass-surface.js";
 import { PlainSurface } from "./glass-surface/glass-surface.shared.js";
@@ -41,7 +41,7 @@ import { EntranceReadinessContext } from "./entrance-readiness.js";
 import { fitOverlayHeight, type OverlaySide } from "./overlay-layout.js";
 import { OverlayScrollContext, OverlayScrollView } from "./overlay-scroll.js";
 import { useMaterialTheme } from "./glass-surface/use-material-theme.js";
-import { MaterialMotionContext, PopupInteractionContext, PopupMotionPolicy, StationaryEntranceContext, usePopupMotion, usePopupPresence, type PopupEdge, type PopupSize } from "./popup-motion.js";
+import { MaterialMotionContext, PopupInteractionContext, PopupMotionPolicy, StationaryEntranceContext, restingRadius, usePopupMotion, usePopupPresence, type PopupEdge, type PopupSize } from "./popup-motion.js";
 import { PortalActivationContext } from "./portal-activation.js";
 
 const OverlaySideContext = createContext<{ side: OverlaySide; centerX?: number; cardWidth?: number }>({ side: "below" });
@@ -302,14 +302,21 @@ function PopupCard({
   const [size, setSize] = useState<PopupSize>({ width: 0, height: 0 });
   const inheritedReady = useContext(EntranceReadinessContext);
   const liquid = theme.surface === "glass";
-  const motion = usePopupMotion({ open, enabled: liquid, ready: ready && inheritedReady, size, edge, anchorX, anchorY, onExited });
+  // The droplet the pane opens from eases into the card's own corner; a card with
+  // per-corner radii keeps them throughout.
+  const radius = restingRadius(cardStyle);
+  const motion = usePopupMotion({ open, enabled: liquid, ready: ready && inheritedReady, size, edge, anchorX, anchorY, radius, onExited });
   const measure = (event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
     if (open && width > 0 && height > 0) setSize(old => old.width === width && old.height === height ? old : { width, height });
     onLayout?.(event);
   };
-  // Measure the complete scrollport before concealing its retained foreground.
-  const freeze = size.width > 0 && size.height > 0 && (!open || ready && inheritedReady) && !motion.readable;
+  // A closing pane keeps its measured size while its retained foreground is gone:
+  // the rows retire at once, the way the native menu's rows vanish in a frame, and
+  // a re-render underneath (a select clearing the filter) cannot resize the exit.
+  // An OPENING pane keeps its rows in the tree: they scale and fade in with the
+  // material (`motion.content`), inert and hidden from assistive tech until it settles.
+  const freeze = size.width > 0 && size.height > 0 && !open && !motion.readable;
   const frozen = useRef(freeze);
   frozen.current = freeze;
   const visibleReport = useMemo(() => report ? {
@@ -329,12 +336,12 @@ function PopupCard({
               ownsScroll={ownsScroll} decoration={decoration} onLayout={measure}
               onAccessibilityEscape={open && motion.readable ? onAccessibilityEscape : undefined}
             >
-              <View
-                style={{ flexShrink: 1, display: freeze ? "none" : "flex", opacity: motion.readable ? 1 : 0, pointerEvents: motion.readable ? "auto" : "none" }}
+              <Animated.View
+                style={[{ flexShrink: 1, display: freeze ? "none" : "flex", pointerEvents: motion.readable ? "auto" : "none" }, motion.content ?? { opacity: motion.readable ? 1 : 0 }]}
                 accessibilityElementsHidden={!motion.readable}
                 importantForAccessibility={motion.readable ? "auto" : "no-hide-descendants"}
                 aria-hidden={!motion.readable}
-              >{children}</View>
+              >{children}</Animated.View>
             </OverlayCard>
             </OverlayScrollContext.Provider>
           </MaterialMotionContext.Provider>

@@ -1,12 +1,17 @@
 // Native iOS: intentional content frost and functional Apple Liquid Glass.
-import { View } from "react-native";
+import { Animated } from "react-native";
 import { useTheme } from "../theme.js";
 import { FrostView, LiquidView, useMaterialCapabilities } from "./material-runtime.ios.js";
 import { resolveMaterial } from "./material-resolution.js";
 import {
-  GlassBox, CLEAR_INTENSITY, brandOverMaterial, clearSurfaceTint, contrastBorder, specularRim, SHEER_FILL_OPACITY, materialFill,
-  surfaceUnderFill, surfaceIntensity, type GlassSurfaceProps,
+  GlassBox, CLEAR_INTENSITY, brandOverMaterial, clearSurfaceTint, contrastBorder, SHEER_FILL_OPACITY, materialFill,
+  surfaceUnderFill, surfaceIntensity, useMaterialFill, useSpecularRim, type GlassSurfaceProps,
 } from "./glass-surface.shared.js";
+
+// The native glass takes the moving shape's radius as a live style (react-native
+// hands `style.borderRadius` to the native view as its corner prop), so a popup's
+// droplet is Apple's own rounded edge, not a clip over a square material.
+const AnimatedLiquidView = LiquidView ? Animated.createAnimatedComponent(LiquidView) : undefined;
 
 export function GlassSurface(props: GlassSurfaceProps) {
   const theme = useTheme();
@@ -14,19 +19,23 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const resolved = resolveMaterial(theme, props, useMaterialCapabilities(), false);
   const solid = resolved.renderer === "solid";
   const translucent = props.sheer && layer === "content";
-  const fill = materialFill(style);
+  // The layers wear the skin's radii, or the moving shape's while a popup opens.
+  const fill = useMaterialFill(style);
+  const rim = useSpecularRim(style, theme.dark);
+  // The frost keeps the skin's corners: the animated clip shapes the droplet and the rim carries its edge.
+  const frostFill = materialFill(style);
   const native = resolved.renderer === "liquid";
   // Liquid Glass takes a brand as its own tintColor and paints no fill for it; the
   // frost paints the fill, a brand one OVER the blur (see brandOverMaterial).
-  const fillLayer = <View style={[fill, { backgroundColor: surfaceUnderFill(theme.glass, layer, brand, tint ?? (clear && brand == null ? clearSurfaceTint(theme.tokens, theme.dark) : undefined), theme.tokens.background), opacity: translucent ? SHEER_FILL_OPACITY : 1 }]} />;
+  const fillLayer = <Animated.View style={[fill, { backgroundColor: surfaceUnderFill(theme.glass, layer, brand, tint ?? (clear && brand == null ? clearSurfaceTint(theme.tokens, theme.dark) : undefined), theme.tokens.background), opacity: translucent ? SHEER_FILL_OPACITY : 1 }]} />;
   const paintsFill = !native || brand == null || tint != null;
   const over = !native && brandOverMaterial(brand, tint);
   const material = solid ? null : <>
     {paintsFill && !over ? fillLayer : null}
-    {native && LiquidView ? <LiquidView glassEffectStyle={clear ? "clear" : "regular"} isInteractive={interactive} tintColor={brand} colorScheme={theme.dark ? "dark" : "light"} style={fill} />
-      : FrostView ? <FrostView intensity={clear ? CLEAR_INTENSITY : surfaceIntensity(layer, translucent)} tint={theme.dark ? "dark" : "light"} style={fill} /> : null}
+    {native && AnimatedLiquidView ? <AnimatedLiquidView glassEffectStyle={clear ? "clear" : "regular"} isInteractive={interactive} tintColor={brand} colorScheme={theme.dark ? "dark" : "light"} style={fill} />
+      : FrostView ? <FrostView intensity={clear ? CLEAR_INTENSITY : surfaceIntensity(layer, translucent)} tint={theme.dark ? "dark" : "light"} style={frostFill} /> : null}
     {paintsFill && over ? fillLayer : null}
-    {!native ? <View style={specularRim(style, theme.dark)} /> : null}
+    {!native ? <Animated.View style={rim} /> : null}
   </>;
   return <GlassBox {...props} style={theme.increasedContrast ? [style, contrastBorder(theme.tokens)] : style} solid={solid} material={material} />;
 }

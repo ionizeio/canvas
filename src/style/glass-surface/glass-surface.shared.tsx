@@ -325,6 +325,27 @@ export function splitSurfaceStyle(style: StyleProp<ViewStyle>): Split {
   return { outer: outer as ViewStyle, clip: clip as ViewStyle };
 }
 
+/**
+ * The corner radius the material's layers wear this frame: null for the skin's own
+ * radii, or the popup motion's radius while a pane opens as a droplet and settles
+ * into the skin's corner (see usePopupMotion). GlassBox provides it to its material
+ * so the lens, the rim and the native glass draw the rounded edge the clip cuts.
+ */
+export type MaterialShape = NonNullable<Animated.WithAnimatedValue<ViewStyle>["borderRadius"]>;
+export const MaterialShapeContext = createContext<MaterialShape | null>(null);
+
+/** A material layer's absolute-fill style: the skin's radii, or the moving shape's radius. */
+export function useMaterialFill(style: StyleProp<ViewStyle>): Animated.WithAnimatedValue<ViewStyle> {
+  const shape = useContext(MaterialShapeContext);
+  return shape == null ? materialFill(style) : { ...MATERIAL_FILL, borderRadius: shape };
+}
+
+/** The specular rim's style, following the moving shape's radius the same way. */
+export function useSpecularRim(style: StyleProp<ViewStyle>, dark: boolean): Animated.WithAnimatedValue<ViewStyle> {
+  const shape = useContext(MaterialShapeContext);
+  return shape == null ? specularRim(style, dark) : { ...MATERIAL_FILL, borderRadius: shape, boxShadow: dark ? SPECULAR_RIM.dark : SPECULAR_RIM.light };
+}
+
 // A stable content host for every appearance. Only the decorative material is
 // clipped; content, focus rings, hit targets and the exterior shadow keep the
 // skin's own layout and overflow policy. Switching modes never reparents children.
@@ -333,6 +354,7 @@ export function GlassBox({
   material, solid = false,
 }: GlassSurfaceProps & { material: ReactNode; solid?: boolean }) {
   const motion = useContext(MaterialMotionContext);
+  const shape = motion?.borderRadius ?? null;
   const flat = (StyleSheet.flatten(style) ?? {}) as Record<string, unknown>;
   const clear: Record<string, unknown> = { backgroundColor: "transparent", borderColor: "transparent" };
   const movingShadow: Record<string, unknown> = {};
@@ -349,7 +371,15 @@ export function GlassBox({
   }
   return (
     <View ref={hostRef} style={[style, solid ? null : clear as ViewStyle, clearedShadow as ViewStyle, pointerEvents ? { pointerEvents } : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={onAccessibilityEscape ? false : undefined}>
-      {material ? <Animated.View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[materialFill(style), { zIndex: -1 }, movingShadow as ViewStyle, motion]}><View style={[materialFill(style), { overflow: "hidden" }]}>{material}</View></Animated.View> : null}
+      {material ? (
+        <Animated.View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[materialFill(style), { zIndex: -1 }, movingShadow as ViewStyle, motion]}>
+          {/* The clip shapes the layers. While a popup opens it wears the droplet's
+              radius and hands it down, so the layers draw the edge the clip cuts. */}
+          <Animated.View style={[materialFill(style), { overflow: "hidden" }, shape == null ? null : { borderRadius: shape }]}>
+            <MaterialShapeContext.Provider value={shape}>{material}</MaterialShapeContext.Provider>
+          </Animated.View>
+        </Animated.View>
+      ) : null}
       <MaterialMotionContext.Provider value={null}>{children}</MaterialMotionContext.Provider>
     </View>
   );

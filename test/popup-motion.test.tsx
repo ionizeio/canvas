@@ -6,7 +6,7 @@ import { AnchoredOverlay } from "../src/style/anchored-overlay.tsx";
 import { OverlayProvider, Portal } from "../src/style/portal.tsx";
 import { EscapeLayerProvider, useEscapeLayer } from "../src/style/escape-layer.ts";
 import { useDialogFocus } from "../src/style/use-dialog-focus.ts";
-import { PopupInteractionContext, PopupMotionPolicy, usePopupMotion, type PopupEdge, type PopupSize } from "../src/style/popup-motion.tsx";
+import { POPUP_PRESENTATION, PopupInteractionContext, PopupMotionPolicy, restingRadius, usePopupMotion, type PopupEdge, type PopupSize } from "../src/style/popup-motion.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { animationClock } from "./liquid-motion-clock.ts";
 import { hostedEntranceParts, layoutElement, layoutHostedEntrance } from "./entrance-layout.ts";
@@ -14,18 +14,24 @@ import { hostedEntranceParts, layoutElement, layoutHostedEntrance } from "./entr
 afterEach(cleanup);
 
 const SIZE = { width: 240, height: 160 };
-function Probe({ open, enabled = true, ready = true, size = SIZE, edge = "top", onExited = () => {} }: {
-  open: boolean; enabled?: boolean; ready?: boolean; size?: PopupSize; edge?: PopupEdge; onExited?: () => void;
+function Probe({ open, enabled = true, ready = true, size = SIZE, edge = "top", radius, onExited = () => {} }: {
+  open: boolean; enabled?: boolean; ready?: boolean; size?: PopupSize; edge?: PopupEdge; radius?: number; onExited?: () => void;
 }) {
-  const motion = usePopupMotion({ open, enabled, ready, size, edge, anchorX: 30, anchorY: 40, onExited });
+  const motion = usePopupMotion({ open, enabled, ready, size, edge, anchorX: 30, anchorY: 40, radius, onExited });
   return <>
     <Animated.View testID="motion-frame" style={[{ left: 0, top: 0, ...size }, motion.frame]} />
+    <Animated.View testID="motion-content" style={[{ opacity: 1 }, motion.content]} />
     <Text testID="motion-readable">{motion.readable ? "readable" : "held"}</Text>
   </>;
 }
 function frame() {
   const { style } = screen.getByTestId("motion-frame");
   return { left: parseFloat(style.left), top: parseFloat(style.top), width: parseFloat(style.width), height: parseFloat(style.height) };
+}
+const corner = () => parseFloat(screen.getByTestId("motion-frame").style.borderRadius);
+function content() {
+  const { style } = screen.getByTestId("motion-content");
+  return { opacity: parseFloat(style.opacity), transform: style.transform };
 }
 const readable = () => screen.getByTestId("motion-readable").textContent === "readable";
 const ui = (body: ReactNode) => <ThemeProvider glass>{body}</ThemeProvider>;
@@ -56,6 +62,44 @@ describe("popup decorative spring", () => {
       } finally { unmount(); clock.restore(); }
     });
   }
+
+  it("opens from a droplet with the rows inside it, overshoots, and rests at the skin's corner with the rows at identity", async () => {
+    const { seed, across, content: fade } = POPUP_PRESENTATION;
+    const { rerender, unmount } = render(ui(<Probe open={false} radius={16} />));
+    await act(async () => {});
+    const clock = animationClock();
+    try {
+      rerender(ui(<Probe open radius={16} />));
+      // The first paint is the droplet: a fraction of the resting height, narrower
+      // than the card, rounder than the skin's corner, with the rows scaled to it
+      // and part way through their fade. Not interactive yet.
+      const droplet = frame();
+      expect(droplet.height).toBeCloseTo(SIZE.height * seed, 4);
+      expect(droplet.width).toBeCloseTo(SIZE.width * (across + (1 - across) * seed), 4);
+      expect(droplet.top).toBe(0);
+      expect(corner()).toBeGreaterThan(16);
+      const rows = content();
+      expect(rows.opacity).toBeCloseTo((seed - fade.fadeFrom) / (fade.fadeTo - fade.fadeFrom), 4);
+      expect(rows.transform).toContain(`scale(${seed})`);
+      expect(readable()).toBe(false);
+      // The opening spring carries the pane past its resting height before it settles.
+      let peak = 0;
+      for (let step = 0; step < 40; step++) { clock.advance(16); peak = Math.max(peak, frame().height); }
+      expect(peak).toBeGreaterThan(SIZE.height * 1.01);
+      clock.advance(1600);
+      expect(frame()).toEqual({ left: 0, top: 0, ...SIZE });
+      expect(corner()).toBe(16);
+      expect(content().opacity).toBe(1);
+      expect(content().transform).toMatch(/^translateX\(-?0px\) translateY\(-?0px\) scale\(1\)$/);
+      expect(readable()).toBe(true);
+    } finally { unmount(); clock.restore(); }
+  });
+
+  it("keeps a card's per-corner radii out of the droplet and reads a uniform one", () => {
+    expect(restingRadius({ borderRadius: 16 })).toBe(16);
+    expect(restingRadius([{ borderRadius: 16 }, { borderTopLeftRadius: 4 }])).toBeUndefined();
+    expect(restingRadius({ padding: 8 })).toBeUndefined();
+  });
 
   it("reverses a closing surface from its current bounds and ignores the canceled exit", async () => {
     let exits = 0;
