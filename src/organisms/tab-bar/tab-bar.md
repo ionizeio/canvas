@@ -1,13 +1,16 @@
 # TabBar
 
-Bottom app navigation: a row of equal-width destinations, each an icon over a short label, with exactly one active. The mobile idiom (iOS HIG tab bar / Material 3 navigation bar), rendered through the glass functional layer.
+Bottom app navigation: a row of equal-width destinations, each an icon over a short label, with exactly one active. The mobile idiom (the iOS 26 floating tab bar / Material 3 navigation bar), rendered through the glass functional layer.
 
-In glass mode, web and Android move one measured indicator between icon
-positions. The web pill remains 48 by 28 points and Android's remains 56 by 32;
-restrained deformation stays out of the label area. Icons, labels, destinations
-and safe-area spacing remain fixed. iOS keeps its tint-only selection. Reduce
-Motion uses the final position immediately, and solid mode retains the ordinary
-platform pill.
+iOS and web share the iOS 26 anatomy: a capsule that floats above the content
+(which scrolls beneath it), inset from the sides, with the safe-area inset kept
+under the capsule, and the selected destination raised as a capsule covering its
+whole cell. Android docks the Material 3 bar full-bleed with its 56 by 32 icon
+pill. In glass mode the selection travels as one measured surface between
+destinations: the cell capsule on iOS and web, the icon pill on Android, with
+restrained deformation that never grows taller than the bar. Icons, labels,
+destinations and safe-area spacing remain fixed. Reduce Motion uses the final
+position immediately, and solid mode retains the ordinary platform surface.
 
 ## Usage
 
@@ -45,7 +48,7 @@ platform pill.
 
 ### Tab Bar
 
-**Do** — Exactly one destination carries the primary tint on both its icon and label, over Material 3's active-indicator pill on web and Android; the rest stay muted, so the current tab is always singular and unmistakable. On web the pill is what lets a bar and a `Sidebar` in the same app shell mark the current destination the same way across the breakpoint that swaps them.
+**Do** — Exactly one destination carries the primary tint on both its icon and label, over the raised cell capsule on iOS and web or Material 3's active-indicator pill on Android; the rest stay muted, so the current tab is always singular and unmistakable. On web the capsule is what lets a bar and a `Sidebar` in the same app shell mark the current destination the same way across the breakpoint that swaps them.
 
 ```tsx
 <TabBar

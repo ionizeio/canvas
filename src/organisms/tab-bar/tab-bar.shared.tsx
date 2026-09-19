@@ -2,15 +2,27 @@ import { primaryText } from "../../style/primary-text.js";
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { StyleSheet, type LayoutRectangle } from "react-native";
 import { View, Text, Pressable, GlassSurface, useTheme, useControllableState, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { selectionTint } from "../../style/selection-tint.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { MeasuredSelection } from "../../style/measured-selection.js";
 
 // Shared TabBar shell. TabBar is the bottom app-navigation bar: a row of equal-width
 // destinations, each an icon over a short label, with exactly one active. It is a
-// functional-layer surface, so it renders through GlassSurface — real Liquid Glass on
-// iOS 26, a frost on web/Android in glass mode, solid otherwise — matching the other bars.
-// The structure, accessibility, and active state live here once; a platform file supplies
-// the skin (bar height, label type, press feedback) and calls createTabBar.
+// functional-layer surface, so it renders through GlassSurface (real Liquid Glass on
+// iOS 26, the lens or a frost on web/Android in glass mode, solid otherwise), matching
+// the other bars. The structure, accessibility, and active state live here once; a
+// platform file supplies the skin (bar shape, label type, press feedback, the active
+// indicator) and calls createTabBar.
+//
+// Two bar anatomies, chosen by the skin:
+//   - DOCKED (Android, Material 3): a full-bleed bar along the bottom edge whose
+//     bottom padding grows by the safe-area inset so it covers the home indicator; the
+//     active indicator is a fixed-size pill centred behind the glyph.
+//   - FLOATING (iOS 26 and web): a capsule inset from the edges that hovers above the
+//     content, which scrolls beneath it; the safe-area inset becomes the space under
+//     the capsule. The active indicator is a capsule covering the whole destination
+//     cell, and under glass it is the measured liquid surface that travels between
+//     destinations.
 //
 // TabBar is the bottom navigation idiom (iOS HIG tab bar / Material 3 navigation bar); it is
 // app-level navigation, distinct from the top `Navbar` and the in-page `Tabs`.
@@ -44,8 +56,23 @@ export interface TabBarProps {
 }
 
 export interface TabBarSkin {
-  /** Bar shape: top hairline + min height + top padding (the fill/border color is applied by shared). */
+  /** Bar shape: hairline, radius, min height and padding (the fill/border colors come from `fill`). */
   bar: ViewStyle;
+  /**
+   * Bar fill and border colors from the active tokens. Solid mode paints them; under
+   * glass the material replaces the fill and the border is the rim. Defaults to the
+   * card fill with the border hairline.
+   */
+  fill?: (tokens: ColorTokens) => { backgroundColor: string; borderColor?: string };
+  /**
+   * A floating capsule instead of a docked, full-bleed bar: `horizontal` is the inset
+   * from the container's sides, `bottom` the least space kept under the capsule, and
+   * `clearance` how far into the safe-area inset the capsule may reach (the bar sits
+   * `max(bottom, bottomInset - clearance)` above the container's bottom edge, so it
+   * floats over the home-indicator zone without touching the indicator itself, the
+   * way the iOS 26 tab bar does). Undefined for a docked bar.
+   */
+  floating?: { horizontal: number; bottom: number; clearance: number };
   /** One destination cell: flex 1, centered, icon/label gap + vertical padding. */
   item: ViewStyle;
   /** Label type per active state (size/line-height/weight/tracking; the color is applied by shared). */
@@ -55,11 +82,15 @@ export interface TabBarSkin {
   /** iOS/web press dim (null on Android, where the ripple carries it). */
   pressedOpacity: number | null;
   /**
-   * Active-indicator pill drawn behind the icon. Web uses its smaller pill and
-   * Android uses the M3 dimensions. iOS remains tint-only and returns null.
-   * Returns the absolute-positioned, self-centering resting style.
+   * The active indicator. With `pillCovers: "icon"` (the default) it is a fixed-size
+   * pill centred behind the glyph, so the style carries a `width` and `height`
+   * (Android's M3 dimensions). With `pillCovers: "cell"` it is a capsule filling the
+   * whole destination cell, so the style carries only the fill and radius. `dark`
+   * lets the fill follow the scheme. Returns the resting style; null for a bar whose
+   * selection is the tint alone.
    */
-  pill: ((tokens: ColorTokens) => ViewStyle) | null;
+  pill: ((tokens: ColorTokens, dark: boolean) => ViewStyle) | null;
+  pillCovers?: "icon" | "cell";
 }
 
 export function createTabBar(skin: TabBarSkin) {
@@ -72,7 +103,8 @@ export function createTabBar(skin: TabBarSkin) {
     // contract). Uncontrolled use starts on the first item unless defaultActive
     // picks another.
     const [activeKey, setActiveKey] = useControllableState<string>(active, defaultActive ?? items[0]?.key ?? "", onSelect);
-    const pill = skin.pill?.(tokens);
+    const pill = skin.pill?.(tokens, material.dark);
+    const cellPill = skin.pillCovers === "cell";
     const structure = JSON.stringify(items.map((item) => item.key));
     const rowRef = useRef<View>(null);
     const itemNodes = useRef<Record<string, View | null>>({});
@@ -103,30 +135,39 @@ export function createTabBar(skin: TabBarSkin) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [structure]);
     const geometry = measurements.structure === structure ? measurements.items[activeKey] : undefined;
-    const selectionLayout = pill && geometry?.item && geometry.icon && typeof pill.width === "number" && typeof pill.height === "number" ? {
-      x: geometry.item.x + geometry.icon.x + (geometry.icon.width - pill.width) / 2,
-      y: geometry.item.y + geometry.icon.y + (geometry.icon.height - pill.height) / 2,
-      width: pill.width,
-      height: pill.height,
-    } : null;
+    // The cell pill is the destination's own rectangle; the icon pill is the skin's
+    // fixed size centred on the glyph.
+    const selectionLayout = pill && geometry?.item && (cellPill
+      ? { x: geometry.item.x, y: geometry.item.y, width: geometry.item.width, height: geometry.item.height }
+      : geometry.icon && typeof pill.width === "number" && typeof pill.height === "number" ? {
+        x: geometry.item.x + geometry.icon.x + (geometry.icon.width - pill.width) / 2,
+        y: geometry.item.y + geometry.icon.y + (geometry.icon.height - pill.height) / 2,
+        width: pill.width,
+        height: pill.height,
+      } : null) || null;
     const movingSelection = glass && selectionLayout !== null;
-    // The skin's paddingTop is the bar's symmetric vertical base. Mirror it on the bottom and
-    // add the safe-area inset there, so the item row stays vertically centered (top margin ==
-    // bottom margin) while the bar still extends down to cover the home indicator.
+    // The moving surface keeps the skin's hue at the moving selection's opacity ceiling,
+    // so the ink stays readable over the track and over labels in flight; the icon pill
+    // is already a translucent tint and passes through unchanged.
+    const pillTint = pill ? (cellPill ? selectionTint(pill, material.dark) : typeof pill.backgroundColor === "string" ? pill.backgroundColor : undefined) : undefined;
+    const fill = skin.fill ? skin.fill(tokens) : { backgroundColor: tokens.card, borderColor: tokens.border };
+    // The skin's paddingTop is the bar's symmetric vertical base. A docked bar mirrors it on
+    // the bottom and adds the safe-area inset there, so the item row stays vertically centered
+    // (top margin == bottom margin) while the bar still extends down to cover the home
+    // indicator. A floating capsule keeps its symmetric padding and puts the inset UNDER it.
     const basePad = typeof skin.bar.paddingTop === "number" ? skin.bar.paddingTop : 0;
-    // A bottom tab bar is a full-bleed nav shell: it must fill its container's width, not
-    // shrink-wrap to the icon column. `alignSelf: "stretch"` fills the cross axis in a normal
-    // column screen; `width: "100%"` also fills a centering/shrink-wrapping parent (e.g. the
-    // docs FitStage). Both route to GlassSurface's outer box, so glass and solid match. The
-    // Outer layout composition remains last in the style list.
-    return (
-      <GlassSurface
-        style={[skin.bar, { borderColor: tokens.border, backgroundColor: tokens.card, alignSelf: "stretch", width: "100%", paddingBottom: basePad + bottomInset }, style]}
-      >
+    const floating = skin.floating;
+    const barStyle: StyleProp<ViewStyle> = [
+      skin.bar,
+      { borderColor: fill.borderColor ?? tokens.border, backgroundColor: fill.backgroundColor },
+      floating ? { paddingBottom: basePad } : { alignSelf: "stretch", width: "100%", paddingBottom: basePad + bottomInset },
+    ];
+    const bar = (
+      <GlassSurface style={floating ? barStyle : [barStyle, style]}>
         <View ref={rowRef} accessibilityRole="tablist" testID={testID} style={{ flex: 1, flexDirection: "row" }}>
           {movingSelection && pill ? (
             <MeasuredSelection layout={selectionLayout} enabled profile="navigation" resetKey={`${structure}:${measurements.revision}`} testID={testID ? `${testID}-selection-motion` : undefined}>
-              <GlassSurface layer="control" interactive tint={typeof pill.backgroundColor === "string" ? pill.backgroundColor : undefined} style={[StyleSheet.absoluteFill, { borderRadius: pill.borderRadius, backgroundColor: pill.backgroundColor }]} testID={testID ? `${testID}-selection` : undefined} />
+              <GlassSurface layer="control" interactive tint={pillTint} style={[StyleSheet.absoluteFill, { borderRadius: pill.borderRadius, backgroundColor: pill.backgroundColor }]} testID={testID ? `${testID}-selection` : undefined} />
             </MeasuredSelection>
           ) : null}
           {items.map((it) => {
@@ -144,11 +185,15 @@ export function createTabBar(skin: TabBarSkin) {
                 android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
                 style={({ pressed }) => [skin.item, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
               >
-                {skin.pill ? (
-                  // Web and Android measure the glyph's real wrapper separately
-                  // from the cell. Labels and safe-area spacing stay untouched.
+                {/* The resting cell capsule, behind the glyph and label alike, until the
+                    measured selection takes over under glass. */}
+                {pill && cellPill && isActive && !movingSelection ? <View style={[StyleSheet.absoluteFill, pill, { pointerEvents: "none" }]} /> : null}
+                {pill ? (
+                  // The glyph's real wrapper is measured separately from the cell, which
+                  // is where the icon pill centres itself. Labels and safe-area spacing
+                  // stay untouched.
                   <View ref={(node) => { iconNodes.current[it.key] = node; }} onLayout={(event) => record(it.key, "icon", event.nativeEvent.layout)} style={{ alignItems: "center", justifyContent: "center" }}>
-                    {isActive && !movingSelection ? <View style={[skin.pill(tokens), { pointerEvents: "none" }]} /> : null}
+                    {!cellPill && isActive && !movingSelection ? <View style={[pill, { pointerEvents: "none" }]} /> : null}
                     {it.icon(isActive)}
                   </View>
                 ) : (
@@ -160,6 +205,21 @@ export function createTabBar(skin: TabBarSkin) {
           })}
         </View>
       </GlassSurface>
+    );
+    if (!floating) return bar;
+    // The floating capsule's frame: full width like the docked bar (so it reads the
+    // container's bounds the same way, `alignSelf: "stretch"` plus `width: "100%"`),
+    // insetting the capsule from the sides and keeping the safe-area space under it.
+    // Touches pass through the frame's margins to whatever scrolls beneath.
+    return (
+      <View
+        style={[
+          { alignSelf: "stretch", width: "100%", pointerEvents: "box-none", paddingHorizontal: floating.horizontal, paddingBottom: Math.max(floating.bottom, bottomInset - floating.clearance) },
+          style,
+        ]}
+      >
+        {bar}
+      </View>
     );
   };
 }
