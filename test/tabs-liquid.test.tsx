@@ -83,12 +83,12 @@ describe("Tabs moving glass selection", () => {
     });
   }
 
-  it("preserves web and Android underline ink while iOS uses its existing filled anatomy", async () => {
+  it("preserves Android underline ink while iOS and web use the capsule's filled anatomy", async () => {
     for (const [platform, Tabs] of [["web", WebTabs], ["android", AndroidTabs], ["ios", IOSTabs]] as const) {
       const { unmount } = render(<ThemeProvider glass><Tabs tabs={["Overview", "Activity"]} testID="tabs" /></ThemeProvider>);
       await act(async () => {});
       measureTab("Overview", { x: 3, y: 3, width: 100, height: 32 });
-      expect(screen.queryByTestId("tabs-selection-motion") !== null).toBe(platform === "ios");
+      expect(screen.queryByTestId("tabs-selection-motion") !== null).toBe(platform !== "android");
       unmount();
     }
   });

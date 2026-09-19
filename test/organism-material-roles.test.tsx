@@ -9,6 +9,7 @@ import { DataTable } from "../src/organisms/data-table/data-table.tsx";
 import { FilterPanel } from "../src/organisms/filter-panel/filter-panel.tsx";
 import { Steps } from "../src/organisms/steps/steps.tsx";
 import { Tabs } from "../src/organisms/tabs/tabs.tsx";
+import { Tabs as AndroidTabs } from "../src/organisms/tabs/tabs.android.tsx";
 import { Command } from "../src/organisms/command/command.tsx";
 import { DashboardGrid } from "../src/organisms/dashboard-grid/dashboard-grid.tsx";
 
@@ -135,14 +136,28 @@ describe("organism material roles", () => {
   });
 
   it("keeps unfilled underline tabs unpainted and their ink indicator intact", () => {
+    // The Android skin is the one that still draws an ink underline; the web
+    // shares iOS's capsule segmented control, whose selected pill is a filled
+    // surface and so becomes glass (the case below).
     capabilities(true, true);
-    const children = <Tabs tabs={["Account", "Profile"]} />;
+    const children = <AndroidTabs tabs={["Account", "Profile"]} />;
     const result = render(mode(children, false));
     const selected = screen.getByRole("tab", { name: "Account" });
     const original = selected.style.cssText;
     result.rerender(mode(children, true));
     expect(materials(selected)).toHaveLength(0);
     expect(selected.style.cssText).toBe(original);
+    expect(screen.getByRole("tab", { name: "Account" })).toBe(selected);
+  });
+
+  it("paints the web capsule tabs' selection as glass while keeping the same host", () => {
+    capabilities(true, true);
+    const children = <Tabs tabs={["Account", "Profile"]} />;
+    const result = render(mode(children, false));
+    const selected = screen.getByRole("tab", { name: "Account" });
+    expect(materials(selected)).toHaveLength(0);
+    result.rerender(mode(children, true));
+    expect(materials(selected)).toHaveLength(1);
     expect(screen.getByRole("tab", { name: "Account" })).toBe(selected);
   });
 

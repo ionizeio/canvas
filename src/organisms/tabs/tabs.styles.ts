@@ -1,6 +1,6 @@
 import { primaryText } from "../../style/primary-text.js";
 import { StyleSheet, type StyleProp, type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow, customShadow, alpha, FOCUS_RESET, shape } from "../../style/index.js";
+import { type ColorTokens, shadow, customShadow, alpha, FOCUS_RESET } from "../../style/index.js";
 import { type TabsSkin } from "./tabs.shared.js";
 
 // Co-located Tabs skins, one per platform. The shell resolves the look axis
@@ -19,8 +19,13 @@ import { type TabsSkin } from "./tabs.shared.js";
 //   Android (M3 underline tabs): no container; each tab is text with a 3px brand
 //     `primary` indicator bar under the active tab; inactive labels read in
 //     `muted-foreground`; title-case ~14sp; press = android_ripple.
-//   Web: the established Canvas look (underline rule / muted pill track / accent
-//     rail), lifted verbatim from the original file.
+//   Web: the SAME capsule segmented control as iOS (the owner's call, 2026-09-18:
+//     the web tab is to look like the iOS tab, and under glass that is the
+//     capsule track with the liquid-glass puck the shared shell derives from
+//     these fills). The one departure is the keyboard focus ring, which a web
+//     page must keep. The former web look (an underline rule, the Riskora card
+//     of hairlined segments) is gone; do not bring it back as a mode-dependent
+//     shape, the skin owns the anatomy and the surface mode owns the material.
 
 export type Variant = "underline" | "pills" | "vertical";
 
@@ -57,127 +62,6 @@ export const overflowScroller: ViewStyle = {
 };
 
 // =============================================================================
-// Web: the established Canvas look (lifted verbatim from the original file).
-// =============================================================================
-
-export const webSkin: TabsSkin = {
-  // The selected underline tab carries no track ripple; press dims the trigger.
-  pressedOpacity: 0.9,
-  ripple: null,
-
-  // --- underline ---
-  underlineRow(tokens) {
-    return {
-      flexDirection: "row",
-      alignItems: "center",
-      borderBottomWidth: 1,
-      borderColor: tokens.border,
-    };
-  },
-  underlineTrigger() {
-    return {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 8,
-      paddingHorizontal: 16,
-      paddingVertical: 12,
-    };
-  },
-  // A 2px primary rule drawn as an explicit sliver pinned to the trigger's
-  // bottom edge (absolute bottom-0 left-0 right-0 h-0.5 rounded-full).
-  underlineIndicator(tokens, selected) {
-    return {
-      position: "absolute",
-      bottom: 0,
-      start: 0,
-      end: 0,
-      height: 2,
-      borderRadius: 9999,
-      backgroundColor: selected ? tokens.primary : "transparent",
-    };
-  },
-  underlineLabel(tokens, selected) {
-    return { fontSize: 14, lineHeight: 20, fontWeight: "500", color: selected ? tokens.foreground : tokens["muted-foreground"] };
-  },
-
-  // --- pills ---
-  // The Riskora section tabs: a white 16px-cornered bar holding 12px-cornered
-  // segments with a hairline each; the selected segment drops its hairline for a
-  // sky tint (the "Employees" tab on the company profile).
-  pillsRow(tokens) {
-    return {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 8,
-      alignSelf: "flex-start",
-      borderRadius: shape.web.menu,
-      borderWidth: 1,
-      borderColor: tokens.border,
-      backgroundColor: tokens.card,
-      padding: 8,
-    };
-  },
-  pillsTrigger() {
-    return {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 8,
-      borderRadius: shape.web.control,
-      borderWidth: 1,
-      paddingHorizontal: 16,
-      paddingVertical: 10,
-    };
-  },
-  pillsFill(tokens, selected) {
-    return selected
-      ? { backgroundColor: alpha(tokens.primary, 0.14), borderColor: "transparent" }
-      : { backgroundColor: "transparent", borderColor: tokens.border };
-  },
-  pillsLabel(tokens, selected) {
-    return { fontSize: 14, lineHeight: 20, fontWeight: "500", color: selected ? tokens.foreground : tokens["muted-foreground"] };
-  },
-
-  // --- vertical ---
-  verticalTrigger() {
-    return {
-      width: "100%",
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 10,
-      borderRadius: shape.web.control,
-      paddingHorizontal: 12,
-      paddingVertical: 12,
-    };
-  },
-  verticalFill(tokens, selected) {
-    return { backgroundColor: selected ? tokens.accent : "transparent" };
-  },
-  verticalLabel(tokens, selected) {
-    return { fontSize: 14, lineHeight: 20, fontWeight: "500", color: selected ? tokens["accent-foreground"] : tokens["muted-foreground"] };
-  },
-
-  // --- count badge ---
-  countBadgeBox(tokens) {
-    return {
-      flexDirection: "row",
-      alignItems: "center",
-      alignSelf: "flex-start",
-      borderRadius: 6,
-      borderWidth: 1,
-      borderColor: "transparent",
-      backgroundColor: tokens.secondary,
-      paddingHorizontal: 6,
-      paddingVertical: 2,
-    };
-  },
-  countBadgeLabel(tokens, muted) {
-    return { fontSize: 12, lineHeight: 16, fontWeight: "500", color: muted ? tokens["muted-foreground"] : tokens["secondary-foreground"] };
-  },
-};
-
-// =============================================================================
 // iOS (iOS 27 / Liquid Glass segmented control): the in-page tab strip is a
 // CAPSULE segmented control (mirroring button-group's iOS 27 treatment). A
 // capsule gray track (radius 9999) holds raised white CAPSULE pills (radius
@@ -211,14 +95,11 @@ function iosSelectedThumb(tokens: ColorTokens, dark: boolean): string {
   return dark ? mix(tokens.muted, tokens.foreground, 0.28) : tokens.background;
 }
 
-export const iosSkin: TabsSkin = {
+// The capsule segmented control, shared by iOS and web. iOS layers the
+// keyboard-focus reset on top (below); web keeps the browser's focus ring.
+const capsuleSkin: TabsSkin = {
   pressedOpacity: 0.8, // HIG: dim on press
   ripple: null,
-  // Suppress the react-native-web blue keyboard-focus ring on iOS triggers; a
-  // real iOS segmented control never shows it. `outlineStyle`/`outlineWidth` are
-  // not in RN's ViewStyle (hence the cast inside FOCUS_RESET) and are ignored
-  // natively. Mirrors input/textarea/pagination's outline resets.
-  focusOutlineReset: FOCUS_RESET,
 
   // --- underline -> capsule segmented control (gray track + raised pill) ---
   underlineRow(tokens) {
@@ -326,6 +207,19 @@ export const iosSkin: TabsSkin = {
     return { fontSize: 12, lineHeight: 16, fontWeight: "600", color: muted ? tokens["muted-foreground"] : tokens["secondary-foreground"] };
   },
 };
+
+
+// iOS: the capsule skin with the react-native-web blue keyboard-focus ring
+// suppressed on its triggers; a real iOS segmented control never shows it.
+// `outlineStyle`/`outlineWidth` are not in RN's ViewStyle (hence the cast inside
+// FOCUS_RESET) and are ignored natively. Mirrors input/textarea/pagination's
+// outline resets.
+export const iosSkin: TabsSkin = { ...capsuleSkin, focusOutlineReset: FOCUS_RESET };
+
+// Web: the capsule skin as is. The focus ring stays: keyboard users on the web
+// need to see which segment holds focus, and the shared shell's roving tab
+// stop makes the whole strip one Tab press away.
+export const webSkin: TabsSkin = capsuleSkin;
 
 // =============================================================================
 // Android (Material 3): underline tabs. No container; each tab is text with a

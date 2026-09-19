@@ -175,3 +175,16 @@ Not covered: Reduce Motion, a sealed candidate build, the InputOTP caret on a de
 and the remaining native-driver cost per animated view (about 0.5% CPU each on the
 simulator), which is the framework's price for direct view updates and scales with the
 scene's bucket count rather than with the tree.
+
+## The web Tabs and TabBar take the iOS liquid-glass anatomy, 2026-09-18
+
+The owner's call: the web tab is to look like the iOS tab with liquid glass, in both
+modes, and the TabBar too. The Tabs shell already derives the glass track and the
+travelling puck from the skin's fills, so the web Tabs change is the skin: the capsule
+segmented control shared with iOS (`capsuleSkin` in `tabs.styles.ts`), the browser
+focus ring kept. Recorded with the skill's recorder against the worktree Metro on 8082
+and `actions-capsule-tabs.mjs` (beside the other actions modules in the artifact root).
+
+| Date | Effect and profile | Runtime and device | Revision (dirty?) | Values tried | rAF p50 / p95 / max (ms) | What the sheet showed | Artifacts |
+|---|---|---|---|---|---|---|---|
+| 2026-09-18 | Web Tabs as the capsule segmented control: default and pill variants, solid to glass, three pill hops, two workspace hops | Chromium headed via the repo's Playwright, 1280x800, dark, 20 fps sampling | Phase 1 commit (clean worktree) | `capsuleSkin` shared with iOS; `PROFILES` unchanged | 17.1 / 32.8 / 1366 over 573 frames; the maximum is the solid-to-glass switch (lens definitions regenerate for every surface on the page), the hops themselves stayed under 33 ms | Capsule track with the material rim, a lighter glass puck with a bright specular edge, on-foreground labels, the disabled tab dimmed: the same anatomy as the iOS row in the docs' three-up. Label ink changes one frame before the puck lands; the puck sits on the new tab by the second frame and stays put (strip 476-487). Solid mode on the docs Tabs page: iOS and web rows identical in light and dark (gray track, raised white pill; lifted gray pill in dark), Android keeps the underline; badge counts, six-tab overflow and the block layout render as on iOS. | `web-capsule-tabs-01` (movie, sheet, `strip-476-487.png`, `frame-487-zoom.png`, `trace.json`) |

@@ -9,6 +9,7 @@ import { Badge } from "../src/atoms/badge/badge.tsx";
 import { Chip } from "../src/atoms/chip/chip.tsx";
 import { Kbd } from "../src/atoms/kbd/kbd.tsx";
 import { Tabs } from "../src/organisms/tabs/tabs.tsx";
+import { selectionTint } from "../src/organisms/tabs/tabs.styles.ts";
 import { Pagination } from "../src/atoms/pagination/pagination.tsx";
 import { brandTint, surfaceUnderFill, BRAND_TINT_ALPHA, BRAND_INK_CONTRAST } from "../src/style/glass-surface/glass-surface.shared.tsx";
 import { alpha, composite, contrastRatio, inkOn } from "../src/style/color.ts";
@@ -147,7 +148,10 @@ describe("brand-tinted glass pucks", () => {
       // The track's own pane is the first material; the selected tab's puck follows.
       const fills = Array.from(strip.querySelectorAll("[style*='backdrop-filter']")).map((lens) => rgbaOf((lens.previousElementSibling as HTMLElement).style.backgroundColor));
       expect(fills[0]).toEqual(rgbaOf(LIGHT["glass-tint"]));
-      expect(fills).toContainEqual(rgbaOf(alpha(lightColors.primary, 0.14)));
+      // The web shares the capsule segmented control with iOS: the puck carries the
+      // raised thumb's fill (the light scheme's `background`) at the moving
+      // selection's opacity ceiling, not a brand tint.
+      expect(fills).toContainEqual(rgbaOf(selectionTint({ backgroundColor: lightColors.background }, false)!));
       const selected = strip.querySelector('[aria-selected="true"]') as HTMLElement;
       const label = Array.from(selected.querySelectorAll("*")).find((n) => n.textContent === "Overview" && (n as HTMLElement).style.color) as HTMLElement;
       expect(rgbaOf(label.style.color)).toEqual(rgbaOf(alpha(lightColors.foreground, 1)));

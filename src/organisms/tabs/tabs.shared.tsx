@@ -19,9 +19,10 @@ import { type Variant } from "./tabs.styles.js";
 // Three looks, picked by boolean prop (first match wins):
 //   - underline (default): each trigger is muted text; the active one gets the
 //     foreground/brand color and an indicator beneath it. The native shape
-//     differs per OS: web/Android draw an underline rule (Android = a 3px brand
-//     `primary` bar with muted inactive labels); iOS draws a gray segmented
-//     track with a raised white pill on the selected tab (no underline).
+//     differs per OS: Android draws an underline rule (a 3px brand `primary`
+//     bar with muted inactive labels); iOS and web draw a gray capsule track
+//     with a raised pill on the selected tab (no underline), which under glass
+//     is the liquid surface that travels between tabs.
 //   - `pills`: the row is a muted track; the active trigger is an elevated/tonal
 //     background pill while the rest sit flat and muted.
 //   - `vertical`: the triggers stack into a left-aligned column rail; the active
