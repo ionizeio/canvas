@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { render, cleanup, waitFor, act } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
 import { hydrateRoot, type Root } from "react-dom/client";
-import { AccessibilityInfo, Animated } from "react-native";
+import { AccessibilityInfo } from "react-native";
 import { Backdrop, BackdropHost } from "../src/organisms/backdrop/backdrop.tsx";
 import { backdropClock, resetBackdropClocks, retainBackdropClock, releaseBackdropClock } from "../src/organisms/backdrop/backdrop-clock.ts";
 import { useGpuBackdrop, refreshBackdropRenderer } from "../src/organisms/backdrop/skia-runtime.ts";
@@ -28,8 +28,6 @@ const FIELD = Array.from({ length: 12 }, (_, i) => ({ x: i / 12, y: i / 12, r: 1
 
 /** The surface root is the only aria-hidden node the engine renders. */
 const surface = (c: HTMLElement) => c.querySelector('[aria-hidden="true"]');
-
-const valueOf = (v: Animated.Value): number => (v as unknown as { __getValue: () => number }).__getValue();
 
 function Scene() {
   return (
@@ -171,35 +169,25 @@ describe("twinkle scintillates rather than shimmering as one", () => {
 
 describe("the clock's continuity", () => {
   // A backdrop that is toggled off and back on resumes mid-flight instead of
-  // restarting. The phase used to be read back from the JS-driven value on stop;
-  // a natively driven value cannot report its position to JS, so the clock keeps
-  // the run's wall clock and derives the phase from it, then resumes through a head
-  // timing that covers the REST of the cycle before the loop takes over. Under
-  // bun test react-native-web swaps in AnimatedMock, which completes every timing
-  // synchronously, so the head is observed through its config rather than its
-  // value: a quarter of the default 32s flight elapsed means a 24s head.
-  // Every timing on the flight value shorter than the full 32s cycle is a resume head.
-  const headFor = (calls: Array<unknown[]>) =>
-    calls
-      .filter((args) => args[0] === backdropClock("default").flight)
-      .map((args) => (args[1] as { duration: number }).duration)
-      .filter((duration) => duration < 32000);
+  // restarting. The clock's channels are loop channels (src/style/loop.tsx): a stop
+  // captures the wall-clock phase and the next play resumes there, on every platform
+  // (the native driver through a head timing, the web through the animation delay).
+  const flight = () => backdropClock("default").flight;
 
   it("resumes the flight from the phase it was stopped at", () => {
     let now = 1_000_000;
     const clock = spyOn(Date, "now").mockImplementation(() => now);
-    const timing = spyOn(Animated, "timing");
     try {
       retainBackdropClock("default", "running");
       now += 8000;
       releaseBackdropClock("default");
-      timing.mockClear();
+      expect(flight().state().playing).toBe(false);
       retainBackdropClock("default", "running");
-      const heads = headFor(timing.mock.calls);
-      expect(heads).toContain(24000);
+      // A quarter of the default 32s flight elapsed, so the run resumes at 0.25.
+      expect(flight().position()).toBeCloseTo(0.25);
+      expect(flight().state().epoch).toBe(now - 8000);
       releaseBackdropClock("default");
     } finally {
-      timing.mockRestore();
       clock.mockRestore();
     }
   });
@@ -207,32 +195,51 @@ describe("the clock's continuity", () => {
   it("keeps the captured phase across a poster still", () => {
     let now = 1_000_000;
     const clock = spyOn(Date, "now").mockImplementation(() => now);
-    const timing = spyOn(Animated, "timing");
     try {
       retainBackdropClock("default", "running");
       now += 16000;
       releaseBackdropClock("default");
       retainBackdropClock("default", "poster");
-      expect(valueOf(backdropClock("default").flight)).toBe(0.35);
+      expect(flight().position()).toBe(0.35);
       releaseBackdropClock("default");
-      timing.mockClear();
       retainBackdropClock("default", "running");
-      expect(headFor(timing.mock.calls)).toContain(16000);
+      expect(flight().position()).toBeCloseTo(0.5);
       releaseBackdropClock("default");
     } finally {
-      timing.mockRestore();
       clock.mockRestore();
     }
   });
 
   it("starts from the top of the cycle on the first run", () => {
-    const timing = spyOn(Animated, "timing");
+    const now = 1_000_000;
+    const clock = spyOn(Date, "now").mockImplementation(() => now);
     try {
       retainBackdropClock("default", "running");
-      expect(headFor(timing.mock.calls)).toEqual([]);
+      expect(flight().position()).toBe(0);
+      expect(flight().state()).toEqual({ playing: true, epoch: now, phase: 0 });
       releaseBackdropClock("default");
     } finally {
-      timing.mockRestore();
+      clock.mockRestore();
+    }
+  });
+
+  it("shares one phase between two surfaces at the same energy", () => {
+    let now = 1_000_000;
+    const clock = spyOn(Date, "now").mockImplementation(() => now);
+    try {
+      retainBackdropClock("default", "running");
+      now += 4000;
+      retainBackdropClock("default", "running");
+      expect(flight().position()).toBeCloseTo(0.125);
+      releaseBackdropClock("default");
+      // Still retained by the other surface: the flight keeps running.
+      now += 4000;
+      expect(flight().state().playing).toBe(true);
+      expect(flight().position()).toBeCloseTo(0.25);
+      releaseBackdropClock("default");
+      expect(flight().state().playing).toBe(false);
+    } finally {
+      clock.mockRestore();
     }
   });
 });
@@ -250,7 +257,8 @@ describe("Backdrop accessibility", () => {
     );
 
     render(wrap(<Scene />));
-    await waitFor(() => expect(valueOf(backdropClock("default").flight)).toBe(0.35));
+    await waitFor(() => expect(backdropClock("default").flight.position()).toBe(0.35));
+    expect(backdropClock("default").flight.state().playing).toBe(false);
 
     await act(async () => {
       resolve(false);

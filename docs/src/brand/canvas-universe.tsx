@@ -1,7 +1,7 @@
 import { useId } from "react";
-import { Animated, useWindowDimensions } from "react-native";
+import { useWindowDimensions } from "react-native";
 import Svg, { Circle, Path, Rect, G, Defs, RadialGradient, LinearGradient, Stop, Mask, Filter, FeGaussianBlur, FeColorMatrix } from "react-native-svg";
-import { Backdrop, backdropClock, useTheme } from "@ionizeio/canvas";
+import { Backdrop, LoopView, backdropClock, useTheme, type LoopChannel } from "@ionizeio/canvas";
 import { glowColor } from "./hero-orbit";
 import { canvasSky } from "./canvas-sky";
 
@@ -14,12 +14,11 @@ import { canvasSky } from "./canvas-sky";
 // is the whole reason the engine lives in the kit and this file does not.
 //
 // Bespoke art (the core, the comets) rides <Backdrop.Custom> and binds to the
-// engine's exported clock, so it stays in phase with the particle layers instead
-// of running its own timeline.
+// engine's exported clock through the kit's LoopView, so it stays in phase with the
+// particle layers instead of running its own timeline, and costs the same nothing
+// per frame (the native driver natively, a compositor CSS animation on the web).
 
 const ENERGY = "energetic" as const;
-
-type AnimNumber = Animated.Value | Animated.AnimatedInterpolation<number> | number;
 
 // SVG defs ids must be unique per mounted instance; React's useId is sanitized
 // because raw ids contain colons, which break url(#...) references on the web.
@@ -59,11 +58,13 @@ function GalaxyCore() {
     return { d: `M${c} ${c} L${x0.toFixed(2)} ${y0.toFixed(2)} A${c} ${c} 0 0 1 ${x1.toFixed(2)} ${y1.toFixed(2)} Z`, color: glowColor(am) };
   });
 
-  const rotate = clock.drift.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "360deg"] });
-  const opacity = clock.breath.interpolate({ inputRange: [0, 1], outputRange: dark ? [0.3, 0.4] : [0.3, 0.38] });
+  // One slow revolution per drift cycle, a breath on the opacity: two channels, two
+  // properties.
+  const rotate = { channel: clock.drift, inputRange: [0, 1], outputRange: [0, 360] };
+  const opacity = { channel: clock.breath, inputRange: [0, 1], outputRange: dark ? [0.3, 0.4] : [0.3, 0.38] };
 
   return (
-    <Animated.View style={{ position: "absolute", left, top, width: size, height: size, opacity, transform: [{ rotate }] }}>
+    <LoopView style={{ position: "absolute", left, top, width: size, height: size }} opacity={opacity} rotate={rotate}>
       <Svg width={size} height={size}>
         <Defs>
           <RadialGradient id={`${id}-fade`} cx="50%" cy="50%" r="50%">
@@ -90,7 +91,7 @@ function GalaxyCore() {
         </G>
         <Circle cx={c} cy={c} r={size * 0.12} fill={`url(#${id}-core)`} />
       </Svg>
-    </Animated.View>
+    </LoopView>
   );
 }
 
@@ -102,20 +103,40 @@ function GalaxyCore() {
 // light source, and a broader dust tail that lags along the orbit and warms in
 // colour. Drawing both is the detail that reads as "someone knew what a comet
 // looks like" rather than "a streak went past".
-function Comet({ progress, from, to, tilt, scale }: { progress: AnimNumber; from: { x: number; y: number }; to: { x: number; y: number }; tilt: number; scale: number }) {
+/** A comet's pass as a window of its channel: the pass runs 0..1 while the channel's
+ *  value crosses `window`, and the comet holds at its ends outside it. `points` are
+ *  `[pass, value]` pairs; the result is the track over the whole channel. */
+function windowed(points: Array<[number, number]>, [start, end]: [number, number]): { inputRange: number[]; outputRange: number[] } {
+  const inputRange: number[] = [];
+  const outputRange: number[] = [];
+  const push = (x: number, y: number) => {
+    if (inputRange.length > 0 && inputRange[inputRange.length - 1] === x) return;
+    inputRange.push(x);
+    outputRange.push(y);
+  };
+  push(0, points[0]![1]);
+  for (const [pass, value] of points) push(start + pass * (end - start), value);
+  push(1, points[points.length - 1]![1]);
+  return { inputRange, outputRange };
+}
+
+function Comet({ channel, window, from, to, tilt, scale }: { channel: LoopChannel; window: [number, number]; from: { x: number; y: number }; to: { x: number; y: number }; tilt: number; scale: number }) {
   const id = useSvgId("comet");
   const { width, height } = useWindowDimensions();
   const w = 260 * scale;
   const h = 26 * scale;
 
-  const p = progress as Animated.Value;
-  const translateX = p.interpolate({ inputRange: [0, 1], outputRange: [width * from.x, width * to.x] });
-  const translateY = p.interpolate({ inputRange: [0, 1], outputRange: [height * from.y, height * to.y] });
-  const opacity = p.interpolate({ inputRange: [0, 0.12, 0.88, 1], outputRange: [0, 0.85, 0.85, 0] });
+  const translateX = { channel, ...windowed([[0, width * from.x], [1, width * to.x]], window) };
+  const translateY = { channel, ...windowed([[0, height * from.y], [1, height * to.y]], window) };
+  const opacity = { channel, ...windowed([[0, 0], [0.12, 0.85], [0.88, 0.85], [1, 0]], window) };
 
   return (
-    <Animated.View
-      style={{ position: "absolute", top: 0, left: 0, width: w, height: h, opacity, transform: [{ translateX }, { translateY }, { rotate: `${tilt}deg` }] }}
+    <LoopView
+      style={{ position: "absolute", top: 0, left: 0, width: w, height: h }}
+      opacity={opacity}
+      translateX={translateX}
+      translateY={translateY}
+      rotate={tilt}
     >
       <Svg width={w} height={h}>
         <Defs>
@@ -142,23 +163,19 @@ function Comet({ progress, from, to, tilt, scale }: { progress: AnimNumber; from
         <Rect x={0} y={h / 2 - 1.6 * scale} width={w} height={3.2 * scale} rx={1.6 * scale} fill={`url(#${id}-ion)`} />
         <Circle cx={w - 2} cy={h / 2} r={5 * scale} fill={`url(#${id}-head)`} />
       </Svg>
-    </Animated.View>
+    </LoopView>
   );
 }
 
 function Comets() {
   const clock = backdropClock(ENERGY);
-  // Two comets on channels with very different periods (the event cycle and the
-  // 180s drift), so their passes almost never coincide and the sky never looks
-  // like it is on a loop.
-  const second = clock.drift.interpolate({
-    inputRange: [0, 0.55, 0.78, 1],
-    outputRange: [0, 0, 1, 1],
-  });
+  // Two comets on channels with very different periods (the event cycle, whose value
+  // holds at 0 and then sweeps, and a window of the 180s drift), so their passes
+  // almost never coincide and the sky never looks like it is on a loop.
   return (
     <>
-      <Comet progress={clock.event} from={{ x: -0.25, y: 0.16 }} to={{ x: 1.15, y: 0.52 }} tilt={14} scale={1} />
-      <Comet progress={second} from={{ x: 1.2, y: 0.72 }} to={{ x: -0.3, y: 0.3 }} tilt={196} scale={0.72} />
+      <Comet channel={clock.event} window={[0, 1]} from={{ x: -0.25, y: 0.16 }} to={{ x: 1.15, y: 0.52 }} tilt={14} scale={1} />
+      <Comet channel={clock.drift} window={[0.55, 0.78]} from={{ x: 1.2, y: 0.72 }} to={{ x: -0.3, y: 0.3 }} tilt={196} scale={0.72} />
     </>
   );
 }

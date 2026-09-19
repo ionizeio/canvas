@@ -6,6 +6,8 @@ Layers paint back to front in declaration order. `depth` is the parallax rate: `
 
 `twinkle` scintillates a particle field. The bodies are dealt into phase buckets that flare at unrelated moments rather than brightening as one, and the bright ones grow a diffraction glint at the peak, so the effect reads as individual stars catching the light instead of the whole sky breathing.
 
+Bespoke art (a galactic core, a comet) goes in a `Backdrop.Custom` layer and binds to the engine's clock through `LoopView`. `backdropClock(energy)` hands out the shared channels (`flight`, `twinkle`, `scintillate`, `drift`, `breath`, `event`), and a `LoopView` maps one onto its opacity or a transform component with an `inputRange` / `outputRange` pair plus a phase `offset`, so the custom layer stays in phase with the particle layers and costs the same nothing per frame: the native driver on iOS and Android, a compositor-run CSS animation on the web.
+
 Mount a single `<BackdropHost>` at your app root and the surface is shared by every `<Backdrop>` beneath it, which keeps one drawing surface alive across navigation instead of one per screen. Without a host a `<Backdrop>` simply renders in place.
 
 **If you are not installing `@shopify/react-native-skia`, add one line to your Metro config.** It is an optional peer used by a future GPU renderer, and Backdrop draws perfectly without it. But Metro resolves `require("...")` at build time and ignores the guarded try/catch around it, so an absent optional peer is a hard bundling failure rather than a graceful runtime fallback. Stub it to an empty module in `metro.config.js`:

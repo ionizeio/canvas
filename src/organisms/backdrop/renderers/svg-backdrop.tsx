@@ -1,7 +1,6 @@
 import { useId, Fragment } from "react";
-import { Animated } from "react-native";
 import Svg, { Circle, Path, Rect, G, Line, Defs, RadialGradient, Stop } from "react-native-svg";
-import { View } from "../../../style/index.js";
+import { View, LoopView, type LoopTrack } from "../../../style/index.js";
 import { type BackdropClock } from "../backdrop-clock.js";
 import { type Layer, type ParticlesLayer, type Particle, type ParticleSprite, type GradientBlob } from "../backdrop-layers.js";
 
@@ -13,16 +12,17 @@ import { type Layer, type ParticlesLayer, type Particle, type ParticleSprite, ty
 // backend boots, the Reduce Motion poster host, and the recovery path if a GPU
 // renderer fails to initialise.
 //
-// Architectural rule, load-bearing: every drawn group is ONE Animated.View wrapping
-// a STATIC <Svg>. Animated must never wrap an Svg directly, because its forced
-// collapsable={false} reaches the DOM on react-native-web and React throws (see
-// src/atoms/spinner/spinner.styles.tsx). No SVG element prop is ever animated;
-// all motion is transform and opacity on the wrapper. A twinkling layer draws as
-// several such groups (its phase buckets), which is the same rule applied per
-// group rather than a relaxation of it.
-
-type AnimNumber = Animated.Value | Animated.AnimatedInterpolation<number> | number;
-type Interp = Animated.Value | Animated.AnimatedInterpolation<number>;
+// Architectural rule, load-bearing: every drawn group is ONE `LoopView` wrapping a
+// STATIC <Svg>. No SVG element prop is ever animated; all motion is transform and
+// opacity on the wrapper, bound to the clock's channels through tracks, which is what
+// lets the loop primitive run the sky on the native driver natively and as compositor
+// CSS animations on the web (src/style/loop.tsx). A twinkling layer draws as several
+// such groups (its phase buckets) nested inside the layer's own wrapper: opacity
+// composes multiplicatively through nesting, so the layer's travel fade and each
+// bucket's flare stay two single-channel tracks instead of a product no compositor
+// animation could express. Never wrap an Svg in an Animated component directly: its
+// forced collapsable={false} reaches the DOM on react-native-web and React throws (see
+// src/atoms/spinner/spinner.styles.tsx).
 
 // SVG defs ids must be unique per mounted instance; React's useId is sanitized
 // because raw ids contain colons, which break url(#...) references on the web.
@@ -50,16 +50,8 @@ function zCurve(depth: number): { inputRange: number[]; outputRange: number[] } 
 
 const FADE_IN = [0, 0.12, 0.78, 0.95, 1];
 
-// Layer phase (flight + offset) mod 1 as a chained interpolation; the epsilon step
-// avoids a degenerate zero-width segment at the seam.
-function sawtooth(flight: Animated.Value, offset: number): Interp {
-  if (offset === 0) return flight;
-  const seam = 1 - offset;
-  return flight.interpolate({
-    inputRange: [0, seam, seam + 1e-6, 1],
-    outputRange: [offset, 1, 0, offset],
-  });
-}
+// A layer's phase in the flight cycle is the track's `offset`: the loop primitive wraps
+// it as a sawtooth on both platforms, so sibling layers stagger on one channel.
 
 // ---------------------------------------------------------------------------
 // Scintillation.
@@ -70,7 +62,7 @@ function sawtooth(flight: Animated.Value, offset: number): Interp {
 // change, and the eye adapts straight through it: the effect was nearly invisible
 // however wide the range was pushed. Real scintillation is DIFFERENTIAL, so a
 // twinkling field is dealt into phase buckets that flare at unrelated moments,
-// each bucket its own Animated.View over its own static Svg.
+// each bucket its own LoopView over its own static Svg.
 
 /** Phase buckets per twinkling field. Enough that neighbours are almost never in
  *  the same bucket, few enough that the extra wrappers stay cheap. */
@@ -95,26 +87,25 @@ function bucketOf(i: number, k: number): number {
 const FLARE_IN = [0, 0.05, 0.16, 0.45, 1];
 const FLARE_OUT = [0.5, 1, 0.75, 0.5, 0.5];
 
-function flare(scintillate: Animated.Value, offset: number): Interp {
-  return sawtooth(scintillate, offset).interpolate({ inputRange: FLARE_IN, outputRange: FLARE_OUT });
+/** One bucket's flare on the scintillation channel, `offset` cycles ahead, scaled by
+ *  the layer cap. */
+function flare(clock: BackdropClock, offset: number, cap: number): LoopTrack {
+  return { channel: clock.scintillate, offset, inputRange: FLARE_IN, outputRange: FLARE_OUT.map((v) => v * cap) };
 }
 
 interface Bucket {
   field: Particle[];
-  opacity: AnimNumber;
+  /** The bucket's flare phase, in cycles of the scintillation channel. */
+  offset: number;
 }
 
-/** Split a twinkling field into its phase buckets, riding `base` (the layer's own
- *  cap or travel fade). A field that does not twinkle is the one bucket it already
- *  was, so the caller has a single path. */
-function buckets(layer: ParticlesLayer, clock: BackdropClock, base: AnimNumber): Bucket[] {
-  if (!layer.twinkle) return [{ field: layer.field, opacity: base }];
+/** Split a twinkling field into its phase buckets. A field that does not twinkle is
+ *  the one bucket it already was, so the caller has a single path. */
+function buckets(layer: ParticlesLayer): Bucket[] {
+  if (!layer.twinkle) return [{ field: layer.field, offset: 0 }];
   const k = Math.min(TWINKLE_BUCKETS, layer.field.length);
-  const out: Bucket[] = Array.from({ length: k }, (_, b) => ({
-    field: [],
-    opacity: Animated.multiply(base, flare(clock.scintillate, b / k)),
-  }));
-  layer.field.forEach((p, i) => out[bucketOf(i, k)].field.push(p));
+  const out: Bucket[] = Array.from({ length: k }, (_, b) => ({ field: [], offset: b / k }));
+  layer.field.forEach((p, i) => out[bucketOf(i, k)]!.field.push(p));
   return out.filter((b) => b.field.length > 0);
 }
 
@@ -210,7 +201,7 @@ function drawParticle(p: Particle, i: number, bw: number, bh: number, sprite: Pa
 // Layer views.
 // ---------------------------------------------------------------------------
 
-interface ParticlesLayerViewProps {
+interface ParticlesSvgProps {
   field: Particle[];
   sprite: ParticleSprite;
   width: number;
@@ -220,33 +211,28 @@ interface ParticlesLayerViewProps {
   /** Draw the scintillation glint under each qualifying body. Set for a twinkling
    *  field, where the flare has to read on bodies a couple of pixels across. */
   glint: boolean;
-  style: object;
-  /** Omitted for a pinned layer, which never travels. */
-  scale?: Interp;
-  opacity: AnimNumber;
 }
 
-function ParticlesLayerView({ field, sprite, width, height, tint, bloom, glint, style, scale, opacity }: ParticlesLayerViewProps) {
+/** The static drawing of one field: every body at its unit position in the box. */
+function ParticlesSvg({ field, sprite, width, height, tint, bloom, glint }: ParticlesSvgProps) {
   const haloId = useSvgId("halo");
   const needsHalo = sprite === "halo" || bloom;
   // A spark is already a starburst and a streak is already elongated; glinting
   // either one just thickens it. Discs and halos are the round bodies that need it.
   const glints = glint && (sprite === "disc" || sprite === "halo");
   return (
-    <Animated.View style={[style, { width, height, opacity, ...(scale ? { transform: [{ scale }] } : null) }]}>
-      <Svg width={width} height={height}>
-        {needsHalo ? (
-          <Defs>
-            <RadialGradient id={haloId} cx="50%" cy="50%" r="50%">
-              <Stop offset="0%" stopColor={tint} stopOpacity={0.9} />
-              <Stop offset="100%" stopColor={tint} stopOpacity={0} />
-            </RadialGradient>
-          </Defs>
-        ) : null}
-        {glints ? field.map((p, i) => drawGlint(p, i, width, height, tint)) : null}
-        {field.map((p, i) => drawParticle(p, i, width, height, sprite, tint, 1, haloId))}
-      </Svg>
-    </Animated.View>
+    <Svg width={width} height={height}>
+      {needsHalo ? (
+        <Defs>
+          <RadialGradient id={haloId} cx="50%" cy="50%" r="50%">
+            <Stop offset="0%" stopColor={tint} stopOpacity={0.9} />
+            <Stop offset="100%" stopColor={tint} stopOpacity={0} />
+          </RadialGradient>
+        </Defs>
+      ) : null}
+      {glints ? field.map((p, i) => drawGlint(p, i, width, height, tint)) : null}
+      {field.map((p, i) => drawParticle(p, i, width, height, sprite, tint, 1, haloId))}
+    </Svg>
   );
 }
 
@@ -254,14 +240,14 @@ interface GradientLayerViewProps {
   blobs: GradientBlob[];
   size: number;
   style: object;
-  scale: AnimNumber;
-  opacity: AnimNumber;
+  scale: LoopTrack | number;
+  opacity: LoopTrack;
 }
 
 function GradientLayerView({ blobs, size, style, scale, opacity }: GradientLayerViewProps) {
   const id = useSvgId("grad");
   return (
-    <Animated.View style={[style, { width: size, height: size, opacity, transform: [{ scale }] }]}>
+    <LoopView style={[style, { width: size, height: size }]} opacity={opacity} scale={scale}>
       <Svg width={size} height={size}>
         <Defs>
           {blobs.map((b, i) => (
@@ -275,7 +261,7 @@ function GradientLayerView({ blobs, size, style, scale, opacity }: GradientLayer
           <Rect key={i} x={0} y={0} width={size} height={size} fill={`url(#${id}-${i})`} />
         ))}
       </Svg>
-    </Animated.View>
+    </LoopView>
   );
 }
 
@@ -302,8 +288,10 @@ export function SvgBackdrop({ layers, width, height, focus, clock, tint, promine
   // cover the farthest viewport corner at scale 1. React Native scales about the
   // view centre, so this centres the radial motion exactly on the vanishing point.
   const box = Math.ceil(2 * Math.hypot(0.5 * width, 0.58 * height));
-  const boxStyle = { position: "absolute" as const, left: focusX - box / 2, top: focusY - box / 2 };
-  const pinnedStyle = { position: "absolute" as const, top: 0, left: 0 };
+  const boxStyle = { position: "absolute" as const, left: focusX - box / 2, top: focusY - box / 2, width: box, height: box };
+  const pinnedStyle = { position: "absolute" as const, top: 0, left: 0, width, height };
+  // A bucket fills its layer's box exactly, so the layer's scale and fade carry it.
+  const fillStyle = { position: "absolute" as const, top: 0, left: 0, width: box, height: box };
 
   return (
     <>
@@ -327,66 +315,56 @@ export function SvgBackdrop({ layers, width, height, focus, clock, tint, promine
           // Palindromic keyframes (equal endpoints) keep a drifting layer seam-free
           // on the looping master value.
           const swell = 0.18 * Math.max(0.2, layer.depth);
-          const scale: AnimNumber = layer.drift
-            ? clock.flight.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1 - swell, 1 + swell, 1 - swell] })
+          const scale: LoopTrack | number = layer.drift
+            ? { channel: clock.flight, inputRange: [0, 0.5, 1], outputRange: [1 - swell, 1 + swell, 1 - swell] }
             : 1;
           const cap = layer.alpha * prominence;
-          const opacity = clock.flight.interpolate({
-            inputRange: [0, 0.5, 1],
-            outputRange: [0.7 * cap, cap, 0.7 * cap],
-          });
+          const opacity: LoopTrack = { channel: clock.flight, inputRange: [0, 0.5, 1], outputRange: [0.7 * cap, cap, 0.7 * cap] };
           return <GradientLayerView key={i} blobs={layer.blobs} size={size} style={style} scale={scale} opacity={opacity} />;
         }
 
         const cap = layer.alpha * prominence;
+        const layerTint = layer.tint ?? tint;
 
         // A pinned layer does not travel: it is the deep field behind everything,
-        // sized to the viewport and scintillating in place.
+        // sized to the viewport and scintillating in place, each bucket on its own
+        // flare phase. A field that does not twinkle needs no animation at all.
         if (layer.depth === 0) {
+          if (!layer.twinkle) {
+            return (
+              <View key={i} style={[pinnedStyle, { opacity: cap }]}>
+                <ParticlesSvg field={layer.field} sprite={layer.sprite} width={width} height={height} tint={layerTint} bloom={layer.bloom} glint={false} />
+              </View>
+            );
+          }
           return (
             <Fragment key={i}>
-              {buckets(layer, clock, cap).map((b, j) => (
-                <ParticlesLayerView
-                  key={j}
-                  field={b.field}
-                  sprite={layer.sprite}
-                  width={width}
-                  height={height}
-                  tint={layer.tint ?? tint}
-                  bloom={layer.bloom}
-                  glint={layer.twinkle}
-                  style={pinnedStyle}
-                  opacity={b.opacity}
-                />
+              {buckets(layer).map((b, j) => (
+                <LoopView key={j} style={pinnedStyle} opacity={flare(clock, b.offset, cap)}>
+                  <ParticlesSvg field={b.field} sprite={layer.sprite} width={width} height={height} tint={layerTint} bloom={layer.bloom} glint />
+                </LoopView>
               ))}
             </Fragment>
           );
         }
 
-        const phase = sawtooth(clock.flight, layer.phase);
-        const scale = phase.interpolate(zCurve(layer.depth));
-        const fade = phase.interpolate({ inputRange: FADE_IN, outputRange: [0, cap, cap, 0, 0] });
-
-        // Every bucket of a travelling layer shares the layer's scale: the flight is
-        // a property of the layer, and only the flare phase differs between buckets.
+        // A travelling layer: its z-curve scale and its fade ride the flight, `phase`
+        // cycles ahead. Its twinkle buckets nest inside it, so the flight is bound once
+        // per layer and only the flare phase differs between buckets.
+        const scale: LoopTrack = { channel: clock.flight, offset: layer.phase, ...zCurve(layer.depth) };
+        const fade: LoopTrack = { channel: clock.flight, offset: layer.phase, inputRange: FADE_IN, outputRange: [0, cap, cap, 0, 0] };
         return (
-          <Fragment key={i}>
-            {buckets(layer, clock, fade).map((b, j) => (
-              <ParticlesLayerView
-                key={j}
-                field={b.field}
-                sprite={layer.sprite}
-                width={box}
-                height={box}
-                tint={layer.tint ?? tint}
-                bloom={layer.bloom}
-                glint={layer.twinkle}
-                style={boxStyle}
-                scale={scale}
-                opacity={b.opacity}
-              />
-            ))}
-          </Fragment>
+          <LoopView key={i} style={boxStyle} opacity={fade} scale={scale}>
+            {layer.twinkle ? (
+              buckets(layer).map((b, j) => (
+                <LoopView key={j} style={fillStyle} opacity={flare(clock, b.offset, 1)}>
+                  <ParticlesSvg field={b.field} sprite={layer.sprite} width={box} height={box} tint={layerTint} bloom={layer.bloom} glint />
+                </LoopView>
+              ))
+            ) : (
+              <ParticlesSvg field={layer.field} sprite={layer.sprite} width={box} height={box} tint={layerTint} bloom={layer.bloom} glint={false} />
+            )}
+          </LoopView>
         );
       })}
     </>
