@@ -1,7 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { useEffect, useRef } from "react";
-import { Animated, Easing } from "react-native";
-import { View, useReducedMotion, supportsNativeDriver, thereAndBack, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, innerFill } from "../../style/index.js";
+import { useEffect } from "react";
+import { Easing } from "react-native";
+import { View, LoopView, createLoopChannel, useReducedMotion, thereAndBack, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, innerFill } from "../../style/index.js";
 
 // Shared Skeleton shell. The structure (a single muted shape — text line, avatar,
 // button — or a composite card / list / table scaffold built from one muted fill,
@@ -185,35 +185,35 @@ function shapeOf(p: SkeletonProps): Shape {
   return "text";
 }
 
+// One shimmer for every Skeleton on the screen: 1 -> 0.5 -> 1 per 1.2s, shaped by a
+// there-and-back easing on a shared loop channel (src/style/loop.tsx), so sibling
+// placeholders breathe together and the frames cost nothing on the JS thread: the native
+// driver on iOS and Android, a compositor CSS animation on the web. The channel runs only
+// while a shimmering Skeleton is mounted.
+const shimmer = createLoopChannel({ period: 1200, shape: thereAndBack(Easing.inOut(Easing.ease)) });
+const SHIMMER = { channel: shimmer, inputRange: [0, 1], outputRange: [1, 0.5] };
+let shimmering = 0;
+
 /** A pulsing or static muted block. The resolved width/height/fill go on the
- *  Animated.View itself so percentage widths resolve against the real parent
- *  (a nested View would collapse `w-[60%]` against an auto-width wrapper).
- *  Extra props (accessibility flags) are spread onto the Animated.View so a
- *  single-shape Skeleton can carry its loading semantics on this outermost node. */
+ *  view itself so percentage widths resolve against the real parent (a nested View
+ *  would collapse `w-[60%]` against an auto-width wrapper). Extra props
+ *  (accessibility flags) are spread onto it so a single-shape Skeleton can carry its
+ *  loading semantics on this outermost node. */
 function Pulse({ animate, style, ...rest }: { animate?: boolean; style: StyleProp<ViewStyle> } & Record<string, unknown>) {
-  const opacity = useRef(new Animated.Value(1)).current;
   // The shimmer is decorative, so honor Reduce Motion: hold the placeholder still
   // (the muted shape alone already reads as "loading").
   const reduced = useReducedMotion();
   const active = !!animate && !reduced;
 
   useEffect(() => {
-    if (!active) {
-      opacity.setValue(1);
-      return;
-    }
-    // One timing 1 → 0.5 → 1 per 1.2s, shaped by a there-and-back easing, on the native
-    // driver where there is one (supportsNativeDriver, src/style/motion.ts): a native loop
-    // cannot hold an Animated.sequence, and a JS-driven loop is a shadow-tree commit per
-    // frame under the New Architecture.
-    const loop = Animated.loop(
-      Animated.timing(opacity, { toValue: 0.5, duration: 1200, easing: thereAndBack(Easing.inOut(Easing.ease)), useNativeDriver: supportsNativeDriver }),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [active, opacity]);
+    if (!active) return;
+    if (shimmering++ === 0) shimmer.play();
+    return () => {
+      if (--shimmering === 0) shimmer.stop();
+    };
+  }, [active]);
 
-  return <Animated.View {...rest} style={[style, { opacity: active ? opacity : 1 }]} />;
+  return active ? <LoopView {...rest} style={style} opacity={SHIMMER} /> : <View {...rest} style={style} />;
 }
 
 export function createSkeleton(skin: SkeletonSkin) {
