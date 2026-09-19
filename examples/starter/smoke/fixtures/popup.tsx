@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Autocomplete, Backdrop, BackdropHost, Button, Card, Column, Dropdown, Row, ThemeProvider, Typography } from "@nannier-com/canvas";
+import { Autocomplete, AvatarMenu, Backdrop, BackdropHost, Button, Card, Column, Container, Dropdown, Navbar, Row, ThemeProvider, Typography } from "@nannier-com/canvas";
 
 // The same list the form-autocomplete fixture offers, declared here because a
 // fixture body may import only React and the kit (tools/native/shared-fixtures).
@@ -19,6 +19,12 @@ const actions = [
   { label: "Archive", separatorBefore: true },
   { label: "Delete", destructive: true },
 ];
+const account = [
+  { label: "Profile", icon: "user" as const },
+  { label: "Settings", icon: "settings" as const },
+  { label: "Sign out", icon: "logOut" as const, separatorBefore: true },
+];
+const navigation = ["Home", "Docs", "Blog", "About"];
 
 // How many open-and-close pairs the cycle driver runs, and how far apart: far
 // enough for an opening to settle before its close, close enough that a run of
@@ -39,12 +45,20 @@ const CYCLE_STEP_MS = 700;
 // starts solid and light unless the route says otherwise, so a recording captures
 // the switches on purpose. The readouts carry test ids so a check reads state
 // instead of pixels.
+//
+// The Dropdown-class triggers are all here for the button-to-menu hand-off: the
+// Dropdown's default outline button, an AvatarMenu (the account capsule, its menu
+// hanging from the trailing edge) with its own driver, and a Navbar collapsed by a
+// narrow Container so its hamburger opens the kit's menu; the hamburger's menu is
+// uncontrolled, so a run taps the button itself. The Autocomplete's field must
+// keep its own material throughout: it is the control that must NOT hand off.
 export function PopupBody({ glass: initialGlass = false, dark: initialDark = false }: { glass?: boolean; dark?: boolean }) {
   const [glass, setGlass] = useState(initialGlass);
   const [dark, setDark] = useState(initialDark);
   const [listOpen, setListOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [ownOpen, setOwnOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const [cycles, setCycles] = useState(0);
   const [cycling, setCycling] = useState(false);
   const cycle = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -112,6 +126,7 @@ export function PopupBody({ glass: initialGlass = false, dark: initialDark = fal
               <Button onPress={() => setListOpen(false)} testID="popup-close-list">Close list</Button>
               <Button onPress={() => setListOpen((value) => !value)} testID="popup-toggle-list">Toggle list</Button>
               <Button onPress={() => setMenuOpen((value) => !value)} testID="popup-toggle-menu">Toggle menu</Button>
+              <Button onPress={() => setAccountOpen((value) => !value)} testID="popup-toggle-account">Toggle account</Button>
               <Button onPress={runCycles} disabled={cycling} testID="popup-cycle">Cycle list</Button>
               <Button onPress={sample} testID="popup-sample">Sample frames</Button>
             </Row>
@@ -122,6 +137,13 @@ export function PopupBody({ glass: initialGlass = false, dark: initialDark = fal
             <Dropdown trigger="Fruit actions" items={actions} open={menuOpen} onOpenChange={setMenuOpen} testID="popup-dropdown" />
             <Typography testID="popup-own-readout">Own trigger: {ownOpen ? "open" : "closed"}</Typography>
             <Dropdown trigger="Own trigger" items={actions} onOpenChange={setOwnOpen} testID="popup-dropdown-own" />
+            <Typography testID="popup-account-readout">Account: {accountOpen ? "open" : "closed"}</Typography>
+            <AvatarMenu name="Rachel Chen" email="rachel.chen@example.com" initials="RC" items={account} open={accountOpen} onOpenChange={setAccountOpen} testID="popup-avatar-menu" />
+            {/* A Container at the xs step is under the bar's sm collapse, so the
+                links fold into the hamburger's menu whatever the viewport is. */}
+            <Container xs start>
+              <Navbar brand="Canvas" links={navigation} testID="popup-navbar" />
+            </Container>
             {/* Room for the list below the field, so the fitter keeps it under the
                 anchor instead of flipping it above on a short page. */}
             <Card>
@@ -129,6 +151,7 @@ export function PopupBody({ glass: initialGlass = false, dark: initialDark = fal
                 <Typography h4>Reading a run</Typography>
                 <Typography small muted>Open: the pane starts as a droplet at the anchor with the rows already in it, grows past its resting size, and settles while the rows sharpen.</Typography>
                 <Typography small muted>Close: the rows fade first, then the pane shrinks back into the anchor edge. A reopen mid-exit grows from wherever the pane is.</Typography>
+                <Typography small muted>Hand-off (the menu, the account capsule, the hamburger): the trigger's pill and label vanish as the droplet forms on the pill's frame; on close the pane narrows to the pill, the drop absorbs upward, the pill re-forms and its label fades back. The Fruit field keeps its material.</Typography>
                 <Typography small muted>Cycle: five open-and-close pairs at a fixed rhythm, for the resource counters and the reversal case.</Typography>
               </Column>
             </Card>

@@ -8,7 +8,7 @@ export default function PopupFixture() {
   const { mode, scheme } = useLocalSearchParams<{ mode?: string; scheme?: string }>();
   return (
     <Page>
-      <PageHeader title="Liquid popup checks" description="The Autocomplete suggestion list and the Dropdown menu under the popup policy: open, close, reopen mid-exit and cycle drivers, material and scheme switches, and a frame readout." />
+      <PageHeader title="Liquid popup checks" description="The Autocomplete suggestion list and the Dropdown-class menus (the outline button, the account capsule, the collapsed navbar's hamburger) under the popup policy and the trigger hand-off: open, close, reopen mid-exit and cycle drivers, material and scheme switches, and a frame readout." />
       <PopupBody key={`${mode ?? "solid"}-${scheme ?? "light"}`} glass={mode === "glass"} dark={scheme === "dark"} />
     </Page>
   );

@@ -394,6 +394,22 @@ name: Sealed Canvas native candidate measurement
 - assertVisible:
     id: popup-own-readout
     text: 'Own trigger: closed'
+# The account capsule (AvatarMenu on Dropdown) opens through its own driver and
+# closes through the hosted backdrop the second tap lands on.
+- tapOn:
+    id: popup-toggle-account
+    retryTapIfNoChange: false
+- assertVisible:
+    id: popup-account-readout
+    text: 'Account: open'
+- assertVisible: Sign out
+- takeScreenshot: popup-account-open
+- tapOn:
+    id: popup-toggle-account
+    retryTapIfNoChange: false
+- assertVisible:
+    id: popup-account-readout
+    text: 'Account: closed'
 - openLink: canvas-smoke:///testing/escape-layers?scenario=drawer
 - tapOn: Open drawer
 - assertVisible: Drawer content
