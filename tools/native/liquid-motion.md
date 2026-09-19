@@ -180,21 +180,25 @@ unthrottled frame rate, see the recording note below).
 
 ### Recording the docs pages in Playwright's headed Chromium
 
-Since the docs gained the animated Backdrop, a component page opened in
-Playwright's headed Chromium keeps its "Loading the examples" skeleton: the docs
-chunk arrives (a 200 in the network log) but React never re-renders the Suspense
-boundary until some other state update lands. Verified 2026-09-18: the skeleton
-stayed for 60 s, `requestIdleCallback` only fired at its 3 s timeout while
-`setTimeout`, `MessageChannel` and rAF were prompt, the page loaded at once under
-`reducedMotion: "reduce"` (the Backdrop still), and the desktop app's own browser
-pane and the headless shell load the same page fine. Treat it as a recording
-quirk of that Chromium under the Backdrop's per-frame style writes (about 8,400
-inline-style mutations a second at 100 fps): the actions module nudges the
-Solid/Glass toggle until the examples are on the page
-(`actions-pagination.mjs`), and clicks go through `page.mouse` at the cell's
-centre because `locator.click()` scrolled the page to "reveal" a cell and moved
-the clip. Anchor a row on an element handle: a locator anchored on a page number
-drifts to another row once the window changes.
+Until 2026-09-19, a component page opened in Playwright's headed Chromium kept its
+"Loading the examples" skeleton: the docs chunk arrived (a 200 in the network log)
+but React never re-rendered the Suspense boundary until some other state update
+landed. Verified 2026-09-18: the skeleton stayed for 60 s, `requestIdleCallback`
+only fired at its 3 s timeout while `setTimeout`, `MessageChannel` and rAF were
+prompt, the page loaded at once under `reducedMotion: "reduce"` (the Backdrop
+still), and the desktop app's own browser pane and the headless shell loaded the
+same page fine. The cause was the Backdrop's per-frame style writes AND the
+Skeleton's own shimmer, both JS-driven `Animated` loops that react-native-web turns
+into one React commit per animation frame (see the 2026-09-19 section below: the
+skeleton alone starved the retry with the sky unmounted). Both now run as
+compositor CSS animations through the loop primitive, and every page in the
+five-page load check resolves its examples with no nudge, headed and headless.
+The nudge loop in `actions-pagination.mjs` and `journeys.mjs` (`settleDocs`) is no
+longer needed; it stays harmless where it exists. Clicks still go through
+`page.mouse` at the cell's centre because `locator.click()` scrolled the page to
+"reveal" a cell and moved the clip, and a row is still anchored on an element
+handle: a locator anchored on a page number drifts to another row once the window
+changes.
 
 ## Idle CPU of the docs app on iOS, 2026-09-18 (native-driver loops)
 
@@ -241,3 +245,41 @@ and `actions-capsule-tabs.mjs` (beside the other actions modules in the artifact
 | 2026-09-18 | TabBar as the iOS 26 floating capsule on web: solid to glass, three pill hops, two workspace hops, two destination hops (`navigation` profile) | Chromium headed via the repo's Playwright, 1280x800, dark, 20 fps sampling | Phase 2 commit (clean worktree) | `floating { horizontal 16, bottom 8, clearance 12 }`, bar 58 with a 4 inset, the cell capsule `background` / lifted `muted` thumb at the selection tint ceiling; `PROFILES` unchanged | 7.6 / 11.7 / 35.2 over 1247 frames | A floating capsule with the material rim over the page, icons over labels, the selected cell a lighter glass capsule with the specular edge. Search to Profile: the puck stretches across both cells for one frame, lands wide on Profile, settles by the fourth (strip 213-220, `tabbar-230.png`). On the docs TabBar page the iOS and web rows are identical in glass and in solid, light and dark (muted capsule, white raised cell, ambient shadow); Android keeps the docked bar and the icon pill (`web-shots/tabbar-desktop-*.png`). | `web-capsule-tabbar-01` (movie, sheet, `strip-213-220.png`, `tabbar-*.png`, `trace.json`), `web-shots/` |
 | 2026-09-18 | The kit TabBar on iOS: the floating capsule with real Liquid Glass, three taps (Home, Search, Profile, Home) | second iPhone 17 Pro simulator, iOS 26.3.1, docs dev app on the worktree Metro, dark glass, 20 fps sampling of a simctl recording | Phase 2 commit | as above | not sampled | The docs TabBar example renders the floating capsule with the system material and the Home cell as a lighter glass capsule, beside the app's own system tab bar, which it now matches. Home to Search: the Search ink turns first, the puck stretches from Home across to Search (one frame), lands slightly wide, settles by the fourth (strip 048-055); the two later hops alike. | `ios-capsule-tabbar-01` (movie, sheet, `strip-048-055.png`), `ios-tabbar-page.png` |
 | 2026-09-18 | The docs' narrow web shell overlays the floating bar; pages keep an 80 bottom inset | Chromium via Playwright, 390x844, dark glass and light solid | Phase 3 commit | `CONTENT_BOTTOM_INSET` 80 on web | not sampled | The capsule floats 8 px above the bottom edge with the page scrolling beneath it: under glass the lens refracts the text passing under the bar, in solid the capsule sits on the page with its ambient shadow and the last row scrolls clear of it. | `web-shots/shell-*.png`, `web-shots/shell-bottom-pair.png`, the `shots.mjs` that took them |
+
+## The Backdrop and the Skeleton shimmer on the loop primitive, 2026-09-19 (web compositor animations)
+
+The docs' animated Backdrop cost a lot on the web at idle. react-native-web has no
+native animated module, so the JS driver's per-frame path is `AnimatedProps.update()`
+to a `useReducer` dispatch: every `Animated.View` re-renders through React on every
+animation frame, and the native-driver flag that fixed iOS (c78c2b76) is a no-op
+there. The kit now has a loop primitive (`createLoopChannel` and `LoopView` in
+`src/style/loop.tsx`): a channel is a shared periodic phase with a wall-clock epoch,
+a track maps it onto opacity or a transform component as `inputRange` /
+`outputRange` plus a phase offset, and the view renders the natively driven
+interpolation graph on iOS and Android and a plain View carrying a CSS keyframe
+animation on the web, compiled through react-native-web's own `animationKeyframes`
+style with the phase in an inline `animation-delay`. The Backdrop clock's channels,
+the SVG renderer (twinkle buckets nested inside their layer so opacity multiplies
+through nesting), the docs' galaxy core and comets, and the Skeleton shimmer all bind
+through it. Probes, screenshots and recordings all sit in
+`/tmp/canvas-liquid-motion-2026-09-19/`: `probe-backdrop.mjs` (React commits via a
+DevTools hook shim, style mutations, a CDP CPU profile), `trace-backdrop.mjs`
+(main-thread time by category from a Chromium trace plus per-process CPU from
+`SystemInfo.getProcessInfo`), `load-check.mjs` (a quiet six-second load, one read),
+`frame-diff.py` (pixels changed per frame of a recording), `harness-run.mjs` and
+`actions-backdrop.mjs` (the harness drivers), and the web and iOS harness recordings.
+
+| Date | Effect and profile | Runtime and device | Revision (dirty?) | Values tried | rAF p50 / p95 / max (ms) | What the trace showed | Artifacts |
+|---|---|---|---|---|---|---|---|
+| 2026-09-19 | Baseline: the docs sky on the JS driver, `/components/badge` at idle | Chromium headed via the repo's Playwright, 1280x800, light glass, rAF unthrottled at 254 fps, 3 s window | cd7c36af (clean) | JS driver | 3.9 / 4.0 / 47 | 1.02 React commits per frame (260 a second), 9,267 inline `style` writes a second (36.5 per frame across 33 wrapper divs). Chromium trace: main thread 99.8% busy, 2,446 of 3,004 ms scripting of which 2,420 ms is React's `performWorkUntilDeadline` and 107 ms the Animated `onUpdate` rAF callback, 259 ms painting; renderer process 154% CPU, GPU process 153%. Headless: 96.5 fps, one commit per frame, 3,395 writes a second, main thread 100% busy. Reduced motion (the sky still): 2 commits a second, 1 write a second, main thread 20% busy. With the sky unmounted (`?surface=solid`) the Skeleton shimmer alone still drove 255 commits a second and starved the docs chunk's Suspense retry, so the fix had to cover both. | `probe-backdrop.mjs`, `trace-backdrop.mjs` |
+| 2026-09-19 | Pricing the compositor path: the same 33-layer sky as static SVG under pure CSS keyframe animations | Chromium headed, 1280x800, device scale 1 and 2, 250 fps | (throwaway page) | CSS `animation` on transform and opacity | not sampled | 0 DOM mutations a second, 33 live animations; renderer 19% CPU, GPU 33% at both scales (against 154% / 153% for the React-driven sky at the same frame rate). Go for the CSS path. | `proto-css-sky.html`, `probe-proto.mjs` |
+| 2026-09-19 | The Backdrop harness `/testing/backdrop` (docs shell solid, so only the harness sky animates): running, then parked | Chromium headed, 1280x800, light, 254 fps, the fixture's own 4 s sampler | before: cd7c36af; after: this commit | JS driver, then the loop primitive | before 3.9 / 4.0 / 66.7; after 3.9 / 4.5 / 11.7 | Before: 6,512 style writes a second while running, 0 parked, 0 CSS animations. After: 0 style writes a second running AND parked, 35 CSS animations running and 0 parked. Recorded fly, park, resume (`web-backdrop-before-01`, `web-backdrop-after-01`, 8 fps): about 300 px change per 125 ms frame while running in both, 0 while parked in both, the park jump to the poster and the resume jump back alike, and the full-size frames 20-23 (after) against 80-83 (before) show the same field, glints, streaks and nebula at the same positions. | `/tmp/canvas-liquid-motion-2026-09-19/web-backdrop-{before,after}-01` (movie, sheet, `strip-020-023.png`, `strip-080-083.png`), `frame-diff.py` |
+| 2026-09-19 | After: the docs sky and the Skeleton on the loop primitive, `/components/badge` at idle | Chromium headed, 1280x800, light glass, 229 to 237 fps, 3 s window | this commit (clean worktree) | loop primitive (CSS keyframes) | 3.9 / 4.5 / 12 | 6.7 to 10.7 React commits a second (0.03 per frame, the page settling), 43 style writes a second (one re-render of 45 elements when the docs chunk landed, none per frame after), 43 live CSS animations, main thread 63% idle from a profile that was 0.2% idle before. Computed-style sampling of the 30 animated wrappers: 13 distinct opacities at one instant (the buckets are differential), 28 of 30 changed over 3 s (the two still ones are the parked comet and the 180 s drift at 250 ms resolution). The docs chunk's examples appear at 1.1 to 1.4 s with no nudge. | `probe-backdrop.mjs`, `probe-computed.mjs`, `badge-{before,after}-dark.png` |
+| 2026-09-19 | The no-nudge load check: five component pages, one quiet read after six seconds | Chromium headed (rAF 255 to 257 fps) and headless via the repo's Playwright | before: cd7c36af; after: this commit | as above | not sampled | Before: badge, popover, dropdown, navbars at 390x844 and calendar/daypeek all still on their skeleton after 6 s headed; headless 3 of 5 resolved. After: all ten resolved (polling the page every 100 ms had masked the starvation on the old code, so the check reads once). | `load-check.mjs` |
+| 2026-09-19 | The Backdrop harness on the native driver: fly, park, resume, sample | second iPhone 17 Pro simulator (`simctl create`, the docs app installed from the user's device and pointed at the worktree Metro on 8095, deleted afterwards), iOS 26.3, dark glass, taps through `idb ui tap`, 8 fps sampling of a simctl recording | this commit | loop primitive (native driver, linear phase timings with the shape as an interpolation) | 16.7 / 16.8 / 25.3 over 232 frames in 4 s (the fixture sampler) | The harness sky and the app's root universe both move (6 to 9k px change per frame below the readouts); Park drops the harness sky to its poster and the change halves to the root universe alone; Resume brings it back. Process 31 to 34% CPU on the harness route (two skies), 17 to 23% on Home (one sky, the same as the 2026-09-18 native-driver number). `sample`: the JavaScript thread idle in 2598 of 2598 samples, the main thread 49% busy and all of it `RCTNativeAnimatedNodesManager stepAnimations` to `synchronouslyUpdateViewOnUIThread`; no `setNativeProps_DEPRECATED`, no `_remountChildren`, no Yoga pixel-grid walk. | `/tmp/canvas-liquid-motion-2026-09-19/ios-backdrop-after-01`, `ios-sample-harness.txt`, `ios-home-after.png` |
+
+Not covered: Android (the emulator's software rasterizer dominated the 2026-09-18 run
+and nothing here changes what it rasterizes), Reduce Motion end to end on a device, and
+the other JS-driven loops that remain on the web (the Home hero orbit, the catalog pulse,
+Spinner, the indeterminate Progress sweep, the InputOTP caret), which are the next
+adopters of the primitive.
