@@ -1,4 +1,5 @@
 import { View, Text, useTheme, ScrollView } from "@ionizeio/canvas";
+import { Platform } from "react-native";
 import { COMPONENTS } from "../../../core/data/components";
 import { CONTENT_TOP_INSET, CONTENT_BOTTOM_INSET } from "../../../shell/topbar";
 import { ScreenFrame } from "../../../shell/native-header";
@@ -35,6 +36,9 @@ export default function ComponentsIndex() {
   return (
     <ScreenFrame>
     <ScrollView
+      // The page scroller marker the web shell's scroll padding and the e2e helpers read
+      // (docs/src/ui/page.tsx carries the same). Web-only attribute; a no-op on native.
+      {...(Platform.OS === "web" ? ({ dataSet: { pageScroll: "" } } as object) : null)}
       // Glass surface mode: the canvas goes transparent so the Canvas Universe backdrop
       // reads through (matching the shared Page); the per-category tiles stay solid content cards.
       style={{ flex: 1, backgroundColor: surface === "glass" ? "transparent" : tokens.background }}

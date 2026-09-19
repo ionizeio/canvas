@@ -9,7 +9,7 @@ import { Topbar, titleFor } from "./topbar";
 import { MobileNavBar } from "./mobile-nav-bar";
 import { SearchModal } from "./search-modal";
 import { CanvasUniverse } from "../brand/canvas-universe";
-import { WebScrollbarTheme, SCROLLBAR_W } from "../ui/web-scrollbar";
+import { WebScrollbarTheme, WebScrollPadding, SCROLLBAR_W } from "../ui/web-scrollbar";
 import { useDocsTheme } from "../theme/docs-theme";
 import { sans } from "../ui/fonts";
 import { MOBILE_TABS, sectionFor } from "../data/nav";
@@ -122,6 +122,7 @@ function WebNav() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: glass ? "transparent" : tokens.background }} edges={["top"]}>
       <WebScrollbarTheme />
+      <WebScrollPadding top={headerHeight} bottom={wide ? 0 : barHeight} />
       {glass ? <CanvasUniverse /> : null}
       <Row flush fill>
         {wide ? (

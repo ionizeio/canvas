@@ -188,6 +188,9 @@ export function Home() {
   return (
     <ScreenFrame>
     <ScrollView
+      // The page scroller marker the web shell's scroll padding and the e2e helpers read
+      // (docs/src/ui/page.tsx carries the same). Web-only attribute; a no-op on native.
+      {...(Platform.OS === "web" ? ({ dataSet: { pageScroll: "" } } as object) : null)}
       style={{ flex: 1, backgroundColor: surface === "glass" ? "transparent" : tokens.background }}
       // "automatic" lets iOS inset the content below the transparent nav bar (and it is a
       // no-op on web, where CONTENT_TOP_INSET clears the topbar). The old "never" relied on

@@ -42,3 +42,24 @@ export function WebScrollbarTheme() {
   }, [tokens]);
   return null;
 }
+
+// Web-only, like the scrollbar theme above. The narrow web shell floats its tab bar over
+// the page and the topbar overlays it at every width, so a browser scrolling an element
+// "into view" (a focused field, an anchored trigger, Playwright's own click actionability)
+// would otherwise park it under that chrome. `scroll-padding` is the platform's way to
+// tell a scroll container where its overlaid edges are: every page scroller declares
+// its band, and native scrollIntoView aligns inside it. Native screens inset themselves
+// through their own bars, so this renders nothing off the web.
+export function WebScrollPadding({ top, bottom }: { top: number; bottom: number }) {
+  useEffect(() => {
+    if (Platform.OS !== "web" || typeof document === "undefined") return;
+    let el = document.getElementById("docs-scroll-padding") as HTMLStyleElement | null;
+    if (!el) {
+      el = document.createElement("style");
+      el.id = "docs-scroll-padding";
+      document.head.appendChild(el);
+    }
+    el.textContent = `[data-page-scroll] { scroll-padding-top: ${Math.ceil(top)}px; scroll-padding-bottom: ${Math.ceil(bottom)}px; }`;
+  }, [top, bottom]);
+  return null;
+}
