@@ -72,6 +72,14 @@ export interface MaterialMotionFrame {
  * The motion project also retains video: rest/settle shots alone are not motion
  * evidence. DOM lens observations measure retained definitions and regeneration,
  * not GPU allocation or native capture resources.
+ *
+ * Sampling starts before the action and runs for at least `sampleMs`, then
+ * continues until the material has been still for `settleFrames` consecutive
+ * frames or `maxMs` has elapsed. The action's own duration is not fixed (a press
+ * is held until its lift is observed, a drag steps the pointer), and on a slow
+ * runner it can eat most of a fixed window, so the recording ends when the
+ * motion is over rather than at a guessed time; a material that never settles
+ * still ends at `maxMs` and fails the stillness assertions.
  */
 export async function captureMaterialMotion(
   page: Page,
@@ -81,11 +89,12 @@ export async function captureMaterialMotion(
   foreground: Locator,
   action: () => Promise<void>,
   sampleMs = 1800,
+  { settleFrames = 10, maxMs = 8000 }: { settleFrames?: number; maxMs?: number } = {},
 ) {
   const foregroundHandle = await foreground.elementHandle();
   if (!foregroundHandle) throw new Error("Motion evidence requires an attached foreground host");
   const key = `canvas-material-motion-${name}`;
-  await material.evaluate((root, { key, sampleMs, foregroundNode }) => {
+  await material.evaluate((root, { key, sampleMs, settleFrames, maxMs, foregroundNode }) => {
     const state = window as unknown as Record<string, unknown>;
     const frames: MaterialMotionFrame[] = [];
     const rect = (node: Element) => {
@@ -104,19 +113,27 @@ export async function captureMaterialMotion(
     observer.observe(document.documentElement, { childList: true, subtree: true });
     const started = performance.now();
     let previous = started;
-    const record = { done: false, frames, definitionsAtStart: lenses(), definitionsAdded: 0 };
+    const record = { done: false, actionDone: false, frames, definitionsAtStart: lenses(), definitionsAdded: 0 };
     state[key] = record;
+    const still = (a: { x: number; y: number; width: number; height: number }, b: typeof a) =>
+      Math.abs(a.x - b.x) < 0.5 && Math.abs(a.y - b.y) < 0.5 && Math.abs(a.width - b.width) < 0.5 && Math.abs(a.height - b.height) < 0.5;
+    let stillRun = 0;
     function sample(now: number) {
+      const material = rect(root);
+      const last = frames.at(-1);
+      stillRun = last && still(last.material, material) ? stillRun + 1 : 0;
       frames.push({
         elapsedMs: now - started,
         frameIntervalMs: now - previous,
-        material: rect(root),
+        material,
         foreground: foregroundNode?.isConnected ? rect(foregroundNode) : null,
         connected: root.isConnected,
         lensDefinitions: lenses(),
       });
       previous = now;
-      if (now - started < sampleMs) requestAnimationFrame(sample);
+      const elapsed = now - started;
+      const settled = record.actionDone && elapsed >= sampleMs && stillRun >= settleFrames;
+      if (!settled && elapsed < maxMs) requestAnimationFrame(sample);
       else {
         observer.disconnect();
         record.definitionsAdded = definitionsAdded;
@@ -124,10 +141,11 @@ export async function captureMaterialMotion(
       }
     }
     requestAnimationFrame(sample);
-  }, { key, sampleMs, foregroundNode: foregroundHandle });
+  }, { key, sampleMs, settleFrames, maxMs, foregroundNode: foregroundHandle });
   try {
     await action();
-    await page.waitForFunction((key) => (window as unknown as Record<string, { done?: boolean }>)[key]?.done, key);
+    await page.evaluate((key) => { (window as unknown as Record<string, { actionDone?: boolean }>)[key]!.actionDone = true; }, key);
+    await page.waitForFunction((key) => (window as unknown as Record<string, { done?: boolean }>)[key]?.done, key, { timeout: maxMs + 5000 });
     const recording = await page.evaluate((key) => {
       const state = window as unknown as Record<string, unknown>;
       const recording = state[key] as {
