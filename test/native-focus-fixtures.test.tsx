@@ -64,6 +64,7 @@ const TabsBody = fixture<{ disabled?: boolean }>("tabs", "TabsBody");
 const ListboxBody = fixture<{ controlled?: boolean; disabled?: boolean }>("listbox", "ListboxBody");
 const EscapeLayersBody = fixture<{ scenario?: string }>("escape-layers", "EscapeLayersBody");
 const ControlRefsBody = fixture("control-refs", "ControlRefsBody");
+const BackdropBody = fixture("backdrop", "BackdropBody");
 const text = (id: string) => screen.getByTestId(id).textContent;
 
 test("the gated alert fixture cancels without confirming and clears its field on reopen", () => {
@@ -107,6 +108,23 @@ test("Tabs fixture reports the actual inactive selection once and keeps disabled
   expect(disabled.getAttribute("aria-selected")).toBe("false");
   expect(text("tabs-selection")).toBe("Selected tab: Activity");
   expect(text("tabs-change-count")).toBe("Changes: 1");
+});
+
+test("Backdrop fixture parks and resumes its sky and reports the sample it took", async () => {
+  await act(async () => { render(<ThemeProvider><BackdropBody /></ThemeProvider>); });
+  expect(text("backdrop-mode")).toBe("Backdrop running");
+  expect(text("backdrop-energy")).toBe("Energy: default");
+  fireEvent.click(screen.getByRole("button", { name: "Park" }));
+  expect(text("backdrop-mode")).toBe("Backdrop still");
+  fireEvent.click(screen.getByRole("button", { name: "Next energy" }));
+  expect(text("backdrop-energy")).toBe("Energy: calm");
+  fireEvent.click(screen.getByRole("button", { name: "Resume" }));
+  expect(text("backdrop-mode")).toBe("Backdrop running");
+  // The sampler reports after its four-second window; the readout names every field a
+  // check reads, so a recorded run can be judged from the text alone.
+  fireEvent.click(screen.getByRole("button", { name: "Sample 4 s" }));
+  expect(text("backdrop-trace")).toBe("Trace: sampling for 4 s");
+  await waitFor(() => expect(text("backdrop-trace")).toMatch(/^Frames: \d+; p50 [\d.]+ ms; p95 [\d.]+ ms; max [\d.]+ ms; style writes\/s: (\d+|n\/a); css animations: (\d+|n\/a)$/), { timeout: 6000 });
 });
 
 test("a fresh disabled Tabs scenario preserves its default selection and zero callbacks", () => {
