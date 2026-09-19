@@ -8,7 +8,7 @@ import { Sidebar } from "./sidebar";
 import { Topbar, titleFor } from "./topbar";
 import { MobileNavBar } from "./mobile-nav-bar";
 import { SearchModal } from "./search-modal";
-import { CanvasUniverse } from "../brand/canvas-universe";
+import { CanvasLattice } from "../brand/canvas-lattice";
 import { WebScrollbarTheme, WebScrollPadding, SCROLLBAR_W } from "../ui/web-scrollbar";
 import { useDocsTheme } from "../theme/docs-theme";
 import { sans } from "../ui/fonts";
@@ -123,7 +123,7 @@ function WebNav() {
     <SafeAreaView style={{ flex: 1, backgroundColor: glass ? "transparent" : tokens.background }} edges={["top"]}>
       <WebScrollbarTheme />
       <WebScrollPadding top={headerHeight} bottom={wide ? 0 : barHeight} />
-      {glass ? <CanvasUniverse /> : null}
+      {glass ? <CanvasLattice /> : null}
       <Row flush fill>
         {wide ? (
           // The rail column is marked for the document root's one pre-hydration rule

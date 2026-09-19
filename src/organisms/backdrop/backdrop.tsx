@@ -12,3 +12,5 @@ export { backdropClock, type BackdropClock, type Energy } from "./backdrop-clock
 // An app that loads an optional GPU backend calls refreshBackdropRenderer() once it
 // is ready; useGpuBackdrop() reports whether one is live.
 export { useGpuBackdrop, refreshBackdropRenderer } from "./skia-runtime.js";
+// A Backdrop.Custom layer reads the surface box it is laid out against.
+export { useBackdropBox, type BackdropBox } from "./backdrop-box.js";

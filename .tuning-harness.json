@@ -6,7 +6,8 @@
     "src/style/popup-motion.tsx",
     "src/style/motion.ts",
     "src/style/glass-surface/glass-lens.ts",
-    "src/organisms/backdrop/backdrop-clock.ts"
+    "src/organisms/backdrop/backdrop-clock.ts",
+    "docs/src/brand/lattice-tunables.ts"
   ],
   "harness": {
     "baseUrl": "http://localhost:8081",
@@ -15,7 +16,8 @@
       "/testing/materials?geometry=1",
       "/testing/backdrop",
       "/testing/tabs",
-      "/testing/popup"
+      "/testing/popup",
+      "/testing/lattice"
     ],
     "fixtures": "examples/starter/smoke/fixtures",
     "notes": "bun run dev in docs/ starts Metro on 8081 and the native opener on 8790. Web motion evidence: E2E_BASE_URL=http://localhost:8081 bunx playwright test --project motion --workers 1 (records video). Native: the installed docs dev app on a booted simulator or emulator, recorded with the skill's record-motion.mjs."

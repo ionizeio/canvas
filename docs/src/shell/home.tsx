@@ -182,7 +182,7 @@ export function Home() {
   const ctaTitle = useFluidType(28, 42, 0.04);
 
   // Glass is a theming-level surface mode: the canvas goes transparent so the Canvas
-  // Universe backdrop reads through (the web shell mounts it; native mounts it via
+  // Lattice backdrop reads through (the web shell mounts it; native mounts it via
   // ScreenFrame). The backdrop is identical on every screen so navigation never
   // interrupts the flight.
   return (
@@ -195,7 +195,7 @@ export function Home() {
       // "automatic" lets iOS inset the content below the transparent nav bar (and it is a
       // no-op on web, where CONTENT_TOP_INSET clears the topbar). The old "never" relied on
       // the native stack insetting the FIRST scroll view it finds under the screen, which
-      // broke when the Cosmos backdrop became the screen's first child; and the hero no
+      // broke when the scene backdrop became the screen's first child; and the hero no
       // longer needs to reach the very top itself, since the backdrop fills behind the bar
       // from outside the scroller.
       contentInsetAdjustmentBehavior="automatic"

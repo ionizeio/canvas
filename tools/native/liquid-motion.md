@@ -729,3 +729,43 @@ candidate build.
  and the rim carries the edge, the same as the iOS
 frost path), Reduce Motion on a device (the unit tests pin the snap), and a sealed
 candidate build.
+## The Lattice: the docs' background scene, 2026-09-19
+
+The docs' background is no longer the starfield. It is a periodic table of components
+(`docs/src/brand/canvas-lattice.tsx`, roster in `lattice-scene.ts`, every coefficient in
+`lattice-tunables.ts`): a lattice of cells across the page, cells lighting at unrelated
+moments with a primitive inside (the slow glows on the flight channel in ten buckets, the
+quick blinks on the scintillation channel in three), neighbours bonding into small
+molecules, and two ASSEMBLY moments in which lit cells lift their primitives out and
+compose them into an organism, a search field once per flight and a card once per drift,
+hold, and settle back. All of it is `Backdrop.Custom` art bound to the engine's clock
+through `LoopView`, so it costs what the sky cost: nothing per frame. The harness is
+`/testing/lattice` (`docs/src/ui/testing/lattice-harness.tsx`): park and resume, step the
+energy, switch the scheme, jump the flight or the drift to just before a moment, read the
+phases, and the 4 s sampler. Recorded with the skill's recorder against the worktree
+Metro on 8098 (the docs shell solid through `?surface=solid`, so only the harness scene
+animates), actions in the session scratchpad's `lattice-actions.mjs` (it returns a clip
+around the moment's organism from the harness box and the scene's own `at`), frames
+located with the 2026-09-19 `frame-diff.py`, artifacts under `/tmp/canvas-lattice-2026-09-19/`.
+
+Two kit changes came out of the loop. `useBackdropBox()` (a patch): a custom layer could
+only read the window, and the harness column is not the window. And a web defect in
+`LoopView`: `channel.play(phase)` on a channel that was already playing handed the running
+CSS animation a new negative delay, which the browser applies against the start time the
+animation already had, so every view landed late by the animation's age (run 02 below:
+the atoms were 1.6 s into a moment that should have started a second later). The view now
+remounts on such a re-phase (`test/loop.test.tsx` pins it); park and resume keep their node.
+
+| Date | Effect and profile | Runtime and device | Revision (dirty?) | Values tried | rAF p50 / p95 / max (ms) | What the sheet showed | Artifacts |
+|---|---|---|---|---|---|---|---|
+| 2026-09-19 | First look: the resting lattice, dark and light, on the harness | Chromium headed via the repo's Playwright, 1280x800, stills | worktree, uncommitted | glow fraction 0.14 with a 12.5% lit window, blink 0.025, glow halo 0.30 | not sampled | 425 cells for the window, 61 glow cells in 10 buckets, 9 blink cells, 26 loop views. Too quiet: at any instant 3 to 4 cells lit on a 1280x800 page, the halo barely there. Light reads as pale hairlines with pastel cells, the right weight. | `scratchpad/shots/run-01` |
+| 2026-09-19 | Field moment, first recording (full frame) | Chromium headed, 8 fps sampling, dark | as above | as above; field `at` (0.72, 0.30) | not sampled | The moment landed under the harness readouts (the roster line and the buttons), unreadable in the sheet; the lit cells changed 300 to 1000 px per frame, the sky was alive. Moved the field moment to (0.74, 0.60), below the text. | `web-field-01` (movie, sheet, `strip-096-111.png`) |
+| 2026-09-19 | Field moment after the density change, clipped to the organism | Chromium headed, 8 fps, dark, 480x260 clip | as above | glow fraction 0.20 with a 19% window, blink 0.04, halo 0.42 | not sampled | The clip showed no travel at all, and the atom trace (`atom-trace.mjs`: computed transforms every 0.5 s after the jump) showed why: at t=0 the atoms were already 19 px out and arrived at 2.2 s, a phase of 0.58 where the jump had asked for 0.53. The CSS keyframes themselves were exact (dumped: 56% home, 64.16% slot, 81.84% slot, 90% home). The re-phase defect above. | `web-field-02`, `atom-trace.mjs` |
+| 2026-09-19 | Field moment with the LoopView re-phase fix | Chromium headed, 8 fps, dark, clip | fix applied, uncommitted | as above; window [0.56, 0.90], out/hold/back 0.24/0.52/0.24 | not sampled (the trace: home and invisible at 0 s, lit by 1 s, travel 1.0 to 3.6 s, hold to 9.0 s, back to 11.6 s, dark by 12.7 s, exactly the table) | Every phase in order: the home cells light (row 1), the atoms lift out and the cells dim behind them (row 2), the three glide on eased straight lines and the field's pill outline appears as they land (rows 3 and 4 of `strip-164-187`), the field holds for 5.7 s, then the outline fades and the atoms glide home and the cells re-light (`strip-228-251`). No clipping, no snap at either end. The outline read faint at 0.35. | `web-field-03` (movie, sheet, `strip-164-187.png`, `strip-196-201.png`, `strip-228-251.png`) |
+| 2026-09-19 | Card moment on the drift | Chromium headed, 8 fps, dark, clip | as above | card window [0.30, 0.56] on the 180 s drift | not sampled | Six atoms (ring, two bars, dot, pill, square) leave cells up to seven pitches away and converge on the card outline; correct, but the travel alone took 11 s and the hold 24 s, too slow to read as a moment. Window tightened to [0.30, 0.42] (5.2 s out, 11 s hold). | `web-card-03` (movie, sheet, `strip-352-375.png`, `strip-400-423.png`) |
+| 2026-09-19 | The sampler while running, parked and resumed | Chromium headed, the harness's own 4 s sampler, the docs shell in glass (its own 43 animations counted) | as above | as above | running 7.5 / 11.6 / 35.7; parked 7.5 / 11.8 / 51.2; resumed 7.5 / 11.8 / 34.6 | Style writes per second 0 in all three states; live CSS animations 78 running (the shell's 43 plus the scene's 35: thirteen bucket opacities, nine atoms with opacity and transform, four assembly groups), 43 parked, 78 resumed; 26 animated wrappers, the roster's 26 loop views. | `sample-trace.mjs` |
+| 2026-09-19 | Park, sample, resume with the docs shell solid | Chromium headed, 8 fps, full frame | as above | as above | not sampled | Frames change while running, zero for the parked stretch, change again on resume; the parked poster is the composed still the clock parks on (flight 0.35: two glow buckets lit, one blink bucket mid-fade, both moments home). | `web-park-04` (movie, sheet) |
+| 2026-09-19 | Field moment with the shipped table, dark | Chromium headed, 8 fps, dark, 480x260 clip, `--timeout 240000` (the recorder gained the flag; the loaded machine served the page in 30 to 55 s) | the committed table | field window [0.52, 0.92] (3.2 s out, 6.4 s hold, 3.2 s back), outline 0.45 over a 0.06 fill, scene alpha 0.8 | not sampled (the sampler row above is the trace) | Frames 537 to 559 the travel out, 560 to 614 the hold, 615 to 641 the travel back: the home cells light, the ring, bar and pill lift out and the cells dim, the three glide in on eased lines, the pill outline and its two bonds appear as they land and now read at a glance, hold, fade, the atoms glide home, the cells re-light. Nothing clips or snaps. | `web-field-05` (movie, sheet, `strip-536-559.png`, `strip-614-637.png`) |
+| 2026-09-19 | Card moment with the shipped table | Chromium headed, 8 fps, dark, clip | as above | card window [0.30, 0.42] on the 180 s drift (5.2 s out, 11 s hold, 5.2 s back) | not sampled | Frames 521 to 559 the six atoms converge from cells up to seven pitches away and the card outline appears, the hold, then 644 to 669 the outline fades and they glide home while the cyan and pink cells re-light. The pace now reads as a moment rather than a drift. | `web-card-05` (movie, sheet, `strip-524-547.png`, `strip-646-669.png`) |
+| 2026-09-19 | Field moment in LIGHT | Chromium headed, 8 fps, light, clip | as above | light ink: scene 0.55, hairline 0.12, outline 0.4 | not sampled | The same phases on the paper floor: pastel cells, atoms in their hue, the faint pill outline over the hold (`strip-402-425`, row 4). Fainter by design (dark text sits on it); every phase still legible in the strip. | `web-field-05-light` (movie, sheet, `strip-402-425.png`, `strip-474-497.png`) |
+| 2026-09-19 | The docs shell with the scene mounted | Chromium headed stills, 1280x800, home and `components/button`, dark and light glass | the committed scene | as above | not sampled | The lattice sits behind the hero, the sidebar and the navbar; the glass panels frost it, the lit cells keep to the brand hues, body text stays legible over it in both schemes (`scratchpad/shots/run-02`). | `run-02/1-surface-glass-scheme-dark.png`, `2-surface-glass-scheme-light.png`, `3-components-button-surface-glass-scheme-dark.png` |

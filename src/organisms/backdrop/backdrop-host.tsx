@@ -7,6 +7,7 @@ import { useWindowDimensions } from "react-native";
 import { View } from "../../style/index.js";
 import { useHydrated } from "../../style/use-hydrated.js";
 import { backdropClock, retainBackdropClock, releaseBackdropClock, type Energy } from "./backdrop-clock.js";
+import { BackdropBoxContext, type BackdropBox } from "./backdrop-box.js";
 import { type Layer } from "./backdrop-layers.js";
 import { SvgBackdrop, BackdropFloor } from "./renderers/svg-backdrop.js";
 
@@ -181,6 +182,12 @@ export function BackdropSurface({ claim }: { claim: BackdropClaim }) {
 
   const clock = backdropClock(energy);
 
+  // Published to the scene's custom layers, which lay their own art out against the
+  // same box the engine's layers use (see backdrop-box.ts). Memoised on the numbers so a
+  // surface re-render with the same box never churns a custom layer that reads it.
+  const focus = claim.focus;
+  const surfaceBox = useMemo<BackdropBox>(() => ({ width, height, focus: { x: focus.x, y: focus.y } }), [width, height, focus.x, focus.y]);
+
   return (
     <View
       // Decorative throughout: never focusable, never in the accessibility tree.
@@ -198,15 +205,17 @@ export function BackdropSurface({ claim }: { claim: BackdropClaim }) {
     >
       {claim.floor ? <BackdropFloor color={claim.floor} /> : null}
       {width > 0 && height > 0 ? (
-        <SvgBackdrop
-          layers={claim.layers}
-          width={width}
-          height={height}
-          focus={claim.focus}
-          clock={clock}
-          tint={claim.tint}
-          prominence={claim.prominence}
-        />
+        <BackdropBoxContext.Provider value={surfaceBox}>
+          <SvgBackdrop
+            layers={claim.layers}
+            width={width}
+            height={height}
+            focus={claim.focus}
+            clock={clock}
+            tint={claim.tint}
+            prominence={claim.prominence}
+          />
+        </BackdropBoxContext.Provider>
       ) : null}
     </View>
   );

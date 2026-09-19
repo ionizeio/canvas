@@ -35,7 +35,7 @@ function catmull(p0: number, p1: number, p2: number, p3: number, t: number): num
   return 0.5 * (2 * p1 + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 + (-p0 + 3 * p1 - 3 * p2 + p3) * t3);
 }
 // The conic glow color at a screen angle (deg): a smooth closed Catmull-Rom sweep of the six hues.
-// Exported for the Cosmos galaxy core, which paints the same sweep as a distant galaxy.
+// Exported so brand art elsewhere can paint the same sweep.
 export function glowColor(deg: number): string {
   const n = GLOW_RGB.length;
   const seg = ((((deg % 360) + 360) % 360) / 360) * n; // 0..n around the wheel

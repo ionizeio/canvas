@@ -183,8 +183,14 @@ describe("LoopView on the web", () => {
       now += 1000;
       rerender(<Star channel={channel} />);
       expect(node.style.animationDelay).toBe("0ms, 0ms");
+      // A new play while playing re-phases the channel. The running animation would
+      // read a new delay against the start time it already has and land late by its own
+      // age, so the view remounts: a new node, a new animation, the delay for now.
       act(() => channel.play(0.75));
-      expect(node.style.animationDelay).toBe("-1500ms, -1500ms");
+      const replaced = wrapper(container);
+      expect(replaced).not.toBe(node);
+      expect(node.isConnected).toBe(false);
+      expect(replaced.style.animationDelay).toBe("-1500ms, -1500ms");
     } finally {
       spy.mockRestore();
     }

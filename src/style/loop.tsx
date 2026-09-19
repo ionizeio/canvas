@@ -1,7 +1,8 @@
-import { useMemo, useSyncExternalStore, type ReactNode } from "react";
+import { useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { Animated, Platform, StyleSheet, View, type EasingFunction, type StyleProp, type ViewProps, type ViewStyle } from "react-native";
 import { devWarn } from "./dev-warn.js";
 import { createNativeLoop, type NativeLoop } from "./loop-native.js";
+import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect.js";
 
 // Looping decorative motion that costs nothing per frame on any platform.
 //
@@ -355,8 +356,24 @@ function WebLoopView({ style, children, opacity, scale, rotate, translateX, tran
   }, [key, epochs]);
   if (animation) inline.animationDelay = delay;
 
+  // A running CSS animation keeps the start time it began with, so a new delay handed
+  // to it re-phases it relative to THAT start, not to now: a channel played again while
+  // it was already playing (a harness jumping to a moment, an app re-syncing a clock)
+  // would land every view late by the animation's age. Such a re-phase remounts the
+  // node instead, so a fresh animation starts now at the delay computed for now. Park
+  // and resume keep the node: a parked view carries no animation, and the one a resume
+  // adds is new anyway. The layout effect re-renders before paint, so the old node
+  // never shows a frame at the wrong phase.
+  const [generation, setGeneration] = useState(0);
+  const playing = animation ? epochs : "";
+  const previous = useRef(playing);
+  useIsomorphicLayoutEffect(() => {
+    if (previous.current !== "" && playing !== "" && previous.current !== playing) setGeneration((g) => g + 1);
+    previous.current = playing;
+  }, [playing]);
+
   return (
-    <View {...rest} style={[style, animation, inline as ViewStyle]}>
+    <View key={generation} {...rest} style={[style, animation, inline as ViewStyle]}>
       {children}
     </View>
   );

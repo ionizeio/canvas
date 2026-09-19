@@ -8,15 +8,15 @@ import { nativeMenuFor, sectionFor, getActiveGroup, getActiveSlug, type MenuNode
 import { GLYPH_RASTERS } from "../core/glyph-rasters";
 import { Sidebar } from "./sidebar";
 import { ThemeToggles } from "./theme-toggles";
-import { CanvasUniverse } from "../brand/canvas-universe";
+import { CanvasLattice } from "../brand/canvas-lattice";
 
 // Wraps a screen's scroller so the native header (which drives the per-screen Stack title +
 // menu, and hosts the Android overflow sheet) can sit as a sibling of the content. On web
 // this is a no-op passthrough: it renders the scroller exactly as before, with NO wrapping
 // View, so the web build stays byte-identical (an extra flex wrapper there collapses
-// onLayout-measured tile grids). On native it also mounts the Canvas Universe backdrop
+// onLayout-measured tile grids). On native it also mounts the Canvas Lattice backdrop
 // behind the (transparent-in-glass) scroller, the native counterpart of the web shell's
-// Cosmos mount.
+// lattice mount.
 export function ScreenFrame({ children }: { children: ReactNode }) {
   if (Platform.OS === "web") return <>{children}</>;
   return (
@@ -31,7 +31,7 @@ export function ScreenFrame({ children }: { children: ReactNode }) {
           own surface, as it did before the host model existed, and the shared
           clock still keeps them all in phase across navigation. */}
       <BackdropHost>
-        <ScreenCosmos />
+        <ScreenLattice />
         {children}
       </BackdropHost>
       <NativeHeader />
@@ -44,10 +44,10 @@ export function ScreenFrame({ children }: { children: ReactNode }) {
 // owns the single renderer for the whole app. Stacked screens therefore share one
 // surface instead of one each, and the flight a navigation or back-swipe reveals is
 // continuous because the renderer was never unmounted.
-function ScreenCosmos() {
+function ScreenLattice() {
   const { surface } = useTheme();
   if (surface !== "glass") return null;
-  return <CanvasUniverse />;
+  return <CanvasLattice />;
 }
 
 // Per-screen config for the NATIVE iOS/Android navigation bar (a real UINavigationBar,

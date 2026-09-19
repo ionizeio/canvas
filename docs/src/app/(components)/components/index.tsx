@@ -39,7 +39,7 @@ export default function ComponentsIndex() {
       // The page scroller marker the web shell's scroll padding and the e2e helpers read
       // (docs/src/ui/page.tsx carries the same). Web-only attribute; a no-op on native.
       {...(Platform.OS === "web" ? ({ dataSet: { pageScroll: "" } } as object) : null)}
-      // Glass surface mode: the canvas goes transparent so the Canvas Universe backdrop
+      // Glass surface mode: the canvas goes transparent so the Canvas Lattice backdrop
       // reads through (matching the shared Page); the per-category tiles stay solid content cards.
       style={{ flex: 1, backgroundColor: surface === "glass" ? "transparent" : tokens.background }}
       contentInsetAdjustmentBehavior="automatic"
