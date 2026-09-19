@@ -230,6 +230,35 @@ and the remaining native-driver cost per animated view (about 0.5% CPU each on t
 simulator), which is the framework's price for direct view updates and scales with the
 scene's bucket count rather than with the tree.
 
+## The moving brand puck's label ink follows the surface, 2026-09-19
+
+The moving glass selections whose surface is a brand puck (numbered Pagination,
+Calendar days, the Navbar's iOS brand skin) switched the newly selected label to
+`primary-foreground` from the press, so it sat unreadable on the bare cell for the
+~150 ms flight, and settled on a puck the frost had dyed too dark on iOS 26 dark
+(the two open items in [[measured-targets-contract]], recorded in the Calendar and
+Pagination rows of 2026-09-18). The fix drives the label ink from the surface's
+coverage of each target through the shared measured-selection contract, and paints
+the brand fill OVER the frost/lens so the ink solver's colour is the rendered one.
+
+The `/testing/tabs` liquid harness gained a scheme switch, a numbered Pagination
+and a month Calendar with `Jump page` / `Jump day` drivers and readouts (long,
+alternating hops so a 20 fps strip shows each flight; one Calendar hop lands on
+today's tinted cell; endpoint days carry events so the inverted dot's ink is
+exercised). Recorded with the skill's recorder against the worktree Metro on 8093;
+`actions-ink.mjs` writes the cell frames and the readouts beside each movie, and
+`ink-trace.py` reads, per frame, each label's ink and the puck's coverage of its
+cell so the ink is judged against the surface, not by eye alone. Development bundle,
+so these are observations, not a sealed-candidate pass.
+
+| Date | Effect and profile | Runtime and device | Revision (dirty?) | Values tried | rAF p50 / p95 / max (ms) | What the strip and trace showed | Artifacts |
+|---|---|---|---|---|---|---|---|
+| 2026-09-19 | Pagination + Calendar brand-puck label ink follows the surface (`selection`), dark glass, brand fill over the lens | Chromium headed via the repo's Playwright on `/testing/tabs`, 1280x800, dark, 20 fps sampling | 26e4c36f then f25f8481 (clean worktree) | `INK_FOLLOW { covered 0.4, clear 0.9 }`, `brandOverMaterial`; `PROFILES` unchanged | 7.8 / 8.0 / 51 over 1584 frames (the max is the solid-to-glass switch) | Pagination hops 2,5,3,6: the arriving number stays white until the puck's coverage of its cell passes ~0.5, then turns navy (`ink-trace.py`: on every hop `24`/`5`/`3`/`6` reads white with puck=0 and navy only at puck>=0.5); the departing number takes white back as coverage drops (`2` stays navy while puck>0, white after); a number the flight only crosses is never driven. Settled puck 4.5-5.6:1 to the navy label (was ~2:1 under-material on the earlier frost path). The web bordered tile's border dissolves under the arriving puck and re-forms behind it (`row-104-115.png`). Calendar hops 3,24,12,23: same, the event dot inverts with the number. | `/tmp/canvas-liquid-motion-2026-09-19/web-ink-02`, `web-ink-03` (movie, sheet, `row-104-115.png`, `hops-zoom.png`, `calendar-hops.png`, `trace.json`), `actions-ink.mjs`, `ink-trace.py` |
+| 2026-09-19 | The same in LIGHT glass | Chromium headed via the repo's Playwright on `/testing/tabs`, 1280x800, light, 20 fps sampling | f25f8481 (clean) | as above | 7.8 / 8.4 / 35 over 1378 frames | Light was never the defect (both inks are the same dark navy there), and it stays correct: bright sky pucks with dark labels throughout, the resting tile dissolving and re-forming the same way (`row-hop1.png`). Confirms the over-material fill did not regress light. | `/tmp/canvas-liquid-motion-2026-09-19/web-ink-04-light` (movie, sheet, `row-hop1.png`) |
+| 2026-09-19 | Pagination + Calendar brand-puck ink on the native frost material | iPhone 17 Pro simulator (a throwaway `simctl create`, the user's device untouched), iOS 26.3, dark glass, the docs dev app installed from the primary device's bundle and pointed at the worktree Metro (`RCT_jsLocation`), taps through `idb ui tap`, 20 fps sampling of a simctl recording | f25f8481 (clean) | as above | not sampled | The moving selections are `static` GlassSurfaces, so on iOS 26 they render the expo-blur frost, not the native Liquid Glass; the brand fill now paints over that frost. Pagination 2->5->3->6 and Calendar 3->24->12->23->3: the arriving label stays white until the puck arrives then settles navy at 5.27:1 (was 1.9:1 under-material on 2026-09-18); the departing `3` keeps its navy ink while the puck covers it (frames 168-169), dims for a single 50 ms crossover frame (170), then white (171+) (`cell3-zoom.png`, `calendar-hops.png`, `row-hops.png`). No unreadable flight window remains. | `/tmp/canvas-liquid-motion-2026-09-19/ios-ink-01` (movie, sheet, `cell3-zoom.png`, `calendar-hops.png`, `row-hops.png`) |
+| 2026-09-19 | The native Liquid Glass `tintColor` path itself (a non-static brand puck): a primary Button on iOS 26 dark | iPhone 17 Pro simulator, iOS 26.3, dark, docs `components/button` | f25f8481 | none (measurement only) | not sampled | The task's second finding named "the GlassView tintColor path", but the moving selections do not use it (they are `static` frost, above). The genuine native GlassView path, a primary Button, was measured over its opaque page: puck (96,204,252), label ink (8,16,24), 10.5:1. Legible, so `brandTint` was not the constraint there and the native path is left unchanged. The dark-teal settled puck the finding described was the frost-under-material rendering, which change (2) fixes. | `/tmp/canvas-liquid-motion-2026-09-19/ios-button-dark.png`, `ios-button-crop.png` |
+| 2026-09-19 | Navbar iOS brand capsule: active link travel, label ink follows, resting capsules dissolve | Chromium headed via the repo's Playwright on `components/navbars` (the iOS compare column, which renders the iOS skin's brand capsule on web), dark glass, 20 fps sampling | f25f8481 (clean) | as above | not sampled | Dashboard->Users->Settings->Dashboard: the sky capsule travels, its label stays navy while the capsule covers it and returns to the brand-blue resting ink as it leaves; the neutral resting capsules of the two flight endpoints dissolve under the surface and re-form, the uninvolved `Settings` keeps its capsule the whole time; one crossover frame where both labels dim (`hop1.png`). | `/tmp/canvas-liquid-motion-2026-09-19/web-navbar-01` (movie, sheet, `hop1.png`), `actions-navbar.mjs` |
+
 ## The web Tabs and TabBar take the iOS liquid-glass anatomy, 2026-09-18
 
 The owner's call: the web tab is to look like the iOS tab with liquid glass, in both
