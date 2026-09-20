@@ -1,9 +1,10 @@
-import { type ReactNode, useEffect, useRef, useState } from "react";
-import { Animated, Easing, AccessibilityInfo } from "react-native";
-import { View, useTheme, alpha, useFormFactor, useResponsive, useContainerWidth, supportsNativeDriver, thereAndBack } from "@ionizeio/canvas";
+import { type ReactNode, useEffect } from "react";
+import { Easing } from "react-native";
+import { View, LoopView, createLoopChannel, thereAndBack, useReducedMotion, useTheme, alpha, useFormFactor, useResponsive, useContainerWidth, type LoopChannel, type LoopTrack } from "@ionizeio/canvas";
 import Svg, { Circle, Path, Defs, RadialGradient, Stop, Mask, Rect, G, Filter, FeGaussianBlur, FeColorMatrix } from "react-native-svg";
 import { CanvasMark } from "./canvas-mark";
 import { AppleLogo, ReactLogo, TypeScriptLogo, AndroidLogo, Html5Logo, TailwindLogo } from "./brand-logos";
+import { ORBIT } from "./orbit-tunables";
 
 // Canvas at the core, the platforms it targets orbiting around it: a dashed ring, a disc
 // carrying the rainbow "C", a rainbow glow that
@@ -45,49 +46,76 @@ export function glowColor(deg: number): string {
   return `rgb(${ch(0)},${ch(1)},${ch(2)})`;
 }
 
-function useReducedMotion() {
-  const [reduced, setReduced] = useState(false);
-  useEffect(() => {
-    let mounted = true;
-    AccessibilityInfo.isReduceMotionEnabled().then((v) => { if (mounted) setReduced(v); });
-    const sub = AccessibilityInfo.addEventListener("reduceMotionChanged", setReduced);
-    return () => { mounted = false; sub.remove(); };
-  }, []);
-  return reduced;
+// The orbit's three loops, as loop channels on the kit's loop primitive, so a frame
+// costs nothing on any platform: the native driver on iOS and Android, a compositor CSS
+// animation on the web. The previous `Animated.loop` ran on the JS driver on the web,
+// where react-native-web re-renders every Animated.View through React on every frame;
+// the orbit alone committed the docs' home page about 115 times a second on an idle
+// screen, which is what kept Lighthouse's main-thread total at 4.4 s there. The
+// channels live at module scope, like the Backdrop's clock, so the orbit continues
+// across page changes instead of restarting, and the harness reads the same clock.
+interface OrbitClock {
+  orbit: LoopChannel;
+  glow: LoopChannel;
+  breath: LoopChannel;
+}
+let clock: OrbitClock | null = null;
+function orbitClock(): OrbitClock {
+  if (!clock) {
+    clock = {
+      orbit: createLoopChannel({ period: ORBIT.orbitPeriod }),
+      glow: createLoopChannel({ period: ORBIT.glowPeriod }),
+      breath: createLoopChannel({ period: ORBIT.glowPeriodBreath, shape: thereAndBack(Easing.inOut(Easing.ease)) }),
+    };
+  }
+  return clock;
+}
+// Refcounted like the Backdrop clock: the first mount starts the loops, the last unmount
+// stops them (capturing the phase for the next mount), and a still orbit parks every
+// channel at its top: badges 60° apart, the glow at full opacity, the poster the
+// reduce-motion ladder shows.
+let mounted = 0;
+function retainOrbit(still: boolean): () => void {
+  const c = orbitClock();
+  mounted += 1;
+  if (still) {
+    c.orbit.park(0);
+    c.glow.park(0);
+    c.breath.park(0);
+  } else {
+    c.orbit.play();
+    c.glow.play();
+    c.breath.play();
+  }
+  return () => {
+    mounted -= 1;
+    if (mounted === 0) {
+      c.orbit.stop();
+      c.glow.stop();
+      c.breath.stop();
+    }
+  };
 }
 
-export function HeroOrbit() {
+export interface HeroOrbitProps {
+  /** Harness only: park the orbit on its poster. Production leaves it to Reduce Motion. */
+  still?: boolean;
+}
+
+export function HeroOrbit({ still }: HeroOrbitProps = {}) {
   const { tokens } = useTheme();
   const reduced = useReducedMotion();
+  const parked = !!still || reduced;
 
-  const badgeSpin = useRef(new Animated.Value(0)).current;
-  const glowSpin = useRef(new Animated.Value(0)).current;
-  const glowPulse = useRef(new Animated.Value(1)).current;
+  // Play from an effect, never during render: a channel's web delay is derived from the
+  // wall clock, and the server render must not carry one.
+  useEffect(() => retainOrbit(parked), [parked]);
 
-  useEffect(() => {
-    if (reduced) {
-      badgeSpin.setValue(0);
-      glowSpin.setValue(0);
-      glowPulse.setValue(1);
-      return;
-    }
-    // Match the CSS: 30s for the orbit, 6s for the rainbow spin, both linear and looping;
-    // a 3.4s ease-in-out opacity pulse (heroGlowPulse: 0.85 → 1 → 0.85) breathes the glow.
-    // The loops run on the native driver where there is one and on the JS driver on web
-    // (supportsNativeDriver): under the New Architecture a JS-driven frame is a shadow-tree
-    // commit per animated view, and this orbit alone kept the docs app's JS thread saturated
-    // on an idle Home screen. A native loop cannot hold an Animated.sequence, so the pulse is
-    // one timing 1 → 0.85 → 1 shaped by a there-and-back easing.
-    const b = Animated.loop(Animated.timing(badgeSpin, { toValue: 1, duration: 30000, easing: Easing.linear, useNativeDriver: supportsNativeDriver }));
-    const g = Animated.loop(Animated.timing(glowSpin, { toValue: 1, duration: 6000, easing: Easing.linear, useNativeDriver: supportsNativeDriver }));
-    const p = Animated.loop(
-      Animated.timing(glowPulse, { toValue: 0.85, duration: 3400, easing: thereAndBack(Easing.inOut(Easing.ease)), useNativeDriver: supportsNativeDriver }),
-    );
-    b.start();
-    g.start();
-    p.start();
-    return () => { b.stop(); g.stop(); p.stop(); };
-  }, [reduced, badgeSpin, glowSpin, glowPulse]);
+  const c = orbitClock();
+  const orbitSpin: LoopTrack = { channel: c.orbit, inputRange: [0, 1], outputRange: [0, 360] };
+  const badgeCounter: LoopTrack = { channel: c.orbit, inputRange: [0, 1], outputRange: [0, -360] };
+  const glowSpin: LoopTrack = { channel: c.glow, inputRange: [0, 1], outputRange: [0, 360] };
+  const glowBreath: LoopTrack = { channel: c.breath, inputRange: [0, 1], outputRange: [1, ORBIT.glowFloor] };
 
   // Desktop (the side-by-side hero, the kit's desktop tier: width > lg, 1024) keeps the
   // fixed orbit next to the copy. The stacked phone/tablet hero scales the WHOLE orbit
@@ -95,14 +123,16 @@ export function HeroOrbit() {
   // screen's centerpiece instead of a small medallion. The tier and the badge size come
   // from the kit's bucket hooks (desktop on the server and for the hydration render, so
   // the pre-rendered page carries the fixed geometry rather than a collapsed orbit drawn
-  // from a window width of 0), and the stacked width from the column this sits in,
-  // measured by the probe below (the window until the first layout, once hydrated).
+  // from a window width of 0), and the stacked width from the column this sits in, once
+  // the probe below has measured it: the fixed geometry holds until then, so a page
+  // re-lays the orbit out once (to the column) rather than twice (to the window, then
+  // the column).
   const stacked = useFormFactor() !== "desktop";
   const badge = useResponsive({ base: 60, sm: 56 });
   const column = useContainerWidth();
   // Fill the column width (small side margin), capped so a big tablet does not get an
   // oversized orbit. The box is square when stacked, so it fills vertically too.
-  const boxW = stacked && column.width > 0 ? Math.min(column.width - 40, 440) : 380;
+  const boxW = stacked && column.measured ? Math.min(column.width - 40, 440) : 380;
   const r = stacked ? Math.round((boxW - badge - 20) / 2) : 150;
   const core = stacked ? Math.round(r * 0.78) : 116;
   // Stacked: trim the ring's vertical margin (badges nearly touch the box edges) so the orbit
@@ -123,10 +153,6 @@ export function HeroOrbit() {
     return { d: `M${gc} ${gc} L${x0.toFixed(2)} ${y0.toFixed(2)} A${gR} ${gR} 0 0 1 ${x1.toFixed(2)} ${y1.toFixed(2)} Z`, color: glowColor(am) };
   });
 
-  const orbitRotate = badgeSpin.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "360deg"] });
-  const badgeCounter = badgeSpin.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "-360deg"] });
-  const glowRotate = glowSpin.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "360deg"] });
-
   return (
     <View onLayout={column.onLayout} style={{ width: "100%", alignItems: "center" }}>
     <View style={{ width: boxW, height: boxH, alignSelf: "center", position: "relative" }}>
@@ -136,15 +162,15 @@ export function HeroOrbit() {
       </Svg>
 
       {/* Rainbow glow halo, behind the disc, spinning and breathing */}
-      <Animated.View
+      <LoopView
+        rotate={glowSpin}
+        opacity={glowBreath}
         style={{
           position: "absolute",
           top: cy - glowSize / 2,
           left: cx - glowSize / 2,
           width: glowSize,
           height: glowSize,
-          opacity: glowPulse,
-          transform: [{ rotate: glowRotate }],
         }}
       >
         <Svg width={glowSize} height={glowSize}>
@@ -171,7 +197,7 @@ export function HeroOrbit() {
             {ring.map((s, i) => <Path key={i} d={s.d} fill={s.color} />)}
           </G>
         </Svg>
-      </Animated.View>
+      </LoopView>
 
       {/* The disc + the Canvas mark (static, above the glow) */}
       <View
@@ -195,15 +221,19 @@ export function HeroOrbit() {
       </View>
 
       {/* Six brand badges on the orbiting layer; each counter-rotates to stay upright */}
-      <Animated.View style={{ position: "absolute", top: 0, left: 0, width: boxW, height: boxH, transform: [{ rotate: orbitRotate }] }}>
+      <LoopView rotate={orbitSpin} style={{ position: "absolute", top: 0, left: 0, width: boxW, height: boxH }}>
         {BADGES.map(({ i, color, render }) => {
           const a = (i * 60 * Math.PI) / 180;
-          const bx = cx + Math.cos(a) * r - badge / 2;
-          const by = cy + Math.sin(a) * r - badge / 2;
+          // Two decimals: the browser stores a parsed length at that precision, and a
+          // hydration render comparing 84.99999999999993 with the server's "85px" would
+          // read as a mismatch.
+          const bx = Math.round((cx + Math.cos(a) * r - badge / 2) * 100) / 100;
+          const by = Math.round((cy + Math.sin(a) * r - badge / 2) * 100) / 100;
           const tint = color === "__fg__" ? tokens.foreground : color;
           return (
-            <Animated.View
+            <LoopView
               key={i}
+              rotate={badgeCounter}
               style={{
                 position: "absolute",
                 top: by,
@@ -216,7 +246,6 @@ export function HeroOrbit() {
                 borderColor: tokens.border,
                 alignItems: "center",
                 justifyContent: "center",
-                transform: [{ rotate: badgeCounter }],
                 // Badge inner shadow: a tight colored glow (the -10px spread keeps it
                 // small) plus a faint grounding shadow. boxShadow carries both + the spread,
                 // which RN's shadow* props cannot.
@@ -224,10 +253,10 @@ export function HeroOrbit() {
               }}
             >
               {render(logo, tint)}
-            </Animated.View>
+            </LoopView>
           );
         })}
-      </Animated.View>
+      </LoopView>
     </View>
     </View>
   );

@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useWindowDimensions } from "react-native";
 import { BackdropHost, Button, Column, Row, ThemeProvider, Typography, backdropClock, type Energy } from "@ionizeio/canvas";
 import { CanvasLattice } from "../../brand/canvas-lattice";
 import { LATTICE } from "../../brand/lattice-tunables";
 import { buildLattice } from "../../brand/lattice-scene";
+import { useFrameTrace } from "./frame-trace";
 
 // The Lattice harness: the docs' background scene on the engine's real surface, with
 // the drivers a tuning run needs. Park and resume the clock, step the energy, switch
@@ -12,21 +13,13 @@ import { buildLattice } from "../../brand/lattice-scene";
 // the channel phases, and sample the frame trace: the requestAnimationFrame intervals,
 // the inline style writes per second on the web (the cost of driving a scene through
 // React each frame, which should be zero) and the live CSS animations the web engine
-// runs on the compositor instead.
+// runs on the compositor instead (the sampler is shared with the orbit harness,
+// frame-trace.ts).
 //
 // This lives in the docs rather than the shared smoke fixtures because the scene is
 // the docs' brand art; the smoke app's fixture keeps the engine's generic sky.
 
 const energies: Energy[] = ["default", "calm", "energetic"];
-
-// The web globals the sampler reads, looked up at run time so the body compiles for
-// the native app too (no DOM lib) and reports "n/a" there.
-type Observer = { observe: (target: unknown, init: object) => void; disconnect: () => void };
-type MutationRecordLike = { type: string; attributeName: string | null };
-const web = globalThis as unknown as {
-  MutationObserver?: new (callback: (records: MutationRecordLike[]) => void) => Observer;
-  document?: { body: unknown; getAnimations?: () => unknown[] };
-};
 
 /** How far before an assembly's window a jump lands, in cycles of its channel. */
 const JUMP_LEAD = 0.03;
@@ -36,7 +29,7 @@ export function LatticeHarness({ initialDark = true, initialEnergy, initialStill
   const [energy, setEnergy] = useState<Energy>(initialEnergy ?? LATTICE.energy);
   const [dark, setDark] = useState(initialDark);
   const [phases, setPhases] = useState("Phases: not read");
-  const [trace, setTrace] = useState("Trace: not sampled");
+  const { trace, sample } = useFrameTrace();
   const { width, height } = useWindowDimensions();
   const clock = backdropClock(energy);
   // The roster the scene mounts for the window box (the surface box is the harness
@@ -54,47 +47,6 @@ export function LatticeHarness({ initialDark = true, initialEnergy, initialStill
     const channel = spec.channel === "drift" ? clock.drift : clock.flight;
     channel.play(Math.max(0, spec.window[0] - JUMP_LEAD));
     readPhases();
-  };
-
-  const sampling = useRef<{ handle: number; timer: ReturnType<typeof setTimeout>; observer: Observer | null } | null>(null);
-  useEffect(() => () => {
-    if (!sampling.current) return;
-    cancelAnimationFrame(sampling.current.handle);
-    clearTimeout(sampling.current.timer);
-    sampling.current.observer?.disconnect();
-  }, []);
-
-  // Four seconds of requestAnimationFrame intervals, inline style writes and live CSS
-  // animations, then one readout line: the numeric half of a recorded run.
-  const sample = () => {
-    if (sampling.current) return;
-    setTrace("Trace: sampling for 4 s");
-    const intervals: number[] = [];
-    let previous: number | null = null;
-    let styleWrites = 0;
-    const tick = (now: number) => {
-      if (previous !== null) intervals.push(now - previous);
-      previous = now;
-      if (sampling.current) sampling.current.handle = requestAnimationFrame(tick);
-    };
-    let observer: Observer | null = null;
-    if (web.MutationObserver && web.document) {
-      observer = new web.MutationObserver((records) => {
-        for (const record of records) if (record.type === "attributes" && record.attributeName === "style") styleWrites++;
-      });
-      observer.observe(web.document.body, { attributes: true, subtree: true, attributeFilter: ["style"] });
-    }
-    const timer = setTimeout(() => {
-      if (sampling.current) cancelAnimationFrame(sampling.current.handle);
-      observer?.disconnect();
-      sampling.current = null;
-      const sorted = [...intervals].sort((a, b) => a - b);
-      const at = (q: number) => sorted[Math.floor((sorted.length - 1) * q)] ?? 0;
-      const writes = observer ? `${Math.round(styleWrites / 4)}` : "n/a";
-      const animations = web.document?.getAnimations ? `${web.document.getAnimations().length}` : "n/a";
-      setTrace(`Frames: ${sorted.length}; p50 ${at(0.5).toFixed(1)} ms; p95 ${at(0.95).toFixed(1)} ms; max ${(sorted.at(-1) ?? 0).toFixed(1)} ms; style writes/s: ${writes}; css animations: ${animations}`);
-    }, 4000);
-    sampling.current = { handle: requestAnimationFrame(tick), timer, observer };
   };
 
   // The host paints across its parent's box, so the Column keeps the scene behind this

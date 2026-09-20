@@ -673,3 +673,29 @@ Not covered: a reopen mid-close on a device (idb's tap latency; the web trace an
 (not available to a transform of one box; the hold covers the swap), the light
 scheme, Reduce Motion on a device (the unit tests pin the snap), and a sealed
 candidate build.
+
+## The hero orbit on the loop primitive, 2026-09-20
+
+The home page's orbit (docs/src/brand/hero-orbit.tsx) ran its three loops through
+`Animated.loop` with `useNativeDriver: supportsNativeDriver`: the native driver on iOS
+and Android, the JS driver on the web, where react-native-web re-renders every
+Animated.View through React on every frame. A React commit counter on the exported home
+page read about 90 to 115 commits a second on an idle screen, with 805 inline style
+writes a second, and Lighthouse's main-thread total for the page stood at 4.4 s (the
+mobile pass simulates a 4x slower CPU) against 2.7 s with reduce-motion forced. The
+port binds the same three loops to `LoopView` tracks on module-scope channels
+(docs/src/brand/orbit-tunables.ts holds the periods and the breath's floor): the badge
+revolution and its six counter-rotations, the glow's spin, the glow's breath. The
+harness is /testing/orbit (docs/src/ui/testing/orbit-harness.tsx): park and resume,
+desktop or stacked orbit, scheme, and the shared frame sampler (frame-trace.ts) with a
+React Profiler commit counter around the real component.
+
+| Date | Effect and profile | Runtime and device | Revision (dirty?) | Values tried | rAF p50 / p95 / max (ms) | What the sheet showed | Artifacts |
+|---|---|---|---|---|---|---|---|
+| 2026-09-20 | BASELINE, web: the previous orbit (three `Animated.loop` timings on the JS driver) on the exported home page, recorded for 8.9 s | Chromium headless through the repo's Playwright, 1280x800, the export of 698eb809 served by the e2e static server on 8123 (gzip, the `_headers` policy), 8 fps sampling of the Playwright video, clipped to the orbit's box (396x416) | 698eb809 (the export; clean) | the shipped periods: orbit 30 s, glow 6 s, breath 3.4 s to 0.85 | 8.4 / 16.8 / 18.0 over 346 frames in a 4 s window after hydration; 91 React commits/s and 805 inline style writes/s in the same window (a page-level MutationObserver and the devtools commit hook) | 75 tiles, 125 ms apart: the six badges revolve about a third of a turn over the strip with every logo upright, the rainbow glow turns through a full cycle every 48 tiles and breathes, the disc and the dashed ring hold still. Continuous, no snap. | `/private/tmp/claude-501/-Users-bnannier-Workspaces-canvas/15b0b96c-c06a-49b2-8225-b2774967df8a/scratchpad/orbit-before` (movie.webm, frames/, contact-sheet.png, meta.json), `/private/tmp/claude-501/-Users-bnannier-Workspaces-canvas/15b0b96c-c06a-49b2-8225-b2774967df8a/scratchpad/style-writes.mjs` |
+| 2026-09-20 | The port: the same three loops as `LoopView` tracks, recorded on the harness for 9.4 s | Chromium headless, 1280x800, the dev server of this working tree on 8111 (the paint-first dev document), same sampling and clip | working tree of this commit | orbit 30 s, glow 6 s, breath 3.4 s to 0.85 (unchanged; the table is the previous values) | harness sampler, running: 9.5 / 17.0 / 25.1 over 324 frames, style writes/s 0, css animations 44 (the orbit's 9 on top of the Lattice's 35), commits/s 0; parked: 10.4 / 17.5 / 25.3 over 316 frames, 0 writes, 35 animations, 0 commits. The home page in the same 4 s window as the baseline: 7 commits/s and 7 style writes/s (startup residue: the Lattice's assemblies and the lens settling), against 91 and 805. | 79 tiles: the same three motions at the same rates as the baseline sheet (a third of a turn of the badges over the strip, the glow's full cycle in 48 tiles, the breath), logos upright, no snap at the channel's seam. The first seven tiles are the page loading. | `/private/tmp/claude-501/-Users-bnannier-Workspaces-canvas/15b0b96c-c06a-49b2-8225-b2774967df8a/scratchpad/orbit-after`, `/private/tmp/claude-501/-Users-bnannier-Workspaces-canvas/15b0b96c-c06a-49b2-8225-b2774967df8a/scratchpad/orbit-probe.mjs`, `/private/tmp/claude-501/-Users-bnannier-Workspaces-canvas/15b0b96c-c06a-49b2-8225-b2774967df8a/scratchpad/orbit-actions.mjs` |
+| 2026-09-20 | The port on iOS: the home screen's stacked orbit on the native driver | iPhone 17 Pro simulator (iOS 26.3), the installed docs dev app pointed at this working tree's Metro on 8111 through the per-device `RCT_jsLocation` default (deleted again afterwards), 8 s of `simctl io recordVideo` at 8 fps, clipped to the orbit (1000x1100 device px) | working tree of this commit | as above | not sampled (the home screen carries no sampler; the native cost of a LoopView is the Backdrop rows' above) | 67 tiles: the badges revolve with the logos upright, the glow spins and breathes, the Lattice's assemblies animate beside it. The same phases as the web. | `/private/tmp/claude-501/-Users-bnannier-Workspaces-canvas/15b0b96c-c06a-49b2-8225-b2774967df8a/scratchpad/orbit-ios` (movie.mp4, frames/, contact-sheet.png) |
+
+Not covered: Android (no emulator was booted), a reduce-motion device (the harness's
+Park driver stands in: it parks the same channels the ladder parks), and the light
+scheme on a device.
