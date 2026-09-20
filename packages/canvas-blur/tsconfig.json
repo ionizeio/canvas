@@ -5,9 +5,7 @@
     "outDir": "./dist",
     "declaration": true,
     "declarationMap": false,
-    "sourceMap": false,
-    "baseUrl": ".",
-    "paths": {}
+    "sourceMap": false
   },
   "include": [
     "src/**/*.ts",
