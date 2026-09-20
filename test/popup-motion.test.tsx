@@ -7,6 +7,7 @@ import { OverlayProvider, Portal } from "../src/style/portal.tsx";
 import { EscapeLayerProvider, useEscapeLayer } from "../src/style/escape-layer.ts";
 import { useDialogFocus } from "../src/style/use-dialog-focus.ts";
 import { HANDOFF_RETURN, POPUP_PRESENTATION, PopupInteractionContext, PopupMotionPolicy, handoffAcross, restingRadius, usePopupMotion, type PopupEdge, type PopupOrigin, type PopupSize } from "../src/style/popup-motion.tsx";
+import { supportsNativeDriver } from "../src/style/motion.ts";
 import { PopupHandoffContext, PopupHandoffForeground, usePopupHandoff, shapeRadius, type PopupHandoff, type PopupHandoffValue } from "../src/style/popup-handoff.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { GLASS_LENS_ID, sizedGlassLensCount } from "../src/style/glass-surface/glass-lens.ts";
@@ -29,11 +30,45 @@ function Probe({ open, enabled = true, ready = true, size = SIZE, edge = "top", 
   </>;
 }
 const triggerFill = () => parseFloat(screen.getByTestId("motion-blend").style.opacity);
-function frame() {
-  const { style } = screen.getByTestId("motion-frame");
-  return { left: parseFloat(style.left), top: parseFloat(style.top), width: parseFloat(style.width), height: parseFloat(style.height) };
+// The frame is a transform of the material's resting box (never a re-laid-out width or
+// offset, so the native driver can run it), so the box a viewer sees is read back off
+// the transform string: a scale about the centre, then a translation.
+function transformOf(node: HTMLElement) {
+  const parts = { translateX: 0, translateY: 0, scaleX: 1, scaleY: 1 };
+  for (const [, name, value] of node.style.transform.matchAll(/(translateX|translateY|scaleX|scaleY|scale)\(([-\d.e]+)(?:px)?\)/g)) {
+    const number = parseFloat(value);
+    if (name === "scale") { parts.scaleX = number; parts.scaleY = number; } else parts[name as keyof typeof parts] = number;
+  }
+  return parts;
 }
-const corner = () => parseFloat(screen.getByTestId("motion-frame").style.borderRadius);
+// Painted pixels: reconstructing an edge from a scale and a shift leaves 1e-15 of noise.
+const exact = (value: number) => { const rounded = Math.round(value * 1e9) / 1e9; return rounded === 0 ? 0 : rounded; };
+function frame() {
+  const node = screen.getByTestId("motion-frame");
+  const { translateX, translateY, scaleX, scaleY } = transformOf(node);
+  const box = { width: parseFloat(node.style.width), height: parseFloat(node.style.height) };
+  const width = box.width * scaleX;
+  const height = box.height * scaleY;
+  return { left: exact((box.width - width) / 2 + translateX), top: exact((box.height - height) / 2 + translateY), width: exact(width), height: exact(height) };
+}
+/** The material's box is never re-laid out: its layout keys stay the resting ones. */
+const restingBox = () => {
+  const { style } = screen.getByTestId("motion-frame");
+  return { left: style.left, top: style.top, width: style.width, height: style.height };
+};
+// The corner the viewer sees on the axis the presentation keeps exact (the seed
+// shape's shorter side, which for every fixture here is the anchor axis, y): the
+// uniform radius the unscaled box wears, scaled with that axis.
+const corner = () => {
+  const node = screen.getByTestId("motion-frame");
+  return parseFloat(node.style.borderRadius) * transformOf(node).scaleY;
+};
+const near = (box: ReturnType<typeof frame>, expected: ReturnType<typeof frame>) => {
+  expect(box.left).toBeCloseTo(expected.left, 6);
+  expect(box.top).toBeCloseTo(expected.top, 6);
+  expect(box.width).toBeCloseTo(expected.width, 6);
+  expect(box.height).toBeCloseTo(expected.height, 6);
+};
 function content() {
   const { style } = screen.getByTestId("motion-content");
   return { opacity: parseFloat(style.opacity), transform: style.transform };
@@ -60,9 +95,11 @@ describe("popup decorative spring", () => {
         if (edge === "right") expect(moving.left + moving.width).toBeCloseTo(SIZE.width, 4);
         if (edge === "top" || edge === "bottom") expect(moving.left / (SIZE.width - moving.width)).toBeCloseTo(30 / SIZE.width, 4);
         else expect(moving.top / (SIZE.height - moving.height)).toBeCloseTo(40 / SIZE.height, 4);
-        expect(screen.getByTestId("motion-frame").style.transform).toBe("");
+        // The box itself is never re-laid out: the frame is a transform of it.
+        expect(restingBox()).toEqual({ left: "0px", top: "0px", width: "240px", height: "160px" });
         clock.advance(1600);
         expect(frame()).toEqual({ left: 0, top: 0, ...SIZE });
+        expect(screen.getByTestId("motion-frame").style.transform).toMatch(/^translateX\(-?0px\) translateY\(-?0px\) scaleX\(1\) scaleY\(1\)$/);
         expect(readable()).toBe(true);
       } finally { unmount(); clock.restore(); }
     });
@@ -73,8 +110,17 @@ describe("popup decorative spring", () => {
     const { rerender, unmount } = render(ui(<Probe open={false} radius={16} />));
     await act(async () => {});
     const clock = animationClock();
+    // Every spring of the presentation asks for the platform's driver (the native
+    // module on iOS and Android, the JS driver on the web): the frame is transforms,
+    // opacity and a radius so it can, and the material's box is never re-laid out.
+    const springs: Array<{ useNativeDriver?: boolean }> = [];
+    const engine = require("react-native-web/dist/vendor/react-native/Animated/AnimatedImplementation").default as typeof Animated;
+    const spring = spyOn(Animated, "spring").mockImplementation((value, config) => { springs.push(config); return engine.spring(value, config); });
     try {
       rerender(ui(<Probe open radius={16} />));
+      expect(springs.length).toBeGreaterThan(0);
+      for (const config of springs) expect(config.useNativeDriver).toBe(supportsNativeDriver);
+      expect(restingBox()).toEqual({ left: "0px", top: "0px", width: "240px", height: "160px" });
       // The first paint is the droplet: a fraction of the resting height, narrower
       // than the card, rounder than the skin's corner, with the rows scaled to it
       // and part way through their fade. Not interactive yet.
@@ -97,7 +143,7 @@ describe("popup decorative spring", () => {
       expect(content().opacity).toBe(1);
       expect(content().transform).toMatch(/^translateX\(-?0px\) translateY\(-?0px\) scale\(1\)$/);
       expect(readable()).toBe(true);
-    } finally { unmount(); clock.restore(); }
+    } finally { unmount(); spring.mockRestore(); clock.restore(); }
   });
 
   it("keeps a card's per-corner radii out of the droplet and reads a uniform one", () => {
@@ -244,8 +290,8 @@ describe("the button-to-menu hand-off", () => {
     try {
       // Closed: the material sits exactly on the pill, wearing its corner and the
       // trigger's own under-fill.
-      expect(frame()).toEqual({ left: 20, top: -40, width: 100, height: 32 });
-      expect(corner()).toBe(16);
+      near(frame(), { left: 20, top: -40, width: 100, height: 32 });
+      expect(corner()).toBeCloseTo(16, 6);
       expect(triggerFill()).toBe(1);
       rerender(ui(<Probe open radius={16} origin={ORIGIN} />));
       // The first paint: the pill's width held (the seed is under `widen`), a share
@@ -253,9 +299,9 @@ describe("the button-to-menu hand-off", () => {
       // than either the pill or the card, with the rows scaled from the pill's centre.
       const droplet = frame();
       expect(handoffAcross(seed)).toBe(0);
-      expect(droplet.width).toBe(100);
+      expect(droplet.width).toBeCloseTo(100, 6);
       expect(droplet.height).toBeCloseTo(32 + (SIZE.height - 32) * seed, 4);
-      expect(droplet.left).toBe(20);
+      expect(droplet.left).toBeCloseTo(20, 6);
       const centreY = -24 + (SIZE.height / 2 + 24) * seed;
       expect(droplet.top).toBeCloseTo(centreY - droplet.height / 2, 4);
       expect(corner()).toBeCloseTo(Math.max(16, 0.5 * Math.min(100, droplet.height)), 4);
@@ -311,8 +357,8 @@ describe("the button-to-menu hand-off", () => {
       expect(Math.abs(handed.width - 100)).toBeLessThan(0.2);
       expect(Math.abs(handed.height - 32)).toBeLessThan(0.2);
       clock.advance(1600);
-      expect(frame()).toEqual({ left: 20, top: -40, width: 100, height: 32 });
-      expect(corner()).toBe(16);
+      near(frame(), { left: 20, top: -40, width: 100, height: 32 });
+      expect(corner()).toBeCloseTo(16, 6);
     } finally { unmount(); clock.restore(); }
   });
 

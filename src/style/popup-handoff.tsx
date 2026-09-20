@@ -70,11 +70,15 @@ export const PopupHandoffContext = createContext<PopupHandoffValue | null>(null)
 export function usePopupHandoff(active: boolean): { handoff: PopupHandoff; context: PopupHandoffValue | null } {
   const channel = useRef<{ progress: Animated.Value; label: Animated.Value; shape: PopupHandoff["shape"]; context: PopupHandoffValue } | null>(null);
   if (!channel.current) {
-    const progress = new Animated.Value(0);
+    // Both values are native from birth where the platform has the driver, the
+    // contract `usePopupMotion` sets for a shared travel value: the pane's whole
+    // presentation, its seed frame included, then runs in the native animated module.
+    const driver = { useNativeDriver: supportsNativeDriver };
+    const progress = new Animated.Value(0, driver);
     // The label's opacity, on its own short fades (native-driven where the platform
     // has the driver, so the JS thread's work at the pane's mount and unmount cannot
     // stutter them): out as the pane appears, back once it has left.
-    const label = new Animated.Value(1);
+    const label = new Animated.Value(1, driver);
     const shape: PopupHandoff["shape"] = { current: null };
     channel.current = {
       progress,
