@@ -2,7 +2,7 @@ import type { Energy } from "@ionizeio/canvas";
 
 // The Lattice scene's one table of tunables.
 //
-// The docs' background is a periodic table of components: a quiet lattice of cells
+// The retained assembly fixture is a periodic table of components: a quiet lattice of cells
 // across the page, a few of them lit at unrelated moments with a primitive inside,
 // neighbours bonding into small molecules, and every so often an ASSEMBLY moment,
 // where a handful of lit cells lift their primitives out, glide them into the

@@ -7,7 +7,7 @@ import { View, Text, Pressable, GlassSurface, useTheme, alpha } from "@ionizeio/
 import { search } from "../../core/data/search";
 import type { SearchEntry } from "../../core/data/types";
 import { sans } from "../../ui/fonts";
-import { CanvasLattice } from "../../brand/canvas-lattice";
+import { CanvasCurrents } from "../../brand/canvas-currents";
 
 // The Search tab's screen. On native (iOS/Android) the rightmost bottom tab opens this and the
 // nav bar hosts the system search field (a real UISearchController on iOS 26 / Material search on
@@ -120,11 +120,11 @@ function NativeSearch() {
           },
         }}
       />
-      {/* The Canvas Lattice fills the screen for the whole search session (while this
+      {/* The spectral currents fill the screen for the whole search session (while this
           screen is focused), phase-continuous with every other screen's sky, so the
           clear Liquid Glass bubble has real color and motion to refract the moment you
           enter search. It clears when you leave. */}
-      {glass && active ? <CanvasLattice /> : null}
+      {glass && active ? <CanvasCurrents /> : null}
       {/* The Liquid Glass results bubble: anchored just above the field, grows upward, closest
           match at the bottom. box-none lets taps outside the bubble reach the field/content. */}
       {showBubble ? (

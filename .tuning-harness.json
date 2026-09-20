@@ -7,6 +7,8 @@
     "src/style/motion.ts",
     "src/style/glass-surface/glass-lens.ts",
     "src/organisms/backdrop/backdrop-clock.ts",
+    "docs/src/brand/canvas-currents.tsx",
+    "docs/src/brand/currents-tunables.ts",
     "docs/src/brand/lattice-tunables.ts",
     "docs/src/brand/orbit-tunables.ts"
   ],
@@ -18,6 +20,7 @@
       "/testing/backdrop",
       "/testing/tabs",
       "/testing/popup",
+      "/testing/currents",
       "/testing/lattice",
       "/testing/orbit"
     ],

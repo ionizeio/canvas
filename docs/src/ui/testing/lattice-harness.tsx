@@ -6,7 +6,7 @@ import { LATTICE } from "../../brand/lattice-tunables";
 import { buildLattice } from "../../brand/lattice-scene";
 import { useFrameTrace } from "./frame-trace";
 
-// The Lattice harness: the docs' background scene on the engine's real surface, with
+// The Lattice harness: the retained assembly scene on the engine's real surface, with
 // the drivers a tuning run needs. Park and resume the clock, step the energy, switch
 // the scheme, jump each assembly moment to just before its window so a recording
 // catches the whole moment without waiting a flight (or three minutes of drift), read

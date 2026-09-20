@@ -699,3 +699,25 @@ React Profiler commit counter around the real component.
 Not covered: Android (no emulator was booted), a reduce-motion device (the harness's
 Park driver stands in: it parks the same channels the ladder parks), and the light
 scheme on a device.
+
+## Spectral currents for the docs background, 2026-09-20
+
+The docs shell now uses `docs/src/brand/canvas-currents.tsx` in place of the
+lattice. The homepage hero and its clock are unchanged. Three static SVG ribbon
+layers bind transform and opacity to the existing Backdrop channels through
+LoopView. The browser runs CSS keyframes; native uses the native animated driver.
+`currents-tunables.ts` owns the ranges, alpha, blur, overscan and sampling density;
+`/testing/currents` provides Park/Resume, energy, scheme and the shared frame trace.
+The lattice remains available as a separate assembly fixture.
+
+| Date | Effect and profile | Runtime and device | Revision (dirty?) | Values tried | rAF p50 / p95 / max (ms) | What the screenshots and trace showed | Artifacts |
+|---|---|---|---|---|---|---|---|
+| 2026-09-20 | Spectral currents, running and parked for four seconds each, then resumed | Codex in-app browser, Chromium, `/testing/currents?scheme=dark&surface=glass`, desktop | working tree of this commit | Default energy; 32/36/45 second cool/warm/violet cycles; dark/light art alpha 0.85/0.55; blur 6/7/9; overscan 14% of the longer edge; 24 samples per cosine cycle; center veil 0.72 | Running: 3.9 / 4.1 / 7.9 over 1016 frames. Parked: 3.9 / 4.2 / 7.8 over 1019 frames. These are this development browser's callback intervals, not a device refresh-rate claim. | Zero inline style writes/s in both samples. The page's two scenes total 12 CSS animations running and zero parked. Resume restores the ribbons' animation names and live transform. Solid removes the scene entirely (zero `canvas-currents` hosts); Glass restores it. Hero source and tunables have no diff. | `/testing/currents` readouts and CUA observations in the task; Lookout evidence below |
+| 2026-09-20 | Homepage, Button docs and tuning fixture, both schemes, desktop and phone | Lookout web capture at Metro 8081; 1440x900 desktop and 390x844 phone, DPR 2 | working tree of this commit | Same values; changed the center gradient to portable SVG `r` and the fixture's heading to h2 after review | not sampled | All 12 screenshots captured and visually inspected. Subtle cyan/jade at upper left and lower right, warm/violet along the opposite edges; center copy and controls stay readable. Hero orbit intact; no clipped background bounds on phone. Zero layout/accessibility warnings. One unrelated console finding: the existing npm latest-version lookup returns 404 at registry.npmjs.org/@ionizeio/canvas/latest. | `.lookout/workspace/capture-report.json`, run `web-20260920-130113`; `.lookout/workspace/web/currents/`; `.lookout/workspace/contact-sheet.png` |
+| 2026-09-20 | Native Button docs in dark/light and homepage in light | Lookout iOS capture, iPhone 17 Pro simulator, iOS 26.3, docs dev app at Metro 8081 | working tree of this commit | Same shared artwork and values | not sampled | Three screenshots captured and visually inspected: the native SVG gradients and ribbon edges render behind the clear header and content; both schemes remain readable. No capture findings on these shots. The first dark-home capture could not obtain a fresh painted frame and is not counted as verified. | `.lookout/workspace/capture-report.json`, run `web-20260920-125921-native`; `.lookout/workspace/ios/native-glass/` |
+
+Not covered: Android (the installed SDK's `adb devices` reports no connected
+emulator/device), native dark homepage (capture limitation above), on-device frame
+cost, and native accessibility-setting toggles. Reduce Motion and Increase Contrast
+use Backdrop's existing policy; the custom artwork explicitly hides itself for
+Reduce Transparency. The Park driver verifies the shared poster-clock path on web.

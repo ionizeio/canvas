@@ -28,8 +28,8 @@ interface DocsThemeContext {
 const Ctx = createContext<DocsThemeContext | null>(null);
 
 // The appearance every pre-rendered page ships with (app.json `web.output: "static"`):
-// the docs default to dark on every platform (the Canvas Lattice is the brand stage
-// and reads best in deep space) and to glass everywhere, not just iOS 26.
+// the docs default to dark on every platform (the spectral currents and hero use
+// the charcoal brand stage) and to glass everywhere, not just iOS 26.
 const SERVER_SCHEME: Scheme = "dark";
 const SERVER_SURFACE: Surface = "glass";
 

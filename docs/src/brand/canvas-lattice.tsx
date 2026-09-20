@@ -5,7 +5,8 @@ import { Backdrop, LoopView, View, backdropClock, useBackdropBox, useTheme, type
 import { LATTICE, type GlyphKind, type LightShape, type SchemeInk } from "./lattice-tunables";
 import { buildLattice, type Assembly, type Atom, type Bucket, type Cell, type LitCell } from "./lattice-scene";
 
-// The Lattice: this application's scene for the kit's Backdrop engine.
+// The Lattice: the assembly demonstration retained at /testing/lattice. The docs'
+// production background is CanvasCurrents; this fixture exercises richer scenes.
 //
 // The kit supplies the surface, the clock, the frame budget and the accessibility
 // ladder. Everything below is Canvas's own art: a periodic table of components across
