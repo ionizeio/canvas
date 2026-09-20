@@ -27,6 +27,18 @@ config.cacheVersion = `${config.cacheVersion ?? ""}:canvas-${createHash("sha256"
   .update(JSON.stringify(readBuildInfo(repoRoot))).digest("hex")}`;
 
 config.watchFolders = [repoRoot];
+// The whole repo is watched so the kit source is live, and that root also holds
+// `.claude/` (peer sessions' worktrees: full checkouts with their own node_modules and
+// exports) and `docs/dist` (a web export, 1,350 documents). None of it is this app's:
+// indexing it costs startup and memory, and every change inside it (a peer's edit, a
+// peer's pre-push export) invalidated the dev document cache (scripts/dev-documents.cjs)
+// under the user's feet. The block list is Metro's ignore pattern for the crawler and the
+// watcher alike.
+const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+config.resolver.blockList = [
+  ...(Array.isArray(config.resolver.blockList) ? config.resolver.blockList : [config.resolver.blockList]).filter(Boolean),
+  new RegExp(`^${escape(repoRoot)}/(\\.claude|docs/dist)/`),
+];
 config.resolver.nodeModulesPaths = [path.resolve(projectRoot, "node_modules")];
 config.resolver.disableHierarchicalLookup = true;
 
