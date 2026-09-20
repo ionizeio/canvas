@@ -37,10 +37,13 @@
 // reports a change anywhere in the watched folders, the same signal Fast Refresh
 // runs on. A reload after an edit renders fresh; a reload without one is served in
 // milliseconds. Only a 200 is kept, a bounded number of them, and a server that offers
-// no watcher (a future Metro) gets no cache rather than a stale one. After a flush the
-// documents most recently asked for are rendered again in the background, once the
-// change has settled, so the page a developer is looking at is fresh by the time they
-// reload (or run Lighthouse) rather than costing that first reload the render.
+// no watcher (a future Metro) gets no cache rather than a stale one. Nothing renders on
+// its own: a render is Expo's most expensive request (it re-serializes the client
+// bundle for the page's assets and evaluates the server bundle, seconds of CPU and tens
+// of megabytes each time), and a version of this middleware that re-rendered the recent
+// documents after every flush turned the watcher's churn into back-to-back renders and
+// took the dev server to a 4 GB heap overflow in under an hour. The first reload after
+// an edit pays for its render; every reload after it is served from the cache.
 //
 // The fonts get the same treatment. Metro serves the seven preloaded faces as bare
 // TrueType with no encoding and `no-store`, 259 KB against the 150 KB the export's
@@ -50,17 +53,11 @@
 // gzipped too, once, and kept in the same cache.
 
 const { gzipSync } = require("node:zlib");
-const http = require("node:http");
 const { paintFirstHtml } = require("./paint-first-html.cjs");
 
 // Enough for a browsing session across the docs (plus the seven faces) without holding
 // hundreds of pages.
 const CACHE_LIMIT = 64;
-// How many recently requested documents a flush re-renders, and how long after the
-// last change event it waits: a save is often a burst of writes, and Metro is busy
-// re-bundling for Fast Refresh in that window anyway.
-const REWARM_DOCUMENTS = 2;
-const REWARM_DELAY_MS = 800;
 
 const isDocumentRequest = (req) => {
   if (req.method !== "GET" && req.method !== "HEAD") return false;
@@ -166,11 +163,9 @@ function sendDocument(req, res, document, end = res.end.bind(res), callback) {
 /**
  * The finished documents by request URL, emptied on every file change Metro's watcher
  * reports. `server` is Metro's Server (the second argument of `enhanceMiddleware`);
- * without a reachable watcher there is no cache. `rewarm(host, url)` is called for the
- * recently requested documents once a flush has settled (the tests pass their own;
- * the default asks this server for the document again over loopback).
+ * without a reachable watcher there is no cache.
  */
-function createDocumentCache(server, { rewarm = requestAgain, rewarmDelay = REWARM_DELAY_MS } = {}) {
+function createDocumentCache(server) {
   let watcher = null;
   try {
     watcher = server?.getBundler?.()?.getBundler?.()?.getWatcher?.() ?? null;
@@ -179,33 +174,13 @@ function createDocumentCache(server, { rewarm = requestAgain, rewarmDelay = REWA
   }
   if (!watcher || typeof watcher.on !== "function") return null;
   const documents = new Map();
-  // The documents most recently asked for, newest last, with the host they were asked
-  // through (the loopback re-request needs a port).
-  const recent = [];
-  let pending = null;
-  watcher.on("change", () => {
-    documents.clear();
-    if (recent.length === 0) return;
-    clearTimeout(pending);
-    pending = setTimeout(() => {
-      pending = null;
-      for (const { host, url } of recent) rewarm(host, url);
-    }, rewarmDelay);
-    pending.unref?.();
-  });
+  watcher.on("change", () => documents.clear());
   return {
     get: (key) => documents.get(key) ?? null,
     set: (key, document) => {
       documents.delete(key);
       documents.set(key, document);
       while (documents.size > CACHE_LIMIT) documents.delete(documents.keys().next().value);
-    },
-    /** Note a document request, so a flush re-renders it. */
-    touch: (host, url) => {
-      const at = recent.findIndex((entry) => entry.url === url);
-      if (at !== -1) recent.splice(at, 1);
-      if (host) recent.push({ host, url });
-      while (recent.length > REWARM_DOCUMENTS) recent.shift();
     },
     clear: () => documents.clear(),
     get size() {
@@ -214,23 +189,14 @@ function createDocumentCache(server, { rewarm = requestAgain, rewarmDelay = REWA
   };
 }
 
-/** Ask this server for a document again, as a browser would, and discard the body. */
-function requestAgain(host, url) {
-  const req = http.request({ host: host.split(":")[0], port: Number(host.split(":")[1] || 80), path: url, method: "GET", headers: { accept: "text/html", "accept-encoding": "gzip" } }, (res) => res.resume());
-  req.on("error", () => {});
-  req.end();
-}
-
-/** The `enhanceMiddleware` for docs/metro.config.js. `options` reach the cache (the
- *  tests observe the re-render instead of performing it). */
-function createDevDocumentMiddleware(options) {
+/** The `enhanceMiddleware` for docs/metro.config.js. */
+function createDevDocumentMiddleware() {
   return (metroMiddleware, server) => {
-    const cache = createDocumentCache(server, options);
+    const cache = createDocumentCache(server);
     return (req, res, next) => {
       const document = isDocumentRequest(req);
       if (!document && !isFontRequest(req)) return metroMiddleware(req, res, next);
       const key = req.url ?? "/";
-      if (document) cache?.touch(req.headers.host, key);
       const cached = cache?.get(key);
       if (cached) return sendDocument(req, res, cached);
       interceptResponse(req, res, {

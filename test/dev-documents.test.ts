@@ -223,36 +223,6 @@ describe("createDevDocumentMiddleware", () => {
     }, handler);
   });
 
-  it("re-renders the recently requested documents once a flush has settled", async () => {
-    const watcher = new EventEmitter();
-    const rewarmed: string[] = [];
-    let rendered = 0;
-    const counting: Handler = (req, res, next) => {
-      rendered += 1;
-      metro(req, res, next);
-    };
-    // The re-request is observed rather than performed, and the settle window is short.
-    const handler = createDevDocumentMiddleware({ rewarm: (host: string, url: string) => rewarmed.push(`${host}${url}`), rewarmDelay: 20 })(counting, metroServer(watcher));
-    await serve(async (base) => {
-      const host = base.replace("http://", "");
-      await get(`${base}/`, { accept: "text/html" });
-      await get(`${base}/chunked`, { accept: "text/html" });
-      await get(`${base}/`, { accept: "text/html" });
-      // A burst of change events settles into one re-render of the two recent documents.
-      watcher.emit("change", { eventsQueue: [] });
-      watcher.emit("change", { eventsQueue: [] });
-      await new Promise((ok) => setTimeout(ok, 80));
-      expect(rewarmed).toEqual([`${host}/chunked`, `${host}/`]);
-      expect(rendered).toBe(2);
-    }, handler);
-    // Nothing recent, nothing to re-render.
-    const quiet: string[] = [];
-    createDocumentCache(metroServer(watcher), { rewarm: (host: string, url: string) => quiet.push(`${host}${url}`), rewarmDelay: 1 });
-    watcher.emit("change", { eventsQueue: [] });
-    await new Promise((ok) => setTimeout(ok, 30));
-    expect(quiet).toEqual([]);
-  });
-
   it("keeps only a 200, only a bounded number, and no cache at all without a watcher", async () => {
     const cache = createDocumentCache(metroServer(new EventEmitter()));
     expect(cache).not.toBeNull();
