@@ -4,7 +4,7 @@ import { DocsSurface } from "./surface";
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
 import { sans, geistMono } from "./fonts";
 import { alpha } from "./color";
-import { useFluidType } from "../lib/fluid-type";
+import { useFluidText, fluidMarker } from "../lib/fluid-type";
 
 // Shared primitives for the token reference pages (Colors, Spacing, Typography, Layout).
 // These pages use a LARGER heading scale than the component/guide pages: the page
@@ -15,9 +15,9 @@ import { useFluidType } from "../lib/fluid-type";
 // Page title — clamp(32px, 5vw, 40px) / 700 / -0.025em.
 export function TokenH1({ children }: { children: ReactNode }) {
   const { tokens } = useTheme();
-  const size = useFluidType(32, 40, 0.05);
+  const size = useFluidText("pageTitle");
   return (
-    <Text accessibilityRole="header" aria-level={1} style={{ fontFamily: sans("700"), fontSize: size, letterSpacing: size * -0.025, color: tokens.foreground }}>
+    <Text accessibilityRole="header" aria-level={1} {...fluidMarker("pageTitle")} style={{ fontFamily: sans("700"), ...size, color: tokens.foreground }}>
       {children}
     </Text>
   );

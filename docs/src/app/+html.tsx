@@ -1,5 +1,7 @@
 import type { PropsWithChildren } from "react";
 import { ScrollViewStyleReset, useServerDocumentContext } from "expo-router/html";
+import { breakpoints, type BreakpointKey } from "@ionizeio/canvas";
+import { FLUID_TEXT, fluidTextAt, type FluidRole } from "../lib/fluid-type";
 
 // The document every pre-rendered page is written into (app.json `web.output:
 // "static"`). expo-router renders each route inside this root at export time, and the
@@ -28,6 +30,45 @@ const IMAGE_ALT = "The same Canvas Select component rendered as native iOS, Mate
 // outranks the class rule react-native-web writes for the same node.
 const SHELL_CSS = "@media (max-width:1024px){#root [data-shell-rail]{display:none}}";
 
+// Pre-hydration only, the same way: the home hero. The server renders the desktop hero
+// (copy and orbit side by side, the desktop-only call to action, the title at its
+// widest size), and on a phone the reflow to the stacked hero at hydration measured
+// as a layout shift of 0.58 on its own. These rules lay the stacked hero out below the
+// kit's desktop cut before the bundle runs; after hydration the components write the
+// same values inline (docs/src/shell/home.tsx marks the nodes), so the rules change
+// nothing further. `!important` because the values they replace are inline styles.
+const HERO_CSS =
+  "@media (max-width:1024px){" +
+  "#root [data-hero-section]{padding-top:8px!important}" +
+  "#root [data-hero]{flex-direction:column!important;gap:16px!important}" +
+  "#root [data-hero-copy],#root [data-hero-orbit]{flex:0 0 auto!important}" +
+  "#root [data-hero-wide]{display:none}" +
+  "}";
+
+// The fluid titles, sized per viewport bucket before hydration. A fluid role's size is
+// a function of the bucket alone (docs/src/lib/fluid-type.ts), so one media rule per
+// bucket reproduces the hook's exact value, in the same px spelling react-native-web
+// writes inline; a bucket that resolves to the desktop size needs no rule.
+const BUCKETS: BreakpointKey[] = ["sm", "md", "lg", "xl", "2xl"];
+function fluidCss(): string {
+  const roles = Object.keys(FLUID_TEXT) as FluidRole[];
+  return BUCKETS.map((bucket, i) => {
+    const floor = i === 0 ? "" : `(min-width:${breakpoints[BUCKETS[i - 1]!] + 1}px) and `;
+    const rules = roles
+      .map((role) => {
+        const at = fluidTextAt(role, bucket);
+        const base = fluidTextAt(role, "base");
+        if (at.fontSize === base.fontSize) return "";
+        const line = at.lineHeight === undefined ? "" : `line-height:${at.lineHeight}px!important;`;
+        return `#root [data-fluid="${role}"]{font-size:${at.fontSize}px!important;${line}letter-spacing:${at.letterSpacing}px!important}`;
+      })
+      .join("");
+    return rules ? `@media ${floor}(max-width:${breakpoints[bucket]}px){${rules}}` : "";
+  }).join("");
+}
+
+const PREHYDRATION_CSS = SHELL_CSS + HERO_CSS + fluidCss();
+
 export default function Root({ children }: PropsWithChildren) {
   const { bodyAttributes, bodyNodes, htmlAttributes, headNodes } = useServerDocumentContext();
   return (
@@ -52,7 +93,7 @@ export default function Root({ children }: PropsWithChildren) {
         <meta name="twitter:image" content="https://canvas.nannier.com/og.png" />
         {/* The react-native-web root reset: html, body and #root full-height, body scroll off. */}
         <ScrollViewStyleReset />
-        <style id="canvas-shell">{SHELL_CSS}</style>
+        <style id="canvas-shell">{PREHYDRATION_CSS}</style>
         {headNodes}
       </head>
       <body {...bodyAttributes}>

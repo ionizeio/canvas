@@ -12,7 +12,7 @@ import { CodeBlock } from "../ui/code-block";
 import { sans, geistMono } from "../ui/fonts";
 import { alpha } from "../ui/color";
 import { useLatestVersion } from "../ui/use-latest-version";
-import { useFluidType } from "../lib/fluid-type";
+import { useFluidText, fluidMarker, type FluidTextStyle } from "../lib/fluid-type";
 import { CONTENT_TOP_INSET, CONTENT_BOTTOM_INSET } from "./topbar";
 import { ScreenFrame } from "./native-header";
 
@@ -125,18 +125,23 @@ const FOOTER_COLS: { head: string; links: { label: string; to?: string; url?: st
 ];
 
 // .landing-wrap: the centered 1140 column with 24px gutters.
+// A `data-*` marker for the pre-hydration sheet in app/+html.tsx (a web attribute;
+// nothing on iOS or Android reads it). Spelled as a spread because the primitives'
+// prop types do not name react-native-web's `dataSet`.
+const marker = (name: string): object => ({ dataSet: { [name]: "" } });
+
 function Wrap({ children, style }: { children: ReactNode; style?: object }) {
   return <View style={[{ width: "100%", maxWidth: 1140, alignSelf: "center", paddingHorizontal: 24 }, style]}>{children}</View>;
 }
 
-function SectionHead({ eyebrow, title, desc, titleSize }: { eyebrow: string; title: string; desc: string; titleSize: number }) {
+function SectionHead({ eyebrow, title, desc, titleSize }: { eyebrow: string; title: string; desc: string; titleSize: FluidTextStyle }) {
   const { tokens } = useTheme();
   return (
     <View style={{ marginBottom: 28 }}>
       <Text style={{ fontFamily: sans("700"), fontSize: 12, letterSpacing: 1.68, textTransform: "uppercase", color: tokens.primary, marginBottom: 12 }}>
         {eyebrow}
       </Text>
-      <Text accessibilityRole="header" aria-level={2} style={{ fontFamily: sans("600"), fontSize: titleSize, letterSpacing: titleSize * -0.025, lineHeight: titleSize * 1.1, color: tokens.foreground }}>
+      <Text accessibilityRole="header" aria-level={2} {...fluidMarker("sectionTitle")} style={{ fontFamily: sans("600"), ...titleSize, color: tokens.foreground }}>
         {title}
       </Text>
       <Text style={{ fontFamily: sans("400"), fontSize: 15.5, lineHeight: 24.8, color: tokens["muted-foreground"], maxWidth: 672, marginTop: 12 }}>
@@ -177,9 +182,12 @@ export function Home() {
   // shots existing. Its own comparison, not `wide`, so a future tweak to `wide` cannot
   // silently re-expose it.
   const showThreeLooks = LOOKS_AVAILABLE && formFactor === "desktop";
-  const h1Size = useFluidType(36, 58, 0.05);
-  const sectionTitle = useFluidType(26, 36, 0.034);
-  const ctaTitle = useFluidType(28, 42, 0.04);
+  // The fluid sizes (docs/src/lib/fluid-type.ts). Each fluid text also carries the
+  // role's `data-fluid` marker, which the pre-hydration sheet in app/+html.tsx reads to
+  // size the same text for a phone or tablet before the bundle runs.
+  const heroTitle = useFluidText("heroTitle");
+  const sectionTitle = useFluidText("sectionTitle");
+  const ctaTitle = useFluidText("ctaTitle");
 
   // Glass is a theming-level surface mode: the canvas goes transparent so the Canvas
   // Lattice backdrop reads through (the web shell mounts it; native mounts it via
@@ -201,13 +209,19 @@ export function Home() {
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{ paddingTop: CONTENT_TOP_INSET, paddingBottom: insets.bottom + (Platform.OS === "web" ? CONTENT_BOTTOM_INSET : 49) }}
     >
-      {/* ── Hero ── */}
-      <View style={{ paddingTop: wide ? 18 : 8, paddingBottom: 56 }}>
+      {/* ── Hero ──
+          Every pre-rendered page carries the desktop hero (the bucket hooks resolve to
+          desktop on the server), so on a phone the copy and the orbit sat side by side
+          until the bundle ran and the reflow to the stacked layout measured as a
+          layout shift of 0.58. The `data-hero*` markers let the pre-hydration sheet in
+          app/+html.tsx lay the stacked hero out below the kit's desktop cut before
+          hydration; once hydrated, these inline values are the same ones. */}
+      <View {...marker("heroSection")} style={{ paddingTop: wide ? 18 : 8, paddingBottom: 56 }}>
         <Wrap>
           {/* Tighter copy-to-orbit gap when stacked so the large phone orbit stays fully on screen. */}
-          <View style={{ flexDirection: wide ? "row" : "column", gap: wide ? 48 : 16, alignItems: "center" }}>
+          <View {...marker("hero")} style={{ flexDirection: wide ? "row" : "column", gap: wide ? 48 : 16, alignItems: "center" }}>
             {/* Copy */}
-            <View style={{ flex: wide ? 1.05 : undefined, width: "100%", minWidth: 0 }}>
+            <View {...marker("heroCopy")} style={{ flex: wide ? 1.05 : undefined, width: "100%", minWidth: 0 }}>
               <Row snug alignCenter style={{ alignSelf: "flex-start", paddingVertical: 5, paddingLeft: 10, paddingRight: 12, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border, backgroundColor: alpha(tokens.card, 0.7), marginBottom: 22 }}>
                 {/* The dot keeps a 7px layout box; the 3px halo ring overflows it (a 0 0 0 3px box-shadow at primary@22%). */}
                 <Column flush center alignCenter style={{ width: 7, height: 7 }}>
@@ -230,7 +244,7 @@ export function Home() {
                   a Typography h1 because the size here is fluid (h1Size tracks the
                   viewport) where the role's type scale is fixed; the semantics are what
                   matter, and React Native Web turns this pair into a real <h1>. */}
-              <Text accessibilityRole="header" aria-level={1} style={{ fontFamily: sans("600"), fontSize: h1Size, letterSpacing: h1Size * -0.032, lineHeight: h1Size * 1.04, color: tokens.foreground }}>
+              <Text accessibilityRole="header" aria-level={1} {...fluidMarker("heroTitle")} style={{ fontFamily: sans("600"), ...heroTitle, color: tokens.foreground }}>
                 One codebase. <Text style={{ color: tokens.primary }}>Every platform.</Text> One component API.
               </Text>
 
@@ -239,9 +253,10 @@ export function Home() {
               </Text>
 
               {/* On the mobile (stacked) layout the prop-proof line, CTAs, and platform
-                  checks are hidden so the rotating orbit surfaces sooner; desktop keeps them. */}
+                  checks are hidden so the rotating orbit surfaces sooner; desktop keeps them.
+                  The wrapper is the sheet's hook for hiding them before hydration. */}
               {wide ? (
-                <>
+                <View {...marker("heroWide")}>
                   <Row snug wrap alignCenter style={{ marginTop: 18 }}>
                     <View style={{ paddingVertical: 2, paddingHorizontal: 8, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.12), borderWidth: 1, borderColor: alpha(tokens.primary, 0.26) }}>
                       <Text style={{ fontFamily: geistMono("400"), fontSize: 12.5, color: tokens.primary }}>{"<Button primary large block>"}</Text>
@@ -262,12 +277,12 @@ export function Home() {
                       </View>
                     ))}
                   </View>
-                </>
+                </View>
               ) : null}
             </View>
 
             {/* Orbit showcase */}
-            <View style={{ flex: wide ? 0.95 : undefined, width: "100%", minWidth: 0 }}>
+            <View {...marker("heroOrbit")} style={{ flex: wide ? 0.95 : undefined, width: "100%", minWidth: 0 }}>
               <HeroOrbit />
               <Text style={{ fontFamily: sans("400"), fontSize: 13, lineHeight: 20, color: tokens["muted-foreground"], marginTop: 14, paddingHorizontal: 2 }}>
                 Canvas at the core; iOS, Android, and the web as targets. One component API, rendered natively on every platform.
@@ -334,7 +349,7 @@ export function Home() {
         <View style={{ flexDirection: wide ? "row" : "column", gap: wide ? 48 : 32, alignItems: "center" }}>
           <View style={{ flex: wide ? 0.9 : undefined, width: "100%" }}>
             <Text style={{ fontFamily: sans("700"), fontSize: 12, letterSpacing: 1.68, textTransform: "uppercase", color: tokens.primary, marginBottom: 12 }}>Get started</Text>
-            <Text accessibilityRole="header" aria-level={2} style={{ fontFamily: sans("600"), fontSize: sectionTitle, letterSpacing: sectionTitle * -0.025, lineHeight: sectionTitle * 1.1, color: tokens.foreground }}>Three props to a styled button.</Text>
+            <Text accessibilityRole="header" aria-level={2} {...fluidMarker("sectionTitle")} style={{ fontFamily: sans("600"), ...sectionTitle, color: tokens.foreground }}>Three props to a styled button.</Text>
             <Text style={{ fontFamily: sans("400"), fontSize: 15.5, lineHeight: 24.8, color: tokens["muted-foreground"], maxWidth: 672, marginTop: 12 }}>
               Install the package, import the stylesheet once, and compose. No enum strings, no className soup, no platform forks. Style props group into orthogonal axes (intent, size, density): pass at most one per axis, stack the rest freely.
             </Text>
@@ -411,7 +426,7 @@ export function Home() {
       <View style={{ marginTop: 72, paddingVertical: 72, borderTopWidth: 1, borderColor: tokens.border, backgroundColor: alpha(tokens.muted, 0.22) }}>
         <Wrap>
           <Column flush alignCenter>
-            <Text accessibilityRole="header" aria-level={2} style={{ fontFamily: sans("600"), fontSize: ctaTitle, letterSpacing: ctaTitle * -0.028, color: tokens.foreground, textAlign: "center" }}>Build your first screen.</Text>
+            <Text accessibilityRole="header" aria-level={2} {...fluidMarker("ctaTitle")} style={{ fontFamily: sans("600"), ...ctaTitle, color: tokens.foreground, textAlign: "center" }}>Build your first screen.</Text>
             <Text style={{ fontFamily: sans("400"), fontSize: 16, lineHeight: 25.6, color: tokens["muted-foreground"], maxWidth: 544, textAlign: "center", marginTop: 14, marginBottom: 28 }}>
               Browse every component live, copy the JSX, and ship it to iOS, Android, and web.
             </Text>
