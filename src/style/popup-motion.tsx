@@ -9,11 +9,18 @@ export const PopupMotionPolicy = createContext(false);
 export const StationaryEntranceContext = createContext(false);
 /** Retained decoration does not participate in input or accessibility. */
 export const PopupInteractionContext = createContext(true);
-/** Only the owning surface consumes this frame; nested surfaces stay independent. */
-export const MaterialMotionContext = createContext<Animated.WithAnimatedValue<ViewStyle> | null>(null);
-
 export type PopupEdge = "top" | "bottom" | "left" | "right";
 export interface PopupSize { width: number; height: number }
+/**
+ * A moving material, as its surface's GlassBox reads it: the frame its wrapper wears
+ * this frame (`usePopupMotion`'s `frame`), and the bounds that frame settles at (the
+ * card's measured size). The layers take the frame's radius through
+ * MaterialShapeContext; the web lens sizes its one filter definition for `rest`
+ * instead of following the wrapper's layout frame by frame (see GlassLensLayer).
+ */
+export interface MaterialMotion { frame: Animated.WithAnimatedValue<ViewStyle>; rest: PopupSize }
+/** Only the owning surface consumes this motion; nested surfaces stay independent. */
+export const MaterialMotionContext = createContext<MaterialMotion | null>(null);
 /**
  * The trigger's frame in the card's own coordinates and the corner its material wears:
  * the shape the pane's material is at progress 0 when a popup hands off with its

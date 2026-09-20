@@ -150,13 +150,21 @@ export interface JavaScriptBudget {
 // 56,654 / 54,934 / 56,759B (~1.4KB gzip); Input and DataTable grew by the same ~340B
 // for their pucks. The Button ceiling moved from 9,728 to 10,240B and StackedList's
 // from 58,368 to 60,416B for that deliberate growth (7% and 6% headroom).
+// DataTable was 50,046 / 48,389 / 50,136B before the web lens held one filter
+// definition while a popup's material moves: the material motion carries the bounds
+// the frame settles at beside the frame, GlassBox hands its layers the radius and
+// those bounds through the shape context, and the lens layer takes its mode from them
+// (glass-surface.tsx, shared by web and Android), measured after at 50,163 / 48,414 /
+// 50,226B (~100B gzip on the lens and frost platforms, ~25B on iOS; Button, Input and
+// StackedList grew by the same). The DataTable ceiling moved from 50,176 to 51,200B
+// (2% headroom) because 40B of its headroom was left.
 // Fixed ceilings leave room for deliberate growth while catching a heavy import.
 // These are independent budgets, not a combined total: shared modules legitimately
 // occur in more than one consumer. Changes require a fresh measurement and rationale.
 export const NAMED_IMPORT_BUDGETS: readonly JavaScriptBudget[] = [
   { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 10_240, requiredExports: ["Button", "ThemeProvider"] },
   { label: "Input + ThemeProvider", entry: "scripts/size-fixtures/input.ts", maxGzip: 39_936, requiredExports: ["Input", "ThemeProvider"] },
-  { label: "DataTable + ThemeProvider", entry: "scripts/size-fixtures/data-table.ts", maxGzip: 50_176, requiredExports: ["DataTable", "ThemeProvider"] },
+  { label: "DataTable + ThemeProvider", entry: "scripts/size-fixtures/data-table.ts", maxGzip: 51_200, requiredExports: ["DataTable", "ThemeProvider"] },
   { label: "StackedList + ThemeProvider", entry: "scripts/size-fixtures/stacked-list.ts", maxGzip: 60_416, requiredExports: ["StackedList", "ThemeProvider"] },
 ];
 

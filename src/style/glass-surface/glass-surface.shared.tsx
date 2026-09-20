@@ -7,9 +7,9 @@
 // The content host keeps its layout in every mode. A separate absolute material
 // clip contains only decoration, preserving shadow, focus and child identity.
 
-import { createContext, useContext, type ReactNode, type Ref, type RefObject } from "react";
+import { createContext, useContext, useMemo, type ReactNode, type Ref, type RefObject } from "react";
 import { Animated, View, StyleSheet, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
-import { MaterialMotionContext, type PopupBlend } from "../popup-motion.js";
+import { MaterialMotionContext, type PopupBlend, type PopupSize } from "../popup-motion.js";
 import { type ColorTokens, type GlassTokens } from "../tokens.js";
 import { alpha, composite, contrastRatio, inkOn } from "../color.js";
 
@@ -336,24 +336,29 @@ export interface MaterialOrigin { layer: GlassLayer; blend: PopupBlend }
 export const MaterialOriginContext = createContext<MaterialOrigin | null>(null);
 
 /**
- * The corner radius the material's layers wear this frame: null for the skin's own
- * radii, or the popup motion's radius while a pane opens as a droplet and settles
- * into the skin's corner (see usePopupMotion). GlassBox provides it to its material
- * so the lens, the rim and the native glass draw the rounded edge the clip cuts.
+ * The shape a MOVING material's layers wear (null while the surface is at rest on
+ * the skin's own geometry): `radius` is the popup motion's corner this frame while a
+ * pane opens as a droplet and settles into the skin's corner (undefined for a card
+ * with per-corner radii, whose layers keep them throughout; see usePopupMotion), and
+ * `rest` is the bounds the frame settles at. GlassBox provides it to its material
+ * so the lens, the rim and the native glass draw the rounded edge the clip cuts, and
+ * so the web lens can size its one filter definition for the resting bounds instead
+ * of the wrapper's layout frame by frame (see GlassLensLayer).
  */
-export type MaterialShape = NonNullable<Animated.WithAnimatedValue<ViewStyle>["borderRadius"]>;
+export type MaterialRadius = NonNullable<Animated.WithAnimatedValue<ViewStyle>["borderRadius"]>;
+export interface MaterialShape { radius: MaterialRadius | undefined; rest: PopupSize }
 export const MaterialShapeContext = createContext<MaterialShape | null>(null);
 
 /** A material layer's absolute-fill style: the skin's radii, or the moving shape's radius. */
 export function useMaterialFill(style: StyleProp<ViewStyle>): Animated.WithAnimatedValue<ViewStyle> {
-  const shape = useContext(MaterialShapeContext);
-  return shape == null ? materialFill(style) : { ...MATERIAL_FILL, borderRadius: shape };
+  const radius = useContext(MaterialShapeContext)?.radius;
+  return radius == null ? materialFill(style) : { ...MATERIAL_FILL, borderRadius: radius };
 }
 
 /** The specular rim's style, following the moving shape's radius the same way. */
 export function useSpecularRim(style: StyleProp<ViewStyle>, dark: boolean): Animated.WithAnimatedValue<ViewStyle> {
-  const shape = useContext(MaterialShapeContext);
-  return shape == null ? specularRim(style, dark) : { ...MATERIAL_FILL, borderRadius: shape, boxShadow: dark ? SPECULAR_RIM.dark : SPECULAR_RIM.light };
+  const radius = useContext(MaterialShapeContext)?.radius;
+  return radius == null ? specularRim(style, dark) : { ...MATERIAL_FILL, borderRadius: radius, boxShadow: dark ? SPECULAR_RIM.dark : SPECULAR_RIM.light };
 }
 
 // A stable content host for every appearance. Only the decorative material is
@@ -411,16 +416,19 @@ export function GlassBox({
   material, solid = false,
 }: GlassSurfaceProps & { material: ReactNode; solid?: boolean }) {
   const motion = useContext(MaterialMotionContext);
-  const shape = motion?.borderRadius ?? null;
+  const radius = motion?.frame.borderRadius ?? undefined;
+  // The shape the layers wear while the material moves: the frame's radius and the
+  // resting bounds, built once per motion so the layers' context reads stay stable.
+  const shape = useMemo<MaterialShape | null>(() => motion ? { radius, rest: motion.rest } : null, [motion, radius]);
   const clear = clearedPaint(style);
   const { shadow: movingShadow, cleared: clearedShadow } = motion && !solid ? splitShadow(style) : { shadow: {}, cleared: {} };
   return (
     <View ref={hostRef} style={[style, solid ? null : clear, clearedShadow, pointerEvents ? { pointerEvents } : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={onAccessibilityEscape ? false : undefined}>
       {material ? (
-        <Animated.View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[materialFill(style), { zIndex: -1 }, movingShadow, motion]}>
+        <Animated.View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[materialFill(style), { zIndex: -1 }, movingShadow, motion?.frame]}>
           {/* The clip shapes the layers. While a popup opens it wears the droplet's
               radius and hands it down, so the layers draw the edge the clip cuts. */}
-          <Animated.View style={[materialFill(style), { overflow: "hidden" }, shape == null ? null : { borderRadius: shape }]}>
+          <Animated.View style={[materialFill(style), { overflow: "hidden" }, radius == null ? null : { borderRadius: radius }]}>
             <MaterialShapeContext.Provider value={shape}>{material}</MaterialShapeContext.Provider>
           </Animated.View>
         </Animated.View>

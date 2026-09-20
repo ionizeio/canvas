@@ -354,8 +354,11 @@ function PopupCard({
   // the trigger's pill; a trigger with no material of its own (a bare icon) has no
   // layer to blend from, so the pane keeps its own fill throughout.
   const blend = useMemo(() => motion.blend && originLayer ? { layer: originLayer, blend: motion.blend } : null, [motion.blend, originLayer]);
+  // The material's motion: the frame it wears, and the measured card it settles at
+  // (the web lens sizes its one filter definition for the latter, see GlassLensLayer).
+  const moving = useMemo(() => motion.frame ? { frame: motion.frame, rest: size } : null, [motion.frame, size]);
   const material = liquid ? (
-    <MaterialMotionContext.Provider value={motion.frame}>
+    <MaterialMotionContext.Provider value={moving}>
       <MaterialOriginContext.Provider value={blend}>
         <GlassSurface layer={dense ? "dense" : "functional"} pointerEvents="none" style={[StyleSheet.absoluteFill, materialShapeStyle(cardStyle)]} />
       </MaterialOriginContext.Provider>

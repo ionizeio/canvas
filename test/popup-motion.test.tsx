@@ -9,6 +9,7 @@ import { useDialogFocus } from "../src/style/use-dialog-focus.ts";
 import { HANDOFF_RETURN, POPUP_PRESENTATION, PopupInteractionContext, PopupMotionPolicy, handoffAcross, restingRadius, usePopupMotion, type PopupEdge, type PopupOrigin, type PopupSize } from "../src/style/popup-motion.tsx";
 import { PopupHandoffContext, PopupHandoffForeground, usePopupHandoff, shapeRadius, type PopupHandoff, type PopupHandoffValue } from "../src/style/popup-handoff.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
+import { GLASS_LENS_ID, sizedGlassLensCount } from "../src/style/glass-surface/glass-lens.ts";
 import { animationClock } from "./liquid-motion-clock.ts";
 import { hostedEntranceParts, layoutElement, layoutHostedEntrance } from "./entrance-layout.ts";
 
@@ -459,6 +460,47 @@ describe("retained popup content and semantics", () => {
       clock.advance(1600);
       expect(editor.isConnected).toBe(false);
     } finally { view.unmount(); clock.restore(); measure.mockRestore(); }
+  });
+
+  it("gives the pane's web lens one def sized for the measured card from the first frame of the travel", async () => {
+    // The material wrapper is resized on almost every frame of the opening, and a
+    // lens that measured itself would build a fresh filter definition (an isolated
+    // SVG document in Chromium) per frame. The pane's lens takes the card's measured
+    // bounds through the material motion instead, so its url is the resting def while
+    // the spring is still travelling, and the registry holds exactly one def for it.
+    Object.defineProperty(window.navigator, "userAgent", { value: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36", configurable: true });
+    const measure = bounds();
+    const page = (open: boolean) => ui(<OverlayProvider><Card open={open} /></OverlayProvider>);
+    const view = render(page(false));
+    await act(async () => {});
+    const clock = animationClock();
+    try {
+      const before = sizedGlassLensCount();
+      view.rerender(page(true));
+      clock.advance(32);
+      const content = await screen.findByTestId("content-A");
+      const nodes = hostedEntranceParts(content);
+      layoutHostedEntrance(content, SIZE);
+      clock.advance(80);
+      // Mid-travel: the pane is still growing toward SIZE.
+      const lens = nodes.entrance.querySelector("[style*='backdrop-filter']") as HTMLElement;
+      expect(lens.style.backdropFilter).toBe(`url(#${GLASS_LENS_ID}-${SIZE.width}x${SIZE.height})`);
+      expect(sizedGlassLensCount()).toBe(before + 1);
+      clock.advance(1600);
+      expect(lens.style.backdropFilter).toBe(`url(#${GLASS_LENS_ID}-${SIZE.width}x${SIZE.height})`);
+      expect(sizedGlassLensCount()).toBe(before + 1);
+      // A card that re-measures (new results) moves the def once, to the new rest.
+      layoutElement(nodes.card, { width: 260, height: 180 });
+      clock.advance(1600);
+      expect(lens.style.backdropFilter).toBe(`url(#${GLASS_LENS_ID}-260x180)`);
+      expect(sizedGlassLensCount()).toBe(before + 1);
+      view.rerender(page(false));
+      clock.advance(1600);
+      expect(sizedGlassLensCount()).toBe(before);
+    } finally {
+      view.unmount(); clock.restore(); measure.mockRestore();
+      delete (window.navigator as unknown as Record<string, unknown>)["userAgent"];
+    }
   });
 
   it("drops a closed owner before its trigger measurement arrives", async () => {

@@ -559,3 +559,51 @@ device (the unit tests pin the byte-identical trigger tree), the unhosted inline
 (it keeps the anchor-edge bloom by design), and the two-body neck of the reference's
 frame 172, which no backdrop-filter material can draw and Apple's container effect
 cannot draw across the portal.
+
+## The web lens holds one definition while a popup's material moves, 2026-09-20
+
+The handshake profile above left one per-frame cost on the web: the lens layer
+(`GlassLensLayer`) acquired a sized `<filter>` for its own layout size, and inside a
+liquid popup that box is the material wrapper the opening spring resizes on almost
+every frame, so every frame of an opening built a new definition, each carrying a
+fresh `data:image/svg+xml` map that Chromium parses as an isolated SVG document, with
+`setSize` and `setUrl` commits on the layer around it. The baseline row below measured
+it: 32 to 44 definitions per opening and 19 to 35 per close, 256 over the run's eight
+phases, 216 isolated SVG documents in the Chrome trace.
+
+The change (`src/style/popup-motion.tsx`, `glass-surface.shared.tsx`,
+`glass-surface.tsx`, `anchored-overlay.tsx`; the lens geometry and grade in
+`glass-lens.ts` are untouched, only its header describes the rule): the material
+motion a popup provides now carries the bounds the frame settles at beside the frame
+(`MaterialMotion { frame, rest }`, `rest` being the card's measured size), GlassBox
+hands the layers `MaterialShapeContext { radius, rest }`, and a lens layer under a
+motion sizes its one definition for `rest` and drops its onLayout measurement, so the
+definition is exactly the one the settled layout would have acquired and nothing is
+built during the travel, the overshoot or the close. Surfaces that do not move measure
+themselves as before. Before choosing this, a static-HTML probe in headed Chromium
+(`probe-chromium/`, the kit's own `sizedLensFilterSpec`) tested the alternatives on
+their pixels: four mirrored percentage quadrants sharing one definition, the only
+arrangement that would keep the rim correct at every size, show visible seams at the
+centre lines (Chromium's backdrop-filter does not sample across a sibling's clip edge);
+the pending CSS frost differs from the SVG definition over the whole interior (max
+12/255), so holding the frost through the motion would swap every pixel of the pane at
+settle; and a droplet-sized box under the resting-size definition differs from its own
+definition only in the right and bottom rim bands (max 29/255 on a bright grid), the
+bands the map anchors at the far edge of the resting box, which sit past the droplet's
+edge while it grows and up to ~2% inside it at the overshoot's peak. That is what the
+change trades, and the stills below could not find it on the harness.
+
+| Date | Effect and profile | Runtime and device | Revision (dirty?) | Values tried | rAF p50 / p95 / max (ms) | What the strip and trace showed | Artifacts |
+|---|---|---|---|---|---|---|---|
+| 2026-09-20 | PROBE of the candidate arrangements on static HTML: one 300 by 160 box under its own definition, four mirrored 50% quadrants under that definition, a 150 by 70 droplet under its own definition, under the resting one, and under the pending frost; plus the resting box under the frost | headed Chromium via the repo's Playwright, `file://` pages, 1x and 2x, a grid-and-text backdrop over two gradient blobs, pixel diffs in PIL | aa39bbd3 (the probe is outside the kit) | the arrangements listed | not applicable | Quadrants against the single layer: 7% of the region differs, max 20, with the diff concentrated on the two centre seams, a line through the pane (the amplified `diff-rest-quad@2x.png`), so the shared-definition quadrant idea is out. Droplet under the resting definition against its own: 4% differ, max 29, all of it in the right and bottom rim bands (`diff-drop-restdef@2x.png`); at 2x zoom the three droplets are indistinguishable (`cmp-drop-zoom.png`). Frost against the lens at rest: max 25 on the rim and max 12 across the interior (`cmp-rest-frost.png`), so a frost held through the motion would change the whole pane at settle. Every rounded corner clipped correctly on the layer's own radius. | `/tmp/canvas-liquid-motion-2026-09-20/probe-chromium/` (`probe.mjs`, `shots/`) |
+| 2026-09-20 | BASELINE: list open and close (twice), menu open and close (the hand-off), own-trigger open and close, then the harness's frame sample, with the definition observer and a Chrome trace | Chromium headed via the repo's Playwright on `/testing/popup?mode=glass&scheme=dark` at this worktree's Metro (8099), 1280x1100, dark glass, 25 fps sampling, machine load 5 | aa39bbd3 (clean) | none (measurement) | 4.0 / 8.1 / 78.4 over 2569 frames (during the openings 8.0 / 12.0, the 120 Hz cadence); readout 3.9 / 7.9 / 35.5 | Definitions added per phase: list open 39, close 20, second open 44, close 19, menu open 32, close 35, own trigger open 32, close 35 (256 added, 256 removed; 17 live at idle, 18 with a pane up). Chrome trace: 256 `ResourceFetcher::requestResource` (248 ms, mean 0.97), 216 `IsolatedSVGDocumentHost` constructions (140 ms) with 216 `createFrame` (72 ms), 10579 `FunctionCall` (2564 ms), 1505 `Layout`, 3759 `UpdateLayoutTree`. The lens during the first opening: the pending grade for a frame, then a new `url(#cds-glass-lens-WxH)` on nearly every frame until `973x280` at rest. Strip: the droplet under the field with tiny rows at 151, growing 152 to 153, full and past rest at 154, settled from 155 (`strip-149-156.png`). | `web-lens-baseline-01` (movie, sheet, `trace.json`, `chrome-trace.json`, the strip), `actions-lens.mjs` |
+| 2026-09-20 | The same sequence with the lens sizing its definition for the resting bounds (runs 1 and 2 on the first cut, run 3 with the two modes as two component types, run 4 on the committed code, one lens component keyed on its mode so a change of mode remounts the node) | as above, load 5 to 11 | working tree of this commit (clean apart from it) | the rule (no tunable value changes) | run 1: 4.4 / 11.0 / 102.7 over 2379 frames, run 2: 7.2 / 8.6 / 47.2 over 2312, run 3: 4.3 / 8.3 / 66.6 over 2387, run 4: 4.7 / 11.2 / 102.2 over 2307 (during the openings 8.0 / 12.0 in all four, as the baseline); readouts 4.0 / 8.0 / 32.0, 4.1 / 8.0 / 31.4, 4.0 / 8.0 / 27.5 and 4.0 / 8.0 / 30.9 | One definition added per opening and one removed per close in every run (4 and 4 over the run; 17 live at idle, 18 with a pane up). Chrome trace: 4 `ResourceFetcher::requestResource` (5.3, 3.6 ms), 2 isolated SVG documents (the second list and menu openings hit Chromium's memory cache for the same map), `FunctionCall` down to 8089, 7996, 7800 and 7567 (1948 and 1950 ms in the first two), `Layout` 1059, 1072, 1108 and 1080, `UpdateLayoutTree` 2986, 2913 and 2913. The lens on the first opening: the pending grade while the wrapper is unmeasured (one to four frames at width 0), then `url(#cds-glass-lens-973x280)` from the 530 by 98 droplet through the settle and the close; the menus `200x231` from their 112 by 106 droplet. Strip: droplet at 132, growing 133 to 134, full at 135, settled from 136, the same phases as the baseline (`compare-list-open.png`); the hand-off close narrows to the pill, absorbs upward, re-forms the pill and fades the label back the same in both runs (`compare-menu-close.png`). | `web-lens-after-01` to `web-lens-after-04` (movie, sheet, `trace.json`, `chrome-trace.json`), `compare-list-open.png`, `compare-menu-close.png` |
+| 2026-09-20 | Lossless stills of the list's opening at 40 to 1200 ms after the click, three openings per build, baseline and change | headed Chromium, the harness at Metro 8099, the same page and viewport, the sources toggled in place | aa39bbd3 written in place for the baseline set, then this commit's working tree | as above | not sampled | At 600 and 1200 ms after the click every still is pixel-identical between the builds (0 of 404460 pixels differ in each of the three pairs, the same as two openings of one build against each other): the resting look is the settled layout's own definition, byte for byte. Mid-travel stills land where the spring is when the capture runs (a 40 ms request captured at 534 to 986 px wide), so no two are at the same width; at 3x zoom on the pane's right and bottom edges during the overshoot (about 985 px) the baseline and the change look the same, and no detached or missing band reads on this dark backdrop (`compare-stills-edges.png`). The probe's numbers bound what a brighter backdrop could show: the two far bands, max 29/255, while the pane is short of its rest. | `stills-baseline/`, `stills-after/` (`stills.json` with the pane's bounds before and after each capture), `shots-open.mjs`, `compare-stills-edges.png` |
+
+Not covered: iOS and Android (the change is the web lens's definition lifecycle; the
+native GlassView and the frosts take the frame's radius through the same
+`MaterialShapeContext` and never acquire definitions, and the unit tests pin the
+shape they receive), the light scheme on the harness (the probe's bright grid is the
+harsher case for the rim), Reduce Motion (no motion, so no `rest`, the layer measures
+itself), and a card whose measured size changes while open (one definition per new
+rest, pinned by `test/popup-motion.test.tsx`).

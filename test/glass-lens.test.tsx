@@ -1,9 +1,11 @@
 import { describe, it, expect, afterEach, spyOn } from "bun:test";
-import { render, cleanup, waitFor, screen } from "@testing-library/react";
-import { Text } from "react-native";
+import { act, render, cleanup, waitFor, screen } from "@testing-library/react";
+import { Text, type ViewStyle } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { GlassSurface } from "../src/style/glass-surface/glass-surface.tsx";
+import { MaterialMotionContext, type MaterialMotion } from "../src/style/popup-motion.tsx";
 import { setSurface } from "../src/theme.ts";
+import { layoutElement } from "./entrance-layout.ts";
 import {
   GLASS_LENS_ID,
   GLASS_LENS_PENDING_FILTER,
@@ -250,6 +252,89 @@ describe("GlassSurface lens tier", () => {
         const filtered = Array.from(clip.children).filter((c) => ((c as HTMLElement).getAttribute("style") ?? "").includes("backdrop-filter"));
         expect(filtered.length).toBe(1);
       });
+    } finally {
+      restore();
+    }
+  });
+
+  it("measures a resting surface on layout and acquires the def for its own box", async () => {
+    const restore = overrideUserAgent(CHROME_UA);
+    try {
+      const before = sizedGlassLensCount();
+      const view = render(
+        <ThemeProvider surface="glass">
+          <GlassSurface testID="rest-gs" style={{ borderRadius: 12 }}>
+            <Text>content</Text>
+          </GlassSurface>
+        </ThemeProvider>,
+      );
+      const clip = (screen.getByTestId("rest-gs").firstElementChild!.firstElementChild) as HTMLElement;
+      const lensLayer = clip.children[1] as HTMLElement;
+      await waitFor(() => expect(lensLayer.style.backdropFilter).toBe(GLASS_LENS_PENDING_FILTER));
+      layoutElement(lensLayer, { width: 141, height: 39 });
+      await waitFor(() => expect(lensLayer.style.backdropFilter).toBe(`url(#${GLASS_LENS_ID}-141x39)`));
+      expect(sizedGlassLensCount()).toBe(before + 1);
+      view.unmount();
+      expect(sizedGlassLensCount()).toBe(before);
+    } finally {
+      restore();
+    }
+  });
+
+  it("holds one def sized for the resting bounds while its material moves, never measuring itself", async () => {
+    // A liquid popup's material wrapper is resized on almost every frame of its
+    // spring, so a def per layout would be a fresh SVG document per frame. Under a
+    // material motion the lens takes the bounds the frame settles at: here there is
+    // no layout engine at all, so the url can only have come from `rest`.
+    const restore = overrideUserAgent(CHROME_UA);
+    try {
+      const before = sizedGlassLensCount();
+      const moving = (width: number): MaterialMotion => ({
+        frame: { position: "absolute", left: 0, top: 0, width, height: 96 } as ViewStyle,
+        rest: { width: 320, height: 96 },
+      });
+      const page = (width: number) => (
+        <ThemeProvider surface="glass">
+          <MaterialMotionContext.Provider value={moving(width)}>
+            <GlassSurface testID="moving-gs" style={{ borderRadius: 12 }}>
+              <Text>rows</Text>
+            </GlassSurface>
+          </MaterialMotionContext.Provider>
+        </ThemeProvider>
+      );
+      const view = render(page(112));
+      const clip = (screen.getByTestId("moving-gs").firstElementChild!.firstElementChild) as HTMLElement;
+      const lensLayer = clip.children[1] as HTMLElement;
+      await waitFor(() => expect(lensLayer.style.backdropFilter).toBe(`url(#${GLASS_LENS_ID}-320x96)`));
+      expect(sizedGlassLensCount()).toBe(before + 1);
+      // The layer has no layout handler to re-acquire from (RNW attaches one only
+      // for an onLayout prop), so a resize storm cannot reach the registry.
+      expect((lensLayer as HTMLElement & { __reactLayoutHandler?: unknown }).__reactLayoutHandler).toBeUndefined();
+      // The frame changes every animation frame; the def does not.
+      view.rerender(page(200));
+      view.rerender(page(331));
+      await act(async () => {});
+      expect(lensLayer.style.backdropFilter).toBe(`url(#${GLASS_LENS_ID}-320x96)`);
+      expect(sizedGlassLensCount()).toBe(before + 1);
+      // The motion ends on an open surface (Reduce Motion switched on): the layer
+      // is a fresh node that measures itself again, since react-native-web only
+      // decides at mount whether a node is observed for layout.
+      view.rerender(
+        <ThemeProvider surface="glass">
+          <GlassSurface testID="moving-gs" style={{ borderRadius: 12 }}>
+            <Text>rows</Text>
+          </GlassSurface>
+        </ThemeProvider>,
+      );
+      const settled = ((screen.getByTestId("moving-gs").firstElementChild!.firstElementChild) as HTMLElement).children[1] as HTMLElement;
+      expect(settled).not.toBe(lensLayer);
+      expect(typeof (settled as HTMLElement & { __reactLayoutHandler?: unknown }).__reactLayoutHandler).toBe("function");
+      await waitFor(() => expect(sizedGlassLensCount()).toBe(before));
+      layoutElement(settled, { width: 320, height: 96 });
+      await waitFor(() => expect(settled.style.backdropFilter).toBe(`url(#${GLASS_LENS_ID}-320x96)`));
+      expect(sizedGlassLensCount()).toBe(before + 1);
+      view.unmount();
+      expect(sizedGlassLensCount()).toBe(before);
     } finally {
       restore();
     }
