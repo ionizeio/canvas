@@ -15,11 +15,12 @@ state throughout; a selection commits and the menu closes logically the moment a
 row is pressed. Reopening during the exit continues from the current material.
 Reduce Motion settles at once with the pill untouched; solid mode keeps the
 ordinary entrance. AvatarMenu and the collapsed Navbar menu are built on Dropdown
-and hand off the same way (the account capsule and the hamburger). The field
-popups (Autocomplete, Select, PhoneInput) hand off the same way too, with one
-difference: a field is read or typed into while its list is open, so its glass
-and text are hidden only while the pane covers its box and are back the moment
-the list has cleared it, on the way out as on the way home.
+and hand off the same way (the account capsule and the hamburger), as do the
+RowMenu's glyph, the Popover's button, the split ButtonGroup and the Command's
+search bar. The field popups (Autocomplete, Select, PhoneInput) hand off the same
+way too, with one difference: a field is read or typed into while its list is
+open, so its glass and text are hidden only while the pane covers its box and are
+back the moment the list has cleared it, on the way out as on the way home.
 
 ## Usage
 

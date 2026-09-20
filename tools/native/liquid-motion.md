@@ -796,3 +796,41 @@ and solid mode on a device (the unit tests pin the plain tree), the inline fallb
 (idb's tap latency; the web trace and `test/popup-motion.test.tsx` pin it), and the
 reference's two-body neck, which no backdrop-filter material can draw and Apple's
 container effect cannot draw across the portal.
+
+## The other menu triggers hand off whole, 2026-09-20 (RowMenu, Popover, split ButtonGroup, Command)
+
+The user asked for the hamburger's treatment on every component like the
+Autocomplete. The Dropdown-class hand-off (its own section above) covered the Dropdown,
+the AvatarMenu and the collapsed Navbar; the field form (the previous section) the
+three fields. Four anchored popups were still on the plain anchor-edge bloom: the
+RowMenu's glyph, the triggered Popover's button, the split ButtonGroup's chevron and
+the Command palette's search bar. Each now takes the Dropdown's morph unchanged: the
+trigger's material hides in place and its foreground fades as the droplet forms on the
+trigger's frame, the pane blooms from there in the trigger's corner, and on close the
+pane narrows back to the trigger's box and re-forms it before the foreground fades back.
+
+Two of the four paint no material of their own, so `usePopupHandoff` takes a `bare`
+option: the trigger declares its corner (the RowMenu's 12 px control corner, the bar's
+6 px), the pane keeps its own dense fill throughout (no control tint to blend from), and
+a GlassPane inside the trigger (the Command's keycap) hides with the trigger but never
+reports as the pill. The Popover's outline Button is the Dropdown's own trigger shape
+and needs nothing new. The split group's material is the group's own `GroupGlass`
+sibling (the shared puck behind both halves, the way the reference's whole bar pill
+is), which now reports its shape and hides on the material curve under a hand-off; the
+primary label, the divider and the chevron ride the label fade as their own animated
+opacity. The harness gained a RowMenu, a Popover and a Command with their own drivers
+and a split ButtonGroup (`popup-toggle-rowmenu`, `popup-toggle-popover`,
+`popup-toggle-command`, `popup-split`); `actions-menus.mjs` presses the four triggers
+themselves and records each trigger's fader, pane and group opacities and the open
+pane's box every animation frame.
+
+| Date | Effect and profile | Runtime and device | Revision (dirty?) | Values tried | rAF p50 / p95 / max (ms) | What the strip and trace showed | Artifacts |
+|---|---|---|---|---|---|---|---|
+| 2026-09-20 | The four triggers: the RowMenu glyph open, close (Escape), open, close, reopen mid-close, close; the Popover button open and close; the split chevron open and close; the search bar open and close | Chromium headed via the repo's Playwright on `/testing/popup?mode=glass&scheme=dark` at the user's Metro (8081, the primary checkout), 1280x1100, dark glass, 25 fps sampling, the page scrolled to the triggers (they sit below the fold); machine load about 12 with a peer's release battery running | working tree of this commit (clean apart from it) | the hand-off's baked values (widen 0.45, tint 0.55, close 520/40, label 50/140 ms), no new tunables | 17.1 / 25.9 / 324.8 over 1045 frames (the page ran at 60 Hz under the peer's battery; the max is the first opening's lens definition); readout 24.8 / 32.9 / 50.9 | Trace, RowMenu: the pane is born 36 by 76 at the glyph's box (x 268, the glyph's 36 px width held, a 100 px corner on the clip) with the glyph's fader at 0 the same frame, grows to the 200 by 151 card, and on close narrows to 36 by 36 at the glyph's box (y 560, the glyph's own frame) by +328 ms with the fader rising to 1 by +461; the reopen mid-close grows back from a 36 by 70 drop. Popover: born 75 by 69 on the button's box with the button's pane hidden and its label fading at +415, rests at 260 by 126, and on close re-forms the 75 by 38 pill by +346 with the pane back that frame and the label at 1 by +471. Split: born 101 wide on the group's frame with the group's glass hidden and the primary label, divider and chevron fading the same frame, rests at 180 by 114, re-forms the 101 by 36 group by +273 with the glass back that frame. Command: born 973 by 97 on the bar's frame (the bar's full width, a 101 px corner) with the keycap's pane hidden and the bar fading at +415, rests at the 420 by 203 palette, narrows back to the 972 by 40 bar by +337 with the bar's outline and text back by +470. The click-to-droplet latency was about 400 ms on this loaded run. Strips: the glyph fading into the droplet at 116 to 117 and the menu full at 121 (`strip-rowmenu-open-114-125.png`); the close narrowing to the glyph's box 152 to 156 and the glyph back at 158 (`strip-rowmenu-close-150-161.png`); the split pill vanishing at 390 with the menu blooming from it (`strip-split-open-388-399.png`); the palette narrowing to the bar 500 to 503 and the bar back at 508 (`strip-command-close-498-509.png`); the Popover's open and close and the others in the same folder. | `web-menus-02` (movie, sheet, `trace.json`, the strips), `actions-menus.mjs` (`web-menus-01` is a mis-driven run: the drivers were scrolled out of view and the presses landed on the Dropdown) |
+| 2026-09-20 | The four triggers on the native GlassView: the RowMenu glyph open and close (twice), the Popover button open and close, the split chevron open and close (a second tap on the trigger, through the backdrop), then the search bar open and close in a run of its own | the throwaway iPhone 17 Pro simulator (iOS 26.3, dark glass, the docs dev app loading the user's Metro on 8081), the harness scrolled so the glyph sits at y 190 pt (`ios-menus-scroll.sh 180`) and, for the bar, at y 240 pt (`ios-command-run.sh`), taps through `idb ui tap`, 30 fps sampling of simctl recordings | working tree of this commit | as the web row | not sampled | RowMenu (`strip-rowmenu-open1-205.png`): 206 the glyph gone under a droplet at its box with the three tiny rows inside; 207 to 209 growing with the rows scaling; 211 full; settled by 213; the close (`strip-rowmenu-close1-247.png`) narrows to the glyph's square and the glyph returns. Popover (`strip-popover-open-393.png`, `strip-popover-close-441.png`): the Details pill vanishes into the droplet and re-forms on close. Split (`strip-split-open-488.png`, `strip-split-close-535.png`): the whole Save pill vanishes into the droplet at 490; on close the menu narrows onto the group's box 545 to 547 and the empty pill re-forms at 548 before the labels return. Command (`ios-command-01/strip-command-open1-174.png`, `strip-command-close1-338.png`): 176 the bar fades under a full-width droplet on its frame; 177 to 179 the palette growing with its rows scaling; 181 full and settled; on close 343 to 349 the palette narrows to the bar's frame and the bar with its keycap returns at 350. The first run's fourth tap missed (the Command's driver had scrolled off, its frame was read at y -689) and hit the tab bar, which navigated the app to the harness top in the light solid state; the bar was recorded in a separate run after reopening the deep link. | `ios-menus-01` (movie, sheet, `buttons.txt`, `taps.log`, the strips), `ios-command-01` (the same), `ios-menus-scroll.sh`, `ios-menus-run.sh`, `ios-command-run.sh` |
+
+Not covered: Android (no emulator booted this run), Reduce Motion and solid mode on a
+device (the unit tests pin the plain tree), the inline fallback and the inline Popover
+and bare Command (no trigger to hand off, by design), a reopen mid-close on a device
+(idb's tap latency; the web trace pins it for the RowMenu), and the reference's two-body
+neck, as before.

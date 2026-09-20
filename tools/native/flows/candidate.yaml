@@ -410,6 +410,62 @@ name: Sealed Canvas native candidate measurement
 - assertVisible:
     id: popup-account-readout
     text: 'Account: closed'
+- tapOn:
+    id: popup-toggle-select
+    retryTapIfNoChange: false
+- assertVisible:
+    id: popup-select-readout
+    text: 'Select: open'
+- assertVisible: Asia Pacific
+- takeScreenshot: popup-select-open
+- tapOn:
+    id: popup-toggle-select
+    retryTapIfNoChange: false
+- assertVisible:
+    id: popup-select-readout
+    text: 'Select: closed'
+- tapOn:
+    id: popup-toggle-rowmenu
+    retryTapIfNoChange: false
+- assertVisible:
+    id: popup-rowmenu-readout
+    text: 'Row menu: open'
+- assertVisible: Duplicate
+- takeScreenshot: popup-rowmenu-open
+- tapOn:
+    id: popup-toggle-rowmenu
+    retryTapIfNoChange: false
+- assertVisible:
+    id: popup-rowmenu-readout
+    text: 'Row menu: closed'
+- tapOn:
+    id: popup-toggle-popover
+    retryTapIfNoChange: false
+- assertVisible:
+    id: popup-popover-readout
+    text: 'Popover: open'
+- assertVisible: Shipment 4821
+- takeScreenshot: popup-popover-open
+- tapOn:
+    id: popup-toggle-popover
+    retryTapIfNoChange: false
+- assertVisible:
+    id: popup-popover-readout
+    text: 'Popover: closed'
+- tapOn:
+    id: popup-toggle-command
+    retryTapIfNoChange: false
+- assertVisible:
+    id: popup-command-readout
+    text: 'Command: open'
+- assertVisible: Open recent
+- takeScreenshot: popup-command-open
+- tapOn:
+    id: popup-toggle-command
+    retryTapIfNoChange: false
+- assertVisible:
+    id: popup-command-readout
+    text: 'Command: closed'
 - openLink: canvas-smoke:///testing/escape-layers?scenario=drawer
 - tapOn: Open drawer
 - assertVisible: Drawer content

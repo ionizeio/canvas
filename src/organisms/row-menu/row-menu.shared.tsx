@@ -1,7 +1,14 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useRef, useState } from "react";
-import { View, Pressable, Text, useOverlayHost, useMeasuredWidth, RippleClip, cornerRadii, useMinTargetSlop, type StyleProp, type ViewStyle, type LayoutStyle, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, useOverlayHost, useMeasuredWidth, RippleClip, cornerRadii, useMinTargetSlop, isGlass, type StyleProp, type ViewStyle, type LayoutStyle, withInnerFill } from "../../style/index.js";
+// The button-to-menu hand-off (popup-handoff.tsx): under glass the glyph's box is the
+// pill the menu takes, the way the collapsed Navbar's hamburger is: the glyph fades as
+// the droplet forms on its box and returns once the pane has re-formed it. The trigger
+// paints no material of its own, so the pane wears the trigger's corner at progress 0
+// and keeps its own fill (`bare`).
+import { PopupHandoffContext, PopupHandoffForeground, shapeRadius, usePopupHandoff } from "../../style/popup-handoff.js";
+import { useReducedMotion } from "../../style/motion.js";
 // The kit-owned popup policy for the dense menu: under glass the material grows out of
 // the anchor edge, recoils and settles, and stays visible briefly on close while
 // the rows are already inert. Solid mode and Reduce Motion keep the ordinary
@@ -88,6 +95,11 @@ export function createRowMenu(skin: RowMenuSkin) {
     const triggerRef = useRef<View>(null);
     const host = useOverlayHost();
     const { width: triggerWidth, onLayout: onTriggerLayout } = useMeasuredWidth();
+    // The hand-off runs under glass, with motion allowed and a hosted menu (the hosted
+    // overlay measures the glyph's frame); the trigger's subtree reads the channel
+    // through the context.
+    const reducedMotion = useReducedMotion();
+    const { handoff, context: handoffContext } = usePopupHandoff(isGlass(theme) && !reducedMotion && host != null, { bare: { radius: shapeRadius(skin.trigger) } });
 
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
 
@@ -101,8 +113,11 @@ export function createRowMenu(skin: RowMenuSkin) {
         onLayout={onTriggerLayout}
       >
         {/* RippleClip clips the Android bounded ripple to the ⋯ trigger's rounded
-            outline (a no-op on iOS/web). */}
+            outline (a no-op on iOS/web). Under the hand-off the whole trigger (its press
+            fill included) rides the label fade inside the clip. */}
+        <PopupHandoffContext.Provider value={handoffContext}>
         <RippleClip shape={cornerRadii(skin.trigger)}>
+        <PopupHandoffForeground>
         <Pressable
           {...target}
           style={({ pressed }) => [
@@ -124,7 +139,9 @@ export function createRowMenu(skin: RowMenuSkin) {
         >
           <Icon moreHorizontal size={skin.triggerIconSize} decorative />
         </Pressable>
+        </PopupHandoffForeground>
         </RippleClip>
+        </PopupHandoffContext.Provider>
 
         <LiquidAnchoredOverlay
           onAccessibilityEscape={escapeScope.onAccessibilityEscape}
@@ -134,6 +151,7 @@ export function createRowMenu(skin: RowMenuSkin) {
           gap={4}
           cardStyle={[skin.menuCard(tokens), { minWidth: Math.max(triggerWidth, skin.menuMinWidth) }]}
           inlineStyle={MENU_ANCHOR}
+          handoff={handoff}
           // A row menu is a card of action rows, so under glass it takes the DENSE
           // layer: the material under the model's densest tint. It opens over the
           // very table row it acts on, which read straight through the functional

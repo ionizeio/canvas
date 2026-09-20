@@ -1,7 +1,15 @@
 import { consumeEscapeKey, EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useId, useRef, useState } from "react";
 import { type Role, type TextInput as RNTextInput, type TextStyle } from "react-native";
-import { View, Text, TextInput, Pressable, useTheme, useControllableState, useOverlayHost, GlassSurface, FOCUS_RESET, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, TextInput, Pressable, useTheme, useControllableState, useOverlayHost, GlassSurface, FOCUS_RESET, isGlass, type StyleProp, type ViewStyle } from "../../style/index.js";
+// The button-to-menu hand-off (popup-handoff.tsx): under glass the search bar is the
+// palette's material at progress 0, the way an iOS 26 search field grows into its
+// surface: the bar and its keycap fade as the droplet forms on the bar's frame, the
+// palette blooms from there, and on close the pane re-forms the bar. The bar paints no
+// material of its own (an outlined row), so the pane wears the bar's corner and keeps
+// its own fill (`bare`); the keycap's pane hides with the bar but is never the pill.
+import { PopupHandoffContext, PopupHandoffForeground, shapeRadius, usePopupHandoff } from "../../style/popup-handoff.js";
+import { useReducedMotion } from "../../style/motion.js";
 // The kit-owned popup policy for the triggered palette: under glass the material grows out of
 // the anchor edge, recoils and settles, and stays visible briefly on close while
 // the rows are already inert. Solid mode and Reduce Motion keep the ordinary
@@ -138,7 +146,8 @@ export function createCommand(skin: CommandSkin) {
       testID,
       style,
     } = props;
-    const { tokens } = useTheme();
+    const theme = useTheme();
+    const { tokens } = theme;
 
     // Controlled when `active` is provided, self-managed otherwise, so the
     // highlight follows hover instead of sitting frozen on the initial row.
@@ -161,6 +170,10 @@ export function createCommand(skin: CommandSkin) {
     // The trigger view AnchoredOverlay measures to anchor (and portal) the card.
     const triggerRef = useRef<View>(null);
     const host = useOverlayHost();
+    // The hand-off runs in trigger mode under glass, with motion allowed and a hosted
+    // palette (the hosted overlay measures the bar's frame).
+    const reducedMotion = useReducedMotion();
+    const { handoff, context: handoffContext } = usePopupHandoff(!!trigger && isGlass(theme) && !reducedMotion && host != null, { bare: { radius: shapeRadius(s.triggerRow(tokens)) } });
 
     // Escape dismisses the open TRIGGER-mode palette via browser Escape or native accessibility escape. The
     // bare inline card is left alone: it has no trigger to reopen it, so escape
@@ -378,6 +391,11 @@ export function createCommand(skin: CommandSkin) {
     // while open for that inline-fallback case.
     return (
       <View ref={triggerRef} testID={testID} style={[s.triggerWrapper, open && !host ? s.triggerWrapperLifted : null, style]}>
+        {/* Under the hand-off the whole bar (outline, glyph, label and keycap) rides
+            the label fade, and the keycap's pane hides in place (never at a partial
+            opacity, see popup-handoff.tsx); without one the fader renders nothing. */}
+        <PopupHandoffContext.Provider value={handoffContext}>
+        <PopupHandoffForeground>
         <Pressable
           accessibilityRole="button"
           accessibilityState={{ expanded: open }}
@@ -389,6 +407,8 @@ export function createCommand(skin: CommandSkin) {
           <Text style={s.triggerLabel(tokens)}>Search...</Text>
           <Kbd keys="⌘ K" style={s.triggerKbd} />
         </Pressable>
+        </PopupHandoffForeground>
+        </PopupHandoffContext.Provider>
         <LiquidAnchoredOverlay
           onAccessibilityEscape={escapeScope.onAccessibilityEscape}
           ownsScroll
@@ -403,6 +423,7 @@ export function createCommand(skin: CommandSkin) {
           // A controlled `open` with no onOpenChange can never actually close, so
           // the hosted dismiss backdrop is skipped (it would only block the page).
           dismissable={openProp === undefined || onOpenChange !== undefined}
+          handoff={handoff}
         >
           <EscapeLayerProvider scope={escapeScope}>
           {cardContent}

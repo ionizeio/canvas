@@ -1,7 +1,7 @@
 // The button-to-menu hand-off: how a Dropdown-class trigger (the outline button, the
 // account capsule, the collapsed navbar's hamburger, a row menu's glyph, a popover's
-// button, a split button, the command palette's search bar) gives its glass pill to
-// the pane as the pane blooms, and takes it back as the pane shrinks home, the way the
+// button, a split button group, the command palette's search bar) gives its glass pill
+// to the pane as the pane blooms, and takes it back as the pane shrinks home, the way the
 // iOS 26 menu behind the docs header's hamburger does (tools/native/liquid-motion.md,
 // 2026-09-19). It is one mechanism on every material: the pane's material travels
 // between the trigger's frame and the resting card (`usePopupMotion` with an
@@ -50,7 +50,8 @@ export interface HandoffShape { radius: number; width: number; height: number; l
  */
 export interface PopupHandoff {
   progress: Animated.Value;
-  shape: { current: { radius: number; area: number; height: number; layer: GlassLayer } | null };
+  /** The pill: its corner, its area (the largest reporter wins), its extent along the anchor axis, and its layer (none for a bare trigger, which keeps the pane's own fill). */
+  shape: { current: { radius: number; area: number; height: number; layer?: GlassLayer } | null };
   fromTrigger: boolean;
 }
 
@@ -74,6 +75,12 @@ export interface PopupHandoffOptions {
    * the extent is the reported height.
    */
   field?: { gap: number };
+  /**
+   * The trigger paints no material of its own (a bare glyph, an outlined search bar):
+   * the pane wears this corner at progress 0 and keeps its own fill throughout, and a
+   * pane INSIDE the trigger (a keycap) hides with it but never reports as the pill.
+   */
+  bare?: { radius: number };
 }
 
 /** Provided by a Dropdown-class owner around its trigger; null everywhere else. */
@@ -118,7 +125,10 @@ export function usePopupHandoff(active: boolean, options?: PopupHandoffOptions):
     // has the driver, so the JS thread's work at the pane's mount and unmount cannot
     // stutter them): out as the pane covers it, back once it has left.
     const label = new Animated.Value(1, driver);
-    const shape: PopupHandoff["shape"] = { current: null };
+    const bare = options?.bare;
+    // A bare trigger's shape is declared, not reported: the trigger's own corner, no
+    // layer to blend from, and an area no pane inside it can beat.
+    const shape: PopupHandoff["shape"] = { current: bare ? { radius: bare.radius, area: Infinity, height: 0 } : null };
     const cover = { current: 1 };
     const isField = field != null;
     channel.current = {
@@ -128,6 +138,7 @@ export function usePopupHandoff(active: boolean, options?: PopupHandoffOptions):
       shape,
       mark: cover,
       report: ({ radius, width, height, layer }) => {
+        if (bare) return;
         const area = width * height;
         if (!shape.current || area >= shape.current.area) shape.current = { radius, area, height, layer };
         if (!isField) return;

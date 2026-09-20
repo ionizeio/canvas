@@ -381,6 +381,141 @@ describe("the field hand-off", () => {
   }, HANDOFF_TIMEOUT);
 });
 
+// The trigger hand-off on the four other menu owners: each trigger fades and, where it
+// paints a material, hides it in place as the droplet forms on its frame, and is back
+// (material first, then the label) once the pane has re-formed it. The split group's
+// material is the group's own glass sibling; the RowMenu's glyph and the Command's bar
+// are bare (no material of their own), so only their foreground fades.
+import { Popover as HandoffPopover } from "../src/atoms/popover/popover.tsx";
+import { RowMenu as HandoffRowMenu } from "../src/organisms/row-menu/row-menu.tsx";
+import { Command as HandoffCommand } from "../src/organisms/command/command.tsx";
+import { ButtonGroup as HandoffButtonGroup } from "../src/atoms/button-group/button-group.tsx";
+
+describe("the trigger hand-off on the other menu owners", () => {
+  async function handsOffWhole(trigger: HTMLElement, fader: HTMLElement, pane: HTMLElement | null, role: string, clock: ReturnType<typeof animationClock>, close: () => void) {
+    expect(inlineOpacity(fader)).toBe("1");
+    if (pane) expect(inlineOpacity(pane)).toBe("1");
+    const content = await openMenu(trigger, clock, role);
+    // The droplet on the trigger's frame: the material gone at once, the label on its
+    // short fade (the test engine finishes it in the seed's own tick).
+    if (pane) expect(inlineOpacity(pane)).toBe("0");
+    expect(inlineOpacity(fader)).toBe("0");
+    clock.advance(1600);
+    expect(heldBack(content)).toBe(false);
+    if (pane) expect(inlineOpacity(pane)).toBe("0");
+    expect(inlineOpacity(fader)).toBe("0");
+    close();
+    let hidden = 0;
+    for (let step = 0; step < 120 && (inlineOpacity(fader) !== "1" || (pane && inlineOpacity(pane) !== "1")); step++) {
+      clock.advance(16);
+      if (pane) {
+        const material = parseFloat(inlineOpacity(pane));
+        expect(material === 0 || material === 1).toBe(true);
+        if (material === 0) { hidden++; expect(parseFloat(inlineOpacity(fader))).toBe(0); }
+      }
+    }
+    if (pane) { expect(hidden).toBeGreaterThan(3); expect(inlineOpacity(pane)).toBe("1"); }
+    expect(inlineOpacity(fader)).toBe("1");
+  }
+
+  it("RowMenu: the glyph fades as the menu blooms from its box and returns once the pane has re-formed it", async () => {
+    const measure = bounds();
+    const view = render(glass(<HandoffRowMenu items={[{ label: "Edit" }, { label: "Delete", destructive: true }]} />));
+    await act(async () => {});
+    const clock = animationClock();
+    try {
+      const glyph = screen.getByRole("button", { name: "More options" });
+      const fader = faderOf(glyph);
+      // A bare trigger: nothing at index 0 hides as a material.
+      expect(inlineOpacity(glyph.firstElementChild)).toBe("");
+      await handsOffWhole(glyph, fader, null, "menu", clock, () => fireEvent.click(glyph));
+    } finally { view.unmount(); clock.restore(); measure.mockRestore(); }
+  }, HANDOFF_TIMEOUT);
+
+  it("Popover: the trigger button's pill is the card's material at progress 0", async () => {
+    const measure = bounds();
+    const view = render(glass(<HandoffPopover trigger="Details" title="Information" actionLabel="Done" />));
+    await act(async () => {});
+    const clock = animationClock();
+    try {
+      const button = screen.getByRole("button", { name: "Details" });
+      await handsOffWhole(button, faderOf(button), paneOf(button), "dialog", clock, () => fireEvent.click(button));
+    } finally { view.unmount(); clock.restore(); measure.mockRestore(); }
+  }, HANDOFF_TIMEOUT);
+
+  it("split ButtonGroup: the whole group's glass is the pill, its label, divider and chevron fading with it", async () => {
+    const measure = bounds();
+    const view = render(glass(<HandoffButtonGroup split items={["Save"]} menu={["Save copy"]} testID="split" />));
+    await act(async () => {});
+    const clock = animationClock();
+    try {
+      const chevron = screen.getByRole("button", { name: "More actions" });
+      const primary = screen.getByRole("button", { name: "Save" });
+      const label = primary.firstElementChild as HTMLElement;
+      const groupGlass = screen.getByTestId("split-glass");
+      // The group's material hides in a wrapper of its own; the primary label carries the fade itself.
+      const materialWrapper = groupGlass.parentElement as HTMLElement;
+      expect(inlineOpacity(materialWrapper)).toBe("1");
+      expect(inlineOpacity(label)).toBe("1");
+      const content = await openMenu(chevron, clock, "menu");
+      expect(inlineOpacity(materialWrapper)).toBe("0");
+      expect(parseFloat(inlineOpacity(label))).toBe(0);
+      clock.advance(1600);
+      expect(heldBack(content)).toBe(false);
+      fireEvent.click(chevron);
+      let hidden = 0;
+      for (let step = 0; step < 120 && inlineOpacity(materialWrapper) !== "1"; step++) {
+        clock.advance(16);
+        const material = parseFloat(inlineOpacity(materialWrapper));
+        expect(material === 0 || material === 1).toBe(true);
+        if (material === 0) { hidden++; expect(parseFloat(inlineOpacity(label))).toBe(0); }
+      }
+      expect(hidden).toBeGreaterThan(3);
+      expect(inlineOpacity(materialWrapper)).toBe("1");
+      expect(inlineOpacity(label)).toBe("1");
+    } finally { view.unmount(); clock.restore(); measure.mockRestore(); }
+  }, HANDOFF_TIMEOUT);
+
+  it("Command: the search bar and its keycap fade as the palette blooms from the bar, the keycap's pane hiding with it", async () => {
+    const measure = bounds();
+    const view = render(glass(<HandoffCommand trigger groups={[{ heading: "Actions", items: [{ label: "New file" }] }]} />));
+    await act(async () => {});
+    const clock = animationClock();
+    try {
+      const bar = screen.getByRole("button", { name: /Search/ });
+      const fader = faderOf(bar);
+      // The keycap inside the bar hides its own pane on the material curve, but the
+      // pill the pane takes is the bar's declared corner, not the keycap.
+      const keycapPane = Array.from(bar.querySelectorAll("*")).find((n) => (n as HTMLElement).style.zIndex === "-1" && (n as HTMLElement).style.opacity !== "") as HTMLElement | undefined;
+      expect(keycapPane).toBeDefined();
+      await handsOffWhole(bar, fader, keycapPane!, "listbox", clock, () => fireEvent.click(bar));
+    } finally { view.unmount(); clock.restore(); measure.mockRestore(); }
+  }, HANDOFF_TIMEOUT);
+
+  it("leaves a solid or reduced-motion trigger's tree plain", async () => {
+    const measure = bounds();
+    try {
+      const view = render(solid(<><HandoffRowMenu items={[{ label: "Edit" }]} /><HandoffPopover trigger="Details" title="Information" /><HandoffButtonGroup split items={["Save"]} menu={["Save copy"]} testID="split" /><HandoffCommand trigger groups={[{ heading: "Actions", items: [{ label: "New file" }] }]} /></>));
+      await act(async () => {});
+      expect(() => faderOf(screen.getByRole("button", { name: "More options" }))).toThrow();
+      expect(() => faderOf(screen.getByRole("button", { name: "Details" }))).toThrow();
+      expect(screen.queryByTestId("split-glass")).toBeNull();
+      expect(() => faderOf(screen.getByRole("button", { name: /Search/ }))).toThrow();
+      view.unmount();
+    } finally { measure.mockRestore(); }
+    const measureAgain = bounds();
+    const reduced = spyOn(AccessibilityInfo, "isReduceMotionEnabled").mockResolvedValue(true);
+    try {
+      const view = render(glass(<><HandoffRowMenu items={[{ label: "Edit" }]} /><HandoffButtonGroup split items={["Save"]} menu={["Save copy"]} testID="split" /></>));
+      await act(async () => {});
+      expect(() => faderOf(screen.getByRole("button", { name: "More options" }))).toThrow();
+      // The group's glass is the plain sibling, not a hand-off wrapper.
+      expect(inlineOpacity(screen.getByTestId("split-glass").parentElement)).toBe("");
+      view.unmount();
+    } finally { reduced.mockRestore(); measureAgain.mockRestore(); }
+  }, HANDOFF_TIMEOUT);
+});
+
 describe("Select on the liquid popup policy", () => {
   it("commits the chosen value before the option material has left", async () => {
     const measure = bounds();

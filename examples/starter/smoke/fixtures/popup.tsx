@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Autocomplete, AvatarMenu, Backdrop, BackdropHost, Button, Card, Column, Container, Dropdown, Navbar, PhoneInput, Row, Select, ThemeProvider, Typography } from "@nannier-com/canvas";
+import { Autocomplete, AvatarMenu, Backdrop, BackdropHost, Button, ButtonGroup, Card, Column, Command, Container, Dropdown, Navbar, PhoneInput, Popover, Row, RowMenu, Select, ThemeProvider, Typography } from "@nannier-com/canvas";
 
 // The same list the form-autocomplete fixture offers, declared here because a
 // fixture body may import only React and the kit (tools/native/shared-fixtures).
@@ -26,6 +26,12 @@ const account = [
 ];
 const navigation = ["Home", "Docs", "Blog", "About"];
 const regions = ["Americas", "Europe", "Asia Pacific", "Middle East", "Africa"];
+const rowActions = [
+  { label: "Edit", icon: "pencil" as const },
+  { label: "Duplicate", icon: "copy" as const },
+  { label: "Delete", icon: "trash" as const, destructive: true, separatorBefore: true },
+];
+const commands = [{ heading: "Actions", items: [{ label: "New file" }, { label: "Open recent" }, { label: "Save all" }] }];
 
 // How many open-and-close pairs the cycle driver runs, and how far apart: far
 // enough for an opening to settle before its close, close enough that a run of
@@ -56,7 +62,11 @@ const CYCLE_STEP_MS = 700;
 // is open), a Select with its own driver, and a PhoneInput whose country list opens
 // from its segment (uncontrolled, so a run taps the segment). The field vanishes
 // into the droplet on open and is back as soon as the list has cleared its box; on
-// close the pane absorbs back into the box and the field re-forms.
+// close the pane absorbs back into the box and the field re-forms. The other menu
+// triggers hand off whole like the Dropdown's button: the RowMenu's glyph and the
+// Popover's button (each with its own driver), the split ButtonGroup's chevron
+// (uncontrolled, so a run taps the chevron) and the Command's search bar (its own
+// driver), whose glyph, label and keycap fade as the palette blooms from the bar.
 export function PopupBody({ glass: initialGlass = false, dark: initialDark = false }: { glass?: boolean; dark?: boolean }) {
   const [glass, setGlass] = useState(initialGlass);
   const [dark, setDark] = useState(initialDark);
@@ -65,6 +75,11 @@ export function PopupBody({ glass: initialGlass = false, dark: initialDark = fal
   const [ownOpen, setOwnOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [selectOpen, setSelectOpen] = useState(false);
+  const [rowMenuOpen, setRowMenuOpen] = useState(false);
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const [commandOpen, setCommandOpen] = useState(false);
+  // The split group's menu is uncontrolled; the readout shows what it last picked.
+  const [splitLabel, setSplitLabel] = useState("nothing picked");
   const [cycles, setCycles] = useState(0);
   const [cycling, setCycling] = useState(false);
   const cycle = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -134,6 +149,9 @@ export function PopupBody({ glass: initialGlass = false, dark: initialDark = fal
               <Button onPress={() => setMenuOpen((value) => !value)} testID="popup-toggle-menu">Toggle menu</Button>
               <Button onPress={() => setAccountOpen((value) => !value)} testID="popup-toggle-account">Toggle account</Button>
               <Button onPress={() => setSelectOpen((value) => !value)} testID="popup-toggle-select">Toggle select</Button>
+              <Button onPress={() => setRowMenuOpen((value) => !value)} testID="popup-toggle-rowmenu">Toggle row menu</Button>
+              <Button onPress={() => setPopoverOpen((value) => !value)} testID="popup-toggle-popover">Toggle popover</Button>
+              <Button onPress={() => setCommandOpen((value) => !value)} testID="popup-toggle-command">Toggle command</Button>
               <Button onPress={runCycles} disabled={cycling} testID="popup-cycle">Cycle list</Button>
               <Button onPress={sample} testID="popup-sample">Sample frames</Button>
             </Row>
@@ -154,6 +172,14 @@ export function PopupBody({ glass: initialGlass = false, dark: initialDark = fal
             <Container xs start>
               <Navbar brand="Canvas" links={navigation} testID="popup-navbar" />
             </Container>
+            <Typography testID="popup-rowmenu-readout">Row menu: {rowMenuOpen ? "open" : "closed"}</Typography>
+            <RowMenu items={rowActions} open={rowMenuOpen} onOpenChange={setRowMenuOpen} testID="popup-rowmenu" />
+            <Typography testID="popup-popover-readout">Popover: {popoverOpen ? "open" : "closed"}</Typography>
+            <Popover trigger="Details" title="Shipment 4821" description="Left the depot this morning." actionLabel="Done" open={popoverOpen} onOpenChange={setPopoverOpen} testID="popup-popover" />
+            <Typography testID="popup-split-readout">Split: {splitLabel}</Typography>
+            <ButtonGroup split items={["Save"]} menu={["Save as draft", "Save and close", "Save a copy"]} onSelect={(_, item) => setSplitLabel(item)} testID="popup-split" />
+            <Typography testID="popup-command-readout">Command: {commandOpen ? "open" : "closed"}</Typography>
+            <Command trigger groups={commands} open={commandOpen} onOpenChange={setCommandOpen} testID="popup-command" />
             {/* Room for the list below the field, so the fitter keeps it under the
                 anchor instead of flipping it above on a short page. */}
             <Card>
@@ -162,6 +188,7 @@ export function PopupBody({ glass: initialGlass = false, dark: initialDark = fal
                 <Typography small muted>Open: the pane starts as a droplet at the anchor with the rows already in it, grows past its resting size, and settles while the rows sharpen.</Typography>
                 <Typography small muted>Close: the rows fade first, then the pane shrinks back into the anchor edge. A reopen mid-exit grows from wherever the pane is.</Typography>
                 <Typography small muted>Hand-off (the menu, the account capsule, the hamburger): the trigger's pill and label vanish as the droplet forms on the pill's frame; on close the pane narrows to the pill, the drop absorbs upward, the pill re-forms and its label fades back.</Typography>
+                <Typography small muted>The row menu's glyph, the Details button, the split group and the search bar hand off whole like the menu: the trigger fades as the droplet forms on its frame and re-forms as the pane closes.</Typography>
                 <Typography small muted>Field hand-off (the Fruit field, the Region select, the Phone box): the field's glass and text vanish into the droplet that forms on its box, the list blooms out of it, and the field is back as soon as the list has cleared the box; on close the pane absorbs back onto the box, hiding the field again only while it covers it, and hands back at the snap.</Typography>
                 <Typography small muted>Cycle: five open-and-close pairs at a fixed rhythm, for the resource counters and the reversal case.</Typography>
               </Column>
