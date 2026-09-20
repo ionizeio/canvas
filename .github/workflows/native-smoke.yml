@@ -27,6 +27,17 @@ jobs:
   smoke:
     runs-on: ${{ inputs.platform == 'ios' && 'macos-latest' || 'ubuntu-latest' }}
     timeout-minutes: 75
+    # Liquid glass is a web surface: iOS 26+ renders Apple's own real Liquid Glass
+    # through expo-glass-effect, and Android has its own native material system,
+    # neither driven by this repo's web CSS/SVG lens implementation (user
+    # direction, 2026-09-20). This job still builds and runs the real native
+    # journey for visibility, but continue-on-error keeps its failure from
+    # failing this reusable workflow's own run, so the calling validate.yml job
+    # (and deploy.yml's publish/cloudflare behind it) are no longer gated on it;
+    # check, e2e and starter remain the release gate. A run here still shows red
+    # in its own job details when the journey fails, so a real regression is
+    # still visible, just not blocking.
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v7
         with:
