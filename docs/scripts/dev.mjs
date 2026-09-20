@@ -10,7 +10,12 @@ const server = startPreviewServer();
 
 const expo = spawn("expo", ["start", ...process.argv.slice(2)], {
   stdio: "inherit",
-  env: process.env,
+  // Hydrate the pre-rendered dev documents the way the export's pages hydrate, instead
+  // of expo-router's dev default of rendering from scratch over the server's markup: a
+  // hydration mismatch then shows in the dev console rather than only in production,
+  // and the paint-first document the dev middleware serves (scripts/dev-documents.cjs)
+  // becomes interactive in place. An explicit environment wins.
+  env: { EXPO_WEB_DEV_HYDRATE: "1", ...process.env },
 });
 
 expo.on("exit", (code) => {

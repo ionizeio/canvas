@@ -12,6 +12,7 @@ const { getDefaultConfig } = require("expo/metro-config");
 const path = require("path");
 const { createHash } = require("node:crypto");
 const { readBuildInfo } = require("./scripts/build-info.cjs");
+const { createDevDocumentMiddleware } = require("./scripts/dev-documents.cjs");
 
 const projectRoot = __dirname;
 const repoRoot = path.resolve(projectRoot, "..");
@@ -60,5 +61,10 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   }
   return context.resolveRequest(context, moduleName, platform);
 };
+
+// The dev server serves each pre-rendered document gzipped and rewritten to paint before
+// its bundle runs, as the export does (scripts/dev-documents.cjs). This is the one hook
+// Expo's dev server offers a project; an export serves no request and never calls it.
+config.server = { ...config.server, enhanceMiddleware: createDevDocumentMiddleware() };
 
 module.exports = config;

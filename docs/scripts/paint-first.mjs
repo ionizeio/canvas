@@ -52,34 +52,25 @@
 // narrowed by exactly one path and nothing else. Cloned scripts are made non-async so
 // they execute in document order, runtime first and entry last, as they would have.
 //
+// The rewrite of one document lives in scripts/paint-first-html.cjs, which the dev
+// server shares (scripts/dev-documents.cjs), so a page served by Metro paints first the
+// same way; this script applies it to every page of an export, with the export's own
+// rules: only the large chunks are preloaded, and every page must end its scripts with
+// the entry.
+//
 // Usage: node scripts/paint-first.mjs [distDir]   (defaults to ./dist)
 
-import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { appPages } from "./html-pages.mjs";
+import shared from "./paint-first-html.cjs";
 
 const dist = process.argv[2] ?? "dist";
 
-// The loader, byte for byte what the CSP hashes. Change it here and the hash check
-// below fails until public/_headers carries the new digest.
-export const LOADER =
-  '(function(){' +
-  'if(typeof trustedTypes!=="undefined"&&trustedTypes.createPolicy)try{trustedTypes.createPolicy("default",{createScriptURL:function(u){' +
-  'var p=new URL(String(u),location.href);if(p.origin===location.origin&&/^\\/_expo\\/static\\/js\\/web\\/[\\w.+\\[\\]-]+\\.js$/.test(p.pathname))return p.href;' +
-  'throw new TypeError("blocked script url "+u)}})}catch(e){}' +
-  'var t=document.getElementById("canvas-entry");if(!t)return;var done=false;' +
-  'function go(){if(done)return;done=true;var f=document.importNode(t.content,true);' +
-  'var s=f.querySelectorAll("script");for(var i=0;i<s.length;i++)s[i].async=false;document.body.appendChild(f)}' +
-  'if(document.hidden||typeof PerformanceObserver!=="function")return setTimeout(go,0);' +
-  'try{new PerformanceObserver(function(l){if(l.getEntries().some(function(e){return e.name==="first-contentful-paint"}))setTimeout(go,0)})' +
-  '.observe({type:"paint",buffered:true})}catch(e){return setTimeout(go,0)}setTimeout(go,1500)})();';
+// The loader and the CSP digest of an inline script, re-exported for the checks.
+export const { LOADER, cspHash, paintFirstHtml } = shared;
 
-/** The CSP source expression for an inline script's contents. */
-export const cspHash = (script) => `'sha256-${createHash("sha256").update(script).digest("base64")}'`;
-
-const DEFERRED = /<script src="([^"]+\.js)" defer><\/script>\n?/g;
 const PRELOAD_MIN_BYTES = 128 * 1024;
 
 export function paintFirst(root) {
@@ -92,22 +83,15 @@ export function paintFirst(root) {
   if (!pages.length) throw new Error("paint-first: no app pages (documents with an app root) in the artifact");
   let rewritten = 0;
   for (const page of pages) {
-    let html = fs.readFileSync(page, "utf8");
+    const before = fs.readFileSync(page, "utf8");
     // Idempotent: a page this script already rewrote carries the template.
-    if (html.includes('id="canvas-entry"')) continue;
-    const scripts = [...html.matchAll(DEFERRED)].map(([, src]) => src);
+    if (before.includes('id="canvas-entry"')) continue;
+    const { html, scripts } = paintFirstHtml(before, {
+      preload: (src) => fs.statSync(path.join(root, src)).size >= PRELOAD_MIN_BYTES,
+    });
     if (scripts.length === 0 || !/\/entry-[^/]+\.js$/.test(scripts[scripts.length - 1])) {
       throw new Error(`paint-first: expected deferred scripts ending with the entry in ${path.relative(root, page)}, found ${scripts.length}`);
     }
-    const preloads = scripts
-      .filter((src) => fs.statSync(path.join(root, src)).size >= PRELOAD_MIN_BYTES)
-      .map((src) => `<link rel="preload" href="${src}" as="script" fetchpriority="low">`)
-      .join("\n");
-    const template = `<template id="canvas-entry">${scripts.map((src) => `<script src="${src}"></script>`).join("")}</template>`;
-    html = html
-      .replace("</head>", `${preloads}\n</head>`)
-      .replace(DEFERRED, "")
-      .replace("</body>", `${template}<script>${LOADER}</script>\n</body>`);
     fs.writeFileSync(page, html);
     rewritten += 1;
   }
