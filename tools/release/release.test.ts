@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test } from "bun:test";
+import { afterAll, afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import * as fs from "node:fs";
@@ -22,6 +22,12 @@ const git = (cwd: string, ...args: string[]) => execFileSync("git", args, {
 }).trim();
 const write = (file: string, data: unknown) => fs.writeFileSync(file, JSON.stringify(data));
 afterEach(() => { for (const dir of roots.splice(0)) fs.rmSync(dir, { recursive: true, force: true }); });
+// A dispatch that authorizes a major exports RELEASE_MAJOR to every validation
+// step, this suite included. Every case starts with no ambient authorization; the
+// cases whose subject is the authorized path set the variable themselves.
+const ambientMajor = process.env.RELEASE_MAJOR;
+beforeEach(() => { delete process.env.RELEASE_MAJOR; });
+afterAll(() => { if (ambientMajor === undefined) delete process.env.RELEASE_MAJOR; else process.env.RELEASE_MAJOR = ambientMajor; });
 
 function fixture(bump = "patch", blurBump?: string) {
   const dir = root();
