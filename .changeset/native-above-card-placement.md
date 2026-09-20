@@ -1,5 +1,0 @@
----
-"@ionizeio/canvas": patch
----
-
-A hosted anchored card that opens ABOVE its trigger on iOS and Android now sits directly above it. The card's scrollport declared no growth of its own and inherited React Native's ScrollView `flexGrow: 1`; while Yoga measured the card's absolutely positioned wrapper (which has no height of its own) it turned the card's height cap into an at-most constraint, and under the legacy stretch errata React Native keeps on the growing scrollport filled it, so the wrapper came out as tall as the cap with the content-sized card at its top. Under a `top` anchor that was invisible; under the `bottom` anchor of a card opened above its trigger the card floated up to the top of the visible band, away from its trigger, on both a page-body host and a viewport host (the docs Page scroller, the `/testing/popup` Dropdown). The scrollport now declares `flexGrow: 0`, so the wrapper is exactly the card's height on every platform; nothing changes on the web, where a growing child never inflated a content-sized card.

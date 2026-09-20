@@ -1,5 +1,656 @@
 # @nannier/canvas
 
+## 3.0.0
+
+### Major Changes
+
+- 7454886: A component never dictates its own width: the input-like controls are FILL and the
+  parent layout container provides the bounds.
+
+  Breaking. Input, Textarea, Select, Autocomplete, Listbox, Slider, and Progress no longer
+  render at a fixed 320px (240 `narrow`, 480 `wide`); they fill the parent they are given
+  (`width: 100%` plus the row-sharing pair, `src/style/sizing.ts`). The `block`, `narrow`,
+  `wide`, and `fit` props are removed from those seven components, `useFieldWidth`,
+  `FieldWidthProps`, and the `fieldWidths` tokens (`--field-*` in the CSS hand-off) are
+  gone, and their `style` prop is now `LayoutStyle`: `ViewStyle` without `width`,
+  `minWidth`, `maxWidth`, `flex`, `flexBasis`, `flexGrow`, `flexShrink`, and `alignSelf`,
+  so a width shim at the call site is a type error. Form's two-column threshold moves from
+  the 480px field width to the `lg` step of the width scale (512).
+
+  Migration:
+
+  - A bare field that used to be 320 wide now fills its column. Where the old measure was
+    the point, wrap the field in a Container step: `<Container xs>` is the old default
+    (320), `<Container lg>` the old `wide` (512 for 480), and `<Container sm>` (384) or a
+    Row `span={n}` cover the rest. `narrow` (240) has no step: give the field a Row span.
+  - Drop `block`: filling the container is now the only behaviour.
+  - `fit` (a Select hugging its value) is a bare `<Column>` inside a `<Row>` (Bootstrap
+    `.col-auto`): `<Row><Column><Select … /></Column></Row>`.
+  - `style={{ maxWidth: … }}` / `style={{ width: … }}` on a field: move the bound to the
+    parent (`Container`, `Column span`) and delete the style.
+  - A field inside a bare Column inside a Row collapses to its content (it always did; the
+    fixed width hid it). Give that Column `span={n}` or `fill`; `useFillStyle` warns in
+    development when it sees the case.
+
+  Also in this release: every non-layout component's `style` prop is `LayoutStyle` (the
+  sizing keys are a type error; Row, Column, Grid, Container, the shells, and the floating
+  overlays keep `StyleProp<ViewStyle>` because they are the bounds providers); Card, Feed,
+  StackedList, ActionPanel, Skeleton, Sparkline, every SVG chart root, and the Calendar
+  containers are FILL with no cap of their own (Alert loses `narrow`/`wide`/`block`,
+  Sparkline its intrinsic 120px, the Calendar timelines their desktop widths); Skeleton
+  text lines take `long` / `short` instead of a width; the width scale gains the `xxxs`
+  (192) and `xxs` (256) tile steps; and the docs generator rejects `width` / `maxWidth` /
+  `minWidth` in a `style` on any non-layout tag, so the showcase composes bounds with
+  `Container`, Row `span`, and `Grid`.
+
+  `Container` conforms to its parent by default: no cap and full width unless a step is
+  named (`page` is now an explicit step, not the default). MediaObject, DescriptionList,
+  EmptyState, Collapsible, Accordion, Form, Field, Stats, and DataTable are FILL too, and
+  the docs examples render every component at the width its parent gives it; a Container
+  step appears in a fence only where the measure is the lesson.
+
+### Minor Changes
+
+- 8998a7e: Add the clear material option to GlassSurface and GlassPane, preserving edge refraction with a lighter tint and minimal blur. This new reusable material capability justifies a minor release.
+
+  Use the clear grade for web Input, Textarea, Autocomplete, InputOTP, Stepper, PhoneInput, and DataTable editors in glass mode. Preserve native field materials, solid and accessibility fallbacks, and normal focus, selection, and text editing. Fields have no click ripple or typing animation.
+
+  Paint grouped focus and error borders above the refractive material so they stay crisp, and align flush Textarea material corners with its editor.
+
+- 86416cb: `DataTable` takes `attached`: the header band squares its corners to a frame the parent draws.
+
+  Minor because it adds a public option. On the web skin the header is Riskora's soft
+  10px-cornered band, which is the look of a table standing on its own (the design floats
+  it inside a padded card). A table flush inside a frame, a `flush` Card or a bordered panel
+  that clips to its corners, now passes `attached`, and the band drops its own corners so
+  the frame's clipped corners are the only rounded ones; before, the frame's fill peeked
+  out under the band's bottom corners. `bordered` squares the band the same way for the
+  table's own outline. iOS and Android bands were square already, so nothing changes there.
+
+  ```tsx
+  <Card flat flush style={{ overflow: "hidden" }}>
+    <DataTable attached columns={columns} rows={rows} />
+  </Card>
+  ```
+
+  The docs use it on every prop table, and the docs playground is now a fully rounded
+  card sitting a gap above its source block in every example and at every simulated tier,
+  instead of squaring its bottom edge into the code block.
+
+- 71216c7: Draw the iOS field family to the iOS input-field reference, and give Input the
+  password toggle and the clear button.
+
+  Minor because it adds public capability: `Input` gains `passwordToggle` (a trailing
+  eye that reveals and re-masks a `secureTextEntry` value, announced as "Show
+  password" / "Hide password"), `clearable` (a trailing circled-x that empties the
+  field while it holds text, in both the controlled and uncontrolled mode), and its
+  `icon` now accepts ANY Canvas glyph name (`IconName`: phone, calendar, creditCard,
+  mapPin, ... instead of six hard-coded names); `SelectOption` gains `leading`, a short
+  glyph (a flag emoji, a currency sign) shown before the label in the trigger and in
+  the option rows; and the token set gains `field-border`.
+
+  The iOS skins of Input, Textarea, Select, Autocomplete, InputOTP and Field now follow
+  the "iOS Mobile Input Fields" design (light and dark): a white `card` box, an 8pt
+  corner (`shape.ios.field` is now 8, was 10), a 16pt value, a 14pt regular
+  `muted-foreground` title 8 above the box, a 20px leading glyph, a boxed muted prefix
+  or suffix addon with a divider (was inline affix text), a gray ▾ select caret (was the
+  brand ⇅), and three states: focus tints the border, the glyph and the caret to the
+  brand `ring`/`primary`; error tints the border and the glyph `destructive` and washes
+  the box with a red-50 fill (`fieldErrorFill`, derived from `card` + `destructive`);
+  rest paints the new `field-border` hairline.
+
+  DISCLOSED ACCESSIBILITY TRADE-OFF. `field-border` (gray-300 `#d1d5db` light, systemGray4
+  `#3a3a3c` dark) is about 1.5:1 against the field's own fill, BELOW the 3:1 WCAG 1.4.11
+  boundary that the `input` token is held to. It is read only for the RESTING state of
+  the iOS field skins (through `fieldBorder` in `src/style/field-colors.ts`, which falls
+  back to `input` for a token map that omits it); the web and Android skins keep `input`,
+  and the focus and error borders keep their full-strength tokens on every platform. The
+  choice was made deliberately on 2026-09-16 so the iOS fields read as the iOS reference.
+
+- 97b7c18: Layer the glass model: under glass EVERY surface renders through the material, each
+  on the layer it belongs to, and the option lists, alert dialogs, toasts and tooltips
+  take the densest tint instead of opting out.
+
+  Minor because it adds public capability: `GlassSurface` gains `layer` ("functional"
+  | "content" | "control" | "dense", the under-fill it paints beneath the material) and
+  `brand` (a brand-tinted puck: the colour as the under-fill, solved by `brandTint` to
+  stay as sheer as its ink's WCAG 4.5:1 allows, or the GlassView's own `tintColor` on
+  iOS 26); the kit exports `GlassPane` (the material as a sibling BEHIND a node that
+  owns its own interaction or semantics, with `paneStyle` and `PANE_SIBLING_INPUT`),
+  `innerFill` / `withInnerFill` / `isGlass` / `inverseDenseTint` (`src/style/glass-fill`),
+  the WCAG helpers `channelsOf`, `composite`, `relativeLuminance`, `contrastRatio` and
+  `inkOn` (`src/style/color`), `HUE_WASH`, and three glass tokens beside `glass-tint`:
+  `glass-tint-content`, `glass-tint-control` and `glass-tint-dense` (`--glass-tint-*` in
+  the CSS hand-off). `AnchoredOverlay` gains `dense`; `opaque` remains for a consumer
+  that wants the plain box and wins when both are passed.
+
+  What a glass app looks like now, by layer:
+
+  - FUNCTIONAL (sheer): Navbar, TabBar, Sidebar, Dialog, ActionSheet, Popover,
+    Command, the calendar peek, a Tabs track, and the Drawer panel, which was the one
+    overlay that painted an opaque card before.
+  - CONTENT (denser, legible first): Card, DataTable, the lists, feeds, stats,
+    description lists, grid-list tiles, board columns, calendars, code blocks,
+    carousels, alerts, empty states, every chart, the bordered FilterPanel, the Skeleton
+    card. A selected Card and a toned Alert pass their tint.
+  - CONTROL (the bright puck): the field boxes (Input, Textarea, Select, Autocomplete,
+    PhoneInput, Stepper, InputOTP), Button, Tabs pills, Pagination cells, Chip, Badge,
+    Kbd, Switch tracks, Checkbox boxes, Radio rings and cards, Progress rails, Steps
+    circles. A brand fill (a primary or destructive Button, a checked Switch or
+    Checkbox, a selected tab, page, day or step) is brand-tinted glass with the intent's
+    foreground on top; a hue wash (a status Badge, a coloured Chip) is the hue's mid
+    step with the label one step deeper (800 in light, 300 in dark) so every palette
+    hue holds 4.5:1 over the page, a content pane and a control puck; a control with no
+    surface of its own (a ghost or link Button) stays bare.
+  - DENSE (the densest tint): Dropdown, Select, Autocomplete, RowMenu, the SplitButton
+    overflow, the PhoneInput country list, AvatarMenu, AlertDialog, Toast, Tooltip and
+    the chart value flag. The inverse ones (the Tooltip bubble, the M3 snackbar) tint
+    with the ink so their inverse text keeps its contrast.
+
+  Fills inside a surface (a hovered or selected row, a header band, a stripe, a code
+  pill, a Skeleton placeholder) become ink tints under glass; a state border (a focus
+  ring, an error edge, an open trigger) stays over the pane while the resting hairline
+  drops and the material's rim is the edge. Solid mode is untouched: every one of these
+  renders the same tree it did before, and under Reduce Transparency or Increase
+  Contrast every layer degrades to its opaque token.
+
+  The named-import size budgets move (Button 8,704B, Input 39,936B, DataTable 46,080B
+  gzip): a control is a glass surface now, so importing one carries the material stack
+  a consumer used to pay for only with an overlay or a bar.
+
+- 8f85af0: Add the `static` material option to shared GlassSurface and GlassPane primitives, separating a surface's material role from its readability density. Static surfaces use frost and functional surfaces use the available native liquid material or browser lens.
+
+  Preserve live child state, focus, caret and layout when switching glass and solid. Resolve unsupported native targets and accessibility preferences to the complete solid skin, coordinate foreground and state fills with actual material capability, and release browser lens definitions when their last owner stops using glass.
+
+  The minor release adds the public static material capability without changing component APIs or platform defaults.
+
+- 7bfa999: The measure axis on components: the Container steps, on the field or button itself.
+
+  Minor because it adds public API. `MeasureProps` (`src/style/sizing.ts`) is the boolean
+  step axis `Container` already reads (`xxxs` 192, `xxs` 256, `xs` 320, `sm` 384, `md` 448,
+  `lg` 512, `xl` 576, `xxl` 672, `xxxl` 768, `wide` 896, `wider` 1024, `widest` 1152, `page`
+  1280, plus `start`), and eleven components now carry it: Input, Textarea, Select,
+  Autocomplete, Listbox, Slider, Progress, Field, Form, Button, and ButtonGroup. So a short
+  field or a call-to-action names its own measure without a wrapper:
+
+  ```tsx
+  <Autocomplete xs start options={people} />
+  <Button md>Continue</Button>
+  ```
+
+  A step is not a width of the component's own. It is the FILL nature capped at that step
+  of the shared width scale (`maxWidth`), so below the step the component still fills the
+  parent it is given, exactly as `<Container xs>` around it would; without a step nothing
+  changes (a field fills its parent, a button hugs its label). The grammar and the
+  precedence are Container's: narrowest step wins when several are passed, a step centers
+  the box in its column, `start` pins it to the leading edge. Two rules the component
+  adds because it is not a layout container: inside a Row only the cap applies (there
+  `alignSelf` is the cross axis and would pin a field to the top of the row, so the Row's
+  own alignment places the box), and on Button and ButtonGroup a step wins over `block`
+  (the segmented and spaced kinds flex their segments to equal shares under a step as they
+  do under `block`; split and stepper ignore both with the same dev-only warning).
+  `ContainerProps` extends `MeasureProps`, `stepOf` is the shared precedence, and
+  `useFillStyle` / `useSizing` take the component's props so a new adopter is one line.
+
+  Also: the design hand-off parity records for the field widths the layout tier removed
+  (`narrow`, `wide`, `block` on Input, Select, Textarea, Autocomplete, Slider, and Alert),
+  which the check had been failing on.
+
+- 8a0f3c2: Add explicit `OverlayProvider viewport`, `viewportInsets`, and `separateWindow` options for bounded nested panels, measured header/footer occlusions, and custom native Modal windows. This minor adds public hosting capabilities: content-sized hosts inherit measured window bounds, while native-window hosts start a separate coordinate boundary.
+
+  Fit anchored cards above or below their triggers and scroll long content inside the available height. Track resized Android root hosts and iOS keyboard frames, preserve trigger hierarchy while hosted menus open, and exclude touch-dismiss backdrops from keyboard and screen-reader focus. Keep option-list refs and keyboard navigation intact. Preserve Command's search and footer while scrolling results, fit its width to narrow hosts, and focus cards after placement is committed.
+
+  Keep pinned-open cards attached to offscreen triggers. Aim the solid iOS Popover pointer using the rendered card width and trigger center, reserve its protrusion, and clamp wide trigger-matched cards to their host.
+
+- e8e30f1: Add an optional accessibilityLabel to Select and Command so applications can name their purpose independently of visible labels or search prompts. Associate each control with its named result list. Select announces required fields without applying unsupported required metadata to a button. Command preserves the unhighlighted state and never points assistive technology at a nonexistent active option.
+
+  This minor release adds the public accessibilityLabel option to both controls.
+
+- 8f85af0: Add the optional Android capture renderer @ionizeio/canvas-blur and the Canvas integration for Android 12 or newer. This minor release adds a native material capability without requiring the new package for existing Canvas consumers. The module starts at 0.1.0 and uses Expo SDK 57 native APIs.
+- c78c2b7: Run every looping animation on the native driver on iOS and Android, and add the cycle shapers that make that possible.
+
+  New public API: `thereAndBack(easing)`, `holdThen(hold, easing)` and `keyframes(points)` in the motion helpers turn one `Animated.timing` into an out-and-back pulse, a hold followed by a sweep, or a keyframed schedule, so a loop can be a single native timing (React Native refuses an `Animated.sequence` inside a native loop and `Animated.delay` hardcodes the JS driver).
+
+  The Backdrop clock, Spinner, the indeterminate Progress sweep, the Skeleton shimmer and the InputOTP caret now pass `useNativeDriver: supportsNativeDriver` (native off-thread, the JS driver on web). Under the New Architecture a JS-driven frame is a Fabric shadow-tree commit per animated view whose cost scales with the whole tree, so the JS-driven Backdrop alone saturated the JS thread of an idle screen (150% CPU and rAF near 3 frames per second on the iPhone 17 Pro simulator); natively driven it idles at a few percent with rAF at 60 frames per second. The Backdrop clock resumes a stopped flight from its wall-clock phase, since a natively driven value cannot report its position to JS. The channel shapes (a linear flight, an out-and-back twinkle and breath, a parked-then-sweep event) are unchanged.
+
+- e629aaa: Add `PhoneInput`, a phone number field with a country segment.
+
+  Minor because it ships a new component. `PhoneInput` is the Input's grouped box with a
+  country segment at its start (the chosen country's flag and a caret that open a list of
+  countries showing their flag, name and dial code) and that country's dial code inline
+  before the number, which is typed on the phone keypad. The number (`value` /
+  `defaultValue` / `onChangeText`) and the country (`country` / `defaultCountry` /
+  `onCountryChange`, ISO alpha-2 codes) are each controlled or self-managed; the segment
+  picks from the kit's curated, alphabetical `PHONE_COUNTRIES` list (66 countries with their
+  ITU dial codes, exported with `flagOf` for the emoji flag of a code) or from a `countries`
+  list of your own; `label`, `required`, `error`, `disabled`, `readOnly`, `small`/`large`
+  and the measure axis work as on Input, and `Field` delegates its label, required mark and
+  error into it. Each platform draws it with its own Input and Select skins (the box and
+  the list), so on iOS it is the iOS input-field reference's phone field: the white box, a
+  flag-and-caret segment whose divider takes the field's state colour, the dial code in
+  the placeholder gray.
+
+- 18ec75f: Add the optional `primary-text` color token so consumers can customize brand text separately from primary fills and their foreground labels. This new theme customization capability justifies the minor release. Built-in primary text now stays readable on the kit's neutral and layered tonal surfaces in both schemes, including Android selected tab pills and today's date within a Web Calendar range. Primary fills, standalone icon accents and filled-control foregrounds retain their colors.
+
+  Existing complete `ColorTokens` literals remain valid. `ThemeProvider` preserves primary-only rebrands by using that override for text unless `primary-text` is also supplied. Custom brand contrast remains the consumer's responsibility. Raw CSS handoff rebrands must also set `--primary-text`; `--primary-text: var(--primary)` restores their previous text-color behavior. Nested providers retain their existing independent token and scheme resolution.
+
+  Correct the Web ActionSheet CSS action and Cancel label aliases to match the existing neutral foreground used by its RN skin.
+
+  The default text contrast checks cover solid and tonal surfaces. Glass materials depend on the content behind them and need verification in the rendered app.
+
+- 1fc75ba: Rebrand the kit's foundation to the Riskora Dashboard UI Kit (Figma file
+  `YLbmaRirWTzivAzXirDTmX`): the colour tokens, the type scale, the elevation ladder, and a
+  new shape token set. This is the first of the phases that restyle the web look to that kit;
+  iOS and Android keep their HIG / Material 3 shapes and take only the brand.
+
+  Minor because it adds public API:
+
+  - `ThemeProvider` gains a `fonts` prop (`ThemeFonts`: a `sans` and a `mono` entry, each one
+    family name or a map from weight to the face registered for it), and the kit's `Text` and
+    `TextInput` primitives now apply the registered face to every kit label. Omit it and the kit
+    renders in the system face as before. `typeface` names the brand faces (Urbanist, Geist Mono);
+    `resolveFontFace` / `fontStyle` are exported for custom text nodes.
+  - `shape` (`ShapeTokens` per `PlatformKey`): the corner radii a platform's skins share
+    (`control`, `field`, `card`, `dialog`, `menu`, `sheet`, `checkbox`, `pill`), mirrored as
+    `--radius-field`, `--radius-dialog`, `--radius-menu`, `--radius-sheet`, `--radius-checkbox`
+    in `styles/tokens/radius.css`. The web column is the Riskora shape (12 / 12 / 20 / 16 / 16 /
+    30 / 6 / pill).
+
+  Token changes (both schemes, CSS and JS): a sky/400 `primary` (`#3da3f5` light, `#68cdff`
+  dark) whose label is the dark ink in both schemes (white-on-sky is 2.7:1), a charcoal-and-white
+  neutral family on one hue (page `#f8fafe` / `#111213`, card `#ffffff` / `#18191c`, ink
+  `#0d121b` / `#ffffff`, panel `#f6f7f8` / `#212327`), red/700 / green/800 / orange/800 status
+  fills that carry white text, a re-seeded chart series (sky first, the bar-highlight orange
+  second), and the sky family on the brand orbs (the `orb-*` keys are unchanged). Every pair is
+  solved to the kit's contrast floors where the source falls short; `tools/figma/riskora-variables.json`
+  vendors the source variables and the new `bun run check-figma` gate fails on drift or on a
+  token without provenance. The Claude-Design render-parity leg (`check-render`,
+  `tools/render-parity/`) is retired in its favour.
+
+  Type: the Typography roles are the Riskora ladder in Urbanist, titles at the regular weight
+  (display 64/70, h1 55/64, h2 40/48, h3 36/44, h4 28/36, h5 20/30, lead 20/30, body 16/24,
+  small 14/20, tiny 12/16, caption 12/16 medium uppercase), and the `fontSize` scale gains a
+  `7xl` step. Elevation: an ambient ladder in the ink with no offset (`0 0 20px` at 6% for the
+  standard shade, `0 1px 2px` at 4% for `sm`), mirrored in `styles/tokens/shadows.css` and the
+  `--p-*` transcriptions.
+
+- 5a23745: Add a runnable independent Expo starter for web, iOS, and Android with published-package installation, workspace editing, controlled input selection, session preferences, and native overlay composition. This minor adds the user-visible starter capability and its setup guide without changing existing component APIs.
+- af0419f: `Tabs` takes `wrap`: a row longer than its container lays out on further lines inside
+  one track instead of panning in the overflow scroller, so every tab is on screen at once.
+
+  Minor because it adds a public option. The capsule track (iOS and web) squares its
+  corners off to the radius concentric with its pills when it wraps, since a capsule's
+  9999 on a track taller than one pill would round its ends into semicircles across the
+  corner pills; the Material 3 pills track does the same, and its underline tabs stack
+  their lines on the one divider. `block` never overflows and wins over `wrap`; a
+  `responsive` vertical rail honors `wrap` once it flattens. The docs example rail wraps
+  at phone and tablet widths now, where the scroller used to show only the first few
+  example labels with no scrollbar to say the rest were there.
+
+- a8376cb: Add typed public React refs to Button, Select, Checkbox, Switch, Radio, and Slider. This minor release adds a public capability: consumers can access each control's interactive React Native host for focus, blur, and measurement, using object or callback refs. Select retains overlay measurement and Radio retains group focus navigation. Native focus delegates to the host and remains separate from accessibility focus. Document the actual inferred ref types in component API tables.
+
+  Fix Space activation for Checkbox, Switch, and Radio on web, including key release, disabled and composition guards, and cancellation when focus leaves the control. Preserve Enter and pointer activation without duplicate callback ownership.
+
+- 411410a: Add the layout tier that gives every component its width from its parent: a shared
+  width scale, the sizing natures, and (in the same release) the `Container` atom and
+  Row/Column twelfth spans.
+
+  Minor because it adds public API: the `widths` token scale (`xs` 320 .. `page` 1280,
+  Tailwind's `max-w` values copied by hand, no dependency) mirrored as `--width-*` in the
+  CSS hand-off, and `src/style/sizing.ts` with the two sizing natures every component
+  root now declares: `FILL` (`width: 100%` plus `flexShrink: 1` and `minWidth: 0`, so a
+  field fills a Column, shares a Row with a hugging button, and splits a Row equally with
+  another fill sibling) and HUG (`useHugStyle`, resolved against the nearest kit layout
+  container because Yoga ignores `fit-content` against a stretching parent and a bare
+  `alignSelf: flex-start` breaks cross-axis centering in Rows). `LayoutAxisProvider` /
+  `useLayoutAxis` publish a container's axis, whether it stretches, and whether it is a
+  content-sized cell; `useFillStyle` warns in development when a fill component sits in a
+  bare Column inside a Row (the one layout that still collapses `width: 100%`). The
+  `LayoutStyle` type (ViewStyle without the sizing keys) is the `style` a non-layout
+  component accepts.
+
+  The `Container` atom is the bounds provider (Bootstrap `.container` / `.container-fluid`):
+  it spans its parent, caps at one step of the width scale (`xs` .. `page`, default `page`,
+  `fluid` for no cap), centers itself (`start` pins it to the leading edge), and takes
+  horizontal gutters from Row and Column's pad scale. Row children take `span={1..12}`
+  (Bootstrap `.col-n`): the Row measures its own width and hands each spanning child a px
+  cell with the gaps in the arithmetic (the DashboardGrid twelfths math, now shared as
+  `spanWidth`), span rows wrap past twelve, and `stacks` ignores spans once stacked. Row,
+  Column, Container, Grid cells, and DashboardGrid cells publish the layout-axis context.
+
+### Patch Changes
+
+- 5d74464: Retain full axe rule, node and check details in accessibility test attachments so failures show invalid attributes and measured contrast alongside concise summaries.
+- fb0fbfd: Correct native smoke appearance validation to preserve Android's automatic mode
+  and both writable custom subtypes. A shared parser rejects ambiguous or malformed
+  output before device mutation, preventing an attempt with an unrestorable value.
+  This is a tooling correction; product theme behavior is unchanged.
+- 7b17d7a: Fit hosted overlays above the Android keyboard in full-screen edge-to-edge windows, where adjustResize leaves the root layout unchanged. Intersect native keyboard coordinates with measured bounds so legacy resized windows retain their existing geometry without subtracting the keyboard twice.
+- 2b834a0: Preserve bounded passive Android CI host evidence around native smoke failures,
+  including ADB executable identities, actual listener/process identities, resource
+  samples and existing daemon-log tails. Capture failure state before appearance
+  restoration while retaining the original test error, exit code or signal.
+
+  This is a tooling observability correction. It does not change ADB lifecycle,
+  trace settings, tool versions, build order or native test commands, and it does
+  not retry failures or claim that the underlying transport disconnect is fixed.
+
+- 005c8b8: Request native accessibility focus on the surviving Autocomplete input when an accessibility activation immediately closes its suggestions. Preserve text editing and keyboard state, and cancel stale requests after controlled-open refusal, disabling, detachment, reopening, or navigation. Add focused lifecycle and single-activation tests plus native acceptance scenarios.
+- a22ca22: `Backdrop.Custom` layers can read the surface box they are laid out against:
+  `useBackdropBox()` returns the surface's measured width and height and the scene's
+  focus point (null outside a surface). The engine's own particle and gradient layers
+  were already laid out against that box; a custom layer could only read the window,
+  which put a scene's bespoke art off the visible area whenever the surface was smaller
+  than the screen (a documentation stage, a card, a harness column). No change for scenes
+  that keep reading the window.
+- b25de07: Run the Backdrop and the Skeleton shimmer as compositor CSS animations on the web.
+  react-native-web has no native animated module, so a looping `Animated.View` there
+  re-renders through React on every animation frame: the docs sky cost one React commit
+  and about forty inline style writes per frame at idle, enough to saturate the main
+  thread in an unthrottled browser and starve a Suspense retry. A new loop primitive
+  (`createLoopChannel`, `LoopView`) binds opacity and transform to a shared periodic
+  channel through `inputRange` / `outputRange` tracks with a phase offset, rendering the
+  natively driven interpolation graph on iOS and Android and a react-native-web
+  `animationKeyframes` animation on the web, with the phase carried in the animation
+  delay so a remounted surface continues mid-flight. The Backdrop clock's channels are
+  now `LoopChannel`s (bind bespoke `Backdrop.Custom` art through `LoopView` rather than
+  through `Animated.interpolate`), the SVG renderer nests twinkle buckets inside their
+  layer, and the Skeleton shares one shimmer channel across every placeholder on screen.
+- 98043d0: Validate focused keyboard journeys in Chromium, Firefox, and WebKit, plus mobile touch selection and nested Drawer menus in Chromium and WebKit, against the same docs artifact used by release validation.
+- 4c97f02: Give the glass ButtonGroup selection a droplet stretch, squash, and settling wobble when switching segments. Keep native materials intact with React Native layout animation and snap to the selected segment under Reduce Motion.
+- ef537ee: Make all ButtonGroup variants follow the Liquid Glass theme using Canvas's shared
+  platform material. Segmented selection moves with a measured React Native spring,
+  while split, stepper and spaced groups gain glass surfaces. Preserve native iOS
+  and Android rendering, solid skins, press feedback and accessibility fallbacks.
+- 62b844b: Expose selected Calendar day buttons as pressed on web while retaining the native selected trait, including date-range endpoints.
+- 0773edd: Wait for the measured Carousel scrollport before checking real keyboard Tab entry in the browser regression test. Preserve all focus, paging, geometry and accessibility assertions. This corrects the test's initialization precondition without changing component behavior.
+- 8f85af0: Resolve chart frames as stable glass with complete opaque capability and
+  accessibility fallbacks, including the shared LineChart, AreaChart and
+  ComposedChart frame. Preserve plain and intrinsic frameless charts, share dense
+  inspection material with Heatmap, and keep MetricBreakdown's latest-value
+  caption outside its plot so it needs no opaque patch over the data.
+- f672ff9: Remove the repaired component accessibility exceptions. Every component page now uses the same serious/critical violation gate, with raw diagnostic evidence retained for failures.
+- 72d6d66: Align field material regression coverage with the clear tint and complete synthetic pointer event lifecycles so text selection and press feedback remain isolated across the test suite.
+- 9c78e8b: Form the hand-off droplet as a compact drop centred on the trigger, never wider than about half the card: a field that fills its column now vanishes into a drop the way the iOS 26 menu's button does, instead of a bar the field's full width, and a close re-widens the drop into the trigger's box before handing back.
+- dd37f0b: Stabilize compiler verification by separating cold TypeScript setup from prop assertions and checking native watch rebuilds in the same process boundary used by development.
+- 3a1561f: Correct the color stylesheet's provenance comment to reference the maintained native tokens and contrast contract.
+- 8f85af0: Dismiss overlay Dialog and AlertDialog presentations with Android Back through their cancellation policy, preserving nested overlay ordering and contained catalogue panels. Give the shared material lifecycle fixture a viewport overlay host so scrolled dialogs stay visible and same-window glass has a safe capture target.
+- 1c23758: Generalize internal liquid selection motion to both axes and add an explicitly activated popup material lifecycle. Preserve foreground hosts, focus readiness, nested dismissal ownership and reopening order. Fix the existing ButtonGroup solid-to-glass measurement gap. Public popup components retain their existing activation policy in this foundation release.
+- 4188cf9: Make native docs preview links apply their explicit light/dark and solid/glass
+  choices when the app is already running. Seed native launch appearance from the
+  actual incoming URL, while preserving manual theme choices during ordinary
+  in-app navigation and when an external link omits an appearance axis.
+  Keep native status-bar icons legible through Expo's app-wide status-bar API,
+  matching the docs' existing native configuration on both iOS and Android.
+- 64dc87e: Restore accessible heading levels throughout the shared documentation layouts, including component references, guides, patterns, templates, and the home page. Give the component catalog its own visible page heading while preserving the existing heading typography.
+- 4188cf9: Keep native documentation header titles readable when the preview appearance differs from the device appearance.
+- 3397d37: Give the docs' animated background broader color bands through the content area
+  and richer colors so glass surfaces have visible detail to blur and refract.
+  Retain the same three animation layers, timing, hero and accessibility fallbacks.
+- 64dc87e: Focus the documentation search input when its native Modal is shown, preserving the opener as the return target when search closes. Expose the desktop search trigger as a button without changing its appearance.
+- 64dc87e: Expose the mobile documentation header and primary tabs as banner and navigation landmarks. Enforce document heading, landmark, and scroll-region accessibility separately from component WCAG checks, and remove the obsolete global scroll-focus exception.
+- 0c998d1: Replace the docs' site-wide lattice background with quiet spectral currents while
+  preserving the existing homepage hero. Shared SVG artwork follows the Backdrop
+  clock through LoopView on web, iOS and Android, with independent ribbon motion,
+  light and dark palettes, and accessibility fallbacks. Add a tuning fixture for
+  the new scene and retain the lattice as a separate assembly demonstration.
+- 9f9d68a: Split the docs web export: one chunk per route and one per component's examples and
+  prop tables, so a component page ships its own docs instead of every component's. A
+  hosted Backdrop ships only its floor in server markup; the star field lands after
+  hydration instead of being drawn at zero size into every pre-rendered page.
+- 01f23a4: Pre-render every docs page (the web export is static) so a page paints its content
+  before its bundle runs, with the bundle fetched early and executed after the first
+  contentful paint. Each page carries its own title and canonical link. Two kit changes
+  make server rendering faithful: the glass material resolves to frost for a server
+  render and the hydration render (the Chromium lens lands in the commit after), and a
+  hosted Backdrop paints its surface inline in server markup until the host takes the
+  claim after hydration, so a pre-rendered page ships its floor.
+- a4ad0ec: The docs ship their seven Urbanist and Geist Mono faces cut down to the glyphs the
+  docs can show, about 140 KB over the wire for all seven against 245 KB, since every
+  one of them is preloaded ahead of the first paint.
+- aa39bbd: Dropdown-class triggers hand off to their menu under glass: the outline button, the AvatarMenu capsule and the collapsed Navbar hamburger give their glass pill to the menu's material as it blooms on the pill's frame, and the menu shrinks back to re-form the pill before the label fades in on close, the way the iOS 26 menu behind a toolbar button opens and dismisses. One mechanism on the native Liquid Glass, the web lens and the frost; the field popups (Select, Autocomplete) keep their field visible and never hand off.
+- 4256da8: Hand the Autocomplete, Select and PhoneInput fields' glass to their lists the way the Dropdown hands its pill to its menu: under glass the list pours out of the field's edge in the field's width, corner and tone, and on close absorbs back into the field's box, the field's text yielding only while the pane covers it, so a field that is typed into never vanishes. Solid mode and Reduce Motion keep the plain tree.
+- 97965af: Correct focused and error floating-label contrast across the Material filled field family. Focused labels use the existing primary-text role; error labels and destructive action text use a separate destructive-text role while fills, indicators, icons and destructive-foreground remain unchanged. Android Textarea now uses the same opaque muted field surface as Input, Select and Autocomplete.
+
+  The authored error-text colors protect the actual enabled capsule and pressed surfaces, including iOS ActionSheet's translucent neutral row and group opacity, beyond the four ordinary neutral surfaces. Fixed-red menus retain their independence from semantic theme overrides, with a darker existing palette step for light text.
+
+  The optional token preserves old complete ColorTokens literals. A React Native destructive-only theme override keeps its existing text color; an explicit destructive-text overrides text independently. Raw CSS rebrands must also set --destructive-text; setting --destructive-text: var(--destructive) restores their legacy text rendering. This is an accessibility correction to existing components and states, released as a patch.
+
+- 3bcc3ec: Make overflowing CodeBlock and DataTable content reachable by keyboard using the native ScrollView focus props. Add a tab stop only while content overflows, preserving ordinary arrow-key scrolling, table semantics, native touch scrolling, and code wrapping. Restore native and web heading semantics to token-reference page titles and sections.
+- 8f85af0: Apply press and disabled feedback to control labels and icons while keeping their material stable. Preserve platform ripple, solid-mode feedback, semantic hosts and focused foreground state. Carry exact nested theme and accessibility settings through overlay portals without changing their safe native capture targets.
+- de19a8a: Make overflowing Carousel viewports keyboard focusable and support Arrow, Home, and End navigation without taking keys from slide inputs. Give picker buttons valid current-slide semantics, visible focus and real platform-sized targets. Avoid duplicate requests for the current slide and silently clamp selection when items are removed. Preserve legacy custom-skin typing.
+- 96f846d: Improve light glass message contrast using the existing popover foreground color for Dialog's built-in description and currency prefix, the web ActionSheet title and message, and the Android ActionSheet message. Preserve solid and dark styling, stronger title colors, the iOS ActionSheet's translucent foreground message, and each skin's typography, layout, actions and material.
+
+  Use the default body text role in the custom Dialog examples and allow the three-action example to wrap on narrow screens.
+
+- cc178b5: Grid tiles are equal-height and the grid spans its parent.
+
+  The Grid root now carries the FILL nature (`width:"100%"`, sharing a Row with
+  hugging siblings), so it reaches its parent's edges instead of measuring
+  whatever width its own cells produced from the pre-measurement guess in a
+  centering parent. Its cells stretch to the height of the row they wrapped
+  onto, and a cell publishes the new `bounded` layout-axis fact
+  (`GRID_CELL_AXIS` in `src/style/sizing.ts`), which a Card reads to grow to the
+  row's height without `grow`: a row of cards shares a flush bottom edge however
+  unevenly their content runs, CSS Grid's default `align-items: stretch`. A
+  `GridItem` fills its cell the same way, so a wide hero card matches its
+  neighbours. DashboardGrid cells publish the same fact, so a Card widget fills
+  its tile without being asked; a field, a chart, or a hug component keeps its
+  own height in either grid. Card's explicit `grow` is unchanged elsewhere.
+
+- 98043d0: Track component interaction evidence by test declaration and input method, detect stale or missing registry entries, and distinguish browser checks from unrecorded native and screen reader verification.
+- b43114e: Published under the `@ionizeio` scope. The GitHub org was renamed from
+  `nannier-com` to `ionizeio` on 2026-09-15; the npm scope follows the same
+  rename. `@nannier-com/canvas` is being deprecated in favor of this package.
+- 34e2557: Preserve passive iOS native smoke build evidence that binds the embedded Hermes
+  bundle to its pre-Hermes source and records the recognized compiled testing-route
+  shape. Retain exact input/configuration hashes and unavailable observations without
+  changing native build or navigation behavior. This is a tooling correction.
+- 0edec27: Move the Calendar's selected day as one measured liquid surface under glass: it travels between the days of one month through the grid and along the week strip (a diagonal move stretches along both axes), while the numbers, event dots, today's tint and the pressed state stay fixed; a month, view, density or cell-size change re-measures and resets it in place instead of travelling between months. In `range` mode the start and end are independent surfaces (the start travels on a restart, the end appears in place on completion and withdraws on a restart, a one-day range keeps both on one cell). The day peek and the hover card open and close on the liquid popup material and stay mounted through their exits. Reduce Motion selects the final bounds at once; solid mode keeps the skin's own filled day.
+- 18a79f1: Move the Carousel's active dot mark as one measured liquid marker under glass: it travels between the dots with stretch, recoil and settle, following the committed slide from a dot press, the arrows, the keyboard, a controlled `index` or a finished swipe, while the dots, their press targets and the slides stay still. The marker is ink like the dots and keeps the skin's own active dot size, a loop back to the first slide travels along the strip, a slide-set change resets it in place, and it is absent wherever the dot strip is. Reduce Motion selects the final bounds at once; solid mode keeps the static dots.
+- 26481dc: Document the Switch's `toggle` and the Slider's `drag` liquid profiles in their entries (what moves, what stays fixed, Reduce Motion, disabled and solid behavior), and correct the Drawer, Toast and Listbox skin comments that still described their surfaces as never taking the glass material now that the layered model renders them through the functional, dense and content layers.
+- 558af6e: Add real-frame motion recipes for existing glass controls, separate from reduced-motion visual baselines, with resource-lifecycle observations and native evidence guidance.
+- d0faebf: Move the Navbar's active link fill as one measured liquid surface under glass: it travels between links with restrained stretch, recoil and settle while the labels, `aria-current`, focus and hit targets stay fixed; iOS carries its brand capsule as glass and keeps its inactive capsules, web and Android carry their tinted tile, a collapse retires the surface until the row measures again, Reduce Motion selects the final bounds at once and solid mode keeps the skin's own active tile. The material inventory names the delivered liquid profiles (moving-selection, liquid-popup) and requires their motion evidence.
+- 6d5fc0e: Move the numbered Pagination's selected page puck as one measured liquid surface under glass: it travels between page cells with horizontal stretch, recoil and settle while the numbers, chevrons, `aria-current`, focus and hit targets stay fixed. Cells are tracked by page number, and a window shift re-measures them before the puck moves: it travels when the page it sits on kept its frame and resets in place when that page moved or left the window, so a shift never invents travel from a stale slot. The compact and with-size variants keep their anatomy, Reduce Motion selects the final bounds at once and solid mode keeps the skin's own selected cell.
+- 865be6f: Open and close Dropdown and Select menus with the liquid popup material under glass: the menu grows out of the trigger's edge with a bounded contour overshoot, recoils and settles to the fitted shape, and stays visible briefly on close while its rows are already inert and out of the accessibility tree; selection and open state commit immediately, reopening during the exit continues from the retained material, Reduce Motion settles at once and solid mode keeps the ordinary entrance. AvatarMenu and the collapsed Navbar menu inherit the behavior from Dropdown.
+- 977f38a: Open and close the remaining popups with the liquid popup material under glass: the triggered Popover, RowMenu (and Board's card menus), the split ButtonGroup menu, Autocomplete's suggestion list, PhoneInput's country list and the triggered Command palette grow out of their anchor edge, recoil and settle, and stay visible briefly on close while their content is already inert. Inline Popover cards and the bare Command palette stay static. A split ButtonGroup disabled while its menu is open now closes it, and a PhoneInput that becomes disabled or read-only while its country list is open closes the list.
+- ca1c1bd: The moving glass selections whose surface is a brand puck (numbered Pagination,
+  Calendar days, the Navbar's iOS brand skin) now keep their label readable through
+  the flight: the label ink follows the travelling surface instead of switching to
+  `primary-foreground` at the press, so a newly selected number stays in its resting
+  ink until the puck is under it and the label the puck leaves takes its resting ink
+  back as the puck departs. A target's own resting tile (the web page cell's border,
+  the iOS neutral link capsule) dissolves under the arriving surface and re-forms
+  behind it rather than popping. This is a shared measured-selection contract
+  (`ink` / `uncovered` / `SelectionText`), so any future moving brand-puck selection
+  inherits it.
+
+  The brand fill of a glass puck now paints over the frost and lens material rather
+  than beneath it, so the colour the contrast solver chose is the colour that
+  renders: a settled `primary-foreground` label on a brand puck holds >= 4.5:1 on
+  both schemes, fixing the too-dark settled puck the frost produced on the dark
+  scheme (Calendar days and Pagination pages). Layer tints and explicit tints are
+  unchanged, and iOS 26's native Liquid Glass path (the brand as its GlassView
+  tintColor) is unchanged.
+
+- 9da8d06: Move the glass selection of Tabs and TabBar as one measured surface with directional stretch, recoil and settle: filled Tabs selections (pills, the iOS segmented track, surfaced vertical rails) travel between triggers while labels, badges, focus and tap targets stay fixed, and the web and Android TabBar indicator travels between icon positions with restrained deformation; iOS keeps its tint-only TabBar selection. Reduce Motion selects the final bounds immediately and solid mode keeps the platform treatment. Adds the isolated liquid geometry probe to the materials fixture and the native motion evidence log.
+- 3fe773a: Move the Sidebar's active row fill as one measured liquid surface under glass: it travels between rows, across sections and through the scroll body with vertical stretch, recoil and settle while icons, labels, badges, `aria-current`, focus and hit targets stay fixed; a row hidden in a closed section withdraws the surface, a collapse or density change resets it in place, Reduce Motion selects the final bounds at once and solid mode keeps the skin's own row fill. GlassSurface gains an internal host ref so a surface can serve as a measurement space.
+- b4dfc61: Route lookout's docs sweep through each sidebar group's own path base. The Templates
+  and Patterns groups live at `/templates/<slug>` and `/patterns/<slug>`, but
+  `lookout.config.ts` filed every sidebar entry under `/components/`, so those 24 pages were
+  never captured and the `calendar` template was folded into the Calendar component's
+  route. Template and pattern pages render `MockupDocPage`, which has no preview card, so
+  they are shot full-page; the component reference keeps its element shot and overlay
+  states. No kit code changes.
+- a22ca22: `LoopView` on the web now lands on the right phase when its channel is played again
+  while already playing (`channel.play(phase)` on a running channel). A running CSS
+  animation keeps the start time it began with, so handing it a new negative delay
+  re-phased it relative to that start rather than to now: every view landed late by the
+  animation's age (the Lattice harness's "jump to moment" driver arrived 1.6 s into a
+  moment that should have started a second later). The view now remounts its node on
+  such a re-phase so the new animation starts now at the delay computed for now. Park
+  and resume are unchanged (a parked view keeps its node), and native was already right
+  (the native loop restarts from the phase through its head timing).
+- 4188cf9: Complete the CSS glass handoff's opaque print and accessibility fallbacks, including every material tint and decorative highlight. Reconcile material policy and theming documentation with role-based glass, solid fallback, and the existing surface and density CSS attributes.
+- 2f2c030: Reconcile the solid, static glass and Liquid Glass material policy and maintain
+  an exhaustive public-component inventory checked against exports and docs routes.
+  The inventory records required verification rather than claiming native rendering
+  or interaction passes, and preserves unpainted component anatomy.
+- bc2cb16: Give every moving glass selection one measurement contract (`useMeasuredTargets`): targets report their frames in an ancestor space keyed by their own identity, a structural change re-measures them before any surface moves, and a surface holds meanwhile, then travels when the target it sits on kept its frame and resets in place when that target moved or left, without unmounting (a remount lingers on iOS, where the native material fades out). The Sidebar's shell shape now measures its rows against an ancestor body, which native `measureLayout` requires: on iOS the rail's active row had jumped instead of travelling. The Sidebar rides through an accordion closing the section it left, and a non-collapsible section's open state no longer counts as structure. Pagination, Calendar, Navbar, Sidebar and Carousel share the hook.
+- a4b1cc3: Hand the RowMenu glyph, the Popover button, the split ButtonGroup and the Command search bar to their panes the way the Dropdown hands its pill to its menu: under glass the trigger fades and hides its glass in place as the droplet forms on its frame, the pane blooms from there, and on close the pane re-forms the trigger before its label fades back. Solid mode and Reduce Motion keep the plain tree.
+- e8e30f1: Name Slider, Progress and overlay form examples using existing component label APIs, including accessible names in intentional layout counterexamples.
+- fc58cff: Gate named-import distribution sizes for Button, Input, DataTable, and StackedList alongside the existing whole-kit budget, independently for web, iOS and Android. Use pinned esbuild with supported export conditions and platform extension ordering, verify those choices with a real package fixture, preserve component exports, and fail on missing or invalid output. Required and optional peers are externalized; these measurements budget Canvas distribution code, not complete native application sizes. Stock Metro package validation remains separate.
+
+  Record Bun 1.4.0 in packageManager and use that version throughout CI so build measurements and verification do not change when the latest runtime changes. Keep all existing gzip ceilings and document the measured sizes and bundler version beside them.
+
+- 200b8f4: A hosted anchored card that opens ABOVE its trigger on iOS and Android now sits directly above it. The card's scrollport declared no growth of its own and inherited React Native's ScrollView `flexGrow: 1`; while Yoga measured the card's absolutely positioned wrapper (which has no height of its own) it turned the card's height cap into an at-most constraint, and under the legacy stretch errata React Native keeps on the growing scrollport filled it, so the wrapper came out as tall as the cap with the content-sized card at its top. Under a `top` anchor that was invisible; under the `bottom` anchor of a card opened above its trigger the card floated up to the top of the visible band, away from its trigger, on both a page-body host and a viewport host (the docs Page scroller, the `/testing/popup` Dropdown). The scrollport now declares `flexGrow: 0`, so the wrapper is exactly the card's height on every platform; nothing changes on the web, where a growing child never inflated a content-sized card.
+- 397ac67: Add isolated native candidate smoke infrastructure with shared input and public-ref
+  fixtures, on-device package identity checks and explicit screen-reader verification
+  records. Verify the independent registry starter's saved state and nested menus
+  across browser engines and touch input.
+  Keep candidate-only routes outside the ordinary starter and offer a Canvas missing-page
+  screen with navigation back to the workspace.
+- 2d5f3e8: Measure the current native smoke Carousel card immediately before its paging gesture. Validate fresh, visible bounds and platform coordinate units, then perform one in-card drag across more than half the page while retaining painted-page and callback assertions. This corrects the test gesture without changing production Carousel behavior.
+- 77dcdf0: Align native fixture test module maps and import validation with the package name
+  used by the maintained starter fixtures, restoring the native regression gate.
+  Keep the package-install documentation sources consistent with the published
+  package name and their generated examples.
+- 602d3e9: Validate native smoke flows with the pinned Maestro command parser before builds,
+  use a supported measured Carousel gesture, and preserve separate test provenance
+  when rerunning corrected tooling against an unchanged native candidate. Retain
+  journey and appearance-restoration failures in fresh evidence directories.
+- 2e1abfa: Exercise built-in Dialog messages and ActionSheet headers in the shared glass test scenario. Capture both surfaces from the sealed native consumer in light and dark appearance, keeping pixel evidence separate from automated visibility checks.
+- 6ddc5e0: Correct native acceptance flows to dismiss a Drawer input with its iOS keyboard Return action and observe Command closure after selection. Verify the exact appended query before and after selection, and capture the visible final result before tapping it.
+- 866d610: Verify native Carousel paging with a measured, strictly in-card drag. Preserve
+  two sequential Maestro phases, reject stale geometry before the gesture, and
+  parse their generated commands before execution without changing app layout.
+- b88f204: Measure safe-area insets inside Drawer and ActionSheet native Modal windows, keeping content clear of the status bar, notch and home indicator. Apply only the insets for the edges each panel touches. The optional safe-area peer remains optional; without it the existing plain-view fallback is preserved. When an app has no root safe-area provider, modal content waits for its first native inset measurement before mounting.
+- 90d3f1f: Honor iOS accessibility escape on existing overlay content hosts. Dismiss the
+  foremost active child before its parent, preserve controlled cancellation policy,
+  and share ownership with native modal close requests without changing layout.
+  Route focused Input and Textarea Escape through the same overlay policy while
+  preserving consumer handlers, local editing cancellation and IME candidates.
+- 8f85af0: Preserve the original Android host background, borders, corners and overflow while sampling its native paint. Keep visible content separate from sampled paint to avoid doubled translucent fills, and require the complete optional native integration before enabling capture.
+- a3809bd: Extend the shared native smoke fixtures and accessibility protocol to verify inactive Dropdown, Listbox, Tabs and Radio activation, including disabled controls and exact selection callbacks. Keep ordinary native tap results separate from actual spoken-feedback verification.
+- 2a8b653: Wait for the native starter home screen before opening the first smoke route, preventing Android startup from dropping the verification link. Store screenshots under Maestro's run output directory using its supported relative paths. Select native Listbox rows by their accessible names between surrounding controls, supporting native layout flattening without relying on DOM ancestry.
+- 19a9689: Make the native smoke navigator follow the Canvas background token so dark-mode fixtures retain readable text on every nested screen.
+- 7dcd0b6: Handle iOS first-use app-link confirmation in native smoke checks and verify Command text entry without relying on an inaccurate iOS focused attribute. Require the last Command result to lie above its footer before tapping. Record actual keyboard events and overlay coordinates, and exercise Drawer input and ActionSheet action/cancel hit targets for native safe-area acceptance.
+- 69a8d8b: Make AvatarMenu's hosted alignment regression wait for the actual mounted menu and positioned wrapper, preserving default, leading-edge and precedence assertions without relying on a fixed animation delay.
+- 366f954: Correct optional-peer development guidance to preserve Metro optional resolution,
+  keep public declarations independent of omitted peer types, and verify the exact
+  sealed package in isolated consumers.
+- 8f85af0: Resolve organism surfaces against their actual material capabilities: content
+  panels use stable frost, while selected calendar days, carousel actions, navigation
+  controls and overlays keep their functional material. Preserve complete solid
+  fallbacks, unfilled step rings and underline tabs. Keep DataTable's content host
+  stable so material changes retain an active editor, its draft, focus and caret.
+  Restore the inherited DashboardGrid edit-cell fill when content frost is unavailable.
+  Keep carousel arrow glyphs in the foreground above their decorative material,
+  and dim their disabled or pressed ink without fading the liquid material.
+- 04218cc: Split browser validation into four complete-suite shards and an independent registry-starter job so the growing suite can finish within its existing job limit. Preserve candidate verification in every shard and retain separately named reports without changing test coverage, retries, or per-test timeouts.
+- 1f05b00: Glass popups now open the way the iOS 26 menu does: the Autocomplete list, the Dropdown menu, the Select and the other option lists start as a glass droplet at their anchor with the rows already inside it, grow a few percent past their resting size and settle while the rows scale up and sharpen, and on close the rows vanish at once while the pane shrinks back into the anchor edge. The corner eases from the droplet's to the skin's on the material's clip, its lens and rim, and the native iOS 26 glass. Solid mode and Reduce Motion are unchanged.
+- bcd43a2: Anchored cards (the Dropdown and Select menus, the Autocomplete list, Popover, RowMenu, the calendar peek and every other hosted overlay) open sooner after their trigger is pressed. The overlay now measures its trigger, its outlet and the visible band together from a layout effect instead of one after another on the next animation frame, and the portal outlet re-renders in the same commit sequence as the owner that published into it, so the card mounts and reveals with fewer hops between the press and its first frame; on iOS and Android the trigger's box lands inside the opening render itself. A card that the fitter moves to the other side of its trigger (a list opened near the bottom of the screen) now waits for its layout under the new height cap before the glass opening starts, instead of beginning at the height it had on the first side and re-targeting mid-motion.
+- fefceee: Run the liquid popup presentation (the droplet every glass option list and menu opens from, its travel, overshoot and close, and the Dropdown-class hand-off) on the native animation driver on iOS and Android. The material's frame is now a transform of its resting box plus a uniform corner radius instead of an animated width, height and offset, so the springs no longer commit a shadow tree per animated view per frame: the JS thread is idle between frames and the seed frame's flush costs nothing there. The corner stays exact on the seed shape's shorter side (a capsule at the droplet, the skin's own radius at rest) and follows the scale on the other; a closed pane now leaves on the animation frame after it has handed the pill back, so the trigger's glass is painting before the pane uncovers it. The web keeps the same graph on its JS driver; solid mode and Reduce Motion are unchanged.
+- cd43ccd: Preserve GlassSurface landmark roles when Reduce Transparency or Increase Contrast replaces glass with an opaque surface. Navigation and banner landmarks remain available with either accessibility setting, including the iOS material implementation.
+- 6444e69: Restore native screen-reader touch exploration and activation for Autocomplete suggestions and inactive Dropdown, Listbox, Tabs, and RadioGroup options. Keep browser roving tab stops and input focus behavior while preserving each control's disabled state.
+- 2fd2318: Use the popover foreground for ordinary web ActionSheet actions and Cancel so their small text stays readable in both light and dark schemes. Destructive actions retain their semantic color.
+- b1952e8: Correct five resting foreground pairs while preserving their intent fills: light muted-foreground #71717b to #6d6d77, light success-foreground #ffffff to #042812, light warning-foreground #ffffff to #451a03, dark primary-foreground #fafafa to #ffffff, and dark destructive-foreground #fafafa to #460809. Validate semantic foreground pairs at 4.5:1 with a one-channel rounding margin, plus rendered Button, Badge and Alert text. Transient press opacity and ripple behavior are unchanged; these checks cover resting text.
+
+  Four-digit hex token overrides now parse correctly in alpha(). Validate hex shapes and finite opacity while preserving the existing opacity replacement for eight-digit hex and passthrough for functional colors. Document that mixOklab accepts opaque hex only and leaves translucent inputs unchanged.
+
+  Deduplicate visual capture routes when a component appears in multiple navigation groups.
+
+- c8cf5ff: Refresh Linux visual baselines after reviewing all 150 changed before/after pairs
+  from workflow 34247263672 at source 18ec75fa. These capture corrected semantic
+  foreground contrast, Carousel picker targets, Popover field labels and previously
+  obstructed captures. No screenshot thresholds or assertions change.
+- 137ccfa: Refresh the Linux visual baselines for the Riskora restyle from workflow 35048401372 at
+  source 8809fa3a: all 226 component, overlay and token captures change (the new palette,
+  Urbanist, the 12 / 16 / 20px corners and the ambient shadow ladder), and the two Container
+  captures are minted for the first time. No screenshot thresholds or assertions change.
+- 8809fa3: Restyle every web skin to the Riskora Dashboard UI Kit (the iOS and Android skins keep their
+  HIG and Material 3 shapes and take only the brand).
+
+  Controls: buttons are 12px-cornered and 44px tall (36 / 52) with matching icon squares;
+  every field (Input, Textarea, Select, Autocomplete, InputOTP) is a white `card` box with
+  the 12px corner, 48px tall (40 / 56), a 16px inset and the 3:1 `input` boundary; select
+  lists, autocomplete lists, dropdowns, row menus, popovers and the command palette share a
+  16px menu card with an 8px inset and 10px-cornered 40px rows. Checkbox is a 20px box with
+  a 6px corner, Radio a 20px ring, Switch a 44x24 pill, Progress a 12px capsule on the soft
+  panel, Slider an 8px rail with a 20px thumb, badges and chips fully rounded pills, Kbd a
+  24px cap, Avatar's square a 12px tile.
+
+  Surfaces: cards, stats tiles, empty states, description lists, feeds, stacked lists, media
+  objects, calendars, board columns and the filter panel take the 20px card corner with the
+  ambient standard shade; the stat tile carries a 16px muted label over a 36px regular
+  headline. Dialogs and alert dialogs are 16px cards under a 60% scrim; toasts and the
+  action sheet share the corner; drawers and sheets round their content-facing edge at 30px
+  under the xl shade.
+
+  Navigation and data: the DataTable has a soft 10px-cornered header band with sentence-case
+  medium labels, 56px rows on dashed hairlines and 36px row-action tiles; the Navbar is a
+  72px bar with 12px link pills; the Sidebar a 20px column with 12px-cornered 48px rows;
+  pill Tabs become card tabs (a 16px bar of 12px-cornered hairline segments, the selected
+  one on a sky tint); pagination tiles are 40px with the 12px corner. Charts sit on the 20px
+  surface with 8px bar caps and dashed gridlines. The `--p-*` web block of `platforms.css`
+  transcribes every value.
+
+- 98043d0: Make internal verification routes reachable in native docs navigation and expose the running bundle's source, package, and runtime identity separately from the latest published release badge.
+- 8f85af0: Share bounded geometry motion across segmented selection, slider thumbs, and switch thumbs while retaining each platform's skin and native material. Keep drag values and hit targets authoritative, preserve focus through material changes, and cancel deformation immediately for solid fallback, disabled controls, Reduce Motion, Reduce Transparency, or Increase Contrast.
+- 8f85af0: Gate Android native smoke on the capture module's instrumentation tests using sealed installed production sources and test inputs from the same candidate revision. Preserve JUnit, native test configuration, source identity, and failure logs while keeping generated build output outside the installed package.
+- 1f25555: Avoid React 18 server-rendering warnings from shared overlay, accessibility, and scrolling effects. Preserve synchronous layout-effect ordering in browsers and native apps while using passive effects during web server rendering.
+- 2835ea3: Give each FilterPanel option one accessible checkbox and tab stop by sharing noninteractive Checkbox content. Space toggles on release, while Enter, row clicks, labels and counts retain one shared selection path and each platform keeps its existing visual anatomy.
+- 8f85af0: Paint Android capture-host backgrounds once so translucent fills retain their authored appearance while remaining available to native blur sampling.
+- d573737: Keep Spinner skin visuals decorative so screen readers encounter one named loading indicator, including the web ActivityIndicator renderer.
+- be4d1cc: The composite Skeleton scaffolds (`card`, `list`, `table`) now announce their loading state to assistive technology once, the way the single shapes already do. Their wrapper kept the `progressbar` role and label but also carried the flags meant to hide the inner muted blocks, and react-native-web forwards only the `aria-hidden` alias, so the wrapper hid its own progressbar and a screen reader never heard that content was loading (Android's `no-hide-descendants` hid the host node the same way). The hide flags now sit on an inner wrapper around the blocks; the outer node keeps the role, the label and the busy state, and the rendered look is unchanged.
+- a86ccfe: Keep native glass overlays visible when their entrance opens by retaining one animated transform graph and keeping ancestor opacity at one. Hold an unmeasured anchored surface outside hit testing and accessibility without remounting its content, preserve corner placement on resize, and coordinate descendant focus callbacks with inherited entrance readiness. Centered panels remain ready without requiring their own size event, and reduced motion settles at the final frame.
+
+  Popover preserves the original opener while waiting for layout, then moves focus into its existing panel. Refitting the same panel retains its focus session, and closing restores focus through the existing controller.
+
+  Native pixel and interaction verification used React Native 0.86. The declared React Native 0.74 floor is covered by public-API source review, types and native bundles, not a device run.
+
+- 4348e87: Unblock the release pipeline after the npm scope migration. The ordinary starter stays on the scope the registry serves Canvas from today (`@nannier-com/canvas@2.62.1`) and compiles against it, the sealed native candidate is installed under that declared dependency name so the smoke fixtures exercise the candidate, and the starter journey resolves the declared package instead of a hardcoded scope.
+- de2bdb2: Replace the placeholder boilerplate guide with runnable setup commands, real session flows, and accurate platform and package requirements.
+- 4b56905: Correct the standalone starter's Expo JSI Swift 6.2 host-callback captures while preserving synchronous pointer lifetimes and the existing concurrency checks.
+- 8f85af0: Keep editing wells and inline metadata on stable glass, reserve liquid materials for action controls, and preserve complete platform surfaces when materials cannot render. Keep outline metadata unfilled and retain field focus, text selection, and segmented-control state while changing surface modes.
+- 8f85af0: Render avatar initials, avatar overflow counts, and emblems with static glass across platforms while preserving photos, platform geometry, and solid fallbacks. Give the account-menu capsule the functional Liquid Glass role without inferring a liquid identity material from pressability.
+- 8f85af0: Resolve cards, metric tiles, bordered identity rows, alerts and phone fields to static frost with complete solid skins when a material is unavailable. Preserve live editors when changing appearance, and keep list/code/empty-state inner fills consistent with the actual material and accessibility preferences.
+- 8f85af0: Preserve the Switch track's measured native host across solid and glass changes
+  so its rounded background and thumb coordinate space survive material updates.
+  Keep the segmented ButtonGroup coordinate host stable for the same reason,
+  including when it has no test ID. Preserve control state and layout instead
+  of replacing either host.
+- acab4a1: Keep optional blur types out of public declarations so strict TypeScript consumers can omit expo-blur. Add isolated packed-consumer checks for React 18.0 on the web, the React Native 0.74 and React 18.2 host pair, and the current locked peers, including real web interaction checks and stock Metro iOS/Android bundles with optional peers absent.
+- d357504: The web field skins rest on the same `field-border` hairline as the iOS ones.
+
+  Input, Textarea, Select, Autocomplete, InputOTP, Stepper, PhoneInput and the Command
+  trigger no longer draw their resting border with the 3:1 `input` boundary on the web,
+  which read as a white frame around every field on the dark card; they rest on the
+  `field-border` hairline (gray-300 light, systemGray4 dark) exactly as the iOS skins do,
+  through the same `fieldBorder()` helper. Focus (`ring`) and error (`destructive`) borders
+  are unchanged, the non-field controls (checkbox, radio, switch, pagination, the outline
+  button) keep `input`, and Android's fields keep their Material underline. The
+  accessibility trade-off disclosed for the iOS fields (a resting boundary below WCAG
+  1.4.11's 3:1) now covers the web fields too, at the user's request.
+
+- 578d52e: The web Liquid Glass lens keeps one filter definition while a popup's material animates.
+
+  A glass popup's pane (Autocomplete, Select, Dropdown, AvatarMenu, Command, Popover, the
+  calendar peek) is resized by its opening spring on almost every frame, and the lens layer
+  used to acquire a fresh sized `<filter>` for each of those sizes: a new data-URI SVG
+  document for Chromium to parse, plus two commits on the layer, per frame. The lens layer
+  now takes the bounds the pane settles at (the card's measured size, carried with the
+  material's frame through the material motion context) and holds that one definition
+  through the travel and the close, so an opening costs one definition instead of thirty
+  to forty and the resting definition is exactly the one the settled layout would have
+  acquired. Surfaces that do not move keep measuring themselves on layout as before.
+
+- ddd7bb4: The web Tabs and TabBar now share the iOS liquid-glass anatomy, and the iOS TabBar takes the iOS 26 floating bar.
+
+  Tabs on the web are the iOS capsule segmented control: a gray capsule track with a raised pill in solid mode, and under glass the same track as a functional-layer pane with the selection travelling as the liquid-glass puck. Both the default and the pill looks take the anatomy (the underline rule and the hairlined segment bar are gone on web); Android keeps its Material underline. The browser's keyboard focus ring stays.
+
+  TabBar on iOS and web is the iOS 26 floating tab bar: a capsule inset from the sides that hovers above the content (which scrolls beneath it), the safe-area inset kept under the capsule, and the selected destination raised as a capsule covering its whole cell, which under glass is the measured liquid surface that travels between destinations. The skin contract gained `fill`, `floating` and `pillCovers` for that; Android's docked Material 3 bar and its icon pill are unchanged.
+
 ## 2.62.3
 
 ### Patch Changes

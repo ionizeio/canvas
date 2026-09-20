@@ -1,6 +1,6 @@
 {
   "name": "@ionizeio/canvas-blur",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Optional Android backdrop capture and frost renderer for Canvas.",
   "license": "MIT",
   "main": "./dist/index.js",
