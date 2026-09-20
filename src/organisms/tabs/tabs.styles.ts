@@ -61,6 +61,17 @@ export const overflowScroller: ViewStyle = {
   maxWidth: "100%",
 };
 
+// The wrapping (`wrap`) non-block row: the scroller's hug-and-cap contract on the
+// tablist itself (hugs the triggers while they fit, caps at the container, shrinks
+// beside Row siblings), with the overflow laid out on further lines instead of
+// panned. No flexGrow reset: a View never claims spare space on its own.
+export const wrapRow: ViewStyle = {
+  flexWrap: "wrap",
+  flexShrink: 1,
+  alignSelf: "flex-start",
+  maxWidth: "100%",
+};
+
 // =============================================================================
 // iOS (iOS 27 / Liquid Glass segmented control): the in-page tab strip is a
 // CAPSULE segmented control (mirroring button-group's iOS 27 treatment). A
@@ -70,6 +81,17 @@ export const overflowScroller: ViewStyle = {
 // =============================================================================
 
 const IOS_PILL_SHADOW: ViewStyle = customShadow({ offsetY: 1, radius: 2, opacity: 0.18, elevation: 2 });
+
+// The capsule track's inset around its pills, and the pill's own height (7px above
+// and below the 18px label line). The WRAPPED track's corner follows from them: a
+// wrapped track is taller than one pill, so the capsule's 9999 would round its ends
+// into semicircles cutting across the corner pills; the concentric radius (the
+// pill's half-height plus the inset) seats a corner pill in a wrapped track exactly
+// as the single-line capsule seats it, and the same inset opens between the lines.
+const CAPSULE_INSET = 3;
+const CAPSULE_PILL_PAD_Y = 7;
+const CAPSULE_LABEL_LINE = 18;
+const CAPSULE_WRAP_RADIUS = (CAPSULE_PILL_PAD_Y * 2 + CAPSULE_LABEL_LINE) / 2 + CAPSULE_INSET;
 
 // Blend two hex colors by `t` (0 = a, 1 = b). Used to lift the dark-mode selected
 // thumb to a lighter gray than the track (Apple's tertiary/secondary system-fill
@@ -102,14 +124,16 @@ const capsuleSkin: TabsSkin = {
   ripple: null,
 
   // --- underline -> capsule segmented control (gray track + raised pill) ---
-  underlineRow(tokens) {
-    // The capsule gray track (radius 9999, muted fill, 3px inset).
+  underlineRow(tokens, wrap) {
+    // The capsule gray track (radius 9999, muted fill, 3px inset); wrapped, the
+    // concentric corner and the inset between lines (see CAPSULE_WRAP_RADIUS).
     return {
       flexDirection: "row",
       alignItems: "center",
-      gap: 0,
-      padding: 3,
-      borderRadius: 9999,
+      columnGap: 0,
+      rowGap: wrap ? CAPSULE_INSET : 0,
+      padding: CAPSULE_INSET,
+      borderRadius: wrap ? CAPSULE_WRAP_RADIUS : 9999,
       backgroundColor: tokens.muted,
     };
   },
@@ -124,7 +148,7 @@ const capsuleSkin: TabsSkin = {
       gap: 6,
       borderRadius: 9999,
       paddingHorizontal: 14,
-      paddingVertical: 7,
+      paddingVertical: CAPSULE_PILL_PAD_Y,
       ...(selected ? { ...IOS_PILL_SHADOW, backgroundColor: iosSelectedThumb(tokens, dark) } : { backgroundColor: "transparent" }),
     };
   },
@@ -135,19 +159,20 @@ const capsuleSkin: TabsSkin = {
   underlineLabel(tokens, selected) {
     // ~13pt SF label; selected reads slightly heavier. Both stay on-foreground
     // (the white pill is the selected affordance, not a brand fill).
-    return { fontSize: 13, lineHeight: 18, fontWeight: selected ? "600" : "500", color: tokens.foreground };
+    return { fontSize: 13, lineHeight: CAPSULE_LABEL_LINE, fontWeight: selected ? "600" : "500", color: tokens.foreground };
   },
 
   // --- pills (capsule segmented track, same gray-track + raised pill) ---
-  pillsRow(tokens) {
+  pillsRow(tokens, wrap) {
     return {
       flexDirection: "row",
       alignItems: "center",
-      gap: 0,
+      columnGap: 0,
+      rowGap: wrap ? CAPSULE_INSET : 0,
       alignSelf: "flex-start",
-      borderRadius: 9999,
+      borderRadius: wrap ? CAPSULE_WRAP_RADIUS : 9999,
       backgroundColor: tokens.muted,
-      padding: 3,
+      padding: CAPSULE_INSET,
     };
   },
   pillsTrigger() {
@@ -158,7 +183,7 @@ const capsuleSkin: TabsSkin = {
       gap: 6,
       borderRadius: 9999,
       paddingHorizontal: 14,
-      paddingVertical: 7,
+      paddingVertical: CAPSULE_PILL_PAD_Y,
     };
   },
   pillsFill(tokens, selected, dark) {
@@ -167,7 +192,7 @@ const capsuleSkin: TabsSkin = {
       : { backgroundColor: "transparent" };
   },
   pillsLabel(tokens, selected) {
-    return { fontSize: 13, lineHeight: 18, fontWeight: selected ? "600" : "500", color: tokens.foreground };
+    return { fontSize: 13, lineHeight: CAPSULE_LABEL_LINE, fontWeight: selected ? "600" : "500", color: tokens.foreground };
   },
 
   // --- vertical (HIG grouped rail; active item is an accent-filled row) ---
@@ -227,13 +252,22 @@ export const webSkin: TabsSkin = capsuleSkin;
 // muted; press = android_ripple.
 // =============================================================================
 
+// The M3 pills track's inset and gap, and its pill's height (7dp around the 20sp
+// label line): the wrapped track's concentric corner, as CAPSULE_WRAP_RADIUS above.
+// The 4dp gap already opens between the lines, so nothing else changes wrapped.
+const M3_PILL_INSET = 4;
+const M3_PILL_PAD_Y = 7;
+const M3_PILL_LABEL_LINE = 20;
+const M3_PILL_WRAP_RADIUS = (M3_PILL_PAD_Y * 2 + M3_PILL_LABEL_LINE) / 2 + M3_PILL_INSET;
+
 export const androidSkin: TabsSkin = {
   pressedOpacity: null, // Android uses a ripple instead
   ripple: (tokens) => ({ color: alpha(tokens.primary, 0.12), borderless: false }),
 
   // --- underline (M3 primary tabs) ---
   underlineRow(tokens) {
-    // M3 tabs sit on a hairline divider; no track fill.
+    // M3 tabs sit on a hairline divider; no track fill. Wrapped, the lines stack
+    // on the one divider, each tab's own indicator marking the active one.
     return {
       flexDirection: "row",
       alignItems: "stretch",
@@ -272,15 +306,15 @@ export const androidSkin: TabsSkin = {
   },
 
   // --- pills (M3 keeps the muted-track + tonal selected fill) ---
-  pillsRow(tokens) {
+  pillsRow(tokens, wrap) {
     return {
       flexDirection: "row",
       alignItems: "center",
-      gap: 4,
+      gap: M3_PILL_INSET,
       alignSelf: "flex-start",
-      borderRadius: 9999,
+      borderRadius: wrap ? M3_PILL_WRAP_RADIUS : 9999,
       backgroundColor: tokens.muted,
-      padding: 4,
+      padding: M3_PILL_INSET,
     };
   },
   pillsTrigger() {
@@ -293,7 +327,7 @@ export const androidSkin: TabsSkin = {
       // clip the Material ripple to the rounded (capsule) outline
       overflow: "hidden",
       paddingHorizontal: 14,
-      paddingVertical: 7,
+      paddingVertical: M3_PILL_PAD_Y,
     };
   },
   pillsFill(tokens, selected) {
@@ -301,7 +335,7 @@ export const androidSkin: TabsSkin = {
     return selected ? { backgroundColor: alpha(tokens.primary, 0.12) } : { backgroundColor: "transparent" };
   },
   pillsLabel(tokens, selected) {
-    return { fontSize: 14, lineHeight: 20, fontWeight: "500", color: selected ? primaryText(tokens) : tokens["muted-foreground"] };
+    return { fontSize: 14, lineHeight: M3_PILL_LABEL_LINE, fontWeight: "500", color: selected ? primaryText(tokens) : tokens["muted-foreground"] };
   },
 
   // --- vertical (M3 navigation rail row; active item is a tonal pill) ---

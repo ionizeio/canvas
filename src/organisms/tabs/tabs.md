@@ -72,6 +72,20 @@ overflows; a vertical rail stacks instead.
 <Tabs tabs={["General", "Security", "Notifications", "Billing", "Integrations", "Advanced"]} />
 ```
 
+### Wrapped overflow
+
+`wrap` lays a row longer than its container out on further lines inside one
+track instead of panning it, so every tab is on screen at once: the track fills
+its container and grows taller, its corners staying concentric with the pills.
+Reach for it where the strip is a page's own navigation on a phone (the docs
+example rail); keep the scroller where the strip sits in a toolbar that must stay
+one line tall. `block` never overflows and wins over `wrap`; a `responsive`
+vertical rail honors `wrap` once it flattens.
+
+```tsx
+<Tabs wrap tabs={["General", "Security", "Notifications", "Billing", "Integrations", "Advanced", "Members", "Audit log"]} />
+```
+
 ## Do & Don't
 
 ### Underline

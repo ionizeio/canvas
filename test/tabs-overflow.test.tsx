@@ -59,6 +59,55 @@ describe("Tabs horizontal overflow scroller", () => {
   });
 });
 
+// `wrap` trades the scroller for lines: the tablist is the outermost node, lays its
+// lines out in place (flexWrap on the row) and the capsule skins square the track off
+// to the corner concentric with the pills. happy-dom lays nothing out, so these are
+// structural too: the frame, the wrap style, the corner.
+describe("Tabs wrap", () => {
+  it("lays the underline row out in place of the scroller frame", () => {
+    ui(<Tabs wrap tabs={MANY} testID="tabs" />);
+    const row = rootOf("tabs");
+    expect(row.getAttribute("role")).toBe("tablist");
+    expect(scrollerOf(row)).toBeNull();
+    expect(row.style.flexWrap).toBe("wrap");
+    // The scroller's hug-and-cap contract rides the row itself now.
+    expect(row.style.maxWidth).toBe("100%");
+  });
+
+  it("lays the pills row out in place of the scroller frame", () => {
+    ui(<Tabs pills wrap tabs={MANY} testID="tabs" />);
+    const row = rootOf("tabs");
+    expect(scrollerOf(row)).toBeNull();
+    expect(row.style.flexWrap).toBe("wrap");
+  });
+
+  it("squares the capsule track off to the corner concentric with its pills", () => {
+    // 7px above and below the 18px label line make a 32px pill; its 16px half-height
+    // plus the 3px inset is the 19px corner. On one line the capsule keeps 9999.
+    ui(<Tabs wrap tabs={MANY} testID="wrapped" />);
+    expect(rootOf("wrapped").style.borderRadius).toBe("19px");
+    ui(<Tabs tabs={MANY} testID="single" />);
+    expect(rootOf("single").style.borderRadius).toBe("9999px");
+  });
+
+  it("lets block win: equal shares never overflow, so nothing wraps", () => {
+    ui(<Tabs block wrap tabs={MANY} testID="tabs" />);
+    const row = rootOf("tabs");
+    expect(scrollerOf(row)).toBeNull();
+    expect(row.style.flexWrap).not.toBe("wrap");
+    expect(row.style.width).toBe("100%");
+    expect(row.style.borderRadius).toBe("9999px");
+  });
+
+  it("keeps selection and the single aria-selected working through a wrapped row", () => {
+    let picked = -1;
+    ui(<Tabs wrap tabs={MANY} testID="tabs" onSelect={(i) => { picked = i; }} />);
+    fireEvent.click(screen.getByText("Integrations"));
+    expect(picked).toBe(4);
+    expect(rootOf("tabs").querySelectorAll('[aria-selected="true"]').length).toBe(1);
+  });
+});
+
 // Geometry: a 600-wide row in a 300-wide viewport, 24px peek padding.
 describe("tabScrollTarget", () => {
   it("returns null when the row fits the viewport", () => {

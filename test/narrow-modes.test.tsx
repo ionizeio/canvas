@@ -167,6 +167,22 @@ describe("Tabs responsive vertical", () => {
     ui(<Tabs vertical tabs={TABS} testID="tabs" />);
     expect(rootOf("tabs").style.flexDirection).toBe("column");
   });
+
+  it("honors wrap once flattened, and only then", () => {
+    // The rail stacks, so `wrap` has nothing to do at desktop widths; the flattened
+    // row it becomes at phone widths is a horizontal row, and wraps in place of the
+    // overflow scroller.
+    ui(<Tabs vertical responsive wrap tabs={TABS} testID="tabs" />);
+    expect(rootOf("tabs").style.flexDirection).toBe("column");
+    expect(rootOf("tabs").style.flexWrap).not.toBe("wrap");
+    cleanup();
+    resizeViewport(375);
+    ui(<Tabs vertical responsive wrap tabs={TABS} testID="tabs" />);
+    const row = rootOf("tabs");
+    expect(row.style.flexDirection).toBe("row");
+    expect(row.style.flexWrap).toBe("wrap");
+    expect(row.parentElement?.style.maxWidth).not.toBe("100%");
+  });
 });
 
 describe("FilterPanel responsive drawer", () => {

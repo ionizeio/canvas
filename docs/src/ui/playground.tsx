@@ -302,16 +302,16 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
 
   // Wide: Tabs' `vertical` rail (a settings-style side rail, active row filled)
   // beside the stage, in a fixed 200px scroller so many examples still scroll.
-  // Narrow: the horizontal `underline` tab bar above the stage, bare — the kit's
-  // own overflow scroller pans long/many labels and keeps the selected tab in
-  // view, so the docs-side horizontal ScrollView wrapper this once needed is
-  // gone (it also blocked the kit scroller from capping, being content-sized).
+  // Narrow: the horizontal `underline` tab bar above the stage, wrapping (the
+  // kit's `wrap`) so every example is on screen at once on a phone or tablet.
+  // The kit's overflow scroller, which this rode before, showed only the first
+  // few labels and panned the rest with no scrollbar to say they were there.
   const rail = wide ? (
     <ScrollView style={{ width: 200, flexGrow: 0 }} showsVerticalScrollIndicator={false}>
       <Tabs vertical block testID="playground-examples" tabs={labels} active={selected} onSelect={setSelected} />
     </ScrollView>
   ) : (
-    <Tabs underline testID="playground-examples" tabs={labels} active={selected} onSelect={setSelected} />
+    <Tabs underline wrap testID="playground-examples" tabs={labels} active={selected} onSelect={setSelected} />
   );
 
   return (

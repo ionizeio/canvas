@@ -52,6 +52,14 @@ import { type Variant } from "./tabs.styles.js";
 // the active trigger fully into view (a jump on first layout, animated after,
 // honoring reduced motion). `block` shares the row equally by definition and
 // `vertical` stacks, so neither scrolls.
+//
+// `wrap` trades the scroller for lines: a non-block underline/pills row lays a
+// long run of triggers out on further lines inside ONE track, so every tab is on
+// screen at once (a page's own example rail on a phone). The tablist is then the
+// outermost node, and the skin squares the track's corners off to the radius
+// concentric with its pills (a capsule's 9999 on a track taller than one pill
+// would round its ends into semicircles across the corner pills). `block` wins
+// over `wrap`; a `responsive` vertical rail honors `wrap` once it flattens.
 
 // The platform-varying surface. Everything color/shape-bearing the three looks
 // need lives here, built from the active tokens (so each follows light/dark/glass).
@@ -73,13 +81,15 @@ export interface TabsSkin {
   // `dark` lets the selected-pill fill follow the scheme (iOS: a white thumb in
   // light mode, a lifted lighter-gray thumb in dark mode, matching Apple's
   // segmented control's tertiary/secondary system-fill layering).
-  underlineRow: (t: ColorTokens) => ViewStyle;
+  /** The track behind the triggers; `wrap` is the multi-line row (TabsProps.wrap),
+   *  where a capsule track squares off to the corner concentric with its pills. */
+  underlineRow: (t: ColorTokens, wrap: boolean) => ViewStyle;
   underlineTrigger: (t: ColorTokens, selected: boolean, dark: boolean) => ViewStyle;
   underlineIndicator: (t: ColorTokens, selected: boolean) => ViewStyle;
   underlineLabel: (t: ColorTokens, selected: boolean) => TextStyle;
 
   // --- pills ---
-  pillsRow: (t: ColorTokens) => ViewStyle;
+  pillsRow: (t: ColorTokens, wrap: boolean) => ViewStyle;
   pillsTrigger: (t: ColorTokens, selected: boolean) => ViewStyle;
   pillsFill: (t: ColorTokens, selected: boolean, dark: boolean) => ViewStyle;
   pillsLabel: (t: ColorTokens, selected: boolean) => TextStyle;
@@ -120,6 +130,14 @@ export interface TabsProps {
 
   // Layout: equal full-width triggers vs. leading-aligned hugging triggers.
   block?: boolean;
+  /**
+   * Layout (the underline and pills rows): a row longer than its container wraps
+   * onto further lines inside one track instead of panning in the overflow
+   * scroller, so every tab stays on screen at once. The track fills its container
+   * and grows taller, its corners concentric with the pills. `block` never
+   * overflows and wins; a `responsive` vertical rail honors it once it flattens.
+   */
+  wrap?: boolean;
 
   /**
    * Responsive (vertical look only): render the EXISTING horizontal underline
@@ -393,6 +411,9 @@ export function createTabs(skin: TabsSkin) {
     );
     const requested = variantOf(props);
     const variant = requested === "vertical" && props.responsive && narrow ? "underline" : requested;
+    // `wrap` applies to the horizontal rows only, and `block` wins (equal shares
+    // never overflow); a flattened responsive rail is a horizontal row, so it wraps.
+    const wrapping = variant !== "vertical" && !!props.wrap && !props.block;
     const measureResponsive = props.responsive && requested === "vertical" ? onResponsiveLayout : undefined;
     const withResponsiveProbe = (root: ReactNode) =>
       measureResponsive ? (
@@ -484,7 +505,7 @@ export function createTabs(skin: TabsSkin) {
     const scroller = useRef<ScrollView>(null);
     const scrollGeom = useRef({ viewport: 0, content: 0, offset: 0 });
     const triggerRects = useRef<Array<LayoutRectangle | undefined>>([]);
-    const structure = JSON.stringify([variant, !!props.block, isRTL(), tabs.map((item) => [labelOf(item), badgeOf(item)])]);
+    const structure = JSON.stringify([variant, !!props.block, wrapping, isRTL(), tabs.map((item) => [labelOf(item), badgeOf(item)])]);
     const rowRef = useRef<View>(null);
     const layoutNodes = useRef<Array<View | null>>([]);
     const [measurements, setMeasurements] = useState<{ structure: string; rects: Record<number, LayoutRectangle>; revision: number }>({ structure, rects: {}, revision: 0 });
@@ -622,47 +643,49 @@ export function createTabs(skin: TabsSkin) {
       );
     }
 
+    // A non-block horizontal row. Wrapping, the tablist is the outermost node and
+    // lays its lines out in place (the consumer's `style` rides it); otherwise it
+    // rides the overflow scroller, the outermost node then.
+    const overflowRow = (track: ViewStyle, triggers: ReactNode) => {
+      const row = (
+        <View ref={rowRef} accessibilityRole="tablist" testID={testID} style={[trackStyle(track), wrapping ? [s.wrapRow, style] : null]}>
+          {trackOf(track)}
+          {selection}
+          {triggers}
+        </View>
+      );
+      return wrapping ? row : scrollRow(row);
+    };
+
     if (variant === "pills") {
-      // Block shares the row equally (never overflows); otherwise the track
-      // rides the overflow scroller.
+      // Block shares the row equally (never overflows); otherwise the track wraps
+      // or rides the overflow scroller.
+      const pillsTrack = skin.pillsRow(tokens, wrapping);
       if (props.block) {
         return (
-          <View ref={rowRef} accessibilityRole="tablist" testID={testID} style={[trackStyle(skin.pillsRow(tokens)), s.blockWidth(true), style]}>
-            {trackOf(skin.pillsRow(tokens))}
+          <View ref={rowRef} accessibilityRole="tablist" testID={testID} style={[trackStyle(pillsTrack), s.blockWidth(true), style]}>
+            {trackOf(pillsTrack)}
             {selection}
             {horizontalTriggers("pills")}
           </View>
         );
       }
-      return scrollRow(
-        <View ref={rowRef} accessibilityRole="tablist" testID={testID} style={trackStyle(skin.pillsRow(tokens))}>
-          {trackOf(skin.pillsRow(tokens))}
-          {selection}
-          {horizontalTriggers("pills")}
-        </View>,
-      );
+      return overflowRow(pillsTrack, horizontalTriggers("pills"));
     }
 
-    // Underline: the row sits on a hairline bottom border (web/Android) or a gray
-    // segmented track (iOS). Block shares the row equally (never overflows);
-    // otherwise the row rides the overflow scroller.
+    // Underline: the row sits on a hairline bottom border (Android) or a gray
+    // segmented track (iOS and web). Block shares the row equally (never
+    // overflows); otherwise the row wraps or rides the overflow scroller.
+    const underlineTrack = skin.underlineRow(tokens, wrapping);
     if (props.block) {
       return withResponsiveProbe(
-        <View ref={rowRef} accessibilityRole="tablist" testID={testID} style={[trackStyle(skin.underlineRow(tokens)), s.blockWidth(true), style]}>
-          {trackOf(skin.underlineRow(tokens))}
+        <View ref={rowRef} accessibilityRole="tablist" testID={testID} style={[trackStyle(underlineTrack), s.blockWidth(true), style]}>
+          {trackOf(underlineTrack)}
           {selection}
           {horizontalTriggers("underline")}
         </View>,
       );
     }
-    return withResponsiveProbe(
-      scrollRow(
-        <View ref={rowRef} accessibilityRole="tablist" testID={testID} style={trackStyle(skin.underlineRow(tokens))}>
-          {trackOf(skin.underlineRow(tokens))}
-          {selection}
-          {horizontalTriggers("underline")}
-        </View>,
-      ),
-    );
+    return withResponsiveProbe(overflowRow(underlineTrack, horizontalTriggers("underline")));
   };
 }
