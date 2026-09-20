@@ -466,6 +466,56 @@ describe("the field hand-off", () => {
     expect(fieldCoverMark(4000, 4)).toBe(1);
   });
 
+  it("forms a compact drop centred under a wide trigger, never a bar its full width, and still hands back onto the whole box", async () => {
+    // A field that fills its column: the same width as the card it opens.
+    const WIDE: PopupOrigin = { x: 0, y: -40, width: SIZE.width, height: 32, radius: 16 };
+    const drop = handoff.droplet * SIZE.width;
+    let exits = 0;
+    const progress = new Animated.Value(0);
+    const onExited = () => { exits++; };
+    const page = (open: boolean) => ui(<Probe open={open} radius={16} origin={WIDE} progress={progress} onExited={onExited} />);
+    const { rerender, unmount } = render(page(false));
+    await act(async () => {});
+    exits = 0;
+    const clock = animationClock();
+    try {
+      // Closed: the pane sits on the whole box, so a hand-back re-forms the field exactly.
+      near(frame(), { left: 0, top: -40, width: SIZE.width, height: 32 });
+      rerender(page(true));
+      // The first paint is the drop: the card's droplet fraction wide, centred on the
+      // trigger, a share of the way to the card's height, and rounder than either box.
+      const droplet = frame();
+      expect(droplet.width).toBeCloseTo(drop, 4);
+      expect(droplet.left).toBeCloseTo((SIZE.width - drop) / 2, 4);
+      expect(droplet.width).toBeLessThan(SIZE.width * 0.5);
+      expect(droplet.height).toBeCloseTo(32 + (SIZE.height - 32) * seed, 4);
+      expect(corner()).toBeCloseTo(Math.max(16, 0.5 * Math.min(drop, droplet.height)), 4);
+      // The drop keeps its width until `widen` (give or take the contour's squash),
+      // then widens to the card.
+      let held = 0;
+      for (let step = 0; step < 100; step++) {
+        clock.advance(16);
+        const value = valueOf(progress);
+        if (value > seed && value < handoff.widen) { held++; expect(Math.abs(frame().width - drop)).toBeLessThan(3); }
+      }
+      expect(held).toBeGreaterThan(0);
+      expect(frame()).toEqual({ left: 0, top: 0, ...SIZE });
+      // The close narrows to the drop, then re-widens into the box for the hand-back.
+      rerender(page(false));
+      let narrowed = false;
+      for (let step = 0; step < 80 && exits === 0; step++) {
+        clock.advance(16);
+        if (Math.abs(frame().width - drop) < 2) narrowed = true;
+      }
+      expect(narrowed).toBe(true);
+      expect(exits).toBe(1);
+      const handed = frame();
+      expect(Math.abs(handed.width - SIZE.width)).toBeLessThan(0.5);
+      clock.advance(1600);
+      near(frame(), { left: 0, top: -40, width: SIZE.width, height: 32 });
+    } finally { unmount(); clock.restore(); }
+  });
+
   it("has the pane clear of the field's box whenever the travel is at or past the cover mark, on the way out and home", async () => {
     let exits = 0;
     const progress = new Animated.Value(0);

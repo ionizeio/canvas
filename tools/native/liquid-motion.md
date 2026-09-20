@@ -834,3 +834,40 @@ device (the unit tests pin the plain tree), the inline fallback and the inline P
 and bare Command (no trigger to hand off, by design), a reopen mid-close on a device
 (idb's tap latency; the web trace pins it for the RowMenu), and the reference's two-body
 neck, as before.
+
+## The droplet is a compact drop under a wide trigger, 2026-09-20 (the shape, checked on the real pages)
+
+The user said the Autocomplete in the docs Playground did not match the iOS
+hamburger, and that the implementation had been verified on the harness but not on
+the real components. Both true. Every run above drove `/testing/popup`; none opened
+`/components/autocomplete`. And the harness could not have shown the fault anyway,
+because it has the same anatomy: the hand-off bore the pane at the TRIGGER's full
+box across the anchor axis, which for the Dropdown's 112 px pill is a 112 by 106
+blob (right) and for a field that fills its column is a 973 by 129 bar (a 7.5:1
+slab that reads as the field getting taller, nothing like the reference's drop). The
+reference (`ios-native-menu-01`, frame 075) shows the pill vanishing whole and a
+drop NARROWER than the pill appearing under it, about 45% of the menu's width.
+
+The change is one tunable, `handoff.droplet` (0.45) in `POPUP_PRESENTATION`: the
+pane's extent across the anchor axis at the seed is the trigger's own or that
+fraction of the card's, whichever is less, centred on the trigger. Progress 0 is
+still the trigger's whole box, so a close narrows to the drop and then re-widens
+into the box before the hand-back (the reference's "blob merges into the re-forming
+pill"), and an opening, which seats at the seed, never paints the box. A narrow pill
+is its own drop (the cap never bites); the Dropdown's 112 px pill now bears a 90 px
+drop, closer to the reference's pill-to-drop ratio. The corner table follows the
+narrowed seed shape. `test/popup-motion.test.tsx` pins a full-width trigger's drop at
+the fraction, centred, held to `widen`, and the hand-back onto the whole box. The
+runs below are on the REAL docs page (`/components/autocomplete`, the Playground's
+web lane, switched to Glass with the header toggle, opened from the chevron and by a
+click into the field) and on the same page in the native app.
+
+| Date | Effect and profile | Runtime and device | Revision (dirty?) | Values tried | rAF p50 / p95 / max (ms) | What the strip and trace showed | Artifacts |
+|---|---|---|---|---|---|---|---|
+| 2026-09-20 | The real Autocomplete docs page: the Playground's web field opened from its chevron and closed (Escape), then opened by a click into the field and closed | Chromium headed via the repo's Playwright on `/components/autocomplete` at this session's Metro (8100, the primary checkout), 1280x1000, Glass via the header toggle, 25 fps sampling | working tree of this commit | droplet 0.45 (new); everything else as baked | 10.0 / 10.8 / 11.0 over 585 frames (a 100 Hz cadence) | Trace, chevron open: the first painted pane is 318 by 108 at x 487 (0.45 of the 707 px field, centred on it, a 109 px capsule corner) with the field's pane at 0 the same frame and the editor slot fading from +36 ms; the pane is the full 707 by 222 below the field by +216, the field's pane back at +157 as the pane clears the box, the slot at 1 by +286. Close: the pane narrows to 484 by 164 at +65, to a 495 by 80 drop at +135, and re-widens to 706 by 48 on the field's box (y 496, the box's own y) by +266 with the field's pane back that frame and the slot at 1 by +395. The click-into-field open is the same to within 6 ms. Strips (`zoom-open-088-093.png`): 89 a compact centred drop under the field with tiny rows inside and the field's text fading; 90 the drop widening, rows sharp, the field an empty ring; 91 to 92 the list full, the field's glass back; 93 the placeholder back. `zoom-close-129-136.png`: 131 the text gone and the pane narrowing; 132 a compact blob at the field; 133 the blob re-widening into a capsule the field's width; 134 to 135 the capsule the field's box; 136 the field back with its text. | `web-playground-01` (movie, sheet, `trace.json`, the strips), `actions-playground.mjs` |
+| 2026-09-20 | The Dropdown on the harness under the cap (a regression check on the approved pill morph): open, close, open, close, reopen mid-close, close; the account and the hamburger | Chromium headed via the repo's Playwright on `/testing/popup?mode=glass&scheme=dark` at Metro 8100, 1280x1100, 25 fps | as above | as above | 10.0 / 10.7 / 60.0 over 1640 frames; readout 10.0 / 10.7 / 29.7 | The pill's drop is 90 by 106 at x 279, centred on the 112 px pill (was 112 by 106), the corner a capsule on the 90 px side; the strip (`zoom-button-open.png`) shows the pill fading into a drop centred on it and the menu blooming from the drop, the same morph as before, the drop a shade narrower than the pill as the reference's is. | `web-handoff-droplet-01` (movie, sheet, `trace.json`, the strips) |
+| 2026-09-20 | The real Autocomplete docs page in the native app: the Playground's field opened from its chevron and closed by a tap on the chevron (through the backdrop), then opened by a tap into the field (the keyboard rises and the list flips above) and closed | a throwaway iPhone 17 Pro simulator (`simctl create`, deleted afterwards), iOS 26.3, dark, the docs dev app installed from the user's device bundle and pointed at Metro 8100 (`RCT_jsLocation`), the page at its default scroll (the field at y 387 pt), taps through `idb ui tap`, 30 fps sampling of a simctl recording | as above | as above | not sampled | Open (`strip-open1-175.png`): 176 the field's text fading and a compact drop, Apple's glass, centred under the field with the five rows tiny inside it; 177 the drop widening with the rows sharp and the field an empty ring; 178 to 179 the list full and the field's glass back; 180 the placeholder back. Close (`strip-close1-229.png`): 231 the rows gone; 232 the pane narrowing; 233 a round blob at the field; 234 the blob re-widening into a capsule; 235 the capsule the field's box; 236 the box re-formed and empty; 238 the text back. The tap-into-field open (`strip-open2-300.png`) forms the same compact drop hanging from the field's top edge as the list opens above the keyboard, and the field re-forms with its caret. This is the reference's sequence on the real component, minus the two-body neck. | `ios-droplet-01` (movie, sheet, `taps.log`, the strips), `ios-droplet-run.sh` |
+
+Not covered: Android, and the other fields and the four menu triggers on the real
+pages (the harness runs above cover them; the geometry change is one rule for every
+hand-off, pinned by the unit test). Reduce Motion and solid mode keep the plain tree.

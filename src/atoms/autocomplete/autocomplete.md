@@ -4,7 +4,7 @@ Text input + dropdown: searchable single-select. Pass `label` (and `required`) t
 
 In glass mode the suggestion list hands off with the field, the way the iOS 26
 menu takes its button: on open the field's glass and text vanish into a droplet
-that forms on the field's box in its width, corner and tone, the list blooms out
+that forms centred on the field's box, a compact drop narrower than the field in the field's corner and tone, the list blooms out
 of it, recoils and settles, and the field is back, caret, floating label and
 toggle included, as soon as the list has cleared its box; on close the
 suggestions go inert at once and the pane absorbs back up into the field's box,

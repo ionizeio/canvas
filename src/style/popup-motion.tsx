@@ -84,9 +84,21 @@ export const POPUP_PRESENTATION = {
    */
   handoff: {
     /**
-     * The pane keeps the trigger's extent ACROSS the anchor axis until this progress
-     * and widens to the card's from there, so the droplet is pill-wide and a closing
-     * pane is the pill's width before its height is gone.
+     * The droplet's extent ACROSS the anchor axis at the seed, as a fraction of the
+     * card's, and never wider than the trigger's own: the reference's drop is about
+     * 45% of its menu's width and narrower than the pill it replaces (frame 075). A
+     * narrow pill is its own droplet (the cap never bites); a wide trigger (a field
+     * that fills its column) vanishes whole and a compact drop forms centred under it
+     * instead of a bar the field's full width. Progress 0 is still the trigger's whole
+     * box, so a close re-widens the drop into the box before the hand-back and the
+     * trigger's own material returns onto the same shape.
+     */
+    droplet: 0.45,
+    /**
+     * The pane keeps the droplet's extent ACROSS the anchor axis until this progress
+     * and widens to the card's from there, so the droplet keeps its shape while it
+     * grows along the axis and a closing pane narrows to the drop before its height
+     * is gone.
      */
     widen: 0.45,
     /**
@@ -416,11 +428,24 @@ export function usePopupMotion({
       const originAcross = horizontal ? box.height : box.width;
       const originAlongCentre = horizontal ? box.x + box.width / 2 : box.y + box.height / 2;
       const originAcrossCentre = horizontal ? box.y + box.height / 2 : box.x + box.width / 2;
+      // The drop the pane is at the seed, across the axis: the trigger's extent for a
+      // narrow pill, a compact drop centred on the trigger for a wide one (see
+      // `handoff.droplet`). The along extent is the trigger's throughout.
+      const dropletAcross = Math.min(originAcross, HANDOFF.droplet * acrossExtent);
       const remainingAlong = progress.interpolate({ inputRange: [0, 1], outputRange: [1, 0], extrapolateLeft: "clamp", extrapolateRight: "extend" });
+      // Across the axis the pane is the trigger's box at 0, the drop from the seed
+      // to `widen`, and the card at 1. The box and the drop share the trigger's
+      // centre, so the shift only has to carry the pane from that centre to the
+      // card's as it widens.
+      const acrossShare = progress.interpolate({
+        inputRange: [0, SEED, HANDOFF.widen, 1],
+        outputRange: [originAcross / acrossExtent, dropletAcross / acrossExtent, dropletAcross / acrossExtent, 1],
+        extrapolate: "clamp",
+      });
       const remainingAcross = progress.interpolate({ inputRange: [0, HANDOFF.widen, 1], outputRange: [1, 1, 0], extrapolate: "clamp" });
       const graph: Graph = {
         scaleAlong: Animated.multiply(Animated.subtract(1, Animated.multiply(remainingAlong, 1 - originAlong / along)), stretch),
-        scaleAcross: Animated.multiply(Animated.subtract(1, Animated.multiply(remainingAcross, 1 - originAcross / acrossExtent)), squash),
+        scaleAcross: Animated.multiply(acrossShare, squash),
         shiftAlong: Animated.multiply(remainingAlong, originAlongCentre - along / 2),
         shiftAcross: Animated.multiply(remainingAcross, originAcrossCentre - acrossExtent / 2),
         // The rows scale from the trigger's centre.
@@ -431,11 +456,13 @@ export function usePopupMotion({
         // The corner is the trigger's at the pill, the droplet's at the seed (as round
         // as the seed shape's shorter side allows), and the skin's once settled.
         const seedAlong = originAlong + (along - originAlong) * SEED;
-        const seedAcross = originAcross + (acrossExtent - originAcross) * handoffAcross(SEED);
+        const seedAcross = dropletAcross;
         const droplet = Math.max(radius, RADIUS.droplet * Math.min(seedAlong, seedAcross));
         const displayed = keyframes([[0, box.radius], [SEED, droplet], [RADIUS.settled, radius]]);
         const alongScale = (at: number) => originAlong / along + at * (1 - originAlong / along);
-        const acrossScale = (at: number) => originAcross / acrossExtent + handoffAcross(at) * (1 - originAcross / acrossExtent);
+        const acrossScale = (at: number) => at <= SEED
+          ? (originAcross + (dropletAcross - originAcross) * (at / SEED)) / acrossExtent
+          : dropletAcross / acrossExtent + handoffAcross(at) * (1 - dropletAcross / acrossExtent);
         graph.corner = radiusTable(progress, displayed, seedAlong <= seedAcross ? alongScale : acrossScale, 0);
       }
       return graph;

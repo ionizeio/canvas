@@ -4,7 +4,7 @@ A phone number field: the Input's box with a country segment at its start (the c
 
 In glass mode the country list hands off with the field, the way the iOS 26 menu
 takes its button: on open the box's glass, segment, dial code and number vanish
-into a droplet that forms on the box in its width, corner and tone, the list
+into a droplet that forms centred on the box, a compact drop narrower than the box in its corner and tone, the list
 blooms out of it, recoils and settles, and the box is back as soon as the list
 has cleared it; on close the rows go inert at once and the pane absorbs back into
 the box, the box yielding again only while the pane covers it and returning as

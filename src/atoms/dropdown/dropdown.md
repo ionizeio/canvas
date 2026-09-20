@@ -4,7 +4,8 @@ Floating menus triggered by a button: actions, options, navigation.
 
 In glass mode the menu opens the way the iOS 26 menu behind a toolbar button
 does: the trigger's glass pill hands off to the menu. Its material and label
-vanish as the menu's material forms on the pill's own frame, pill-wide, with the
+vanish as the menu's material forms as a drop centred on the pill (the pill's own
+width for a narrow pill, never wider than about half the menu), with the
 rows already inside it small and faint, then grows past its resting size and
 settles while the rows sharpen; the menu stays visible briefly on close while its
 rows are already out of reach and out of the accessibility tree, narrows back to

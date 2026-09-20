@@ -4,8 +4,8 @@ Native select restyled to match Canvas inputs. Pass `label` (and `required`) to 
 
 In glass mode the option panel hands off with the trigger, the way the iOS 26
 menu takes its button: on open the trigger's glass, value, placeholder, floating
-label and chevron vanish into a droplet that forms on the trigger's box in its
-width, corner and tone, the panel blooms out of it (or up from it when it flips
+label and chevron vanish into a droplet that forms centred on the trigger's box,
+a compact drop narrower than the trigger in its corner and tone, the panel blooms out of it (or up from it when it flips
 above) with a bounded contour overshoot, recoil and an exact settle to the fitted
 panel, and the trigger is back as soon as the panel has cleared its box; on close
 the options go inert at once and the pane absorbs back into the trigger's box,
