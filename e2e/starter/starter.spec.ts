@@ -4,12 +4,16 @@ import { resolve } from "node:path";
 
 const repo = resolve(__dirname, "../..");
 const starter = resolve(repo, "examples/starter");
-const packageRoot = resolve(starter, "node_modules/@ionizeio/canvas");
 
 test.beforeAll(async ({}, testInfo) => {
   const declared = JSON.parse(readFileSync(resolve(starter, "package.json"), "utf8"));
+  // The starter pins Canvas under whichever scope the registry serves it from
+  // today, so the check reads the declared package instead of assuming a scope.
+  const kits = Object.keys(declared.dependencies).filter((name) => /^@[^/]+\/canvas$/.test(name));
+  expect(kits, "The ordinary starter must declare exactly one Canvas package.").toHaveLength(1);
+  const packageRoot = resolve(starter, "node_modules", kits[0]!);
   const installed = JSON.parse(readFileSync(resolve(packageRoot, "package.json"), "utf8"));
-  const pin = declared.dependencies["@ionizeio/canvas"];
+  const pin = declared.dependencies[kits[0]!];
   expect(pin, "The ordinary starter must retain an exact registry version.").toMatch(/^\d+\.\d+\.\d+$/);
   expect(installed.version).toBe(pin);
   expect(realpathSync(packageRoot), "The consumer must use a real installed directory.").toBe(packageRoot);

@@ -8,12 +8,12 @@ export default function PreferencesScreen() {
   return (
     <Screen>
       <Column tight><Typography h1>Preferences</Typography><Typography muted>Preview changes immediately. Save keeps them for this session; Cancel restores your saved preferences.</Typography></Column>
-      {session.preferencesNotice ? <Alert block success title={session.preferencesNotice} /> : null}
+      {session.preferencesNotice ? <Alert success title={session.preferencesNotice} /> : null}
       <Grid columns={2} minTileWidth={360} loose>
         <Card>
           <Form submitLabel="Save preferences" cancelLabel="Cancel changes" onSubmit={session.savePreferences} onCancel={session.cancelPreferences}>
             <FormSection title="Appearance" description="Choose a scheme or follow your device.">
-              <Listbox block bordered accessibilityLabel="Appearance" items={APPEARANCES} selected={APPEARANCE_VALUES.indexOf(draft.appearance)} onChange={(selection) => session.updatePreferences({ appearance: APPEARANCE_VALUES[typeof selection === "number" ? selection : selection[0] ?? 0]! })} />
+              <Listbox bordered accessibilityLabel="Appearance" items={APPEARANCES} selected={APPEARANCE_VALUES.indexOf(draft.appearance)} onChange={(selection) => session.updatePreferences({ appearance: APPEARANCE_VALUES[typeof selection === "number" ? selection : selection[0] ?? 0]! })} />
             </FormSection>
             <Switch checked={draft.showSummary} onChange={(showSummary) => session.updatePreferences({ showSummary })} description="Display saved details beside the workspace editor.">Show workspace summary</Switch>
           </Form>

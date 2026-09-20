@@ -17,7 +17,7 @@ export default function WorkspaceScreen() {
         <Row snug alignCenter wrap><Typography h1>Your workspace</Typography><Badge secondary>Local session</Badge></Row>
         <Typography muted>Shape a space for your team. Changes stay in this app until you reload or reset it.</Typography>
       </Column>
-      {session.workspaceNotice ? <Alert block success title={session.workspaceNotice} /> : null}
+      {session.workspaceNotice ? <Alert success title={session.workspaceNotice} /> : null}
       <Grid columns={session.preferencesDraft.showSummary ? 2 : 1} minTileWidth={360} loose>
         <Card>
           <Column loose>
@@ -27,13 +27,13 @@ export default function WorkspaceScreen() {
             </Column>
             <Form submitLabel="Save workspace" cancelLabel="Cancel changes" onSubmit={save} onCancel={session.cancelWorkspace}>
               <Field label="Workspace name" required helper="At least two characters." error={session.errors.name}>
-                <Input ref={nameInput} block value={draft.name} onChangeText={(name) => session.updateWorkspace({ name })} returnKeyType="done" />
+                <Input ref={nameInput} value={draft.name} onChangeText={(name) => session.updateWorkspace({ name })} returnKeyType="done" />
               </Field>
               <Field label="Home city" required helper="Type to find a city, then choose a suggestion." error={session.errors.city}>
-                <Autocomplete block options={CITIES} query={session.cityQuery} onQueryChange={session.updateCityQuery} value={draft.city} onValueChange={(city) => session.updateWorkspace({ city })} />
+                <Autocomplete options={CITIES} query={session.cityQuery} onQueryChange={session.updateCityQuery} value={draft.city} onValueChange={(city) => session.updateWorkspace({ city })} />
               </Field>
               <Field label="Workstreams" helper="Choose one or more areas of work." error={session.errors.workstreams}>
-                <Listbox block multi bordered accessibilityLabel="Workspace workstreams" items={WORKSTREAMS} selected={draft.workstreams} onChange={(selection) => session.updateWorkspace({ workstreams: Array.isArray(selection) ? selection : [selection] })} />
+                <Listbox multi bordered accessibilityLabel="Workspace workstreams" items={WORKSTREAMS} selected={draft.workstreams} onChange={(selection) => session.updateWorkspace({ workstreams: Array.isArray(selection) ? selection : [selection] })} />
               </Field>
             </Form>
           </Column>

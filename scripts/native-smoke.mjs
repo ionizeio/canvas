@@ -27,6 +27,17 @@ function run(cwd, command, args, identity, capture = false) {
   return execFileSync(command, args, { cwd, env: env(identity), encoding: "utf8", stdio: capture ? ["ignore", "pipe", "pipe"] : "inherit" });
 }
 
+// The ordinary starter pins Canvas under the scope the registry serves it from
+// today, and its sources import that name. The candidate replaces exactly that
+// dependency, so every import in the copied app resolves to the sealed package
+// even while the registry name lags a scope migration. The identity still names
+// the package by its own name.
+function declaredCanvasDependency(metadata) {
+  const names = Object.keys(metadata.dependencies ?? {}).filter((name) => /^@[a-z0-9-]+\/canvas$/.test(name));
+  if (names.length !== 1) throw new Error("The starter must declare exactly one Canvas package");
+  return names[0];
+}
+
 export function prepareNativeSmoke(candidate, artifacts, output) {
   const manifest = verifyArtifacts(repo, candidate, artifacts);
   const identity = packageIdentity(manifest);
@@ -40,9 +51,10 @@ export function prepareNativeSmoke(candidate, artifacts, output) {
   run(repo, "git", ["archive", "--format=tar", "--output", starterArchive, "HEAD", "examples/starter"], identity);
   run(output, "tar", ["-xf", starterArchive, "-C", app, "--strip-components=2"], identity);
   run(app, "bun", ["install", "--frozen-lockfile"], identity);
-  const inputs = packageArtifacts(manifest);
   const metadataFile = path.join(app, "package.json");
   const metadata = read(metadataFile);
+  const inputs = packageArtifacts(manifest).map((input) => ({ ...input,
+    installedAs: input.name === manifest.name ? declaredCanvasDependency(metadata) : input.name }));
   for (const input of inputs) {
     const tarball = path.join(output, input.filename);
     fs.copyFileSync(path.join(artifacts, input.filename), tarball);
@@ -50,14 +62,14 @@ export function prepareNativeSmoke(candidate, artifacts, output) {
     const unpacked = path.join(output, "unpacked", input.name);
     fs.mkdirSync(unpacked, { recursive: true });
     run(output, "tar", ["-xzf", tarball, "-C", unpacked], identity);
-    metadata.dependencies[input.name] = `file:${tarball}`;
+    metadata.dependencies[input.installedAs] = `file:${tarball}`;
   }
   write(metadataFile, metadata);
   run(app, "bun", ["install", "--ignore-scripts"], identity);
   for (const input of inputs) {
-    assertInstalledPackage(path.join(output, "unpacked", input.name, "package"), path.join(app, "node_modules", input.name));
-    const installed = read(path.join(app, "node_modules", input.name, "package.json"));
-    if (installed.version !== input.version) throw new Error("Installed version differs from the candidate");
+    assertInstalledPackage(path.join(output, "unpacked", input.name, "package"), path.join(app, "node_modules", input.installedAs));
+    const installed = read(path.join(app, "node_modules", input.installedAs, "package.json"));
+    if (installed.name !== input.name || installed.version !== input.version) throw new Error("Installed package differs from the candidate");
   }
   // Resolve from this isolated app, never from the repository's source link.
   if (inputs.some((input) => input.name === "@ionizeio/canvas-blur")) {
@@ -94,7 +106,7 @@ function context(output) {
   if (JSON.stringify(appInventory(app)) !== JSON.stringify(context.appSources)) throw new Error("Starter source changed after candidate preparation");
   for (const input of context.packages) {
     if (sha256(path.join(output, input.filename)) !== input.sha256) throw new Error("Native smoke candidate changed");
-    assertInstalledPackage(path.join(output, "unpacked", input.name, "package"), path.join(app, "node_modules", input.name));
+    assertInstalledPackage(path.join(output, "unpacked", input.name, "package"), path.join(app, "node_modules", input.installedAs ?? input.name));
   }
   if (context.packages.some((input) => input.name === "@ionizeio/canvas-blur")) {
     assertAndroidInstrumentationInputs(output, context.identity, context.androidInstrumentation);
