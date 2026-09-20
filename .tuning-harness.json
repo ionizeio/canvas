@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "evidenceLog": "tools/native/liquid-motion.md",
   "sources": [
     "src/style/liquid-motion*.ts",
@@ -11,6 +11,18 @@
     "docs/src/brand/currents-tunables.ts",
     "docs/src/brand/lattice-tunables.ts",
     "docs/src/brand/orbit-tunables.ts"
+  ],
+  "references": [
+    {
+      "name": "ios-native-menu",
+      "what": "the native iOS 26 UIMenu behind the docs header's hamburger (unstable_headerRightItems), open and dismiss, iPhone 17 Pro simulator on iOS 26.3, dark glass",
+      "run": "/tmp/canvas-liquid-motion-2026-09-19/ios-native-menu-01 (movie and frames, 30 fps sampling; re-record with record-motion.mjs --platform ios on the docs app header when absent)",
+      "strips": [
+        "tools/native/reference/ios-native-menu/open-073-090.png",
+        "tools/native/reference/ios-native-menu/dismiss-165-182.png"
+      ],
+      "card": "tools/native/liquid-motion.md#references"
+    }
   ],
   "harness": {
     "baseUrl": "http://localhost:8081",

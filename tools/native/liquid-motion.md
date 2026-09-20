@@ -871,3 +871,61 @@ click into the field) and on the same page in the native app.
 Not covered: Android, and the other fields and the four menu triggers on the real
 pages (the harness runs above cover them; the geometry change is one rule for every
 hand-off, pinned by the unit test). Reduce Motion and solid mode keep the plain tree.
+
+## References
+
+One card per reference behavior, written from a recording of the reference itself,
+never from memory. Every item on a card is a thing the implementation must
+reproduce on the shipped surface, and the `Versus reference` cell of each run under
+the version 2 contract names what still differs from it. Compare a run against a
+card with the skill's `compare-runs.mjs` (the reference row over the candidate row,
+aligned at the trigger frames, one cadence), and hand the strip to a fresh-context
+judge before any completion claim.
+
+### ios-native-menu
+
+- **What:** the native iOS 26 `UIMenu` behind the docs header's hamburger
+  (`unstable_headerRightItems`), opened by a tap on the pill and dismissed by a tap
+  outside. Recorded on the user's iPhone 17 Pro simulator, iOS 26.3, dark glass,
+  on 2026-09-19 (the reference row in the popup section above).
+- **Recording:** `/tmp/canvas-liquid-motion-2026-09-19/ios-native-menu-01` (simctl
+  movie, frames at 30 fps, 33.3 ms apart). The strips are kept in the repo at
+  `tools/native/reference/ios-native-menu/open-073-090.png` and
+  `dismiss-165-182.png`; the movie is not. When the run folder is gone, re-record
+  the same menu with `record-motion.mjs --platform ios` on the docs app.
+- **Phases, open** (trigger frame 074; milliseconds from it): 075 (+33) the header
+  pill is gone whole and a droplet about 45% of the menu's width and 35% of its
+  height sits under the button with the rows inside it, small, faint and blurred;
+  076 to 078 (+67 to +133) it grows while the rows scale up and sharpen; 079 (+167)
+  full and slightly past rest; 080 to 084 (+200 to +333) a settle while the corner
+  relaxes to the menu's radius; sharp rows from 081 (+233); at rest by 088 (+467).
+- **Phases, dismiss** (trigger frame 166): 167 (+33) the rows vanish and blur in one
+  frame with the pane still full; 169 to 171 (+100 to +167) the pane shrinks toward
+  the button as a narrowing blob; 172 to 173 (+200 to +233) it merges into the
+  re-forming pill through a liquid bridge, two bodies with a neck; 174 to 176 (+267
+  to +333) the pill's icons fade back; at rest by 180 (+467).
+- **Signature numbers:** droplet one frame after the tap; droplet at birth about
+  45% wide and 35% tall of the resting menu; full size at +167 ms; settled by
+  +333 ms; open phase 467 ms trigger to rest. Dismiss: rows gone in one frame,
+  shrink from +100 to +167 ms, merge at +200 to +233 ms, icons back from +267 to
+  +333 ms, rest at +467 ms. Tolerance: one frame (33 ms) or ten percent of the
+  phase, whichever is larger.
+- **Qualities:** the droplet is born blurred and faint and sharpens as it grows,
+  the rows scaling up inside it; the pane's corner starts rounder than the menu's
+  and relaxes; on dismiss the pane and the re-forming pill join through a liquid
+  bridge (two bodies with a neck) before the pill stands alone; the pill's icons
+  fade back after the merge, over the merged glass; the pill vanishes whole the
+  frame the droplet appears, no bare-pill frame.
+
+## Runs under the version 2 contract, from 2026-09-20
+
+Every row from here on names its Surface (a harness route, or the shipped route
+with platform and mode) and its Versus reference verdict (`matches`, `differs:
+...`, `accepted: ... (user, date)`, or `no reference`). `matches` is only ever
+written on a shipped surface, from the blind judge's reading of the comparison
+strip; the push gate refuses a row that breaks this. The tables above keep their
+columns.
+
+| Date | Effect and profile | Runtime and device | Revision (dirty?) | Surface | Values tried | rAF p50 / p95 / max (ms) | What the comparison showed | Versus reference | Artifacts |
+|---|---|---|---|---|---|---|---|---|---|
+| 2026-09-20 | RETROSPECTIVE: the 2026-09-19 hand-off run `ios-handoff-03` (the Dropdown pill open and close on the native GlassView) compared against the `ios-native-menu` card with `compare-runs.mjs`, the first use of the comparison | the run's own: a throwaway iPhone 17 Pro simulator, iOS 26.3, dark glass, 30 fps sampling | the run's own: the 2026-09-19 hand-off commit's working tree (before the compact drop of 9c78e8ba) | harness `/testing/popup` (the run was a harness run) | none (a comparison, no new values) | not sampled | Open, both rows aligned at the trigger (074 / 118, 33 ms tiles): the reference is a blurred, faint droplet growing over six tiles and sharp from tile 8 (+233 ms), at rest at +467 ms; the candidate is full and sharp by tile 5 (+133 ms), at rest at +233 ms, born opaque with a small pane rather than a faint blob (`versus-reference-118.png`). Dismiss (166 / 185): the candidate's rows vanish on the same tile as the reference's, but the pane then re-forms an EMPTY pill from tile 5 to tile 11 (about 230 ms) where the reference's icons are back by +333 ms, and the reference's two-body neck at +200 to +233 ms has no counterpart (`versus-reference-185.png`). Phase durations from `comparison.json`: open 467 ms reference against 233 ms candidate (delta -233, x0.5); dismiss 467 against 500 (+33, inside tolerance). | differs: open phase half the reference's (233 against 467 ms, outside the 47 ms tolerance); no faint blurred birth, the pane is opaque from its first frame; no two-body neck on dismiss; the re-formed pill stays empty about 230 ms where the reference's icons are back within 100 ms of the merge | `/tmp/canvas-liquid-motion-2026-09-19/ios-handoff-03/versus-reference-118.png`, `versus-reference-185.png`, `versus-reference-118.json` (phases), the clips 380,150,820,1650 (reference) and 0,120,900,1000 (candidate) |

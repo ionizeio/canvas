@@ -391,22 +391,40 @@ anatomy around it.
 ## Visual effects and motion: the tuning harness
 
 Effects judged by eye (the liquid motion, glass and its lens, gradients, parallax,
-any spring or gesture) go through the global `tuning-harness` skill: harness first,
-iterate against recordings and numeric traces, log the run, docs screenshot last.
-In this repo the harness is the hidden `/testing/*` routes under
-`docs/src/app/(home)/testing/`, rendering the fixture bodies in
+any spring or gesture) go through the global `tuning-harness` skill: record the
+reference in the app first and write its card, harness for the inner loop against
+recordings and numeric traces, then land the effect on the shipped surface (the
+docs page or app screen the user opens, in the mode they will see) and compare
+that recording against the card, blind, until nothing differs; log every run,
+docs screenshot last. In this repo the harness is the hidden `/testing/*` routes
+under `docs/src/app/(home)/testing/`, rendering the fixture bodies in
 `examples/starter/smoke/fixtures/` (shared with the sealed smoke app); the liquid
 glass one is `/testing/materials` and its isolated probe is
-`/testing/materials?geometry=1`. The tunables live in one table per effect
-(`PROFILES` and the spring constants in `src/style/liquid-motion.ts`), never in a
-public value prop. The evidence log is `tools/native/liquid-motion.md`, and
-`.tuning-harness.json` at the repo root tells the global push gate which files are
-tunables (`src/style/liquid-motion*.ts`, `src/style/popup-motion.tsx`,
-`src/style/motion.ts`, `src/style/glass-surface/glass-lens.ts`): a push whose newest
-tunable change has no evidence row in or after it is refused. A pure refactor of
-those files with no visual change carries the commit trailer
-`Tuning-evidence: unchanged`. Why: a single screenshot cannot show whether a spring
-overshoots or a recoil lands on time; only the recorded loop converges.
+`/testing/materials?geometry=1`, the popups are `/testing/popup`. A harness run
+proves the mechanism only; the row that closes the loop is recorded on the real
+page (`components/<slug>`, web under the header's Glass toggle since the web
+default is solid, and the installed docs app on a simulator). The tunables live in
+one table per effect (`PROFILES` and the spring constants in
+`src/style/liquid-motion.ts`, `POPUP_PRESENTATION` in `src/style/popup-motion.tsx`),
+never in a public value prop. The evidence log is `tools/native/liquid-motion.md`;
+its `## References` section holds the reference cards (the native iOS 26 menu
+behind the docs header's hamburger is `ios-native-menu`, strips under
+`tools/native/reference/`), and every row under the version 2 table names its
+`Surface` and its `Versus reference` verdict. `.tuning-harness.json` at the repo
+root (version 2) tells the global push gate which files are tunables
+(`src/style/liquid-motion*.ts`, `src/style/popup-motion.tsx`,
+`src/style/motion.ts`, `src/style/glass-surface/glass-lens.ts`, the docs brand
+scenes): a push whose newest tunable change has no evidence row in or after it is
+refused, and so is a row with an empty `Surface` or `Versus reference` cell or a
+`matches` written on a harness route. A pure refactor of those files with no
+visual change carries the commit trailer `Tuning-evidence: unchanged`. A report may
+claim the effect is done or matches only from a shipped-surface row with no open
+difference; open differences lead the report, and a card item that cannot be
+matched goes to the user as a decision, never into the log as "by design". Why: a
+single screenshot cannot show whether a spring overshoots or a recoil lands on
+time, and a harness run cannot show that the real component got the effect at all;
+on 2026-09-20 the harness-only loop reported the popup hand-off done while the
+docs pages did not have it.
 
 ## Preview links on every completed piece of work
 
