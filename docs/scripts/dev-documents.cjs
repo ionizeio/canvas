@@ -26,9 +26,32 @@
 // scripts/dev.mjs does; without it expo-router throws the server's markup away and
 // renders from scratch, the one behaviour of the export a dev page would otherwise
 // never show.
+//
+// The third gap is time to first byte. Expo renders a document from scratch on every
+// request: it re-reads the app config (which fingerprints the whole source tree and
+// asks git for the revision), rebuilds and re-evaluates the server bundle, enumerates
+// the client bundle's assets, and only then renders, about a second for the home page
+// on a warm server and the first thing every paint metric waits on. A rendered document
+// is a pure function of the source tree, so the middleware keeps the finished documents
+// (rewritten, and gzipped once) and drops all of them whenever Metro's file watcher
+// reports a change anywhere in the watched folders, the same signal Fast Refresh
+// runs on. A reload after an edit renders fresh; a reload without one is served in
+// milliseconds. Only a 200 is kept, a bounded number of them, and a server that offers
+// no watcher (a future Metro) gets no cache rather than a stale one.
+//
+// The fonts get the same treatment. Metro serves the seven preloaded faces as bare
+// TrueType with no encoding and `no-store`, 259 KB against the 150 KB the export's
+// gzipped copies weigh, and every one of them sits on the largest paint's critical path
+// (Lighthouse's model charges each request that finished before the paint to it): the
+// dev home page's largest paint read 2.6 s where the export's read 2.1 s. So a font is
+// gzipped too, once, and kept in the same cache.
 
 const { gzipSync } = require("node:zlib");
 const { paintFirstHtml } = require("./paint-first-html.cjs");
+
+// Enough for a browsing session across the docs (plus the seven faces) without holding
+// hundreds of pages.
+const CACHE_LIMIT = 64;
 
 const isDocumentRequest = (req) => {
   if (req.method !== "GET" && req.method !== "HEAD") return false;
@@ -38,21 +61,27 @@ const isDocumentRequest = (req) => {
   return !/\.[a-z0-9]+$/i.test(pathname);
 };
 
+// A TrueType or OpenType face from Metro's asset route (`/assets/?unstable_path=...` in
+// development). WOFF is already compressed and is left alone.
+const isFontRequest = (req) => req.method === "GET" && /^\/assets\b/.test(req.url ?? "") && /\.(ttf|otf)(\?|$)/i.test(decodeURIComponent(req.url ?? ""));
+
 const acceptsGzip = (req) => /\bgzip\b/.test(req.headers["accept-encoding"] ?? "");
 
 const toBuffer = (chunk, encoding) => (Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk, typeof encoding === "string" ? encoding : "utf8"));
 
 /**
- * Buffer a text/html response body and hand the whole document to `rewrite` on end,
- * gzipped when the request allows it. A response that turns out not to be a document
- * (a redirect, an error as JSON) is replayed as it was written.
+ * Buffer a response body whose content type `matches` and, on end, send it through
+ * `rewrite` (the identity for a font), gzipped when the request allows it. A response
+ * that turns out to be something else (a redirect, an error as JSON) is replayed as it
+ * was written. `store`, when given, receives the finished response (its status, headers
+ * and rewritten body) to keep.
  */
-function interceptDocument(req, res, rewrite) {
+function interceptResponse(req, res, { matches, rewrite = (body) => body, store }) {
   const chunks = [];
   const write = res.write.bind(res);
   const end = res.end.bind(res);
   const writeHead = res.writeHead.bind(res);
-  const isHtml = () => /^text\/html\b/.test(String(res.getHeader("content-type") ?? ""));
+  const isHtml = () => matches(String(res.getHeader("content-type") ?? ""));
   let released = false;
   const release = () => {
     released = true;
@@ -93,26 +122,85 @@ function interceptDocument(req, res, rewrite) {
     }
     res.write = write;
     res.end = end;
-    let body = Buffer.from(rewrite(Buffer.concat(chunks).toString("utf8")), "utf8");
-    // The document is the one thing the dev server sends uncompressed; Metro gzips its
-    // bundles itself. The same encoding the export's static server and the deployment
-    // use, so a transfer-sized measurement reads the same here.
-    if (acceptsGzip(req)) {
-      body = gzipSync(body);
-      res.setHeader("Content-Encoding", "gzip");
-      res.setHeader("Vary", "Accept-Encoding");
-    }
-    res.setHeader("Content-Length", String(body.length));
-    return end(body, callback);
+    res.writeHead = writeHead;
+    const document = { status: res.statusCode, headers: res.getHeaders(), body: rewrite(Buffer.concat(chunks)) };
+    if (store && document.status === 200) store(document);
+    return sendDocument(req, res, document, end, callback);
+  };
+}
+
+/** The document rewrite over a buffered body. */
+const rewriteDocument = (body) => Buffer.from(paintFirstHtml(body.toString("utf8")).html, "utf8");
+
+const isHtmlType = (contentType) => /^text\/html\b/.test(contentType);
+const isFontType = (contentType) => /^(font\/|application\/(x-)?font)/.test(contentType);
+
+/** Send a finished document, gzipped when the request allows it. */
+function sendDocument(req, res, document, end = res.end.bind(res), callback) {
+  res.statusCode = document.status;
+  for (const name of Object.keys(document.headers)) res.setHeader(name, document.headers[name]);
+  let body = document.body;
+  // The document is the one thing the dev server sends uncompressed; Metro gzips its
+  // bundles itself. The same encoding the export's static server and the deployment
+  // use, so a transfer-sized measurement reads the same here.
+  if (acceptsGzip(req)) {
+    body = document.gzip ?? (document.gzip = gzipSync(document.body));
+    res.setHeader("Content-Encoding", "gzip");
+    res.setHeader("Vary", "Accept-Encoding");
+  } else {
+    res.removeHeader("Content-Encoding");
+  }
+  res.setHeader("Content-Length", String(body.length));
+  return end(body, callback);
+}
+
+/**
+ * The finished documents by request URL, emptied on every file change Metro's watcher
+ * reports. `server` is Metro's Server (the second argument of `enhanceMiddleware`);
+ * without a reachable watcher there is no cache.
+ */
+function createDocumentCache(server) {
+  let watcher = null;
+  try {
+    watcher = server?.getBundler?.()?.getBundler?.()?.getWatcher?.() ?? null;
+  } catch {
+    watcher = null;
+  }
+  if (!watcher || typeof watcher.on !== "function") return null;
+  const documents = new Map();
+  watcher.on("change", () => documents.clear());
+  return {
+    get: (key) => documents.get(key) ?? null,
+    set: (key, document) => {
+      documents.delete(key);
+      documents.set(key, document);
+      while (documents.size > CACHE_LIMIT) documents.delete(documents.keys().next().value);
+    },
+    clear: () => documents.clear(),
+    get size() {
+      return documents.size;
+    },
   };
 }
 
 /** The `enhanceMiddleware` for docs/metro.config.js. */
 function createDevDocumentMiddleware() {
-  return (metroMiddleware) => (req, res, next) => {
-    if (isDocumentRequest(req)) interceptDocument(req, res, (html) => paintFirstHtml(html).html);
-    return metroMiddleware(req, res, next);
+  return (metroMiddleware, server) => {
+    const cache = createDocumentCache(server);
+    return (req, res, next) => {
+      const document = isDocumentRequest(req);
+      if (!document && !isFontRequest(req)) return metroMiddleware(req, res, next);
+      const key = req.url ?? "/";
+      const cached = cache?.get(key);
+      if (cached) return sendDocument(req, res, cached);
+      interceptResponse(req, res, {
+        matches: document ? isHtmlType : isFontType,
+        rewrite: document ? rewriteDocument : undefined,
+        store: cache ? (finished) => cache.set(key, finished) : undefined,
+      });
+      return metroMiddleware(req, res, next);
+    };
   };
 }
 
-module.exports = { createDevDocumentMiddleware, interceptDocument, isDocumentRequest };
+module.exports = { createDevDocumentMiddleware, createDocumentCache, interceptResponse, isDocumentRequest, isFontRequest };

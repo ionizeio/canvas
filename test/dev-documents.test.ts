@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { gunzipSync } from "node:zlib";
 import { createRequire } from "node:module";
+import { EventEmitter } from "node:events";
 
 // The paint-first document rewrite the export and the dev server share, and the dev
 // server's middleware that applies it to a served document (docs/scripts/dev-documents.cjs).
@@ -14,7 +15,10 @@ import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 const ROOT = join(import.meta.dir, "..");
 const { LOADER, cspHash, paintFirstHtml } = require(join(ROOT, "docs/scripts/paint-first-html.cjs"));
-const { createDevDocumentMiddleware, isDocumentRequest } = require(join(ROOT, "docs/scripts/dev-documents.cjs"));
+const { createDevDocumentMiddleware, createDocumentCache, isDocumentRequest, isFontRequest } = require(join(ROOT, "docs/scripts/dev-documents.cjs"));
+
+/** Metro's Server in miniature: the chain the middleware walks to the file watcher. */
+const metroServer = (watcher: EventEmitter | null) => ({ getBundler: () => ({ getBundler: () => ({ getWatcher: () => watcher }) }) });
 
 const DEV_BUNDLE = "/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.routerRoot=src%2Fapp";
 const page = (scripts: string[]) =>
@@ -66,10 +70,18 @@ describe("createDevDocumentMiddleware", () => {
   type Handler = (req: IncomingMessage, res: ServerResponse, next: (error?: unknown) => void) => void;
   // Expo's chain in miniature: the enhanced Metro middleware first (Metro answers its
   // bundles and calls next for anything else), the document handler behind it.
+  const FONT = Buffer.from("not really a font, but a body the size of one ".repeat(40));
   const metro: Handler = (req, res, next) => {
     if (req.url?.startsWith("/node_modules/")) {
       res.setHeader("Content-Type", "application/javascript");
       res.end("console.log(1)");
+      return;
+    }
+    if (req.url?.startsWith("/assets/")) {
+      // Metro's asset route: a bare TrueType body, no encoding, no caching.
+      res.setHeader("Content-Type", "font/ttf");
+      res.setHeader("Cache-Control", "no-store");
+      res.end(FONT);
       return;
     }
     next();
@@ -107,8 +119,8 @@ describe("createDevDocumentMiddleware", () => {
       req.end();
     });
 
-  async function serve<T>(run: (base: string) => Promise<T>): Promise<T> {
-    const server = createServer((req, res) => enhanced(req, res, () => documents(req, res, () => res.end())));
+  async function serve<T>(run: (base: string) => Promise<T>, handler: Handler = enhanced): Promise<T> {
+    const server = createServer((req, res) => handler(req, res, () => documents(req, res, () => res.end())));
     await new Promise<void>((ok) => server.listen(0, "127.0.0.1", ok));
     const address = server.address();
     const base = `http://127.0.0.1:${typeof address === "object" && address ? address.port : 0}`;
@@ -155,5 +167,85 @@ describe("createDevDocumentMiddleware", () => {
       expect(json.headers["content-encoding"]).toBeUndefined();
       expect(JSON.parse(json.body.toString("utf8"))).toEqual({ a: 1 });
     });
+  });
+
+  it("serves a document again from the cache until Metro's watcher reports a change", async () => {
+    const watcher = new EventEmitter();
+    let rendered = 0;
+    const counting: Handler = (req, res, next) => {
+      rendered += 1;
+      metro(req, res, next);
+    };
+    const handler = createDevDocumentMiddleware()(counting, metroServer(watcher));
+    await serve(async (base) => {
+      const first = await get(`${base}/`, { accept: "text/html", "accept-encoding": "gzip" });
+      const second = await get(`${base}/`, { accept: "text/html", "accept-encoding": "identity" });
+      expect(rendered).toBe(1);
+      expect(gunzipSync(first.body).toString("utf8")).toBe(second.body.toString("utf8"));
+      expect(second.headers["content-encoding"]).toBeUndefined();
+      expect(second.headers["content-type"]).toBe("text/html");
+      // Another URL renders on its own.
+      await get(`${base}/chunked`, { accept: "text/html", "accept-encoding": "gzip" });
+      expect(rendered).toBe(2);
+      // A file change drops every document.
+      watcher.emit("change", { eventsQueue: [] });
+      await get(`${base}/`, { accept: "text/html", "accept-encoding": "gzip" });
+      expect(rendered).toBe(3);
+      // A bundle is never cached or intercepted.
+      expect((await get(`${base}${DEV_BUNDLE}`, { accept: "*/*" })).body.toString("utf8")).toBe("console.log(1)");
+    }, handler);
+  });
+
+  it("gzips and caches a font from Metro's asset route", async () => {
+    const font = "/assets/?unstable_path=.%2Fassets%2Ffonts/Urbanist_600SemiBold.ttf";
+    expect(isFontRequest({ method: "GET", url: font, headers: {} } as IncomingMessage)).toBe(true);
+    expect(isFontRequest({ method: "GET", url: "/assets/?unstable_path=.%2Fassets%2Fimages%2Flooks/a.webp", headers: {} } as IncomingMessage)).toBe(false);
+    const watcher = new EventEmitter();
+    let served = 0;
+    const counting: Handler = (req, res, next) => {
+      served += 1;
+      metro(req, res, next);
+    };
+    const handler = createDevDocumentMiddleware()(counting, metroServer(watcher));
+    await serve(async (base) => {
+      const gz = await get(`${base}${font}`, { accept: "*/*", "accept-encoding": "gzip, br" });
+      expect(gz.headers["content-encoding"]).toBe("gzip");
+      expect(gz.headers["content-type"]).toBe("font/ttf");
+      expect(gunzipSync(gz.body).equals(FONT)).toBe(true);
+      expect(gz.body.length).toBeLessThan(FONT.length);
+      const plain = await get(`${base}${font}`, { accept: "*/*", "accept-encoding": "identity" });
+      expect(plain.headers["content-encoding"]).toBeUndefined();
+      expect(plain.body.equals(FONT)).toBe(true);
+      expect(served).toBe(1);
+      watcher.emit("change", { eventsQueue: [] });
+      await get(`${base}${font}`, { accept: "*/*", "accept-encoding": "gzip" });
+      expect(served).toBe(2);
+    }, handler);
+  });
+
+  it("keeps only a 200, only a bounded number, and no cache at all without a watcher", async () => {
+    const cache = createDocumentCache(metroServer(new EventEmitter()));
+    expect(cache).not.toBeNull();
+    for (let i = 0; i < 70; i++) cache!.set(`/page-${i}`, { status: 200, headers: {}, body: Buffer.from("x") });
+    expect(cache!.size).toBe(64);
+    expect(cache!.get("/page-0")).toBeNull();
+    expect(cache!.get("/page-69")).not.toBeNull();
+    expect(createDocumentCache(metroServer(null))).toBeNull();
+    expect(createDocumentCache(undefined)).toBeNull();
+    // A missing document (Expo's 404 page) is rendered every time.
+    const watcher = new EventEmitter();
+    let rendered = 0;
+    const missing: Handler = (req, res) => {
+      rendered += 1;
+      res.statusCode = 404;
+      res.setHeader("Content-Type", "text/html");
+      res.end(page([DEV_BUNDLE]));
+    };
+    const handler = createDevDocumentMiddleware()(missing, metroServer(watcher));
+    await serve(async (base) => {
+      expect((await get(`${base}/nowhere`, { accept: "text/html" })).status).toBe(404);
+      expect((await get(`${base}/nowhere`, { accept: "text/html" })).status).toBe(404);
+      expect(rendered).toBe(2);
+    }, handler);
   });
 });
