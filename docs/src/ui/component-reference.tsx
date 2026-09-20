@@ -1,5 +1,6 @@
-import { Suspense } from "react";
-import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
+import { Suspense, useState } from "react";
+import { Platform } from "react-native";
+import { Redirect, useLocalSearchParams } from "expo-router";
 import { View, Text, Skeleton, useTheme } from "@ionizeio/canvas";
 import { getComponent } from "../core/data/components";
 import type { ComponentDoc } from "../core/data/types";
@@ -51,7 +52,6 @@ export function ComponentReference() {
 
 function ComponentBody({ comp, variant }: { comp: ComponentDoc; variant?: string }) {
   const { tokens } = useTheme();
-  const router = useRouter();
   const entry = useComponentDocs(comp.dir ?? comp.slug);
   const propGroups = entry?.props;
   const examples = entry?.examples ?? [];
@@ -60,22 +60,46 @@ function ComponentBody({ comp, variant }: { comp: ComponentDoc; variant?: string
   // URL, so a variant segment that resolves to it (the literal "default", or anything that
   // matches no example) is redundant and canonicalizes to the bare path.
   const variantIdx = variant ? examples.findIndex((e) => variantSlug(e.label) === variant) : 0;
+  // Local state, seeded once from the URL, NOT re-derived from it on every render: this
+  // component is shared by the index route (no variant) and the `[variant]` route (one
+  // per non-default example), which expo-router treats as distinct screens (no optional
+  // catch-all in this version), and it remounts on ANY router.replace to a new resolved
+  // path, even between two `[variant]` values on the same file (verified against a
+  // running instance, not assumed). That remount is the blink the form-factor switcher
+  // (and every other piece of local Playground state, and its glass materials) suffered
+  // on every rail click. Selecting a new example now updates this state directly instead
+  // of asking the router to navigate, so the component and its children never unmount.
+  // Called before the redirect below (Rules of Hooks), and moot when it fires: a
+  // <Redirect> mount never reaches the JSX that would read `selected`.
+  const [selected, setSelected] = useState(() => (variantIdx < 0 ? 0 : variantIdx));
   if (variant !== undefined && variantIdx <= 0) {
     return <Redirect href={`/components/${comp.slug}`} />;
   }
-  const selected = variantIdx < 0 ? 0 : variantIdx;
-
-  // Selecting an example rewrites the URL so the view is deep-linkable. `replace`, not
-  // `push`: switching variants filters the same page rather than opening a new destination,
-  // and the default example drops the segment to stay canonical.
-  const onSelect = (i: number) => {
+  // The canonical URL for example `i` (the bare component path for the default, a
+  // `/<variant>` deep link otherwise); shared by the address-bar sync below and the
+  // DocsHead override, so the two can never disagree.
+  const hrefFor = (i: number) => {
     const label = examples[i]?.label;
-    const href = i <= 0 || !label ? `/components/${comp.slug}` : `/components/${comp.slug}/${variantSlug(label)}`;
-    router.replace(href as never);
+    return i <= 0 || !label ? `/components/${comp.slug}` : `/components/${comp.slug}/${variantSlug(label)}`;
+  };
+
+  // Keeps the address bar deep-linkable without the remount above: a direct history
+  // update, not router.replace. `replace`, not `push`, matching the router call this
+  // replaces: no new history entry, so back/forward behaves exactly as before. Native
+  // has no address bar to sync, so this is web-only.
+  const onSelect = (i: number) => {
+    setSelected(i);
+    if (Platform.OS === "web") {
+      window.history.replaceState(window.history.state, "", hrefFor(i));
+    }
   };
 
   return (
     <>
+      {/* Overrides the outer DocsHead in ComponentReference (nearer wins) once this
+          Suspense boundary resolves, so the canonical tag tracks `selected` through
+          every in-page switch instead of only being correct on a cold load. */}
+      <DocsHead title={comp.name} path={hrefFor(selected)} />
       {examples.length > 0 ? (
         <Playground examples={examples} stageAlign={comp.stageAlign} singlePreview={comp.singlePreview} selected={selected} onSelect={onSelect} />
       ) : (

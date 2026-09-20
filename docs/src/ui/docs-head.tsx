@@ -25,11 +25,18 @@ export const SITE_NAME = "Canvas";
 // the root element carries `data-hydrated` (never in the server markup, applied by the
 // head runtime after the first commit), which is what the browser suite waits for
 // before it clicks anything.
-export function DocsHead({ title }: { title?: string }) {
+export function DocsHead({ title, path }: { title?: string; path?: string }) {
   const pathname = usePathname();
   const hydrated = useHydrated();
   if (Platform.OS !== "web") return null;
-  const canonical = `${SITE_ORIGIN}${pathname === "/" ? "/" : pathname.replace(/\/+$/, "")}`;
+  // `path` overrides the router's own pathname for a caller that tracks its
+  // canonical address itself (a component page whose in-page variant switch
+  // updates the address bar without going through the router; see
+  // ComponentBody in component-reference.tsx), so the canonical tag stays
+  // accurate through that switch instead of lagging until the next real
+  // navigation.
+  const resolvedPath = path ?? pathname;
+  const canonical = `${SITE_ORIGIN}${resolvedPath === "/" ? "/" : resolvedPath.replace(/\/+$/, "")}`;
   return (
     <Head>
       <title>{title ? `${title} · ${SITE_NAME}` : SITE_NAME}</title>
