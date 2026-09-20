@@ -2,12 +2,16 @@
 
 Text input + dropdown: searchable single-select. Pass `label` (and `required`) to name the field: iOS and web render the label above the field, while Android floats the Material 3 in-container label once the list opens or a value fills the field. The field fills the parent it is given; a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container step sets its measure.
 
-In glass mode the suggestion list grows out of the field's edge, recoils and
-settles, and stays visible briefly on close while the suggestions are already
-inert; the field, its caret, floating label and toggle never move, and picking a
-suggestion commits the value at once. Filtering re-shapes the material without
-replaying the opening. Reduce Motion settles at once; solid mode keeps the
-ordinary entrance.
+In glass mode the suggestion list hands off with the field, the way the iOS 26
+menu takes its button: on open the field's glass and text vanish into a droplet
+that forms on the field's box in its width, corner and tone, the list blooms out
+of it, recoils and settles, and the field is back, caret, floating label and
+toggle included, as soon as the list has cleared its box; on close the
+suggestions go inert at once and the pane absorbs back up into the field's box,
+the field yielding again only while the pane covers it and returning as the pane
+re-forms the field. Picking a suggestion commits the value at once. Filtering
+re-shapes the material without replaying the opening. Reduce Motion settles at
+once with the field untouched; solid mode keeps the ordinary entrance.
 
 Arrow Down and Arrow Up open the list and highlight an option while focus stays in the text field. Navigation stops at the first and last matches. Home and End jump to those limits once an option is highlighted; otherwise they retain their text-editing behavior. Enter chooses the highlighted option, Escape closes the list without changing the query, and Tab closes it while moving focus. Typing resets the highlight. Confirming an input-method candidate does not select an option or submit a surrounding Form.
 

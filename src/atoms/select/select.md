@@ -2,13 +2,17 @@
 
 Native select restyled to match Canvas inputs. Pass `label` (and `required`) to name the field: iOS and web render the label above the trigger, while Android floats the Material 3 in-container label once the menu opens or a value is selected. The trigger fills the parent it is given; a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container step sets its measure.
 
-In glass mode the option panel grows out of the trigger's edge (or up from it
-when it flips above), with a bounded contour overshoot, recoil and an exact
-settle to the fitted panel; on close it stays visible briefly while the options
-are already inert. The displayed value, placeholder, floating label and chevron
-never move, and the chosen value and expanded state commit immediately, ahead of
-the material. Reduce Motion settles at once; solid mode keeps the ordinary
-entrance.
+In glass mode the option panel hands off with the trigger, the way the iOS 26
+menu takes its button: on open the trigger's glass, value, placeholder, floating
+label and chevron vanish into a droplet that forms on the trigger's box in its
+width, corner and tone, the panel blooms out of it (or up from it when it flips
+above) with a bounded contour overshoot, recoil and an exact settle to the fitted
+panel, and the trigger is back as soon as the panel has cleared its box; on close
+the options go inert at once and the pane absorbs back into the trigger's box,
+the trigger yielding again only while the pane covers it and returning as the
+pane re-forms the box. The chosen value and expanded state commit immediately,
+ahead of the material. Reduce Motion settles at once with the trigger untouched;
+solid mode keeps the ordinary entrance.
 
 The label also names the option list. Use `accessibilityLabel` to provide an explicit purpose when the visible label or placeholder is insufficient; it overrides both accessible names. A required field announces "required" with the button name and marks the option list as required. The selected value never replaces the field's purpose.
 

@@ -109,6 +109,18 @@ export const POPUP_PRESENTATION = {
     tint: 0.55,
     /** The close back onto the trigger: slower than a plain close, so the pill re-forms readably. */
     close: { stiffness: 520, damping: 40 },
+    /**
+     * The FIELD hand-off (Autocomplete, Select, PhoneInput): the same travel between
+     * the field's box and the card as a menu button's, so the field vanishes into the
+     * droplet on open and the pane absorbs back onto the box on close, with one
+     * difference the anatomy forces: a field is read or typed into while its list is
+     * open, so its material and text are only hidden while the pane COVERS the box
+     * (from the snap up to the cover mark) and are back as soon as the pane has left
+     * it, both on the way out and on the way home. `margin` is the share of the
+     * travel by which the field hides before the pane's edge reaches the box (the
+     * contour's stretch carries the edge a few pixels past the unstretched frame).
+     */
+    field: { margin: 0.03 },
   },
 } as const;
 
@@ -128,6 +140,19 @@ export const HANDOFF_RETURN = 1e-9;
 /** The across extent's share of its travel at `progress` under the hand-off (held at the trigger's until `widen`). */
 export function handoffAcross(progress: number): number {
   return progress <= HANDOFF.widen ? 0 : Math.min(1, (progress - HANDOFF.widen) / (1 - HANDOFF.widen));
+}
+
+/**
+ * Where a field's material hides and returns: the progress at which the pane's box,
+ * travelling between the field's box and the card, has its near edge on the field's
+ * near edge, less the table's margin. Below it the pane covers the field (hidden);
+ * from it up the pane has left the box (back). `extent` is the field's size along the
+ * anchor axis and `gap` the standoff between the two boxes; boxes that touch or
+ * overlap cover the field for the whole travel (1).
+ */
+export function fieldCoverMark(extent: number, gap: number): number {
+  if (!(extent > 0) || !(gap > 0)) return 1;
+  return Math.min(1, extent / (extent + gap) + HANDOFF.field.margin);
 }
 
 /**
@@ -166,6 +191,11 @@ export function usePopupPresence(open: boolean, enabled: boolean) {
 // its first spring would flush the seed through the JS driver, and on Fabric that is a
 // shadow-tree commit per animated view (src/style/motion.ts).
 const DRIVER = { useNativeDriver: supportsNativeDriver } as const;
+
+// The progress from which the pane counts as settled on its resting box: the foreground
+// becomes interactive here (before the opening's overshoot has died down), and a close
+// that starts from here is a close from rest.
+const SETTLED = 0.995;
 
 // The radius table's grid. The table is sampled on this grid PLUS the marks the
 // presentation turns at (progress 0, the seed, the settled mark, 1), so the corner is
@@ -268,7 +298,7 @@ export function usePopupMotion({
       latest.current = value;
       // The foreground becomes interactive once the material first covers its resting
       // content area, which with the opening's overshoot is before the settle.
-      if (value >= 0.995 && animating.current) setReadable(true);
+      if (value >= SETTLED && animating.current) setReadable(true);
     });
     return () => progress.removeListener(subscription);
   }, [progress]);
@@ -368,58 +398,72 @@ export function usePopupMotion({
     const acrossExtent = horizontal ? height : width;
     const alongAnchor = (horizontal ? edge === "right" : edge === "bottom") ? 1 : 0;
     const acrossAnchor = horizontal ? yFraction : xFraction;
-    let scaleAlong: Animated.AnimatedNode;
-    let scaleAcross: Animated.AnimatedNode;
-    let shiftAlong: Animated.AnimatedNode;
-    let shiftAcross: Animated.AnimatedNode;
-    let corner: Animated.AnimatedInterpolation<number> | undefined;
-    let translateX: Animated.AnimatedNode;
-    let translateY: Animated.AnimatedNode;
-    if (origin) {
-      // The material travels between two boxes: the trigger's (progress 0) and the
-      // card's (progress 1), each extent on its own curve (the across one held at the
-      // trigger's until `widen`, the along one carrying the overshoot), the centre
-      // following the extent so the drop stays under the pill while its width is held.
-      // Each scale is 1 less the remaining share of the way from the trigger's extent,
-      // and each shift the remaining share of the way from the trigger's centre, so at
-      // rest both are the identity exactly.
-      const originAlong = horizontal ? origin.width : origin.height;
-      const originAcross = horizontal ? origin.height : origin.width;
-      const originAlongCentre = horizontal ? origin.x + origin.width / 2 : origin.y + origin.height / 2;
-      const originAcrossCentre = horizontal ? origin.y + origin.height / 2 : origin.x + origin.width / 2;
+    const shaped = radius != null && Number.isFinite(radius);
+    interface Graph {
+      scaleAlong: Animated.AnimatedNode; scaleAcross: Animated.AnimatedNode;
+      shiftAlong: Animated.AnimatedNode; shiftAcross: Animated.AnimatedNode;
+      corner?: Animated.AnimatedNode; translateX: Animated.AnimatedNode; translateY: Animated.AnimatedNode;
+    }
+    // The material travels between two boxes: the trigger's (progress 0) and the
+    // card's (progress 1), each extent on its own curve (the across one held at the
+    // trigger's until `widen`, the along one carrying the overshoot), the centre
+    // following the extent so the drop stays under the pill while its width is held.
+    // Each scale is 1 less the remaining share of the way from the trigger's extent,
+    // and each shift the remaining share of the way from the trigger's centre, so at
+    // rest both are the identity exactly.
+    const fromOrigin = (box: PopupOrigin): Graph => {
+      const originAlong = horizontal ? box.width : box.height;
+      const originAcross = horizontal ? box.height : box.width;
+      const originAlongCentre = horizontal ? box.x + box.width / 2 : box.y + box.height / 2;
+      const originAcrossCentre = horizontal ? box.y + box.height / 2 : box.x + box.width / 2;
       const remainingAlong = progress.interpolate({ inputRange: [0, 1], outputRange: [1, 0], extrapolateLeft: "clamp", extrapolateRight: "extend" });
       const remainingAcross = progress.interpolate({ inputRange: [0, HANDOFF.widen, 1], outputRange: [1, 1, 0], extrapolate: "clamp" });
-      scaleAlong = Animated.multiply(Animated.subtract(1, Animated.multiply(remainingAlong, 1 - originAlong / along)), stretch);
-      scaleAcross = Animated.multiply(Animated.subtract(1, Animated.multiply(remainingAcross, 1 - originAcross / acrossExtent)), squash);
-      shiftAlong = Animated.multiply(remainingAlong, originAlongCentre - along / 2);
-      shiftAcross = Animated.multiply(remainingAcross, originAcrossCentre - acrossExtent / 2);
-      if (radius != null && Number.isFinite(radius)) {
+      const graph: Graph = {
+        scaleAlong: Animated.multiply(Animated.subtract(1, Animated.multiply(remainingAlong, 1 - originAlong / along)), stretch),
+        scaleAcross: Animated.multiply(Animated.subtract(1, Animated.multiply(remainingAcross, 1 - originAcross / acrossExtent)), squash),
+        shiftAlong: Animated.multiply(remainingAlong, originAlongCentre - along / 2),
+        shiftAcross: Animated.multiply(remainingAcross, originAcrossCentre - acrossExtent / 2),
+        // The rows scale from the trigger's centre.
+        translateX: Animated.multiply(remaining, box.x + box.width / 2 - width / 2),
+        translateY: Animated.multiply(remaining, box.y + box.height / 2 - height / 2),
+      };
+      if (shaped) {
         // The corner is the trigger's at the pill, the droplet's at the seed (as round
         // as the seed shape's shorter side allows), and the skin's once settled.
         const seedAlong = originAlong + (along - originAlong) * SEED;
         const seedAcross = originAcross + (acrossExtent - originAcross) * handoffAcross(SEED);
         const droplet = Math.max(radius, RADIUS.droplet * Math.min(seedAlong, seedAcross));
-        const displayed = keyframes([[0, origin.radius], [SEED, droplet], [RADIUS.settled, radius]]);
+        const displayed = keyframes([[0, box.radius], [SEED, droplet], [RADIUS.settled, radius]]);
         const alongScale = (at: number) => originAlong / along + at * (1 - originAlong / along);
         const acrossScale = (at: number) => originAcross / acrossExtent + handoffAcross(at) * (1 - originAcross / acrossExtent);
-        corner = radiusTable(progress, displayed, seedAlong <= seedAcross ? alongScale : acrossScale, 0);
+        graph.corner = radiusTable(progress, displayed, seedAlong <= seedAcross ? alongScale : acrossScale, 0);
       }
-      // The rows scale from the trigger's centre.
-      translateX = Animated.multiply(remaining, origin.x + origin.width / 2 - width / 2);
-      translateY = Animated.multiply(remaining, origin.y + origin.height / 2 - height / 2);
-    } else {
-      // The pane's extent along the anchor axis is progress itself (the opening's
-      // overshoot passes through); across it the pane starts at the droplet's width
-      // and never overshoots (the along axis carries the bounce, as the native
-      // menu's does). The shift keeps the anchor edge where it is: a box scaled about
-      // its centre by s moves its edges by half of (1 - s) of its extent.
+      return graph;
+    };
+    // The pane's extent along the anchor axis is progress itself (the opening's
+    // overshoot passes through); across it the pane starts at the droplet's width
+    // and never overshoots (the along axis carries the bounce, as the native
+    // menu's does). The shift keeps the anchor edge where it is: a box scaled about
+    // its centre by s moves its edges by half of (1 - s) of its extent.
+    const fromAnchor = (): Graph => {
       const travelAlong = progress.interpolate({ inputRange: [0, 1], outputRange: [0, 1], extrapolateLeft: "clamp", extrapolateRight: "extend" });
       const travelAcross = progress.interpolate({ inputRange: [0, 1], outputRange: [ACROSS, 1], extrapolateLeft: "clamp", extrapolateRight: "extend" });
-      scaleAlong = Animated.multiply(travelAlong, stretch);
-      scaleAcross = Animated.multiply(travelAcross, squash);
-      shiftAlong = Animated.multiply(Animated.subtract(1, scaleAlong), along * (alongAnchor - 0.5));
-      shiftAcross = Animated.multiply(Animated.subtract(1, scaleAcross), acrossExtent * (acrossAnchor - 0.5));
-      if (radius != null && Number.isFinite(radius)) {
+      const scaleAlong = Animated.multiply(travelAlong, stretch);
+      const scaleAcross = Animated.multiply(travelAcross, squash);
+      // The rows scale with the pane's extent along the anchor axis, sit centred
+      // across it, and cross-fade in. Every term is linear in the remaining travel,
+      // so at rest the foreground is exactly the identity.
+      const alongShift = (along / 2) * (alongAnchor ? 1 : -1);
+      const acrossShift = acrossExtent * (1 - ACROSS) * (acrossAnchor - 0.5);
+      const graph: Graph = {
+        scaleAlong,
+        scaleAcross,
+        shiftAlong: Animated.multiply(Animated.subtract(1, scaleAlong), along * (alongAnchor - 0.5)),
+        shiftAcross: Animated.multiply(Animated.subtract(1, scaleAcross), acrossExtent * (acrossAnchor - 0.5)),
+        translateX: Animated.multiply(remaining, horizontal ? alongShift : acrossShift),
+        translateY: Animated.multiply(remaining, horizontal ? acrossShift : alongShift),
+      };
+      if (shaped) {
         // The droplet is as round as its shorter side allows; the skin's corner is
         // back by the time the pane has nearly filled out. Below the seed (a close)
         // the pane keeps the capsule as it shrinks.
@@ -429,16 +473,11 @@ export function usePopupMotion({
         const displayed = keyframes([[SEED, droplet], [RADIUS.settled, radius]]);
         const alongScale = (at: number) => at;
         const acrossScale = (at: number) => ACROSS + (1 - ACROSS) * at;
-        corner = radiusTable(progress, displayed, seedAlong <= seedAcross ? alongScale : acrossScale, SEED);
+        graph.corner = radiusTable(progress, displayed, seedAlong <= seedAcross ? alongScale : acrossScale, SEED);
       }
-      // The rows scale with the pane's extent along the anchor axis, sit centred
-      // across it, and cross-fade in. Every term is linear in the remaining travel,
-      // so at rest the foreground is exactly the identity.
-      const alongShift = (along / 2) * (alongAnchor ? 1 : -1);
-      const acrossShift = acrossExtent * (1 - ACROSS) * (acrossAnchor - 0.5);
-      translateX = Animated.multiply(remaining, horizontal ? alongShift : acrossShift);
-      translateY = Animated.multiply(remaining, horizontal ? acrossShift : alongShift);
-    }
+      return graph;
+    };
+    const { scaleAlong, scaleAcross, shiftAlong, shiftAcross, corner, translateX, translateY } = origin ? fromOrigin(origin) : fromAnchor();
     const frame: Animated.WithAnimatedValue<ViewStyle> = {
       transform: [
         { translateX: horizontal ? shiftAlong : shiftAcross },

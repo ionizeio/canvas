@@ -2,13 +2,20 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { forwardRef, useId, useRef } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
-import { type Role } from "react-native";
+import { Animated, type Role } from "react-native";
 import { View, Pressable, Text, useControllableState, useFillStyle, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, GlassPane, paneStyle, isGlass, withInnerFill } from "../../style/index.js";
 // The kit-owned popup policy: the menu material grows from its anchor edge with a
 // bounded contour overshoot, recoils and settles, and stays visible briefly on
 // close while its rows are already inert. Solid mode and Reduce Motion keep the
 // ordinary entrance. Internal, never a public prop.
 import { LiquidAnchoredOverlay } from "../../style/liquid-anchored-overlay.js";
+// The field hand-off (popup-handoff.tsx): under glass the list pours out of the
+// trigger's edge (its width, corner and control tint) and, on close, absorbs back into
+// the trigger's box, the value and chevron yielding only while the pane covers it. A
+// Select is a field beside Inputs and Autocompletes, so it takes the field form: the
+// box never vanishes whole the way a menu button does.
+import { HandoffText, PopupHandoffContext, handoffInk, usePopupHandoff } from "../../style/popup-handoff.js";
+import { useReducedMotion } from "../../style/motion.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the option-list
@@ -25,6 +32,8 @@ import { root, rootLifted, PANEL_ANCHOR, type SelectSkin, type Size } from "./se
 // capped card; the rows past the cap then scroll into view instead of disappearing.
 const optionScroll: ViewStyle = { flexShrink: 1 };
 const floatingLabelLayer: ViewStyle = { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, pointerEvents: "none" };
+// The standoff between the trigger's edge and the list (the hand-off's cover mark reads it too).
+const LIST_GAP = 4;
 
 // Shared Select shell. The structure (the stacked label + the trigger row with
 // its optional leading icon, value/placeholder and trailing chevron, plus the
@@ -226,6 +235,11 @@ export function createSelect(skin: SelectSkin) {
     // shorthand reset leaves alone. Solid mode is untouched.
     const glass = isGlass(theme);
     const glassTrigger: ViewStyle | null = glass ? { backgroundColor: "transparent", borderColor: open ? triggerShape.borderColor : "transparent" } : null;
+    // The hand-off runs when the trigger's material is glass, motion is allowed and the
+    // list is hosted (the hosted overlay measures the trigger's frame, which the inline
+    // fallback never has); the trigger's subtree reads the channel through the context.
+    const reducedMotion = useReducedMotion();
+    const { handoff, context: handoffContext } = usePopupHandoff(glass && !reducedMotion && host != null, { field: { gap: LIST_GAP } });
     // Floating label owns the resting placeholder: show nothing until the menu opens
     // (matching the M3 Input); a selected value always shows.
     const selected = items.find((o) => o.value === value);
@@ -246,6 +260,7 @@ export function createSelect(skin: SelectSkin) {
             which its same-node overflow:"hidden" cannot clip. See src/style/ripple-clip.
             `alignSelf:"stretch"` keeps the wrapper (and the trigger inside it) filling the
             field's standard width, which lives on the root View. */}
+        <PopupHandoffContext.Provider value={handoffContext}>
         <RippleClip shape={cornerRadii(triggerShape)} style={{ alignSelf: "stretch" }}>
         <Pressable
           ref={hostRef}
@@ -275,10 +290,14 @@ export function createSelect(skin: SelectSkin) {
           aria-labelledby={inline && !props.accessibilityLabel && !required ? labelId : undefined}
         >
           {({ pressed }) => {
-            const ink = glass ? { opacity: disabled ? skin.disabledOpacity : pressed && skin.pressedOpacity != null ? skin.pressedOpacity : 1 } : null;
+            // The ink the value, the chevron and the floating label wear under glass (a
+            // press or a disabled state dims them); under the hand-off it rides the
+            // label's fade as well.
+            const inkOpacity = disabled ? skin.disabledOpacity : pressed && skin.pressedOpacity != null ? skin.pressedOpacity : 1;
+            const ink = handoffContext ? handoffInk(handoffContext, inkOpacity) : glass ? { opacity: inkOpacity } : null;
             return <>
               <GlassPane layer="control" shape={triggerShape} interactive={!disabled} />
-              <View
+              <Animated.View
                 style={[
                   skin.triggerValue,
                   // Android floating label: the reserve (top padding that lets the value
@@ -299,10 +318,10 @@ export function createSelect(skin: SelectSkin) {
                 {icon ? <Icon globe muted size={14} /> : null}
                 {selectedLeading != null ? <Text style={skin.valueText(tokens, size, true)}>{selectedLeading}</Text> : null}
                 <Text style={skin.valueText(tokens, size, hasValue)}>{displayText}</Text>
-              </View>
-              <Text style={[skin.chevron(tokens, size, open), ink]}>{skin.chevronGlyph}</Text>
+              </Animated.View>
+              <HandoffText style={[skin.chevron(tokens, size, open), ink]}>{skin.chevronGlyph}</HandoffText>
               {floating ? (
-                <View style={[floatingLabelLayer, ink]}>
+                <Animated.View style={[floatingLabelLayer, ink]}>
                   <FloatingLabel
                     styles={skin}
                     size={size}
@@ -315,12 +334,13 @@ export function createSelect(skin: SelectSkin) {
                     isError={false}
                     height={triggerHeight}
                   />
-                </View>
+                </Animated.View>
               ) : null}
             </>;
           }}
         </Pressable>
         </RippleClip>
+        </PopupHandoffContext.Provider>
 
         <LiquidAnchoredOverlay
           onAccessibilityEscape={escapeScope.onAccessibilityEscape}
@@ -328,7 +348,7 @@ export function createSelect(skin: SelectSkin) {
           open={open}
           onDismiss={() => setOpen(false)}
           triggerRef={triggerRef}
-          gap={4}
+          gap={LIST_GAP}
           cardStyle={[skin.panel(tokens), { minWidth: triggerWidth }]}
           inlineStyle={PANEL_ANCHOR}
           // An option list is a card of rows, so under glass the panel takes the
@@ -339,6 +359,7 @@ export function createSelect(skin: SelectSkin) {
           // A controlled `open` with no onOpenChange can never actually close, so
           // the hosted dismiss backdrop is skipped (it would only block the page).
           dismissable={props.open === undefined || onOpenChange !== undefined}
+          handoff={handoff}
         >
           <EscapeLayerProvider scope={escapeScope}>
             {/* The option rows have no radius of their own and sit inside the rounded

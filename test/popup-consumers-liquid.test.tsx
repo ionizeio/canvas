@@ -200,7 +200,7 @@ describe("the button-to-menu hand-off", () => {
     } finally { view.unmount(); clock.restore(); measure.mockRestore(); }
   }, HANDOFF_TIMEOUT);
 
-  it("AvatarMenu and the collapsed Navbar menu inherit it; Select's field never hands off", async () => {
+  it("AvatarMenu and the collapsed Navbar menu inherit it", async () => {
     const measure = bounds();
     const clock = animationClock();
     try {
@@ -229,16 +229,6 @@ describe("the button-to-menu hand-off", () => {
       await openMenu(hamburger, clock);
       expect(inlineOpacity(iconFader)).toBe("0");
       bar.unmount();
-
-      const select = render(glass(<Select label="Region" options={["Americas", "Europe"]} />));
-      await act(async () => {});
-      const field = screen.getByRole("button", { name: "Region" });
-      expect(() => faderOf(field)).toThrow();
-      await openMenu(field, clock, "listbox");
-      // The field keeps its material and its label: nothing in it is at opacity 0.
-      const hidden = Array.from(select.container.querySelectorAll("*")).filter((n) => (n as HTMLElement).style.opacity === "0");
-      expect(hidden).toEqual([]);
-      select.unmount();
     } finally { clock.restore(); measure.mockRestore(); }
   }, HANDOFF_TIMEOUT);
 
@@ -267,6 +257,127 @@ describe("the button-to-menu hand-off", () => {
       expect(() => faderOf(button)).toThrow();
       view.unmount();
     } finally { measureAgain.mockRestore(); }
+  }, HANDOFF_TIMEOUT);
+});
+
+// The field hand-off (popup-handoff.tsx `field`): the field vanishes into the droplet
+// on open the way a menu button does (its GlassPane hidden in place, never at a partial
+// opacity, its text on a short fade) and is back as soon as the pane has left its box;
+// on close the pane absorbs back onto the box, hiding both again only while it covers
+// them, and hands back at the snap. The field's text nodes carry the fade as their own
+// inline opacity or on a layout-neutral slot, so the field's row keeps its layout.
+async function fieldHandsOff(box: HTMLElement, trigger: HTMLElement, role: string, clock: ReturnType<typeof animationClock>, text: HTMLElement[]) {
+  const pane = box.firstElementChild as HTMLElement;
+  expect(inlineOpacity(pane)).toBe("1");
+  for (const node of text) expect(inlineOpacity(node)).toBe("1");
+  // The pane reports the field's box (its layout event), so the cover ends where the
+  // pane leaves the box rather than at the top of the travel.
+  layoutElement(pane.firstElementChild as Element, { width: SIZE.width, height: 48 });
+  const content = await openMenu(trigger, clock, role);
+  // The droplet forms on the box: the field's material is gone at once and its text
+  // on its short fade (the test engine finishes it in the seed's own tick).
+  expect(inlineOpacity(pane)).toBe("0");
+  for (const node of text) expect(parseFloat(inlineOpacity(node))).toBe(0);
+  clock.advance(1600);
+  expect(heldBack(content)).toBe(false);
+  // The pane has left the box: the field stands under the resting list, whole.
+  expect(inlineOpacity(pane)).toBe("1");
+  for (const node of text) expect(inlineOpacity(node)).toBe("1");
+  // The close from rest: the absorb covers the box, the material yields (never in
+  // between) with the text gone under it, and both are back at the snap.
+  fireEvent.click(trigger);
+  let hidden = 0;
+  let textOut = false;
+  for (let step = 0; step < 120 && (hidden === 0 || inlineOpacity(pane) !== "1"); step++) {
+    clock.advance(16);
+    const material = parseFloat(inlineOpacity(pane));
+    expect(material === 0 || material === 1).toBe(true);
+    if (material === 0) {
+      hidden++;
+      if (text.every((node) => parseFloat(inlineOpacity(node)) < 1)) textOut = true;
+    }
+  }
+  expect(hidden).toBeGreaterThan(0);
+  expect(textOut).toBe(true);
+  expect(inlineOpacity(pane)).toBe("1");
+  // The test engine finishes the text's timed return in the snap's own tick.
+  for (const node of text) expect(inlineOpacity(node)).toBe("1");
+  expect(pane.isConnected).toBe(true);
+}
+
+describe("the field hand-off", () => {
+  it("Select: the list pours from the field's edge and absorbs back into it, the value and chevron fading only under the pane", async () => {
+    const measure = bounds();
+    const view = render(glass(<Select label="Region" options={["Americas", "Europe"]} />));
+    await act(async () => {});
+    const clock = animationClock();
+    try {
+      const field = screen.getByRole("button", { name: "Region" });
+      // No fader wraps the field: its material is the pane at index 0, the value
+      // cluster and the chevron carry the fade themselves.
+      expect(() => faderOf(field)).toThrow();
+      const cluster = field.children[1] as HTMLElement;
+      const chevron = field.children[2] as HTMLElement;
+      await fieldHandsOff(field, field, "listbox", clock, [cluster, chevron]);
+    } finally { view.unmount(); clock.restore(); measure.mockRestore(); }
+  }, HANDOFF_TIMEOUT);
+
+  it("Autocomplete: the same around the live editor, which keeps focus and its value", async () => {
+    const measure = bounds();
+    const view = render(glass(<Autocomplete label="Fruit" options={["Apple", "Apricot"]} defaultQuery="Ap" />));
+    await act(async () => {});
+    const clock = animationClock();
+    try {
+      const editor = screen.getByRole("combobox") as HTMLInputElement;
+      // The editor's fade rides a layout-neutral slot around it (the editor itself is
+      // never an animated host: its ref must stay attached for the accessibility
+      // return), so the slot is the faded node and the box is the slot's parent.
+      const slot = editor.parentElement as HTMLElement;
+      const box = slot.parentElement as HTMLElement;
+      const toggle = screen.getByRole("button", { name: "Toggle options" });
+      const chevron = toggle.firstElementChild as HTMLElement;
+      expect(inlineOpacity(editor)).toBe("");
+      await fieldHandsOff(box, toggle, "listbox", clock, [slot, chevron]);
+      expect(screen.getByRole("combobox")).toBe(editor);
+      expect(editor.value).toBe("Ap");
+    } finally { view.unmount(); clock.restore(); measure.mockRestore(); }
+  }, HANDOFF_TIMEOUT);
+
+  it("PhoneInput: the country list hands off with the whole box", async () => {
+    const measure = bounds();
+    const view = render(glass(<PhoneInput label="Phone" />));
+    await act(async () => {});
+    const clock = animationClock();
+    try {
+      const segment = screen.getByRole("button", { name: /^Country/ });
+      const box = segment.parentElement as HTMLElement;
+      const number = (screen.getByRole("textbox") as HTMLElement).parentElement as HTMLElement;
+      await fieldHandsOff(box, segment, "listbox", clock, [segment.children[0] as HTMLElement, segment.children[1] as HTMLElement, number]);
+    } finally { view.unmount(); clock.restore(); measure.mockRestore(); }
+  }, HANDOFF_TIMEOUT);
+
+  it("leaves a solid or reduced-motion field's tree plain: no inline opacity on the editor, the value or the box", async () => {
+    const measure = bounds();
+    try {
+      const view = render(solid(<><Autocomplete label="Fruit" options={["Apple"]} /><Select label="Region" options={["Americas"]} /></>));
+      await act(async () => {});
+      expect(inlineOpacity(screen.getByRole("combobox"))).toBe("");
+      const field = screen.getByRole("button", { name: "Region" });
+      expect(inlineOpacity(field.firstElementChild)).toBe("");
+      view.unmount();
+    } finally { measure.mockRestore(); }
+    const measureAgain = bounds();
+    const reduced = spyOn(AccessibilityInfo, "isReduceMotionEnabled").mockResolvedValue(true);
+    try {
+      const view = render(glass(<Autocomplete label="Fruit" options={["Apple"]} />));
+      await act(async () => {});
+      expect(inlineOpacity(screen.getByRole("combobox"))).toBe("");
+      // No slot around the editor, and the pane is the plain GlassSurface host, not
+      // a hand-off wrapper.
+      expect(inlineOpacity(screen.getByRole("combobox").parentElement)).toBe("");
+      expect(inlineOpacity((screen.getByRole("combobox").parentElement as HTMLElement).firstElementChild)).toBe("");
+      view.unmount();
+    } finally { reduced.mockRestore(); measureAgain.mockRestore(); }
   }, HANDOFF_TIMEOUT);
 });
 

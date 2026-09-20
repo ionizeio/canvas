@@ -6,7 +6,7 @@ import { AnchoredOverlay, popupOrigin } from "../src/style/anchored-overlay.tsx"
 import { OverlayProvider, Portal } from "../src/style/portal.tsx";
 import { EscapeLayerProvider, useEscapeLayer } from "../src/style/escape-layer.ts";
 import { useDialogFocus } from "../src/style/use-dialog-focus.ts";
-import { HANDOFF_RETURN, POPUP_PRESENTATION, PopupInteractionContext, PopupMotionPolicy, handoffAcross, restingRadius, usePopupMotion, type PopupEdge, type PopupOrigin, type PopupSize } from "../src/style/popup-motion.tsx";
+import { HANDOFF_RETURN, POPUP_PRESENTATION, PopupInteractionContext, PopupMotionPolicy, fieldCoverMark, handoffAcross, restingRadius, usePopupMotion, type PopupEdge, type PopupOrigin, type PopupSize } from "../src/style/popup-motion.tsx";
 import { supportsNativeDriver } from "../src/style/motion.ts";
 import { PopupHandoffContext, PopupHandoffForeground, usePopupHandoff, shapeRadius, type PopupHandoff, type PopupHandoffValue } from "../src/style/popup-handoff.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
@@ -74,6 +74,7 @@ function content() {
   return { opacity: parseFloat(style.opacity), transform: style.transform };
 }
 const readable = () => screen.getByTestId("motion-readable").textContent === "readable";
+const valueOf = (value: Animated.Value) => (value as unknown as { __getValue: () => number }).__getValue();
 const ui = (body: ReactNode) => <ThemeProvider glass>{body}</ThemeProvider>;
 
 describe("popup decorative spring", () => {
@@ -265,8 +266,8 @@ describe("popup decorative spring", () => {
 
 // The trigger's side of the hand-off: the material and label opacities the trigger's
 // subtree paints from, read back off the DOM as the owner-held travel value moves.
-function HandoffProbe({ active = true, onChannel }: { active?: boolean; onChannel: (handoff: PopupHandoff, context: PopupHandoffValue | null) => void }) {
-  const { handoff, context } = usePopupHandoff(active);
+function HandoffProbe({ active = true, field, onChannel }: { active?: boolean; field?: { gap: number }; onChannel: (handoff: PopupHandoff, context: PopupHandoffValue | null) => void }) {
+  const { handoff, context } = usePopupHandoff(active, field ? { field } : undefined);
   onChannel(handoff, context);
   return (
     <PopupHandoffContext.Provider value={context}>
@@ -422,7 +423,7 @@ describe("the button-to-menu hand-off", () => {
     value!.report({ radius: 12, width: 24, height: 24, layer: "control" });
     value!.report({ radius: 9999, width: 120, height: 36, layer: "control" });
     value!.report({ radius: 4, width: 10, height: 10, layer: "content" });
-    expect(channel!.shape.current).toEqual({ radius: 9999, area: 120 * 36, layer: "control" });
+    expect(channel!.shape.current).toEqual({ radius: 9999, area: 120 * 36, height: 36, layer: "control" });
     const before = channel!.progress;
     rerender(<HandoffProbe active={false} onChannel={(h, c) => { channel = h; value = c; }} />);
     // The travel value outlives the activation, so a pane that is out keeps driving it.
@@ -445,6 +446,132 @@ describe("the button-to-menu hand-off", () => {
     expect(popupOrigin(rect, undefined, 90, 8)).toBeUndefined();
     expect(popupOrigin(rect, 100, undefined, 8)).toBeUndefined();
     expect(popupOrigin(null, 100, 90, 8)).toBeUndefined();
+  });
+});
+
+describe("the field hand-off", () => {
+  // A field 100 by 32 whose box ends 8 above the card (the overlay's gap), corner 16.
+  const ORIGIN: PopupOrigin = { x: 20, y: -40, width: 100, height: 32, radius: 16 };
+  const GAP = 8;
+  const { seed, handoff } = POPUP_PRESENTATION;
+  const fieldBottom = ORIGIN.y + ORIGIN.height;
+  const mark = fieldCoverMark(ORIGIN.height, GAP);
+
+  it("places the cover mark where the pane's edge meets the field's box", () => {
+    expect(mark).toBeCloseTo(32 / 40 + handoff.field.margin, 9);
+    // Boxes that touch or overlap, or a field with no extent yet, cover for the whole travel.
+    expect(fieldCoverMark(32, 0)).toBe(1);
+    expect(fieldCoverMark(0, 8)).toBe(1);
+    expect(fieldCoverMark(32, -4)).toBe(1);
+    expect(fieldCoverMark(4000, 4)).toBe(1);
+  });
+
+  it("has the pane clear of the field's box whenever the travel is at or past the cover mark, on the way out and home", async () => {
+    let exits = 0;
+    const progress = new Animated.Value(0);
+    const onExited = () => { exits++; };
+    const page = (open: boolean) => ui(<Probe open={open} radius={16} origin={ORIGIN} progress={progress} onExited={onExited} />);
+    const { rerender, unmount } = render(page(false));
+    await act(async () => {});
+    exits = 0;
+    const clock = animationClock();
+    try {
+      rerender(page(true));
+      // The first paint is the droplet ON the field's box (the field vanishes into it),
+      // below the cover mark, so the field's material is out.
+      expect(valueOf(progress)).toBeCloseTo(seed, 9);
+      expect(frame().top).toBeLessThan(fieldBottom);
+      let released = 0;
+      for (let step = 0; step < 100; step++) {
+        clock.advance(16);
+        // Past the mark the pane's top is at or below the field's bottom edge, within
+        // the pixel the contour's stretch may add (the margin is sized for it).
+        if (valueOf(progress) >= mark) { released++; expect(frame().top).toBeGreaterThanOrEqual(fieldBottom - 1); }
+      }
+      expect(released).toBeGreaterThan(20);
+      expect(frame()).toEqual({ left: 0, top: 0, ...SIZE });
+      rerender(page(false));
+      let covered = 0;
+      for (let step = 0; step < 80 && exits === 0; step++) {
+        clock.advance(16);
+        const value = valueOf(progress);
+        if (value >= mark) expect(frame().top).toBeGreaterThanOrEqual(fieldBottom - 1);
+        else if (value > 0) covered++;
+      }
+      expect(covered).toBeGreaterThan(3);
+      expect(exits).toBe(1);
+      // The travel is home; the contour's last recoil settles on its own.
+      clock.advance(1600);
+      near(frame(), { left: 20, top: -40, width: 100, height: 32 });
+    } finally { unmount(); clock.restore(); }
+  });
+
+  it("gives the field a material that hides only while the pane covers its box, out and home, and a text that fades with it", async () => {
+    let channel: PopupHandoff | null = null;
+    let value: PopupHandoffValue | null = null;
+    render(<HandoffProbe field={{ gap: GAP }} onChannel={(h, c) => { channel = h; value = c; }} />);
+    await act(async () => {});
+    const clock = animationClock();
+    const engine = require("react-native-web/dist/vendor/react-native/Animated/AnimatedImplementation").default as typeof Animated;
+    const timing = spyOn(Animated, "timing").mockImplementation(engine.timing);
+    try {
+      const travel = channel!.progress;
+      expect(channel!.fromTrigger).toBe(true);
+      // Before the pane has reported, the cover runs to the top of the travel.
+      act(() => travel.setValue(0.9));
+      expect(materialOpacity()).toBe(0);
+      act(() => travel.setValue(0));
+      expect(materialOpacity()).toBe(1);
+      clock.advance(handoff.label.returnMs + 32);
+      // The pane reports the field's box: the cover ends where the pane leaves it.
+      act(() => value!.report({ radius: 16, width: 100, height: 32, layer: "control" }));
+      // The opening: gone the frame the droplet forms on the box, the text on its short
+      // fade, and back (text over its return fade) once past the mark.
+      act(() => travel.setValue(seed));
+      expect(materialOpacity()).toBe(0);
+      clock.advance(handoff.label.hideMs + 32);
+      expect(labelOpacity()).toBe(0);
+      act(() => travel.setValue(mark - 0.01));
+      expect(materialOpacity()).toBe(0);
+      act(() => travel.setValue(mark + 0.02));
+      expect(materialOpacity()).toBe(1);
+      clock.advance(handoff.label.returnMs / 2);
+      const midway = labelOpacity();
+      expect(midway).toBeGreaterThan(0);
+      expect(midway).toBeLessThan(1);
+      clock.advance(handoff.label.returnMs);
+      expect(labelOpacity()).toBe(1);
+      act(() => travel.setValue(1.02));
+      expect(materialOpacity()).toBe(1);
+      act(() => travel.setValue(1));
+      expect(materialOpacity()).toBe(1);
+      // The close: gone again below the mark, never in between, back at the snap.
+      act(() => travel.setValue(mark + 0.05));
+      expect(materialOpacity()).toBe(1);
+      act(() => travel.setValue(mark - 0.01));
+      expect(materialOpacity()).toBe(0);
+      clock.advance(handoff.label.hideMs + 32);
+      expect(labelOpacity()).toBe(0);
+      act(() => travel.setValue(0.3));
+      expect(materialOpacity()).toBe(0);
+      act(() => travel.setValue(8e-6));
+      expect(materialOpacity()).toBe(0);
+      expect(labelOpacity()).toBe(0);
+      act(() => travel.setValue(0));
+      expect(materialOpacity()).toBe(1);
+      expect(labelOpacity()).toBe(0);
+      clock.advance(handoff.label.returnMs + 32);
+      expect(labelOpacity()).toBe(1);
+      // A reopen mid-close: covered again below the mark, released once past it.
+      act(() => travel.setValue(0.3));
+      expect(materialOpacity()).toBe(0);
+      clock.advance(handoff.label.hideMs + 32);
+      expect(labelOpacity()).toBe(0);
+      act(() => travel.setValue(mark + 0.05));
+      expect(materialOpacity()).toBe(1);
+      clock.advance(handoff.label.returnMs + 32);
+      expect(labelOpacity()).toBe(1);
+    } finally { timing.mockRestore(); clock.restore(); }
   });
 });
 
