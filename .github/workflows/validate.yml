@@ -250,7 +250,10 @@ jobs:
   e2e:
     needs: check
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Playwright shards by file, not by duration: shards 3 and 4 carry 9 to 11 minutes
+    # of tests behind about 4 minutes of setup, and the fourth shard hit a 15 minute
+    # limit on a routine main run (GitHub reports that as cancelled).
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
