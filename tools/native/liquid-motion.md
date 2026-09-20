@@ -721,3 +721,21 @@ emulator/device), native dark homepage (capture limitation above), on-device fra
 cost, and native accessibility-setting toggles. Reduce Motion and Increase Contrast
 use Backdrop's existing policy; the custom artwork explicitly hides itself for
 Reduce Transparency. The Park driver verifies the shared poster-clock path on web.
+
+### More color behind the glass, 2026-09-20
+
+The requested second pass keeps the motion's timing and three LoopViews, but adds
+one broad ribbon per layer through the content area. The original edge-only scene
+left most glass controls sampling almost-uniform charcoal. Broader coverage solves
+that spatial gap; stronger ink and a lighter center veil preserve the new detail.
+No material renderer, hero, clock, or accessibility policy changed.
+
+| Date | Effect and profile | Runtime and device | Revision (dirty?) | Values tried | rAF p50 / p95 / max (ms) | What the screenshots and trace showed | Artifacts |
+|---|---|---|---|---|---|---|---|
+| 2026-09-20 | Broader spectral currents, four-second running sample | Codex in-app browser, `/testing/currents?scheme=dark&surface=glass` | working tree following 0c998d14 | Dark/light ink 1/0.8 (was 0.85/0.55); veil opacity/center 0.28/0.6 (was 0.72/0.88); added ribbon wash/body/contour widths 100/42/1.2 at alpha 0.22/0.62/0.65; stronger gradient stops; unchanged 32/36/45 second cycles | 4.0 / 8.1 / 23.0 over 763 callbacks in this development browser | Zero inline style writes/s; still 12 CSS animations for the two scenes, with no extra animated layer. | `/testing/currents` readout in the task |
+| 2026-09-20 | Homepage, Button docs and tuning fixture, desktop/phone, dark/light | Lookout web capture at Metro 8081; direct live Button-page inspection at 818px wide | same working tree | same values | not sampled | Twelve screenshots captured and visually inspected. Color bands now pass behind the tabs, preview panels, code panel and bottom navigation; the selected pills and glass diffusion are easier to distinguish. Copy and labels remain readable in both schemes, with no new overflow. No layout/accessibility warnings. Console findings: existing npm latest-version lookup 404; one Metro development WebSocket closing message. | `.lookout/workspace/capture-report.json`, run `web-20260920-132232`; `.lookout/workspace/web/currents/` |
+
+Native re-capture was attempted on the iPhone simulator, but run
+`web-20260920-132446-native` caught a blank startup frame for dark and a loading
+skeleton for light. Those images do not verify the revised artwork. Android still
+has no connected device. The verified visual scope for this tuning pass is web.

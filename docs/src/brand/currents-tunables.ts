@@ -10,8 +10,11 @@ export const CURRENTS = {
   // reliably as a wide desktop. Translations below use the unpadded surface box.
   overscan: 0.14,
   samplesPerCycle: 24,
-  ink: { dark: 0.85, light: 0.55 },
-  veil: { opacity: 0.72, center: 0.88, fade: 0.66 },
+  ink: { dark: 1, light: 0.8 },
+  // Broad color bands cross the content so glass has a changing backdrop to
+  // sample. Keep a gentle veil for copy without erasing the center of the scene.
+  veil: { opacity: 0.28, center: 0.6, fade: 0.66 },
+  ribbon: { washWidth: 100, washOpacity: 0.22, bodyWidth: 42, bodyOpacity: 0.62, edgeWidth: 1.2, edgeOpacity: 0.65 },
   layers: {
     cool: {
       channel: "flight", cycles: 1, offset: 0,

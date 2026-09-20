@@ -83,6 +83,19 @@ function Stroke({ id, d, width, opacity = 1, soft = false }: { id: string; d: st
   return <Path d={d} fill="none" stroke={`url(#${id}-ink)`} strokeWidth={width} opacity={opacity} filter={soft ? `url(#${id}-soft)` : undefined} />;
 }
 
+// A broad wash gives glass color to diffuse; the narrow contour gives refraction
+// an edge to bend. All three stay in the existing layer's single static SVG.
+function Ribbon({ id, d }: { id: string; d: string }) {
+  const ribbon = CURRENTS.ribbon;
+  return (
+    <>
+      <Stroke id={id} d={d} width={ribbon.washWidth} opacity={ribbon.washOpacity} soft />
+      <Stroke id={id} d={d} width={ribbon.bodyWidth} opacity={ribbon.bodyOpacity} soft />
+      <Stroke id={id} d={d} width={ribbon.edgeWidth} opacity={ribbon.edgeOpacity} />
+    </>
+  );
+}
+
 function Ink({ id, children, diagonal = false }: { id: string; children: ReactElement[]; diagonal?: boolean }) {
   return <LinearGradient id={`${id}-ink`} x1="0%" y1={diagonal ? "100%" : "50%"} x2="100%" y2={diagonal ? "0%" : "50%"}>{children}</LinearGradient>;
 }
@@ -94,9 +107,9 @@ function CoolCurrent({ id }: { id: string }) {
       <Defs>
         <Ink id={id}>
           <Stop offset="0%" stopColor="#b24dff" stopOpacity={0} />
-          <Stop offset="22%" stopColor="#46e082" stopOpacity={0.2} />
-          <Stop offset="55%" stopColor="#27cdf2" stopOpacity={0.3} />
-          <Stop offset="79%" stopColor="#46e082" stopOpacity={0.13} />
+          <Stop offset="22%" stopColor="#46e082" stopOpacity={0.38} />
+          <Stop offset="55%" stopColor="#27cdf2" stopOpacity={0.52} />
+          <Stop offset="79%" stopColor="#46e082" stopOpacity={0.28} />
           <Stop offset="100%" stopColor="#27cdf2" stopOpacity={0} />
         </Ink>
         <LinearGradient id={`${id}-fill`} x1="0%" y1="0%" x2="0%" y2="100%">
@@ -110,6 +123,7 @@ function CoolCurrent({ id }: { id: string }) {
       <Stroke id={id} d={edge} width={1.1} opacity={0.5} />
       <Stroke id={id} d="M -100 286 C 109 97 212 321 397 161 S 785 14 956 58 S 1154 15 1300 -88" width={0.7} opacity={0.25} />
       <Stroke id={id} d="M 340 838 C 550 709 621 730 776 511 S 1066 452 1330 298" width={18} opacity={0.55} soft />
+      <Ribbon id={id} d="M -160 310 C 100 190 290 430 515 315 S 820 95 1050 235 S 1260 380 1370 210" />
     </>
   );
 }
@@ -120,11 +134,11 @@ function WarmCurrent({ id }: { id: string }) {
     <>
       <Defs>
         <Ink id={id}>
-          <Stop offset="0%" stopColor="#b24dff" stopOpacity={0.06} />
-          <Stop offset="23%" stopColor="#ff6a4d" stopOpacity={0.26} />
-          <Stop offset="43%" stopColor="#ffb43d" stopOpacity={0.23} />
-          <Stop offset="66%" stopColor="#46e082" stopOpacity={0.08} />
-          <Stop offset="85%" stopColor="#27cdf2" stopOpacity={0.28} />
+          <Stop offset="0%" stopColor="#b24dff" stopOpacity={0.12} />
+          <Stop offset="23%" stopColor="#ff6a4d" stopOpacity={0.48} />
+          <Stop offset="43%" stopColor="#ffb43d" stopOpacity={0.4} />
+          <Stop offset="66%" stopColor="#46e082" stopOpacity={0.2} />
+          <Stop offset="85%" stopColor="#27cdf2" stopOpacity={0.48} />
           <Stop offset="100%" stopColor="#b24dff" stopOpacity={0} />
         </Ink>
         <LinearGradient id={`${id}-fill`} x1="0%" y1="0%" x2="0%" y2="100%">
@@ -138,6 +152,7 @@ function WarmCurrent({ id }: { id: string }) {
       <Stroke id={id} d={edge} width={1.1} opacity={0.65} />
       <Stroke id={id} d="M -95 447 C 169 347 260 571 516 623 S 883 452 1056 408 S 1220 354 1300 321" width={0.8} opacity={0.35} />
       <Stroke id={id} d="M -95 460 C 179 341 268 586 539 634 S 891 463 1061 419 S 1226 367 1300 328" width={0.6} opacity={0.2} />
+      <Ribbon id={id} d="M -120 595 C 140 555 220 300 455 368 S 735 590 930 460 S 1180 355 1340 390" />
     </>
   );
 }
@@ -150,9 +165,9 @@ function VioletCurrent({ id }: { id: string }) {
       <Defs>
         <Ink id={id} diagonal>
           <Stop offset="0%" stopColor="#b24dff" stopOpacity={0} />
-          <Stop offset="30%" stopColor="#b24dff" stopOpacity={0.24} />
-          <Stop offset="60%" stopColor="#ff2d6e" stopOpacity={0.15} />
-          <Stop offset="85%" stopColor="#ffb43d" stopOpacity={0.24} />
+          <Stop offset="30%" stopColor="#b24dff" stopOpacity={0.42} />
+          <Stop offset="60%" stopColor="#ff2d6e" stopOpacity={0.3} />
+          <Stop offset="85%" stopColor="#ffb43d" stopOpacity={0.42} />
           <Stop offset="100%" stopColor="#ffb43d" stopOpacity={0} />
         </Ink>
       </Defs>
@@ -160,6 +175,7 @@ function VioletCurrent({ id }: { id: string }) {
       <Stroke id={id} d={upper} width={1} opacity={0.45} />
       <Stroke id={id} d={lower} width={18} soft />
       <Stroke id={id} d={lower} width={1} opacity={0.5} />
+      <Ribbon id={id} d="M -140 70 C 160 95 175 330 390 286 S 760 175 970 320 S 1215 655 1380 585" />
     </>
   );
 }
