@@ -63,13 +63,18 @@ test("the example rail selects with the arrow keys and addresses the example", a
   await expect(tabs.nth(1)).toHaveAttribute("aria-selected", "true");
   // Selecting an example is addressable: the URL names it.
   await expect(page).toHaveURL(/\/components\/badge\/solid(\?|$)/);
-
-  // KNOWN GAP, docs side: selecting drops keyboard focus to the document body, so a
-  // second arrow press does nothing. /components/badge and /components/badge/solid
-  // are different route files, so the replace swaps the whole screen out from under
-  // the focused tab. The kit's own Tabs keeps focus across arrows (the test above),
-  // so this is the docs' deep-link routing, not the component.
-  await expect(page.locator("body")).toBeFocused();
+  // Formerly a KNOWN GAP: selecting used to drop keyboard focus to the document body,
+  // because /components/badge and /components/badge/solid are different route files
+  // and router.replace remounted the whole screen out from under the focused tab. The
+  // docs page now updates the address bar in place instead of navigating, so the
+  // component and its children stay mounted and the kit's own roving-focus keeps focus
+  // on the newly selected tab, exactly like the component in isolation (the test
+  // above); a second arrow press keeps walking the rail instead of landing on nothing.
+  await expect(tabs.nth(1)).toBeFocused();
+  await page.keyboard.press("ArrowDown");
+  await expect(tabs.nth(2)).toHaveAttribute("aria-selected", "true");
+  await expect(page).toHaveURL(/\/components\/badge\/outline(\?|$)/);
+  await expect(tabs.nth(2)).toBeFocused();
 });
 
 test("a slider moves its value with the arrows", async ({ page }) => {
