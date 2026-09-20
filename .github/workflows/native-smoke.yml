@@ -6,6 +6,10 @@ on:
       platform:
         required: true
         type: string
+      major_version:
+        description: The exact major a human authorized on the calling dispatch (empty for every automatic run)
+        type: string
+        default: ''
 
 permissions:
   contents: read
@@ -14,6 +18,10 @@ env:
   HUSKY: '0'
   MAESTRO_CLI_NO_ANALYTICS: '1'
   MAESTRO_CLI_ANALYSIS_NOTIFICATION_DISABLED: 'true'
+  # A reusable workflow called via `uses:` does not inherit the caller's env
+  # context, only its declared inputs, so the candidate restore this job runs
+  # needs its own copy of the authorization to validate a major candidate.
+  RELEASE_MAJOR: ${{ inputs.major_version }}
 
 jobs:
   smoke:

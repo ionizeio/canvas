@@ -170,6 +170,7 @@ jobs:
           tar -xzf "$RUNNER_TEMP/artifacts/docs.tgz" -C docs/dist
         env:
           SOURCE_SHA: ${{ github.sha }}
+          RELEASE_MAJOR: ${{ github.event_name == 'workflow_dispatch' && inputs.major && inputs.major_version || '' }}
       # Keep preview access restricted in Cloudflare. Permanent deployment URLs
       # remain behind Access; only the production host serves the public site.
       - name: Publish the tested docs to Cloudflare Pages
@@ -223,6 +224,7 @@ jobs:
         run: node scripts/release.mjs restore "$RUNNER_TEMP/candidate"
         env:
           SOURCE_SHA: ${{ github.sha }}
+          RELEASE_MAJOR: ${{ github.event_name == 'workflow_dispatch' && inputs.major && inputs.major_version || '' }}
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -307,6 +309,7 @@ jobs:
         run: node scripts/release.mjs restore "$RUNNER_TEMP/candidate"
         env:
           SOURCE_SHA: ${{ github.sha }}
+          RELEASE_MAJOR: ${{ github.event_name == 'workflow_dispatch' && inputs.major && inputs.major_version || '' }}
 
       - uses: oven-sh/setup-bun@v2
         with:

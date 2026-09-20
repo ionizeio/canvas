@@ -243,6 +243,10 @@ jobs:
     uses: ./.github/workflows/native-smoke.yml
     with:
       platform: ${{ matrix.platform }}
+      # This workflow's own major_version input (below) already carries what
+      # the calling dispatch authorized; forward it, since `uses:` passes only
+      # declared inputs, never env.
+      major_version: ${{ inputs.major_version }}
 
   # Partition the full browser suite while keeping each shard on the same sealed
   # candidate. All shards gate the reusable workflow and therefore publication;
