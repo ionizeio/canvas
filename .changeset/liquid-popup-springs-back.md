@@ -1,5 +1,0 @@
----
-"@ionizeio/canvas": patch
----
-
-The liquid popup's dismiss now springs back up into its button the way the iOS 26 menu's does, checked on the real Dropdown docs page against the recorded reference: the pane's body flies back to the pill by its centre on a soft spring at the reference's pace (a quarter of the way at +99, half at +132, home by +300) instead of collapsing under the button and hopping onto it, narrowing to a drop that sinks into the pill's underside and vanishes there; the pill re-forms under the drop as a short fat oval on the travel itself (its step and its scale flip on the same native frame, so iOS no longer shows the pill whole for a frame), from a mark above the seed that only a close reads (a `closing` flag on the hand-off channel); its label fades back at full size over the pill while the last of the drop is still settling; and the dismissed rows retire as legible blurred ghosts through the pane's contraction. The other menu triggers (AvatarMenu, the Navbar hamburger, RowMenu, Popover, the split ButtonGroup, Command) take the same close; the field popups keep their absorb onto the box, now on the same pace.
