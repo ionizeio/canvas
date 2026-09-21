@@ -171,6 +171,17 @@ jobs:
         env:
           SOURCE_SHA: ${{ github.sha }}
           RELEASE_MAJOR: ${{ github.event_name == 'workflow_dispatch' && inputs.major && inputs.major_version || '' }}
+      # This job deploys the already-built, already-validated docs archive; it
+      # never installs the monorepo. The wrangler action, finding no wrangler in
+      # docs/, would run `bun i wrangler@4` there, and any install in docs/ fires
+      # docs' own postinstall (link-sources plus a tsc build of canvas-blur), which
+      # cannot resolve react or expo-modules-core here because the root workspace
+      # is not installed. Pre-installing wrangler with lifecycle scripts skipped
+      # makes the action's "existing installation" check succeed (we pass no
+      # wranglerVersion, so it uses whatever is present) and it never installs.
+      - name: Install wrangler without running the docs postinstall
+        working-directory: docs
+        run: bun i wrangler@4 --ignore-scripts
       # Keep preview access restricted in Cloudflare. Permanent deployment URLs
       # remain behind Access; only the production host serves the public site.
       - name: Publish the tested docs to Cloudflare Pages
