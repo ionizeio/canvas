@@ -1,5 +1,0 @@
----
-"@ionizeio/canvas": patch
----
-
-Bring the liquid popup's opening and dismiss onto the iOS 26 menu's frames, checked on the real docs pages against the recorded reference: the droplet hangs from the trigger's far edge with the pill's tone and a whole rim, its rows blurred and sharpening on their own clock (the blur is now a CSS filter string, which react-native-web applies; the object list was dropped on the web), the rows scale outside the scrollport so the first row is no longer clipped at birth, the pane grows as a capsule and relaxes to its corner only once it is full, and a dismiss ghosts the rows on its first frame, contracts the pane about its centre, goes sheer, narrows to a drop hanging under the trigger, re-forms the trigger's material as a small growing body above it and slides the drop onto the box before the label fades back over the merged glass. A Button, an Avatar or an AvatarMenu capsule that is the pill now fades its own foreground, so the owner's fader never sits over its material.
