@@ -158,11 +158,18 @@ export interface JavaScriptBudget {
 // 50,226B (~100B gzip on the lens and frost platforms, ~25B on iOS; Button, Input and
 // StackedList grew by the same). The DataTable ceiling moved from 50,176 to 51,200B
 // (2% headroom) because 40B of its headroom was left.
+// Button measured 10,308 / 8,327 / 10,247B (web / iOS / Android) after the hand-off
+// pane learned to paint a clear trigger's veil as its second under-fill on the way
+// home (`originFills` in glass-surface.shared.tsx, shared by every platform's surface:
+// the web's text-entry fields are clear lenses, and a field's popup now rests over its
+// field and deflates back onto it as the field's own material), about 70B gzip on the
+// lens and frost platforms over the 10,240B ceiling, which had 0 to 60B of headroom
+// left. The Button ceiling moved from 10,240 to 10,752B (4% headroom).
 // Fixed ceilings leave room for deliberate growth while catching a heavy import.
 // These are independent budgets, not a combined total: shared modules legitimately
 // occur in more than one consumer. Changes require a fresh measurement and rationale.
 export const NAMED_IMPORT_BUDGETS: readonly JavaScriptBudget[] = [
-  { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 10_240, requiredExports: ["Button", "ThemeProvider"] },
+  { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 10_752, requiredExports: ["Button", "ThemeProvider"] },
   { label: "Input + ThemeProvider", entry: "scripts/size-fixtures/input.ts", maxGzip: 39_936, requiredExports: ["Input", "ThemeProvider"] },
   { label: "DataTable + ThemeProvider", entry: "scripts/size-fixtures/data-table.ts", maxGzip: 51_200, requiredExports: ["DataTable", "ThemeProvider"] },
   { label: "StackedList + ThemeProvider", entry: "scripts/size-fixtures/stacked-list.ts", maxGzip: 60_416, requiredExports: ["StackedList", "ThemeProvider"] },
