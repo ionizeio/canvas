@@ -18,16 +18,19 @@
 // and hands back at the snap).
 //
 // Two invariants keep every material honest:
-// - The trigger's material is never at a partial opacity. It is 1 from the re-form
-//   mark down (`handoff.reform`: the pill is a body of its own under the last of a
-//   closing drop, the way the reference's pill re-forms before its blob has merged)
-//   and 0 above it, which is the moment an opening pane exists (a field's is 1 at the
-//   snap and from the cover mark up); a native glass ancestor at a fractional alpha
+// - The trigger's material is never at a partial opacity. On a close it is 1 from
+//   the re-form mark down (`handoff.reform`: the pill is a body of its own under the
+//   last of the drop, the way the reference's pill re-forms before its blob has
+//   merged) and 0 above it; on an opening it is 0 the moment the pane exists and 1
+//   only at the snap (the pane's motion steps a `closing` flag on the channel, so the
+//   mark can sit above the seed the opening starts from); a field's is 1 at the snap
+//   and from the cover mark up. A native glass ancestor at a fractional alpha
 //   may not paint, and a web backdrop under one loses its sampling root (see
 //   entrance.tsx). The label is a separate value on its own short fades, never an
 //   ancestor of the material, so its partial frames touch no glass: it cuts OUT the
 //   frame the pane exists (the droplet covers it) and fades IN over the re-formed
-//   material once the pane has left. A component that paints a pill of its own
+//   material from the return mark down, while the last of the drop is still settling
+//   onto the pill (`handoff.label.returnFrom`). A component that paints a pill of its own
 //   (Button, Avatar, the AvatarMenu capsule) therefore fades its FOREGROUND itself
 //   (`usePopupHandoffPill` + `handoffInk`) and turns the owner's whole-subtree fader
 //   (`PopupHandoffForeground`) into a pass-through, so the fader never sits over its
@@ -58,6 +61,13 @@ export interface HandoffShape { radius: number; width: number; height: number; l
  */
 export interface PopupHandoff {
   progress: Animated.Value;
+  /**
+   * Whether the pane is CLOSING (1) or opening or at rest (0), set by the pane's motion
+   * as each travel starts: the trigger's material re-forms at a mark above the seed
+   * on a close (`handoff.reform`), which an opening, seated at the seed, must never
+   * read. Only ever stepped, never animated, so the material stays whole or absent.
+   */
+  closing: Animated.Value;
   /** The pill: its corner, its area (the largest reporter wins), its extent along the anchor axis, and its layer (none for a bare trigger, which keeps the pane's own fill). */
   shape: { current: { radius: number; area: number; height: number; layer?: GlassLayer } | null };
   fromTrigger: boolean;
@@ -69,8 +79,10 @@ export interface PopupHandoff {
 export interface PopupHandoffValue {
   /** 1 while the trigger paints its own material, 0 while the pane stands in for it. */
   material: Animated.AnimatedInterpolation<number>;
-  /** The material's scale about its centre: whole at rest, growing from `reformGrowth.from` as it re-forms under a closing drop. */
-  growth: Animated.Value;
+  /** The material's width scale about its centre: whole at rest, a short fat oval growing back under a closing drop on the travel (`reformGrowth.width`). */
+  growth: Animated.AnimatedInterpolation<number>;
+  /** The material's height scale, on the travel too (`reformGrowth.height`): most of the way back before the width has started. */
+  growthTall: Animated.AnimatedInterpolation<number>;
   /** The trigger's foreground opacity: out as the pane covers it, back once the pane has left. */
   label: Animated.Value;
   /** A GlassPane in the trigger reports its shape here (the largest one is the pill). */
@@ -100,8 +112,8 @@ export const PopupHandoffContext = createContext<PopupHandoffValue | null>(null)
 
 interface Channel {
   progress: Animated.Value;
+  closing: Animated.Value;
   label: Animated.Value;
-  growth: Animated.Value;
   /** Whether the owner is a field (its material returns from the cover mark up). */
   field: boolean;
   shape: PopupHandoff["shape"];
@@ -134,12 +146,11 @@ export function usePopupHandoff(active: boolean, options?: PopupHandoffOptions):
     // presentation, its seed frame included, then runs in the native animated module.
     const driver = { useNativeDriver: supportsNativeDriver };
     const progress = new Animated.Value(0, driver);
+    const closing = new Animated.Value(0, driver);
     // The label's opacity, on its own short fades (native-driven where the platform
     // has the driver, so the JS thread's work at the pane's mount and unmount cannot
     // stutter them): out as the pane covers it, back once it has left.
     const label = new Animated.Value(1, driver);
-    // The material's re-forming scale (see `handoff.reformGrowth`), native like the label.
-    const growth = new Animated.Value(1, driver);
     const bare = options?.bare;
     // A bare trigger's shape is declared, not reported: the trigger's own corner, no
     // layer to blend from, and an area no pane inside it can beat.
@@ -148,8 +159,8 @@ export function usePopupHandoff(active: boolean, options?: PopupHandoffOptions):
     const isField = field != null;
     channel.current = {
       progress,
+      closing,
       label,
-      growth,
       field: isField,
       shape,
       mark: cover,
@@ -165,53 +176,51 @@ export function usePopupHandoff(active: boolean, options?: PopupHandoffOptions):
       },
     };
   }
-  const { progress, label, growth, field: isField, shape, mark: cover, report } = channel.current;
+  const { progress, closing, label, field: isField, shape, mark: cover, report } = channel.current;
   const material = useMemo(() => {
-    // A whole trigger: 1 from the re-form mark down (the pill is a body of its own
-    // under the last of a closing drop, see `handoff.reform`), 0 above it, which is
-    // the moment an opening pane exists (the seed is above the mark).
-    if (!isField) return progress.interpolate({ inputRange: [HANDOFF.reform - HANDOFF_RETURN, HANDOFF.reform], outputRange: [1, 0], extrapolate: "clamp" });
+    // A whole trigger: on a CLOSE, 1 from the re-form mark down (the pill is a body
+    // of its own under the last of the drop, see `handoff.reform`, a mark above the
+    // seed) and 0 above it; on an opening, 0 the moment the pane exists (any travel
+    // above the snap) and 1 only at exactly 0. The two steps are blended by the
+    // closing flag, itself 0 or 1, so the product is never a partial opacity.
+    if (!isField) {
+      const returned = progress.interpolate({ inputRange: [0, HANDOFF_RETURN], outputRange: [1, 0], extrapolate: "clamp" });
+      const reformed = progress.interpolate({ inputRange: [HANDOFF.reform - HANDOFF_RETURN, HANDOFF.reform], outputRange: [1, 0], extrapolate: "clamp" });
+      return Animated.add(Animated.multiply(Animated.subtract(1, closing), returned), Animated.multiply(closing, reformed)) as unknown as Animated.AnimatedInterpolation<number>;
+    }
     // A field: the same at the snap, and back from the cover mark up (the pane has
     // left the box), both steps as sharp as the interpolation allows.
     return progress.interpolate({ inputRange: [0, HANDOFF_RETURN, mark - HANDOFF_RETURN, mark], outputRange: [1, 0, 0, 1], extrapolate: "clamp" });
-  }, [progress, isField, mark]);
-  const context = useMemo<PopupHandoffValue>(() => ({ material, growth, label, report }), [material, growth, label, report]);
-  useEffect(() => {
-    // A whole trigger's material RE-FORMS as it comes back under a closing drop: the
-    // frame the travel crosses the re-form mark downward the material is a small body
-    // scaled about its centre and springs to whole (`reformGrowth`). Crossing upward
-    // (a reopen) the material is hidden anyway and its scale rests at whole.
-    if (isField) return;
-    let previous = 0;
-    let spring: Animated.CompositeAnimation | null = null;
-    const listener = progress.addListener(({ value }) => {
-      const was = previous;
-      previous = value;
-      if (was >= HANDOFF.reform && value < HANDOFF.reform) {
-        spring?.stop();
-        growth.setValue(HANDOFF.reformGrowth.from);
-        spring = Animated.spring(growth, {
-          toValue: 1, stiffness: HANDOFF.reformGrowth.stiffness, damping: HANDOFF.reformGrowth.damping, mass: 1,
-          overshootClamping: true, restDisplacementThreshold: 0.001, restSpeedThreshold: 0.01,
-          useNativeDriver: supportsNativeDriver, isInteraction: false,
-        });
-        spring.start();
-      } else if (was < HANDOFF.reform && value >= HANDOFF.reform) {
-        spring?.stop();
-        spring = null;
-        growth.setValue(1);
-      }
+  }, [progress, closing, isField, mark]);
+  // A whole trigger's material RE-FORMS as it comes back under a closing drop: from
+  // the re-form mark down it is a short fat oval growing to whole on the travel
+  // (`reformGrowth`, the reference's pill per frame), so its step and its scales flip
+  // on the same native frame. A field's material never scales (its curves are the
+  // identity), and above the mark the scale is moot: the material is hidden there.
+  const { growth, growthTall } = useMemo(() => {
+    const curve = (points: readonly (readonly [number, number])[]) => progress.interpolate({
+      inputRange: isField ? [0, 1] : points.map(([at]) => at),
+      outputRange: isField ? [1, 1] : points.map(([, scale]) => scale),
+      extrapolate: "clamp",
     });
-    return () => { progress.removeListener(listener); spring?.stop(); };
-  }, [progress, growth, isField]);
+    return { growth: curve(HANDOFF.reformGrowth.width), growthTall: curve(HANDOFF.reformGrowth.height) };
+  }, [progress, isField]);
+  const context = useMemo<PopupHandoffValue>(() => ({ material, growth, growthTall, label, report }), [material, growth, growthTall, label, report]);
   useEffect(() => {
     // The pane's travel drives the label: the frame the pane first covers the trigger
-    // (the droplet over the pill) the label fades out, and the frame the pane has left
-    // (snapped home; for a field, past the cover mark too) the label fades back over
-    // the trigger's own material.
+    // (the droplet over the pill) the label fades out, and it fades back the frame a
+    // closing travel crosses the return mark downward (`label.returnFrom`, a mark
+    // above the seed that only a close reads: the pill's own material is back under
+    // the last of the drop, and the label rises through that glass, the way the
+    // reference's icons come up over its merged glass while its bump is still
+    // absorbed); for a field, past the cover mark (the pane has left its box). A
+    // reopen cuts it out again on its first frame of travel.
     let out = false;
     let fade: Animated.CompositeAnimation | null = null;
-    let waiting = 0;
+    // The direction, mirrored from the flag the pane's motion steps (a setValue calls
+    // its listeners synchronously, on every driver).
+    let closingNow = 0;
+    const direction = closing.addListener(({ value }) => { closingNow = value; });
     const run = (toValue: number, duration: number) => {
       fade?.stop();
       fade = null;
@@ -221,30 +230,18 @@ export function usePopupHandoff(active: boolean, options?: PopupHandoffOptions):
       fade.start();
     };
     const listener = progress.addListener(({ value }) => {
-      const covered = isField ? value > 0 && value < cover.current : value > 0;
+      const covered = isField ? value > 0 && value < cover.current : closingNow ? value >= LABEL.returnFrom : value > 0;
       if (covered === out) return;
       out = covered;
-      cancelAnimationFrame(waiting);
-      if (covered) { run(0, LABEL.hideMs); return; }
-      // The return waits out the merge (see `label.returnDelayMs`), counted on frames
-      // rather than a timer so the fade starts on a paint; a field's return (the pane
-      // has left its box, no merge) is immediate.
-      const delay = isField ? 0 : LABEL.returnDelayMs;
-      if (delay <= 0) { run(1, LABEL.returnMs); return; }
-      const since = Date.now();
-      const wait = () => {
-        if (Date.now() - since >= delay) run(1, LABEL.returnMs);
-        else waiting = requestAnimationFrame(wait);
-      };
-      waiting = requestAnimationFrame(wait);
+      run(covered ? 0 : 1, covered ? LABEL.hideMs : LABEL.returnMs);
     });
     return () => {
       progress.removeListener(listener);
-      cancelAnimationFrame(waiting);
+      closing.removeListener(direction);
       fade?.stop();
     };
-  }, [progress, label, isField, cover]);
-  const handoff = useMemo<PopupHandoff>(() => ({ progress, shape, fromTrigger: active, field: isField }), [progress, shape, active, isField]);
+  }, [progress, closing, label, isField, cover]);
+  const handoff = useMemo<PopupHandoff>(() => ({ progress, closing, shape, fromTrigger: active, field: isField }), [progress, closing, shape, active, isField]);
   return { handoff, context: active ? context : null };
 }
 

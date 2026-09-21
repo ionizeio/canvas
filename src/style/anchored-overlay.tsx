@@ -343,14 +343,14 @@ function MaterialReadiness({ readable, children }: { readable: boolean; children
  * which a hand-off needs when it re-forms the trigger's pill above the card.
  */
 function PopupCard({
-  open, opening, onExited, ready = true, edge = "top", anchorX, anchorY, origin, originLayer, progress,
+  open, opening, onExited, ready = true, edge = "top", anchorX, anchorY, origin, originLayer, progress, closing,
   wrapperStyle, cardStyle, dense, onMount, ownsScroll, decoration,
   children, onLayout, onAccessibilityEscape,
 }: {
   open: boolean; opening: number; onExited: () => void; ready?: boolean;
   edge?: PopupEdge; anchorX?: number; anchorY?: number;
   /** The trigger's frame, and the layer of the material it hands off (none for a bare trigger, which keeps the pane's own fill throughout). */
-  origin?: PopupOrigin; originLayer?: GlassLayer; progress?: Animated.Value;
+  origin?: PopupOrigin; originLayer?: GlassLayer; progress?: Animated.Value; closing?: Animated.Value;
   wrapperStyle?: StyleProp<ViewStyle>; cardStyle?: StyleProp<ViewStyle>;
   dense?: boolean; onMount?: () => void; ownsScroll?: boolean; decoration?: ReactNode;
   children: ReactNode; onLayout?: (event: LayoutChangeEvent) => void;
@@ -365,7 +365,7 @@ function PopupCard({
   // The droplet the pane opens from eases into the card's own corner; a card with
   // per-corner radii keeps them throughout.
   const radius = restingRadius(cardStyle);
-  const motion = usePopupMotion({ open, enabled: liquid, ready: ready && inheritedReady, size, edge, anchorX, anchorY, radius, origin, progress, onExited });
+  const motion = usePopupMotion({ open, enabled: liquid, ready: ready && inheritedReady, size, edge, anchorX, anchorY, radius, origin, progress, closing, onExited });
   const measure = (event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
     if (open && width > 0 && height > 0) setSize(old => old.width === width && old.height === height ? old : { width, height });
@@ -744,7 +744,7 @@ function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, t
       {rect && horizontal && fit ? (
         <OverlaySideContext.Provider value={anchorGeometry}>
           <OverlayScrollContext.Provider value={report}>
-            {liquid ? <PopupCard open={open} opening={presence.opening} onExited={presence.finish} ready={measured} edge={edge} anchorX={anchorCenter} anchorY={anchorY} origin={origin} originLayer={origin ? handoff?.shape.current?.layer : undefined} progress={handoff?.progress} wrapperStyle={wrapperStyle} cardStyle={cappedStyle} dense={dense} onMount={onCardMount} ownsScroll={ownsScroll} decoration={decoration} onLayout={onCardLayout} onAccessibilityEscape={onAccessibilityEscape}>{children}</PopupCard> : <Entrance anchor anchorBottom={fit.side === "above"} ready={measured} style={wrapperStyle}>
+            {liquid ? <PopupCard open={open} opening={presence.opening} onExited={presence.finish} ready={measured} edge={edge} anchorX={anchorCenter} anchorY={anchorY} origin={origin} originLayer={origin ? handoff?.shape.current?.layer : undefined} progress={handoff?.progress} closing={handoff?.closing} wrapperStyle={wrapperStyle} cardStyle={cappedStyle} dense={dense} onMount={onCardMount} ownsScroll={ownsScroll} decoration={decoration} onLayout={onCardLayout} onAccessibilityEscape={onAccessibilityEscape}>{children}</PopupCard> : <Entrance anchor anchorBottom={fit.side === "above"} ready={measured} style={wrapperStyle}>
               <OverlayCard onAccessibilityEscape={onAccessibilityEscape} cardStyle={cappedStyle} opaque={opaque} dense={dense} onMount={onCardMount} ownsScroll={ownsScroll} onLayout={onCardLayout} ready={measured} decoration={decoration}>{children}</OverlayCard>
             </Entrance>}
           </OverlayScrollContext.Provider>

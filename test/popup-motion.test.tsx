@@ -291,29 +291,35 @@ describe("the button-to-menu hand-off", () => {
   const ORIGIN: PopupOrigin = { x: 20, y: -40, width: 100, height: 32, radius: 16, hangs: true };
   const { seed, birth, handoff } = POPUP_PRESENTATION;
 
-  it("is the trigger's pill at progress 0, a pill-wide droplet at the seed, and the card at rest", async () => {
+  it("is nothing at the drop's tip at progress 0, a pill-wide droplet at the seed, and the card at rest", async () => {
     const { rerender, unmount } = render(ui(<Probe open={false} radius={16} origin={ORIGIN} />));
     await act(async () => {});
     const clock = animationClock();
     try {
-      // Closed: the material sits exactly on the pill, wearing its corner and the
-      // trigger's own under-fill.
-      near(frame(), { left: 20, top: -40, width: 100, height: 32 });
-      expect(corner()).toBeCloseTo(16, 6);
+      // Closed: the material has shrunk to nothing at the drop's tip under the pill
+      // (the pill's own material is back since the re-form mark), centred on the
+      // pill across the axis and wearing the trigger's own under-fill.
+      const closed = frame();
+      expect(closed.width).toBeCloseTo(0, 6);
+      expect(closed.height).toBeCloseTo(0, 6);
+      expect(closed.left + closed.width / 2).toBeCloseTo(70, 6);
       expect(triggerFill()).toBe(1);
       rerender(ui(<Probe open radius={16} origin={ORIGIN} />));
       // The first paint: the pill's width held (the seed is under `widen`), the
-      // birth's share of the card's height, hanging from the pill's BOTTOM edge (the
-      // pill's spot is empty, the drop's tip on its far edge, less the seed's share
-      // of the edge's travel above the slide mark), rounder than either the pill or
-      // the card, with the rows scaled from the pane's centre.
+      // birth's share of the card's height, its centre the seed's share of the way
+      // from the pill's centre to the card's (the pane travels by its centre), which
+      // hangs it from the pill's BOTTOM edge (the pill's spot is empty, the drop's tip
+      // within a few pixels of its far edge), rounder than either the pill or the
+      // card, with the rows scaled from the pane's centre.
       const droplet = frame();
       expect(handoffAcross(seed)).toBe(0);
       expect(droplet.width).toBeCloseTo(100, 6);
       expect(droplet.height).toBeCloseTo(Math.max(32, birth.along * SIZE.height), 4);
       expect(droplet.left).toBeCloseTo(20, 6);
+      const pillCentre = ORIGIN.y + ORIGIN.height / 2;
+      expect(droplet.top + droplet.height / 2).toBeCloseTo(pillCentre + seed * (SIZE.height / 2 - pillCentre), 4);
       const far = ORIGIN.y + ORIGIN.height;
-      expect(droplet.top).toBeCloseTo(far + (0 - far) * ((seed - handoff.slide) / (1 - handoff.slide)), 4);
+      expect(Math.abs(droplet.top - far)).toBeLessThan(4);
       expect(corner()).toBeCloseTo(Math.max(16, 0.5 * Math.min(100, droplet.height)), 4);
       expect(transformOf(screen.getByTestId("motion-content")).scaleX).toBeCloseTo(seed, 9);
       expect(transformOf(screen.getByTestId("motion-content")).translateX).toBeCloseTo((70 - SIZE.width / 2) * (1 - seed), 9);
@@ -331,7 +337,7 @@ describe("the button-to-menu hand-off", () => {
     } finally { unmount(); clock.restore(); }
   });
 
-  it("narrows to the pill before its height is gone on close, re-forms the pill exactly, and hands back at 0", async () => {
+  it("narrows to the pill before its height is gone on close, shrinks to nothing under it, and hands back at 0", async () => {
     let exits = 0;
     const progress = new Animated.Value(0);
     const onExited = () => { exits++; };
@@ -363,18 +369,19 @@ describe("the button-to-menu hand-off", () => {
       expect(drop).toBe(true);
       expect(exits).toBe(1);
       expect((progress as unknown as { __getValue: () => number }).__getValue()).toBe(0);
-      // At the hand-back the travel is exactly the pill; the contour's last recoil is
-      // within a tenth of a pixel of it and settles on its own.
+      // At the hand-back the drop has shrunk to nothing at its tip under the pill
+      // (the pill's own material carries the pill), centred on the pill.
       const handed = frame();
-      expect(Math.abs(handed.width - 100)).toBeLessThan(0.2);
-      expect(Math.abs(handed.height - 32)).toBeLessThan(0.2);
+      expect(handed.width).toBeLessThan(0.2);
+      expect(handed.height).toBeLessThan(0.2);
+      expect(handed.left + handed.width / 2).toBeCloseTo(70, 3);
       clock.advance(1600);
-      near(frame(), { left: 20, top: -40, width: 100, height: 32 });
-      expect(corner()).toBeCloseTo(16, 6);
+      expect(frame().width).toBeCloseTo(0, 6);
+      expect(frame().height).toBeCloseTo(0, 6);
     } finally { unmount(); clock.restore(); }
   });
 
-  it("gives the trigger a material that is back from the re-form mark down and a label that returns over it once the pane has left", async () => {
+  it("gives the trigger a material that is back from the re-form mark down and a label that returns over it from the return mark down", async () => {
     let channel: PopupHandoff | null = null;
     render(<HandoffProbe onChannel={(value) => { channel = value; }} />);
     await act(async () => {});
@@ -399,41 +406,61 @@ describe("the button-to-menu hand-off", () => {
       act(() => travel.setValue(0.5));
       expect(labelOpacity()).toBe(0);
       expect(materialOpacity()).toBe(0);
-      // The tail of a close: anything above the re-form mark keeps the material
-      // hidden, even a hair above it; from the mark down the pill is a body of its
-      // own under the drop, the label still hidden until the snap.
+      // The tail of a close (the pane's motion has stepped the closing flag): anything
+      // above the re-form mark keeps the material hidden, even a hair above it; from
+      // the mark down the pill is a body of its own under the drop. The label starts
+      // back the frame the travel crosses the return mark downward (never above the
+      // re-form mark, so it never shows over a bare spot), and rises over `returnMs`
+      // while the drop is still settling onto the pill; at the snap it is well on its
+      // way, never cut. Both marks sit above the seed and only a close reads them.
+      expect(handoff.label.returnFrom).toBeLessThanOrEqual(handoff.reform);
+      expect(handoff.reform).toBeGreaterThan(seed);
+      act(() => travel.setValue(0.7));
+      act(() => channel!.closing.setValue(1));
+      expect(materialOpacity()).toBe(0);
       act(() => travel.setValue(handoff.reform + 1e-6));
       expect(materialOpacity()).toBe(0);
       act(() => travel.setValue(handoff.reform));
       expect(materialOpacity()).toBe(0);
       act(() => travel.setValue(handoff.reform - 1e-6));
       expect(materialOpacity()).toBe(1);
+      act(() => travel.setValue(Math.max(handoff.label.returnFrom, handoff.reform - 1e-6)));
       expect(labelOpacity()).toBe(0);
-      act(() => travel.setValue(0.001));
-      expect(materialOpacity()).toBe(1);
-      act(() => travel.setValue(8e-6));
-      expect(materialOpacity()).toBe(1);
+      act(() => travel.setValue(handoff.label.returnFrom - 1e-6));
       expect(labelOpacity()).toBe(0);
-      // The snap: the label waits out the merge (`returnDelayMs`, counted on frames),
-      // then starts its fade from 0 and is back over `returnMs`, never showing over
-      // the standing-in pane.
-      act(() => travel.setValue(0));
-      expect(materialOpacity()).toBe(1);
-      expect(labelOpacity()).toBe(0);
-      clock.advance(handoff.label.returnDelayMs - 16);
-      expect(labelOpacity()).toBe(0);
-      clock.advance(32 + handoff.label.returnMs / 2);
+      clock.advance(handoff.label.returnMs / 2);
       const midway = labelOpacity();
       expect(midway).toBeGreaterThan(0);
       expect(midway).toBeLessThan(1);
+      act(() => travel.setValue(0.001));
+      expect(materialOpacity()).toBe(1);
+      expect(labelOpacity()).toBeGreaterThanOrEqual(midway);
+      act(() => travel.setValue(8e-6));
+      expect(materialOpacity()).toBe(1);
+      act(() => travel.setValue(0));
+      expect(materialOpacity()).toBe(1);
+      const atSnap = labelOpacity();
+      expect(atSnap).toBeGreaterThanOrEqual(midway);
       clock.advance(handoff.label.returnMs);
       expect(labelOpacity()).toBe(1);
       expect(materialOpacity()).toBe(1);
-      // A reopen while the label is still returning turns it back out.
+      // A reopen (the flag stepped back to opening) turns the label out on its first
+      // frame of travel and hides the material the moment the pane exists, at the
+      // seed, which is under the re-form mark a close would read.
       act(() => travel.setValue(0));
+      act(() => channel!.closing.setValue(0));
+      expect(materialOpacity()).toBe(1);
       act(() => travel.setValue(seed));
+      expect(materialOpacity()).toBe(0);
       clock.advance(handoff.label.hideMs + 32);
       expect(labelOpacity()).toBe(0);
+      // Mid-close reopen: the pill was back under the drop; the reopening drop takes
+      // its place again on the frame the flag flips.
+      act(() => channel!.closing.setValue(1));
+      act(() => travel.setValue(handoff.reform - 0.05));
+      expect(materialOpacity()).toBe(1);
+      act(() => channel!.closing.setValue(0));
+      expect(materialOpacity()).toBe(0);
     } finally { timing.mockRestore(); clock.restore(); }
   });
 
@@ -518,7 +545,7 @@ describe("the birth, the settle and the dismiss of a hand-off pane", () => {
     } finally { unmount(); clock.restore(); timing.mockRestore(); }
   });
 
-  it("dismisses with the rows ghosted on the first frame and retiring, the pane sheer and contracted about its centre, then re-forms the trigger before the drop slides onto it", async () => {
+  it("dismisses with the rows ghosted on the first frame and retiring, the pane sheer and contracted about its centre, then re-forms the trigger under the drop as the body springs back up into it", async () => {
     let exits = 0;
     const progress = new Animated.Value(0);
     const { rerender, unmount } = render(ui(<Probe open={false} radius={16} origin={ORIGIN} progress={progress} onExited={() => { exits++; }} />));
@@ -532,17 +559,21 @@ describe("the birth, the settle and the dismiss of a hand-off pane", () => {
       expect(frame()).toEqual({ left: 0, top: 0, ...SIZE });
       expect(retiring()).toBe(false);
       rerender(ui(<Probe open={false} radius={16} origin={ORIGIN} progress={progress} onExited={() => { exits++; }} />));
-      // The close's first frame: the rows are blurred ghosts at `keep` and the rows
-      // stay in the tree (retiring) while they fade; the travel has not moved.
-      expect(focus().filter).toBe(`blur(${birth.blur}px)`);
+      // The close's first frame: the rows are ghosts blurred by the dismiss's own
+      // lighter blur at `keep` of their ink, and they stay in the tree (retiring)
+      // while they fade; the travel has not moved.
+      expect(focus().filter).toBe(`blur(${dismiss.ghost.blur}px)`);
       expect(parseFloat(focus().opacity)).toBeCloseTo(dismiss.ghost.keep, 6);
       expect(retiring()).toBe(true);
       expect(valueOf(progress)).toBe(1);
       // The close, sampled frame by frame to the snap: the pane contracts about its
       // centre to `contract` of its box while the travel still holds at 1 and goes
       // sheer (its under-fills at the dismiss's share); the ghosts fade and the rows
-      // retire by the ghosts' fade; the drop hangs under the pill down to the slide
-      // mark (its top at the pill's bottom) and then slides onto the pill's box.
+      // retire by the ghosts' fade; the body flies back up into the pill BY ITS
+      // CENTRE, the remaining share of the way from the pill's centre to the card's
+      // at every progress (the contraction and the contour scale about that centre,
+      // so it is exact), its top hanging under the pill's spot early and rising into
+      // it over the second half of the travel.
       const seen: { value: number; box: ReturnType<typeof frame>; retiring: boolean; presence: number; at: number }[] = [];
       for (let step = 0; step < 80 && exits === 0; step++) {
         clock.advance(16);
@@ -555,51 +586,80 @@ describe("the birth, the settle and the dismiss of a hand-off pane", () => {
       expect(Math.min(...seen.map((s) => s.presence))).toBeCloseTo(dismiss.sheer, 4);
       expect(seen.some((s) => s.retiring)).toBe(true);
       expect(seen.filter((s) => s.at > dismiss.ghost.fadeMs + 32).every((s) => !s.retiring)).toBe(true);
-      // (Within a few pixels: the contraction's release and the contour's recoil
-      // scale the pane about its centre on top of the edge's travel.)
-      const hanging = seen.filter((s) => s.value > handoff.slide && s.value < seed);
-      expect(hanging.length).toBeGreaterThan(0);
-      for (const s of hanging) expect(Math.abs(s.box.top - (ORIGIN.y + ORIGIN.height))).toBeLessThan(4);
-      const sliding = seen.filter((s) => s.value < handoff.slide * 0.75 && s.value > 0);
-      expect(sliding.length).toBeGreaterThan(0);
-      for (const s of sliding) expect(s.box.top).toBeLessThan(ORIGIN.y + ORIGIN.height - 4);
-      // The hand-back is the pill's box exactly, the contraction's release included
+      const pillCentre = ORIGIN.y + ORIGIN.height / 2;
+      const travelling = seen.filter((s) => s.value > 0 && s.value < 1);
+      expect(travelling.length).toBeGreaterThan(6);
+      const flying = travelling.filter((s) => s.value >= seed);
+      expect(flying.length).toBeGreaterThan(2);
+      for (const s of flying) expect(s.box.top + s.box.height / 2).toBeCloseTo(pillCentre + s.value * (SIZE.height / 2 - pillCentre), 6);
+      // Early in the travel (the contraction still releasing) the drop's top is at or
+      // under the pill's bottom edge. Under the seed the centre keeps travelling to
+      // the pill's centre while the drop shrinks to nothing, narrowing faster than
+      // it shortens (its width over its height falls frame by frame): the last of it
+      // sinks into the pill's box, its top rising from the pill's bottom edge toward
+      // the pill's centre, centred on the pill across the axis.
+      const early = travelling.filter((s) => s.value > 0.7);
+      expect(early.length).toBeGreaterThan(0);
+      for (const s of early) expect(s.box.top).toBeGreaterThan(ORIGIN.y + ORIGIN.height - 4);
+      const absorbed = travelling.filter((s) => s.value < seed);
+      expect(absorbed.length).toBeGreaterThan(3);
+      const tip = ORIGIN.y + ORIGIN.height;
+      for (const s of absorbed) {
+        expect(s.box.top + s.box.height / 2).toBeCloseTo(pillCentre + s.value * (SIZE.height / 2 - pillCentre), 6);
+        expect(s.box.top).toBeLessThan(tip + 4);
+        expect(s.box.top).toBeGreaterThan(pillCentre - 1);
+        expect(s.box.left + s.box.width / 2).toBeCloseTo(70, 3);
+      }
+      for (let i = 1; i < absorbed.length; i++) expect(absorbed[i]!.box.top).toBeLessThanOrEqual(absorbed[i - 1]!.box.top + 1e-6);
+      for (let i = 1; i < absorbed.length; i++) {
+        expect(absorbed[i]!.box.height).toBeLessThanOrEqual(absorbed[i - 1]!.box.height + 1e-6);
+        expect(absorbed[i]!.box.width).toBeLessThanOrEqual(absorbed[i - 1]!.box.width + 1e-6);
+      }
+      for (let i = 1; i < absorbed.length; i++) {
+        expect(absorbed[i]!.box.width / absorbed[i]!.box.height).toBeLessThanOrEqual(absorbed[i - 1]!.box.width / absorbed[i - 1]!.box.height + 1e-3);
+      }
+      // The hand-back is nothing at the drop's tip, the contraction's release included
       // (the contour's own recoil settles over the next frames, as on every close).
-      expect(Math.abs(frame().left - 20)).toBeLessThan(0.1);
+      expect(frame().width).toBeLessThan(0.1);
+      expect(frame().height).toBeLessThan(0.1);
       clock.advance(1600);
-      near(frame(), { left: 20, top: -40, width: 100, height: 32 });
+      expect(frame().width).toBeCloseTo(0, 6);
     } finally { unmount(); clock.restore(); timing.mockRestore(); }
   });
 
-  it("re-forms the trigger's material from a small body as the travel crosses the re-form mark downward, whole again across it upward", async () => {
+  it("re-forms the trigger's material as a short fat oval growing to whole on the travel under the re-form mark", async () => {
     let channel: PopupHandoff | null = null;
     let context: PopupHandoffValue | null = null;
     const { unmount } = render(ui(<HandoffProbe onChannel={(handoff, value) => { channel = handoff; context = value; }} />));
     await act(async () => {});
-    const clock = animationClock();
     try {
       const travel = channel!.progress;
-      const growth = context!.growth;
-      expect(valueOf(growth)).toBe(1);
-      act(() => travel.setValue(1));
-      act(() => travel.setValue(handoff.reform + 0.05));
-      expect(valueOf(growth)).toBe(1);
-      // Crossing the mark downward: the material comes back small and springs to whole.
-      act(() => travel.setValue(handoff.reform - 0.01));
-      expect(valueOf(growth)).toBeCloseTo(handoff.reformGrowth.from, 6);
-      clock.advance(48);
-      const growing = valueOf(growth);
-      expect(growing).toBeGreaterThan(handoff.reformGrowth.from);
-      expect(growing).toBeLessThan(1);
-      clock.advance(600);
-      expect(valueOf(growth)).toBeCloseTo(1, 3);
-      // Crossing upward (a reopen) rests it at whole at once; it is hidden there anyway.
-      act(() => travel.setValue(handoff.reform + 0.1));
-      act(() => travel.setValue(handoff.reform - 0.01));
-      expect(valueOf(growth)).toBeCloseTo(handoff.reformGrowth.from, 6);
-      act(() => travel.setValue(handoff.reform + 0.1));
-      expect(valueOf(growth)).toBe(1);
-    } finally { unmount(); clock.restore(); }
+      const { growth, growthTall } = context!;
+      const { width, height } = handoff.reformGrowth;
+      // The curves start at the re-form mark (the material's step and its scale flip
+      // on the same frame), a short fat oval there, and are the identity at 0.
+      expect(width.at(-1)![0]).toBe(handoff.reform);
+      expect(height.at(-1)![0]).toBe(handoff.reform);
+      expect(width.at(-1)![1]).toBeLessThan(height.at(-1)![1]);
+      expect(width[0]).toEqual([0, 1]);
+      expect(height[0]).toEqual([0, 1]);
+      expect(valueOf(growth as unknown as Animated.Value)).toBe(1);
+      expect(valueOf(growthTall as unknown as Animated.Value)).toBe(1);
+      act(() => travel.setValue(handoff.reform - 1e-6));
+      expect(valueOf(growth as unknown as Animated.Value)).toBeCloseTo(width.at(-1)![1], 4);
+      expect(valueOf(growthTall as unknown as Animated.Value)).toBeCloseTo(height.at(-1)![1], 4);
+      // Monotonic to whole as the travel runs home: wider and taller every step.
+      let previousWidth = 0; let previousHeight = 0;
+      for (const at of [handoff.reform - 0.01, 0.4, 0.3, 0.2, 0.1, 0.05, 0]) {
+        act(() => travel.setValue(at));
+        const w = valueOf(growth as unknown as Animated.Value); const h = valueOf(growthTall as unknown as Animated.Value);
+        expect(w).toBeGreaterThanOrEqual(previousWidth); expect(h).toBeGreaterThanOrEqual(previousHeight);
+        expect(h).toBeGreaterThanOrEqual(w - 1e-9);
+        previousWidth = w; previousHeight = h;
+      }
+      expect(previousWidth).toBe(1);
+      expect(previousHeight).toBe(1);
+    } finally { unmount(); }
   });
 });
 

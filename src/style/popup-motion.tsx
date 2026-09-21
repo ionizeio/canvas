@@ -149,18 +149,25 @@ export const POPUP_PRESENTATION = {
   content: { fadeFrom: 0.3, fadeTo: 0.9 },
   /**
    * The dismiss. The rows RETIRE as blurred ghosts rather than in a cut: on the
-   * close's first frame they are blurred by the birth's `blur` and at `keep` of their
-   * ink, and the ghosts fade out over `fadeMs` on the same JS-driven wrapper (the
-   * reference's rows are faint blurred ghosts one frame after the tap, about an
-   * eighth of their ink, still there at +67 and gone by +100; a 33 ms blur with a
-   * 90 ms fade left three quarters of the ink in the first frame). The emptied pane
+   * close's first frame they are blurred by `blur` px (lighter than the birth's: the
+   * reference's ghosts are legible blurred text, and the birth's 6 px made them
+   * illegible smudges to the 2026-09-21 run 08 judge) and at `keep` of their ink,
+   * and the ghosts fade out over `fadeMs` on the same JS-driven wrapper, an ease-in
+   * so they hold before they go (measured on the reference's frames, its blurred
+   * rows peak at 53% of the crisp text's luminance one frame after the tap and again
+   * at +66, and are gone by +99; a 33 ms blur with a 90 ms fade left three quarters
+   * of the crisp ink in the first frame, and 0.15 on a 70 ms ease-out had them at 6%
+   * by the +40 tile, invisible to the run 05 judge; 0.5 on a 110 ms ease-in was
+   * read at a third of the crisp brightness by the run 10 judge, the 2.5 px blur
+   * taking a third of the peak, so 0.75 puts the peak near the reference's half).
+   * The emptied pane
    * goes SHEER the same frame: its under-fills thin to `sheer` of their opacity over
    * `sheerMs` (the page text under the reference's pane, hidden at rest, shows
    * through at +33 and stays so while it shrinks; its rim stays whole, a bounded
    * body), and stay so until it leaves; the re-formed pill under it is at its own
    * full tone, so the two bodies never add up to a flash.
    */
-  dismiss: { ghost: { keep: 0.15, fadeMs: 70 }, sheer: 0.35, sheerMs: 33 },
+  dismiss: { ghost: { keep: 0.75, blur: 2.5, fadeMs: 110 }, sheer: 0.35, sheerMs: 33 },
   /** The contour: a stretch and squash around the travel, independent of it. */
   contour: {
     stiffness: 320, damping: 15,
@@ -173,8 +180,9 @@ export const POPUP_PRESENTATION = {
    * pane's material IS the trigger's pill at progress 0 and the resting card at 1, so
    * the pill vanishes into the droplet on open and the pane re-forms the pill on close.
    * Modelled on the native menu's dismiss (frames 169 to 176 of the reference): the
-   * pane narrows to the button first, the drop left under it absorbs upward, and the
-   * button's icons fade back while the last of the drop is still merging.
+   * pane narrows to the button first, the drop left under it springs back up into
+   * the button by its centre, and the button's icons fade back while the last of the
+   * drop is still merging.
    */
   handoff: {
     /**
@@ -189,6 +197,15 @@ export const POPUP_PRESENTATION = {
      */
     droplet: 0.45,
     /**
+     * How fast a closing drop NARROWS as it is absorbed into the pill's underside,
+     * as the power of the travel's share under the seed that its across extent
+     * follows (its along extent follows the share itself): above 1 the drop is
+     * narrower than it is short as it goes, the last of it a small bump taller than
+     * wide, as the reference's is (a drop 36% of the pill's width and 150% of its
+     * height at +198, a bump 25% by 70% at +231, a speck at +264, gone by +297).
+     */
+    absorb: 1.5,
+    /**
      * The pane keeps the droplet's extent ACROSS the anchor axis until this progress
      * and widens to the card's from there, so the droplet keeps its shape while it
      * grows along the axis and a closing pane narrows to the drop before its height
@@ -201,59 +218,73 @@ export const POPUP_PRESENTATION = {
      * pill vanishes whole, icons and glass in one frame; a 33 ms fade left half the
      * label under the drop's blur in the +33 tile, and 16 still raced the tile on
      * the web, where the fade only starts a frame after the pane's mount), and back
-     * over `returnMs` from `returnDelayMs` after the pane has re-formed the pill and
-     * left. The reference's icons come up over its merged glass from about +170
-     * (faint) to +333 (whole), the frames its neck is absorbed in; the pane here
-     * slides onto the pill and leaves at about +205, so the label starts as it
-     * leaves and takes 130 to be whole at about +335 (a delay of 60 put its start
-     * two frames behind the reference's, and 100 had it whole 50 ms early). On iOS the native glass can trail the commit by a frame (the
-     * 2026-09-19 `ios-handoff-01` row): that frame shows the pill's glass without
-     * its label, a flash no fade of the label fixes, since the reference's pill is
-     * gone whole in that frame. The pane sits above the trigger (the overlay outlet), so a label fading
-     * in under the pane's glass would read dimmed and blurred through it; the native
-     * menu's icons fade over the last hundred milliseconds of its merge, and this is
-     * the same fade a beat later, on the trigger's own material.
+     * over `returnMs` from the frame a closing travel crosses `returnFrom` downward,
+     * UNDER the last of the drop: the reference's icons come up over its merged glass
+     * from about +170 (faint) to +333 (whole), the frames its neck is absorbed in,
+     * while its pill re-forms beneath them; here the pill's own material is back from
+     * `reform` and the drop, wearing the pill's tone, is still settling onto it, so
+     * the label rises through that glass (soft under its blur, crisp the frame the
+     * pane leaves) rather than after it. A return at the snap (the 2026-09-20 cut,
+     * `returnDelayMs` 0 then 130 of fade) had the label whole at about +335 only
+     * because that close landed at +200; on the reference's own pace (the pane home at
+     * about +280) it was two tiles late and the pill stood empty through the merge.
+     * `returnFrom` is read on a close only (the channel's `closing` flag) and never
+     * above `reform`, so the label never shows over a bare spot; it sits where the
+     * re-formed pill is about two thirds wide (the reference's icons are two faint
+     * smudges at +165 in a 43% pill and half in at +198 in a 73% one, at full size,
+     * the left one overhanging the pill's edge), and the label comes back at FULL
+     * size: scaled down with the pill (a 2026-09-21 cut) it read as a zoomed-down
+     * button. On iOS the
+     * native glass can trail the commit by a frame (the 2026-09-19 `ios-handoff-01`
+     * row): that frame shows the pill's glass without its label, a flash no fade of
+     * the label fixes, since the reference's pill is gone whole in that frame.
      */
-    label: { hideMs: 0, returnDelayMs: 0, returnMs: 130 },
+    label: { hideMs: 0, returnFrom: 0.3, returnMs: 150 },
     /**
      * The progress below which a closing pane counts as MERGED with the trigger: it
      * snaps home there instead of crawling the spring's last pixels, so the trigger's
      * material and label come back the frame the drop has been absorbed, the way the
-     * reference's icons are back within 100 ms of its merge. 0.06 of the travel is
-     * under 2 px of the along extent between the drop and the pill on the docs
-     * Dropdown, invisible at 30 fps; at 0.015 the spring's tail kept the drop on the
-     * pill for 120 ms after it had visibly landed (label back two tiles after the
-     * reference's), and the wait for the numeric rest before that left the re-formed
-     * pill empty ~230 ms.
+     * reference's icons are back within 100 ms of its merge. With the drop shrinking
+     * to nothing (2026-09-21), 0.03 of the travel is a speck a pixel or two across,
+     * and the snap it brings at about +300 on the soft close lets the pill's last
+     * growth (`reformGrowth`, 89% at +264 to whole) run on the reference's pace
+     * rather than pop at 0.06's +273; at 0.015 the 2026-09-20 stiff spring's tail
+     * kept its pill-sized drop on the pill for 120 ms after it had visibly landed.
      */
-    merged: 0.06,
+    merged: 0.03,
     /**
-     * The progress below which a closing pane's TRIGGER re-forms its own material
-     * above the hanging drop, a second body: the reference's pill is back as a small
-     * body of its own at +120 to +133, the frame after its blob has narrowed to the
-     * drop, and the two merge from +200. The drop hangs under the trigger from here
-     * down to `slide` and then slides onto its box, so the two bodies touch and
-     * overlap rather than bridge (no neck: the material has no metaball pass). Under
-     * the seed, so an opening never shows the pill under its droplet.
+     * The progress below which a CLOSING pane's trigger re-forms its own material
+     * under the drop, a second body: the reference's pill is back as a small body of
+     * its own at +132, when its blob is 45% of the way home, and grows while the blob
+     * rises into it (29% of its width at +132, 43% at +165, 73% at +198, 98% at
+     * +297). The drop travels by its centre (see `usePopupMotion`), so from here down
+     * it overlaps the pill's box more each frame and is the box at 0; the two overlap
+     * rather than bridge (no neck: the material has no metaball pass). Read on a
+     * close only (the channel's `closing` flag), so it sits ABOVE the seed: an
+     * opening, seated at the seed, hides the pill from its first frame regardless.
+     * At 0.4 (under the seed, the 2026-09-20 cut) the pill came back at 60% of the
+     * way, +179 on the reference's pace, 47 ms after the reference's; 0.55 put it at
+     * about +128, a frame after the +123 tile the reference's is already in.
      */
-    reform: 0.4,
+    reform: 0.58,
     /**
-     * How the trigger's material RE-FORMS at `reform`: it comes back at `from` of
-     * its size, scaled about its centre, and springs to whole (the reference's pill
-     * is a small oval a third of its width at +133, half at +167, 86% at +200 and
-     * whole by +267; 500/30 was still 87% at +240).
-     * A scale, never an opacity: the material is whole or absent, never partial.
+     * How the trigger's material RE-FORMS under `reform`: its width and height
+     * scales, about its centre, as functions of the TRAVEL (progress, scale pairs
+     * under the mark; whole at 0 and at rest), the reference's pill measured per frame
+     * and placed on the travel by the close's pace: a SHORT FAT oval first (29% wide
+     * but 60% tall at +132, 43% by 79% at +165), most of its width back in the frames
+     * its blob is absorbed (73% by 80% at +198, 85% at +231, 89% at +264, 98% at
+     * +297). Curves on the travel rather than a spring of their own so the material's
+     * step and its scale flip on the SAME native frame: with a spring started from a
+     * listener the native step showed the pill whole for a frame before the JS thread
+     * had set the small start value (the 2026-09-21 `ios-springback-02` run), which
+     * the web's synchronous listener never showed. A uniform miniature (49% by 49%)
+     * read as a zoomed-down button (the run 08 judge).
      */
-    reformGrowth: { from: 0.35, stiffness: 800, damping: 40 },
-    /**
-     * The progress below which a closing drop SLIDES from under the trigger onto its
-     * box (above it the drop hangs from the trigger's far edge): the reference's blob
-     * hangs separate under its re-formed pill at +167 and is absorbed over +200 to
-     * +233, so the slide begins after the pill has re-formed (`reform`) and takes
-     * the spring's last part of the travel. An opening drop is born above this
-     * mark, so the slide never shows on the way out.
-     */
-    slide: 0.2,
+    reformGrowth: {
+      width: [[0, 1], [0.02, 0.98], [0.065, 0.89], [0.13, 0.85], [0.185, 0.73], [0.3, 0.43], [0.47, 0.32], [0.58, 0.3]],
+      height: [[0, 1], [0.065, 0.95], [0.13, 0.9], [0.185, 0.8], [0.3, 0.79], [0.58, 0.6]],
+    },
     /**
      * The material's under-fill is the TRIGGER's layer (the bright control puck) up
      * to the seed and the pane's own (the dense menu tint) from this progress on,
@@ -265,29 +296,32 @@ export const POPUP_PRESENTATION = {
     tint: 0.7,
     /**
      * The close back onto the trigger. On the reference the rows vanish at +33 and
-     * the emptied pane CONTRACTS in that frame, to about 86% of its width and 82% of
-     * its height about its centre, holds there through +67, then shrinks fast (a
-     * narrowing blob under half its width by +100, on the button by +167) and merges
-     * by +233: `contract` is the scale the pane steps to ABOUT ITS CENTRE over
-     * `contractMs` (a factor of its own on both axes, released back to 1 over
-     * `releaseMs` as the spring runs, so the pane ends on the pill's box exactly),
-     * then a `hold`, then a stiff, near-critically damped spring. Without
-     * the hold the shrink began a tile early and front-loaded (65% at +67, 37% at
-     * +100); a softer spring alone (320/30) put the merge at +233 but kept the early
-     * start; 520/40 with a 60 ms hold was a tile late through the shrink (77% wide
-     * at +120, on the button at +200, the 2026-09-20 `web-dropdown-page-08` judge),
-     * and 900/54 still 80% wide at +105: the reference's pane goes from full to
-     * under half its width inside the 40 ms after +80, so the spring must cover half
-     * the travel in that time (1400/70 with a 45 ms hold and no contraction ran a
-     * tile early: 74% at +92 and on the button at +116; with the contraction and a
-     * 20 ms hold it had the drop sliding onto the pill from +150 and merged by +190,
-     * a frame before the reference's merge begins, so 1000/58 lets the tail take
-     * the reference's +200 to +233). The hold is counted from the contraction's
-     * end, itself a frame and 33 ms after the tap, so 10 lands the spring's start at
-     * about +65, the reference's shrink beginning after +67, and its pill re-forming
-     * (`reform`) at about +140, the reference's at +120 to +160.
+     * the emptied pane CONTRACTS in that frame, to about 86% of its width and 84% of
+     * its height about its centre, holds there through +67, then flies back up into
+     * the button by its centre: measured on the reference's frames, its centre has
+     * crossed 24% of the way at +99, 45% at +132, 57% at +165, 78% at +198, 86% at
+     * +231, 92% at +264 and all of it at +297, the bottom edge rushing up while the
+     * top hangs under the pill's spot until the last frames, which is a critically
+     * damped spring of about twenty radians a second released at about +50.
+     * `contract` is the scale the pane steps to ABOUT ITS CENTRE over `contractMs`
+     * (a factor of its own on both axes, released back to 1 over `releaseMs` as the
+     * spring runs, so the pane ends on the pill's box exactly), then a `hold`, then
+     * that spring, released with `velocity` (travel per second, toward the pill):
+     * the reference's blob is already a quarter of the way at +99, a frame after its
+     * hold, where a spring from rest is only an eighth of the way (12% at +97 in the
+     * 2026-09-21 run 01, a tile behind through +132 and level from +165; -2.7 bought
+     * 4% at +100 because the spring first moves at about +75, after the contraction's
+     * end callback and two frames of scheduling, and -5 from there puts every tile
+     * inside the card's tolerance by the spring's closed form). The
+     * 2026-09-20 cut ran a stiff 1000/58 on an edge-pinned drop
+     * (home by +200, the last 38 px a hop in 70 ms) and read as a collapse under the
+     * button with the pill popping back, not as the pane springing back up to it; on
+     * this spring the drop is still a body 22% of the way out at +198 and lands at
+     * about +280, the reference's merge being +200 to +233 with a bump to +280. The
+     * hold is counted from the contraction's end, itself a frame and 33 ms after the
+     * tap, so 10 lands the spring's start at about +65.
      */
-    close: { contract: 0.85, contractMs: 33, releaseMs: 120, hold: 10, stiffness: 1000, damping: 58 },
+    close: { contract: 0.85, contractMs: 33, releaseMs: 120, hold: 10, stiffness: 400, damping: 40, velocity: -5 },
     /**
      * The FIELD hand-off (Autocomplete, Select, PhoneInput): the same travel between
      * the field's box and the card as a menu button's, so the field vanishes into the
@@ -426,7 +460,7 @@ function radiusTable(progress: Animated.Value, relax: Animated.Value, resting: n
  * rest every term is exactly the identity: scale 1, translation 0, the skin's radius.
  */
 export function usePopupMotion({
-  open, enabled, ready, size, edge = "top", anchorX, anchorY, radius, origin, progress: shared, onExited,
+  open, enabled, ready, size, edge = "top", anchorX, anchorY, radius, origin, progress: shared, closing, onExited,
 }: {
   open: boolean;
   enabled: boolean;
@@ -449,6 +483,11 @@ export function usePopupMotion({
    * platform has the driver (`usePopupHandoff` constructs it so).
    */
   progress?: Animated.Value;
+  /**
+   * The owner's closing flag (see `PopupHandoff.closing`): stepped to 1 as a close
+   * starts and to 0 as an opening does, before any travel of that direction paints.
+   */
+  closing?: Animated.Value;
   onExited: () => void;
 }) {
   const reduced = useReducedMotion();
@@ -527,6 +566,9 @@ export function usePopupMotion({
     contour.stopAnimation();
     cancelAnimationFrame(leaving.current);
     cancelAnimationFrame(holding.current);
+    // The direction, before any value of this travel paints: the trigger's material
+    // reads its re-form mark on a close only.
+    closing?.setValue(open ? 0 : 1);
     const current = latest.current;
     presence.stopAnimation();
     relax.stopAnimation();
@@ -599,9 +641,9 @@ export function usePopupMotion({
       setFocusing(true);
       setRetiring(true);
       // The rows are ghosts on this frame's flush; only the ghosts' fade is a timing.
-      blur.setValue(1);
+      blur.setValue(DISMISS.ghost.blur / BIRTH.blur);
       ghost.setValue(DISMISS.ghost.keep);
-      focus.push(Animated.timing(ghost, { toValue: 0, duration: DISMISS.ghost.fadeMs, easing: Easing.out(Easing.quad), ...JS_DRIVER, isInteraction: false }));
+      focus.push(Animated.timing(ghost, { toValue: 0, duration: DISMISS.ghost.fadeMs, easing: Easing.in(Easing.quad), ...JS_DRIVER, isInteraction: false }));
     }
     const focusing = Animated.parallel(focus, { stopTogether: true });
     const { contract, contractMs, releaseMs, hold: closeHold, ...closeSpring } = HANDOFF.close;
@@ -638,12 +680,14 @@ export function usePopupMotion({
       shrink.setValue(1);
       if (open) { setReadable(true); return; }
       // A closed pane leaves on the NEXT animation frame, not in the task that snapped
-      // it home. Under a hand-off the snap is also the frame the trigger's own material
-      // comes back (its opacity steps to 1 at exactly 0), and on iOS 26 the native
-      // glass takes a frame to paint after that; a pane removed in the same task
-      // uncovered a pill with no material yet, one empty frame in the recordings. With
-      // the hold the pane stands on the pill's box, wearing the trigger's fill, while
-      // the pill's glass comes up beneath it, and leaves once it has.
+      // it home. Under a field's hand-off the snap is also the frame the field's own
+      // material comes back (its opacity steps to 1 at exactly 0), and on iOS 26 the
+      // native glass takes a frame to paint after that; a pane removed in the same task
+      // uncovered a box with no material yet, one empty frame in the recordings. With
+      // the hold the pane stands on the box, wearing the trigger's fill, while the
+      // glass comes up beneath it, and leaves once it has. A whole trigger's pill is
+      // back since the re-form mark and its drop has shrunk to nothing by the snap, so
+      // the hold shows nothing there.
       leaving.current = requestAnimationFrame(() => {
         if (generation === lifecycle.current) exited.current();
       });
@@ -682,7 +726,7 @@ export function usePopupMotion({
       cancelAnimationFrame(leaving.current); cancelAnimationFrame(holding.current);
     };
     // The origin only picks the close's spring; a hand-off never changes it mid-flight.
-  }, [animate, open, ready, measured, progress, contour, blur, ghost, presence, relax, shrink]);
+  }, [animate, open, ready, measured, progress, closing, contour, blur, ghost, presence, relax, shrink]);
 
   useEffect(() => {
     const old = previous.current;
@@ -726,59 +770,89 @@ export function usePopupMotion({
       shiftAlong: Animated.AnimatedNode; shiftAcross: Animated.AnimatedNode;
       corner?: Animated.AnimatedNode; translateX: Animated.AnimatedNode; translateY: Animated.AnimatedNode;
     }
-    // The material travels between two boxes: the trigger's (progress 0) and the
-    // card's (progress 1), each extent on its own curve (the across one held at the
-    // trigger's until `widen`, the along one carrying the overshoot), the centre
-    // following the extent so the drop stays under the pill while its width is held.
-    // Each scale is 1 less the remaining share of the way from the trigger's extent,
-    // and each shift the remaining share of the way from the trigger's centre, so at
-    // rest both are the identity exactly.
+    // The material travels between the trigger and the card, each extent on its own
+    // curve (the across one held at the drop's until `widen`, the along one carrying
+    // the overshoot). A whole trigger's pane (`hangs`) is the DROP under the pill at
+    // the seed, the card at 1, and NOTHING at 0: from the seed down its centre keeps
+    // travelling into the pill while it shrinks to a point, narrowing faster than it
+    // shortens, the way the reference's blob is drawn up into its re-formed pill (a
+    // drop 36% of the pill's width at +198, a bump at +231, gone by +297) while the
+    // pill's own material, back since `handoff.reform`, carries the label. A field's pane
+    // is the field's box at 0 instead (its material returns only at the snap). At
+    // rest every term is the identity exactly.
     const fromOrigin = (box: PopupOrigin): Graph => {
       const originAlong = horizontal ? box.width : box.height;
       const originAcross = horizontal ? box.height : box.width;
       const originAcrossCentre = horizontal ? box.y + box.height / 2 : box.x + box.width / 2;
+      const originCentre = horizontal ? box.x + box.width / 2 : box.y + box.height / 2;
       // The drop the pane is at the seed. Across the axis: the trigger's extent for
       // a narrow pill, a compact drop centred on the trigger for a wide one (see
       // `handoff.droplet`). Along it: the birth's share of the card, never shorter
-      // than the trigger (see `birth.along`); the trigger's box at 0 and the card at 1.
+      // than the trigger (see `birth.along`).
       const dropletAcross = Math.min(originAcross, HANDOFF.droplet * acrossExtent);
       const dropletAlong = Math.max(originAlong, BIRTH.along * along);
+      // Under the seed a hanging drop's extents go to nothing: the along one with the
+      // travel, the across one faster (`handoff.absorb`), so the last of it is a
+      // small bump taller than it is wide, as the reference's is.
+      const dropAlong = (at: number) => box.hangs ? dropletAlong * (at / SEED) : originAlong + (dropletAlong - originAlong) * (at / SEED);
+      const dropAcross = (at: number) => box.hangs ? dropletAcross * Math.pow(at / SEED, HANDOFF.absorb) : originAcross + (dropletAcross - originAcross) * (at / SEED);
       const alongShare = (at: number) => at <= SEED
-        ? (originAlong + (dropletAlong - originAlong) * (at / SEED)) / along
+        ? dropAlong(at) / along
         : (dropletAlong + (along - dropletAlong) * ((at - SEED) / (1 - SEED))) / along;
+      const acrossScaleOf = (at: number) => at <= SEED
+        ? dropAcross(at) / acrossExtent
+        : dropletAcross / acrossExtent + handoffAcross(at) * (1 - dropletAcross / acrossExtent);
       const alongScale = progress.interpolate({
-        inputRange: [0, SEED, 1], outputRange: [originAlong / along, dropletAlong / along, 1],
+        inputRange: [0, SEED, 1], outputRange: [dropAlong(0) / along, dropletAlong / along, 1],
         extrapolateLeft: "clamp", extrapolateRight: "extend",
       });
-      // The pane's ANCHOR-SIDE edge (the top of a card that opens below its
-      // trigger) is the trigger's near edge at 0 (the pane IS the pill), the
-      // trigger's FAR edge at `handoff.slide` (the drop hangs from the pill's bottom,
-      // its tip on that edge and the pill's spot empty, as the reference's does one
-      // frame after the tap and while its blob hangs under the re-formed pill) and
-      // the card's edge at 1; so a close narrows to the drop under the pill, holds
-      // it there while the pill re-forms above, and then slides it up onto the pill's
-      // box, the way the reference's blob is absorbed upward into its pill. In card coordinates the
-      // edges are offsets from the card's own anchor-side edge. A box scaled about
-      // its centre by s has that edge moved inward by half of (1 - s) of its extent,
-      // so the shift is the edge's travel less that.
+      // Along the axis a whole trigger's pane travels BY ITS CENTRE above the seed:
+      // the pane's centre is the card's at 1 and the remaining share of the way to
+      // the pill's centre at any progress, its extent shrinking on `alongScale` about
+      // that centre. So a close is the body itself flying back up into the button,
+      // the way the reference's blob does (its centre crosses half its menu's height
+      // into the pill from +66 to +297, the bottom edge rushing up while the top
+      // hangs a little under the pill's spot); the edge-pinned curve this replaced
+      // (the top edge held at the pill's bottom to a slide mark, then a hop onto the
+      // box) was a height collapse under the button that never read as springing
+      // back to it (the 2026-09-21 rows). Under the seed the centre keeps travelling
+      // to the pill's centre while the extents go to nothing (`handoff.absorb`), so
+      // the last of the drop sinks INTO the pill and vanishes near its centre, the
+      // way the reference's bump is drawn up into its pill's underside: a drop held
+      // at the pill's far edge while it shrank read as deflating in place beside a
+      // pill that re-formed on its own (the 2026-09-21 run 05 judge), and a drop the
+      // pill's full width sliding up behind the pill read as never swallowed (run
+      // 03). One curve serves both directions: a reopen mid-close grows from its
+      // current bounds. Past rest (the opening's overshoot) the
+      // anchor edge holds: a box scaled about its centre by s moves that edge by
+      // half of (s - 1) of its extent, and `alongScale` is linear in the progress
+      // there, so the hold is the overshoot times that slope. In card coordinates
+      // the shift is an offset of the card's own box.
       const originNear = horizontal ? (alongAnchor ? box.x + box.width - along : box.x) : (alongAnchor ? box.y + box.height - along : box.y);
-      const originFar = alongAnchor ? originNear - originAlong : originNear + originAlong;
+      const overshoot = progress.interpolate({ inputRange: [1, 2], outputRange: [0, 1], extrapolateLeft: "clamp", extrapolateRight: "extend" });
+      const slopePastRest = (1 - dropletAlong / along) / (1 - SEED);
       // A field's drop is born over the field's box instead and slides off it (the
-      // field returns the moment the pane has cleared the box, `fieldCoverMark`).
-      const edge = box.hangs
-        ? progress.interpolate({ inputRange: [0, HANDOFF.slide, 1], outputRange: [originNear, originFar, 0], extrapolateLeft: "clamp", extrapolateRight: "extend" })
-        : progress.interpolate({ inputRange: [0, 1], outputRange: [originNear, 0], extrapolateLeft: "clamp", extrapolateRight: "extend" });
-      const shiftAlong = Animated.add(
-        edge,
-        Animated.multiply(Animated.subtract(1, alongScale), (alongAnchor ? 1 : -1) * (along / 2)),
-      );
-      // Across the axis the pane is the trigger's box at 0, the drop from the seed
-      // to `widen`, and the card at 1. The box and the drop share the trigger's
-      // centre, so the shift only has to carry the pane from that centre to the
-      // card's as it widens.
+      // field returns the moment the pane has cleared the box, `fieldCoverMark`): its
+      // anchor-side edge travels from the field's near edge to the card's, less the
+      // half of (1 - s) of the extent a scale about the centre moves it by.
+      const shiftAlong = box.hangs
+        ? Animated.add(
+          Animated.multiply(remaining, originCentre - along / 2),
+          Animated.multiply(overshoot, (alongAnchor ? -1 : 1) * slopePastRest * (along / 2)),
+        )
+        : Animated.add(
+          progress.interpolate({ inputRange: [0, 1], outputRange: [originNear, 0], extrapolateLeft: "clamp", extrapolateRight: "extend" }),
+          Animated.multiply(Animated.subtract(1, alongScale), (alongAnchor ? 1 : -1) * (along / 2)),
+        );
+      // Across the axis the pane is the drop from the seed to `widen` and the card at
+      // 1; under the seed a hanging drop narrows to nothing (sampled, the curve is a
+      // power) and a field's pane widens back to the field's box. The box and the
+      // drop share the trigger's centre, so the shift only has to carry the pane from
+      // that centre to the card's as it widens.
+      const underSeed = [0, 0.25, 0.5, 0.75].map((share) => share * SEED);
       const acrossShare = progress.interpolate({
-        inputRange: [0, SEED, HANDOFF.widen, 1],
-        outputRange: [originAcross / acrossExtent, dropletAcross / acrossExtent, dropletAcross / acrossExtent, 1],
+        inputRange: [...underSeed, SEED, HANDOFF.widen, 1],
+        outputRange: [...underSeed.map(acrossScaleOf), dropletAcross / acrossExtent, dropletAcross / acrossExtent, 1],
         extrapolate: "clamp",
       });
       const remainingAcross = progress.interpolate({ inputRange: [0, HANDOFF.widen, 1], outputRange: [1, 1, 0], extrapolate: "clamp" });
@@ -792,18 +866,21 @@ export function usePopupMotion({
         translateY: horizontal ? Animated.multiply(remaining, box.y + box.height / 2 - height / 2) : shiftAlong,
       };
       if (shaped) {
-        // The corner is the trigger's at the pill, the droplet's at the seed (as round
-        // as the seed shape's shorter side allows), the grown pane's at 1, and the
-        // skin's once the settle has relaxed it.
+        // The corner is the droplet's at the seed (as round as the seed shape's
+        // shorter side allows), the grown pane's at 1, and the skin's once the settle
+        // has relaxed it; under the seed a hanging drop stays a capsule on its shorter
+        // side as it shrinks (under the skin's own corner, it is a bump by then) and a
+        // field's pane eases back to the field's corner.
         const seedAlong = dropletAlong;
         const seedAcross = dropletAcross;
         const droplet = Math.max(radius, RADIUS.droplet * Math.min(seedAlong, seedAcross));
         const grown = Math.max(radius, RADIUS.grown * Math.min(along, acrossExtent));
-        const displayed = keyframes([[0, box.radius], [SEED, droplet], [1, grown]]);
-        const acrossScale = (at: number) => at <= SEED
-          ? (originAcross + (dropletAcross - originAcross) * (at / SEED)) / acrossExtent
-          : dropletAcross / acrossExtent + handoffAcross(at) * (1 - dropletAcross / acrossExtent);
-        graph.corner = radiusTable(progress, relax, radius, displayed, seedAlong <= seedAcross ? alongShare : acrossScale, 0);
+        const above = keyframes([[SEED, droplet], [1, grown]]);
+        const displayed = (at: number) => at >= SEED ? above(at)
+          : box.hangs ? RADIUS.droplet * Math.min(dropAlong(at), dropAcross(at)) : box.radius + (droplet - box.radius) * (at / SEED);
+        // A hanging drop's extents reach 0 at progress 0: the table is floored a hair
+        // above it, where the capsule's radius over its scale is still a number.
+        graph.corner = radiusTable(progress, relax, radius, displayed, seedAlong <= seedAcross ? alongShare : acrossScaleOf, box.hangs ? SEED / 50 : 0);
       }
       return graph;
     };

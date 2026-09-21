@@ -7,10 +7,11 @@ does: the trigger's glass pill hands off to the menu. Its material and label
 vanish as the menu's material forms as a drop centred on the pill (the pill's own
 width for a narrow pill, never wider than about half the menu), with the
 rows already inside it small and faint, then grows past its resting size and
-settles while the rows sharpen; the menu stays visible briefly on close while its
-rows are already out of reach and out of the accessibility tree, narrows back to
-the pill's width, absorbs upward into the pill's frame and re-forms the pill,
-whose label fades back as it does. The rows and headers never move on their own;
+settles while the rows sharpen; on close the rows retire as blurred ghosts while
+the menu, already out of reach and out of the accessibility tree, contracts, goes
+sheer and springs back up into the pill by its centre, narrowing to a drop that
+is drawn into the pill's underside as the pill re-forms beneath it, its label
+fading back over the pill as the last of the drop settles. The rows and headers never move on their own;
 the trigger stays where it is and keeps its press and its accessible name and
 state throughout; a selection commits and the menu closes logically the moment a
 row is pressed. Reopening during the exit continues from the current material.

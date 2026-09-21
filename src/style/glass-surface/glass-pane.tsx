@@ -68,10 +68,11 @@ export function GlassPane({ layer = "control", shape, tint, brand, interactive, 
     if (width > 0 && height > 0) handoff.report({ radius: shapeRadius(radii), width, height, layer });
   };
   // The wrapper carries the hand-off's material opacity (1 or 0, never between; see
-  // HANDOFF_RETURN) and its re-forming scale (whole at rest, growing back under a
-  // closing drop), so the surface underneath keeps the same tree it has elsewhere.
+  // HANDOFF_RETURN) and its re-forming scales (whole at rest, growing back under a
+  // closing drop as a short fat oval), so the surface underneath keeps the same tree
+  // it has elsewhere.
   return (
-    <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { zIndex: -1, opacity: handoff.material, transform: [{ scale: handoff.growth }] }]}>
+    <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { zIndex: -1, opacity: handoff.material, transform: [{ scaleX: handoff.growth }, { scaleY: handoff.growthTall }] }]}>
       <GlassSurface static={stable} clear={clear} layer={layer} tint={tint} brand={brand} interactive={interactive} pointerEvents="none" testID={testID} style={[StyleSheet.absoluteFill, radii]} onLayout={report} />
     </Animated.View>
   );
