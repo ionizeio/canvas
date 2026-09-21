@@ -9,13 +9,13 @@
 // yield to it on the same travel value, which the owner creates here and shares with
 // both sides (`usePopupHandoff`).
 //
-// A FIELD (Autocomplete, Select, PhoneInput) hands off the same way (`field`), with
-// the one difference its anatomy forces: the user reads or types into it while its
-// list is open, so its material and text are hidden only while the pane COVERS the
-// field's box, from the snap up to the cover mark (`fieldCoverMark`), and are back the
-// moment the pane has left it, on the way out (the field vanishes into the droplet and
-// re-forms under the settling list) as on the way home (the pane absorbs onto the box
-// and hands back at the snap).
+// A FIELD (Autocomplete, Select, PhoneInput) hands off the same way (`field`): the
+// pane rests OVER the field's box (`handoff.cover`), so the field's material and text
+// are hidden from the frame the drop forms until the close snaps home, exactly as a
+// pill's are, with the one difference on the way home that a field never re-forms
+// under the drop: the pane deflates onto the box and the field returns whole at the
+// snap (`handoff.field`). A field the user types into (the Autocomplete) echoes its
+// query at the top of the pane meanwhile.
 //
 // Two invariants keep every material honest:
 // - The trigger's material is never at a partial opacity. On a close it is 1 from
@@ -23,8 +23,8 @@
 //   last of the drop, the way the reference's pill re-forms before its blob has
 //   merged) and 0 above it; on an opening it is 0 the moment the pane exists and 1
 //   only at the snap (the pane's motion steps a `closing` flag on the channel, so the
-//   mark can sit above the seed the opening starts from); a field's is 1 at the snap
-//   and from the cover mark up. A native glass ancestor at a fractional alpha
+//   mark can sit above the seed the opening starts from); a field's is 1 only at the
+//   snap, both ways. A native glass ancestor at a fractional alpha
 //   may not paint, and a web backdrop under one loses its sampling root (see
 //   entrance.tsx). The label is a separate value on its own short fades, never an
 //   ancestor of the material, so its partial frames touch no glass: it cuts OUT the
@@ -43,15 +43,15 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState, type R
 import { Animated, Easing, StyleSheet, type StyleProp, type ViewStyle } from "react-native";
 import type { GlassLayer } from "./glass-surface/glass-surface.shared.js";
 import { supportsNativeDriver } from "./motion.js";
-import { HANDOFF_RETURN, POPUP_PRESENTATION, fieldCoverMark } from "./popup-motion.js";
+import { HANDOFF_RETURN, POPUP_PRESENTATION } from "./popup-motion.js";
 import { Text } from "./text.js";
 import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect.js";
 
 const HANDOFF = POPUP_PRESENTATION.handoff;
 const { label: LABEL } = HANDOFF;
 
-/** The material shape a trigger reports: its uniform corner, the box it covers and its layer. */
-export interface HandoffShape { radius: number; width: number; height: number; layer: GlassLayer }
+/** The material shape a trigger reports: its uniform corner, the box it covers, its layer, and whether it is CLEAR (the web's text-entry material: a lens with no under-fill). */
+export interface HandoffShape { radius: number; width: number; height: number; layer: GlassLayer; clear?: boolean }
 
 /**
  * The channel an owner shares with its popup: the travel value the pane's motion
@@ -68,10 +68,10 @@ export interface PopupHandoff {
    * read. Only ever stepped, never animated, so the material stays whole or absent.
    */
   closing: Animated.Value;
-  /** The pill: its corner, its area (the largest reporter wins), its extent along the anchor axis, and its layer (none for a bare trigger, which keeps the pane's own fill). */
-  shape: { current: { radius: number; area: number; height: number; layer?: GlassLayer } | null };
+  /** The pill: its corner, its area (the largest reporter wins), its layer (none for a bare trigger, which keeps the pane's own fill) and whether its material is clear. */
+  shape: { current: { radius: number; area: number; layer?: GlassLayer; clear?: boolean } | null };
   fromTrigger: boolean;
-  /** Whether the owner is a field (its drop is born over its box; a whole trigger's hangs under it). */
+  /** Whether the owner is a field (its pane rests flush on its box and deflates onto it; a whole trigger's pane is nothing at the snap and re-forms the pill). */
   field: boolean;
 }
 
@@ -91,14 +91,12 @@ export interface PopupHandoffValue {
 
 export interface PopupHandoffOptions {
   /**
-   * The owner is a FIELD: a control the user reads or types into while its list is
-   * open, so its material and text yield only while the pane covers the field's box
-   * and are back as soon as the pane has left it. `gap` is the standoff the owner
-   * gives its overlay, which with the pane's reported extent fixes where that cover
-   * ends (`fieldCoverMark`). The field popups anchor below or above their field, so
-   * the extent is the reported height.
+   * The owner is a FIELD (Autocomplete, Select, PhoneInput): its pane rests flush on
+   * the field's box and deflates onto it on a close, and the field's material and
+   * text are back only at the snap, never re-formed under the drop (see
+   * `handoff.field` in popup-motion.tsx).
    */
-  field?: { gap: number };
+  field?: boolean;
   /**
    * The trigger paints no material of its own (a bare glyph, an outlined search bar):
    * the pane wears this corner at progress 0 and keeps its own fill throughout, and a
@@ -114,11 +112,9 @@ interface Channel {
   progress: Animated.Value;
   closing: Animated.Value;
   label: Animated.Value;
-  /** Whether the owner is a field (its material returns from the cover mark up). */
+  /** Whether the owner is a field (its material returns only at the snap, both ways). */
   field: boolean;
   shape: PopupHandoff["shape"];
-  /** Where a field's cover ends on the travel (1 until its pane has reported). */
-  mark: { current: number };
   report: PopupHandoffValue["report"];
 }
 
@@ -132,13 +128,6 @@ interface Channel {
  * popup does, while the shared value still carries the pane's travel.
  */
 export function usePopupHandoff(active: boolean, options?: PopupHandoffOptions): { handoff: PopupHandoff; context: PopupHandoffValue | null } {
-  const field = options?.field;
-  const gap = useRef(field?.gap ?? 0);
-  gap.current = field?.gap ?? 0;
-  // A field's cover mark, once its pane has reported its extent: the one part of the
-  // material curve that depends on a measurement, so it is state, and the curve is
-  // rebuilt (once, at mount) when it lands.
-  const [mark, setMark] = useState(1);
   const channel = useRef<Channel | null>(null);
   if (!channel.current) {
     // Every value is native from birth where the platform has the driver, the
@@ -154,44 +143,34 @@ export function usePopupHandoff(active: boolean, options?: PopupHandoffOptions):
     const bare = options?.bare;
     // A bare trigger's shape is declared, not reported: the trigger's own corner, no
     // layer to blend from, and an area no pane inside it can beat.
-    const shape: PopupHandoff["shape"] = { current: bare ? { radius: bare.radius, area: Infinity, height: 0 } : null };
-    const cover = { current: 1 };
-    const isField = field != null;
+    const shape: PopupHandoff["shape"] = { current: bare ? { radius: bare.radius, area: Infinity } : null };
     channel.current = {
       progress,
       closing,
       label,
-      field: isField,
+      field: !!options?.field,
       shape,
-      mark: cover,
-      report: ({ radius, width, height, layer }) => {
+      report: ({ radius, width, height, layer, clear }) => {
         if (bare) return;
         const area = width * height;
-        if (!shape.current || area >= shape.current.area) shape.current = { radius, area, height, layer };
-        if (!isField) return;
-        const next = fieldCoverMark(shape.current.height, gap.current);
-        if (next === cover.current) return;
-        cover.current = next;
-        setMark(next);
+        if (!shape.current || area >= shape.current.area) shape.current = { radius, area, layer, clear };
       },
     };
   }
-  const { progress, closing, label, field: isField, shape, mark: cover, report } = channel.current;
+  const { progress, closing, label, field: isField, shape, report } = channel.current;
   const material = useMemo(() => {
-    // A whole trigger: on a CLOSE, 1 from the re-form mark down (the pill is a body
-    // of its own under the last of the drop, see `handoff.reform`, a mark above the
-    // seed) and 0 above it; on an opening, 0 the moment the pane exists (any travel
-    // above the snap) and 1 only at exactly 0. The two steps are blended by the
-    // closing flag, itself 0 or 1, so the product is never a partial opacity.
-    if (!isField) {
-      const returned = progress.interpolate({ inputRange: [0, HANDOFF_RETURN], outputRange: [1, 0], extrapolate: "clamp" });
-      const reformed = progress.interpolate({ inputRange: [HANDOFF.reform - HANDOFF_RETURN, HANDOFF.reform], outputRange: [1, 0], extrapolate: "clamp" });
-      return Animated.add(Animated.multiply(Animated.subtract(1, closing), returned), Animated.multiply(closing, reformed)) as unknown as Animated.AnimatedInterpolation<number>;
-    }
-    // A field: the same at the snap, and back from the cover mark up (the pane has
-    // left the box), both steps as sharp as the interpolation allows.
-    return progress.interpolate({ inputRange: [0, HANDOFF_RETURN, mark - HANDOFF_RETURN, mark], outputRange: [1, 0, 0, 1], extrapolate: "clamp" });
-  }, [progress, closing, isField, mark]);
+    // 0 the moment the pane exists (any travel above the snap) and 1 only at exactly
+    // 0, as sharp a step as the interpolation allows. A whole trigger is also back
+    // on a CLOSE from the re-form mark down (the pill is a body of its own under the
+    // last of the drop, see `handoff.reform`, a mark above the seed); the two steps
+    // are blended by the closing flag, itself 0 or 1, so the product is never a
+    // partial opacity. A field's pane deflates onto its box instead, so the field
+    // reads the snap step both ways.
+    const returned = progress.interpolate({ inputRange: [0, HANDOFF_RETURN], outputRange: [1, 0], extrapolate: "clamp" });
+    if (isField) return returned;
+    const reformed = progress.interpolate({ inputRange: [HANDOFF.reform - HANDOFF_RETURN, HANDOFF.reform], outputRange: [1, 0], extrapolate: "clamp" });
+    return Animated.add(Animated.multiply(Animated.subtract(1, closing), returned), Animated.multiply(closing, reformed)) as unknown as Animated.AnimatedInterpolation<number>;
+  }, [progress, closing, isField]);
   // A whole trigger's material RE-FORMS as it comes back under a closing drop: from
   // the re-form mark down it is a short fat oval growing to whole on the travel
   // (`reformGrowth`, the reference's pill per frame), so its step and its scales flip
@@ -213,8 +192,8 @@ export function usePopupHandoff(active: boolean, options?: PopupHandoffOptions):
     // above the seed that only a close reads: the pill's own material is back under
     // the last of the drop, and the label rises through that glass, the way the
     // reference's icons come up over its merged glass while its bump is still
-    // absorbed); for a field, past the cover mark (the pane has left its box). A
-    // reopen cuts it out again on its first frame of travel.
+    // absorbed); for a field, at the snap, over its re-formed box. A reopen cuts it
+    // out again on its first frame of travel.
     let out = false;
     let fade: Animated.CompositeAnimation | null = null;
     // The direction, mirrored from the flag the pane's motion steps (a setValue calls
@@ -230,7 +209,7 @@ export function usePopupHandoff(active: boolean, options?: PopupHandoffOptions):
       fade.start();
     };
     const listener = progress.addListener(({ value }) => {
-      const covered = isField ? value > 0 && value < cover.current : closingNow ? value >= LABEL.returnFrom : value > 0;
+      const covered = isField || !closingNow ? value > 0 : value >= LABEL.returnFrom;
       if (covered === out) return;
       out = covered;
       run(covered ? 0 : 1, covered ? LABEL.hideMs : LABEL.returnMs);
@@ -240,7 +219,7 @@ export function usePopupHandoff(active: boolean, options?: PopupHandoffOptions):
       closing.removeListener(direction);
       fade?.stop();
     };
-  }, [progress, closing, label, isField, cover]);
+  }, [progress, closing, label, isField]);
   const handoff = useMemo<PopupHandoff>(() => ({ progress, closing, shape, fromTrigger: active, field: isField }), [progress, closing, shape, active, isField]);
   return { handoff, context: active ? context : null };
 }

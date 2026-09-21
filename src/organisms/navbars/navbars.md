@@ -10,8 +10,10 @@ one measured surface with restrained stretch, recoil and settle (the labels,
 `aria-current`, focus and hit targets stay fixed; iOS keeps its inactive capsules and
 carries the brand fill as glass, web and Android carry their tinted tile), the
 collapsed menu is Dropdown's, so it opens and closes with Dropdown's liquid material
-and its hand-off (the hamburger fades as the menu's material forms on its frame and
-returns as the menu shrinks back into it) while the bar itself stays still, and a
+and its hand-off (the hamburger fades as the menu's material forms under it and
+blooms up over its spot, resting over the hamburger's box the way the native menu
+covers its button, and returns as the menu shrinks back into it) while the bar
+itself stays still, and a
 collapse retires the surface until the row measures again. Reduce Motion selects the final bounds at once; solid mode keeps
 the skin's own active tile. Either cluster takes a caller-supplied element beside its
 built-in parts: `brandContent` leads the left one with a logo mark (beside or

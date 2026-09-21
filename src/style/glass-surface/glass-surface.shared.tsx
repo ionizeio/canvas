@@ -332,7 +332,31 @@ export function splitSurfaceStyle(style: StyleProp<ViewStyle>): Split {
  * pane's material while it stands in for the trigger; null everywhere else, where a
  * surface paints its own layer's fill alone.
  */
-export interface MaterialOrigin { layer: GlassLayer; blend: PopupBlend }
+/**
+ * The trigger's material a hand-off pane paints as its second under-fill: its layer
+ * and the cross-fade on the travel (`blend`), and, for a CLEAR trigger (the web's
+ * text-entry lens, which wears the clear veil rather than the layer's puck fill),
+ * the owner's `closing` flag: an opening drop is born with the layer's bright puck
+ * (the reference's light sheer body), a closing remnant deflates onto the field as
+ * the field's own veil, so the hand-back is the box it lands on and not a light
+ * puck swapped for a dark box in one frame (the 2026-09-21 judge). The two fills
+ * split the trigger's share on the flag, itself 0 or 1, so nothing doubles up.
+ */
+export interface MaterialOrigin { layer: GlassLayer; clear?: boolean; closing?: Animated.Value; blend: PopupBlend }
+
+/**
+ * The trigger's under-fill layers of a hand-off pane: one for the trigger's layer,
+ * and for a clear trigger a second one for its veil that takes over on a close.
+ */
+export function originFills(origin: MaterialOrigin, tokens: ColorTokens, dark: boolean, glass: GlassTokens, background: string, presence: Animated.Value | undefined): { color: string; opacity: number | Animated.AnimatedNode }[] {
+  const puck = surfaceUnderFill(glass, origin.layer, undefined, undefined, background);
+  if (!origin.clear || !origin.closing) return [{ color: puck, opacity: presentOpacity(origin.blend.trigger, presence) }];
+  const veil = surfaceUnderFill(glass, origin.layer, undefined, clearSurfaceTint(tokens, dark), background);
+  return [
+    { color: puck, opacity: presentOpacity(Animated.multiply(origin.blend.trigger, Animated.subtract(1, origin.closing)) as unknown as Animated.AnimatedInterpolation<number>, presence) },
+    { color: veil, opacity: presentOpacity(Animated.multiply(origin.blend.trigger, origin.closing) as unknown as Animated.AnimatedInterpolation<number>, presence) },
+  ];
+}
 export const MaterialOriginContext = createContext<MaterialOrigin | null>(null);
 
 /**

@@ -3,15 +3,20 @@
 Text input + dropdown: searchable single-select. Pass `label` (and `required`) to name the field: iOS and web render the label above the field, while Android floats the Material 3 in-container label once the list opens or a value fills the field. The field fills the parent it is given; a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container step sets its measure.
 
 In glass mode the suggestion list hands off with the field, the way the iOS 26
-menu takes its button: on open the field's glass and text vanish into a droplet
-that forms centred on the field's box, a compact drop narrower than the field in the field's corner and tone, the list blooms out
-of it, recoils and settles, and the field is back, caret, floating label and
-toggle included, as soon as the list has cleared its box; on close the
-suggestions go inert at once and the pane absorbs back up into the field's box,
-the field yielding again only while the pane covers it and returning as the pane
-re-forms the field. Picking a suggestion commits the value at once. Filtering
-re-shapes the material without replaying the opening. Reduce Motion settles at
-once with the field untouched; solid mode keeps the ordinary entrance.
+menu takes its button: on open the field's glass and text vanish whole and a
+compact droplet forms hanging under the field's box, in the field's corner and
+tone, with the rows inside it; the list blooms up out of it over the spot the
+field held, recoils and settles resting over the field's box, and stays there for
+as long as it is open. The field's line is echoed at the top of the list (the
+query, the value or the placeholder, and the chevron) so what you type stays in
+view: the editor underneath keeps focus and every keystroke, a press on the echo
+hands editing focus back to it, and its chevron closes the list. On close the
+suggestions go inert at once and the pane deflates onto the field's box, pinching
+to the droplet's width and re-widening into the box, and the field is back,
+caret, floating label and toggle included, the moment the pane has settled on it.
+Picking a suggestion commits the value at once. Filtering re-shapes the material
+without replaying the opening. Reduce Motion settles at once with the field
+untouched and the list beside it; solid mode keeps the ordinary entrance.
 
 Arrow Down and Arrow Up open the list and highlight an option while focus stays in the text field. Navigation stops at the first and last matches. Home and End jump to those limits once an option is highlighted; otherwise they retain their text-editing behavior. Enter chooses the highlighted option, Escape closes the list without changing the query, and Tab closes it while moving focus. Typing resets the highlight. Confirming an input-method candidate does not select an option or submit a surrounding Form.
 

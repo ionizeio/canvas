@@ -7,7 +7,7 @@ import { FrostView, LiquidView, useMaterialCapabilities } from "./material-runti
 import { resolveMaterial } from "./material-resolution.js";
 import {
   GlassBox, CLEAR_INTENSITY, MaterialOriginContext, presentOpacity, brandOverMaterial, clearSurfaceTint, contrastBorder, SHEER_FILL_OPACITY, materialFill,
-  surfaceUnderFill, surfaceIntensity, useMaterialFill, useSpecularRim, type GlassSurfaceProps,
+  surfaceUnderFill, surfaceIntensity, useMaterialFill, useSpecularRim, type GlassSurfaceProps, originFills,
 } from "./glass-surface.shared.js";
 
 // The native glass takes the moving shape's radius as a live style (react-native
@@ -39,7 +39,7 @@ export function GlassSurface(props: GlassSurfaceProps) {
   // fills thin.
   const presence = useContext(MaterialMotionContext)?.presence;
   const fillLayer = <Animated.View style={[fill, { backgroundColor: surfaceUnderFill(theme.glass, layer, brand, tint ?? (clear && brand == null ? clearSurfaceTint(theme.tokens, theme.dark) : undefined), theme.tokens.background), opacity: presentOpacity(origin ? origin.blend.own : translucent ? SHEER_FILL_OPACITY : 1, presence) }]} />;
-  const originLayer = origin ? <Animated.View style={[fill, { backgroundColor: surfaceUnderFill(theme.glass, origin.layer, undefined, undefined, theme.tokens.background), opacity: presentOpacity(origin.blend.trigger, presence) }]} /> : null;
+  const originLayer = origin ? originFills(origin, theme.tokens, theme.dark, theme.glass, theme.tokens.background, presence).map(({ color, opacity }, index) => <Animated.View key={index} style={[fill, { backgroundColor: color, opacity }]} />) : null;
   const paintsFill = !native || brand == null || tint != null;
   const over = !native && brandOverMaterial(brand, tint);
   const material = solid ? null : <>

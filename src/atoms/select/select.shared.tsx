@@ -234,12 +234,16 @@ export function createSelect(skin: SelectSkin) {
     // as state; the Android skin's bottom indicator is a side colour, which the
     // shorthand reset leaves alone. Solid mode is untouched.
     const glass = isGlass(theme);
-    const glassTrigger: ViewStyle | null = glass ? { backgroundColor: "transparent", borderColor: open ? triggerShape.borderColor : "transparent" } : null;
     // The hand-off runs when the trigger's material is glass, motion is allowed and the
     // list is hosted (the hosted overlay measures the trigger's frame, which the inline
     // fallback never has); the trigger's subtree reads the channel through the context.
     const reducedMotion = useReducedMotion();
-    const { handoff, context: handoffContext } = usePopupHandoff(glass && !reducedMotion && host != null, { field: { gap: LIST_GAP } });
+    const { handoff, context: handoffContext } = usePopupHandoff(glass && !reducedMotion && host != null, { field: true });
+    // While the list is open under the hand-off the pane rests over the trigger, whose
+    // material and text are hidden: the open-state border the box paints outside that
+    // material is not painted either, or it would show through the pane's glass.
+    const covered = handoffContext != null && open;
+    const glassTrigger: ViewStyle | null = glass ? { backgroundColor: "transparent", borderColor: open && !covered ? triggerShape.borderColor : "transparent" } : null;
     // Floating label owns the resting placeholder: show nothing until the menu opens
     // (matching the M3 Input); a selected value always shows.
     const selected = items.find((o) => o.value === value);

@@ -65,7 +65,7 @@ export function GlassPane({ layer = "control", shape, tint, brand, interactive, 
   if (!handoff) return <GlassSurface static={stable} clear={clear} layer={layer} tint={tint} brand={brand} interactive={interactive} pointerEvents="none" testID={testID} style={[StyleSheet.absoluteFill, radii, { zIndex: -1 }]} />;
   const report = (event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
-    if (width > 0 && height > 0) handoff.report({ radius: shapeRadius(radii), width, height, layer });
+    if (width > 0 && height > 0) handoff.report({ radius: shapeRadius(radii), width, height, layer, clear: !!clear });
   };
   // The wrapper carries the hand-off's material opacity (1 or 0, never between; see
   // HANDOFF_RETURN) and its re-forming scales (whole at rest, growing back under a

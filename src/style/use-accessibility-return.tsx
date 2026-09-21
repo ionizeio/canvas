@@ -99,7 +99,10 @@ export function useAccessibilityReturn(open: boolean, disabled: boolean, forward
     AccessibilityInfo.sendAccessibilityEvent(target, "focus");
   }, []);
 
-  return { inputRef, activate, cancel, onContentMount, onContentUnmount };
+  // `editor` is the attached input itself, for an owner that wants to hand editing
+  // focus back to it from a control of its own (the Autocomplete's query echo, which
+  // stands where the field was while its list covers it).
+  return { inputRef, editor: input, activate, cancel, onContentMount, onContentUnmount };
 }
 
 /** Observe the real portaled subtree, which can outlive the owner's close render. */

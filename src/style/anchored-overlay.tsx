@@ -41,7 +41,7 @@ import { EntranceReadinessContext } from "./entrance-readiness.js";
 import { fitOverlayHeight, type OverlaySide } from "./overlay-layout.js";
 import { OverlayScrollContext, OverlayScrollView } from "./overlay-scroll.js";
 import { useMaterialTheme } from "./glass-surface/use-material-theme.js";
-import { MaterialMotionContext, PopupInteractionContext, PopupMotionPolicy, StationaryEntranceContext, restingRadius, usePopupMotion, usePopupPresence, type PopupEdge, type PopupOrigin, type PopupSize } from "./popup-motion.js";
+import { MaterialMotionContext, PopupInteractionContext, PopupMotionPolicy, StationaryEntranceContext, coverStandoff, restingRadius, usePopupMotion, usePopupPresence, type PopupEdge, type PopupOrigin, type PopupSize } from "./popup-motion.js";
 import type { PopupHandoff } from "./popup-handoff.js";
 import { PortalActivationContext } from "./portal-activation.js";
 import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect.js";
@@ -68,7 +68,13 @@ export interface AnchoredOverlayProps {
   onAccessibilityEscape?: ViewProps["onAccessibilityEscape"];
   /** Ref to the trigger view the card anchors below. */
   triggerRef: RefObject<View | null>;
-  /** Gap between the trigger's bottom edge and the card's top (default 4). */
+  /**
+   * Gap between the trigger's bottom edge and the card's top (default 4). Under an
+   * active hand-off (`handoff.fromTrigger`, a below or above placement) the card
+   * rests OVER the trigger's box instead (`coverStandoff`), the way the iOS 26 menu
+   * rests over its button; the gap still governs the solid, reduced-motion and
+   * inline cases, where the trigger stays visible under the card.
+   */
   gap?: number;
   /** The floating card's contents. */
   children: ReactNode;
@@ -343,14 +349,14 @@ function MaterialReadiness({ readable, children }: { readable: boolean; children
  * which a hand-off needs when it re-forms the trigger's pill above the card.
  */
 function PopupCard({
-  open, opening, onExited, ready = true, edge = "top", anchorX, anchorY, origin, originLayer, progress, closing,
+  open, opening, onExited, ready = true, edge = "top", anchorX, anchorY, origin, originLayer, originClear, progress, closing,
   wrapperStyle, cardStyle, dense, onMount, ownsScroll, decoration,
   children, onLayout, onAccessibilityEscape,
 }: {
   open: boolean; opening: number; onExited: () => void; ready?: boolean;
   edge?: PopupEdge; anchorX?: number; anchorY?: number;
-  /** The trigger's frame, and the layer of the material it hands off (none for a bare trigger, which keeps the pane's own fill throughout). */
-  origin?: PopupOrigin; originLayer?: GlassLayer; progress?: Animated.Value; closing?: Animated.Value;
+  /** The trigger's frame, the layer of the material it hands off (none for a bare trigger, which keeps the pane's own fill throughout) and whether that material is clear. */
+  origin?: PopupOrigin; originLayer?: GlassLayer; originClear?: boolean; progress?: Animated.Value; closing?: Animated.Value;
   wrapperStyle?: StyleProp<ViewStyle>; cardStyle?: StyleProp<ViewStyle>;
   dense?: boolean; onMount?: () => void; ownsScroll?: boolean; decoration?: ReactNode;
   children: ReactNode; onLayout?: (event: LayoutChangeEvent) => void;
@@ -386,7 +392,7 @@ function PopupCard({
   // The trigger's layer cross-fades with the pane's own while the pane stands in for
   // the trigger's pill; a trigger with no material of its own (a bare icon) has no
   // layer to blend from, so the pane keeps its own fill throughout.
-  const blend = useMemo(() => motion.blend && originLayer ? { layer: originLayer, blend: motion.blend } : null, [motion.blend, originLayer]);
+  const blend = useMemo(() => motion.blend && originLayer ? { layer: originLayer, clear: originClear, closing, blend: motion.blend } : null, [motion.blend, originLayer, originClear, closing]);
   // The material's motion: the frame it wears, and the measured card it settles at
   // (the web lens sizes its one filter definition for the latter, see GlassLensLayer).
   const moving = useMemo(() => motion.frame && motion.presence ? { frame: motion.frame, rest: size, presence: motion.presence } : null, [motion.frame, motion.presence, size]);
@@ -524,13 +530,15 @@ export function placeOverlay(
 /**
  * The trigger's frame in the card's coordinates for a hand-off (pure, so the geometry
  * is testable): the measured trigger rect less the card's outlet position, with the
- * corner the trigger reported, capped at the capsule the box allows. Undefined until
- * the card's position is known, or when the popup does not take the trigger as origin.
+ * corner the trigger reported, capped at the capsule the box allows, and whether the
+ * trigger is a whole one (a pill) or a field (see `PopupOrigin.whole`). Undefined
+ * until the card's position is known, or when the popup does not take the trigger as
+ * origin.
  */
-export function popupOrigin(rect: Rect | null, cardLeft: number | undefined, cardTop: number | undefined, radius: number | undefined, hangs = true): PopupOrigin | undefined {
+export function popupOrigin(rect: Rect | null, cardLeft: number | undefined, cardTop: number | undefined, radius: number | undefined, whole = true, clear = false): PopupOrigin | undefined {
   if (!rect || cardLeft == null || cardTop == null) return undefined;
   const capsule = Math.min(rect.width, rect.height) / 2;
-  return { x: rect.x - cardLeft, y: rect.y - cardTop, width: rect.width, height: rect.height, radius: Math.min(radius ?? capsule, capsule), hangs };
+  return { x: rect.x - cardLeft, y: rect.y - cardTop, width: rect.width, height: rect.height, radius: Math.min(radius ?? capsule, capsule), whole, clear };
 }
 
 function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, triggerRef, gap, cardStyle, dismissable, cardWidth, centered, preferSide, alignEnd, rtl, opaque, dense, onCardMount, ownsScroll, children, decoration, liquid = false, handoff }: HostedProps) {
@@ -676,13 +684,20 @@ function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, t
   const reported = sizes.content !== null && chrome !== null;
   const skinMaxHeight = typeof flatCardStyle?.maxHeight === "number" ? flatCardStyle.maxHeight : Infinity;
   const desiredHeight = reported ? Math.min(sizes.content! + chrome!, skinMaxHeight) : null;
-  const horizontal = rect ? placeOverlay(rect, { cardWidth: fittedCardWidth, centered, preferSide, alignEnd, rtl, gap, outletWidth }) : null;
+  // The card's standoff from its trigger: under a hand-off the card rests OVER the
+  // trigger's box (a negative standoff, see `handoff.cover`), so the pane's near
+  // edge rises over the trigger's spot as the drop grows and the rows sit where the
+  // trigger was; otherwise the owner's gap. A card placed beside its trigger
+  // (`preferSide`) keeps its gap: the cover is along the anchor axis only.
+  const covering = !!handoff?.fromTrigger && !preferSide;
+  const standoff = covering && rect ? coverStandoff(rect.height, gap) : gap;
+  const horizontal = rect ? placeOverlay(rect, { cardWidth: fittedCardWidth, centered, preferSide, alignEnd, rtl, gap: standoff, outletWidth }) : null;
   const renderedCardWidth = sizes.width ?? fittedCardWidth;
   const cardLeft = horizontal?.left ?? (horizontal?.right != null && outletWidth != null && renderedCardWidth != null ? outletWidth - horizontal.right - renderedCardWidth : undefined);
   const anchorCenter = rect && cardLeft != null ? rect.x + rect.width / 2 - cardLeft : undefined;
   // Host bounds are measured in one native window and inherited through
   // content-sized providers; the card does not guess keyboard/screen offsets.
-  const fit = rect && outlet ? fitOverlayHeight({ triggerTop: rect.y, triggerHeight: rect.height, outletHeight: outlet.height, visibleTop: outlet.visibleTop, visibleBottom: outlet.visibleBottom, desiredHeight, currentSide: lastSide.current, gap, beside: horizontal?.top === rect.y }) : null;
+  const fit = rect && outlet ? fitOverlayHeight({ triggerTop: rect.y, triggerHeight: rect.height, outletHeight: outlet.height, visibleTop: outlet.visibleTop, visibleBottom: outlet.visibleBottom, desiredHeight, currentSide: lastSide.current, gap: standoff, beside: preferSide && horizontal?.top === rect.y }) : null;
   const fittedSide = fit?.side;
   const anchorGeometry = useMemo(() => ({ side: fittedSide ?? "below", centerX: anchorCenter, cardWidth: renderedCardWidth }), [fittedSide, anchorCenter, renderedCardWidth]);
   const cap = fit ? Math.min(fit.maxHeight, skinMaxHeight) : null;
@@ -721,10 +736,11 @@ function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, t
   const anchorY = rect && cardTop != null ? rect.y + rect.height / 2 - cardTop : undefined;
   const wrapperStyle: ViewStyle = { position: "absolute", left: horizontal?.left, right: horizontal?.right, top: fit?.top, bottom: fit?.bottom };
   // The hand-off's origin: the trigger's box in the card's coordinates, wearing the
-  // pill's corner (never past a capsule's). Memoised on its numbers so the motion
-  // graph is not rebuilt by a render that moved nothing.
+  // pill's corner (never past a capsule's), a whole trigger unless the owner is a
+  // field. Memoised on its numbers so the motion graph is not rebuilt by a render
+  // that moved nothing.
   const origin = useMemo<PopupOrigin | undefined>(
-    () => popupOrigin(handoff?.fromTrigger ? rect : null, cardLeft, cardTop, handoff?.shape.current?.radius, !handoff?.field),
+    () => popupOrigin(handoff?.fromTrigger ? rect : null, cardLeft, cardTop, handoff?.shape.current?.radius, !handoff?.field, !!handoff?.shape.current?.clear),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [handoff?.fromTrigger, handoff?.field, rect?.x, rect?.y, rect?.width, rect?.height, cardLeft, cardTop],
   );
@@ -744,7 +760,7 @@ function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, t
       {rect && horizontal && fit ? (
         <OverlaySideContext.Provider value={anchorGeometry}>
           <OverlayScrollContext.Provider value={report}>
-            {liquid ? <PopupCard open={open} opening={presence.opening} onExited={presence.finish} ready={measured} edge={edge} anchorX={anchorCenter} anchorY={anchorY} origin={origin} originLayer={origin ? handoff?.shape.current?.layer : undefined} progress={handoff?.progress} closing={handoff?.closing} wrapperStyle={wrapperStyle} cardStyle={cappedStyle} dense={dense} onMount={onCardMount} ownsScroll={ownsScroll} decoration={decoration} onLayout={onCardLayout} onAccessibilityEscape={onAccessibilityEscape}>{children}</PopupCard> : <Entrance anchor anchorBottom={fit.side === "above"} ready={measured} style={wrapperStyle}>
+            {liquid ? <PopupCard open={open} opening={presence.opening} onExited={presence.finish} ready={measured} edge={edge} anchorX={anchorCenter} anchorY={anchorY} origin={origin} originLayer={origin ? handoff?.shape.current?.layer : undefined} originClear={origin?.clear} progress={handoff?.progress} closing={handoff?.closing} wrapperStyle={wrapperStyle} cardStyle={cappedStyle} dense={dense} onMount={onCardMount} ownsScroll={ownsScroll} decoration={decoration} onLayout={onCardLayout} onAccessibilityEscape={onAccessibilityEscape}>{children}</PopupCard> : <Entrance anchor anchorBottom={fit.side === "above"} ready={measured} style={wrapperStyle}>
               <OverlayCard onAccessibilityEscape={onAccessibilityEscape} cardStyle={cappedStyle} opaque={opaque} dense={dense} onMount={onCardMount} ownsScroll={ownsScroll} onLayout={onCardLayout} ready={measured} decoration={decoration}>{children}</OverlayCard>
             </Entrance>}
           </OverlayScrollContext.Provider>

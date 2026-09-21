@@ -35,13 +35,22 @@ export const MaterialMotionContext = createContext<MaterialMotion | null>(null);
 export interface PopupOrigin {
   x: number; y: number; width: number; height: number; radius: number;
   /**
-   * Whether the drop HANGS from the trigger's far edge at the seed (a whole trigger's
-   * pill: the pill's spot is empty and the drop sits under it, as the reference's
-   * does) or is born over the trigger's box and slides off it (a field, which is
-   * read or typed into while its list is open and returns the moment the pane has
-   * cleared its box, see `fieldCoverMark`).
+   * Whether the trigger is a WHOLE one (a pill: the pane is nothing at progress 0
+   * and the pill re-forms as a body of its own under the closing drop, see
+   * `handoff.reform`) or a FIELD (the pane is the field's box at 0, deflating onto
+   * it on a close, and the field returns whole at the snap). Either way the drop is
+   * born hanging from the trigger's far edge, the trigger's spot empty, and the pane
+   * rests OVER the trigger's box (see `handoff.cover`), so its near edge rises over
+   * the spot as it grows, the way the reference menu's does.
    */
-  hangs?: boolean;
+  whole: boolean;
+  /**
+   * Whether the trigger's material is CLEAR (the web's text-entry fields: a lens
+   * under the clear veil rather than the layer's puck fill): the pane's trigger
+   * under-fill wears the veil too, so the drop is born with the field's own tone and
+   * a field's deflating pane hands back as the field's own box (MaterialOrigin.clear).
+   */
+  clear?: boolean;
 }
 /** The opacities of the two under-fills a hand-off pane paints: the trigger's layer's and its own. */
 export interface PopupBlend { trigger: Animated.AnimatedInterpolation<number>; own: Animated.AnimatedInterpolation<number> }
@@ -165,9 +174,14 @@ export const POPUP_PRESENTATION = {
    * `sheerMs` (the page text under the reference's pane, hidden at rest, shows
    * through at +33 and stays so while it shrinks; its rim stays whole, a bounded
    * body), and stay so until it leaves; the re-formed pill under it is at its own
-   * full tone, so the two bodies never add up to a flash.
+   * full tone, so the two bodies never add up to a flash. A FIELD's pane goes sheer
+   * the same way (the card's quality on the dismiss's first frame) and then comes
+   * back to whole over `landMs` as it deflates, so it lands on the field's box AS the
+   * box, in the field's own material (see `usePopupMotion`): held whole it never
+   * went sheer, held sheer it left the field's spot reading empty for the last 150
+   * ms of the close (the 2026-09-21 judges, rounds 2 and 4).
    */
-  dismiss: { ghost: { keep: 0.75, blur: 2.5, fadeMs: 110 }, sheer: 0.35, sheerMs: 33 },
+  dismiss: { ghost: { keep: 0.75, blur: 2.5, fadeMs: 110 }, sheer: 0.35, sheerMs: 33, landMs: 240 },
   /** The contour: a stretch and squash around the travel, independent of it. */
   contour: {
     stiffness: 320, damping: 15,
@@ -323,17 +337,37 @@ export const POPUP_PRESENTATION = {
      */
     close: { contract: 0.85, contractMs: 33, releaseMs: 120, hold: 10, stiffness: 400, damping: 40, velocity: -5 },
     /**
-     * The FIELD hand-off (Autocomplete, Select, PhoneInput): the same travel between
-     * the field's box and the card as a menu button's, so the field vanishes into the
-     * droplet on open and the pane absorbs back onto the box on close, with one
-     * difference the anatomy forces: a field is read or typed into while its list is
-     * open, so its material and text are only hidden while the pane COVERS the box
-     * (from the snap up to the cover mark) and are back as soon as the pane has left
-     * it, both on the way out and on the way home. `margin` is the share of the
-     * travel by which the field hides before the pane's edge reaches the box (the
-     * contour's stretch carries the edge a few pixels past the unstretched frame).
+     * Where the pane RESTS relative to its trigger under a hand-off: over the
+     * trigger's box, its near edge `inset` into the box from the trigger's near edge
+     * (a card below its trigger has its top edge that far under the trigger's top;
+     * negative puts it above). The reference menu rests over its pill's spot with
+     * its top rim ON the pill's top edge (measured on the 3x frames, 2026-09-21: the
+     * pill's fill spans rows 196 to 322 and the resting menu's rim sits at rows 186
+     * to 188, three points above it, the rim's own width), so its top edge rises
+     * over the spot as the drop grows and the first row sits where the pill was; a
+     * pane resting under its trigger (the 2026-09-20 placement, the trigger's height
+     * plus a gap below it) could never do that, and its top edge stayed put through
+     * the bloom. Flush on every trigger, so a field's query echoed at the top of its
+     * pane keeps the field's own text line. Solid mode, Reduce Motion and the inline
+     * fallback keep the owner's gap: the trigger is visible there and the pane must
+     * not cover it.
      */
-    field: { margin: 0.03 },
+    cover: { inset: 0 },
+    /**
+     * The FIELD hand-off (Autocomplete, Select, PhoneInput): the same hanging drop
+     * and the same bloom over the box as a menu button's, and the same hidden field
+     * throughout (its material and text are back only at the snap), with one
+     * difference on the way home: the pane DEFLATES onto the field's box with its
+     * near edge held where it rests (the 2026-09-20 absorb), pinching to the drop's
+     * width and re-widening into the box, rather than sinking into the box by its
+     * centre as a pill's drop does; the field's text then returns at full size over
+     * its re-formed box. The two curves (the open's centre travel and the close's
+     * edge-held deflation) agree at rest and are blended by a turn value that a
+     * close from rest or an opening from closed steps at once, so neither shows the
+     * blend; a reversal mid-flight turns over `turnMs` so the pane never jumps
+     * between them.
+     */
+    field: { turnMs: 50 },
   },
 } as const;
 
@@ -356,16 +390,15 @@ export function handoffAcross(progress: number): number {
 }
 
 /**
- * Where a field's material hides and returns: the progress at which the pane's box,
- * travelling between the field's box and the card, has its near edge on the field's
- * near edge, less the table's margin. Below it the pane covers the field (hidden);
- * from it up the pane has left the box (back). `extent` is the field's size along the
- * anchor axis and `gap` the standoff between the two boxes; boxes that touch or
- * overlap cover the field for the whole travel (1).
+ * The standoff an anchored card takes from its trigger under a hand-off: negative,
+ * so the card's near edge sits on the trigger's near edge, `handoff.cover.inset`
+ * into the box (the card rests over the trigger, see `handoff.cover`). `extent` is
+ * the trigger's size along the anchor axis; a trigger with no extent yet keeps the
+ * owner's own gap.
  */
-export function fieldCoverMark(extent: number, gap: number): number {
-  if (!(extent > 0) || !(gap > 0)) return 1;
-  return Math.min(1, extent / (extent + gap) + HANDOFF.field.margin);
+export function coverStandoff(extent: number, gap: number): number {
+  if (!(extent > 0)) return gap;
+  return HANDOFF.cover.inset - extent;
 }
 
 /**
@@ -524,6 +557,11 @@ export function usePopupMotion({
   const shrinkValue = useRef<Animated.Value | null>(null);
   if (!shrinkValue.current) shrinkValue.current = new Animated.Value(1, DRIVER);
   const shrink = shrinkValue.current;
+  // A field's turn between its two curves (see `handoff.field`): 0 on the open's
+  // centre travel, 1 on the close's edge-held deflation; native like the travel.
+  const turnValue = useRef<Animated.Value | null>(null);
+  if (!turnValue.current) turnValue.current = new Animated.Value(0, DRIVER);
+  const turn = turnValue.current;
   const [readable, setReadable] = useState(!animate);
   // Whether the rows' focus wrapper is painting (the birth's sharpening or a
   // dismiss's ghosting runs): its style is the identity, and absent, otherwise.
@@ -573,6 +611,7 @@ export function usePopupMotion({
     presence.stopAnimation();
     relax.stopAnimation();
     shrink.stopAnimation();
+    turn.stopAnimation();
     blur.stopAnimation();
     ghost.stopAnimation();
     if (!animate || restoredAtRest) {
@@ -581,6 +620,7 @@ export function usePopupMotion({
       presence.setValue(1);
       relax.setValue(1);
       shrink.setValue(1);
+      turn.setValue(0);
       blur.setValue(0);
       ghost.setValue(1);
       setFocusing(false);
@@ -609,6 +649,12 @@ export function usePopupMotion({
       setFocusing(false);
       setRetiring(false);
     };
+    // The field's turn (see `handoff.field`): an opening from the closed state and a
+    // close from rest step it (the two curves agree there, so nothing is seen); a
+    // reversal mid-flight turns over `turnMs`, so the pane never jumps between them.
+    const turning = open ? (current <= 0 ? 0 : HANDOFF.field.turnMs) : (current >= SETTLED ? 0 : HANDOFF.field.turnMs);
+    if (turning > 0) tone.push(Animated.timing(turn, { toValue: open ? 0 : 1, duration: turning, easing: Easing.out(Easing.quad), ...DRIVER, isInteraction: false }));
+    else turn.setValue(open ? 0 : 1);
     if (open) {
       const born = current <= 0;
       if (born) {
@@ -637,7 +683,19 @@ export function usePopupMotion({
       focus.push(Animated.timing(blur, { toValue: 0, duration: born ? BIRTH.sharpMs : DISMISS.ghost.fadeMs, easing: born ? Easing.inOut(Easing.quad) : Easing.out(Easing.quad), ...JS_DRIVER, isInteraction: false }));
       focus.push(Animated.timing(ghost, { toValue: 1, duration: DISMISS.ghost.fadeMs, easing: Easing.out(Easing.quad), ...JS_DRIVER, isInteraction: false }));
     } else {
-      tone.push(Animated.timing(presence, { toValue: DISMISS.sheer, duration: DISMISS.sheerMs, easing: Easing.out(Easing.quad), ...DRIVER, isInteraction: false }));
+      // The pane goes sheer as it leaves. A whole trigger's stays so (its re-formed
+      // pill is the body under it, at full tone); a field's comes back to whole over
+      // `dismiss.landMs` as it deflates onto the box, wearing the field's own
+      // material from the seed down (`handoff.tint`; for the web's clear text-entry
+      // lens that is the clear veil, see MaterialOrigin.clear), so it lands as the
+      // box: held sheer, it left the field's spot reading empty for the last 150 ms
+      // of the close, with nothing re-formed under it; held whole, it never went
+      // sheer (the 2026-09-21 judges); with no fill at all (a cut for the clear
+      // field) it was invisible over the page where the field's veil is not.
+      const sheer = Animated.timing(presence, { toValue: DISMISS.sheer, duration: DISMISS.sheerMs, easing: Easing.out(Easing.quad), ...DRIVER, isInteraction: false });
+      tone.push(origin && !origin.whole
+        ? Animated.sequence([sheer, Animated.timing(presence, { toValue: 1, duration: DISMISS.landMs, easing: Easing.inOut(Easing.quad), ...DRIVER, isInteraction: false })])
+        : sheer);
       setFocusing(true);
       setRetiring(true);
       // The rows are ghosts on this frame's flush; only the ghosts' fade is a timing.
@@ -726,7 +784,7 @@ export function usePopupMotion({
       cancelAnimationFrame(leaving.current); cancelAnimationFrame(holding.current);
     };
     // The origin only picks the close's spring; a hand-off never changes it mid-flight.
-  }, [animate, open, ready, measured, progress, closing, contour, blur, ghost, presence, relax, shrink]);
+  }, [animate, open, ready, measured, progress, closing, contour, blur, ghost, presence, relax, shrink, turn]);
 
   useEffect(() => {
     const old = previous.current;
@@ -772,30 +830,40 @@ export function usePopupMotion({
     }
     // The material travels between the trigger and the card, each extent on its own
     // curve (the across one held at the drop's until `widen`, the along one carrying
-    // the overshoot). A whole trigger's pane (`hangs`) is the DROP under the pill at
-    // the seed, the card at 1, and NOTHING at 0: from the seed down its centre keeps
+    // the overshoot). Every hand-off pane is the DROP hanging from the trigger's far
+    // edge at the seed (the trigger's spot empty, the drop's tip on its far edge, as
+    // the reference's is) and the card at 1, the card resting over the trigger's box
+    // (`handoff.cover`), so the pane's near edge rises over the spot as it grows. A
+    // whole trigger's pane is NOTHING at 0: from the seed down its centre keeps
     // travelling into the pill while it shrinks to a point, narrowing faster than it
     // shortens, the way the reference's blob is drawn up into its re-formed pill (a
     // drop 36% of the pill's width at +198, a bump at +231, gone by +297) while the
-    // pill's own material, back since `handoff.reform`, carries the label. A field's pane
-    // is the field's box at 0 instead (its material returns only at the snap). At
-    // rest every term is the identity exactly.
+    // pill's own material, back since `handoff.reform`, carries the label. A field's
+    // pane is the field's box at 0 instead (its material returns only at the snap),
+    // and on a close it deflates onto the box with its near edge held (see
+    // `handoff.field`). At rest every term is the identity exactly.
     const fromOrigin = (box: PopupOrigin): Graph => {
       const originAlong = horizontal ? box.width : box.height;
       const originAcross = horizontal ? box.height : box.width;
+      const originStart = horizontal ? box.x : box.y;
       const originAcrossCentre = horizontal ? box.y + box.height / 2 : box.x + box.width / 2;
-      const originCentre = horizontal ? box.x + box.width / 2 : box.y + box.height / 2;
+      const originCentre = originStart + originAlong / 2;
       // The drop the pane is at the seed. Across the axis: the trigger's extent for
       // a narrow pill, a compact drop centred on the trigger for a wide one (see
       // `handoff.droplet`). Along it: the birth's share of the card, never shorter
-      // than the trigger (see `birth.along`).
+      // than the trigger (see `birth.along`), hanging from the trigger's far edge:
+      // under a trigger for a card anchored at its top, over one for a card anchored
+      // at its bottom.
       const dropletAcross = Math.min(originAcross, HANDOFF.droplet * acrossExtent);
       const dropletAlong = Math.max(originAlong, BIRTH.along * along);
-      // Under the seed a hanging drop's extents go to nothing: the along one with the
-      // travel, the across one faster (`handoff.absorb`), so the last of it is a
-      // small bump taller than it is wide, as the reference's is.
-      const dropAlong = (at: number) => box.hangs ? dropletAlong * (at / SEED) : originAlong + (dropletAlong - originAlong) * (at / SEED);
-      const dropAcross = (at: number) => box.hangs ? dropletAcross * Math.pow(at / SEED, HANDOFF.absorb) : originAcross + (dropletAcross - originAcross) * (at / SEED);
+      const dropCentre = alongAnchor ? originStart - dropletAlong / 2 : originStart + originAlong + dropletAlong / 2;
+      // Under the seed a whole trigger's drop goes to nothing: the along extent with
+      // the travel, the across one faster (`handoff.absorb`), so the last of it is a
+      // small bump taller than it is wide, as the reference's is. A field's pane
+      // re-forms the field's box instead: the along extent back to the field's, the
+      // across one re-widening to the box.
+      const dropAlong = (at: number) => box.whole ? dropletAlong * (at / SEED) : originAlong + (dropletAlong - originAlong) * (at / SEED);
+      const dropAcross = (at: number) => box.whole ? dropletAcross * Math.pow(at / SEED, HANDOFF.absorb) : originAcross + (dropletAcross - originAcross) * (at / SEED);
       const alongShare = (at: number) => at <= SEED
         ? dropAlong(at) / along
         : (dropletAlong + (along - dropletAlong) * ((at - SEED) / (1 - SEED))) / along;
@@ -806,49 +874,58 @@ export function usePopupMotion({
         inputRange: [0, SEED, 1], outputRange: [dropAlong(0) / along, dropletAlong / along, 1],
         extrapolateLeft: "clamp", extrapolateRight: "extend",
       });
-      // Along the axis a whole trigger's pane travels BY ITS CENTRE above the seed:
-      // the pane's centre is the card's at 1 and the remaining share of the way to
-      // the pill's centre at any progress, its extent shrinking on `alongScale` about
-      // that centre. So a close is the body itself flying back up into the button,
-      // the way the reference's blob does (its centre crosses half its menu's height
-      // into the pill from +66 to +297, the bottom edge rushing up while the top
-      // hangs a little under the pill's spot); the edge-pinned curve this replaced
-      // (the top edge held at the pill's bottom to a slide mark, then a hop onto the
-      // box) was a height collapse under the button that never read as springing
-      // back to it (the 2026-09-21 rows). Under the seed the centre keeps travelling
-      // to the pill's centre while the extents go to nothing (`handoff.absorb`), so
-      // the last of the drop sinks INTO the pill and vanishes near its centre, the
-      // way the reference's bump is drawn up into its pill's underside: a drop held
-      // at the pill's far edge while it shrank read as deflating in place beside a
-      // pill that re-formed on its own (the 2026-09-21 run 05 judge), and a drop the
-      // pill's full width sliding up behind the pill read as never swallowed (run
-      // 03). One curve serves both directions: a reopen mid-close grows from its
-      // current bounds. Past rest (the opening's overshoot) the
-      // anchor edge holds: a box scaled about its centre by s moves that edge by
+      // Along the axis the pane travels BY ITS CENTRE: the trigger's centre at 0, the
+      // hanging drop's at the seed and the card's at 1, its extent shrinking on
+      // `alongScale` about that centre. So an opening is the drop under the trigger
+      // growing up over the trigger's spot and down into the card, and a whole
+      // trigger's close is the body itself flying back up into the button, the way
+      // the reference's blob does (its centre crosses half its menu's height into
+      // the pill from +66 to +297, the bottom edge rushing up while the top hangs a
+      // little under the pill's spot); the edge-pinned curve this replaced (the top
+      // edge held at the pill's bottom to a slide mark, then a hop onto the box) was
+      // a height collapse under the button that never read as springing back to it
+      // (the 2026-09-21 rows), and the linear centre before the seed point was the
+      // hanging drop only by coincidence of the card's height (born inside the box
+      // once the card rested over it). Under the seed the centre keeps travelling to
+      // the trigger's centre while the extents go to nothing (`handoff.absorb`), so
+      // the last of a whole trigger's drop sinks INTO the pill and vanishes near its
+      // centre: a drop held at the pill's far edge while it shrank read as deflating
+      // in place beside a pill that re-formed on its own (the 2026-09-21 run 05
+      // judge), and a drop the pill's full width sliding up behind the pill read as
+      // never swallowed (run 03). One curve serves both directions: a reopen
+      // mid-close grows from its current bounds. Past rest (the opening's overshoot)
+      // the anchor edge holds: a box scaled about its centre by s moves that edge by
       // half of (s - 1) of its extent, and `alongScale` is linear in the progress
       // there, so the hold is the overshoot times that slope. In card coordinates
       // the shift is an offset of the card's own box.
-      const originNear = horizontal ? (alongAnchor ? box.x + box.width - along : box.x) : (alongAnchor ? box.y + box.height - along : box.y);
       const overshoot = progress.interpolate({ inputRange: [1, 2], outputRange: [0, 1], extrapolateLeft: "clamp", extrapolateRight: "extend" });
       const slopePastRest = (1 - dropletAlong / along) / (1 - SEED);
-      // A field's drop is born over the field's box instead and slides off it (the
-      // field returns the moment the pane has cleared the box, `fieldCoverMark`): its
-      // anchor-side edge travels from the field's near edge to the card's, less the
-      // half of (1 - s) of the extent a scale about the centre moves it by.
-      const shiftAlong = box.hangs
-        ? Animated.add(
-          Animated.multiply(remaining, originCentre - along / 2),
-          Animated.multiply(overshoot, (alongAnchor ? -1 : 1) * slopePastRest * (along / 2)),
-        )
-        : Animated.add(
-          progress.interpolate({ inputRange: [0, 1], outputRange: [originNear, 0], extrapolateLeft: "clamp", extrapolateRight: "extend" }),
+      const held = Animated.multiply(overshoot, (alongAnchor ? -1 : 1) * slopePastRest * (along / 2));
+      const hang = Animated.add(
+        progress.interpolate({ inputRange: [0, SEED, 1], outputRange: [originCentre - along / 2, dropCentre - along / 2, 0], extrapolate: "clamp" }),
+        held,
+      );
+      let shiftAlong: Animated.AnimatedNode = hang;
+      if (!box.whole) {
+        // A field's close DEFLATES onto the box with its near edge held (the
+        // 2026-09-20 absorb the owner asked to keep): the pane's anchor-side edge
+        // travels from where it rests to the field's near edge, less the half of
+        // (1 - s) of the extent a scale about the centre moves it by, the extents on
+        // the same curves as the open's (pinching to the drop's width at the seed and
+        // re-widening into the box). The turn blends it with the open's centre travel
+        // (see `handoff.field`); the two agree at rest, where the turn is stepped.
+        const originNear = alongAnchor ? originStart + originAlong - along : originStart;
+        const pinned = Animated.add(
+          progress.interpolate({ inputRange: [0, 1], outputRange: [originNear, 0], extrapolate: "clamp" }),
           Animated.multiply(Animated.subtract(1, alongScale), (alongAnchor ? 1 : -1) * (along / 2)),
         );
+        shiftAlong = Animated.add(hang, Animated.multiply(turn, Animated.subtract(pinned, hang)));
+      }
       // Across the axis the pane is the drop from the seed to `widen` and the card at
-      // 1; under the seed a hanging drop narrows to nothing (sampled, the curve is a
-      // power) and a field's pane widens back to the field's box. The box and the
-      // drop share the trigger's centre, so the shift only has to carry the pane from
-      // that centre to the card's as it widens.
+      // 1; under the seed a whole trigger's drop narrows to nothing (sampled, the
+      // curve is a power) and a field's pane widens back to the field's box. The box
+      // and the drop share the trigger's centre, so the shift only has to carry the
+      // pane from that centre to the card's as it widens.
       const underSeed = [0, 0.25, 0.5, 0.75].map((share) => share * SEED);
       const acrossShare = progress.interpolate({
         inputRange: [...underSeed, SEED, HANDOFF.widen, 1],
@@ -861,26 +938,26 @@ export function usePopupMotion({
         scaleAcross: Animated.multiply(Animated.multiply(acrossShare, squash), shrink),
         shiftAlong,
         shiftAcross: Animated.multiply(remainingAcross, originAcrossCentre - acrossExtent / 2),
-        // The rows scale from the pane's centre, which follows its anchor-side edge.
+        // The rows scale from the pane's centre, which follows its travel.
         translateX: horizontal ? shiftAlong : Animated.multiply(remaining, box.x + box.width / 2 - width / 2),
         translateY: horizontal ? Animated.multiply(remaining, box.y + box.height / 2 - height / 2) : shiftAlong,
       };
       if (shaped) {
         // The corner is the droplet's at the seed (as round as the seed shape's
         // shorter side allows), the grown pane's at 1, and the skin's once the settle
-        // has relaxed it; under the seed a hanging drop stays a capsule on its shorter
-        // side as it shrinks (under the skin's own corner, it is a bump by then) and a
-        // field's pane eases back to the field's corner.
+        // has relaxed it; under the seed a whole trigger's drop stays a capsule on its
+        // shorter side as it shrinks (under the skin's own corner, it is a bump by
+        // then) and a field's pane eases back to the field's corner.
         const seedAlong = dropletAlong;
         const seedAcross = dropletAcross;
         const droplet = Math.max(radius, RADIUS.droplet * Math.min(seedAlong, seedAcross));
         const grown = Math.max(radius, RADIUS.grown * Math.min(along, acrossExtent));
         const above = keyframes([[SEED, droplet], [1, grown]]);
         const displayed = (at: number) => at >= SEED ? above(at)
-          : box.hangs ? RADIUS.droplet * Math.min(dropAlong(at), dropAcross(at)) : box.radius + (droplet - box.radius) * (at / SEED);
-        // A hanging drop's extents reach 0 at progress 0: the table is floored a hair
+          : box.whole ? RADIUS.droplet * Math.min(dropAlong(at), dropAcross(at)) : box.radius + (droplet - box.radius) * (at / SEED);
+        // A whole trigger's drop reaches 0 at progress 0: the table is floored a hair
         // above it, where the capsule's radius over its scale is still a number.
-        graph.corner = radiusTable(progress, relax, radius, displayed, seedAlong <= seedAcross ? alongShare : acrossScaleOf, box.hangs ? SEED / 50 : 0);
+        graph.corner = radiusTable(progress, relax, radius, displayed, seedAlong <= seedAcross ? alongShare : acrossScaleOf, box.whole ? SEED / 50 : 0);
       }
       return graph;
     };
@@ -932,9 +1009,14 @@ export function usePopupMotion({
       ],
     };
     if (corner) frame.borderRadius = corner;
+    // The rows contract with the pane on a dismiss (`handoff.close.contract` scales
+    // the material about its centre; the rows, ghosts by then, follow it): rows held
+    // at their resting size overhung the contracted pane's edges on a wide field's
+    // list, the check mark and chevron outside the glass (the 2026-09-21 judge),
+    // where the reference's ghosts stay inside its pane.
     const content: Animated.WithAnimatedValue<ViewStyle> = {
       opacity: progress.interpolate({ inputRange: [CONTENT.fadeFrom, CONTENT.fadeTo], outputRange: [0, 1], extrapolate: "clamp" }),
-      transform: [{ translateX }, { translateY }, { scale }],
+      transform: [{ translateX }, { translateY }, { scale: Animated.multiply(scale, shrink) }],
     };
     // Under a hand-off the material's under-fill is the trigger's at the pill and the
     // pane's own from `tint` on (see MaterialOriginContext).
@@ -943,7 +1025,7 @@ export function usePopupMotion({
       own: progress.interpolate({ inputRange: [0, SEED, HANDOFF.tint], outputRange: [0, 0, 1], extrapolate: "clamp" }),
     } : null;
     return { frame, content, blend };
-  }, [progress, relax, shrink, contour, width, height, horizontal, edge, xFraction, yFraction, radius, origin]);
+  }, [progress, relax, shrink, turn, contour, width, height, horizontal, edge, xFraction, yFraction, radius, origin]);
   // The rows' focus wrapper's style: the blur as the filter string every platform's
   // `filter` accepts (react-native-web knows no filter object list), and the ghosts' fade.
   const focus = useMemo<PopupFocus>(() => ({

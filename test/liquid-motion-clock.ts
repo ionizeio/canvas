@@ -10,6 +10,7 @@ export function animationClock() {
   const engine = require("react-native-web/dist/vendor/react-native/Animated/AnimatedImplementation").default as typeof Animated;
   const spring = spyOn(Animated, "spring").mockImplementation(engine.spring);
   const parallel = spyOn(Animated, "parallel").mockImplementation(engine.parallel);
+  const sequence = spyOn(Animated, "sequence").mockImplementation(engine.sequence);
   let now = Date.now();
   let nextId = 0;
   const frames = new Map<number, FrameRequestCallback>();
@@ -30,6 +31,6 @@ export function animationClock() {
         });
       }
     },
-    restore() { time.mockRestore(); raf.mockRestore(); cancel.mockRestore(); spring.mockRestore(); parallel.mockRestore(); },
+    restore() { time.mockRestore(); raf.mockRestore(); cancel.mockRestore(); spring.mockRestore(); parallel.mockRestore(); sequence.mockRestore(); },
   };
 }

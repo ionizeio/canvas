@@ -3,7 +3,14 @@ export type OverlaySide = "above" | "below";
 const INSET = 8;
 const EPSILON = 0.5;
 
-/** Fit an anchored card inside its host's visible vertical band. */
+/**
+ * Fit an anchored card inside its host's visible vertical band. `gap` is the card's
+ * standoff from the trigger along the axis: positive keeps the card off the trigger's
+ * edge, negative rests it OVER the trigger's box (a hand-off card, whose near edge
+ * sits inside the trigger by the trigger's height less the standoff, see
+ * `coverStandoff` in popup-motion.tsx); either way the space on each side is what is
+ * left between that near edge and the band's edge.
+ */
 export function fitOverlayHeight({
   triggerTop, triggerHeight, outletHeight, visibleTop = 0, visibleBottom = outletHeight,
   desiredHeight, currentSide = "below", gap, beside = false,

@@ -11,7 +11,7 @@ import { useReadyCaptureTarget, useCaptureDemand } from "./capture-target.js";
 import { resolveMaterial } from "./material-resolution.js";
 import {
   GlassBox, CLEAR_INTENSITY, brandOverMaterial, clearSurfaceTint, contrastBorder, frostMethodProps, GlassBlurTargetContext,
-  MaterialOriginContext, presentOpacity, MaterialShapeContext, SHEER_FILL_OPACITY, materialFill, surfaceUnderFill, surfaceIntensity, useMaterialFill, useSpecularRim, type GlassSurfaceProps,
+  MaterialOriginContext, presentOpacity, MaterialShapeContext, SHEER_FILL_OPACITY, materialFill, surfaceUnderFill, surfaceIntensity, useMaterialFill, useSpecularRim, type GlassSurfaceProps, originFills,
 } from "./glass-surface.shared.js";
 
 const EMPTY_TARGET = { current: null };
@@ -75,7 +75,7 @@ export function GlassSurface(props: GlassSurfaceProps) {
   // that is faint inside.
   const presence = useContext(MaterialMotionContext)?.presence;
   const tintLayer = <Animated.View style={[fill, { backgroundColor: surfaceUnderFill(theme.glass, layer, brand, tint ?? (clear && brand == null ? clearSurfaceTint(theme.tokens, theme.dark) : undefined), theme.tokens.background), opacity: presentOpacity(origin ? origin.blend.own : translucent ? SHEER_FILL_OPACITY : 1, presence) }]} />;
-  const originLayer = origin ? <Animated.View style={[fill, { backgroundColor: surfaceUnderFill(theme.glass, origin.layer, undefined, undefined, theme.tokens.background), opacity: presentOpacity(origin.blend.trigger, presence) }]} /> : null;
+  const originLayer = origin ? originFills(origin, theme.tokens, theme.dark, theme.glass, theme.tokens.background, presence).map(({ color, opacity }, index) => <Animated.View key={index} style={[fill, { backgroundColor: color, opacity }]} />) : null;
   // The fill paints beneath the material, except over the Android capture frost
   // (which samples a separate plane) and for a brand colour (see brandOverMaterial).
   const over = nativeCapture || brandOverMaterial(brand, tint);

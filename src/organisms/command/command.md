@@ -6,8 +6,9 @@ that matches nothing shows a muted "No results" row.
 
 In glass mode the triggered palette hands off with the search bar, the way the
 iOS 26 menu takes its button: the bar's outline, glyph, label and keycap fade as a
-droplet forms on the bar's frame, the palette blooms out of it, recoils and
-settles, and on close its rows go inert at once while the pane narrows back to
+droplet forms hanging under the bar, the palette blooms up out of it over the
+bar's spot, recoils and settles resting over the bar's box with its own search
+field where the bar was, and on close its rows go inert at once while the pane narrows back to
 the bar and the bar fades back. The search editor keeps focus and typing
 re-shapes the material without replaying the opening. The bare inline palette
 never animates. Reduce Motion settles at once with the bar untouched; solid mode

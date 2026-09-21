@@ -290,35 +290,32 @@ async function fieldHandsOff(box: HTMLElement, trigger: HTMLElement, role: strin
   const pane = box.firstElementChild as HTMLElement;
   expect(inlineOpacity(pane)).toBe("1");
   for (const node of text) expect(inlineOpacity(node)).toBe("1");
-  // The pane reports the field's box (its layout event), so the cover ends where the
-  // pane leaves the box rather than at the top of the travel.
   layoutElement(pane.firstElementChild as Element, { width: SIZE.width, height: 48 });
   const content = await openMenu(trigger, clock, role);
-  // The droplet forms on the box: the field's material is gone at once and its text
-  // on its short fade (the test engine finishes it in the seed's own tick).
+  // The droplet forms under the box: the field's material is gone at once and its
+  // text on its short fade (the test engine finishes it in the seed's own tick).
   expect(inlineOpacity(pane)).toBe("0");
   for (const node of text) expect(parseFloat(inlineOpacity(node))).toBe(0);
   clock.advance(1600);
   expect(heldBack(content)).toBe(false);
-  // The pane has left the box: the field stands under the resting list, whole.
-  expect(inlineOpacity(pane)).toBe("1");
-  for (const node of text) expect(inlineOpacity(node)).toBe("1");
-  // The close from rest: the absorb covers the box, the material yields (never in
-  // between) with the text gone under it, and both are back at the snap.
+  // The list rests OVER the box (the way the iOS 26 menu rests over its button): the
+  // field stays hidden under it, material and text, for as long as it is open.
+  expect(inlineOpacity(pane)).toBe("0");
+  for (const node of text) expect(parseFloat(inlineOpacity(node))).toBe(0);
+  // The close from rest: the pane deflates onto the box, the material never in
+  // between, and both material and text are back at the snap only.
   fireEvent.click(trigger);
   let hidden = 0;
-  let textOut = false;
-  for (let step = 0; step < 120 && (hidden === 0 || inlineOpacity(pane) !== "1"); step++) {
+  for (let step = 0; step < 120 && inlineOpacity(pane) !== "1"; step++) {
     clock.advance(16);
     const material = parseFloat(inlineOpacity(pane));
     expect(material === 0 || material === 1).toBe(true);
     if (material === 0) {
       hidden++;
-      if (text.every((node) => parseFloat(inlineOpacity(node)) < 1)) textOut = true;
+      for (const node of text) expect(parseFloat(inlineOpacity(node))).toBe(0);
     }
   }
-  expect(hidden).toBeGreaterThan(0);
-  expect(textOut).toBe(true);
+  expect(hidden).toBeGreaterThan(3);
   expect(inlineOpacity(pane)).toBe("1");
   // The test engine finishes the text's timed return in the snap's own tick.
   for (const node of text) expect(inlineOpacity(node)).toBe("1");
@@ -326,7 +323,7 @@ async function fieldHandsOff(box: HTMLElement, trigger: HTMLElement, role: strin
 }
 
 describe("the field hand-off", () => {
-  it("Select: the list pours from the field's edge and absorbs back into it, the value and chevron fading only under the pane", async () => {
+  it("Select: the list blooms from under the field and rests over it, the value and chevron hidden until the close hands back", async () => {
     const measure = bounds();
     const view = render(glass(<Select label="Region" options={["Americas", "Europe"]} />));
     await act(async () => {});
@@ -363,6 +360,44 @@ describe("the field hand-off", () => {
     } finally { view.unmount(); clock.restore(); measure.mockRestore(); }
   }, HANDOFF_TIMEOUT);
 
+  it("Autocomplete: the query is echoed at the top of the list while the list covers the field, hidden from assistive technology, its chevron closing and its text refocusing the editor", async () => {
+    const measure = bounds();
+    const view = render(glass(<Autocomplete label="Fruit" options={["Apple", "Apricot"]} defaultQuery="Ap" placeholder="Search a fruit" />));
+    await act(async () => {});
+    const clock = animationClock();
+    try {
+      const editor = screen.getByRole("combobox") as HTMLInputElement;
+      const toggle = screen.getByRole("button", { name: "Toggle options" });
+      expect(screen.queryByTestId("autocomplete-echo")).toBeNull();
+      const list = await openMenu(toggle, clock, "listbox");
+      clock.advance(1600);
+      // The echo is the first thing in the pane, before the scrollport with the rows,
+      // wearing the field's text, and is hidden from assistive technology.
+      const echo = screen.getByTestId("autocomplete-echo");
+      expect(echo.getAttribute("aria-hidden")).toBe("true");
+      expect(echo.textContent).toBe("Ap▾");
+      expect(echo.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(screen.getAllByRole("option", { hidden: true }).length).toBe(2);
+      // Typing keeps going into the editor and the echo follows it.
+      fireEvent.change(editor, { target: { value: "Apr" } });
+      expect(editor.value).toBe("Apr");
+      expect(screen.getByTestId("autocomplete-echo").textContent).toBe("Apr▾");
+      // Emptied, it shows the placeholder.
+      fireEvent.change(editor, { target: { value: "" } });
+      expect(screen.getByTestId("autocomplete-echo").textContent).toBe("Search a fruit▾");
+      // A press on its text hands editing focus back to the editor; its chevron closes.
+      editor.blur();
+      expect(document.activeElement).not.toBe(editor);
+      fireEvent.click(echo.firstElementChild as HTMLElement);
+      expect(document.activeElement).toBe(editor);
+      fireEvent.click(echo.lastElementChild as HTMLElement);
+      expect(toggle.getAttribute("aria-expanded")).toBe("false");
+      let steps = 0;
+      while (screen.queryByTestId("autocomplete-echo") && steps++ < 200) clock.advance(16);
+      expect(screen.queryByTestId("autocomplete-echo")).toBeNull();
+    } finally { view.unmount(); clock.restore(); measure.mockRestore(); }
+  }, HANDOFF_TIMEOUT);
+
   it("PhoneInput: the country list hands off with the whole box", async () => {
     const measure = bounds();
     const view = render(glass(<PhoneInput label="Phone" />));
@@ -393,9 +428,12 @@ describe("the field hand-off", () => {
       await act(async () => {});
       expect(inlineOpacity(screen.getByRole("combobox"))).toBe("");
       // No slot around the editor, and the pane is the plain GlassSurface host, not
-      // a hand-off wrapper.
+      // a hand-off wrapper; the open list carries no echo, the field stays visible.
       expect(inlineOpacity(screen.getByRole("combobox").parentElement)).toBe("");
       expect(inlineOpacity((screen.getByRole("combobox").parentElement as HTMLElement).firstElementChild)).toBe("");
+      fireEvent.click(screen.getByRole("button", { name: "Toggle options" }));
+      await screen.findByRole("listbox", { hidden: true }, { timeout: 8000 });
+      expect(screen.queryByTestId("autocomplete-echo")).toBeNull();
       view.unmount();
     } finally { reduced.mockRestore(); measureAgain.mockRestore(); }
   }, HANDOFF_TIMEOUT);

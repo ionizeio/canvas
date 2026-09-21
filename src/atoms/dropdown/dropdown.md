@@ -4,10 +4,11 @@ Floating menus triggered by a button: actions, options, navigation.
 
 In glass mode the menu opens the way the iOS 26 menu behind a toolbar button
 does: the trigger's glass pill hands off to the menu. Its material and label
-vanish as the menu's material forms as a drop centred on the pill (the pill's own
-width for a narrow pill, never wider than about half the menu), with the
-rows already inside it small and faint, then grows past its resting size and
-settles while the rows sharpen; on close the rows retire as blurred ghosts while
+vanish whole as the menu's material forms as a drop hanging under the pill (the
+pill's own width for a narrow pill, never wider than about half the menu), with
+the rows already inside it small and faint, then grows up over the pill's spot
+and down past its resting size and settles resting over the pill's box, the way
+the native menu covers its button, while the rows sharpen; on close the rows retire as blurred ghosts while
 the menu, already out of reach and out of the accessibility tree, contracts, goes
 sheer and springs back up into the pill by its centre, narrowing to a drop that
 is drawn into the pill's underside as the pill re-forms beneath it, its label
@@ -20,9 +21,9 @@ ordinary entrance. AvatarMenu and the collapsed Navbar menu are built on Dropdow
 and hand off the same way (the account capsule and the hamburger), as do the
 RowMenu's glyph, the Popover's button, the split ButtonGroup and the Command's
 search bar. The field popups (Autocomplete, Select, PhoneInput) hand off the same
-way too, with one difference: a field is read or typed into while its list is
-open, so its glass and text are hidden only while the pane covers its box and are
-back the moment the list has cleared it, on the way out as on the way home.
+way too, their list resting over the field's box, with one difference on the way
+home: the pane deflates onto the field's box and the field returns whole once it
+has settled there, rather than re-forming under a drop as a pill does.
 
 ## Usage
 

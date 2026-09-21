@@ -4,14 +4,15 @@ A phone number field: the Input's box with a country segment at its start (the c
 
 In glass mode the country list hands off with the field, the way the iOS 26 menu
 takes its button: on open the box's glass, segment, dial code and number vanish
-into a droplet that forms centred on the box, a compact drop narrower than the box in its corner and tone, the list
-blooms out of it, recoils and settles, and the box is back as soon as the list
-has cleared it; on close the rows go inert at once and the pane absorbs back into
-the box, the box yielding again only while the pane covers it and returning as
-the pane re-forms the box. A pick commits the country and returns focus to the
+whole and a compact droplet forms hanging under the box, in its corner and tone,
+with the countries inside it; the list blooms up out of it over the spot the box
+held, recoils and settles resting over the box, and stays there while it is open.
+On close the rows go inert at once and the pane deflates onto the box, pinching to
+the droplet's width and re-widening into it, and the box is back the moment the
+pane has settled on it. A pick commits the country and returns focus to the
 number at once. A field that becomes disabled or read-only while the list is open
-closes it. Reduce Motion settles at once with the box untouched; solid mode keeps
-the ordinary entrance.
+closes it. Reduce Motion settles at once with the box untouched and the list
+beside it; solid mode keeps the ordinary entrance.
 
 ## Usage
 

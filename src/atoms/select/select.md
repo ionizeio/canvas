@@ -4,15 +4,17 @@ Native select restyled to match Canvas inputs. Pass `label` (and `required`) to 
 
 In glass mode the option panel hands off with the trigger, the way the iOS 26
 menu takes its button: on open the trigger's glass, value, placeholder, floating
-label and chevron vanish into a droplet that forms centred on the trigger's box,
-a compact drop narrower than the trigger in its corner and tone, the panel blooms out of it (or up from it when it flips
-above) with a bounded contour overshoot, recoil and an exact settle to the fitted
-panel, and the trigger is back as soon as the panel has cleared its box; on close
-the options go inert at once and the pane absorbs back into the trigger's box,
-the trigger yielding again only while the pane covers it and returning as the
-pane re-forms the box. The chosen value and expanded state commit immediately,
-ahead of the material. Reduce Motion settles at once with the trigger untouched;
-solid mode keeps the ordinary entrance.
+label and chevron vanish whole and a compact droplet forms hanging under the
+trigger's box (over it, when the panel fits above), in the trigger's corner and
+tone, with the options inside it; the panel blooms up out of it over the spot the
+trigger held, with a bounded contour overshoot, recoil and an exact settle to the
+fitted panel resting over the trigger's box, and stays there while it is open, the
+first option where the value was. On close the options go inert at once and the
+pane deflates onto the trigger's box, pinching to the droplet's width and
+re-widening into the box, and the trigger is back the moment the pane has settled
+on it. The chosen value and expanded state commit immediately, ahead of the
+material. Reduce Motion settles at once with the trigger untouched and the panel
+beside it; solid mode keeps the ordinary entrance.
 
 The label also names the option list. Use `accessibilityLabel` to provide an explicit purpose when the visible label or placeholder is insufficient; it overrides both accessible names. A required field announces "required" with the button name and marks the option list as required. The selected value never replaces the field's purpose.
 

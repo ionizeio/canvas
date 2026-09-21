@@ -76,8 +76,9 @@ Contrast use the shared material's opaque fallbacks.
 
 In glass mode the split menu hands off with the whole group, the way the iOS 26
 menu takes its bar: the group's shared glass, its primary label, the divider and
-the chevron vanish as a droplet forms on the group's frame, the menu blooms out of
-it, recoils and settles, and on close its rows go inert at once while the pane
+the chevron vanish as a droplet forms hanging under the group, the menu blooms up
+out of it over the group's spot, recoils and settles resting over the group's box,
+and on close its rows go inert at once while the pane
 narrows back to the group, re-forms its glass and the labels fade back. The
 primary action and the chevron stay two fixed targets throughout, and a group
 disabled while its menu is open closes it. Reduce Motion settles at once with the

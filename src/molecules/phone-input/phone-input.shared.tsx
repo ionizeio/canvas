@@ -194,7 +194,7 @@ export function createPhoneInput(skin: PhoneInputSkin) {
     // fallback never has); the box's subtree reads the channel through the context.
     const host = useOverlayHost();
     const reducedMotion = useReducedMotion();
-    const { handoff, context: handoffContext } = usePopupHandoff(glass && !reducedMotion && host != null, { field: { gap: LIST_GAP } });
+    const { handoff, context: handoffContext } = usePopupHandoff(glass && !reducedMotion && host != null, { field: true });
     const ink = handoffInk(handoffContext);
 
     const close = () => setOpen(false);
@@ -215,7 +215,12 @@ export function createPhoneInput(skin: PhoneInputSkin) {
     const ripple = field.ripple ? field.ripple(tokens) : undefined;
 
     const boxShape = field.groupContainer(tokens, borderColor, active, isError);
-    const glassBox: ViewStyle | null = glass ? { backgroundColor: "transparent", borderColor: (active || isError) && !entryMaterial.foregroundStateBorder ? tokens[borderColor] : "transparent" } : null;
+    // While the country list is open under the hand-off the pane rests over the box,
+    // whose material and text are hidden: the state border the box (or the web's
+    // foreground stroke) paints outside that material is not painted either, or it
+    // would show through the pane's glass as an outline.
+    const covered = handoffContext != null && open;
+    const glassBox: ViewStyle | null = glass ? { backgroundColor: "transparent", borderColor: (active || isError) && !covered && !entryMaterial.foregroundStateBorder ? tokens[borderColor] : "transparent" } : null;
     const box = (
       <PopupHandoffContext.Provider value={handoffContext}>
       <View
@@ -289,7 +294,7 @@ export function createPhoneInput(skin: PhoneInputSkin) {
             aria-describedby={props["aria-describedby"]}
           />
         </Animated.View>
-        {entryMaterial.stateBorder(boxShape, active || isError)}
+        {covered ? null : entryMaterial.stateBorder(boxShape, active || isError)}
       </View>
       </PopupHandoffContext.Provider>
     );

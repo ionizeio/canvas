@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, spyOn } from "bun:test";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import { Keyboard, Platform, View, type KeyboardEvent } from "react-native";
 import { fitOverlayHeight } from "../src/style/overlay-layout.ts";
 import { OverlayProvider, useOverlayHost, insetOverlayBounds, intersectOverlayBounds, type OverlayHost, type OverlayBounds } from "../src/style/portal.tsx";
@@ -8,7 +8,9 @@ import { ThemeProvider } from "../src/style/theme.tsx";
 import { entranceTranslation } from "../src/style/entrance.tsx";
 import { popoverArrowOffset } from "../src/atoms/popover/popover.styles.tsx";
 import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
+import { Select } from "../src/atoms/select/select.tsx";
 import { webSkin as dropdownSkin } from "../src/atoms/dropdown/dropdown.styles.ts";
+import { POPUP_PRESENTATION } from "../src/style/popup-motion.tsx";
 import { hostedEntranceParts, layoutHostedEntrance } from "./entrance-layout.ts";
 
 afterEach(cleanup);
@@ -253,6 +255,64 @@ describe("a card opened above its trigger on a scrolled host", () => {
       expect(scrollport).toContain("flex-shrink: 1");
     } finally {
       measure.mockRestore();
+    }
+  });
+});
+
+// Under a hand-off (glass, motion allowed, hosted) the card RESTS OVER its trigger's
+// box, the way the iOS 26 menu rests over its button (`handoff.cover`): its near edge
+// the cover's inset into the trigger's box from the trigger's near edge, flush on it
+// at the inset the reference measures. The same trigger in solid mode keeps the gap
+// under the trigger's bottom edge.
+describe("a hand-off card rests over its trigger", () => {
+  const measureScrolledHost = (trigger: string) => spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (this: Element) {
+    const outlet = getComputedStyle(this).zIndex === "1000";
+    const inPage = this.closest('[data-testid="page"]') !== null;
+    const [x, y, width, height] = this.getAttribute("data-testid") === trigger
+      ? [28, 612, 119, SCROLLED_HOST.triggerHeight]
+      : outlet && inPage ? [28, -80, 346, SCROLLED_HOST.outletHeight]
+      : outlet ? [0, 0, 402, 874]
+      : [0, 0, 0, 0];
+    return { x, y, width, height, top: y, left: x, right: x + width, bottom: y + height, toJSON: () => ({}) };
+  });
+  const page = (glass: boolean, child: ReactNode) => (
+    <ThemeProvider glass={glass} solid={!glass}>
+      <OverlayProvider>
+        <View testID="page">
+          <OverlayProvider style={{ flexGrow: 0, flexShrink: 0, flexBasis: "auto" }}>{child}</OverlayProvider>
+        </View>
+      </OverlayProvider>
+    </ThemeProvider>
+  );
+
+  it("a whole trigger's menu: on the pill's top under glass, the gap under its bottom in solid mode", async () => {
+    const items = [{ label: "Open" }, { label: "Rename" }];
+    for (const glass of [true, false]) {
+      const measure = measureScrolledHost("edge-menu");
+      try {
+        const view = render(page(glass, <Dropdown testID="edge-menu" trigger="Fruit actions" items={items} />));
+        fireEvent.click(screen.getByRole("button", { name: "Fruit actions" }));
+        const menu = await screen.findByRole("menu", { hidden: true });
+        const parts = hostedEntranceParts(menu);
+        const expected = glass ? SCROLLED_HOST.triggerTop + POPUP_PRESENTATION.handoff.cover.inset : SCROLLED_HOST.triggerTop + SCROLLED_HOST.triggerHeight + dropdownSkin.menuGap;
+        await waitFor(() => expect(parts.entrance.getAttribute("style") ?? "").toContain(`top: ${expected}px`));
+        view.unmount();
+      } finally { measure.mockRestore(); }
+    }
+  });
+
+  it("a field's list: flush on the field's top under glass, the gap under its bottom in solid mode", async () => {
+    for (const glass of [true, false]) {
+      const measure = measureScrolledHost("edge-menu");
+      try {
+        const view = render(page(glass, <Select testID="edge-menu" label="Region" options={["Americas", "Europe"]} />));
+        fireEvent.click(screen.getByRole("button", { name: "Region" }));
+        const list = await screen.findByRole("listbox", { hidden: true });
+        const parts = hostedEntranceParts(list);
+        const expected = glass ? SCROLLED_HOST.triggerTop + POPUP_PRESENTATION.handoff.cover.inset : SCROLLED_HOST.triggerTop + SCROLLED_HOST.triggerHeight + 4;
+        await waitFor(() => expect(parts.entrance.getAttribute("style") ?? "").toContain(`top: ${expected}px`));
+        view.unmount();
+      } finally { measure.mockRestore(); }
     }
   });
 });

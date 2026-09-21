@@ -9,11 +9,13 @@ import { View, Pressable, Text, TextInput, useControllableState, useFillStyle, u
 // the rows are already inert. Solid mode and Reduce Motion keep the ordinary
 // entrance. Internal, never a public prop.
 import { LiquidAnchoredOverlay } from "../../style/liquid-anchored-overlay.js";
-// The field hand-off (popup-handoff.tsx): under glass the list pours out of the field's
-// edge (the field's width, corner and control tint) and, on close, absorbs back into
-// the field's box, the editor's text yielding only while the pane covers it. The field
-// itself never vanishes: it is typed into while its list is open.
+// The field hand-off (popup-handoff.tsx): under glass the field vanishes into a drop
+// hanging under its box, the list blooms up over the box and rests there, the way the
+// iOS 26 menu takes its button, and on close deflates back onto the box, the field
+// returning at the snap. The editor keeps focus under the pane throughout; the query
+// echo at the top of the list shows what it holds (autocomplete-echo.tsx).
 import { HandoffText, PopupHandoffContext, PopupHandoffForeground, handoffInk, usePopupHandoff } from "../../style/popup-handoff.js";
+import { QueryEcho } from "./autocomplete-echo.js";
 import { useReducedMotion } from "../../style/motion.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useActiveOptionScroll } from "../../style/use-active-option-scroll.js";
@@ -132,7 +134,9 @@ const asNum = (v: unknown, fallback: number): number => (typeof v === "number" ?
 // behavior). With a provider, AnchoredOverlay portals the card over the page and
 // adds the outside-tap dismiss backdrop instead. `start:0,end:0` pins it to the
 // field's width; the skin owns the card's shape/fill/shadow.
-// The standoff between the field's edge and the list (the hand-off's cover mark reads it too).
+// The standoff between the field's edge and the list where the field stays visible
+// (solid mode, Reduce Motion, the inline fallback); under the hand-off the list rests
+// over the field instead (`coverStandoff`).
 const LIST_GAP = 4;
 const POPOVER_ANCHOR: ViewStyle = { position: "absolute", top: "100%", start: 0, end: 0, zIndex: 50, marginTop: LIST_GAP };
 // The editor's slot under the hand-off: the fader takes the editor's place in the
@@ -275,13 +279,18 @@ export function createAutocomplete(skin: AutocompleteSkin) {
     // open-state outline in the foreground, outside the lens's sampled backdrop.
     // Native fields keep their original border or bottom indicator.
     const glass = isGlass(theme);
-    const glassField: ViewStyle | null = glass ? { backgroundColor: "transparent", borderColor: open && !entryMaterial.foregroundStateBorder ? fieldShape.borderColor : "transparent" } : null;
     // The hand-off runs when the field's material is glass, motion is allowed and the
     // list is hosted (the hosted overlay measures the field's frame, which the inline
     // fallback never has); the field's subtree reads the channel through the context.
     const reducedMotion = useReducedMotion();
-    const { handoff, context: handoffContext } = usePopupHandoff(glass && !reducedMotion && host != null, { field: { gap: LIST_GAP } });
+    const { handoff, context: handoffContext } = usePopupHandoff(glass && !reducedMotion && host != null, { field: true });
     const ink = handoffInk(handoffContext);
+    // While the list is open under the hand-off the pane rests over the field, whose
+    // material and text are hidden (popup-handoff.tsx): the open-state border, which
+    // the box (or the web's foreground stroke) paints outside that material, is not
+    // painted either, or it would show through the pane's glass as an outline.
+    const covered = handoffContext != null && open;
+    const glassField: ViewStyle | null = glass ? { backgroundColor: "transparent", borderColor: open && !covered && !entryMaterial.foregroundStateBorder ? fieldShape.borderColor : "transparent" } : null;
 
     return (
       <View style={[wrapper, open && !host ? wrapperLifted : null, widthCap, style]}>
@@ -446,7 +455,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
             />
             </PopupHandoffForeground>
           ) : null}
-          {entryMaterial.stateBorder(fieldShape, open)}
+          {covered ? null : entryMaterial.stateBorder(fieldShape, open)}
         </View>
         </PopupHandoffContext.Provider>
 
@@ -474,6 +483,17 @@ export function createAutocomplete(skin: AutocompleteSkin) {
         >
           <AccessibilityReturnBoundary onMount={accessibilityReturn.onContentMount} onUnmount={accessibilityReturn.onContentUnmount}>
             <EscapeLayerProvider scope={escapeScope}>
+              {/* Under the hand-off the list rests over the field, so the field's line
+                  is echoed inside the pane (the query, the value or the placeholder,
+                  and the chevron); the fragment leaves the tree byte for byte otherwise. */}
+              <QueryEcho
+                active={handoffContext != null}
+                skin={skin} tokens={tokens} size={size}
+                text={fieldValue} placeholder={placeholder}
+                field={fieldShape} card={skin.popover(tokens)}
+                editor={accessibilityReturn.editor}
+                onClose={() => { accessibilityReturn.cancel(); setOpen(false); }}
+              >
               <OverlayScrollView
                 ref={listRef}
                 style={optionScroll}
@@ -533,6 +553,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
                   </View>
                 </RippleClip>
               </OverlayScrollView>
+              </QueryEcho>
             </EscapeLayerProvider>
           </AccessibilityReturnBoundary>
         </LiquidAnchoredOverlay>

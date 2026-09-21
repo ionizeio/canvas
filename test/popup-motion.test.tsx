@@ -6,7 +6,7 @@ import { AnchoredOverlay, popupOrigin } from "../src/style/anchored-overlay.tsx"
 import { OverlayProvider, Portal } from "../src/style/portal.tsx";
 import { EscapeLayerProvider, useEscapeLayer } from "../src/style/escape-layer.ts";
 import { useDialogFocus } from "../src/style/use-dialog-focus.ts";
-import { HANDOFF_RETURN, POPUP_PRESENTATION, PopupInteractionContext, PopupMotionPolicy, fieldCoverMark, handoffAcross, restingRadius, usePopupMotion, type PopupEdge, type PopupOrigin, type PopupSize } from "../src/style/popup-motion.tsx";
+import { HANDOFF_RETURN, POPUP_PRESENTATION, PopupInteractionContext, PopupMotionPolicy, coverStandoff, handoffAcross, restingRadius, usePopupMotion, type PopupEdge, type PopupOrigin, type PopupSize } from "../src/style/popup-motion.tsx";
 import { supportsNativeDriver } from "../src/style/motion.ts";
 import { PopupHandoffContext, PopupHandoffForeground, usePopupHandoff, shapeRadius, type PopupHandoff, type PopupHandoffValue } from "../src/style/popup-handoff.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
@@ -272,7 +272,7 @@ describe("popup decorative spring", () => {
 
 // The trigger's side of the hand-off: the material and label opacities the trigger's
 // subtree paints from, read back off the DOM as the owner-held travel value moves.
-function HandoffProbe({ active = true, field, onChannel }: { active?: boolean; field?: { gap: number }; onChannel: (handoff: PopupHandoff, context: PopupHandoffValue | null) => void }) {
+function HandoffProbe({ active = true, field = false, onChannel }: { active?: boolean; field?: boolean; onChannel: (handoff: PopupHandoff, context: PopupHandoffValue | null) => void }) {
   const { handoff, context } = usePopupHandoff(active, field ? { field } : undefined);
   onChannel(handoff, context);
   return (
@@ -288,7 +288,7 @@ const labelOpacity = () => parseFloat((screen.getByTestId("handoff-label").paren
 describe("the button-to-menu hand-off", () => {
   // A pill 100 by 32 whose top sits 40 above the card, its own corner 16; the drop
   // hangs from its bottom edge (a whole trigger, not a field).
-  const ORIGIN: PopupOrigin = { x: 20, y: -40, width: 100, height: 32, radius: 16, hangs: true };
+  const ORIGIN: PopupOrigin = { x: 20, y: -40, width: 100, height: 32, radius: 16, whole: true };
   const { seed, birth, handoff } = POPUP_PRESENTATION;
 
   it("is nothing at the drop's tip at progress 0, a pill-wide droplet at the seed, and the card at rest", async () => {
@@ -306,20 +306,18 @@ describe("the button-to-menu hand-off", () => {
       expect(triggerFill()).toBe(1);
       rerender(ui(<Probe open radius={16} origin={ORIGIN} />));
       // The first paint: the pill's width held (the seed is under `widen`), the
-      // birth's share of the card's height, its centre the seed's share of the way
-      // from the pill's centre to the card's (the pane travels by its centre), which
-      // hangs it from the pill's BOTTOM edge (the pill's spot is empty, the drop's tip
-      // within a few pixels of its far edge), rounder than either the pill or the
-      // card, with the rows scaled from the pane's centre.
+      // birth's share of the card's height, HANGING from the pill's bottom edge (the
+      // pill's spot is empty, the drop's tip exactly on its far edge: the pane
+      // travels by its centre, and the hanging drop's centre is the seed's point on
+      // that travel), rounder than either the pill or the card, with the rows scaled
+      // from the pane's centre.
       const droplet = frame();
       expect(handoffAcross(seed)).toBe(0);
       expect(droplet.width).toBeCloseTo(100, 6);
       expect(droplet.height).toBeCloseTo(Math.max(32, birth.along * SIZE.height), 4);
       expect(droplet.left).toBeCloseTo(20, 6);
-      const pillCentre = ORIGIN.y + ORIGIN.height / 2;
-      expect(droplet.top + droplet.height / 2).toBeCloseTo(pillCentre + seed * (SIZE.height / 2 - pillCentre), 4);
       const far = ORIGIN.y + ORIGIN.height;
-      expect(Math.abs(droplet.top - far)).toBeLessThan(4);
+      expect(droplet.top).toBeCloseTo(far, 4);
       expect(corner()).toBeCloseTo(Math.max(16, 0.5 * Math.min(100, droplet.height)), 4);
       expect(transformOf(screen.getByTestId("motion-content")).scaleX).toBeCloseTo(seed, 9);
       expect(transformOf(screen.getByTestId("motion-content")).translateX).toBeCloseTo((70 - SIZE.width / 2) * (1 - seed), 9);
@@ -472,7 +470,9 @@ describe("the button-to-menu hand-off", () => {
     value!.report({ radius: 12, width: 24, height: 24, layer: "control" });
     value!.report({ radius: 9999, width: 120, height: 36, layer: "control" });
     value!.report({ radius: 4, width: 10, height: 10, layer: "content" });
-    expect(channel!.shape.current).toEqual({ radius: 9999, area: 120 * 36, height: 36, layer: "control" });
+    expect(channel!.shape.current).toEqual({ radius: 9999, area: 120 * 36, layer: "control", clear: undefined });
+    value!.report({ radius: 9999, width: 120, height: 36, layer: "control", clear: true });
+    expect(channel!.shape.current!.clear).toBe(true);
     const before = channel!.progress;
     rerender(<HandoffProbe active={false} onChannel={(h, c) => { channel = h; value = c; }} />);
     // The travel value outlives the activation, so a pane that is out keeps driving it.
@@ -489,10 +489,12 @@ describe("the button-to-menu hand-off", () => {
     expect(shapeRadius([{ borderRadius: 8 }, { borderTopLeftRadius: 12 }])).toBe(12);
     expect(shapeRadius({ padding: 4 })).toBe(0);
     const rect = { x: 100, y: 50, width: 120, height: 36 };
-    expect(popupOrigin(rect, 100, 90, 9999)).toEqual({ x: 0, y: -40, width: 120, height: 36, radius: 18, hangs: true });
-    expect(popupOrigin(rect, 40, 90, 8)).toEqual({ x: 60, y: -40, width: 120, height: 36, radius: 8, hangs: true });
-    // A field's drop is born over its box rather than hanging under it.
-    expect(popupOrigin(rect, 40, 90, 8, false)!.hangs).toBe(false);
+    expect(popupOrigin(rect, 100, 90, 9999)).toEqual({ x: 0, y: -40, width: 120, height: 36, radius: 18, whole: true, clear: false });
+    expect(popupOrigin(rect, 40, 90, 8)).toEqual({ x: 60, y: -40, width: 120, height: 36, radius: 8, whole: true, clear: false });
+    // A clear field's material (the web's text-entry lens) reaches the pane as `clear`.
+    expect(popupOrigin(rect, 40, 90, 8, false, true)).toMatchObject({ whole: false, clear: true });
+    // A field's pane is the field's box at the snap rather than nothing under a re-formed pill.
+    expect(popupOrigin(rect, 40, 90, 8, false)!.whole).toBe(false);
     expect(popupOrigin(rect, 100, 90, undefined)!.radius).toBe(18);
     expect(popupOrigin(rect, undefined, 90, 8)).toBeUndefined();
     expect(popupOrigin(rect, 100, undefined, 8)).toBeUndefined();
@@ -502,7 +504,7 @@ describe("the button-to-menu hand-off", () => {
 
 describe("the birth, the settle and the dismiss of a hand-off pane", () => {
   // A pill 100 by 32 whose top sits 40 above the card, its own corner 16.
-  const ORIGIN: PopupOrigin = { x: 20, y: -40, width: 100, height: 32, radius: 16, hangs: true };
+  const ORIGIN: PopupOrigin = { x: 20, y: -40, width: 100, height: 32, radius: 16, whole: true };
   const { seed, birth, radius: { settle }, dismiss, handoff } = POPUP_PRESENTATION;
   // The timings here (the fills, the sharpening, the settle, the ghosts) run on the
   // real engine under the clock, as the springs do: the test mock finishes a timing
@@ -570,10 +572,10 @@ describe("the birth, the settle and the dismiss of a hand-off pane", () => {
       // centre to `contract` of its box while the travel still holds at 1 and goes
       // sheer (its under-fills at the dismiss's share); the ghosts fade and the rows
       // retire by the ghosts' fade; the body flies back up into the pill BY ITS
-      // CENTRE, the remaining share of the way from the pill's centre to the card's
-      // at every progress (the contraction and the contour scale about that centre,
-      // so it is exact), its top hanging under the pill's spot early and rising into
-      // it over the second half of the travel.
+      // CENTRE, from the card's centre to the hanging drop's at the seed and on to
+      // the pill's at 0, linearly on each leg (the contraction and the contour scale
+      // about that centre, so it is exact), its top hanging under the pill's spot
+      // early and rising into it over the second half of the travel.
       const seen: { value: number; box: ReturnType<typeof frame>; retiring: boolean; presence: number; at: number }[] = [];
       for (let step = 0; step < 80 && exits === 0; step++) {
         clock.advance(16);
@@ -587,11 +589,14 @@ describe("the birth, the settle and the dismiss of a hand-off pane", () => {
       expect(seen.some((s) => s.retiring)).toBe(true);
       expect(seen.filter((s) => s.at > dismiss.ghost.fadeMs + 32).every((s) => !s.retiring)).toBe(true);
       const pillCentre = ORIGIN.y + ORIGIN.height / 2;
+      const dropCentre = ORIGIN.y + ORIGIN.height + Math.max(ORIGIN.height, birth.along * SIZE.height) / 2;
       const travelling = seen.filter((s) => s.value > 0 && s.value < 1);
       expect(travelling.length).toBeGreaterThan(6);
       const flying = travelling.filter((s) => s.value >= seed);
       expect(flying.length).toBeGreaterThan(2);
-      for (const s of flying) expect(s.box.top + s.box.height / 2).toBeCloseTo(pillCentre + s.value * (SIZE.height / 2 - pillCentre), 6);
+      for (const s of flying) expect(s.box.top + s.box.height / 2).toBeCloseTo(dropCentre + (s.value - seed) / (1 - seed) * (SIZE.height / 2 - dropCentre), 6);
+      const sinking = travelling.filter((s) => s.value < seed);
+      for (const s of sinking) expect(s.box.top + s.box.height / 2).toBeCloseTo(pillCentre + (s.value / seed) * (dropCentre - pillCentre), 6);
       // Early in the travel (the contraction still releasing) the drop's top is at or
       // under the pill's bottom edge. Under the seed the centre keeps travelling to
       // the pill's centre while the drop shrinks to nothing, narrowing faster than
@@ -605,7 +610,7 @@ describe("the birth, the settle and the dismiss of a hand-off pane", () => {
       expect(absorbed.length).toBeGreaterThan(3);
       const tip = ORIGIN.y + ORIGIN.height;
       for (const s of absorbed) {
-        expect(s.box.top + s.box.height / 2).toBeCloseTo(pillCentre + s.value * (SIZE.height / 2 - pillCentre), 6);
+        expect(s.box.top + s.box.height / 2).toBeCloseTo(pillCentre + (s.value / seed) * (dropCentre - pillCentre), 6);
         expect(s.box.top).toBeLessThan(tip + 4);
         expect(s.box.top).toBeGreaterThan(pillCentre - 1);
         expect(s.box.left + s.box.width / 2).toBeCloseTo(70, 3);
@@ -664,25 +669,25 @@ describe("the birth, the settle and the dismiss of a hand-off pane", () => {
 });
 
 describe("the field hand-off", () => {
-  // A field 100 by 32 whose box ends 8 above the card (the overlay's gap), corner 16.
-  const ORIGIN: PopupOrigin = { x: 20, y: -40, width: 100, height: 32, radius: 16 };
-  const GAP = 8;
+  // A field 100 by 32 whose box the card rests over: the card's top on the field's
+  // top (the field's standoff is flush), corner 16.
+  const ORIGIN: PopupOrigin = { x: 20, y: 0, width: 100, height: 32, radius: 16, whole: false };
   const { seed, birth, handoff } = POPUP_PRESENTATION;
   const fieldBottom = ORIGIN.y + ORIGIN.height;
-  const mark = fieldCoverMark(ORIGIN.height, GAP);
 
-  it("places the cover mark where the pane's edge meets the field's box", () => {
-    expect(mark).toBeCloseTo(32 / 40 + handoff.field.margin, 9);
-    // Boxes that touch or overlap, or a field with no extent yet, cover for the whole travel.
-    expect(fieldCoverMark(32, 0)).toBe(1);
-    expect(fieldCoverMark(0, 8)).toBe(1);
-    expect(fieldCoverMark(32, -4)).toBe(1);
-    expect(fieldCoverMark(4000, 4)).toBe(1);
+  it("rests a hand-off card over its trigger, flush on its box (the reference menu's rim sits on its pill's top edge), and keeps the owner's gap without an extent", () => {
+    expect(handoff.cover.inset).toBe(0);
+    expect(coverStandoff(32, 4)).toBe(handoff.cover.inset - 32);
+    expect(coverStandoff(48, 12)).toBe(handoff.cover.inset - 48);
+    expect(coverStandoff(0, 4)).toBe(4);
+    expect(coverStandoff(0, 12)).toBe(12);
   });
 
-  it("forms a compact drop centred under a wide trigger, never a bar its full width, and still hands back onto the whole box", async () => {
-    // A field that fills its column: the same width as the card it opens.
-    const WIDE: PopupOrigin = { x: 0, y: -40, width: SIZE.width, height: 32, radius: 16 };
+  it("forms a compact drop hanging under a wide trigger, never a bar its full width, rises over the box as it grows, and deflates back onto the whole box", async () => {
+    // A field that fills its column: the same width as the card it opens, its box
+    // 40 above the card's top (a card resting under it, as the inline fallback and
+    // a solid page place it; the geometry is the same wherever the card rests).
+    const WIDE: PopupOrigin = { x: 0, y: -40, width: SIZE.width, height: 32, radius: 16, whole: false };
     const drop = handoff.droplet * SIZE.width;
     let exits = 0;
     const progress = new Animated.Value(0);
@@ -697,12 +702,14 @@ describe("the field hand-off", () => {
       near(frame(), { left: 0, top: -40, width: SIZE.width, height: 32 });
       rerender(page(true));
       // The first paint is the drop: the card's droplet fraction wide, centred on the
-      // trigger, a share of the way to the card's height, and rounder than either box.
+      // trigger, a share of the way to the card's height, hanging from the field's
+      // bottom edge (the field's spot empty), and rounder than either box.
       const droplet = frame();
       expect(droplet.width).toBeCloseTo(drop, 4);
       expect(droplet.left).toBeCloseTo((SIZE.width - drop) / 2, 4);
       expect(droplet.width).toBeLessThan(SIZE.width * 0.5);
       expect(droplet.height).toBeCloseTo(Math.max(32, birth.along * SIZE.height), 4);
+      expect(droplet.top).toBeCloseTo(WIDE.y + WIDE.height, 4);
       expect(corner()).toBeCloseTo(Math.max(16, 0.5 * Math.min(drop, droplet.height)), 4);
       // The drop keeps its width up to `widen` (give or take the contour's squash),
       // then widens to the card; the seed sits at the widen mark, so the width is
@@ -716,15 +723,22 @@ describe("the field hand-off", () => {
       }
       expect(held).toBeGreaterThan(0);
       expect(frame()).toEqual({ left: 0, top: 0, ...SIZE });
-      // The close narrows to the drop (the width passes through the drop's at the
-      // widen mark; the close spring crosses it at about three pixels a millisecond,
-      // so a 16 ms step lands within about 25 px of it), then re-widens into the box
-      // for the hand-back: the narrowest frame is near the drop, far under the box.
+      // The close DEFLATES onto the box with its near edge held: the pane's top never
+      // rises above the field's top nor sinks under the card's top by more than the
+      // contraction's dip (the first frames shrink the pane about its centre), it
+      // narrows to the drop (the width passes through the drop's at the widen mark;
+      // the close spring crosses it at about three pixels a millisecond, so a 16 ms
+      // step lands within about 25 px of it), then re-widens into the box for the
+      // hand-back: the narrowest frame is near the drop, far under the box.
       rerender(page(false));
       let narrowest = Infinity;
+      const dip = (1 - handoff.close.contract) * SIZE.height / 2;
       for (let step = 0; step < 80 && exits === 0; step++) {
         clock.advance(16);
-        narrowest = Math.min(narrowest, frame().width);
+        const moving = frame();
+        narrowest = Math.min(narrowest, moving.width);
+        expect(moving.top).toBeGreaterThanOrEqual(WIDE.y - 1);
+        expect(moving.top).toBeLessThanOrEqual(dip + 1);
       }
       expect(Math.abs(narrowest - drop)).toBeLessThan(25);
       expect(narrowest).toBeLessThan(SIZE.width * 0.6);
@@ -736,7 +750,7 @@ describe("the field hand-off", () => {
     } finally { unmount(); clock.restore(); }
   });
 
-  it("has the pane clear of the field's box whenever the travel is at or past the cover mark, on the way out and home", async () => {
+  it("rises over the field's spot as it grows, from the drop under the box to the card resting over it, and hides the field throughout", async () => {
     let exits = 0;
     const progress = new Animated.Value(0);
     const onExited = () => { exits++; };
@@ -747,39 +761,106 @@ describe("the field hand-off", () => {
     const clock = animationClock();
     try {
       rerender(page(true));
-      // The first paint is the droplet ON the field's box (the field vanishes into it),
-      // below the cover mark, so the field's material is out.
+      // The first paint is the droplet hanging UNDER the field's box (the field
+      // vanishes, its spot empty), then the pane's top edge rises over the spot as
+      // the pane grows (never falling back, past the contour's stretch), until the
+      // card rests over the box: the field's whole box inside the pane at rest.
       expect(valueOf(progress)).toBeCloseTo(seed, 9);
-      expect(frame().top).toBeLessThan(fieldBottom);
-      let released = 0;
+      expect(frame().top).toBeCloseTo(fieldBottom, 4);
+      let top = frame().top;
+      let rose = 0;
       for (let step = 0; step < 100; step++) {
         clock.advance(16);
-        // Past the mark the pane's top is at or below the field's bottom edge, within
-        // the pixel the contour's stretch may add (the margin is sized for it).
-        if (valueOf(progress) >= mark) { released++; expect(frame().top).toBeGreaterThanOrEqual(fieldBottom - 1); }
+        const next = frame().top;
+        expect(next).toBeLessThanOrEqual(top + 1);
+        if (next < top - 1) rose++;
+        top = next;
       }
-      expect(released).toBeGreaterThan(20);
+      expect(rose).toBeGreaterThan(3);
       expect(frame()).toEqual({ left: 0, top: 0, ...SIZE });
+      expect(ORIGIN.y).toBeGreaterThanOrEqual(0);
+      expect(fieldBottom).toBeLessThanOrEqual(SIZE.height);
+      // The close from rest: the pane ends on the box exactly and hands back there.
       rerender(page(false));
-      let covered = 0;
-      for (let step = 0; step < 80 && exits === 0; step++) {
-        clock.advance(16);
-        const value = valueOf(progress);
-        if (value >= mark) expect(frame().top).toBeGreaterThanOrEqual(fieldBottom - 1);
-        else if (value > 0) covered++;
-      }
-      expect(covered).toBeGreaterThan(3);
+      for (let step = 0; step < 80 && exits === 0; step++) clock.advance(16);
       expect(exits).toBe(1);
-      // The travel is home; the contour's last recoil settles on its own.
       clock.advance(1600);
-      near(frame(), { left: 20, top: -40, width: 100, height: 32 });
+      near(frame(), { left: 20, top: 0, width: 100, height: 32 });
     } finally { unmount(); clock.restore(); }
   });
 
-  it("gives the field a material that hides only while the pane covers its box, out and home, and a text that fades with it", async () => {
+  it("deflates onto the box as the box: a field's pane goes sheer on the close's first frames and is whole again by the time it lands, where a pill's stays sheer", async () => {
+    const engine = require("react-native-web/dist/vendor/react-native/Animated/AnimatedImplementation").default as typeof Animated;
+    const timing = spyOn(Animated, "timing").mockImplementation(engine.timing);
+    const clock = animationClock();
+    const { dismiss } = POPUP_PRESENTATION;
+    try {
+      for (const whole of [false, true]) {
+        const origin: PopupOrigin = { ...ORIGIN, whole };
+        const page = (open: boolean) => ui(<Probe open={open} radius={16} origin={origin} />);
+        const { rerender, unmount } = render(page(false));
+        await act(async () => {});
+        rerender(page(true));
+        clock.advance(1600);
+        expect(presence()).toBe(1);
+        rerender(page(false));
+        clock.advance(dismiss.sheerMs + 16);
+        // Sheer within a frame of the timing's end (the land timing's first frame may already have run).
+        expect(presence()).toBeLessThan(dismiss.sheer + 0.02);
+        clock.advance(dismiss.landMs + 32);
+        expect(presence()).toBeCloseTo(whole ? dismiss.sheer : 1, 2);
+        unmount();
+      }
+    } finally { timing.mockRestore(); clock.restore(); }
+  });
+
+  it("turns between the open's centre travel and the close's deflation without a hop when reversed mid-flight", async () => {
+    const progress = new Animated.Value(0);
+    const page = (open: boolean) => ui(<Probe open={open} radius={16} origin={ORIGIN} progress={progress} />);
+    const { rerender, unmount } = render(page(false));
+    await act(async () => {});
+    const clock = animationClock();
+    const engine = require("react-native-web/dist/vendor/react-native/Animated/AnimatedImplementation").default as typeof Animated;
+    const timing = spyOn(Animated, "timing").mockImplementation(engine.timing);
+    // The two curves differ by the drop's hang under the box: at this fixture's
+    // seed the open's top edge is at the field's bottom (32) where the close's is
+    // at the field's top (0), and about twelve pixels apart where the reversal below
+    // lands. A turn stepped in one frame would hop by that much on top of the
+    // spring's own motion; the timed turn spreads it over its frames.
+    const hop = 8;
+    try {
+      rerender(page(true));
+      let steps = 0;
+      while (valueOf(progress) < 0.8 && steps++ < 40) clock.advance(16);
+      expect(valueOf(progress)).toBeGreaterThan(0.6);
+      let last = frame();
+      // Closed part way out: the frame moves on from where it is, a few pixels a
+      // step, through the turn and the deflation.
+      rerender(page(false));
+      for (let step = 0; step < 12; step++) {
+        clock.advance(16);
+        const next = frame();
+        expect(Math.abs(next.top - last.top)).toBeLessThan(hop);
+        expect(Math.abs(next.left - last.left)).toBeLessThan(hop);
+        last = next;
+      }
+      expect(valueOf(progress)).toBeLessThan(seed);
+      // Reopened under the seed: the first frame turns back without a hop (from there
+      // the open's own curve carries the pane down into the hanging drop and up over
+      // the box again, on the spring's pace).
+      rerender(page(true));
+      clock.advance(16);
+      const first = frame();
+      expect(Math.abs(first.top - last.top)).toBeLessThan(hop);
+      expect(Math.abs(first.left - last.left)).toBeLessThan(hop);
+      clock.advance(1600);
+      expect(frame()).toEqual({ left: 0, top: 0, ...SIZE });
+    } finally { unmount(); timing.mockRestore(); clock.restore(); }
+  });
+
+  it("gives the field a material that is hidden from the drop's first frame to the snap, out and home, with no re-form, and a text that fades with it", async () => {
     let channel: PopupHandoff | null = null;
-    let value: PopupHandoffValue | null = null;
-    render(<HandoffProbe field={{ gap: GAP }} onChannel={(h, c) => { channel = h; value = c; }} />);
+    render(<HandoffProbe field onChannel={(h) => { channel = h; }} />);
     await act(async () => {});
     const clock = animationClock();
     const engine = require("react-native-web/dist/vendor/react-native/Animated/AnimatedImplementation").default as typeof Animated;
@@ -787,23 +868,35 @@ describe("the field hand-off", () => {
     try {
       const travel = channel!.progress;
       expect(channel!.fromTrigger).toBe(true);
-      // Before the pane has reported, the cover runs to the top of the travel.
-      act(() => travel.setValue(0.9));
-      expect(materialOpacity()).toBe(0);
-      act(() => travel.setValue(0));
+      expect(channel!.field).toBe(true);
       expect(materialOpacity()).toBe(1);
-      clock.advance(handoff.label.returnMs + 32);
-      // The pane reports the field's box: the cover ends where the pane leaves it.
-      act(() => value!.report({ radius: 16, width: 100, height: 32, layer: "control" }));
-      // The opening: gone the frame the droplet forms on the box, the text on its short
-      // fade, and back (text over its return fade) once past the mark.
+      expect(labelOpacity()).toBe(1);
+      // The opening: gone the frame the droplet forms under the box, the text on its
+      // short fade, and out for the whole travel, the resting card (which covers the
+      // box) and the overshoot included.
       act(() => travel.setValue(seed));
       expect(materialOpacity()).toBe(0);
       clock.advance(handoff.label.hideMs + 32);
       expect(labelOpacity()).toBe(0);
-      act(() => travel.setValue(mark - 0.01));
+      act(() => travel.setValue(0.9));
       expect(materialOpacity()).toBe(0);
-      act(() => travel.setValue(mark + 0.02));
+      act(() => travel.setValue(1.02));
+      expect(materialOpacity()).toBe(0);
+      act(() => travel.setValue(1));
+      expect(materialOpacity()).toBe(0);
+      expect(labelOpacity()).toBe(0);
+      // The close: the re-form mark a pill reads is nothing to a field (its pane
+      // deflates onto the box); the material and the text are back at the snap only.
+      act(() => channel!.closing.setValue(1));
+      act(() => travel.setValue(handoff.reform - 1e-6));
+      expect(materialOpacity()).toBe(0);
+      act(() => travel.setValue(handoff.label.returnFrom - 1e-6));
+      expect(materialOpacity()).toBe(0);
+      expect(labelOpacity()).toBe(0);
+      act(() => travel.setValue(8e-6));
+      expect(materialOpacity()).toBe(0);
+      expect(labelOpacity()).toBe(0);
+      act(() => travel.setValue(0));
       expect(materialOpacity()).toBe(1);
       clock.advance(handoff.label.returnMs / 2);
       const midway = labelOpacity();
@@ -811,36 +904,12 @@ describe("the field hand-off", () => {
       expect(midway).toBeLessThan(1);
       clock.advance(handoff.label.returnMs);
       expect(labelOpacity()).toBe(1);
-      act(() => travel.setValue(1.02));
-      expect(materialOpacity()).toBe(1);
-      act(() => travel.setValue(1));
-      expect(materialOpacity()).toBe(1);
-      // The close: gone again below the mark, never in between, back at the snap.
-      act(() => travel.setValue(mark + 0.05));
-      expect(materialOpacity()).toBe(1);
-      act(() => travel.setValue(mark - 0.01));
-      expect(materialOpacity()).toBe(0);
-      clock.advance(handoff.label.hideMs + 32);
-      expect(labelOpacity()).toBe(0);
-      act(() => travel.setValue(0.3));
-      expect(materialOpacity()).toBe(0);
-      act(() => travel.setValue(8e-6));
-      expect(materialOpacity()).toBe(0);
-      expect(labelOpacity()).toBe(0);
-      act(() => travel.setValue(0));
-      expect(materialOpacity()).toBe(1);
-      expect(labelOpacity()).toBe(0);
-      clock.advance(handoff.label.returnMs + 32);
-      expect(labelOpacity()).toBe(1);
-      // A reopen mid-close: covered again below the mark, released once past it.
+      // A reopen mid-close: covered again from its first frame of travel.
+      act(() => channel!.closing.setValue(0));
       act(() => travel.setValue(0.3));
       expect(materialOpacity()).toBe(0);
       clock.advance(handoff.label.hideMs + 32);
       expect(labelOpacity()).toBe(0);
-      act(() => travel.setValue(mark + 0.05));
-      expect(materialOpacity()).toBe(1);
-      clock.advance(handoff.label.returnMs + 32);
-      expect(labelOpacity()).toBe(1);
     } finally { timing.mockRestore(); clock.restore(); }
   });
 });
