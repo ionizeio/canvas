@@ -40,6 +40,15 @@ import { AccessibilityInfo, Platform, UIManager, type EasingFunction } from "rea
 // Platform.OS is fixed per bundle, so this is evaluated once.
 export const supportsNativeDriver: boolean = Platform.OS !== "web";
 
+/**
+ * The JS driver, named: for the one kind of value the native driver cannot take, a
+ * `filter` (the liquid popup's row blur, popup-motion.tsx), which paints on a
+ * wrapper of its own so no native-driven node shares it. Everything else in a
+ * presentation takes `supportsNativeDriver`; a bare `useNativeDriver: false` in a
+ * presentation file is what test/design-rules-source.test.ts keeps out.
+ */
+export const JS_DRIVER = { useNativeDriver: false } as const;
+
 /** Shape one loop iteration as an out-and-back: `easing` carries the value from 0 to 1
  *  over the first half of the cycle and back down over the second, so a pulse, a breath
  *  or a shimmer is a single `Animated.timing` from 0 to 1 that ends where it began. The

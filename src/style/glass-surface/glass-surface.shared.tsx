@@ -336,6 +336,17 @@ export interface MaterialOrigin { layer: GlassLayer; blend: PopupBlend }
 export const MaterialOriginContext = createContext<MaterialOrigin | null>(null);
 
 /**
+ * A material layer's opacity under a moving popup's presence: the layer's own
+ * opacity scaled by the presence (faint at the droplet's birth, 1 once grown), or
+ * the layer's own when the material is at rest. A constant stays a constant, so a
+ * surface with no motion keeps its style byte for byte.
+ */
+export function presentOpacity(own: number | Animated.AnimatedInterpolation<number>, presence: Animated.Value | undefined): number | Animated.AnimatedNode {
+  if (!presence) return own;
+  return typeof own === "number" && own === 1 ? presence : Animated.multiply(own, presence);
+}
+
+/**
  * The shape a MOVING material's layers wear (null while the surface is at rest on
  * the skin's own geometry): `radius` is the popup motion's corner this frame while a
  * pane opens as a droplet and settles into the skin's corner (undefined for a card

@@ -142,6 +142,9 @@ const faderOf = (trigger: Element): HTMLElement => {
 };
 // A GlassPane under a hand-off sits in a wrapper whose opacity is the material curve.
 const paneOf = (trigger: Element): HTMLElement => trigger.firstElementChild as HTMLElement;
+// A Button that is the pill fades its own foreground row (the node after its pane)
+// on the label's value; the whole-subtree fader above it is then a pass-through.
+const labelOf = (trigger: Element): HTMLElement => trigger.lastElementChild as HTMLElement;
 const layoutRoot = (root: HTMLElement, size: { width: number; height: number }) => {
   const node = Array.from(root.querySelectorAll("*")).find((n) => typeof (n as Element & { __reactLayoutHandler?: unknown }).__reactLayoutHandler === "function");
   if (!node) throw new Error("no layout host in the fixture");
@@ -168,23 +171,27 @@ describe("the button-to-menu hand-off", () => {
     try {
       const button = screen.getByRole("button", { name: "Account" });
       const pane = paneOf(button);
-      const fader = faderOf(button);
+      const fader = labelOf(button);
       expect(inlineOpacity(pane)).toBe("1");
       expect(inlineOpacity(fader)).toBe("1");
+      // The whole-subtree fader around the button is a pass-through: the button is
+      // the pill and fades its own foreground, so nothing sits over its material.
+      expect(inlineOpacity(faderOf(button))).toBe("1");
       const menu = await openMenu(button, clock);
       // The pane's material has the trigger's frame: the pill is hidden in place
-      // (still in the tree) and the label is gone (the test engine finishes its
-      // short fade in the seed's own tick).
+      // (still in the tree) and the label is cut in the same frame.
       expect(pane.isConnected).toBe(true);
       expect(inlineOpacity(pane)).toBe("0");
       expect(inlineOpacity(fader)).toBe("0");
+      expect(inlineOpacity(faderOf(button))).toBe("1");
       clock.advance(1600);
       expect(heldBack(menu)).toBe(false);
       expect(inlineOpacity(pane)).toBe("0");
       fireEvent.click(within(menu).getByRole("menuitem", { name: "Profile" }));
       // The close: the pane narrows back to the pill with both hidden; the material
-      // is back only at the end, never in between, and the label never shows while
-      // the material is hidden (it would sit under the standing-in pane's glass).
+      // is back under the last of the drop (the re-form mark), never partial, and the
+      // label never shows while the material is hidden (it would sit under the
+      // standing-in pane's glass) and returns only once the pane has snapped home.
       let hidden = 0;
       for (let step = 0; step < 120 && inlineOpacity(pane) !== "1"; step++) {
         clock.advance(16);
@@ -194,6 +201,10 @@ describe("the button-to-menu hand-off", () => {
       }
       expect(hidden).toBeGreaterThan(3);
       expect(inlineOpacity(pane)).toBe("1");
+      for (let step = 0; step < 120 && inlineOpacity(fader) !== "1"; step++) {
+        clock.advance(16);
+        expect(inlineOpacity(pane)).toBe("1");
+      }
       // The test engine finishes the label's timed return in the snap's own tick.
       expect(inlineOpacity(fader)).toBe("1");
       expect(pane.isConnected).toBe(true);
@@ -207,15 +218,24 @@ describe("the button-to-menu hand-off", () => {
       const account = render(glass(<AvatarMenu name="Rachel Chen" email="rachel@example.com" items={[{ label: "Profile" }]} />));
       await act(async () => {});
       const capsule = screen.getByRole("button", { name: "Rachel Chen, rachel@example.com" });
-      // The fader wraps the whole custom trigger; the capsule's pane and the
-      // avatar's own disc are the wrappers at opacity 1 inside it, and both hide.
+      // The capsule is the pill: Dropdown's whole-subtree fader around it is a
+      // pass-through, the capsule's pane and the avatar's own disc are the wrappers
+      // at opacity 1 inside it (both hide on the material curve), and the capsule's
+      // foreground (the avatar's glyph, the identity column, the chevron) takes the
+      // label's fade as ink of its own.
       const fader = capsule.firstElementChild as HTMLElement;
       expect(inlineOpacity(fader)).toBe("1");
       const panes = Array.from(fader.querySelectorAll("*")).filter((n) => (n as HTMLElement).style.opacity === "1" && (n as HTMLElement).style.zIndex === "-1");
       expect(panes.length).toBe(2);
+      const identity = screen.getByText("Rachel Chen").parentElement as HTMLElement;
+      const glyph = screen.getByText("RC").parentElement as HTMLElement;
+      expect(inlineOpacity(identity)).toBe("1");
+      expect(inlineOpacity(glyph)).toBe("1");
       await openMenu(capsule, clock);
-      expect(inlineOpacity(fader)).toBe("0");
+      expect(inlineOpacity(fader)).toBe("1");
       for (const pane of panes) expect(inlineOpacity(pane)).toBe("0");
+      expect(inlineOpacity(identity)).toBe("0");
+      expect(inlineOpacity(glyph)).toBe("0");
       account.unmount();
 
       const bar = render(glass(<Navbar brand="Canvas" links={["Home", "Docs"]} />));
@@ -439,7 +459,8 @@ describe("the trigger hand-off on the other menu owners", () => {
     const clock = animationClock();
     try {
       const button = screen.getByRole("button", { name: "Details" });
-      await handsOffWhole(button, faderOf(button), paneOf(button), "dialog", clock, () => fireEvent.click(button));
+      expect(inlineOpacity(faderOf(button))).toBe("1");
+      await handsOffWhole(button, labelOf(button), paneOf(button), "dialog", clock, () => fireEvent.click(button));
     } finally { view.unmount(); clock.restore(); measure.mockRestore(); }
   }, HANDOFF_TIMEOUT);
 
@@ -472,6 +493,10 @@ describe("the trigger hand-off on the other menu owners", () => {
       }
       expect(hidden).toBeGreaterThan(3);
       expect(inlineOpacity(materialWrapper)).toBe("1");
+      for (let step = 0; step < 120 && inlineOpacity(label) !== "1"; step++) {
+        clock.advance(16);
+        expect(inlineOpacity(materialWrapper)).toBe("1");
+      }
       expect(inlineOpacity(label)).toBe("1");
     } finally { view.unmount(); clock.restore(); measure.mockRestore(); }
   }, HANDOFF_TIMEOUT);

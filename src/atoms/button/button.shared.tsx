@@ -2,14 +2,17 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { forwardRef, type ReactNode } from "react";
 import {
   ActivityIndicator,
+  Animated,
   type GestureResponderEvent,
   type MouseEvent,
   type NativeSyntheticEvent,
   type TargetedEvent,
+  type ViewStyle,
 } from "react-native";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { primaryText } from "../../style/primary-text.js";
 import { View, Pressable, RippleClip, Text, useMinTargetSlop, useSizing, type LayoutStyle, type MeasureProps, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import { handoffInk, usePopupHandoffPill } from "../../style/popup-handoff.js";
 import { type ButtonSkin, type Intent, type Size, FG_TOKEN } from "./button.styles.js";
 
 // Shared Button shell. The structure (Pressable + optional loading spinner +
@@ -141,6 +144,8 @@ export function createButton(skin: ButtonSkin) {
     // material, the intent's foreground on top); `secondary` and `outline` take the
     // plain control material; `ghost` and `link` have no surface and stay bare.
     const puck = isGlass(theme) && intent !== "ghost" && intent !== "link";
+    // The hand-off channel when the button is a Dropdown-class trigger (null otherwise).
+    const pill = usePopupHandoffPill();
     const brand = intent === "primary" ? tokens.primary : intent === "destructive" ? tokens.destructive : undefined;
     const ripple = skin.ripple ? skin.ripple(tokens, intent) : undefined;
     // The rounded shape the ripple is clipped to (Android only; undefined on iOS/web). A bounded
@@ -196,20 +201,27 @@ export function createButton(skin: ButtonSkin) {
             !puck && skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
           ]}
         >
-          {({ pressed }) => <>
-            {puck ? <GlassPane layer="control" shape={container} brand={brand} interactive={!(disabled || loading)} /> : null}
-            <View style={[
-              { flexDirection: container.flexDirection, alignItems: container.alignItems, justifyContent: container.justifyContent, gap: container.gap, flexShrink: 1 },
-              // Dim the foreground independently of native material feedback.
-              // Keep this row in every mode to retain foreground child state.
-              puck ? { opacity: pressed && skin.pressedOpacity != null ? skin.pressedOpacity : container.opacity ?? 1 } : null,
-            ]}>
+          {({ pressed }) => {
+            const row: ViewStyle = { flexDirection: container.flexDirection, alignItems: container.alignItems, justifyContent: container.justifyContent, gap: container.gap, flexShrink: 1 };
+            // Dim the foreground independently of native material feedback. Keep this
+            // row in every mode to retain foreground child state.
+            const dim = puck ? (pressed && skin.pressedOpacity != null ? skin.pressedOpacity : typeof container.opacity === "number" ? container.opacity : 1) : null;
+            const foreground = <>
               {loading ? <ActivityIndicator size="small" color={intent === "link" ? primaryText(tokens) : tokens[FG_TOKEN[intent]]} /> : null}
               {!loading && iconLeft != null ? iconLeft : null}
               {children != null ? <Text style={skin.label(tokens, intent, size)}>{children}</Text> : null}
               {!loading && iconRight != null ? iconRight : null}
-            </View>
-          </>}
+            </>;
+            return <>
+              {puck ? <GlassPane layer="control" shape={container} brand={brand} interactive={!(disabled || loading)} /> : null}
+              {/* As a Dropdown-class trigger the button is the pill: its pane hides and
+                  re-forms on the hand-off's material curve, and its foreground takes the
+                  label's fade as ink of its own (never a fader over the pane). */}
+              {pill
+                ? <Animated.View style={[row, handoffInk(pill, dim ?? 1)]}>{foreground}</Animated.View>
+                : <View style={[row, dim == null ? null : { opacity: dim }]}>{foreground}</View>}
+            </>;
+          }}
         </Pressable>
       </RippleClip>
     );

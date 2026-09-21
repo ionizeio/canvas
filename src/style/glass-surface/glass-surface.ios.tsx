@@ -2,10 +2,11 @@
 import { useContext } from "react";
 import { Animated } from "react-native";
 import { useTheme } from "../theme.js";
+import { MaterialMotionContext } from "../popup-motion.js";
 import { FrostView, LiquidView, useMaterialCapabilities } from "./material-runtime.ios.js";
 import { resolveMaterial } from "./material-resolution.js";
 import {
-  GlassBox, CLEAR_INTENSITY, MaterialOriginContext, brandOverMaterial, clearSurfaceTint, contrastBorder, SHEER_FILL_OPACITY, materialFill,
+  GlassBox, CLEAR_INTENSITY, MaterialOriginContext, presentOpacity, brandOverMaterial, clearSurfaceTint, contrastBorder, SHEER_FILL_OPACITY, materialFill,
   surfaceUnderFill, surfaceIntensity, useMaterialFill, useSpecularRim, type GlassSurfaceProps,
 } from "./glass-surface.shared.js";
 
@@ -32,8 +33,13 @@ export function GlassSurface(props: GlassSurfaceProps) {
   // cross-fading on the popup's travel (a sheer surface is content-only, so the sheer
   // opacity and the blend never meet).
   const origin = useContext(MaterialOriginContext);
-  const fillLayer = <Animated.View style={[fill, { backgroundColor: surfaceUnderFill(theme.glass, layer, brand, tint ?? (clear && brand == null ? clearSurfaceTint(theme.tokens, theme.dark) : undefined), theme.tokens.background), opacity: origin ? origin.blend.own : translucent ? SHEER_FILL_OPACITY : 1 }]} />;
-  const originLayer = origin ? <Animated.View style={[fill, { backgroundColor: surfaceUnderFill(theme.glass, origin.layer, undefined, undefined, theme.tokens.background), opacity: origin.blend.trigger }]} /> : null;
+  // A moving material is born faint: its under-fills ride the popup's presence (see
+  // MaterialMotionContext); Apple's glass itself is never at a partial alpha (UIKit
+  // drops a visual effect under one), and the frost's rim stays whole, so only the
+  // fills thin.
+  const presence = useContext(MaterialMotionContext)?.presence;
+  const fillLayer = <Animated.View style={[fill, { backgroundColor: surfaceUnderFill(theme.glass, layer, brand, tint ?? (clear && brand == null ? clearSurfaceTint(theme.tokens, theme.dark) : undefined), theme.tokens.background), opacity: presentOpacity(origin ? origin.blend.own : translucent ? SHEER_FILL_OPACITY : 1, presence) }]} />;
+  const originLayer = origin ? <Animated.View style={[fill, { backgroundColor: surfaceUnderFill(theme.glass, origin.layer, undefined, undefined, theme.tokens.background), opacity: presentOpacity(origin.blend.trigger, presence) }]} /> : null;
   const paintsFill = !native || brand == null || tint != null;
   const over = !native && brandOverMaterial(brand, tint);
   const material = solid ? null : <>

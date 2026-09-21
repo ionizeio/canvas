@@ -55,6 +55,9 @@ export const useOverlayAnchor = () => useContext(OverlaySideContext);
 // A transparent layer filling the outlet: it catches a tap anywhere off the card
 // and dismisses. Transparent (no fill) — anchored menus don't dim the page.
 const BACKDROP: ViewStyle = { position: "absolute", top: 0, right: 0, bottom: 0, left: 0 };
+// The rows' focus wrapper (see PopupCard): shrinkable like the rows' host above it,
+// so a capped card's scrollport still shrinks to the cap through it.
+const rowsFocus: ViewStyle = { flexShrink: 1, minHeight: 0 };
 
 export interface AnchoredOverlayProps {
   /** Whether the card is shown. */
@@ -248,6 +251,8 @@ function OverlayCard({
   ready = true,
   opening = 0,
   open = true,
+  foreground,
+  unclipped = false,
 }: {
   cardStyle?: StyleProp<ViewStyle>;
   opaque?: boolean;
@@ -267,6 +272,22 @@ function OverlayCard({
   ready?: boolean;
   opening?: number;
   open?: boolean;
+  /**
+   * The motion of the card's FOREGROUND (its decoration and its scrollport with the
+   * rows) while a liquid popup opens: the rows scale and fade with the material
+   * (`usePopupMotion`'s `content`). It wears a wrapper OUTSIDE the scrollport: the
+   * port clips to its own box, so rows scaled inside it toward a trigger above the
+   * card lost their top rows at the port's edge (the first row was missing from
+   * every birth frame of the 2026-09-20 recordings). Absent, the foreground is the
+   * plain tree, byte for byte.
+   */
+  foreground?: Animated.WithAnimatedValue<ViewStyle>;
+  /**
+   * Whether the host's own clip is lifted: a foreground travelling toward its
+   * trigger leaves the card's box, and a skin that clips its rows to its corners
+   * (the iOS menu) would cut it there. Lifted only while the foreground moves.
+   */
+  unclipped?: boolean;
 }) {
   // Latch the callback so the usual fresh-closure-per-render caller cannot re-arm
   // the effect; it must fire once per opening, not once per render.
@@ -289,9 +310,21 @@ function OverlayCard({
   // theming surface, and no glass is hand-painted anywhere.
   const content = ownsScroll ? children : <OverlayScrollView>{children}</OverlayScrollView>;
   if (opaque) return <PlainSurface style={cardStyle} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape}>{decoration}{content}</PlainSurface>;
-  if (beside) return <PlainSurface style={hostStyleBesideMaterial(cardStyle)} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape}>{decoration}{content}</PlainSurface>;
+  // The foreground wrapper is always in a liquid card's tree, the identity while the
+  // card has no motion (unmeasured, reduced motion, at rest): a wrapper that appeared
+  // with the first measurement would remount the rows and their editor mid-opening.
+  if (beside) return (
+    <PlainSurface style={[hostStyleBesideMaterial(cardStyle), unclipped ? UNCLIPPED : null]} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape}>
+      <Animated.View style={[FOREGROUND, foreground ?? null]}>{decoration}{content}</Animated.View>
+    </PlainSurface>
+  );
   return <GlassSurface layer={dense ? "dense" : "functional"} style={cardStyle} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape}>{decoration}{content}</GlassSurface>;
 }
+
+// The moving foreground's wrapper passes the card's sizing through to the scrollport
+// (a content-sized port that shrinks to the card's cap and never grows).
+const FOREGROUND: ViewStyle = { flexShrink: 1, minHeight: 0 };
+const UNCLIPPED: ViewStyle = { overflow: "visible" };
 
 // Readiness inside the card is the Entrance's own layout readiness AND the
 // material's: a solid card (no material motion) still waits for its layout
@@ -343,7 +376,7 @@ function PopupCard({
   // a re-render underneath (a select clearing the filter) cannot resize the exit.
   // An OPENING pane keeps its rows in the tree: they scale and fade in with the
   // material (`motion.content`), inert and hidden from assistive tech until it settles.
-  const freeze = size.width > 0 && size.height > 0 && !open && !motion.readable;
+  const freeze = size.width > 0 && size.height > 0 && !open && !motion.readable && !motion.retiring;
   const frozen = useRef(freeze);
   frozen.current = freeze;
   const visibleReport = useMemo(() => report ? {
@@ -356,7 +389,7 @@ function PopupCard({
   const blend = useMemo(() => motion.blend && originLayer ? { layer: originLayer, blend: motion.blend } : null, [motion.blend, originLayer]);
   // The material's motion: the frame it wears, and the measured card it settles at
   // (the web lens sizes its one filter definition for the latter, see GlassLensLayer).
-  const moving = useMemo(() => motion.frame ? { frame: motion.frame, rest: size } : null, [motion.frame, size]);
+  const moving = useMemo(() => motion.frame && motion.presence ? { frame: motion.frame, rest: size, presence: motion.presence } : null, [motion.frame, motion.presence, size]);
   const material = liquid ? (
     <MaterialMotionContext.Provider value={moving}>
       <MaterialOriginContext.Provider value={blend}>
@@ -376,13 +409,25 @@ function PopupCard({
             dense={dense} beside={liquid} onMount={onMount} opening={opening} open={open}
             ownsScroll={ownsScroll} decoration={decoration} onLayout={measure}
             onAccessibilityEscape={open && motion.readable ? onAccessibilityEscape : undefined}
+            foreground={motion.content ?? undefined} unclipped={motion.content != null && !motion.readable}
           >
-            <Animated.View
-              style={[{ flexShrink: 1, display: freeze ? "none" : "flex", pointerEvents: motion.readable ? "auto" : "none" }, motion.content ?? { opacity: motion.readable ? 1 : 0 }]}
+            <View
+              style={[{ flexShrink: 1, display: freeze ? "none" : "flex", pointerEvents: motion.readable ? "auto" : "none" }, motion.content ? null : { opacity: motion.readable ? 1 : 0 }]}
               accessibilityElementsHidden={!motion.readable}
               importantForAccessibility={motion.readable ? "auto" : "no-hide-descendants"}
               aria-hidden={!motion.readable}
-            >{children}</Animated.View>
+            >
+              {/* The rows are blurred at the droplet's birth and sharpen on their own
+                  clock, and blur and fade into ghosts on a dismiss (they stay in the tree
+                  while `retiring`). The blur is a `filter`, which no native driver
+                  animates and which may not share a node with the native-driven opacity
+                  and transform of the foreground, so it wears a wrapper of its own on
+                  the JS driver (a handful of frames per opening and per dismiss). The
+                  wrapper is always in the tree (a wrapper that appeared with the first
+                  measurement would remount the rows mid-opening) and is the identity,
+                  no filter, at rest and in a card that is not moving. */}
+              <Animated.View style={[rowsFocus, motion.focus ? { filter: motion.focus.filter, opacity: motion.focus.opacity } as unknown as ViewStyle : null]}>{children}</Animated.View>
+            </View>
           </OverlayCard>
           </OverlayScrollContext.Provider>
         </MaterialReadiness>
@@ -482,10 +527,10 @@ export function placeOverlay(
  * corner the trigger reported, capped at the capsule the box allows. Undefined until
  * the card's position is known, or when the popup does not take the trigger as origin.
  */
-export function popupOrigin(rect: Rect | null, cardLeft: number | undefined, cardTop: number | undefined, radius: number | undefined): PopupOrigin | undefined {
+export function popupOrigin(rect: Rect | null, cardLeft: number | undefined, cardTop: number | undefined, radius: number | undefined, hangs = true): PopupOrigin | undefined {
   if (!rect || cardLeft == null || cardTop == null) return undefined;
   const capsule = Math.min(rect.width, rect.height) / 2;
-  return { x: rect.x - cardLeft, y: rect.y - cardTop, width: rect.width, height: rect.height, radius: Math.min(radius ?? capsule, capsule) };
+  return { x: rect.x - cardLeft, y: rect.y - cardTop, width: rect.width, height: rect.height, radius: Math.min(radius ?? capsule, capsule), hangs };
 }
 
 function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, triggerRef, gap, cardStyle, dismissable, cardWidth, centered, preferSide, alignEnd, rtl, opaque, dense, onCardMount, ownsScroll, children, decoration, liquid = false, handoff }: HostedProps) {
@@ -679,9 +724,9 @@ function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, t
   // pill's corner (never past a capsule's). Memoised on its numbers so the motion
   // graph is not rebuilt by a render that moved nothing.
   const origin = useMemo<PopupOrigin | undefined>(
-    () => popupOrigin(handoff?.fromTrigger ? rect : null, cardLeft, cardTop, handoff?.shape.current?.radius),
+    () => popupOrigin(handoff?.fromTrigger ? rect : null, cardLeft, cardTop, handoff?.shape.current?.radius, !handoff?.field),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [handoff?.fromTrigger, rect?.x, rect?.y, rect?.width, rect?.height, cardLeft, cardTop],
+    [handoff?.fromTrigger, handoff?.field, rect?.x, rect?.y, rect?.width, rect?.height, cardLeft, cardTop],
   );
 
   if (!presence.present) return null;
