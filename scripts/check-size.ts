@@ -79,7 +79,12 @@ const CORE_FILE_GZIP_OVERRIDES: Record<string, number> = {
 // follow (Dropdown, Select, Popover, RowMenu, Autocomplete, PhoneInput, Command)
 // add imports, not modules, and the remaining moving selections (Navbar, Sidebar,
 // Pagination, Calendar, Carousel) are expected inside that slack.
-export const JS_MAX_GZIP = 229_376; // 224 KB
+//
+// Lowered from 224KB on 2026-09-22, when the liquid motion system, the Entrance
+// spring and the Backdrop organism were removed: measured after at 204,074 /
+// 204,399 / 206,693B (web / iOS / Android), under even the 208KB cap the foundation
+// had displaced. 216KB keeps the same ~7% headroom over the measured figure.
+export const JS_MAX_GZIP = 221_184; // 216 KB
 
 export interface JavaScriptBudget {
   label: string;
@@ -165,14 +170,21 @@ export interface JavaScriptBudget {
 // field and deflates back onto it as the field's own material), about 70B gzip on the
 // lens and frost platforms over the 10,240B ceiling, which had 0 to 60B of headroom
 // left. The Button ceiling moved from 10,240 to 10,752B (4% headroom).
+// Every consumer shrank on 2026-09-22 when the liquid motion system went (the
+// moving selections, the popup presentation and hand-off, the Entrance spring, the
+// material motion seam and the four popup contexts in GlassBox): measured after at
+// Button 8,710 / 6,733 / 8,652B, Input 38,033 / 36,919 / 38,114B, DataTable 46,262 /
+// 44,522 / 46,347B, StackedList 52,075 / 50,386 / 52,159B. The ceilings moved to
+// 9,472 / 39,936 / 49,664 / 55,808B: ~7% headroom over the measured figures for
+// Button, DataTable and StackedList (Input keeps the ceiling it never grew into).
 // Fixed ceilings leave room for deliberate growth while catching a heavy import.
 // These are independent budgets, not a combined total: shared modules legitimately
 // occur in more than one consumer. Changes require a fresh measurement and rationale.
 export const NAMED_IMPORT_BUDGETS: readonly JavaScriptBudget[] = [
-  { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 10_752, requiredExports: ["Button", "ThemeProvider"] },
+  { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 9_472, requiredExports: ["Button", "ThemeProvider"] },
   { label: "Input + ThemeProvider", entry: "scripts/size-fixtures/input.ts", maxGzip: 39_936, requiredExports: ["Input", "ThemeProvider"] },
-  { label: "DataTable + ThemeProvider", entry: "scripts/size-fixtures/data-table.ts", maxGzip: 51_200, requiredExports: ["DataTable", "ThemeProvider"] },
-  { label: "StackedList + ThemeProvider", entry: "scripts/size-fixtures/stacked-list.ts", maxGzip: 60_416, requiredExports: ["StackedList", "ThemeProvider"] },
+  { label: "DataTable + ThemeProvider", entry: "scripts/size-fixtures/data-table.ts", maxGzip: 49_664, requiredExports: ["DataTable", "ThemeProvider"] },
+  { label: "StackedList + ThemeProvider", entry: "scripts/size-fixtures/stacked-list.ts", maxGzip: 55_808, requiredExports: ["StackedList", "ThemeProvider"] },
 ];
 
 export interface JavaScriptSize extends JavaScriptBudget {

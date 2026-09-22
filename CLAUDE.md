@@ -388,43 +388,52 @@ styling escape hatches":
 those ban rebuilding a component's look; this bans rebuilding a component's
 anatomy around it.
 
-## Visual effects and motion: the tuning harness
+## Motion: what stays, what is gone, and the tuning harness
 
-Effects judged by eye (the liquid motion, glass and its lens, gradients, parallax,
-any spring or gesture) go through the global `tuning-harness` skill: record the
-reference in the app first and write its card, harness for the inner loop against
-recordings and numeric traces, then land the effect on the shipped surface (the
-docs page or app screen the user opens, in the mode they will see) and compare
-that recording against the card, blind, until nothing differs; log every run,
-docs screenshot last. In this repo the harness is the hidden `/testing/*` routes
-under `docs/src/app/(home)/testing/`, rendering the fixture bodies in
-`examples/starter/smoke/fixtures/` (shared with the sealed smoke app); the liquid
-glass one is `/testing/materials` and its isolated probe is
-`/testing/materials?geometry=1`, the popups are `/testing/popup`. A harness run
-proves the mechanism only; the row that closes the loop is recorded on the real
-page (`components/<slug>`, web under the header's Glass toggle since the web
-default is solid, and the installed docs app on a simulator). The tunables live in
-one table per effect (`PROFILES` and the spring constants in
-`src/style/liquid-motion.ts`, `POPUP_PRESENTATION` in `src/style/popup-motion.tsx`),
-never in a public value prop. The evidence log is `tools/native/liquid-motion.md`;
-its `## References` section holds the reference cards (the native iOS 26 menu
-behind the docs header's hamburger is `ios-native-menu`, strips under
-`tools/native/reference/`), and every row under the version 2 table names its
-`Surface` and its `Versus reference` verdict. `.tuning-harness.json` at the repo
-root (version 2) tells the global push gate which files are tunables
-(`src/style/liquid-motion*.ts`, `src/style/popup-motion.tsx`,
-`src/style/motion.ts`, `src/style/glass-surface/glass-lens.ts`, the docs brand
-scenes): a push whose newest tunable change has no evidence row in or after it is
-refused, and so is a row with an empty `Surface` or `Versus reference` cell or a
-`matches` written on a harness route. A pure refactor of those files with no
-visual change carries the commit trailer `Tuning-evidence: unchanged`. A report may
-claim the effect is done or matches only from a shipped-surface row with no open
-difference; open differences lead the report, and a card item that cannot be
-matched goes to the user as a decision, never into the log as "by design". Why: a
-single screenshot cannot show whether a spring overshoots or a recoil lands on
-time, and a harness run cannot show that the real component got the effect at all;
-on 2026-09-20 the harness-only loop reported the popup hand-off done while the
-docs pages did not have it.
+On 2026-09-21 the owner removed the liquid glass motion outright: the moving
+selections (the pill that travelled between tabs, rows, pages, days and dots), the
+liquid popup presentation (the droplet, the button-to-menu and field hand-offs, the
+cover and the spring-back), the Entrance spring, the Backdrop organism with its Skia
+and WebGL paths, and the docs' decorative scenes. Do not bring any of it back, in any
+form, without a new decision from the owner: a selected state paints where it is
+(a static control-layer pane under glass, the skin's own fill in solid mode), an
+anchored card appears in place once its placement is measured, and no decorative
+loop runs behind a page. The motion that stays is functional: the Spinner, the
+Skeleton shimmer, the indeterminate Progress sweep and the InputOTP caret (all on the
+loop primitive, `src/style/loop.tsx`, the native driver natively and a compositor CSS
+animation on the web, so nothing commits through React per frame), the floating
+labels, the Accordion, Collapsible and Reveal transitions, the Drawer and ActionSheet
+slides, the Sidebar drill-down, the native ripple and the router's own transitions.
+`test/design-rules-source.test.ts` keeps `Animated.loop(` inside `loop-native.ts` and
+every transition between 100 and 700 ms. Why: react-native-web's Animated JS driver
+is one React commit per frame at default priority and React never expires a retry
+lane, so a spring running beside a Suspense boundary held the whole body back (the
+sidebar pill cost every component page 1.3 s per click); the owner judged the
+animations not worth that and had them deleted rather than re-engineered.
+
+Effects that remain judged by eye (the glass material and its lens, a gradient, a
+new functional transition) still go through the global `tuning-harness` skill:
+record the reference first and write its card, harness for the inner loop, land the
+effect on the shipped surface (the docs page or app screen the user opens, in the
+mode they will see) and compare against the card, blind, until nothing differs; log
+every run, docs screenshot last. In this repo the harness is the hidden `/testing/*`
+routes under `docs/src/app/(home)/testing/`, rendering the fixture bodies in
+`examples/starter/smoke/fixtures/` (shared with the sealed smoke app); the material
+one is `/testing/materials`. The tunables live in one table per effect, never in a
+public value prop. The evidence log is `tools/native/liquid-motion.md`: its sections
+up to the removal are HISTORY of deleted code, its `## References` section keeps the
+`ios-native-menu` card (strips under `tools/native/reference/`) as the record of what
+that work was judged against, and every row under a version 2 table names its
+`Surface` and its `Versus reference` verdict. `.tuning-harness.json` at the repo root
+(version 2) tells the global push gate which files are tunables (`src/style/motion.ts`
+and `src/style/glass-surface/glass-lens.ts`): a push whose newest tunable change has
+no evidence row in or after it is refused, and so is a row with an empty `Surface` or
+`Versus reference` cell or a `matches` written on a harness route. A pure refactor of
+those files with no visual change carries the commit trailer `Tuning-evidence:
+unchanged`. A report may claim an effect is done or matches only from a
+shipped-surface row with no open difference; open differences lead the report, and a
+card item that cannot be matched goes to the user as a decision, never into the log
+as "by design".
 
 ## Preview links on every completed piece of work
 

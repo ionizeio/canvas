@@ -1,34 +1,19 @@
 # Liquid motion evidence
 
-The `motion` Playwright project runs the existing material lifecycle fixture with
-Reduce Motion disabled. Other projects retain their deterministic reduced-motion
-baseline. Run against the running docs app, or omit `E2E_BASE_URL` to use the web
-export after building it:
+This log is the record of the liquid glass motion work of 2026-09-17 to 2026-09-21 and
+of its removal on 2026-09-22 (the section "The liquid motion system is removed" at the
+end). Everything between the two is HISTORY: the moving selections, the liquid popup
+presentation with its hand-offs, the Entrance spring, the Backdrop and the docs scenes
+these rows describe no longer exist in the kit, and the `motion` Playwright project,
+the `captureMaterialMotion` sampler and the `/testing/popup`, `/testing/tabs`,
+`/testing/backdrop`, `/testing/lattice`, `/testing/currents` and `/testing/orbit`
+harness routes went with them. The `## References` section keeps the `ios-native-menu`
+card as the record of what the deleted work was judged against.
 
-```sh
-E2E_BASE_URL=http://localhost:8081 bunx playwright test --project motion --workers 1 --output /tmp/canvas-liquid-motion
-```
-
-Each pilot interaction records real `requestAnimationFrame` bounds, the semantic
-host's bounds, browser identity, viewport, motion preference, scheme and root font
-size. A video plus rest/settled screenshots remain in the chosen output directory.
-The JSON is also saved directly, so choosing a console-only reporter does not
-discard it. No fake animation clock, forced endpoint, screenshot animation
-disabling or browser skin label establishes the motion result.
-
-The tests cover ButtonGroup selection and held lift, Switch toggle, and Slider
-drag in light and dark glass. They verify actual shape change, immediate selected
-or value semantics, still final geometry, retained material hosts and no increase
-in the number of retained browser lens definitions. ButtonGroup also checks that
-the semantic row's origin and height remain fixed. This does not establish native
-material fidelity, GPU allocation totals, focus behavior or every responsive case.
-
-`captureMaterialMotion` in `e2e/support/material-evidence.ts` can sample the
-decorative host of each new motion owner. Keep the foreground locator on the
-actual semantic panel or control, not an animated wrapper. Start observation before
-input. For popup opening, arrange the harness so it can observe initial material
-mounting as well as visible bounds. A retained exit needs a separate recording
-that checks logical closure and semantic exclusion while decoration remains.
+A new effect judged by eye (the material and its lens, a functional transition) still
+records here under a version 2 table (a `Surface` and a `Versus reference` cell per
+row), recorded with the tuning-harness skill's `record-motion.mjs` on the shipped page
+or screen; the remaining harness route is `/testing/materials`.
 
 ## Native capture
 
@@ -1021,3 +1006,4 @@ state at rest, and nothing commits through React per frame at idle.
 | 2026-09-22 | REMOVAL 1 of 4: the moving selections. `src/style/liquid-motion.ts`, `liquid-motion-geometry.ts` and `measured-selection.tsx` deleted; Tabs, TabBar, Sidebar, Navbar, Pagination, Calendar, Carousel, Switch, Slider and the ButtonGroup segment paint their selected state in place (a static control-layer pane under glass, the skin's own fill in solid mode) | Chromium (Playwright 1.60 headed, 1440x900, dark), the docs dev server on 8081 serving this working tree | the phase 1 tree (this commit) | `/components/button` clicking the sidebar's Badge row, web, Glass (the docs default); screenshots of `/components/tabs`, `pagination`, `calendar`, `switch`, `tab-bar`, `button-group` in Glass and `?surface=solid` | none: the effect is removed | 134 Hz rAF in the profiler's unthrottled Chromium; idle 0 React commits and 0 inline style writes per second | click to the examples 339 ms (78 ms skeleton up, chunk 86 to 98 ms, 339 ms examples) against 1471 ms with the pill's spring, 15 React commits against 398; the selected tab, page, day, knob, destination and segment sit still at rest in both modes, the Calendar's 24th and the Pagination's 2 are brand pucks, the Sidebar's active row a tinted pane | no reference: the effect is removed by the owner's decision; the check is that nothing moves and nothing commits per frame | session scratchpad `shots1/*.png` and the profile run (not kept in the repo) |
 | 2026-09-22 | REMOVAL 2 of 4: the liquid popups and the Entrance spring. `popup-motion.tsx`, `popup-handoff.tsx`, `liquid-anchored-overlay.tsx`, `portal-activation.ts` and `autocomplete-echo.tsx` deleted; AnchoredOverlay renders its card through Entrance, now a readiness hold with no motion; GlassBox is the pre-motion host plus clip box again; the 13 popup consumers open a plain dense or functional card under a trigger that stays where it is | Chromium (Playwright 1.60 headed, 1440x1000, dark) on the docs dev server; the iPhone 17 Pro simulator (iOS 26, native Liquid Glass) running the docs dev app against the same Metro | the phase 2 tree (this commit) | `/components/dropdown`, `select`, `autocomplete`, `popover`, `dialog`, `avatar/accountmenu`, web, Glass; `components/dropdown` and `components/select` on iOS | none: the effect is removed | 7 to 12 React commits in the 1.5 s after each click (the open itself), none per frame | every popup opens as a card beside its trigger with the trigger still painted; the Dropdown menu and the Select list on iOS render through the native GlassView under the unchanged trigger | no reference: the effect is removed by the owner's decision; the check is that the card appears in place and nothing commits per frame | session scratchpad `popups/*.png` and the two simulator screenshots (not kept in the repo) |
 | 2026-09-22 | REMOVAL 3 of 4: the Backdrop organism (its clock, layers, SVG renderer, the `@shopify/react-native-skia` GPU probe and the WebGL context pooling of its host) is deleted from the kit with its docs page and fixtures, and the docs' decorative scenes (the Lattice, the spectral currents, the hero orbit, the catalog pulse, the three-looks auto-advance and fade) with their harness routes and tunables; the docs canvases paint the theme background in both surface modes | Chromium (Playwright 1.60 headed, 1440x1000 and 390x844, dark) on the docs dev server; the iPhone 17 Pro simulator (iOS 26) running the docs dev app against the same Metro | the phase 3 tree (this commit) | `/` (home, Glass and `?surface=solid`, desktop and phone width), `/components`, `/components/dropdown`, web; `components/tabs` on iOS | none: the scenes are removed | idle 0 React commits and 0 inline style writes per second on the component pages (unchanged since phase 1) | the home hero is copy and CTAs on the theme background, the three-looks strip steps on its chevrons only, every page paints `tokens.background` under its glass surfaces (the first pass left the canvases transparent and the dark scheme's text sat on a white document: fixed before this row), no console errors on the five pages | no reference: the scenes are removed by the owner's decision | session scratchpad `pages2/*.png` and the simulator screenshot (not kept in the repo) |
+| 2026-09-22 | REMOVAL 4 of 4, housekeeping: CLAUDE.md's motion section rewritten for the kit without the liquid motion, this log's introduction turned into the history note, `.tuning-harness.json` down to `motion.ts` and `glass-lens.ts` with `/testing/materials` as the one harness route, the size ceilings lowered to the measured figures (whole kit 216 KB, Button 9,472 B, DataTable 49,664 B, StackedList 55,808 B), the Backdrop visual baselines deleted, the patch changeset written | the kit's size fixtures under esbuild (`bun run check-size`); the docs web export (`bun run build:web`, 657 pages) | the phase 4 tree (this commit) | none: no shipped surface changes in this commit (tooling, docs text and budgets only) | none | none | whole kit 204,074 / 204,399 / 206,693 B gzip (web / iOS / Android) against 212,411 / 212,852 / 214,493 B with the motion; Button 8,710 / 6,733 / 8,652 B against 10,308 / 8,327 / 10,247 B; the export builds and every page paints first | no reference: a bookkeeping commit | none |
