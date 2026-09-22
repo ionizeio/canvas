@@ -79,12 +79,6 @@ plugin({
     // Browser material capability is resolved separately from native optional peers.
     build.module("expo-blur", () => ({ exports: {}, loader: "object" }));
     build.module("expo-glass-effect", () => ({ exports: {}, loader: "object" }));
-    // @shopify/react-native-skia is an OPTIONAL peer for Backdrop's GPU renderer.
-    // An empty stub is the interesting case rather than a lazy one: it reproduces
-    // "module resolves but no drawing backend is live", which is exactly what a web
-    // consumer sees before CanvasKit finishes loading. Backdrop must render its SVG
-    // baseline in that window, not a blank screen.
-    build.module("@shopify/react-native-skia", () => ({ exports: {}, loader: "object" }));
     // react-native-svg's native entry imports deep RN internals RNW lacks; stub it with
     // no-op elements (the kit's Icon/Spinner/Popover draw with it, but behavior tests assert
     // logic/interaction, not the rendered vector paths).

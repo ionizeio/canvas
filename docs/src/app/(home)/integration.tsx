@@ -191,12 +191,6 @@ export default function IntegrationScreen() {
             <InlineCode>expo-clipboard</InlineCode>: backs the <InlineCode>CodeBlock</InlineCode> copy chip on native;
             the web covers copy with <InlineCode>navigator.clipboard</InlineCode> either way.
           </P>
-          <P muted>
-            <InlineCode>@shopify/react-native-skia</InlineCode>: a GPU backend a future <InlineCode>Backdrop</InlineCode>{" "}
-            renderer can upgrade to; <InlineCode>Backdrop</InlineCode> draws fully through{" "}
-            <InlineCode>react-native-svg</InlineCode> without it (Metro apps that skip it stub the module with one line,
-            see the Backdrop docs).
-          </P>
           <CodeBlock code={OPTIONAL_INSTALL} />
         </Section>
 

@@ -31,7 +31,7 @@ function GroupTable({ group }: { group: PropGroup }) {
   // real frost in glass/frost mode (DocsSurface routes through the kit GlassSurface),
   // exactly like the live-example stage and the do/don't cards. Without it the table
   // is a clear hole: its rows are transparent between the muted stripes, so in frost
-  // mode the Canvas Lattice backdrop bleeds straight through and washes the rows out.
+  // mode the page behind bleeds straight through and washes the rows out.
   // The surface owns the rounded bordered frame now, so the table drops its own
   // `bordered` outline to avoid doubling it and passes `attached` instead: the
   // header band squares up to the surface's frame rather than floating as a

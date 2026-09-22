@@ -15,6 +15,26 @@ export interface FrostProps {
   blurTarget?: React.RefObject<import("react-native").View | null>;
 }
 
+// Optional peers are loaded through a GUARDED require, never a static import, AND the
+// require sits directly inside the try block with nothing between the two. Both halves
+// are load-bearing.
+//
+// The static-import half: `scripts/verify-package.ts` fails the build on a static
+// import of an optional peer, because a consumer without the package installed would
+// otherwise get an unresolved module.
+//
+// The placement half: Metro decides whether a dependency is optional in
+// `isOptionalDependency` (metro/src/ModuleGraph/worker/collectDependencies.js). It
+// walks up from the require call and, at the FIRST enclosing block statement, returns
+// whether that block belongs to a TryStatement. It does not keep climbing. So wrapping
+// the call in `if (typeof require === "function")` interposes the IF's own block, the
+// answer comes back false, and Metro registers a REQUIRED edge: a consumer who skipped
+// the optional peer then fails to bundle with "Unable to resolve module". Verified
+// against metro 0.84.4 by running the collector on both shapes; the guarded form
+// reports optional=undefined and the hoisted form reports optional=true. Expo enables
+// this via `allowOptionalDependencies: true` in @expo/metro-config. A `typeof` guard
+// would buy nothing anyway: where `require` is undefined the ReferenceError lands in
+// the same catch. Every other optional peer in the kit follows this shape.
 declare const require: (id: string) => unknown;
 export let FrostView: ComponentType<FrostProps> | undefined;
 export let requiresBlurTarget = false;

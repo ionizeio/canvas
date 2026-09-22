@@ -131,7 +131,6 @@ describe("animation length", () => {
     "src/atoms/progress/progress.shared.tsx",
     "src/atoms/skeleton/skeleton.shared.tsx",
     "src/atoms/input-otp/input-otp.shared.tsx",
-    "src/organisms/backdrop/backdrop-clock.ts",
     "src/style/loop-native.ts",
   ]);
 

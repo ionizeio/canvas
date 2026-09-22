@@ -110,13 +110,9 @@
     "expo-blur": "*",
     "expo-clipboard": "*",
     "expo-glass-effect": "*",
-    "@shopify/react-native-skia": ">=2",
     "@ionizeio/canvas-blur": "*"
   },
   "peerDependenciesMeta": {
-    "@shopify/react-native-skia": {
-      "optional": true
-    },
     "react-native-qrcode-svg": {
       "optional": true
     },

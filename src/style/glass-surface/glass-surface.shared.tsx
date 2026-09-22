@@ -98,8 +98,7 @@ export interface GlassSurfaceProps {
 // Android materials sample an explicitly safe native plane. An ancestor target
 // would create a render-node cycle, so OverlayProvider publishes its own content
 // target only to its sibling outlet. GlassModalBlurTarget bridges a window-level
-// target into a genuinely separate RN Modal window. BackdropHost may also expose
-// its separate decorative plane to inline content. Targetless surfaces resolve
+// target into a genuinely separate RN Modal window. Targetless surfaces resolve
 // to their complete solid skin. The optional capture integration owns demand,
 // readiness and resource release without changing the content host.
 export const GlassBlurTargetContext = createContext<RefObject<View | null> | null>(null);

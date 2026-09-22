@@ -10,7 +10,7 @@ declare const require: (id: string) => unknown;
 let RNQRCode: typeof RNQRCodeType | undefined;
 try {
   // Directly in the try block: an intervening `if` makes Metro treat this as
-  // a REQUIRED dependency. See src/organisms/backdrop/skia-runtime.ts.
+  // a REQUIRED dependency. See src/style/glass-surface/material-runtime.ts.
   const mod = require("react-native-qrcode-svg") as { default?: typeof RNQRCodeType } | typeof RNQRCodeType;
   RNQRCode = (mod as { default?: typeof RNQRCodeType }).default ?? (mod as typeof RNQRCodeType);
 } catch {

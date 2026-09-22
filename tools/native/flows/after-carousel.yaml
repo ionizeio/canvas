@@ -288,23 +288,6 @@ name: Sealed Canvas native candidate after measured drag
       - assertVisible:
           id: material-capture-stats
           text: 'Hosts: [1-9][0-9]*; active: [1-9][0-9]*; recordings: [1-9][0-9]*; frost: [1-9][0-9]*; listeners: [1-9][0-9]*'
-# Exercise a changing native capture, then let the scene become idle again.
-- tapOn:
-    id: material-animate
-- extendedWaitUntil:
-    visible:
-      id: material-backdrop-motion
-      text: Backdrop still
-    timeout: 10000
-- runFlow:
-    when:
-      platform: Android
-    commands:
-      - tapOn:
-          id: material-inspect
-      - assertVisible:
-          id: material-capture-stats
-          text: 'Hosts: [1-9][0-9]*; active: [1-9][0-9]*; recordings: [1-9][0-9]*; frost: [1-9][0-9]*; listeners: [1-9][0-9]*'
 - scrollUntilVisible:
     element:
       id: material-editor-identity
@@ -559,27 +542,3 @@ name: Sealed Canvas native candidate after measured drag
           id: material-capture-stats
           text: 'Hosts: [0-9]+; active: 0; recordings: [0-9]+; frost: 0; listeners: 0'
       - takeScreenshot: material-overlays-released
-# The Backdrop engine: a production-shaped sky parks, resumes and reports its trace.
-- openLink: canvas-smoke:///testing/backdrop
-- assertVisible:
-    id: backdrop-mode
-    text: Backdrop running
-- tapOn:
-    id: backdrop-toggle
-- assertVisible:
-    id: backdrop-mode
-    text: Backdrop still
-- takeScreenshot: backdrop-parked
-- tapOn:
-    id: backdrop-toggle
-- assertVisible:
-    id: backdrop-mode
-    text: Backdrop running
-- tapOn:
-    id: backdrop-sample
-- extendedWaitUntil:
-    visible:
-      id: backdrop-trace
-      text: 'Frames: [0-9]+; p50 [0-9.]+ ms; p95 [0-9.]+ ms; max [0-9.]+ ms; style writes/s: n/a; css animations: n/a'
-    timeout: 8000
-- takeScreenshot: backdrop-running-sampled

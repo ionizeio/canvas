@@ -1,12 +1,7 @@
 // Tooling metadata, not a public styling API. Material role is independent of
-// tint density, capability resolution, and whether an interaction animates.
+// tint density and capability resolution.
 export type MaterialRole = "static" | "liquid" | "inherited";
 export type MaterialTier = "atoms" | "molecules" | "organisms" | "charts" | "style";
-// "moving-selection": one measured glass surface travels between the component's
-// own targets (Tabs, TabBar, Navbar). "liquid-popup": the anchored panel opens and
-// closes through the kit's popup material lifecycle. Both are internal profiles
-// that follow the effective material; neither is a public styling axis.
-export type MotionProfile = "native-feedback" | "selection-pilot" | "moving-selection" | "liquid-popup" | "optional-profile" | "inherited";
 
 export interface MaterialCoverageEntry {
   name: string;
@@ -16,8 +11,6 @@ export interface MaterialCoverageEntry {
   roles: readonly MaterialRole[];
   /** The owned surface and context, including compound/inherited anatomy. */
   target: string;
-  /** Extra custom motion is never inferred from clickability or material. */
-  motion: MotionProfile;
   /** Existing unfilled variants must retain their anatomy in every mode. */
   unpaintedVariants: string;
   /** Required evidence recipes, not a claim of implementation or a test pass. */

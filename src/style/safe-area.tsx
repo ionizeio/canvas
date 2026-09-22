@@ -20,7 +20,7 @@ let SafeAreaView: SafeAreaViewComponent = View;
 let SafeAreaProvider: SafeAreaProviderComponent = View;
 try {
   // Directly in the try block: an intervening `if` makes Metro treat this as
-  // a REQUIRED dependency. See src/organisms/backdrop/skia-runtime.ts.
+  // a REQUIRED dependency. See src/style/glass-surface/material-runtime.ts.
   const mod = require("react-native-safe-area-context") as {
     SafeAreaView?: SafeAreaViewComponent;
     SafeAreaProvider?: SafeAreaProviderComponent;

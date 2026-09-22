@@ -417,11 +417,6 @@
             "icon": "more-horizontal"
           },
           {
-            "slug": "backdrop",
-            "label": "Backdrop",
-            "icon": "sparkles"
-          },
-          {
             "slug": "board",
             "label": "Board",
             "icon": "columns-2"

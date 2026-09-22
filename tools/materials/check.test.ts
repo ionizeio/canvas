@@ -11,7 +11,7 @@ const catalog = [{ slug: "field", category: "Atoms" }];
 const field: MaterialCoverageEntry = {
   name: "Field", tier: "atoms", family: "field", docsRoute: "components/field",
   roles: ["static"], target: "Stable field well; caret and text remain sharp.",
-  motion: "native-feedback", unpaintedVariants: "The label remains unpainted.",
+  unpaintedVariants: "The label remains unpainted.",
   verification: ["solid-appearance", "glass-appearance", "mode-switch", "accessibility-fallback", "runtime-capability", "semantic-state"],
 };
 
@@ -38,10 +38,6 @@ test("surface decisions require complete solid, fallback and both-direction expe
   expect(errors).toContain("Missing solid-appearance expectation for Field");
   expect(errors).toContain("Missing mode-switch expectation for Field");
   expect(errors).toContain("Missing accessibility-fallback expectation for Field");
-  expect(checkMaterialCoverage([api], catalog, [{ ...field, motion: "selection-pilot" }]).errors).toContain("Selection pilot lacks liquid role/motion verification: Field");
-  for (const motion of ["moving-selection", "liquid-popup"] as const) {
-    expect(checkMaterialCoverage([api], catalog, [{ ...field, motion }]).errors).toContain("Liquid profile lacks liquid role/motion verification: Field");
-  }
   const result = checkMaterialCoverage([api], catalog, [field]);
   expect(result.implementationVerified).toBe(false);
   expect(result.runtimeEvidence).toBe("not-recorded");
@@ -49,7 +45,7 @@ test("surface decisions require complete solid, fallback and both-direction expe
 
 test("inherited primitives require composition evidence without inventing surfaces", () => {
   const inherited: MaterialCoverageEntry = {
-    ...field, roles: ["inherited"], motion: "inherited",
+    ...field, roles: ["inherited"],
     target: "Unsurfaced layout host.", verification: ["inherited-composition", "semantic-state"],
   };
   expect(checkMaterialCoverage([api], catalog, [inherited]).errors).toEqual([]);

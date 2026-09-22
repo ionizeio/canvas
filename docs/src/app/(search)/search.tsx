@@ -7,7 +7,6 @@ import { View, Text, Pressable, GlassSurface, useTheme, alpha } from "@ionizeio/
 import { search } from "../../core/data/search";
 import type { SearchEntry } from "../../core/data/types";
 import { sans } from "../../ui/fonts";
-import { CanvasCurrents } from "../../brand/canvas-currents";
 
 // The Search tab's screen. On native (iOS/Android) the rightmost bottom tab opens this and the
 // nav bar hosts the system search field (a real UISearchController on iOS 26 / Material search on
@@ -42,16 +41,10 @@ function rankForBubble(query: string): SearchEntry[] {
 
 function NativeSearch() {
   const router = useRouter();
-  const { tokens, surface } = useTheme();
+  const { tokens } = useTheme();
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState("");
-  // True while THIS screen is the focused one (the active search session). The aurora is tied to
-  // this, not to whether results exist, so the wash is there the moment you enter search.
-  const [active, setActive] = useState(false);
   const results = useMemo(() => rankForBubble(query), [query]);
-  // In glass mode the bubble is translucent (real Liquid Glass on iOS 26, frost on fallback), so
-  // it needs color behind it to refract. In solid mode the bubble is opaque, so the wash is skipped.
-  const glass = surface === "glass";
   const showBubble = results.length > 0;
   const searchRef = useRef<SearchBarCommands>(null);
 
@@ -70,8 +63,7 @@ function NativeSearch() {
     };
   }, []);
 
-  // Mark the screen active (drives the aurora) while it's focused, and put the caret in the
-  // system search field on every visit to the tab. Imperative focus is needed because
+  // Put the caret in the system search field on every visit to the tab. Imperative focus is needed because
   // react-native-screens' `autoFocus` is Android-only AND only fires when the search view is
   // first created, so revisits to the kept-alive tab screen never refocus. The search view is
   // created a beat after the screen gains navigation focus and exposes no ready callback, so
@@ -83,13 +75,11 @@ function NativeSearch() {
   // adopts it. These focus() calls are correct and will light up on iOS when that lands.
   useFocusEffect(
     useCallback(() => {
-      setActive(true);
       const early = setTimeout(() => searchRef.current?.focus(), 80);
       const late = setTimeout(() => searchRef.current?.focus(), 400);
       return () => {
         clearTimeout(early);
         clearTimeout(late);
-        setActive(false);
       };
     }, []),
   );
@@ -120,11 +110,6 @@ function NativeSearch() {
           },
         }}
       />
-      {/* The spectral currents fill the screen for the whole search session (while this
-          screen is focused), phase-continuous with every other screen's sky, so the
-          clear Liquid Glass bubble has real color and motion to refract the moment you
-          enter search. It clears when you leave. */}
-      {glass && active ? <CanvasCurrents /> : null}
       {/* The Liquid Glass results bubble: anchored just above the field, grows upward, closest
           match at the bottom. box-none lets taps outside the bubble reach the field/content. */}
       {showBubble ? (

@@ -31,17 +31,15 @@ const IMAGE_ALT = "The same Canvas Select component rendered as native iOS, Mate
 const SHELL_CSS = "@media (max-width:1024px){#root [data-shell-rail]{display:none}}";
 
 // Pre-hydration only, the same way: the home hero. The server renders the desktop hero
-// (copy and orbit side by side, the desktop-only call to action, the title at its
-// widest size), and on a phone the reflow to the stacked hero at hydration measured
-// as a layout shift of 0.58 on its own. These rules lay the stacked hero out below the
-// kit's desktop cut before the bundle runs; after hydration the components write the
-// same values inline (docs/src/shell/home.tsx marks the nodes), so the rules change
-// nothing further. `!important` because the values they replace are inline styles.
+// (the desktop-only prop-proof line and platform checks, the title at its widest
+// size), and on a phone the reflow at hydration measured as a layout shift on its own.
+// These rules lay the phone hero out below the kit's desktop cut before the bundle
+// runs; after hydration the components write the same values inline
+// (docs/src/shell/home.tsx marks the nodes), so the rules change nothing further.
+// `!important` because the values they replace are inline styles.
 const HERO_CSS =
   "@media (max-width:1024px){" +
   "#root [data-hero-section]{padding-top:8px!important}" +
-  "#root [data-hero]{flex-direction:column!important;gap:16px!important}" +
-  "#root [data-hero-copy],#root [data-hero-orbit]{flex:0 0 auto!important}" +
   "#root [data-hero-wide]{display:none}" +
   "}";
 

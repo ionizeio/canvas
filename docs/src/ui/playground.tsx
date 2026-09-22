@@ -1,6 +1,6 @@
 import { Component, Fragment, type ReactNode, useEffect, useState } from "react";
 import { Platform } from "react-native";
-import { ScrollView, View, Text, Row, Column, Tabs, Input, ButtonGroup, BackdropHost, OverlayProvider, BreakpointOverride, useMeasuredWidth, useTheme, type IconName, type BreakpointKey, useResponsive } from "@ionizeio/canvas";
+import { ScrollView, View, Text, Row, Column, Tabs, Input, ButtonGroup, OverlayProvider, BreakpointOverride, useMeasuredWidth, useTheme, type IconName, type BreakpointKey, useResponsive } from "@ionizeio/canvas";
 import { buildScopes } from "../core/build-scopes";
 import { IconSearchContext } from "../core/live-state";
 import type { DocExample, ExampleScope } from "../core/scope";
@@ -85,12 +85,8 @@ export function FitStage({ children, align = "center" }: { children: ReactNode; 
   const fill = align === "start";
   return (
     <View style={{ width: "100%", alignItems: fill ? "stretch" : "center", justifyContent: "center" }}>
-      {/* A local BackdropHost so an example that mounts a <Backdrop> paints inside its
-          own stage. A Backdrop claims the NEAREST host, so without this an example
-          would publish to the app-root host and take over the whole page's backdrop.
-          Costs nothing for every other example: a host with no claimant renders nothing. */}
       <View style={{ width: "100%", alignItems: fill ? "stretch" : "center" }}>
-        <BackdropHost>{children}</BackdropHost>
+        {children}
       </View>
     </View>
   );

@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { Animated, Platform } from "react-native";
-import { View, Text, Button, Row, Icon, Image, useTheme, useReducedMotion, useResponsive } from "@ionizeio/canvas";
+import { useState } from "react";
+import { View, Text, Button, Row, Icon, Image, useTheme, useResponsive } from "@ionizeio/canvas";
 import { useRouter } from "expo-router";
 import { COMPONENTS } from "../core/data/components";
 import { FIRST_EXAMPLE_CODE } from "../core/previews";
@@ -11,15 +10,15 @@ import { alpha } from "../ui/color";
 
 // The landing page's comparison hero: full device-screen captures of each atom's docs
 // page, taken on the iPhone 17 Pro simulator, the Android emulator retargeted to that
-// same screen, and phone-width web, rotating alphabetically through every atom with a
-// captured set. Baked images (not live renders) so each pane is the platform's true
-// full-screen view, status bar and tab bar included; the drawn DeviceFrame supplies the
-// bezel and camera cutout around it. The code chip and the "Open <Atom>" CTA follow the
-// atom on stage. Regenerate the shots with `bun scripts/capture-looks.ts`.
-const INTERVAL_MS = 4000;
+// same screen, and phone-width web, stepping alphabetically through every atom with a
+// captured set on the reader's own chevrons (nothing advances or fades on its own).
+// Baked images (not live renders) so each pane is the platform's true full-screen view,
+// status bar and tab bar included; the drawn DeviceFrame supplies the bezel and camera
+// cutout around it. The code chip and the "Open <Atom>" CTA follow the atom on stage.
+// Regenerate the shots with `bun scripts/capture-looks.ts`.
 
 // Width of the atom name + counter block between the chevrons. Fixed so the arrows stay
-// put while cycling; sized past the longest atom name at the 17px semibold face.
+// put while stepping; sized past the longest atom name at the 17px semibold face.
 const LABEL_W = 200;
 
 const PLATFORMS = [
@@ -62,13 +61,8 @@ export function ThreeLooksRotator() {
 
 function Rotator() {
   const { tokens } = useTheme();
-  const reducedMotion = useReducedMotion();
   const router = useRouter();
   const [index, setIndex] = useState(0);
-  // Set the moment the reader drives the rotator themselves. Auto-advance never comes
-  // back: having the stage jump out from under someone who just took manual control is
-  // the whole problem being fixed here.
-  const [manual, setManual] = useState(false);
   // Three columns above md (768), by the kit's viewport bucket (desktop on the server).
   const columns = useResponsive({ base: true, md: false });
 
@@ -76,26 +70,7 @@ function Rotator() {
   const shots = LOOKS_SHOTS[atom.slug];
   const code = atom.code;
 
-  // Auto-advance until the reader takes over with the chevrons, or prefers reduced
-  // motion. The arrows always work, whether or not the carousel is still cycling.
-  useEffect(() => {
-    if (reducedMotion || manual) return;
-    const id = setInterval(() => setIndex((i) => (i + 1) % ATOMS.length), INTERVAL_MS);
-    return () => clearInterval(id);
-  }, [reducedMotion, manual]);
-
-  // A one-shot fade-in per swap (not a loop, so the web Animated driver is safe).
-  const fade = useRef(new Animated.Value(1)).current;
-  useEffect(() => {
-    if (reducedMotion) return;
-    fade.setValue(0);
-    Animated.timing(fade, { toValue: 1, duration: 240, useNativeDriver: Platform.OS !== "web" }).start();
-  }, [index, reducedMotion, fade]);
-
-  const step = (delta: number) => {
-    setManual(true);
-    setIndex((i) => (i + delta + ATOMS.length) % ATOMS.length);
-  };
+  const step = (delta: number) => setIndex((i) => (i + delta + ATOMS.length) % ATOMS.length);
 
   return (
     <View style={{ gap: 20 }}>
@@ -124,7 +99,7 @@ function Rotator() {
       {/* One phone pane per platform: three side-by-side columns on wide viewports,
           stacked when narrow. Each pane is an aspect-ratio container with an
           absolute-fill image (RNW ignores aspectRatio on an auto-height Image). */}
-      <Animated.View style={{ opacity: fade, flexDirection: columns ? "row" : "column", gap: 16, width: "100%", maxWidth: 1040, alignSelf: "center" }}>
+      <View style={{ flexDirection: columns ? "row" : "column", gap: 16, width: "100%", maxWidth: 1040, alignSelf: "center" }}>
         {PLATFORMS.map((p) => (
           <View key={p.key} style={{ flex: columns ? 1 : undefined, width: columns ? undefined : "100%", minWidth: 0 }}>
             <Text style={{ fontFamily: sans("600"), fontSize: 11, letterSpacing: 0.55, textTransform: "uppercase", color: tokens["muted-foreground"], textAlign: "center" }}>
@@ -143,7 +118,7 @@ function Rotator() {
             </DeviceFrame>
           </View>
         ))}
-      </Animated.View>
+      </View>
 
       <View style={{ alignItems: "center", gap: 18 }}>
         {code ? (

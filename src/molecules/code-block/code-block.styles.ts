@@ -40,7 +40,7 @@ function codeText(tokens: ColorTokens): TextStyle {
 // The code surface is OPAQUE: it is a content surface, and the hand-off paints it
 // var(--muted) flat. It used to carry a half-transparent muted fill, translated
 // literally from a Tailwind bg-muted/50 in the kit's shadcn-era origins, which meant
-// a code block sitting over any backdrop (the docs' aurora, a photo, a glass page)
+// a code block sitting over any backdrop (a photo, a glass page)
 // showed it straight through the code.
 function surface(tokens: ColorTokens): ViewStyle {
   return {

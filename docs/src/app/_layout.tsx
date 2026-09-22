@@ -1,5 +1,5 @@
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { BackdropHost, OverlayProvider, ToastProvider } from "@ionizeio/canvas";
+import { OverlayProvider, ToastProvider } from "@ionizeio/canvas";
 import { DocsThemeProvider } from "../theme/docs-theme";
 import { useDocsFonts } from "../ui/fonts";
 import { DocsHead } from "../ui/docs-head";
@@ -43,13 +43,11 @@ export default function RootLayout() {
       <DocsHead />
       <DocsThemeProvider>
         {fontsLoaded ? (
-          <BackdropHost>
-            <OverlayProvider>
-              <ToastProvider>
-                <Navbar />
-              </ToastProvider>
-            </OverlayProvider>
-          </BackdropHost>
+          <OverlayProvider>
+            <ToastProvider>
+              <Navbar />
+            </ToastProvider>
+          </OverlayProvider>
         ) : null}
       </DocsThemeProvider>
     </SafeAreaProvider>

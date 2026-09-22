@@ -1,53 +1,10 @@
-import { useEffect, useRef, useState } from "react";
-import { Animated, Easing, AccessibilityInfo } from "react-native";
-import { View, Text, Row, Column, useTheme, alpha, Container, supportsNativeDriver, thereAndBack } from "@ionizeio/canvas";
+import { View, Text, Row, Column, useTheme, alpha, Container } from "@ionizeio/canvas";
 import Svg, { Defs, RadialGradient, Stop, Rect } from "react-native-svg";
 import { sans, geistMono } from "../ui/fonts";
 import { MiniBtn, type CatTile } from "./tile";
 
 // ── Patterns previews ─────────────────────────────────────────────────────────
 // Hand-authored mini-mockups for the Patterns category.
-
-// Honours the OS "reduce motion" setting so the pulsing skeletons hold still when
-// the user has asked for less animation. Mirrors the hero-orbit helper.
-function useReducedMotion() {
-  const [reduced, setReduced] = useState(false);
-  useEffect(() => {
-    let mounted = true;
-    AccessibilityInfo.isReduceMotionEnabled().then((v) => {
-      if (mounted) setReduced(v);
-    });
-    const sub = AccessibilityInfo.addEventListener("reduceMotionChanged", setReduced);
-    return () => {
-      mounted = false;
-      sub.remove();
-    };
-  }, []);
-  return reduced;
-}
-
-// The CSS `pulse` keyframe (opacity 1 → 0.5 → 1 over 2s, ease-in-out) as an
-// Animated.Value, shared by the skeleton bars/discs in the Loading & related tiles.
-function usePulse() {
-  const opacity = useRef(new Animated.Value(1)).current;
-  const reduced = useReducedMotion();
-  useEffect(() => {
-    if (reduced) {
-      opacity.setValue(1);
-      return;
-    }
-    // One timing 1 → 0.5 → 1 shaped by a there-and-back easing, on the native driver where
-    // there is one (supportsNativeDriver): a native loop cannot hold an Animated.sequence, and
-    // a JS-driven loop is a shadow-tree commit per frame under the New Architecture, which
-    // this pulse paid for on every route because the Components tab stays mounted.
-    const loop = Animated.loop(
-      Animated.timing(opacity, { toValue: 0.5, duration: 2000, easing: thereAndBack(Easing.inOut(Easing.ease)), useNativeDriver: supportsNativeDriver }),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [reduced, opacity]);
-  return opacity;
-}
 
 // A small key-cap, standing in for the docs `.kbd` element.
 function MiniKbd({ children }: { children: string }) {
@@ -229,18 +186,17 @@ function GlassSurfacePreview() {
   );
 }
 
-// 5. Loading — a pulsing avatar disc beside two pulsing skeleton bars.
+// 5. Loading: a skeleton avatar disc beside two skeleton bars.
 function LoadingPreview() {
   const { tokens } = useTheme();
-  const opacity = usePulse();
   const fill = alpha(tokens.muted, 0.6);
   return (
     <Container xxxs start>
       <Row snug alignCenter>
-        <Animated.View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: fill, opacity }} />
+        <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: fill }} />
         <View style={{ flex: 1, gap: 6 }}>
-          <Animated.View style={{ height: 8, borderRadius: 6, backgroundColor: fill, opacity }} />
-          <Animated.View style={{ height: 8, width: "75%", borderRadius: 6, backgroundColor: fill, opacity }} />
+          <View style={{ height: 8, borderRadius: 6, backgroundColor: fill }} />
+          <View style={{ height: 8, width: "75%", borderRadius: 6, backgroundColor: fill }} />
         </View>
       </Row>
     </Container>

@@ -20,7 +20,7 @@ const CATEGORY_IDS = ["Tokens", "Atoms", "Molecules", "Organisms", "Charts", "Te
 // A live catalog: a category pill bar + intro, then a tile
 // grid per category, each tile a small mockup preview of the component linking to its reference.
 export default function ComponentsIndex() {
-  const { tokens, surface } = useTheme();
+  const { tokens } = useTheme();
   const byCat = (c: string) => COMPONENTS.filter((x) => x.category === c).length;
   const counts = {
     Tokens: 3,
@@ -39,9 +39,7 @@ export default function ComponentsIndex() {
       // The page scroller marker the web shell's scroll padding and the e2e helpers read
       // (docs/src/ui/page.tsx carries the same). Web-only attribute; a no-op on native.
       {...(Platform.OS === "web" ? ({ dataSet: { pageScroll: "" } } as object) : null)}
-      // Glass surface mode: the canvas goes transparent so the Canvas Lattice backdrop
-      // reads through (matching the shared Page); the per-category tiles stay solid content cards.
-      style={{ flex: 1, backgroundColor: surface === "glass" ? "transparent" : tokens.background }}
+      style={{ flex: 1, backgroundColor: tokens.background }}
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{ paddingTop: CONTENT_TOP_INSET + 24, paddingHorizontal: 28, paddingBottom: Math.max(80, CONTENT_BOTTOM_INSET + 24), gap: 28, width: "100%", maxWidth: 1400, alignSelf: "center" }}
     >

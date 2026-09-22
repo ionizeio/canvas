@@ -61,9 +61,7 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   // No stub is needed for the kit's optional peers, and adding one back would hide a
   // real regression. The kit loads them through a require sitting DIRECTLY inside a
   // try block, which is the shape Metro's isOptionalDependency recognises, so an
-  // absent peer resolves to nothing and the runtime catch takes over. This app
-  // deliberately installs no Skia, so a successful `expo export` here is the proof
-  // that the optional-peer mechanism still works.
+  // absent peer resolves to nothing and the runtime catch takes over.
   if (moduleName.endsWith(".js") && (moduleName.startsWith("./") || moduleName.startsWith("../"))) {
     try {
       return context.resolveRequest(context, moduleName, platform);

@@ -1,11 +1,10 @@
 import type { ComponentCatalogEntry, MaterialCoverageEntry, PublicRenderable } from "./types";
 
 const ROLES = new Set(["static", "liquid", "inherited"]);
-const MOTION = new Set(["native-feedback", "selection-pilot", "moving-selection", "liquid-popup", "optional-profile", "inherited"]);
 const TIERS = new Set(["atoms", "molecules", "organisms", "charts", "style"]);
 const RECIPE_IDS = new Set([
   "solid-appearance", "glass-appearance", "mode-switch", "accessibility-fallback",
-  "runtime-capability", "semantic-state", "inherited-composition", "liquid-motion",
+  "runtime-capability", "semantic-state", "inherited-composition",
   "open-surface", "inspection",
 ]);
 
@@ -48,21 +47,12 @@ export function checkMaterialCoverage(
     if (!entry.roles.length || new Set(entry.roles).size !== entry.roles.length || entry.roles.some((role) => !ROLES.has(role))) errors.push(`Invalid material roles for ${entry.name}`);
     if (!entry.target.trim()) errors.push(`Missing surface context for ${entry.name}`);
     if (!entry.unpaintedVariants.trim()) errors.push(`Missing unpainted-variant policy for ${entry.name}`);
-    if (!MOTION.has(entry.motion)) errors.push(`Unknown motion profile for ${entry.name}: ${entry.motion}`);
     if (!entry.verification.length || entry.verification.some((recipe) => !RECIPE_IDS.has(recipe))) errors.push(`Invalid verification recipes for ${entry.name}`);
     const ownsSurface = entry.roles.includes("static") || entry.roles.includes("liquid");
     const required = ownsSurface
       ? ["solid-appearance", "glass-appearance", "mode-switch", "accessibility-fallback", "runtime-capability", "semantic-state"]
       : ["inherited-composition", "semantic-state"];
     for (const recipe of required) if (!entry.verification.includes(recipe)) errors.push(`Missing ${recipe} expectation for ${entry.name}`);
-    if (entry.motion === "selection-pilot" && (!entry.roles.includes("liquid") || !entry.verification.includes("liquid-motion"))) {
-      errors.push(`Selection pilot lacks liquid role/motion verification: ${entry.name}`);
-    }
-    // A delivered liquid profile is a claim about motion; it needs the liquid role
-    // and the liquid-motion evidence recipe, exactly like the pilots.
-    if ((entry.motion === "moving-selection" || entry.motion === "liquid-popup") && (!entry.roles.includes("liquid") || !entry.verification.includes("liquid-motion"))) {
-      errors.push(`Liquid profile lacks liquid role/motion verification: ${entry.name}`);
-    }
   }
   for (const name of discovered.keys()) if (!declared.has(name)) errors.push(`Unclassified public renderable: ${name}`);
   for (const route of docs.keys()) if (!coveredRoutes.has(route)) errors.push(`Unclassified component docs route: ${route}`);

@@ -6,7 +6,6 @@ import { useRouter } from "expo-router";
 import { COMPONENTS } from "../core/data/components";
 import { CanvasMark } from "../brand/canvas-mark";
 import { Github } from "../brand/brand-logos";
-import { HeroOrbit } from "../brand/hero-orbit";
 import { ThreeLooksRotator, LOOKS_AVAILABLE } from "./three-looks-rotator";
 import { CodeBlock } from "../ui/code-block";
 import { sans, geistMono } from "../ui/fonts";
@@ -152,7 +151,7 @@ function SectionHead({ eyebrow, title, desc, titleSize }: { eyebrow: string; tit
 }
 
 export function Home() {
-  const { tokens, surface } = useTheme();
+  const { tokens } = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const go = (to: string) => router.push(to as never);
@@ -189,39 +188,28 @@ export function Home() {
   const sectionTitle = useFluidText("sectionTitle");
   const ctaTitle = useFluidText("ctaTitle");
 
-  // Glass is a theming-level surface mode: the canvas goes transparent so the Canvas
-  // Lattice backdrop reads through (the web shell mounts it; native mounts it via
-  // ScreenFrame). The backdrop is identical on every screen so navigation never
-  // interrupts the flight.
   return (
     <ScreenFrame>
     <ScrollView
       // The page scroller marker the web shell's scroll padding and the e2e helpers read
       // (docs/src/ui/page.tsx carries the same). Web-only attribute; a no-op on native.
       {...(Platform.OS === "web" ? ({ dataSet: { pageScroll: "" } } as object) : null)}
-      style={{ flex: 1, backgroundColor: surface === "glass" ? "transparent" : tokens.background }}
+      style={{ flex: 1, backgroundColor: tokens.background }}
       // "automatic" lets iOS inset the content below the transparent nav bar (and it is a
-      // no-op on web, where CONTENT_TOP_INSET clears the topbar). The old "never" relied on
-      // the native stack insetting the FIRST scroll view it finds under the screen, which
-      // broke when the scene backdrop became the screen's first child; and the hero no
-      // longer needs to reach the very top itself, since the backdrop fills behind the bar
-      // from outside the scroller.
+      // no-op on web, where CONTENT_TOP_INSET clears the topbar).
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{ paddingTop: CONTENT_TOP_INSET, paddingBottom: insets.bottom + (Platform.OS === "web" ? CONTENT_BOTTOM_INSET : 49) }}
     >
       {/* ── Hero ──
           Every pre-rendered page carries the desktop hero (the bucket hooks resolve to
-          desktop on the server), so on a phone the copy and the orbit sat side by side
-          until the bundle ran and the reflow to the stacked layout measured as a
-          layout shift of 0.58. The `data-hero*` markers let the pre-hydration sheet in
-          app/+html.tsx lay the stacked hero out below the kit's desktop cut before
+          desktop on the server). The `data-hero*` markers let the pre-hydration sheet in
+          app/+html.tsx lay the phone hero out below the kit's desktop cut before
           hydration; once hydrated, these inline values are the same ones. */}
       <View {...marker("heroSection")} style={{ paddingTop: wide ? 18 : 8, paddingBottom: 56 }}>
         <Wrap>
-          {/* Tighter copy-to-orbit gap when stacked so the large phone orbit stays fully on screen. */}
-          <View {...marker("hero")} style={{ flexDirection: wide ? "row" : "column", gap: wide ? 48 : 16, alignItems: "center" }}>
+          <View {...marker("hero")}>
             {/* Copy */}
-            <View {...marker("heroCopy")} style={{ flex: wide ? 1.05 : undefined, width: "100%", minWidth: 0 }}>
+            <View {...marker("heroCopy")} style={{ width: "100%", minWidth: 0 }}>
               <Row snug alignCenter style={{ alignSelf: "flex-start", paddingVertical: 5, paddingLeft: 10, paddingRight: 12, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border, backgroundColor: alpha(tokens.card, 0.7), marginBottom: 22 }}>
                 {/* The dot keeps a 7px layout box; the 3px halo ring overflows it (a 0 0 0 3px box-shadow at primary@22%). */}
                 <Column flush center alignCenter style={{ width: 7, height: 7 }}>
@@ -252,23 +240,27 @@ export function Home() {
                 Canvas is a universal React Native UI kit. The same components render natively on iOS and Android and on the web through React Native Web, styled with flat, semantic boolean props that read like a sentence.
               </Text>
 
-              {/* On the mobile (stacked) layout the prop-proof line, CTAs, and platform
-                  checks are hidden so the rotating orbit surfaces sooner; desktop keeps them.
-                  The wrapper is the sheet's hook for hiding them before hydration. */}
-              {wide ? (
-                <View {...marker("heroWide")}>
+              {/* On a phone the prop-proof line and the platform checks are hidden; desktop
+                  keeps them. The `heroWide` wrappers are the sheet's hook for hiding them
+                  before hydration; the CTAs stay on every width. */}
+              <View {...marker("heroWide")}>
+                {wide ? (
                   <Row snug wrap alignCenter style={{ marginTop: 18 }}>
                     <View style={{ paddingVertical: 2, paddingHorizontal: 8, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.12), borderWidth: 1, borderColor: alpha(tokens.primary, 0.26) }}>
                       <Text style={{ fontFamily: geistMono("400"), fontSize: 12.5, color: tokens.primary }}>{"<Button primary large block>"}</Text>
                     </View>
                     <Text style={{ fontFamily: sans("400"), fontSize: 13.5, color: tokens["muted-foreground"] }}>the prop name is the value.</Text>
                   </Row>
+                ) : null}
+              </View>
 
-                  <Row cozy wrap style={{ marginTop: 30 }}>
-                    <Button primary large iconRight={<Icon arrowRight primaryForeground size={16} />} onPress={() => go("/components/button")}>Browse components</Button>
-                    <Button outline large onPress={() => go("/tokens/colors")}>Explore tokens</Button>
-                  </Row>
+              <Row cozy wrap style={{ marginTop: 30 }}>
+                <Button primary large iconRight={<Icon arrowRight primaryForeground size={16} />} onPress={() => go("/components/button")}>Browse components</Button>
+                <Button outline large onPress={() => go("/tokens/colors")}>Explore tokens</Button>
+              </Row>
 
+              <View {...marker("heroWide")}>
+                {wide ? (
                   <View style={{ flexDirection: "row", flexWrap: "wrap", rowGap: 8, columnGap: 18, marginTop: 26 }}>
                     {PLATFORMS.map((p) => (
                       <View key={p} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
@@ -277,16 +269,8 @@ export function Home() {
                       </View>
                     ))}
                   </View>
-                </View>
-              ) : null}
-            </View>
-
-            {/* Orbit showcase */}
-            <View {...marker("heroOrbit")} style={{ flex: wide ? 0.95 : undefined, width: "100%", minWidth: 0 }}>
-              <HeroOrbit />
-              <Text style={{ fontFamily: sans("400"), fontSize: 13, lineHeight: 20, color: tokens["muted-foreground"], marginTop: 14, paddingHorizontal: 2 }}>
-                Canvas at the core; iOS, Android, and the web as targets. One component API, rendered natively on every platform.
-              </Text>
+                ) : null}
+              </View>
             </View>
           </View>
         </Wrap>
@@ -294,7 +278,7 @@ export function Home() {
 
       {/* ── Three native looks ── the comparison hero: full-mobile screenshots of
            each atom's page on the iPhone simulator, the Pixel emulator, and phone
-           web, rotating alphabetically with the CTA following the atom on stage.
+           web, stepped alphabetically with the CTA following the atom on stage.
            Desktop web only (see showThreeLooks above): on a device you ARE the
            platform, the native bundles skip the images, and mobile web is gated out
            because the stacked panes read as cross-platform promotion. */}

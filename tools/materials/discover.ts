@@ -6,8 +6,8 @@ function reactElement(type: ts.Type, checker: ts.TypeChecker, visited = new Set<
   if (visited.has(type)) return false;
   visited.add(type);
   if (type.isUnionOrIntersection()) return type.types.some((part) => reactElement(part, checker, visited));
-  // Null-only declarative children (Backdrop.Particles) and scalar-returning
-  // components are legal React output too. Do not require JSX syntax or a frame.
+  // Null-only declarative children and scalar-returning components are legal React
+  // output too. Do not require JSX syntax or a frame.
   if (type.flags & (ts.TypeFlags.Null | ts.TypeFlags.Undefined | ts.TypeFlags.StringLike | ts.TypeFlags.NumberLike | ts.TypeFlags.BooleanLike | ts.TypeFlags.BigIntLike)) return true;
   const symbol = type.getSymbol();
   // ReactNode expands to a union containing ReactElement. JSX.Element and

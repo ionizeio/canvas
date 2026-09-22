@@ -34,11 +34,10 @@ Install the optional peers needed by your app's features. The package remains us
 | `expo-blur` | you want static frost on iOS, including content beneath iOS 26 Liquid Glass, or supported legacy Android frost | surfaces use their solid fill when no other material is available; browser frost/lenses, native Liquid Glass and the Android capture module remain independent |
 | `expo-clipboard` | you want `CodeBlock` to copy text on native | web can use `navigator.clipboard`; native copying needs a supplied `onCopy` handler |
 | `react-native-safe-area-context` | you want safe-area insets in Canvas shells, with your app's `SafeAreaProvider` | safe-area wrappers render as plain views without insets |
-| `@shopify/react-native-skia` | you want `Backdrop` to use an available GPU drawing backend | `Backdrop` keeps its React Native SVG renderer |
 
 ```bash
 # add any subset you actually use
-npm install react-native-qrcode-svg expo-glass-effect expo-blur expo-clipboard react-native-safe-area-context @shopify/react-native-skia
+npm install react-native-qrcode-svg expo-glass-effect expo-blur expo-clipboard react-native-safe-area-context
 # Android native capture also requires rebuilding your custom native app
 npm install @ionizeio/canvas-blur
 ```
@@ -185,8 +184,7 @@ safe live backdrop target; a tint-only path does not establish native blur suppo
 On Android 12+ with Expo SDK 57, the optional `@ionizeio/canvas-blur` integration
 keeps a stable native content host and records only while a glass surface uses it.
 `OverlayProvider` supplies a sibling target to its overlays and a separate-window
-target to native modals. `BackdropHost` can supply its decorative scene to inline
-surfaces, without sampling their own foreground. Without a safe target, supported
+target to native modals. Without a safe target, supported
 module or hardware material, the complete solid skin remains visible. Modern Expo
 blur targets are not kept recording in solid mode. The Android module requires a
 native rebuild; Expo Go does not contain it.

@@ -23,7 +23,6 @@ import { Typography } from "../src/atoms/typography/typography.tsx";
 import { DescriptionList } from "../src/molecules/description-lists/description-lists.tsx";
 import { AlertDialog } from "../src/molecules/alert-dialog/alert-dialog.tsx";
 import { ActionSheet } from "../src/organisms/action-sheet/action-sheet.tsx";
-import { Backdrop, BackdropHost } from "../src/organisms/backdrop/backdrop.tsx";
 import { Command } from "../src/organisms/command/command.tsx";
 import { DataTable } from "../src/organisms/data-table/data-table.tsx";
 import { Dialog } from "../src/organisms/dialog/dialog.tsx";
@@ -46,7 +45,7 @@ function fixture<Props extends object>(name: string, exported: string) {
     react: React,
     "react/jsx-runtime": JSX,
     "@nannier-com/canvas": {
-      ActionSheet, AlertDialog, Autocomplete, Backdrop, BackdropHost, Button, Calendar, Checkbox, Column, Command, DataTable,
+      ActionSheet, AlertDialog, Autocomplete, Button, Calendar, Checkbox, Column, Command, DataTable,
       DescriptionList, Dialog, Drawer, Dropdown, Icon, Listbox, Pagination, Radio, RadioGroup,
       Row, Select, Slider, Switch, TabBar, Tabs, ThemeProvider, Typography, useTheme,
     },
@@ -66,7 +65,6 @@ const TabsBody = fixture<{ disabled?: boolean }>("tabs", "TabsBody");
 const ListboxBody = fixture<{ controlled?: boolean; disabled?: boolean }>("listbox", "ListboxBody");
 const EscapeLayersBody = fixture<{ scenario?: string }>("escape-layers", "EscapeLayersBody");
 const ControlRefsBody = fixture("control-refs", "ControlRefsBody");
-const BackdropBody = fixture("backdrop", "BackdropBody");
 const text = (id: string) => screen.getByTestId(id).textContent;
 
 test("the gated alert fixture cancels without confirming and clears its field on reopen", () => {
@@ -115,23 +113,6 @@ test("Tabs fixture reports the actual inactive selection once and keeps disabled
 // The sampler runs for four seconds of real time, so this test's budget is the
 // window plus the render and the readout poll: under bun's default five seconds
 // the render had under a second to finish, and on a loaded machine it did not.
-test("Backdrop fixture parks and resumes its sky and reports the sample it took", async () => {
-  await act(async () => { render(<ThemeProvider><BackdropBody /></ThemeProvider>); });
-  expect(text("backdrop-mode")).toBe("Backdrop running");
-  expect(text("backdrop-energy")).toBe("Energy: default");
-  fireEvent.click(screen.getByRole("button", { name: "Park" }));
-  expect(text("backdrop-mode")).toBe("Backdrop still");
-  fireEvent.click(screen.getByRole("button", { name: "Next energy" }));
-  expect(text("backdrop-energy")).toBe("Energy: calm");
-  fireEvent.click(screen.getByRole("button", { name: "Resume" }));
-  expect(text("backdrop-mode")).toBe("Backdrop running");
-  // The sampler reports after its four-second window; the readout names every field a
-  // check reads, so a recorded run can be judged from the text alone.
-  fireEvent.click(screen.getByRole("button", { name: "Sample 4 s" }));
-  expect(text("backdrop-trace")).toBe("Trace: sampling for 4 s");
-  await waitFor(() => expect(text("backdrop-trace")).toMatch(/^Frames: \d+; p50 [\d.]+ ms; p95 [\d.]+ ms; max [\d.]+ ms; style writes\/s: (\d+|n\/a); css animations: (\d+|n\/a)$/), { timeout: 6000 });
-}, 15000);
-
 test("a fresh disabled Tabs scenario preserves its default selection and zero callbacks", () => {
   const view = render(<ThemeProvider><TabsBody key="enabled" /></ThemeProvider>);
   fireEvent.click(screen.getByRole("tab", { name: "Activity" }));

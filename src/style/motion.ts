@@ -14,12 +14,11 @@ import { AccessibilityInfo, Platform, UIManager, type EasingFunction } from "rea
 // cost scales with the size of the tree, not with the animation, so a slow decorative
 // loop is the most expensive thing an idle screen can run: the docs app sat at 150% CPU
 // with the JS thread saturated and rAF near 3 frames per second on the iPhone 17 Pro
-// simulator until its three loops (the Backdrop clock, the hero orbit, a catalog pulse)
-// moved to the native driver, after which the JS thread was idle, rAF ran at 60 frames
-// per second and the process sat near 20%, all of it the native animated module updating
-// the scene's forty views (2026-09-18, tools/native/liquid-motion.md). On the native
-// driver the whole graph (timing, the interpolations, multiply, the view props) runs in
-// the native animated module and the JS thread is not involved between frames.
+// simulator until its decorative loops (since removed) moved to the native driver, after
+// which the JS thread was idle and rAF ran at 60 frames per second (2026-09-18,
+// tools/native/liquid-motion.md). On the native driver the whole graph (timing, the
+// interpolations, multiply, the view props) runs in the native animated module and the
+// JS thread is not involved between frames.
 //
 // Two constraints follow, and `useNativeDriver: supportsNativeDriver` is the whole gate:
 //   - A native loop must be ONE `Animated.timing` inside `Animated.loop`. React Native
@@ -35,7 +34,7 @@ import { AccessibilityInfo, Platform, UIManager, type EasingFunction } from "rea
 // on iOS" came from the 2026-06 Spinner, whose loop then drove a
 // `createAnimatedComponent(Svg)` root, which the native driver's direct view updates
 // do not reach. A native loop on an `Animated.View` advances on RN 0.86 / iOS 26 Fabric
-// (the Backdrop clock, the hero orbit and the catalog pulse all run on it).
+// (the Skeleton shimmer, the Spinner and the indeterminate Progress all run on it).
 //
 // Platform.OS is fixed per bundle, so this is evaluated once.
 export const supportsNativeDriver: boolean = Platform.OS !== "web";

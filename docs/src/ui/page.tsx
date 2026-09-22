@@ -19,7 +19,7 @@ import { DocsHead } from "./docs-head";
 // so portaled cards scroll with the page and stay glued to their triggers.
 // Playground stages mount their own nearer host and stay stage-contained.
 export function Page({ children, viewportOverlays = false }: { children: ReactNode; viewportOverlays?: boolean }) {
-  const { tokens, surface } = useTheme();
+  const { tokens } = useTheme();
   // Runtime fixtures need viewport modals and a sibling capture plane. Keep the
   // catalogue's content host by default so anchored previews scroll as before.
   const ContentHost = viewportOverlays ? View : OverlayProvider;
@@ -29,7 +29,7 @@ export function Page({ children, viewportOverlays = false }: { children: ReactNo
         // the window, so a check for "does this page scroll sideways" has to ask this
         // node and not the document. Web-only attribute; a no-op on native.
         {...(Platform.OS === "web" ? ({ dataSet: { pageScroll: "" } } as object) : null)}
-        style={{ flex: 1, backgroundColor: surface === "glass" ? "transparent" : tokens.background }}
+        style={{ flex: 1, backgroundColor: tokens.background }}
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
           // Web: clear the absolute Topbar overlay (CONTENT_TOP_INSET = 56). Native: iOS

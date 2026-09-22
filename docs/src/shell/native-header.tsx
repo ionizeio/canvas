@@ -2,50 +2,26 @@ import { useState, type ReactNode } from "react";
 import { Platform } from "react-native";
 import { Stack, usePathname, useRouter, useIsFocused } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Pressable, Icon, BackdropHost, useTheme } from "@ionizeio/canvas";
+import { View, Pressable, Icon, useTheme } from "@ionizeio/canvas";
 import { titleFor } from "./topbar";
 import { nativeMenuFor, sectionFor, getActiveGroup, getActiveSlug, type MenuNode } from "../data/nav";
 import { GLYPH_RASTERS } from "../core/glyph-rasters";
 import { Sidebar } from "./sidebar";
 import { ThemeToggles } from "./theme-toggles";
-import { CanvasCurrents } from "../brand/canvas-currents";
 
 // Wraps a screen's scroller so the native header (which drives the per-screen Stack title +
 // menu, and hosts the Android overflow sheet) can sit as a sibling of the content. On web
 // this is a no-op passthrough: it renders the scroller exactly as before, with NO wrapping
 // View, so the web build stays byte-identical (an extra flex wrapper there collapses
-// onLayout-measured tile grids). On native it also mounts the spectral currents
-// behind the (transparent-in-glass) scroller, the native counterpart of the web shell's
-// backdrop mount.
+// onLayout-measured tile grids).
 export function ScreenFrame({ children }: { children: ReactNode }) {
   if (Platform.OS === "web") return <>{children}</>;
   return (
     <View style={{ flex: 1 }}>
-      {/* The backdrop is hosted HERE on native, not at the app root, and that is a
-          deliberate difference from the web shell rather than an oversight. A
-          Backdrop paints into its nearest host, and on native a root-level host
-          sits behind the tab controller and the stack navigator, both of which
-          paint their own opaque background: the sky renders correctly and is
-          simply never visible. Hosting inside the screen puts the surface above
-          that chrome, which is where it has to be. Every screen therefore has its
-          own surface, as it did before the host model existed, and the shared
-          clock still keeps them all in phase across navigation. */}
-      <BackdropHost>
-        <ScreenCurrents />
-        {children}
-      </BackdropHost>
+      {children}
       <NativeHeader />
     </View>
   );
-}
-
-// The per-screen native scene claim, glass-gated like the web mount. Each screen
-// owns a host above its native navigator; the shared clock keeps their layers in
-// phase when navigation or a back-swipe reveals another screen.
-function ScreenCurrents() {
-  const { surface } = useTheme();
-  if (surface !== "glass") return null;
-  return <CanvasCurrents />;
 }
 
 // Per-screen config for the NATIVE iOS/Android navigation bar (a real UINavigationBar,
@@ -106,8 +82,8 @@ export function NativeHeader() {
     // 4.26.2 and 4.27.0 both reproduce it. Filed upstream with a standalone repro:
     // https://github.com/software-mansion/react-native-screens/issues/4549 (repro:
     // https://github.com/bnannier/rns-header-item-image-repro). The full recipe is
-    // image icons + the type:"custom" ThemeToggles item + a large early commit
-    // (the Backdrop's still-to-live swap); dropping the icons is the least
+    // image icons + the type:"custom" ThemeToggles item + a large early commit;
+    // dropping the icons is the least
     // invasive workaround. Flip this flag back on once a fixed release lands and
     // a dev build boots with it.
     const NATIVE_MENU_IMAGE_ICONS = false;

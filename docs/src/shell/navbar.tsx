@@ -8,7 +8,6 @@ import { Sidebar } from "./sidebar";
 import { Topbar, titleFor } from "./topbar";
 import { MobileNavBar } from "./mobile-nav-bar";
 import { SearchModal } from "./search-modal";
-import { CanvasCurrents } from "../brand/canvas-currents";
 import { WebScrollbarTheme, WebScrollPadding, SCROLLBAR_W } from "../ui/web-scrollbar";
 import { useDocsTheme } from "../theme/docs-theme";
 import { sans } from "../ui/fonts";
@@ -79,10 +78,10 @@ function sectionIcon(name: string, active: boolean) {
 
 // Web (every width): desktop = sidebar + glass topbar; narrow = the mobile iOS shell (a
 // bottom kit TabBar for the sections + the glass topbar whose hamburger drills into the
-// current section's sub-nav, mirroring the native iOS app). cmd-K search modal, web
-// scrollbar gutter, and spectral currents in glass mode are shared.
+// current section's sub-nav, mirroring the native iOS app). The cmd-K search modal and
+// the web scrollbar gutter are shared.
 function WebNav() {
-  const { tokens, surface } = useTheme();
+  const { tokens } = useTheme();
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
   const router = useRouter();
@@ -90,7 +89,6 @@ function WebNav() {
   // check did (desktop is width > lg = 1024; only a viewport of exactly 1024 moves
   // from the desktop shell to the mobile shell, matching the sidebar's drawer cut).
   const wide = useFormFactor() === "desktop";
-  const glass = surface === "glass";
   const [searchOpen, setSearchOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -120,10 +118,9 @@ function WebNav() {
   // Only the navigation siblings change: desktop gets the sidebar rail and Topbar;
   // narrow web gets MobileNavBar, bottom tabs and the responsive sidebar drawer.
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: glass ? "transparent" : tokens.background }} edges={["top"]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: tokens.background }} edges={["top"]}>
       <WebScrollbarTheme />
       <WebScrollPadding top={headerHeight} bottom={wide ? 0 : barHeight} />
-      {glass ? <CanvasCurrents /> : null}
       <Row flush fill>
         {wide ? (
           // The rail column is marked for the document root's one pre-hydration rule

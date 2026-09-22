@@ -17,7 +17,7 @@ declare const require: (id: string) => unknown;
 let ExpoGlass: { GlassView?: unknown; isLiquidGlassAvailable?: () => boolean } | undefined;
 try {
   // Directly in the try block: an intervening `if` makes Metro treat this as
-  // a REQUIRED dependency. See src/organisms/backdrop/skia-runtime.ts.
+  // a REQUIRED dependency. See src/style/glass-surface/material-runtime.ts.
   ExpoGlass = require("expo-glass-effect") as typeof ExpoGlass;
 } catch {
   ExpoGlass = undefined;

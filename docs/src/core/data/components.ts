@@ -490,18 +490,6 @@ export const COMPONENTS: ComponentDoc[] = [
   },
 
   {
-    slug: "backdrop",
-    name: "Backdrop",
-    description:
-      "The engine for a full-screen animated background. Canvas supplies the surface, the shared clock, the frame budget and the accessibility ladder; your app supplies the scene by composing Particles, Gradient, Shader and Custom layers, so the animation belongs to your application rather than to the kit.",
-    category: "Organisms",
-    singlePreview: true,
-    // The stage must stretch: a hosted Backdrop renders null and paints through the
-    // stage's own host, so a centred shrink-to-fit stage would collapse to zero width.
-    stageAlign: "start",
-  },
-
-  {
     slug: "stepper",
     name: "Stepper",
     description: "A ± numeric control: − and + buttons around an editable field, clamped to a range (the iOS UIStepper idiom). For a multi-step progress indicator, see Steps.",
