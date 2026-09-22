@@ -2,8 +2,7 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { type GestureResponderEvent, type View as RNView, type ScrollView as RNScrollView } from "react-native";
-import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useControllableState, useMeasuredWidth, FILL, type StyleProp, type ViewStyle, type LayoutStyle, GlassSurface, GlassPane, paneStyle, isGlass } from "../../style/index.js";
-import { LiquidAnchoredOverlay } from "../../style/liquid-anchored-overlay.js";
+import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useControllableState, AnchoredOverlay, useMeasuredWidth, FILL, type StyleProp, type ViewStyle, type LayoutStyle, GlassSurface, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import { ButtonGroup } from "../../atoms/button-group/button-group.js";
 import { type CalendarSkin, type DayState, type Density } from "./calendar.styles.js";
 import { calendarDayAccessibility } from "./calendar.accessibility.js";
@@ -257,9 +256,6 @@ export function createCalendar(skin: CalendarSkin) {
     const peekAnchorRef = useRef<RNView | null>(null);
     const hoverAnchorRef = useRef<RNView | null>(null);
     const hoverEventRef = useRef<CalendarEvent | null>(null);
-    // What the day peek and the hover card showed while open, kept for their exits.
-    const lastPeek = useRef<{ key: number; content: ReactNode } | null>(null);
-    const lastHover = useRef<{ key: string; content: ReactNode } | null>(null);
     const scrollRef = useRef<RNScrollView | null>(null);
     // Which view's scroller has been positioned on its initial window.
     const scrollInitFor = useRef<string | null>(null);
@@ -596,36 +592,16 @@ export function createCalendar(skin: CalendarSkin) {
     );
 
     // The floating detail card for the hovered timeline block (pointer platforms;
-    // no backdrop, so the page stays interactive and hover-out hides it). The card
-    // rides the liquid popup policy, so it stays mounted through its exit showing
-    // the snapshot of what it showed while open; a hover onto another block keys
-    // a fresh card.
+    // no backdrop, so the page stays interactive and hover-out hides it).
     const hoverCard = () => {
-      if (hoverKey != null && hoverEventRef.current != null) {
-        const e = hoverEventRef.current;
-        const [start, end] = spanOf(e);
-        lastHover.current = {
-          key: hoverKey,
-          content: (
-            <EscapeLayerProvider scope={hoverEscapeScope}>
-            <Text style={skin.peekTitle(tokens)}>{e.title ?? "Event"}</Text>
-            <Text style={[skin.eventTime(tokens), { marginTop: 2 }]}>
-              {`${WEEKDAYS_FULL[weekdayOf(e.day)]}, ${monthName} ${e.day} · ${formatHour(start, hour24)} – ${formatHour(end, hour24)}`}
-            </Text>
-            {e.description != null ? (
-              <Text style={[skin.peekBody(tokens), { marginTop: 6 }]}>{e.description}</Text>
-            ) : null}
-          </EscapeLayerProvider>
-          ),
-        };
-      }
-      const shown = lastHover.current;
-      if (shown == null) return null;
+      if (hoverKey == null || hoverEventRef.current == null) return null;
+      const e = hoverEventRef.current;
+      const [start, end] = spanOf(e);
       return (
-        <LiquidAnchoredOverlay
+        <AnchoredOverlay
           onAccessibilityEscape={hoverEscapeScope.onAccessibilityEscape}
-          key={shown.key}
-          open={hoverKey != null}
+          key={hoverKey}
+          open
           onDismiss={() => setHoverKey(null)}
           triggerRef={hoverAnchorRef}
           gap={6}
@@ -635,58 +611,37 @@ export function createCalendar(skin: CalendarSkin) {
           cardStyle={[skin.peekCard(tokens), { width: tm.peekWidth }]}
           inlineStyle={{ position: "absolute", top: "100%", left: 0 }}
         >
-          {shown.content}
-        </LiquidAnchoredOverlay>
+          <EscapeLayerProvider scope={hoverEscapeScope}>
+          <Text style={skin.peekTitle(tokens)}>{e.title ?? "Event"}</Text>
+          <Text style={[skin.eventTime(tokens), { marginTop: 2 }]}>
+            {`${WEEKDAYS_FULL[weekdayOf(e.day)]}, ${monthName} ${e.day} · ${formatHour(start, hour24)} – ${formatHour(end, hour24)}`}
+          </Text>
+          {e.description != null ? (
+            <Text style={[skin.peekBody(tokens), { marginTop: 6 }]}>{e.description}</Text>
+          ) : null}
+        </EscapeLayerProvider>
+        </AnchoredOverlay>
       );
     };
 
     // The anchored day peek: the pressed day's timeline in a floating overlay
     // card. Untimed events list as title rows; timed events render the same
-    // hour-slice timeline the day view draws, bounded to the day's events. On the
-    // liquid popup policy the card stays mounted through its exit, showing the
-    // snapshot of the day it showed while open (a month swap closes it, so the
-    // leaving card never re-titles itself); pressing another event day keys a
-    // fresh card on that cell.
+    // hour-slice timeline the day view draws, bounded to the day's events.
     const dayPeekOverlay = () => {
-      if (peekDay != null) {
-        const dayEvents = eventsOn(peekDay);
-        const timedDay = dayEvents.filter((e) => e.start != null);
-        const untimed = dayEvents.filter((e) => e.start == null);
-        // Bound the slice to this day's events (min two hours so a lone half-hour
-        // event still reads as a timeline).
-        const rs = timedDay.length ? Math.max(0, Math.floor(Math.min(...timedDay.map((e) => spanOf(e)[0])))) : 0;
-        const re = timedDay.length ? Math.min(24, Math.max(Math.ceil(Math.max(...timedDay.map((e) => spanOf(e)[1]))), rs + 2)) : 0;
-        const peekHours = Array.from({ length: re - rs }, (_, i) => rs + i);
-        lastPeek.current = {
-          key: peekDay,
-          content: (
-            <EscapeLayerProvider scope={escapeScope}>
-            <Text style={skin.peekTitle(tokens)}>{`${WEEKDAYS_FULL[weekdayOf(peekDay)]}, ${monthName} ${peekDay}`}</Text>
-            {untimed.map((e, i) => (
-              <View key={`untimed-${i}`} style={{ marginTop: 6 }}>
-                <Text numberOfLines={1} style={skin.eventTitle(tokens)}>{e.title ?? "Event"}</Text>
-              </View>
-            ))}
-            {timedDay.length > 0 ? (
-              <View style={{ flexDirection: "row", marginTop: 8 }}>
-                {axisFor(peekHours)}
-                <View style={{ flex: 1 }}>
-                  {slotsFor(peekHours)}
-                  {eventLayer(peekDay, true, rs, re, false)}
-                </View>
-              </View>
-            ) : null}
-          </EscapeLayerProvider>
-          ),
-        };
-      }
-      const shown = lastPeek.current;
-      if (shown == null) return null;
+      if (peekDay == null) return null;
+      const dayEvents = eventsOn(peekDay);
+      const timedDay = dayEvents.filter((e) => e.start != null);
+      const untimed = dayEvents.filter((e) => e.start == null);
+      // Bound the slice to this day's events (min two hours so a lone half-hour
+      // event still reads as a timeline).
+      const rs = timedDay.length ? Math.max(0, Math.floor(Math.min(...timedDay.map((e) => spanOf(e)[0])))) : 0;
+      const re = timedDay.length ? Math.min(24, Math.max(Math.ceil(Math.max(...timedDay.map((e) => spanOf(e)[1]))), rs + 2)) : 0;
+      const peekHours = Array.from({ length: re - rs }, (_, i) => rs + i);
       return (
-        <LiquidAnchoredOverlay
+        <AnchoredOverlay
           onAccessibilityEscape={escapeScope.onAccessibilityEscape}
-          key={shown.key}
-          open={peekDay != null}
+          key={peekDay}
+          open
           onDismiss={() => setPeekDay(null)}
           triggerRef={peekAnchorRef}
           gap={6}
@@ -695,8 +650,24 @@ export function createCalendar(skin: CalendarSkin) {
           cardStyle={[skin.peekCard(tokens), { width: tm.peekWidth }]}
           inlineStyle={{ position: "absolute", top: "100%", left: 0 }}
         >
-          {shown.content}
-        </LiquidAnchoredOverlay>
+          <EscapeLayerProvider scope={escapeScope}>
+          <Text style={skin.peekTitle(tokens)}>{`${WEEKDAYS_FULL[weekdayOf(peekDay)]}, ${monthName} ${peekDay}`}</Text>
+          {untimed.map((e, i) => (
+            <View key={`untimed-${i}`} style={{ marginTop: 6 }}>
+              <Text numberOfLines={1} style={skin.eventTitle(tokens)}>{e.title ?? "Event"}</Text>
+            </View>
+          ))}
+          {timedDay.length > 0 ? (
+            <View style={{ flexDirection: "row", marginTop: 8 }}>
+              {axisFor(peekHours)}
+              <View style={{ flex: 1 }}>
+                {slotsFor(peekHours)}
+                {eventLayer(peekDay, true, rs, re, false)}
+              </View>
+            </View>
+          ) : null}
+        </EscapeLayerProvider>
+        </AnchoredOverlay>
       );
     };
 

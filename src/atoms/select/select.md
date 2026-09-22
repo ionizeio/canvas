@@ -2,19 +2,10 @@
 
 Native select restyled to match Canvas inputs. Pass `label` (and `required`) to name the field: iOS and web render the label above the trigger, while Android floats the Material 3 in-container label once the menu opens or a value is selected. The trigger fills the parent it is given; a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container step sets its measure.
 
-In glass mode the option panel hands off with the trigger, the way the iOS 26
-menu takes its button: on open the trigger's glass, value, placeholder, floating
-label and chevron vanish whole and a compact droplet forms hanging under the
-trigger's box (over it, when the panel fits above), in the trigger's corner and
-tone, with the options inside it; the panel blooms up out of it over the spot the
-trigger held, with a bounded contour overshoot, recoil and an exact settle to the
-fitted panel resting over the trigger's box, and stays there while it is open, the
-first option where the value was. On close the options go inert at once and the
-pane deflates onto the trigger's box, pinching to the droplet's width and
-re-widening into the box, and the trigger is back the moment the pane has settled
-on it. The chosen value and expanded state commit immediately, ahead of the
-material. Reduce Motion settles at once with the trigger untouched and the panel
-beside it; solid mode keeps the ordinary entrance.
+In glass mode the option panel is a dense-layer glass card under the trigger (or
+above it when it fits there); the trigger stays in place with its value and
+chevron, and the chosen value and expanded state commit immediately. Solid mode
+paints the skin's own panel.
 
 The label also names the option list. Use `accessibilityLabel` to provide an explicit purpose when the visible label or placeholder is insufficient; it overrides both accessible names. A required field announces "required" with the button name and marks the option list as required. The selected value never replaces the field's purpose.
 

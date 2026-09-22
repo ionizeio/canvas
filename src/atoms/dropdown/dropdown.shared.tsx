@@ -1,19 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { View, Pressable, Text, useHugStyle, useOverlayHost, useMeasuredWidth, useRovingFocus, isRTL, RippleClip, cornerRadii, isGlass, type StyleProp, type ViewStyle, withInnerFill } from "../../style/index.js";
-import { useReducedMotion } from "../../style/motion.js";
-// The kit-owned popup policy: the menu material grows from its anchor edge with a
-// bounded contour overshoot, recoils and settles, and stays visible briefly on
-// close while its rows are already inert. Solid mode and Reduce Motion keep the
-// ordinary entrance. Internal, never a public prop.
-import { LiquidAnchoredOverlay } from "../../style/liquid-anchored-overlay.js";
-// The button-to-menu hand-off: under glass the trigger's pill IS the menu's
-// material at progress 0, so the pill and its label vanish into the droplet on open
-// and the pane re-forms the pill before the label fades back on close. A trigger-side
-// capability of the Dropdown (the AvatarMenu and the collapsed Navbar menu inherit
-// it), never the field popups', whose field must stay visible for typing.
-import { PopupHandoffContext, PopupHandoffForeground, usePopupHandoff } from "../../style/popup-handoff.js";
+import { View, Pressable, Text, useHugStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, useRovingFocus, isRTL, RippleClip, cornerRadii, type StyleProp, type ViewStyle, withInnerFill } from "../../style/index.js";
 import { Button } from "../button/button.js";
 import { Icon, type IconName } from "../icon/icon.js";
 import { wrapper, wrapperLifted, customTrigger, type DropdownSkin } from "./dropdown.styles.js";
@@ -136,7 +124,7 @@ type FocusableRow = { focus?: (options?: { preventScroll?: boolean }) => void } 
 // trigger's leading edge and pinning its end edge lines up the trailing edges,
 // mirrored automatically in a right-to-left locale.
 // The inline anchors take their standoff from the skin, so a menu built for a
-// taller trigger (the account pill, which the hand-off stands off by 6) can differ
+// taller trigger (the account pill, which its design spec stands off by 6) can differ
 // without any caller-facing spacing prop. start/end stay logical for RTL.
 const menuAnchor = (gap: number): ViewStyle => ({ position: "absolute", top: "100%", start: 0, zIndex: 50, marginTop: gap });
 const menuAnchorEnd = (gap: number): ViewStyle => ({ position: "absolute", top: "100%", end: 0, zIndex: 50, marginTop: gap });
@@ -252,14 +240,6 @@ export function createDropdown(skin: DropdownSkin) {
     const triggerRef = useRef<View>(null);
     const host = useOverlayHost();
 
-    // The hand-off runs when the trigger's own material is glass (the pill exists to
-    // hand off), motion is allowed, and the menu is hosted (the hosted overlay
-    // measures the trigger's frame, which the inline fallback never has). The trigger
-    // subtree reads the channel through the context; the overlay takes the same
-    // channel and, while it is from the trigger, the trigger's frame as its origin.
-    const reducedMotion = useReducedMotion();
-    const { handoff, context: handoffContext } = usePopupHandoff(isGlass(theme) && !reducedMotion && host != null);
-
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
 
     return (
@@ -271,10 +251,6 @@ export function createDropdown(skin: DropdownSkin) {
         style={[wrapper, open && !host ? wrapperLifted : null, hug, style]}
         onLayout={onTriggerLayout}
       >
-        {/* Under a hand-off the trigger's foreground fades on the pane's travel and any
-            GlassPane inside it hides in place (never at a partial opacity, see
-            popup-handoff.tsx); without one the fader renders nothing of its own. */}
-        <PopupHandoffContext.Provider value={handoffContext}>
         {children != null ? (
           <Pressable
             // Custom content can contain its own native material. Its owner
@@ -294,18 +270,15 @@ export function createDropdown(skin: DropdownSkin) {
             aria-disabled={disabled ? true : undefined}
             {...{ "aria-haspopup": "menu" }}
           >
-            <PopupHandoffForeground>{children}</PopupHandoffForeground>
+            {children}
           </Pressable>
         ) : (
-          <PopupHandoffForeground>
-            <Button outline small expanded={open} haspopup="menu" disabled={disabled} onPress={() => setOpen(!open)}>
-              {trigger}
-            </Button>
-          </PopupHandoffForeground>
+          <Button outline small expanded={open} haspopup="menu" disabled={disabled} onPress={() => setOpen(!open)}>
+            {trigger}
+          </Button>
         )}
-        </PopupHandoffContext.Provider>
 
-        <LiquidAnchoredOverlay
+        <AnchoredOverlay
           onAccessibilityEscape={escapeScope.onAccessibilityEscape}
           open={open}
           onDismiss={() => setOpen(false)}
@@ -331,7 +304,6 @@ export function createDropdown(skin: DropdownSkin) {
           // into them: on the portaled path that is a measurement later than the
           // open itself.
           onCardMount={focusFirstItem}
-          handoff={handoff}
         >
           <EscapeLayerProvider scope={escapeScope}>
             {/* role="menu" gives the menuitem rows a valid ARIA parent; without it
@@ -421,7 +393,7 @@ export function createDropdown(skin: DropdownSkin) {
             </View>
             </RippleClip>
         </EscapeLayerProvider>
-        </LiquidAnchoredOverlay>
+        </AnchoredOverlay>
       </View>
     );
   };

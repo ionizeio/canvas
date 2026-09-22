@@ -3,20 +3,7 @@ import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { consumeEscapeKey, EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { forwardRef, useEffect, useId, useRef, useState } from "react";
 import { Platform, type Role, type TextInput as RNTextInput } from "react-native";
-import { View, Pressable, Text, TextInput, useControllableState, useFillStyle, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, isGlass, PANE_SIBLING_INPUT, withInnerFill } from "../../style/index.js";
-// The kit-owned popup policy for the suggestion list: under glass the material grows out of
-// the anchor edge, recoils and settles, and stays visible briefly on close while
-// the rows are already inert. Solid mode and Reduce Motion keep the ordinary
-// entrance. Internal, never a public prop.
-import { LiquidAnchoredOverlay } from "../../style/liquid-anchored-overlay.js";
-// The field hand-off (popup-handoff.tsx): under glass the field vanishes into a drop
-// hanging under its box, the list blooms up over the box and rests there, the way the
-// iOS 26 menu takes its button, and on close deflates back onto the box, the field
-// returning at the snap. The editor keeps focus under the pane throughout; the query
-// echo at the top of the list shows what it holds (autocomplete-echo.tsx).
-import { HandoffText, PopupHandoffContext, PopupHandoffForeground, handoffInk, usePopupHandoff } from "../../style/popup-handoff.js";
-import { QueryEcho } from "./autocomplete-echo.js";
-import { useReducedMotion } from "../../style/motion.js";
+import { View, Pressable, Text, TextInput, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, isGlass, PANE_SIBLING_INPUT, withInnerFill } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useActiveOptionScroll } from "../../style/use-active-option-scroll.js";
 import { AccessibilityReturnBoundary, accessibilitySelectionProps, useAccessibilityReturn } from "../../style/use-accessibility-return.js";
@@ -134,21 +121,7 @@ const asNum = (v: unknown, fallback: number): number => (typeof v === "number" ?
 // behavior). With a provider, AnchoredOverlay portals the card over the page and
 // adds the outside-tap dismiss backdrop instead. `start:0,end:0` pins it to the
 // field's width; the skin owns the card's shape/fill/shadow.
-// The standoff between the field's edge and the list where the field stays visible
-// (solid mode, Reduce Motion, the inline fallback); under the hand-off the list rests
-// over the field instead (`coverStandoff`).
-const LIST_GAP = 4;
-const POPOVER_ANCHOR: ViewStyle = { position: "absolute", top: "100%", start: 0, end: 0, zIndex: 50, marginTop: LIST_GAP };
-// The editor's slot under the hand-off: the fader takes the editor's place in the
-// field's row (the same flex share and floor, stretched to the row so a floating-label
-// editor can stretch inside it) and the editor fills it, so the row lays out exactly
-// as it does without the fader. The editor itself is never an animated component: an
-// animated host re-attaches its ref on every render, which the accessibility return
-// reads as the editor detaching and cancels its request on.
-const EDITOR_SLOT: ViewStyle = { flex: 1, minWidth: 0, flexDirection: "row", alignItems: "center", alignSelf: "stretch" };
-// The Android floating label's layer under the hand-off: the label fades with the
-// editor, positioned against the field's box exactly as it is without the layer.
-const FLOAT_LAYER: ViewStyle = { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, pointerEvents: "none" };
+const POPOVER_ANCHOR: ViewStyle = { position: "absolute", top: "100%", start: 0, end: 0, zIndex: 50, marginTop: 4 };
 
 // The option list is a SCROLLPORT inside the card's `maxHeight` cap. The cap bounds
 // the CARD, so without this the list would keep its full content height and the
@@ -279,18 +252,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
     // open-state outline in the foreground, outside the lens's sampled backdrop.
     // Native fields keep their original border or bottom indicator.
     const glass = isGlass(theme);
-    // The hand-off runs when the field's material is glass, motion is allowed and the
-    // list is hosted (the hosted overlay measures the field's frame, which the inline
-    // fallback never has); the field's subtree reads the channel through the context.
-    const reducedMotion = useReducedMotion();
-    const { handoff, context: handoffContext } = usePopupHandoff(glass && !reducedMotion && host != null, { field: true });
-    const ink = handoffInk(handoffContext);
-    // While the list is open under the hand-off the pane rests over the field, whose
-    // material and text are hidden (popup-handoff.tsx): the open-state border, which
-    // the box (or the web's foreground stroke) paints outside that material, is not
-    // painted either, or it would show through the pane's glass as an outline.
-    const covered = handoffContext != null && open;
-    const glassField: ViewStyle | null = glass ? { backgroundColor: "transparent", borderColor: open && !covered && !entryMaterial.foregroundStateBorder ? fieldShape.borderColor : "transparent" } : null;
+    const glassField: ViewStyle | null = glass ? { backgroundColor: "transparent", borderColor: open && !entryMaterial.foregroundStateBorder ? fieldShape.borderColor : "transparent" } : null;
 
     return (
       <View style={[wrapper, open && !host ? wrapperLifted : null, widthCap, style]}>
@@ -299,7 +261,6 @@ export function createAutocomplete(skin: AutocompleteSkin) {
             <LabelContent label={label!} required={required} starColor={tokens.destructive} />
           </Text>
         ) : null}
-        <PopupHandoffContext.Provider value={handoffContext}>
         <View
           ref={fieldRef}
           onLayout={onTriggerLayout}
@@ -310,7 +271,6 @@ export function createAutocomplete(skin: AutocompleteSkin) {
           ]}
         >
           <GlassPane {...entryMaterial.paneProps} shape={fieldShape} />
-          <PopupHandoffForeground style={EDITOR_SLOT}>
           <TextInput
             ref={accessibilityReturn.inputRef}
             // The field paints its own focus state (the skin's open border), so
@@ -418,7 +378,6 @@ export function createAutocomplete(skin: AutocompleteSkin) {
             accessibilityLabel={hasLabel ? label : undefined}
             aria-label={hasLabel ? label : undefined}
           />
-          </PopupHandoffForeground>
           <Pressable
             style={({ pressed }) => [
               skin.chevronTarget(size),
@@ -437,10 +396,9 @@ export function createAutocomplete(skin: AutocompleteSkin) {
             aria-expanded={open}
             aria-disabled={!!disabled}
           >
-            <HandoffText style={[skin.chevron(tokens, size), ink]}>▾</HandoffText>
+            <Text style={skin.chevron(tokens, size)}>▾</Text>
           </Pressable>
           {floating ? (
-            <PopupHandoffForeground style={FLOAT_LAYER}>
             <FloatingLabel
               styles={skin}
               size={size}
@@ -453,13 +411,11 @@ export function createAutocomplete(skin: AutocompleteSkin) {
               isError={false}
               height={fieldHeight}
             />
-            </PopupHandoffForeground>
           ) : null}
-          {covered ? null : entryMaterial.stateBorder(fieldShape, open)}
+          {entryMaterial.stateBorder(fieldShape, open)}
         </View>
-        </PopupHandoffContext.Provider>
 
-        <LiquidAnchoredOverlay
+        <AnchoredOverlay
           onAccessibilityEscape={escapeScope.onAccessibilityEscape}
           ownsScroll
           open={open}
@@ -468,7 +424,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
             setOpen(false);
           }}
           triggerRef={fieldRef}
-          gap={LIST_GAP}
+          gap={4}
           cardStyle={[skin.popover(tokens), { minWidth: triggerWidth }]}
           inlineStyle={POPOVER_ANCHOR}
           // The filtered option list is a card of rows, so under glass it takes
@@ -479,21 +435,9 @@ export function createAutocomplete(skin: AutocompleteSkin) {
           // A controlled `open` with no onOpenChange can never actually close, so
           // the hosted dismiss backdrop is skipped (it would only block the page).
           dismissable={openProp === undefined || onOpenChange !== undefined}
-          handoff={handoff}
         >
           <AccessibilityReturnBoundary onMount={accessibilityReturn.onContentMount} onUnmount={accessibilityReturn.onContentUnmount}>
             <EscapeLayerProvider scope={escapeScope}>
-              {/* Under the hand-off the list rests over the field, so the field's line
-                  is echoed inside the pane (the query, the value or the placeholder,
-                  and the chevron); the fragment leaves the tree byte for byte otherwise. */}
-              <QueryEcho
-                active={handoffContext != null}
-                skin={skin} tokens={tokens} size={size}
-                text={fieldValue} placeholder={placeholder}
-                field={fieldShape} card={skin.popover(tokens)}
-                editor={accessibilityReturn.editor}
-                onClose={() => { accessibilityReturn.cancel(); setOpen(false); }}
-              >
               <OverlayScrollView
                 ref={listRef}
                 style={optionScroll}
@@ -553,10 +497,9 @@ export function createAutocomplete(skin: AutocompleteSkin) {
                   </View>
                 </RippleClip>
               </OverlayScrollView>
-              </QueryEcho>
             </EscapeLayerProvider>
           </AccessibilityReturnBoundary>
-        </LiquidAnchoredOverlay>
+        </AnchoredOverlay>
 
         {helperText != null && helperText !== "" ? (
           <Text style={skin.helper(tokens)}>{helperText}</Text>

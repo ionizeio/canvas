@@ -1,9 +1,7 @@
-import type { ReactElement, ReactNode } from "react";
-import { Animated } from "react-native";
-import { View, Text, useControllableState, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
+import type { ReactElement } from "react";
+import { View, Text, useControllableState, type ColorTokens, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
 import { GlassPane, paneStyle } from "../../style/glass-surface/glass-pane.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { handoffInk, usePopupHandoffPill } from "../../style/popup-handoff.js";
 import type { DropdownItem, DropdownProps } from "../dropdown/dropdown.shared.js";
 import { Icon } from "../icon/icon.js";
 import { createAvatar, type AvatarSkin } from "./avatar.shared.js";
@@ -23,7 +21,7 @@ import { createAvatar, type AvatarSkin } from "./avatar.shared.js";
 // can paint its open fill and rotate the chevron, and passes open/onOpenChange
 // down to keep Dropdown in step.
 //
-// The pill's disc is the Avatar `tiny` step (24px), the size the hand-off draws
+// The pill's disc is the Avatar `tiny` step (24px), the size the design spec draws
 // inside the capsule on every platform, so the inset around it stays 4 on web, 6
 // on iOS, and 8 on Android instead of collapsing to a ring around the photo.
 //
@@ -113,25 +111,6 @@ function accountLabel(name?: string, email?: string): string {
   return name ?? email ?? "Account menu";
 }
 
-// The capsule is the PILL of the Dropdown's hand-off: it paints its own GlassPane
-// (which hides and re-forms on the material curve) and its foreground nodes take the
-// label's fade as ink of their own (`Ink`), so Dropdown's whole-subtree fader becomes
-// a pass-through and never sits over the capsule's material (popup-handoff.tsx). The
-// Avatar inside fades itself the same way. Rendered as a component of its own because
-// the hand-off channel is provided by Dropdown around its trigger, inside this tree.
-function Capsule({ shape, pane, children }: { shape: StyleProp<ViewStyle>; pane: ReactNode; children: ReactNode }) {
-  usePopupHandoffPill();
-  return <View style={shape}>{pane}{children}</View>;
-}
-
-// A foreground node of the capsule: the label's fade folded with its own ink (the
-// disabled dim) under a hand-off, the plain node otherwise.
-function Ink({ style, opacity, children }: { style: StyleProp<ViewStyle>; opacity: number; children: ReactNode }) {
-  const pill = usePopupHandoffPill();
-  if (!pill) return <View style={style}>{children}</View>;
-  return <Animated.View style={[style, handoffInk(pill, opacity)]}>{children}</Animated.View>;
-}
-
 /** Build an AvatarMenu from the same platform skin family as Avatar and AvatarGroup. */
 export function createAvatarMenu(skin: AvatarMenuSkin, Dropdown: (props: DropdownProps) => ReactElement) {
   // The pill's avatar comes from the same skin, built once per platform module. It
@@ -191,12 +170,13 @@ export function createAvatarMenu(skin: AvatarMenuSkin, Dropdown: (props: Dropdow
             own: it is NOT a Pressable, since nesting one inside Dropdown's would
             make a doubly-focusable, invalid control
             (test/no-console-violations.test.tsx locks that). */}
-        <Capsule shape={paneStyle(theme, pillShape)} pane={<GlassPane layer="control" shape={pillShape} interactive={!disabled} />}>
+        <View style={paneStyle(theme, pillShape)}>
+          <GlassPane layer="control" shape={pillShape} interactive={!disabled} />
           {/* `tiny` (24px) is the disc the capsule is drawn around: it leaves the
-              hand-off's 4/6/8 inset inside the 32/36/40 pill on web/iOS/Android. */}
+              design spec's 4/6/8 inset inside the 32/36/40 pill on web/iOS/Android. */}
           <Avatar tiny src={src} name={name} initials={initials} />
           {compact ? null : (
-            <Ink style={[IDENTITY_COLUMN, disabledInk]} opacity={disabledInk ? skin.menuDisabledOpacity : 1}>
+            <View style={[IDENTITY_COLUMN, disabledInk]}>
               {name ? (
                 <Text numberOfLines={1} style={[skin.menuPillName, { color: tokens.foreground }]}>
                   {name}
@@ -207,14 +187,14 @@ export function createAvatarMenu(skin: AvatarMenuSkin, Dropdown: (props: Dropdow
                   {email}
                 </Text>
               ) : null}
-            </Ink>
+            </View>
           )}
           {/* The chevron points down when closed and flips up while the menu is open;
               it repeats the button's own state, so it stays decorative. */}
-          <Ink style={[{ transform: [{ rotate: expanded ? "180deg" : "0deg" }] }, disabledInk]} opacity={disabledInk ? skin.menuDisabledOpacity : 1}>
+          <View style={[{ transform: [{ rotate: expanded ? "180deg" : "0deg" }] }, disabledInk]}>
             <Icon chevronDown size={skin.menuChevronSize} muted decorative />
-          </Ink>
-        </Capsule>
+          </View>
+        </View>
       </Dropdown>
     );
   };

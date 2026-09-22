@@ -19,11 +19,7 @@
 // the arrangement that renders exactly as authored, so each distinct surface
 // size gets its own `<filter>` under `cds-glass-lens-<w>x<h>`, acquired on
 // layout and refcounted so live surfaces share defs and resize storms do not
-// accumulate garbage. A surface whose material MOVES (a liquid popup's pane, resized
-// by its spring on almost every frame) does not acquire per layout: its lens layer
-// takes the bounds the motion settles at and holds that one def through the travel
-// (GlassLensLayer in glass-surface.tsx), because every def here costs Chromium a
-// fresh isolated SVG document for the map.
+// accumulate garbage.
 //
 // Map anatomy: one image carries both axes. The red channel is the X
 // displacement (low band on the left rim, high band on the right), the green
@@ -314,11 +310,10 @@ export function useGlassLens(glass: boolean): boolean {
 }
 
 /**
- * The sized-def lifecycle for one lens layer: feed it the size the layer's def is
- * for (its layout size, or the resting bounds while its surface moves), get the
- * backdrop-filter value to render. Acquires the def for the current size, swaps
- * when the size changes, releases on unmount, and returns the pending grade until
- * the def exists.
+ * The sized-def lifecycle for one lens layer: feed it the layer's layout size,
+ * get the backdrop-filter value to render. Acquires the def for the current
+ * size, swaps on resize, releases on unmount, and returns the pending grade
+ * until the def exists.
  */
 export function useSizedGlassLens(width: number, height: number, clear = false): string {
   const w = Math.round(width);

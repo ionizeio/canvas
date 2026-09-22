@@ -8,11 +8,9 @@
 // corners, with taps passing through. In solid mode it renders nothing at all, so the
 // solid tree is byte-identical to the pre-glass one.
 
-import { useContext } from "react";
-import { Animated, StyleSheet, type LayoutChangeEvent, type StyleProp, type ViewStyle } from "react-native";
+import { StyleSheet, type StyleProp, type ViewStyle } from "react-native";
 import { useTheme, type ThemeValue } from "../theme.js";
 import { isGlass } from "../glass-fill.js";
-import { PopupHandoffContext, shapeRadius } from "../popup-handoff.js";
 import { GlassSurface } from "./glass-surface.js";
 import { contrastBorder, type GlassLayer } from "./glass-surface.shared.js";
 
@@ -37,10 +35,6 @@ export interface GlassPaneProps {
 
 export function GlassPane({ layer = "control", shape, tint, brand, interactive, testID, static: stable, clear }: GlassPaneProps) {
   const theme = useTheme();
-  // Inside a Dropdown-class trigger the pane takes part in the button-to-menu hand-off
-  // (popup-handoff.tsx): it reports its shape, so the pill's corner is the pane's
-  // progress-0 corner, and hides in place while the menu's material stands in for it.
-  const handoff = useContext(PopupHandoffContext);
   if (!isGlass(theme)) return null;
   const flat = (StyleSheet.flatten(shape) ?? {}) as ViewStyle;
   const radii: ViewStyle = {
@@ -62,20 +56,7 @@ export function GlassPane({ layer = "control", shape, tint, brand, interactive, 
   for (const [key, value] of Object.entries(flat)) {
     if (key.startsWith("border")) (radii as Record<string, unknown>)[key] = value;
   }
-  if (!handoff) return <GlassSurface static={stable} clear={clear} layer={layer} tint={tint} brand={brand} interactive={interactive} pointerEvents="none" testID={testID} style={[StyleSheet.absoluteFill, radii, { zIndex: -1 }]} />;
-  const report = (event: LayoutChangeEvent) => {
-    const { width, height } = event.nativeEvent.layout;
-    if (width > 0 && height > 0) handoff.report({ radius: shapeRadius(radii), width, height, layer, clear: !!clear });
-  };
-  // The wrapper carries the hand-off's material opacity (1 or 0, never between; see
-  // HANDOFF_RETURN) and its re-forming scales (whole at rest, growing back under a
-  // closing drop as a short fat oval), so the surface underneath keeps the same tree
-  // it has elsewhere.
-  return (
-    <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { zIndex: -1, opacity: handoff.material, transform: [{ scaleX: handoff.growth }, { scaleY: handoff.growthTall }] }]}>
-      <GlassSurface static={stable} clear={clear} layer={layer} tint={tint} brand={brand} interactive={interactive} pointerEvents="none" testID={testID} style={[StyleSheet.absoluteFill, radii]} onLayout={report} />
-    </Animated.View>
-  );
+  return <GlassSurface static={stable} clear={clear} layer={layer} tint={tint} brand={brand} interactive={interactive} pointerEvents="none" testID={testID} style={[StyleSheet.absoluteFill, radii, { zIndex: -1 }]} />;
 }
 
 /**

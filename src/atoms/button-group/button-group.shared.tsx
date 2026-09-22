@@ -1,24 +1,13 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Animated, type GestureResponderEvent, type LayoutChangeEvent, type LayoutRectangle } from "react-native";
-import { View, Pressable, Text, RippleClip, cornerRadii, useHugStyle, useSizing, useControllableState, useOverlayHost, useMeasuredWidth, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, type MeasureProps, stepOf } from "../../style/index.js";
-// The kit-owned popup policy for the split menu: under glass the material grows out of
-// the anchor edge, recoils and settles, and stays visible briefly on close while
-// the rows are already inert. Solid mode and Reduce Motion keep the ordinary
-// entrance. Internal, never a public prop.
-import { LiquidAnchoredOverlay } from "../../style/liquid-anchored-overlay.js";
+import { type GestureResponderEvent, type LayoutChangeEvent, type LayoutRectangle } from "react-native";
+import { View, Pressable, Text, RippleClip, cornerRadii, useHugStyle, useSizing, useControllableState, AnchoredOverlay, useOverlayHost, useMeasuredWidth, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, type MeasureProps, stepOf } from "../../style/index.js";
 import { Icon, type IconName } from "../icon/icon.js";
 import { primaryText } from "../../style/primary-text.js";
 import * as s from "./button-group.styles.js";
 import { GroupGlass, GlassSelection } from "./button-group-glass.js";
 import { paneStyle } from "../../style/glass-surface/glass-pane.js";
-// The button-to-menu hand-off (popup-handoff.tsx): under glass the whole split group is
-// the pill its menu takes, the way the reference's bar pill (three items) vanishes
-// into its menu: the group's material hides in place, the primary label, the divider
-// and the chevron fade, the pane blooms from the group's frame and re-forms it on close.
-import { HandoffText, PopupHandoffContext, handoffInk, usePopupHandoff } from "../../style/popup-handoff.js";
-import { useReducedMotion } from "../../style/motion.js";
 
 // Shared ButtonGroup shell. The structure (the four kinds, their layout, the
 // uncontrolled stepper position, the split dropdown), the accessibility, the
@@ -336,7 +325,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     const hug = useHugStyle();
     const [open, setOpen] = useState(false);
     // A group disabled while its menu is open cannot keep live rows: close it, so
-    // the retained exit retires the rows at once and nothing selects afterwards.
+    // nothing selects afterwards.
     useEffect(() => {
       if (disabled) setOpen(false);
     }, [disabled]);
@@ -347,12 +336,6 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     const { width: triggerWidth, onLayout: onTriggerLayout } = useMeasuredWidth();
     const triggerRef = useRef<View>(null);
     const host = useOverlayHost();
-    // The hand-off runs when the group's material is glass, motion is allowed and the
-    // menu is hosted (the hosted overlay measures the group's frame); the group's
-    // subtree reads the channel through the context.
-    const reducedMotion = useReducedMotion();
-    const { handoff, context: handoffContext } = usePopupHandoff(glass && !reducedMotion && host != null);
-    const ink = handoffInk(handoffContext);
     // The skin's splitMenu merges the card visuals (fill/border/shadow/radius)
     // with the inline anchor (position/top/end/marginTop/zIndex). Split them so
     // AnchoredOverlay can style the portaled card via cardStyle and fall back to
@@ -367,7 +350,6 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
         testID={testID}
         onLayout={onTriggerLayout}
       >
-        <PopupHandoffContext.Provider value={handoffContext}>
         {glass ? <GroupGlass testID={testID ? `${testID}-glass` : undefined} /> : null}
         {/* Each half is its own rounded surface, so its bounded Android ripple is clipped
             to those corners by a RippleClip parent (no-op on iOS/web). See src/style/ripple-clip. */}
@@ -379,11 +361,11 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
             android_ripple={ripple ? ripple(tokens) : undefined}
             accessibilityRole="button"
           >
-            <HandoffText style={[skin.splitPrimaryLabel(tokens), s.sizeLabel[size], glass ? s.glassSegmentLabel(tokens, true) : null, disabled && glass ? s.dim : null, ink]}>{primary}</HandoffText>
+            <Text style={[skin.splitPrimaryLabel(tokens), s.sizeLabel[size], glass ? s.glassSegmentLabel(tokens, true) : null, disabled && glass ? s.dim : null]}>{primary}</Text>
           </Pressable>
         </RippleClip>
         {/* Hairline divider so the chevron reads as a distinct trigger. */}
-        <Animated.View style={[glass ? s.glassDivider(tokens, triggerHeight) : skin.splitDivider(tokens, triggerHeight), ink]} />
+        <View style={glass ? s.glassDivider(tokens, triggerHeight) : skin.splitDivider(tokens, triggerHeight)} />
         <RippleClip shape={glass ? s.glassEndCorners : cornerRadii(skin.splitTrigger(tokens, triggerHeight))}>
           <Pressable
             style={({ pressed }) => [paneStyle(theme, [skin.splitTrigger(tokens, triggerHeight), glass ? s.glassCell : null]), skin.pressedOpacity != null && pressed && !glass ? { opacity: skin.pressedOpacity } : null]}
@@ -395,13 +377,12 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
             aria-expanded={open}
             accessibilityLabel="More actions"
           >
-            <Animated.View style={[{ transform: [{ rotate: open ? "180deg" : "0deg" }] }, ink]}>
+            <View style={{ transform: [{ rotate: open ? "180deg" : "0deg" }] }}>
               <Icon chevronDown size={s.chevronSize[size]} {...(glass ? { color: primaryText(tokens) } : iconColorProps(skin.splitChevronColor))} />
-            </Animated.View>
+            </View>
           </Pressable>
         </RippleClip>
-        </PopupHandoffContext.Provider>
-        <LiquidAnchoredOverlay
+        <AnchoredOverlay
           onAccessibilityEscape={escapeScope.onAccessibilityEscape}
           open={open}
           onDismiss={() => setOpen(false)}
@@ -415,7 +396,6 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
           // RowMenu: the material under the model's densest tint, so the items stay
           // legible over the page.
           dense
-          handoff={handoff}
         >
           <EscapeLayerProvider scope={escapeScope}>
           {/* role="menu" gives the menuitem rows a valid ARIA parent; without it
@@ -425,11 +405,10 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
               <Pressable
                 key={`${item}-${i}`}
                 style={({ pressed }) => [s.splitMenuItem, pressed ? skin.splitMenuItemPressed(tokens) : null]}
-                // A row that outlives its logical menu (the retained material's exit,
-                // a group disabled while open) is inert: it never selects.
+                // A row of a group disabled while its menu is open is inert: it never selects.
                 disabled={disabled}
                 onPress={(e) => {
-                  if (!open || disabled) return;
+                  if (disabled) return;
                   onSelect?.(i + 1, item, e);
                   setOpen(false);
                 }}
@@ -440,7 +419,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
             ))}
           </View>
           </EscapeLayerProvider>
-        </LiquidAnchoredOverlay>
+        </AnchoredOverlay>
       </View>
     );
   }

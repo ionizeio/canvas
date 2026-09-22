@@ -46,7 +46,7 @@ const platforms = [
 function sizeMenu(container: HTMLElement): void {
   const menu = container.querySelector('[role="menu"]');
   if (!menu) throw new Error("Expected the mounted inline menu before reporting its layout");
-  expect(layoutEntrance(menu, { width: 260, height: 160 })).toBe(true);
+  layoutEntrance(menu, { width: 260, height: 160 });
 }
 
 describe("real destructive text consumers", () => {

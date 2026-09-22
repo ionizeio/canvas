@@ -47,14 +47,6 @@ export interface AutocompleteSkin extends FloatingLabelStyles<Size> {
   /** The disclosure's real layout/touch target, including the field's border band. */
   chevronTarget: (size: Size) => ViewStyle;
   /**
-   * The disclosure's box in the QUERY ECHO at the top of the open list (the field's
-   * text and chevron re-formed inside the pane while the list rests over the field,
-   * see autocomplete-echo.tsx): the same column and trailing gutter as
-   * `chevronTarget`, so the glyph sits where the field's does, centred in the echo's
-   * shorter row and without the field box's hit-slop margins.
-   */
-  echoChevron: (size: Size) => ViewStyle;
-  /**
    * The open option list CARD: radius, fill, border, elevation/shadow, padding,
    * max-height. Positioning is owned by the shell (AnchoredOverlay portals and
    * anchors it; POPOVER_ANCHOR is the no-host inline fallback), so this returns
@@ -143,7 +135,6 @@ export const webSkin: AutocompleteSkin = {
     alignSelf: "stretch", alignItems: "center", justifyContent: "center", flexShrink: 0,
     width: 24, minHeight: 24,
   }),
-  echoChevron: () => ({ alignSelf: "stretch", alignItems: "center", justifyContent: "center", flexShrink: 0, width: 24 }),
   // The list is the Riskora menu: a 16px-cornered card with an 8px inset and
   // 40px rows with a 10px corner (matches Select's panel).
   popover: (t) => ({
@@ -241,7 +232,6 @@ export const iosSkin: AutocompleteSkin = {
     // gutter for the target instead of taking all 44pt from editable text.
     marginVertical: -1, marginEnd: -12,
   }),
-  echoChevron: () => ({ alignSelf: "stretch", alignItems: "center", justifyContent: "center", flexShrink: 0, width: 44, marginEnd: -12 }),
   popover: (t) => ({
     maxHeight: 260,
     overflow: "hidden", // clip rows to the rounded card; the list scrolls inside
@@ -329,7 +319,6 @@ export const androidSkin: AutocompleteSkin = {
     borderTopEndRadius: ANDROID_TOP_RADIUS,
     overflow: "hidden",
   }),
-  echoChevron: () => ({ alignSelf: "stretch", alignItems: "center", justifyContent: "center", flexShrink: 0, width: 48, marginEnd: -16 }),
   // M3 menu surface: flat 4dp corners, elevated (no soft drop shadow), zero
   // padding so the full-bleed rows reach the edges.
   popover: (t) => ({

@@ -5,7 +5,7 @@ Month grid, week timeline, and day timeline in one component. Events mark their 
 In glass mode the selected day is a brand-tinted control-layer puck behind its
 number and event dot, in the month grid and along the week strip; in `range`
 mode both endpoints carry the puck over the range band. The day peek and the
-hover card open and close on the liquid popup material. Solid mode keeps the
+hover card are functional-layer glass cards beside their day. Solid mode keeps the
 skin's own filled day.
 
 ## Usage

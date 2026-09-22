@@ -1,6 +1,5 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { useCallback, useContext, useEffect, useRef, useState, Fragment } from "react";
-import { PopupInteractionContext } from "../../style/popup-motion.js";
+import { useCallback, useEffect, useRef, useState, Fragment } from "react";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { glassMessageStyle } from "../../style/glass-message.js";
 import { Animated, KeyboardAvoidingView, Modal, Platform, StyleSheet } from "react-native";
@@ -107,8 +106,7 @@ export function createActionSheet(skin: ActionSheetSkin) {
     // Uncontrolled by default: the trigger opens the sheet and the scrim/Cancel
     // closes it; a controlled `open` prop overrides this.
     const [internalOpen, setInternalOpen] = useState(false);
-    const parentInteractive = useContext(PopupInteractionContext);
-    const open = parentInteractive && (openProp ?? internalOpen);
+    const open = openProp ?? internalOpen;
     const setOpen = useCallback(
       (next: boolean) => {
         if (openProp === undefined) setInternalOpen(next);
@@ -151,11 +149,7 @@ export function createActionSheet(skin: ActionSheetSkin) {
     const [sheetH, setSheetH] = useState(0);
     const progress = useRef(new Animated.Value(open ? 1 : 0)).current;
     useEffect(() => {
-      if (!parentInteractive) {
-        progress.stopAnimation();
-        progress.setValue(0);
-        setMounted(false);
-      } else if (open) {
+      if (open) {
         setMounted(true);
         Animated.timing(progress, { toValue: 1, duration: reduced ? 0 : 220, useNativeDriver: supportsNativeDriver }).start();
       } else if (mounted) {
@@ -163,7 +157,7 @@ export function createActionSheet(skin: ActionSheetSkin) {
           if (finished) setMounted(false);
         });
       }
-    }, [open, mounted, progress, reduced, parentInteractive]);
+    }, [open, mounted, progress, reduced]);
 
     const slide = progress.interpolate({ inputRange: [0, 1], outputRange: [sheetH || 600, 0] });
     const dimOpacity = progress.interpolate({ inputRange: [0, 1], outputRange: [0, skin.scrimOpacity] });
@@ -235,7 +229,7 @@ export function createActionSheet(skin: ActionSheetSkin) {
           </Button>
         ) : null}
         <Modal
-          visible={mounted && parentInteractive}
+          visible={mounted}
           transparent
           animationType="none"
           onRequestClose={escapeScope.onRequestClose}

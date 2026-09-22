@@ -2,18 +2,7 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useCallback, useContext, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { type Role } from "react-native";
-import { View, Text, GlassSurface, useOverlayHost, useMeasuredWidth, usePopoverFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
-// The kit-owned popup policy for the floating card: under glass the material grows out of
-// the anchor edge, recoils and settles, and stays visible briefly on close while
-// the rows are already inert. Solid mode and Reduce Motion keep the ordinary
-// entrance. Internal, never a public prop.
-import { LiquidAnchoredOverlay } from "../../style/liquid-anchored-overlay.js";
-// The button-to-menu hand-off (popup-handoff.tsx): under glass the trigger button's
-// pill is the card's material at progress 0, the way the Dropdown's button is: the
-// pill and its label vanish into the droplet, the card blooms from there, and on close
-// the pane re-forms the pill before the label fades back. Triggered and hosted only.
-import { PopupHandoffContext, PopupHandoffForeground, usePopupHandoff } from "../../style/popup-handoff.js";
-import { useReducedMotion } from "../../style/motion.js";
+import { View, Text, GlassSurface, AnchoredOverlay, useOverlayHost, useMeasuredWidth, usePopoverFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../button/button.js";
 import { type PopoverSkin, type Placement } from "./popover.styles.js";
 import * as s from "./popover.styles.js";
@@ -153,11 +142,6 @@ export function createPopover(skin: PopoverSkin) {
     const { width: triggerWidth, onLayout: onTriggerLayout } = useMeasuredWidth();
     const triggerRef = useRef<View>(null);
     const host = useOverlayHost();
-    // The hand-off runs when the trigger's material is glass, motion is allowed and the
-    // card is hosted (the hosted overlay measures the trigger's frame); never for the
-    // inline panel, which has no trigger.
-    const reducedMotion = useReducedMotion();
-    const { handoff, context: handoffContext } = usePopupHandoff(!inline && surface === "glass" && !reducedMotion && host != null);
 
     // The card body (heading, supporting line, custom content, optional action),
     // shared by the static inline panel and the floating overlay card.
@@ -210,22 +194,15 @@ export function createPopover(skin: PopoverSkin) {
         onLayout={onTriggerLayout}
       >
         <View style={s.triggerWrap}>
-          {/* Under the hand-off the button's foreground fades on the pane's travel and its
-              GlassPane hides in place (never at a partial opacity, see popup-handoff.tsx);
-              without one the fader renders nothing of its own. */}
-          <PopupHandoffContext.Provider value={handoffContext}>
-            <PopupHandoffForeground>
-              <Button outline small expanded={open} haspopup="dialog" onPress={() => setOpen(!open)}>
-                {trigger ?? "Open popover"}
-              </Button>
-            </PopupHandoffForeground>
-          </PopupHandoffContext.Provider>
+          <Button outline small expanded={open} haspopup="dialog" onPress={() => setOpen(!open)}>
+            {trigger ?? "Open popover"}
+          </Button>
         </View>
 
         {/* Hosted cards may flip above when space below is insufficient. The
             beak then follows the actual upper placement. Otherwise `top`
             retains its documented decoration-only behavior. */}
-        <LiquidAnchoredOverlay
+        <AnchoredOverlay
           onAccessibilityEscape={escapeScope.onAccessibilityEscape}
           open={open}
           onDismiss={() => setOpen(false)}
@@ -238,7 +215,6 @@ export function createPopover(skin: PopoverSkin) {
           // A controlled `open` with no onOpenChange can never actually close, so
           // the hosted dismiss backdrop is skipped (it would only block the page).
           dismissable={props.open === undefined || onOpenChange !== undefined}
-          handoff={handoff}
         >
           <EscapeLayerProvider scope={escapeScope}>
           {/* The anchor beak, drawn only when the skin supplies one (iOS) and only in
@@ -254,7 +230,7 @@ export function createPopover(skin: PopoverSkin) {
             {panelBody}
           </PopoverFocusPanel>
         </EscapeLayerProvider>
-        </LiquidAnchoredOverlay>
+        </AnchoredOverlay>
       </View>
     );
   };

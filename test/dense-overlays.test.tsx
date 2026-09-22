@@ -60,10 +60,9 @@ function overrideUserAgent(value: string) {
 
 // The anchored card and its surface: walk up from a node inside the floating content
 // to the absolute `top: 100%` anchor wrapper AnchoredOverlay positions. The wrapper's
-// child on that path is the card's root box (the plain View when opaque, the semantic
-// host beside its material under the liquid policy); the wrapper itself is the
-// SURFACE, whose subtree holds the material, which a liquid popup paints as a sibling
-// of the card so it can travel outside the card's own clip.
+// child on that path is the card's root box (the plain View when opaque, the
+// GlassSurface host under glass); the wrapper itself is the SURFACE, whose subtree
+// holds the material.
 function anchored(container: HTMLElement, contentSelector: string): { card: HTMLElement; surface: HTMLElement } {
   const content = container.querySelector(contentSelector) as HTMLElement | null;
   if (!content) throw new Error(`no ${contentSelector} rendered`);

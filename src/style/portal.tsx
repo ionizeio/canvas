@@ -43,8 +43,6 @@ import { GlassBlurTargetHost, blurTargetMountable } from "./glass-surface/glass-
 import { EntranceReadinessContext } from "./entrance-readiness.js";
 import { useTheme } from "./theme.js";
 import { ResolvedThemeProvider } from "./theme-context.js";
-import { PortalActivationContext } from "./portal-activation.js";
-import { PopupInteractionContext } from "./popup-motion.js";
 
 // What a <Portal> (and an anchored overlay) needs from its host. `measureOutlet`
 // is exposed so an anchored overlay can measure a trigger RELATIVE TO the outlet
@@ -82,44 +80,6 @@ export function intersectOverlayBounds(a: OverlayBounds, b: OverlayBounds): Over
 }
 
 const OverlayContext = createContext<OverlayHost | null>(null);
-
-interface PortalIdentity { id: string; host: OverlayHost | null }
-interface PortalMetadata {
-  parentId: string | null;
-  activation: symbol | number | null;
-}
-interface PortalEntry extends PortalMetadata { node: ReactNode }
-
-// Logical ancestry survives registry teleportation. Reset the opening token in
-// the published subtree so an ordinary nested Portal does not inherit an
-// unrelated owner's opening identity.
-const PortalParentContext = createContext<PortalIdentity | null>(null);
-// Keep activation metadata private while preserving the public host's existing
-// two-argument mount contract, including instrumentation/custom host behavior.
-const hostMetadata = new WeakMap<OverlayHost, Map<string, PortalMetadata>>();
-
-function raisePortalSubtree(entries: Map<string, PortalEntry>, id: string): void {
-  const descendants = new Set([id]);
-  // Usually parents register first. Walking to a fixed point also preserves
-  // ordering when a retained parent is republished after its descendants.
-  let found = true;
-  while (found) {
-    found = false;
-    for (const [childId, entry] of entries) {
-      if (!descendants.has(childId) && entry.parentId && descendants.has(entry.parentId)) {
-        descendants.add(childId);
-        found = true;
-      }
-    }
-  }
-  const raised = [...entries].filter(([entryId]) => descendants.has(entryId));
-  for (const [entryId] of raised) entries.delete(entryId);
-  // The parent may have been registered after a child. Put it first, then keep
-  // descendant sibling order stable. Existing keyed React children move intact.
-  const parent = raised.find(([entryId]) => entryId === id);
-  if (parent) entries.set(...parent);
-  for (const entry of raised) if (entry[0] !== id) entries.set(...entry);
-}
 
 /** The nearest overlay host, or null when no <OverlayProvider> is mounted. */
 export function useOverlayHost(): OverlayHost | null {
@@ -167,8 +127,8 @@ export function OverlayProvider({ children, style, separateWindow = false, viewp
   const parent = separateWindow ? null : inheritedHost;
   // The registry is an immutable Map snapshot held in a ref; each change swaps in
   // a new Map (new identity) so useSyncExternalStore detects it. Insertion order
-  // records logical opening order independently of retained mount lifetime.
-  const snapshot = useRef<ReadonlyMap<string, PortalEntry>>(new Map());
+  // is preserved, so a later-opened overlay paints over an earlier one.
+  const snapshot = useRef<ReadonlyMap<string, ReactNode>>(new Map());
   const listeners = useRef<Set<() => void>>(new Set());
   const layoutListeners = useRef<Set<() => void>>(new Set());
   const topInset = viewportInsets?.top ?? 0;
@@ -221,21 +181,14 @@ export function OverlayProvider({ children, style, separateWindow = false, viewp
 
   const host = useMemo<OverlayHost>(() => {
     const emit = () => listeners.current.forEach((l) => l());
-    const metadata = new Map<string, PortalMetadata>();
-    const host: OverlayHost = {
+    return {
       mount(id, node) {
         const next = new Map(snapshot.current);
-        const previous = next.get(id);
-        const current = metadata.get(id) ?? { parentId: null, activation: null };
-        next.set(id, { node, ...current });
-        if (!previous || (current.activation !== null && !Object.is(previous.activation, current.activation))) {
-          raisePortalSubtree(next, id);
-        }
+        next.set(id, node);
         snapshot.current = next;
         emit();
       },
       unmount(id) {
-        metadata.delete(id);
         if (!snapshot.current.has(id)) return;
         const next = new Map(snapshot.current);
         next.delete(id);
@@ -278,8 +231,6 @@ export function OverlayProvider({ children, style, separateWindow = false, viewp
         measureOwn((bounds) => { own = bounds; settle(); });
       },
     };
-    hostMetadata.set(host, metadata);
-    return host;
   }, [parent, viewport]);
 
   const subscribe = useCallback((listener: () => void) => {
@@ -313,7 +264,7 @@ export function OverlayProvider({ children, style, separateWindow = false, viewp
 interface OutletProps {
   outletRef: React.RefObject<View | null>;
   subscribe: (listener: () => void) => () => void;
-  getSnapshot: () => ReadonlyMap<string, PortalEntry>;
+  getSnapshot: () => ReadonlyMap<string, ReactNode>;
   onLayout: () => void;
 }
 
@@ -323,8 +274,8 @@ function Outlet({ outletRef, subscribe, getSnapshot, onLayout }: OutletProps) {
   const nodes = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
   return (
     <View ref={outletRef} style={outletStyles.outlet} onLayout={onLayout}>
-      {[...nodes].map(([id, entry]) => (
-        <Fragment key={id}>{entry.node}</Fragment>
+      {[...nodes].map(([id, node]) => (
+        <Fragment key={id}>{node}</Fragment>
       ))}
     </View>
   );
@@ -341,11 +292,7 @@ export interface PortalProps {
 export function Portal({ children }: PortalProps) {
   const host = useOverlayHost();
   const id = useId();
-  const activation = useContext(PortalActivationContext);
-  const parent = useContext(PortalParentContext);
-  const identity = useMemo(() => ({ id, host }), [id, host]);
   const entranceReady = useContext(EntranceReadinessContext);
-  const interactive = useContext(PopupInteractionContext);
   const theme = useTheme();
 
   // Publish the CURRENT children on every render (children is a fresh node each
@@ -361,16 +308,9 @@ export function Portal({ children }: PortalProps) {
     // updates to retain foreground state. Capture targets intentionally come
     // from the outlet: copying the publisher's target can create a native cycle.
     if (!host) return;
-    hostMetadata.get(host)?.set(id, { activation, parentId: parent?.host === host ? parent.id : null });
     host.mount(id,
       <ResolvedThemeProvider value={theme}>
-        <EntranceReadinessContext.Provider value={entranceReady}>
-          <PortalParentContext.Provider value={identity}>
-            <PortalActivationContext.Provider value={null}>
-              <PopupInteractionContext.Provider value={interactive}>{children}</PopupInteractionContext.Provider>
-            </PortalActivationContext.Provider>
-          </PortalParentContext.Provider>
-        </EntranceReadinessContext.Provider>
+        <EntranceReadinessContext.Provider value={entranceReady}>{children}</EntranceReadinessContext.Provider>
       </ResolvedThemeProvider>,
     );
   });

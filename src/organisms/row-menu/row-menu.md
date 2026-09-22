@@ -2,15 +2,9 @@
 
 Vertical action menu items and navigation links.
 
-In glass mode the menu hands off with its trigger, the way the iOS 26 menu takes
-its button: the glyph fades as a droplet forms hanging under its box in the box's
-corner, the menu blooms up out of it over the glyph's spot, recoils and settles
-resting over the glyph's box, and on close the rows go inert at once
-and out of the accessibility tree while the pane shrinks back to the glyph's box
-and the glyph fades back. The trigger paints no surface of its own, so the pane
-keeps the menu's dense tint throughout. A row's callback fires the moment it is
-pressed. Reduce Motion settles at once with the glyph untouched; solid mode keeps
-the ordinary entrance. Board's card menus are RowMenus and behave the same.
+In glass mode the menu is a dense-layer glass card beside its glyph; a row's
+callback fires the moment it is pressed. Solid mode paints the skin's own menu.
+Board's card menus are RowMenus and behave the same.
 
 ## Usage
 

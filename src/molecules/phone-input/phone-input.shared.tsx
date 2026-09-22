@@ -1,7 +1,7 @@
 import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { forwardRef, useEffect, useId, useRef, useState } from "react";
-import { Animated, type Role, type TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from "react-native";
+import { type Role, type TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from "react-native";
 import {
   View,
   Pressable,
@@ -9,8 +9,8 @@ import {
   TextInput,
   useControllableState,
   useFillStyle,
+  AnchoredOverlay,
   useMeasuredWidth,
-  useOverlayHost,
   LabelContent,
   RippleClip,
   cornerRadii,
@@ -25,17 +25,6 @@ import {
   withInnerFill,
   alpha,
 } from "../../style/index.js";
-// The kit-owned popup policy for the country list: under glass the material grows out of
-// the anchor edge, recoils and settles, and stays visible briefly on close while
-// the rows are already inert. Solid mode and Reduce Motion keep the ordinary
-// entrance. Internal, never a public prop.
-import { LiquidAnchoredOverlay } from "../../style/liquid-anchored-overlay.js";
-// The field hand-off (popup-handoff.tsx): under glass the country list pours out of
-// the box's edge (its width, corner and control tint) and, on close, absorbs back into
-// the box, the segment and the number yielding only while the pane covers it. The box
-// never vanishes: it is typed into while its list is open.
-import { HandoffText, PopupHandoffContext, handoffInk, usePopupHandoff } from "../../style/popup-handoff.js";
-import { useReducedMotion } from "../../style/motion.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { root, rootLifted, PANEL_ANCHOR } from "../../atoms/select/select.styles.js";
@@ -128,8 +117,6 @@ const NUMBER_AREA: ViewStyle = {
 
 // The list is a scrollport inside the panel's maxHeight cap (see select.shared.tsx).
 const optionScroll: ViewStyle = { flexShrink: 1 };
-// The standoff between the box's edge and the list (the hand-off's cover mark reads it too).
-const LIST_GAP = 4;
 
 /** Build a PhoneInput component from a platform skin. */
 export function createPhoneInput(skin: PhoneInputSkin) {
@@ -189,13 +176,6 @@ export function createPhoneInput(skin: PhoneInputSkin) {
     // The whole box anchors the list (the trigger's measured width is its minimum).
     const boxRef = useRef<View>(null);
     const { width: boxWidth, onLayout: onBoxLayout } = useMeasuredWidth();
-    // The hand-off runs when the box's material is glass, motion is allowed and the
-    // list is hosted (the hosted overlay measures the box's frame, which the inline
-    // fallback never has); the box's subtree reads the channel through the context.
-    const host = useOverlayHost();
-    const reducedMotion = useReducedMotion();
-    const { handoff, context: handoffContext } = usePopupHandoff(glass && !reducedMotion && host != null, { field: true });
-    const ink = handoffInk(handoffContext);
 
     const close = () => setOpen(false);
     // A field that becomes disabled or read-only while its country list is open
@@ -215,14 +195,8 @@ export function createPhoneInput(skin: PhoneInputSkin) {
     const ripple = field.ripple ? field.ripple(tokens) : undefined;
 
     const boxShape = field.groupContainer(tokens, borderColor, active, isError);
-    // While the country list is open under the hand-off the pane rests over the box,
-    // whose material and text are hidden: the state border the box (or the web's
-    // foreground stroke) paints outside that material is not painted either, or it
-    // would show through the pane's glass as an outline.
-    const covered = handoffContext != null && open;
-    const glassBox: ViewStyle | null = glass ? { backgroundColor: "transparent", borderColor: (active || isError) && !covered && !entryMaterial.foregroundStateBorder ? tokens[borderColor] : "transparent" } : null;
+    const glassBox: ViewStyle | null = glass ? { backgroundColor: "transparent", borderColor: (active || isError) && !entryMaterial.foregroundStateBorder ? tokens[borderColor] : "transparent" } : null;
     const box = (
-      <PopupHandoffContext.Provider value={handoffContext}>
       <View
         ref={boxRef}
         onLayout={onBoxLayout}
@@ -243,11 +217,11 @@ export function createPhoneInput(skin: PhoneInputSkin) {
           aria-controls={open ? listId : undefined}
           testID={props.testID != null ? `${props.testID}-country` : undefined}
         >
-          <HandoffText style={[skin.flag(size), ink]}>{selected ? (selected.flag ?? flagOf(selected.code)) : ""}</HandoffText>
-          <HandoffText style={[skin.caret(tokens, open), ink]}>{skin.caretGlyph}</HandoffText>
+          <Text style={skin.flag(size)}>{selected ? (selected.flag ?? flagOf(selected.code)) : ""}</Text>
+          <Text style={skin.caret(tokens, open)}>{skin.caretGlyph}</Text>
         </Pressable>
 
-        <Animated.View style={[NUMBER_AREA, ink]}>
+        <View style={NUMBER_AREA}>
           {selected ? (
             <Text style={[text, skin.dial(tokens), { alignSelf: "center" }]} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
               {selected.dialCode}
@@ -293,25 +267,23 @@ export function createPhoneInput(skin: PhoneInputSkin) {
             aria-labelledby={label != null && props.accessibilityLabel == null ? labelId : undefined}
             aria-describedby={props["aria-describedby"]}
           />
-        </Animated.View>
-        {covered ? null : entryMaterial.stateBorder(boxShape, active || isError)}
+        </View>
+        {entryMaterial.stateBorder(boxShape, active || isError)}
       </View>
-      </PopupHandoffContext.Provider>
     );
 
     const list = (
-      <LiquidAnchoredOverlay
+      <AnchoredOverlay
         onAccessibilityEscape={escapeScope.onAccessibilityEscape}
         ownsScroll
         open={open}
         onDismiss={close}
         triggerRef={boxRef}
-        gap={LIST_GAP}
+        gap={4}
         cardStyle={[skin.menu.panel(tokens), { minWidth: boxWidth }]}
         inlineStyle={PANEL_ANCHOR}
         // The country list is an option list: the DENSE layer under glass, like Select's.
         dense
-        handoff={handoff}
       >
         <EscapeLayerProvider scope={escapeScope}>
           <OverlayScrollView style={optionScroll} bounces={false}>
@@ -351,7 +323,7 @@ export function createPhoneInput(skin: PhoneInputSkin) {
             </RippleClip>
           </OverlayScrollView>
         </EscapeLayerProvider>
-      </LiquidAnchoredOverlay>
+      </AnchoredOverlay>
     );
 
     const dim = disabled ? { opacity: field.disabledOpacity } : null;

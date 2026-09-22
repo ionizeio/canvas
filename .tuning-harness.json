@@ -2,7 +2,6 @@
   "version": 2,
   "evidenceLog": "tools/native/liquid-motion.md",
   "sources": [
-    "src/style/popup-motion.tsx",
     "src/style/motion.ts",
     "src/style/glass-surface/glass-lens.ts",
     "src/organisms/backdrop/backdrop-clock.ts",
@@ -27,9 +26,7 @@
     "baseUrl": "http://localhost:8081",
     "routes": [
       "/testing/materials",
-      "/testing/materials?geometry=1",
       "/testing/backdrop",
-      "/testing/popup",
       "/testing/currents",
       "/testing/lattice",
       "/testing/orbit"

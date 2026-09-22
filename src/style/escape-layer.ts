@@ -1,7 +1,6 @@
 import { createContext, createElement, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { Platform, type TextInputProps } from "react-native";
 import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect.js";
-import { PopupInteractionContext } from "./popup-motion.js";
 
 // One owner per Escape. The identity is captured in the originating shell and
 // provided again INSIDE its teleported content: Canvas's Portal renders registry
@@ -194,11 +193,10 @@ export function consumeEscapeKey(event: EscapeEvent): void {
 /** Preserve local editing decisions before bridging RNW's stopped input keys. */
 export function useInputEscapeBridge(onKeyPress: TextInputProps["onKeyPress"]): NonNullable<TextInputProps["onKeyPress"]> {
   const owner = useContext(EscapeParent);
-  const interactive = useContext(PopupInteractionContext);
   const nativeRuntime = Platform.select({ web: false, default: true });
   return useCallback((event) => {
     onKeyPress?.(event);
-    if (!interactive || eventKey(event) !== "Escape") return;
+    if (eventKey(event) !== "Escape") return;
     const native = event.nativeEvent as typeof event.nativeEvent & { isComposing?: boolean; keyCode?: number; defaultPrevented?: boolean };
     const keyboard = event as typeof event & { isComposing?: boolean; keyCode?: number };
     if (native.isComposing || keyboard.isComposing || native.keyCode === 229 || keyboard.keyCode === 229) {
@@ -214,16 +212,12 @@ export function useInputEscapeBridge(onKeyPress: TextInputProps["onKeyPress"]): 
       // the field itself is outside the currently open overlay.
       dispatch(storeFor(document), event);
     }
-  }, [onKeyPress, owner, nativeRuntime, interactive]);
+  }, [onKeyPress, owner, nativeRuntime]);
 }
 
 /** Internal ownership hook for Canvas overlays; the public hook remains below. */
 export function useEscapeLayer(active: boolean, onEscape: () => void) {
   const parent = useContext(EscapeParent);
-  const interactive = useContext(PopupInteractionContext);
-  // A retained popup's descendants remain mounted only to preserve foreground
-  // state. Their logical dismissal ownership ends with the containing popup.
-  active = active && interactive;
   const nativeRuntime = Platform.select({ web: false, default: true });
   const callback = useRef(onEscape);
   callback.current = onEscape;
@@ -283,7 +277,7 @@ export function useEscapeLayer(active: boolean, onEscape: () => void) {
     // RNW TextInput stops keydown propagation. Its existing local handlers call
     // this AFTER local editing decisions, using the same owner as document keys.
     onKeyPress(event: EscapeEvent) {
-      if (!interactive || eventKey(event) !== "Escape") return;
+      if (eventKey(event) !== "Escape") return;
       if (nativeRuntime) {
         if (!event.defaultPrevented && !event.nativeEvent?.defaultPrevented && requestNativeClose(layer)) event.preventDefault?.();
       } else if (typeof document !== "undefined") {

@@ -7,9 +7,8 @@
 // The content host keeps its layout in every mode. A separate absolute material
 // clip contains only decoration, preserving shadow, focus and child identity.
 
-import { createContext, useContext, useMemo, type ReactNode, type Ref, type RefObject } from "react";
-import { Animated, View, StyleSheet, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
-import { MaterialMotionContext, type PopupBlend, type PopupSize } from "../popup-motion.js";
+import { createContext, useContext, type ReactNode, type RefObject } from "react";
+import { View, StyleSheet, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
 import { type ColorTokens, type GlassTokens } from "../tokens.js";
 import { alpha, composite, contrastRatio, inkOn } from "../color.js";
 
@@ -31,13 +30,6 @@ export interface GlassSurfaceProps {
   layer?: GlassLayer;
   /** Stable frost independent of density. Content defaults to static material. */
   static?: boolean;
-  /**
-   * The host node: the outer View that carries the layout, role and testID. A
-   * moving selection measures its targets against this node when the surface
-   * itself is the coordinate space (a Sidebar column). Internal; the material
-   * never sits on this ref and the solid box exposes the same node.
-   */
-  hostRef?: Ref<View>;
   /** Clear refractive material with restrained tint and minimal frost. */
   clear?: boolean;
   /**
@@ -325,97 +317,9 @@ export function splitSurfaceStyle(style: StyleProp<ViewStyle>): Split {
   return { outer: outer as ViewStyle, clip: clip as ViewStyle };
 }
 
-/**
- * A hand-off pane's second under-fill: the TRIGGER's layer (the bright control puck
- * its pill was) cross-fading out as the pane's own layer fades in, on the popup's
- * travel (see POPUP_PRESENTATION.handoff.tint). Provided by PopupCard around the
- * pane's material while it stands in for the trigger; null everywhere else, where a
- * surface paints its own layer's fill alone.
- */
-/**
- * The trigger's material a hand-off pane paints as its second under-fill: its layer
- * and the cross-fade on the travel (`blend`), and, for a CLEAR trigger (the web's
- * text-entry lens, which wears the clear veil rather than the layer's puck fill),
- * the owner's `closing` flag: an opening drop is born with the layer's bright puck
- * (the reference's light sheer body), a closing remnant deflates onto the field as
- * the field's own veil, so the hand-back is the box it lands on and not a light
- * puck swapped for a dark box in one frame (the 2026-09-21 judge). The two fills
- * split the trigger's share on the flag, itself 0 or 1, so nothing doubles up.
- */
-export interface MaterialOrigin { layer: GlassLayer; clear?: boolean; closing?: Animated.Value; blend: PopupBlend }
-
-/**
- * The trigger's under-fill layers of a hand-off pane: one for the trigger's layer,
- * and for a clear trigger a second one for its veil that takes over on a close.
- */
-export function originFills(origin: MaterialOrigin, tokens: ColorTokens, dark: boolean, glass: GlassTokens, background: string, presence: Animated.Value | undefined): { color: string; opacity: number | Animated.AnimatedNode }[] {
-  const puck = surfaceUnderFill(glass, origin.layer, undefined, undefined, background);
-  if (!origin.clear || !origin.closing) return [{ color: puck, opacity: presentOpacity(origin.blend.trigger, presence) }];
-  const veil = surfaceUnderFill(glass, origin.layer, undefined, clearSurfaceTint(tokens, dark), background);
-  return [
-    { color: puck, opacity: presentOpacity(Animated.multiply(origin.blend.trigger, Animated.subtract(1, origin.closing)) as unknown as Animated.AnimatedInterpolation<number>, presence) },
-    { color: veil, opacity: presentOpacity(Animated.multiply(origin.blend.trigger, origin.closing) as unknown as Animated.AnimatedInterpolation<number>, presence) },
-  ];
-}
-export const MaterialOriginContext = createContext<MaterialOrigin | null>(null);
-
-/**
- * A material layer's opacity under a moving popup's presence: the layer's own
- * opacity scaled by the presence (faint at the droplet's birth, 1 once grown), or
- * the layer's own when the material is at rest. A constant stays a constant, so a
- * surface with no motion keeps its style byte for byte.
- */
-export function presentOpacity(own: number | Animated.AnimatedInterpolation<number>, presence: Animated.Value | undefined): number | Animated.AnimatedNode {
-  if (!presence) return own;
-  return typeof own === "number" && own === 1 ? presence : Animated.multiply(own, presence);
-}
-
-/**
- * The shape a MOVING material's layers wear (null while the surface is at rest on
- * the skin's own geometry): `radius` is the popup motion's corner this frame while a
- * pane opens as a droplet and settles into the skin's corner (undefined for a card
- * with per-corner radii, whose layers keep them throughout; see usePopupMotion), and
- * `rest` is the bounds the frame settles at. GlassBox provides it to its material
- * so the lens, the rim and the native glass draw the rounded edge the clip cuts, and
- * so the web lens can size its one filter definition for the resting bounds instead
- * of the wrapper's layout frame by frame (see GlassLensLayer).
- */
-export type MaterialRadius = NonNullable<Animated.WithAnimatedValue<ViewStyle>["borderRadius"]>;
-export interface MaterialShape { radius: MaterialRadius | undefined; rest: PopupSize }
-export const MaterialShapeContext = createContext<MaterialShape | null>(null);
-
-/** A material layer's absolute-fill style: the skin's radii, or the moving shape's radius. */
-export function useMaterialFill(style: StyleProp<ViewStyle>): Animated.WithAnimatedValue<ViewStyle> {
-  const radius = useContext(MaterialShapeContext)?.radius;
-  return radius == null ? materialFill(style) : { ...MATERIAL_FILL, borderRadius: radius };
-}
-
-/** The specular rim's style, following the moving shape's radius the same way. */
-export function useSpecularRim(style: StyleProp<ViewStyle>, dark: boolean): Animated.WithAnimatedValue<ViewStyle> {
-  const radius = useContext(MaterialShapeContext)?.radius;
-  return radius == null ? specularRim(style, dark) : { ...MATERIAL_FILL, borderRadius: radius, boxShadow: dark ? SPECULAR_RIM.dark : SPECULAR_RIM.light };
-}
-
 // A stable content host for every appearance. Only the decorative material is
 // clipped; content, focus rings, hit targets and the exterior shadow keep the
 // skin's own layout and overflow policy. Switching modes never reparents children.
-// The shadow keys a surface may carry. While a material moves, the shadow moves with
-// it (the host's is erased and the material wrapper wears it); a host whose material
-// is a sibling erases it for good.
-const SHADOW_KEYS = ["shadowColor", "shadowOffset", "shadowOpacity", "shadowRadius", "elevation", "boxShadow"] as const;
-
-/** A style's shadow keys, and the style that erases them. */
-export function splitShadow(style: StyleProp<ViewStyle>): { shadow: ViewStyle; cleared: ViewStyle } {
-  const flat = (StyleSheet.flatten(style) ?? {}) as Record<string, unknown>;
-  const shadow: Record<string, unknown> = {};
-  const cleared: Record<string, unknown> = {};
-  for (const key of SHADOW_KEYS) {
-    if (flat[key] == null) continue;
-    shadow[key] = flat[key];
-    cleared[key] = key === "boxShadow" ? "none" : key === "shadowColor" ? "transparent" : key === "shadowOffset" ? { width: 0, height: 0 } : 0;
-  }
-  return { shadow: shadow as ViewStyle, cleared: cleared as ViewStyle };
-}
 
 /** The fill and border colours of a style turned transparent: what the material supplies instead. */
 function clearedPaint(style: StyleProp<ViewStyle>): ViewStyle {
@@ -427,57 +331,27 @@ function clearedPaint(style: StyleProp<ViewStyle>): ViewStyle {
   return clear as ViewStyle;
 }
 
-/**
- * The host style of a box whose material a SIBLING paints (a liquid popup's card):
- * the skin's style with its fill, border colours and shadow handed to the material,
- * byte for byte what GlassBox gives its own host while its material moves.
- */
-export function hostStyleBesideMaterial(style: StyleProp<ViewStyle>): StyleProp<ViewStyle> {
-  return [style, clearedPaint(style), splitShadow(style).cleared];
-}
-
-/** The part of a skin's style a sibling material wears: its corners and its shadow. */
-export function materialShapeStyle(style: StyleProp<ViewStyle>): ViewStyle {
-  const flat = (StyleSheet.flatten(style) ?? {}) as Record<string, unknown>;
-  const shape: Record<string, unknown> = {};
-  for (const key of [...RADIUS_KEYS, "borderCurve", ...SHADOW_KEYS]) {
-    if (flat[key] != null) shape[key] = flat[key];
-  }
-  return shape as ViewStyle;
-}
-
 export function GlassBox({
-  style, children, pointerEvents, testID, role, onLayout, onAccessibilityEscape, hostRef,
+  style, children, pointerEvents, testID, role, onLayout, onAccessibilityEscape,
   material, solid = false,
 }: GlassSurfaceProps & { material: ReactNode; solid?: boolean }) {
-  const motion = useContext(MaterialMotionContext);
-  const radius = motion?.frame.borderRadius ?? undefined;
-  // The shape the layers wear while the material moves: the frame's radius and the
-  // resting bounds, built once per motion so the layers' context reads stay stable.
-  const shape = useMemo<MaterialShape | null>(() => motion ? { radius, rest: motion.rest } : null, [motion, radius]);
-  const clear = clearedPaint(style);
-  const { shadow: movingShadow, cleared: clearedShadow } = motion && !solid ? splitShadow(style) : { shadow: {}, cleared: {} };
   return (
-    <View ref={hostRef} style={[style, solid ? null : clear, clearedShadow, pointerEvents ? { pointerEvents } : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={onAccessibilityEscape ? false : undefined}>
+    <View style={[style, solid ? null : clearedPaint(style), pointerEvents ? { pointerEvents } : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={onAccessibilityEscape ? false : undefined}>
       {material ? (
-        <Animated.View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[materialFill(style), { zIndex: -1 }, movingShadow, motion?.frame]}>
-          {/* The clip shapes the layers. While a popup opens it wears the droplet's
-              radius and hands it down, so the layers draw the edge the clip cuts. */}
-          <Animated.View style={[materialFill(style), { overflow: "hidden" }, radius == null ? null : { borderRadius: radius }]}>
-            <MaterialShapeContext.Provider value={shape}>{material}</MaterialShapeContext.Provider>
-          </Animated.View>
-        </Animated.View>
+        <View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[materialFill(style), { overflow: "hidden", zIndex: -1 }]}>
+          {material}
+        </View>
       ) : null}
-      <MaterialMotionContext.Provider value={null}>{children}</MaterialMotionContext.Provider>
+      {children}
     </View>
   );
 }
 
 // The no-glass / no-module fallback: one plain View identical to the pre-portal
 // surface (keeps the skin's own opaque fill from `style`).
-export function PlainSurface({ style, children, pointerEvents, testID, role, onLayout, onAccessibilityEscape, hostRef }: GlassSurfaceProps) {
+export function PlainSurface({ style, children, pointerEvents, testID, role, onLayout, onAccessibilityEscape }: GlassSurfaceProps) {
   return (
-    <View ref={hostRef} style={[style, pointerEvents ? { pointerEvents } : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={onAccessibilityEscape ? false : undefined}>
+    <View style={[style, pointerEvents ? { pointerEvents } : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={onAccessibilityEscape ? false : undefined}>
       {children}
     </View>
   );

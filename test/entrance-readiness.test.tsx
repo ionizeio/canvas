@@ -26,25 +26,18 @@ function Card({ open = true, onMount }: { open?: boolean; onMount: () => void })
 }
 
 describe("anchored focus readiness", () => {
-  it("waits for a positive finite size and notifies once across resize and rehold", () => {
+  it("an inline card is ready on mount and notifies once per opening", () => {
     let mounts = 0;
-    render(themed(<Card onMount={() => { mounts++; }} />));
-    const content = screen.getByTestId("card-content");
-    const entrance = content.closest('[aria-hidden="true"]')!;
-    expect(mounts).toBe(0);
-    expect(screen.queryByRole("button", { name: "Card action" })).toBeNull();
-    for (const size of [{ width: 0, height: 160 }, { width: 240, height: NaN }]) {
-      layoutElement(entrance, size);
-      expect(mounts).toBe(0);
-    }
-    layoutElement(entrance, SIZE);
+    const view = render(themed(<Card onMount={() => { mounts++; }} />));
     expect(mounts).toBe(1);
     expect(screen.getByRole("button", { name: "Card action" })).toBeTruthy();
-    layoutElement(entrance, { width: 280, height: 180 });
-    layoutElement(entrance, { width: 0, height: 0 });
-    expect(screen.queryByRole("button", { name: "Card action" })).toBeNull();
-    layoutElement(entrance, SIZE);
+    expect(screen.getByTestId("card-content").closest('[aria-hidden="true"]')).toBeNull();
+    view.rerender(themed(<Card onMount={() => { mounts++; }} />));
     expect(mounts).toBe(1);
+    view.rerender(themed(<Card open={false} onMount={() => { mounts++; }} />));
+    expect(screen.queryByRole("button", { name: "Card action" })).toBeNull();
+    view.rerender(themed(<Card onMount={() => { mounts++; }} />));
+    expect(mounts).toBe(2);
   });
 
   it("waits for the enclosing entrance and creates a new notification on reopen", () => {
@@ -53,8 +46,8 @@ describe("anchored focus readiness", () => {
       <Entrance ready={ready}><Card open={open} onMount={() => { mounts++; }} /></Entrance>,
     );
     const view = render(page(false));
-    layoutEntrance(screen.getByTestId("card-content"), SIZE);
     expect(mounts).toBe(0);
+    expect(screen.getByTestId("card-content").closest('[aria-hidden="true"]')).not.toBeNull();
     view.rerender(page(true));
     expect(mounts).toBe(1);
     view.rerender(page(false));
@@ -62,51 +55,39 @@ describe("anchored focus readiness", () => {
     expect(mounts).toBe(1);
     view.rerender(page(true, false));
     view.rerender(page(true));
-    expect(mounts).toBe(1);
-    layoutEntrance(screen.getByTestId("card-content"), SIZE);
     expect(mounts).toBe(2);
   });
 
-  it("does not notify when closed before its first layout", () => {
+  it("does not notify a card closed while its enclosing entrance is still held", () => {
     let mounts = 0;
-    const view = render(themed(<Card onMount={() => { mounts++; }} />));
+    const page = (open: boolean) => themed(<Entrance ready={false}><Card open={open} onMount={() => { mounts++; }} /></Entrance>);
+    const view = render(page(true));
     const content = screen.getByTestId("card-content");
-    const entrance = content.closest('[aria-hidden="true"]')!;
-    view.rerender(themed(<Card open={false} onMount={() => { mounts++; }} />));
-    expect(entrance.isConnected).toBe(false);
+    view.rerender(page(false));
+    expect(content.isConnected).toBe(false);
     expect(mounts).toBe(0);
   });
 
-  for (const entranceFirst of [true, false]) {
-    it(`hosted card needs owner fitting and its own entrance size (entrance first=${entranceFirst})`, async () => {
-      const measure = spyOn(Element.prototype, "getBoundingClientRect").mockReturnValue({
-        x: 0, y: 0, width: 640, height: 800,
-        top: 0, left: 0, right: 640, bottom: 800, toJSON: () => ({}),
-      } as DOMRect);
-      try {
-        let mounts = 0;
-        render(themed(<OverlayProvider><Card onMount={() => { mounts++; }} /></OverlayProvider>));
-        const content = await screen.findByTestId("card-content");
-        const nodes = hostedEntranceParts(content);
-        expect(mounts).toBe(0);
-        if (entranceFirst) layoutElement(nodes.entrance, SIZE);
-        else {
-          layoutElement(nodes.viewport, SIZE);
-          layoutElement(nodes.content, SIZE);
-          layoutElement(nodes.card, SIZE);
-        }
-        expect(mounts).toBe(0);
-        expect(screen.queryByRole("button", { name: "Card action" })).toBeNull();
-        if (entranceFirst) {
-          layoutElement(nodes.viewport, SIZE);
-          layoutElement(nodes.content, SIZE);
-          layoutElement(nodes.card, SIZE);
-        } else layoutElement(nodes.entrance, SIZE);
-        expect(mounts).toBe(1);
-        expect(screen.getByRole("button", { name: "Card action" })).toBeTruthy();
-      } finally { cleanup(); measure.mockRestore(); }
-    });
-  }
+  it("a hosted card waits for its owner's fitting before it notifies", async () => {
+    const measure = spyOn(Element.prototype, "getBoundingClientRect").mockReturnValue({
+      x: 0, y: 0, width: 640, height: 800,
+      top: 0, left: 0, right: 640, bottom: 800, toJSON: () => ({}),
+    } as DOMRect);
+    try {
+      let mounts = 0;
+      render(themed(<OverlayProvider><Card onMount={() => { mounts++; }} /></OverlayProvider>));
+      const content = await screen.findByTestId("card-content");
+      const nodes = hostedEntranceParts(content);
+      expect(mounts).toBe(0);
+      expect(screen.queryByRole("button", { name: "Card action" })).toBeNull();
+      layoutElement(nodes.viewport, SIZE);
+      layoutElement(nodes.content, SIZE);
+      expect(mounts).toBe(0);
+      layoutElement(nodes.card, SIZE);
+      expect(mounts).toBe(1);
+      expect(screen.getByRole("button", { name: "Card action" })).toBeTruthy();
+    } finally { cleanup(); measure.mockRestore(); }
+  });
 });
 
 for (const hosted of [false, true]) {
@@ -136,13 +117,15 @@ for (const hosted of [false, true]) {
       return { view, page, panel, opener, reveal, restore: () => { cleanup(); measure?.mockRestore(); } };
     }
 
-    it("captures the opener immediately and delays focus until layout commits", async () => {
+    it(hosted ? "captures the opener immediately and delays focus until the fit commits" : "captures the opener and focuses the panel at once", async () => {
       const f = await fixture();
       try {
-        expect(document.activeElement).toBe(f.opener);
-        expect(screen.queryByRole("dialog")).toBeNull();
-        focus(screen.getByRole("button", { name: "Elsewhere" }));
-        f.reveal();
+        if (hosted) {
+          expect(document.activeElement).toBe(f.opener);
+          expect(screen.queryByRole("dialog")).toBeNull();
+          focus(screen.getByRole("button", { name: "Elsewhere" }));
+          f.reveal();
+        }
         expect(screen.getByRole("dialog")).toBe(f.panel);
         expect(document.activeElement).toBe(f.panel);
         f.view.rerender(f.page(false));
@@ -150,7 +133,7 @@ for (const hosted of [false, true]) {
       } finally { f.restore(); }
     });
 
-    it("keeps the opener focused when closed before layout, including a later reopen", async () => {
+    it("restores the opener on close and focuses a reopened panel", async () => {
       const f = await fixture();
       try {
         f.view.rerender(f.page(false));
@@ -163,9 +146,10 @@ for (const hosted of [false, true]) {
           return node!;
         });
         expect(panel).not.toBe(f.panel);
-        expect(document.activeElement).toBe(f.opener);
-        if (hosted) layoutHostedEntrance(panel, SIZE);
-        else layoutEntrance(panel, SIZE);
+        if (hosted) {
+          expect(document.activeElement).toBe(f.opener);
+          layoutHostedEntrance(panel, SIZE);
+        }
         expect(document.activeElement).toBe(screen.getByRole("dialog"));
       } finally { f.restore(); }
     });

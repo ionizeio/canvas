@@ -76,7 +76,7 @@ async function measuredMenu(hosted: boolean, role = "menu") {
     return node!;
   });
   if (hosted) layoutHostedEntrance(panel, { width: 200, height: 90 }, { width: 190, height: 80 });
-  else expect(layoutEntrance(panel, { width: 200, height: 90 })).toBe(true);
+  else layoutEntrance(panel, { width: 200, height: 90 });
 }
 async function withMeasurements(run: () => Promise<void>) {
   const measure = spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (this: Element) {
@@ -235,13 +235,13 @@ it("triggered Command and floating Popover escape, while persistent content has 
   expect(() => host(screen.getByPlaceholderText("Persistent commands"))).toThrow("No native accessibility escape handler");
   fireEvent.click(screen.getByRole("button", { name: /Search/ }));
   const input = screen.getByPlaceholderText("Find command");
-  expect(layoutEntrance(input, { width: 320, height: 160 })).toBe(true);
+  layoutEntrance(input, { width: 320, height: 160 });
   act(() => host(input).escape());
   expect(screen.queryByPlaceholderText("Find command")).toBeNull();
   expect(selected).toBe(0);
   fireEvent.click(screen.getByRole("button", { name: "Show details" }));
   const title = screen.getByText("Floating details");
-  expect(layoutEntrance(title, { width: 240, height: 100 })).toBe(true);
+  layoutEntrance(title, { width: 240, height: 100 });
   act(() => host(title).escape());
   expect(screen.queryByText("Floating details")).toBeNull();
   expect(screen.getByText("Persistent details")).toBeDefined();
@@ -264,7 +264,7 @@ it("Calendar day-peek escape closes only the peek without changing the selected 
     events={[{ day: 8, title: "Offsite" }]} onSelect={day => selected.push(day)} />);
   fireEvent.click(screen.getByRole("button", { name: "8, 1 event" }));
   const title = screen.getByText("Offsite");
-  expect(layoutEntrance(title, { width: 260, height: 100 })).toBe(true);
+  layoutEntrance(title, { width: 260, height: 100 });
   act(() => host(title).escape());
   expect(screen.queryByText("Offsite")).toBeNull();
   expect(selected).toEqual([8]);
@@ -281,7 +281,7 @@ it("Calendar hover-card escape clears only the hover owner without selecting or 
   const event = screen.getByRole("button", { name: "Planning, 9 AM to 10 AM" });
   fireEvent.pointerEnter(event, { pointerType: "mouse" });
   const description = screen.getByText("Review milestones");
-  expect(layoutEntrance(description, { width: 260, height: 100 })).toBe(true);
+  layoutEntrance(description, { width: 260, height: 100 });
   act(() => host(description).escape());
   expect(screen.queryByText("Review milestones")).toBeNull();
   expect(screen.getByRole("button", { name: "Planning, 9 AM to 10 AM" })).toBe(event);

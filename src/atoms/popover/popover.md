@@ -2,16 +2,9 @@
 
 Floating panel with a title, supporting text, rich content such as form fields, and a single follow-up action, anchored to its trigger. Pass children to host custom content in the panel body, between the description and the action.
 
-In glass mode the triggered card hands off with its button, the way the iOS 26
-menu takes its button: the button's pill and label vanish whole as a droplet forms
-hanging under the pill, the card blooms up out of it over the pill's spot (or down
-over it when it fits above) with a bounded contour overshoot, recoils and settles
-resting over the pill's box, and on close its content
-goes out of reach at once while the pane narrows back to the pill, re-forms it
-and the label fades back. Focus enters only once the material covers the panel,
-and the `inline` card is a static in-flow panel that never animates. Reduce
-Motion settles at once with the button untouched; solid mode keeps the ordinary
-entrance.
+In glass mode the triggered card is a functional-layer glass panel beside its
+button; focus enters once the card's placement has committed, and the `inline`
+card is a static in-flow panel. Solid mode paints the skin's own panel.
 
 ## Usage
 

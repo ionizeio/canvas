@@ -2,17 +2,10 @@
 
 A phone number field: the Input's box with a country segment at its start (the chosen country's flag and a caret, which open a list of countries with their names and dial codes) and that country's dial code inline before the number. The number and the country are each controlled (`value` / `country`) or self-managed (`defaultValue` / `defaultCountry`), the segment defaults to the kit's curated `PHONE_COUNTRIES` list (pass `countries` for a full or localized one), and the number field asks for the phone keypad. Pass `label` (and `required`) to name it; `error` paints the whole box, segment included, and Field delegates its label, required mark and error into it. On iOS the field is drawn to the iOS input-field reference: the white box, the flag and gray caret segment with its state-coloured divider, the dial code in the placeholder gray.
 
-In glass mode the country list hands off with the field, the way the iOS 26 menu
-takes its button: on open the box's glass, segment, dial code and number vanish
-whole and a compact droplet forms hanging under the box, in its corner and tone,
-with the countries inside it; the list blooms up out of it over the spot the box
-held, recoils and settles resting over the box, and stays there while it is open.
-On close the rows go inert at once and the pane deflates onto the box, pinching to
-the droplet's width and re-widening into it, and the box is back the moment the
-pane has settled on it. A pick commits the country and returns focus to the
-number at once. A field that becomes disabled or read-only while the list is open
-closes it. Reduce Motion settles at once with the box untouched and the list
-beside it; solid mode keeps the ordinary entrance.
+In glass mode the country list is a dense-layer glass card under the box; the
+box, its segment and its number stay in place. A pick commits the country and
+returns focus to the number at once, and a field that becomes disabled or
+read-only while the list is open closes it. Solid mode paints the skin's own list.
 
 ## Usage
 

@@ -55,7 +55,7 @@ async function layoutOptions(hosted: boolean, role = "menu", root: ParentNode = 
     return node!;
   });
   if (hosted) layoutHostedEntrance(panel, { width: 160, height: 74 }, { width: 150, height: 64 });
-  else expect(layoutEntrance(panel, { width: 160, height: 74 })).toBe(true);
+  else layoutEntrance(panel, { width: 160, height: 74 });
 }
 
 

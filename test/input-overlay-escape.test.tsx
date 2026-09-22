@@ -174,7 +174,7 @@ it("a semantic field does not displace an active Autocomplete owner or select it
   fireEvent.change(combo, { target: { value: "Ap" } });
   const panel = document.querySelector('[role="listbox"]');
   expect(panel).not.toBeNull();
-  expect(layoutEntrance(panel!, { width: 200, height: 90 })).toBe(true);
+  layoutEntrance(panel!, { width: 200, height: 90 });
   const field = screen.getByRole("textbox", { name: "Sibling field" });
   focus(field);
   fireEvent.keyDown(field, { key: "Escape" });

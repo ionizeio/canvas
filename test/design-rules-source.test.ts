@@ -169,25 +169,6 @@ describe("animation length", () => {
     expect(offenders).toEqual([]);
   });
 
-  it("the liquid popup presentation runs on the platform's driver", () => {
-    // The popup's frame is transforms, opacity and a corner radius so that every
-    // spring can take the native driver (tools/native/liquid-motion.md, 2026-09-20):
-    // a JS-driven opening cost a Fabric shadow-tree commit per animated view per
-    // frame, 35 to 114 ms for the seed frame alone on the simulator. The files gate
-    // the driver on supportsNativeDriver, never a literal, and never animate a
-    // layout key (width, height, an offset), which the native driver cannot take.
-    const offenders: string[] = [];
-    for (const { file, text } of sources) {
-      if (!/src\/style\/popup-(motion|handoff)\.tsx$/.test(file)) continue;
-      text.split("\n").forEach((line, i) => {
-        const code = line.replace(/\/\/.*$/, "");
-        if (/useNativeDriver:\s*(true|false)\b/.test(code)) offenders.push(`${file}:${i + 1} literal driver flag in the popup presentation`);
-        if (/\b(width|height|left|top|right|bottom):\s*Animated\./.test(code)) offenders.push(`${file}:${i + 1} animated layout key in the popup presentation`);
-      });
-    }
-    expect(offenders).toEqual([]);
-  });
-
   it("linear easing is reserved for the loops that need it", () => {
     // Linear on a transition reads mechanical; linear on a rotating spinner is the
     // only thing that keeps it from stuttering once per revolution.

@@ -1,6 +1,5 @@
-import { useContext, useEffect, useRef, useState, type RefObject } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import { type View } from "react-native";
-import { PopupInteractionContext } from "./popup-motion.js";
 
 // Refs may attach after the hook's open effect: Portal publishes into a sibling
 // outlet, and anchored overlays also wait for a trigger measurement. An ordinary
@@ -155,8 +154,6 @@ function createFocusRef(modal: boolean, onAttach: () => void) {
 }
 
 function usePanelFocus(open: boolean, modal: boolean): RefObject<View | null> {
-  const interactive = useContext(PopupInteractionContext);
-  open = open && interactive;
   const [attachment, setAttachment] = useState(0);
   const controllerRef = useRef<ReturnType<typeof createFocusRef> | null>(null);
   if (controllerRef.current == null) {

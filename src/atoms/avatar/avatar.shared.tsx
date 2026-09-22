@@ -1,8 +1,6 @@
 import { Children, cloneElement, isValidElement, useState, type ReactElement, type ReactNode } from "react";
-import { Animated } from "react-native";
 import { View, Pressable, Text, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type ImageStyle, type LayoutStyle } from "../../style/index.js";
 import { GlassPane, paneStyle } from "../../style/glass-surface/glass-pane.js";
-import { handoffInk, usePopupHandoffPill } from "../../style/popup-handoff.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { isGlass } from "../../style/glass-fill.js";
 import { inkOn } from "../../style/color.js";
@@ -100,9 +98,9 @@ export interface AvatarProps {
 // identity pill) or a dense toolbar, small the inline topbar/stack size, default
 // the 40px row avatar, large the identity-header size. Platform-neutral.
 //
-// 24 is the size the web hand-off draws inside its identity pill, and it is what
+// 24 is the size the web design spec draws inside its identity pill, and it is what
 // keeps the capsule's inset right on every platform: the pill is 32/36/40 tall on
-// web/iOS/Android, so a 24 disc leaves the hand-off's 4/6/8 of breathing room
+// web/iOS/Android, so a 24 disc leaves the design spec's 4/6/8 of breathing room
 // (measured from the outer edge, the 1px hairline included, since RN sizes a box
 // the way `box-sizing: border-box` does).
 const BOX: Record<Size, number> = { tiny: 24, small: 28, default: 40, large: 48 };
@@ -214,7 +212,6 @@ export function createAvatar(skin: AvatarSkin) {
     const shapeStyle = containerStyle(tokens, skin, size, shape, !!ring, background);
     const separator = ring ? { borderWidth: RING_WIDTH, borderColor: theme.increasedContrast ? tokens.foreground : tokens.background } : null;
     const container: StyleProp<ViewStyle> = [showPhoto ? shapeStyle : paneStyle(theme, shapeStyle), separator, style];
-    const pill = usePopupHandoffPill();
     const pane = showPhoto ? null : <GlassPane static layer="control" shape={shapeStyle} brand={colored ? background : undefined} />;
 
     // Pad the visual box out to the skin's minimum touch target (44pt HIG / 48dp
@@ -239,10 +236,6 @@ export function createAvatar(skin: AvatarSkin) {
     } else {
       inner = glyph ? <Text style={labelStyle(skin, size, foreground)}>{glyph}</Text> : null;
     }
-    // Inside a Dropdown-class trigger (the AvatarMenu capsule, or an avatar as the
-    // trigger itself) the photo or initials take the hand-off's label fade as ink of
-    // their own while the disc's pane hides on the material curve (popup-handoff.tsx).
-    if (pill && inner) inner = <Animated.View style={handoffInk(pill)}>{inner}</Animated.View>;
 
     if (onPress) {
       return (

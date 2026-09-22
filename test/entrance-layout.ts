@@ -14,27 +14,22 @@ export function layoutElement(node: Element, size: FixtureSize): void {
 }
 
 /**
- * Happy-dom has no layout engine. Give an opened overlay its intended wrapper
- * size before querying or operating its accessible contents. This targets only
- * a concealed ancestor with a layout handler, never its rows or scroll viewport.
- * Owner readiness still applies; supplying a size cannot override ready=false.
+ * Happy-dom has no layout engine. Give an opened overlay's card its intended size
+ * before querying or operating its accessible contents: the first layout host above
+ * the content's scroll viewport (or above the content itself, when the content
+ * owns its scrolling) is the card, whose report releases a hosted card's hold.
+ * Row and viewport handlers stay untouched: fixtures stage those deliberately.
+ * Returns false when nothing above the content is concealed (an inline card).
  */
 export function layoutEntrance(content: Element, size: FixtureSize): boolean {
   for (let node = content.parentElement; node; node = node.parentElement) {
-    if (node.getAttribute("aria-hidden") === "true" &&
-        typeof (node as LayoutHost).__reactLayoutHandler === "function") {
-      // A liquid popup (PopupCard) measures its CARD inside the concealed wrapper
-      // before its material can settle and reveal the rows, so the card boundary
-      // (the first layout host above the scroll viewport, or the first one above
-      // the content when the content owns its scrolling) gets the size too. Row
-      // and viewport handlers stay untouched: fixtures stage those deliberately.
+    if (node.getAttribute("aria-hidden") === "true") {
       let viewport: Element | null = null;
       for (let inner = content.parentElement; inner && inner !== node; inner = inner.parentElement) {
         const overflow = getComputedStyle(inner).overflowY;
         if (!viewport && (overflow === "auto" || overflow === "scroll")) { viewport = inner; continue; }
         if (viewport && typeof (inner as LayoutHost).__reactLayoutHandler === "function") { layoutElement(inner, size); break; }
       }
-      layoutElement(node, size);
       return true;
     }
   }
@@ -48,15 +43,14 @@ export function layoutEntrances(root: ParentNode, size: FixtureSize): void {
   }
 }
 
-/** Locate the four native layout boundaries of one concealed hosted overlay. */
+/** Locate the native layout boundaries of one concealed hosted overlay. */
 export function hostedEntranceParts(content: Element): {
   entrance: Element; card: Element; viewport: Element; content: Element;
 } {
   let viewport: Element | null = null;
   let card: Element | null = null;
   for (let node: Element | null = content; node; node = node.parentElement) {
-    if (node.getAttribute("aria-hidden") === "true" &&
-        typeof (node as LayoutHost).__reactLayoutHandler === "function") {
+    if (node.getAttribute("aria-hidden") === "true") {
       if (!viewport || !card || !viewport.firstElementChild) break;
       return { entrance: node, card, viewport, content: viewport.firstElementChild };
     }
@@ -68,14 +62,13 @@ export function hostedEntranceParts(content: Element): {
 }
 
 /**
- * Supply the hosted owner's card and scroll measurements as well as its Entrance
- * size. Separate sizes allow capped-content fixtures to state real geometry.
- * Descendant row and input layout handlers are deliberately left untouched.
+ * Supply the hosted owner's card and scroll measurements. Separate sizes allow
+ * capped-content fixtures to state real geometry. Descendant row and input layout
+ * handlers are deliberately left untouched.
  */
 export function layoutHostedEntrance(content: Element, cardSize: FixtureSize, viewportSize = cardSize, contentSize = viewportSize): void {
   const nodes = hostedEntranceParts(content);
   layoutElement(nodes.viewport, viewportSize);
   layoutElement(nodes.content, contentSize);
   layoutElement(nodes.card, cardSize);
-  layoutElement(nodes.entrance, cardSize);
 }

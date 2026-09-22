@@ -1,8 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useHardwareBack } from "../../style/use-hardware-back.js";
-import { useContext, useId, useState, type ReactNode } from "react";
-import { PopupInteractionContext } from "../../style/popup-motion.js";
+import { useId, useState, type ReactNode } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
 import { View, Text, Pressable, RippleClip, cornerRadii, GlassSurface, Entrance, Portal, useDialogFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
@@ -146,8 +145,7 @@ export function createDialog(skin: DialogSkin) {
     // Uncontrolled by default: the trigger opens the dialog and an action closes
     // it; a controlled `open` prop overrides this.
     const [internalOpen, setInternalOpen] = useState(false);
-    const parentInteractive = useContext(PopupInteractionContext);
-    const open = parentInteractive && (openProp ?? internalOpen);
+    const open = openProp ?? internalOpen;
     const setOpen = (next: boolean) => {
       if (openProp === undefined) setInternalOpen(next);
       onOpenChange?.(next);
