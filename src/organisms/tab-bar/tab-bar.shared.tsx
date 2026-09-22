@@ -1,10 +1,9 @@
 import { primaryText } from "../../style/primary-text.js";
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { StyleSheet, type LayoutRectangle } from "react-native";
-import { View, Text, Pressable, GlassSurface, useTheme, useControllableState, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { type ReactNode } from "react";
+import { StyleSheet } from "react-native";
+import { View, Text, Pressable, GlassPane, GlassSurface, useTheme, useControllableState, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { selectionTint } from "../../style/selection-tint.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { MeasuredSelection } from "../../style/measured-selection.js";
 
 // Shared TabBar shell. TabBar is the bottom app-navigation bar: a row of equal-width
 // destinations, each an icon over a short label, with exactly one active. It is a
@@ -21,8 +20,7 @@ import { MeasuredSelection } from "../../style/measured-selection.js";
 //   - FLOATING (iOS 26 and web): a capsule inset from the edges that hovers above the
 //     content, which scrolls beneath it; the safe-area inset becomes the space under
 //     the capsule. The active indicator is a capsule covering the whole destination
-//     cell, and under glass it is the measured liquid surface that travels between
-//     destinations.
+//     cell, and under glass it is a control-layer pane behind the glyph and label.
 //
 // TabBar is the bottom navigation idiom (iOS HIG tab bar / Material 3 navigation bar); it is
 // app-level navigation, distinct from the top `Navbar` and the in-page `Tabs`.
@@ -86,8 +84,8 @@ export interface TabBarSkin {
    * pill centred behind the glyph, so the style carries a `width` and `height`
    * (Android's M3 dimensions). With `pillCovers: "cell"` it is a capsule filling the
    * whole destination cell, so the style carries only the fill and radius. `dark`
-   * lets the fill follow the scheme. Returns the resting style; null for a bar whose
-   * selection is the tint alone.
+   * lets the fill follow the scheme. Returns the indicator's style; null for a bar
+   * whose selection is the tint alone.
    */
   pill: ((tokens: ColorTokens, dark: boolean) => ViewStyle) | null;
   pillCovers?: "icon" | "cell";
@@ -105,50 +103,13 @@ export function createTabBar(skin: TabBarSkin) {
     const [activeKey, setActiveKey] = useControllableState<string>(active, defaultActive ?? items[0]?.key ?? "", onSelect);
     const pill = skin.pill?.(tokens, material.dark);
     const cellPill = skin.pillCovers === "cell";
-    const structure = JSON.stringify(items.map((item) => item.key));
-    const rowRef = useRef<View>(null);
-    const itemNodes = useRef<Record<string, View | null>>({});
-    const iconNodes = useRef<Record<string, View | null>>({});
-    const latestStructure = useRef(structure);
-    latestStructure.current = structure;
-    type DestinationGeometry = { item?: LayoutRectangle; icon?: LayoutRectangle };
-    const [measurements, setMeasurements] = useState<{ structure: string; items: Record<string, DestinationGeometry>; revision: number }>({ structure, items: {}, revision: 0 });
-    const record = (key: string, part: keyof DestinationGeometry, layout: LayoutRectangle) => {
-      if (latestStructure.current !== structure || layout.width <= 0 || layout.height <= 0) return;
-      setMeasurements((previous) => {
-        const destinations = previous.structure === structure ? previous.items : {};
-        const old = destinations[key]?.[part];
-        if (old && old.x === layout.x && old.y === layout.y && old.width === layout.width && old.height === layout.height) return previous;
-        return { structure, items: { ...destinations, [key]: { ...destinations[key], [part]: layout } }, revision: previous.revision + (old ? 1 : 0) };
-      });
-    };
-    useLayoutEffect(() => {
-      const row = rowRef.current;
-      if (!row || !skin.pill) return;
-      for (const { key } of items) {
-        const item = itemNodes.current[key];
-        item?.measureLayout(row, (x, y, width, height) => record(key, "item", { x, y, width, height }), () => {});
-        if (item) iconNodes.current[key]?.measureLayout(item, (x, y, width, height) => record(key, "icon", { x, y, width, height }), () => {});
-      }
-      // Reordering invalidates coordinate scopes without changing keyed hosts.
-      // Generation checks discard callbacks from a removed or older ordering.
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [structure]);
-    const geometry = measurements.structure === structure ? measurements.items[activeKey] : undefined;
-    // The cell pill is the destination's own rectangle; the icon pill is the skin's
-    // fixed size centred on the glyph.
-    const selectionLayout = pill && geometry?.item && (cellPill
-      ? { x: geometry.item.x, y: geometry.item.y, width: geometry.item.width, height: geometry.item.height }
-      : geometry.icon && typeof pill.width === "number" && typeof pill.height === "number" ? {
-        x: geometry.item.x + geometry.icon.x + (geometry.icon.width - pill.width) / 2,
-        y: geometry.item.y + geometry.icon.y + (geometry.icon.height - pill.height) / 2,
-        width: pill.width,
-        height: pill.height,
-      } : null) || null;
-    const movingSelection = glass && selectionLayout !== null;
-    // The moving surface keeps the skin's hue at the moving selection's opacity ceiling,
-    // so the ink stays readable over the track and over labels in flight; the icon pill
-    // is already a translucent tint and passes through unchanged.
+    // Under glass the active indicator is a CONTROL-layer material in the pill's own
+    // shape: the cell capsule is a GlassPane filling the active destination's cell
+    // (the Pressable keeps its tap, ripple and dim), the icon pill a GlassSurface of
+    // the skin's fixed size centred on the glyph. Its under-fill keeps the skin's hue at
+    // selectionTint's translucent ceiling, so the ink stays readable over the material;
+    // the icon pill is already a translucent tint and passes through unchanged. In
+    // solid mode the indicator is the skin's own fill, painted by a plain View.
     const pillTint = pill ? (cellPill ? selectionTint(pill, material.dark) : typeof pill.backgroundColor === "string" ? pill.backgroundColor : undefined) : undefined;
     const fill = skin.fill ? skin.fill(tokens) : { backgroundColor: tokens.card, borderColor: tokens.border };
     // The skin's paddingTop is the bar's symmetric vertical base. A docked bar mirrors it on
@@ -164,19 +125,12 @@ export function createTabBar(skin: TabBarSkin) {
     ];
     const bar = (
       <GlassSurface style={floating ? barStyle : [barStyle, style]}>
-        <View ref={rowRef} accessibilityRole="tablist" testID={testID} style={{ flex: 1, flexDirection: "row" }}>
-          {movingSelection && pill ? (
-            <MeasuredSelection layout={selectionLayout} enabled profile="navigation" resetKey={`${structure}:${measurements.revision}`} testID={testID ? `${testID}-selection-motion` : undefined}>
-              <GlassSurface layer="control" interactive tint={pillTint} style={[StyleSheet.absoluteFill, { borderRadius: pill.borderRadius, backgroundColor: pill.backgroundColor }]} testID={testID ? `${testID}-selection` : undefined} />
-            </MeasuredSelection>
-          ) : null}
+        <View accessibilityRole="tablist" testID={testID} style={{ flex: 1, flexDirection: "row" }}>
           {items.map((it) => {
             const isActive = it.key === activeKey;
             return (
               <Pressable
                 key={it.key}
-                ref={(node) => { itemNodes.current[it.key] = node; }}
-                onLayout={skin.pill ? (event) => record(it.key, "item", event.nativeEvent.layout) : undefined}
                 accessibilityRole="tab"
                 accessibilityState={{ selected: isActive }}
                 aria-selected={isActive}
@@ -185,15 +139,22 @@ export function createTabBar(skin: TabBarSkin) {
                 android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
                 style={({ pressed }) => [skin.item, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
               >
-                {/* The resting cell capsule, behind the glyph and label alike, until the
-                    measured selection takes over under glass. */}
-                {pill && cellPill && isActive && !movingSelection ? <View style={[StyleSheet.absoluteFill, pill, { pointerEvents: "none" }]} /> : null}
+                {/* The cell capsule, behind the glyph and label alike. */}
+                {pill && cellPill && isActive ? (
+                  glass
+                    ? <GlassPane layer="control" shape={pill} tint={pillTint} interactive />
+                    : <View style={[StyleSheet.absoluteFill, pill, { pointerEvents: "none" }]} />
+                ) : null}
                 {pill ? (
-                  // The glyph's real wrapper is measured separately from the cell, which
-                  // is where the icon pill centres itself. Labels and safe-area spacing
-                  // stay untouched.
-                  <View ref={(node) => { iconNodes.current[it.key] = node; }} onLayout={(event) => record(it.key, "icon", event.nativeEvent.layout)} style={{ alignItems: "center", justifyContent: "center" }}>
-                    {!cellPill && isActive && !movingSelection ? <View style={[pill, { pointerEvents: "none" }]} /> : null}
+                  // Wrap the icon so the icon pill can centre on it: the wrapper shrink-wraps
+                  // to the glyph and the absolute pill is drawn first (behind) without
+                  // affecting layout. Labels and safe-area spacing stay untouched.
+                  <View style={{ alignItems: "center", justifyContent: "center" }}>
+                    {!cellPill && isActive ? (
+                      glass
+                        ? <GlassSurface layer="control" interactive tint={pillTint} pointerEvents="none" style={pill} />
+                        : <View style={[pill, { pointerEvents: "none" }]} />
+                    ) : null}
                     {it.icon(isActive)}
                   </View>
                 ) : (

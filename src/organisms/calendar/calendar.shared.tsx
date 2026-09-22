@@ -1,10 +1,9 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Animated, StyleSheet, type GestureResponderEvent, type View as RNView, type ScrollView as RNScrollView } from "react-native";
+import { type GestureResponderEvent, type View as RNView, type ScrollView as RNScrollView } from "react-native";
 import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useControllableState, useMeasuredWidth, FILL, type StyleProp, type ViewStyle, type LayoutStyle, GlassSurface, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import { LiquidAnchoredOverlay } from "../../style/liquid-anchored-overlay.js";
-import { MeasuredSelection, SelectionText, useMeasuredTargets } from "../../style/measured-selection.js";
 import { ButtonGroup } from "../../atoms/button-group/button-group.js";
 import { type CalendarSkin, type DayState, type Density } from "./calendar.styles.js";
 import { calendarDayAccessibility } from "./calendar.accessibility.js";
@@ -309,46 +308,6 @@ export function createCalendar(skin: CalendarSkin) {
     // Day-of-month the anchor's week starts on; ≤ 0 in a leading-blank first week.
     const weekStart = anchor - weekdayOf(anchor);
 
-    // Under glass the selected day's brand puck (and, in range mode, each
-    // endpoint's puck) travels as a measured control-layer surface through the
-    // month grid or the week strip while the numbers and event dots stay still.
-    // Cells are keyed by day number INSIDE one scope: the view, the month, the
-    // density, the fluid cell size and the strip's week make up the structure,
-    // and a change of any of them re-measures the cells (useMeasuredTargets) and
-    // resets the surfaces in place (the 12th of May and the 12th of June are
-    // different targets). Travel between days of one grid follows the geometry's
-    // direction, so a diagonal move stretches along both axes without rotating.
-    // The range endpoints are two independent identities: the start surface
-    // travels when the start is picked again, the end surface appears in place
-    // when the range completes and withdraws when the pick restarts, and a
-    // one-day range leaves both on the same cell. The day view has no cells and
-    // no surface. The number and the event dot on a travelling puck take the
-    // puck's ink as the puck covers them (useMeasuredTargets.ink), not at the press.
-    const structure = JSON.stringify([view, month, density, fluidCell, lead, daysInMonth, view === "week" ? weekStart : 0]);
-    const spaceRef = useRef<RNView>(null);
-    // Cells report against the measurement space (the grid or the strip row): the
-    // strip's cells sit inside per-column views, so a cell's own layout event is
-    // only a trigger to measure it in the space.
-    const dayTargets = useMeasuredTargets<number>(structure, spaceRef);
-    const carried = new Set<number>();
-    const surfaces: ReactNode[] = [];
-    // The roles are asked for in every mode (with no day outside glass, where the
-    // cells paint the selection themselves), so the ink contract sees them retire.
-    const moving = dayGlass && view !== "day";
-    const roles: Array<[string, number | undefined]> = props.range
-      ? [["start", moving ? range?.start : undefined], ["end", moving ? range?.end : undefined]]
-      : [["selected", moving ? selected : undefined]];
-    for (const [role, dayNum] of roles) {
-      const { layout, resetKey, bounds } = dayTargets.target(role, dayNum);
-      if (dayNum == null || layout == null) continue;
-      carried.add(dayNum);
-      surfaces.push(
-        <MeasuredSelection key={role} layout={layout} enabled resetKey={resetKey} bounds={bounds} testID={testID ? `${testID}-${role}-motion` : undefined}>
-          <GlassSurface static layer="control" interactive brand={tokens.primary} style={[StyleSheet.absoluteFill, { borderRadius: skin.dayCellBase.borderRadius }]} testID={testID ? `${testID}-${role}-surface` : undefined} />
-        </MeasuredSelection>,
-      );
-    }
-
     const pick = (dayNum: number) => {
       setSelected(dayNum);
       onSelect?.(dayNum);
@@ -464,20 +423,9 @@ export function createCalendar(skin: CalendarSkin) {
       const count = eventsOn(dayNum).length;
       // Under glass the SELECTED day is a BRAND-tinted CONTROL-layer puck (a GlassPane
       // behind the label; the cell drops its brand fill). An unselected today keeps its
-      // soft tint, which is translucent already and reads as a wash on the pane. Once
-      // the cell is measured the travelling surface carries the puck instead.
-      const selectedPuck = dayGlass && isSelected && !carried.has(dayNum);
+      // soft tint, which is translucent already and reads as a wash on the pane.
+      const selectedPuck = dayGlass && isSelected;
       const daySurface = [skin.dayCellBase, skin.dayCellState(tokens, state)];
-      // The number's and the dot's ink per state, following the puck under glass.
-      const resting: DayState = { selected: false, today: isToday };
-      const labelInk = dayTargets.ink(dayNum, isSelected, {
-        rest: skin.dayLabel(tokens, resting).color as string,
-        covered: skin.dayLabel(tokens, { ...resting, selected: true }).color as string,
-      });
-      const dotInk = dayTargets.ink(dayNum, isSelected, {
-        rest: skin.eventDotColor(tokens, resting).backgroundColor as string,
-        covered: skin.eventDotColor(tokens, { ...resting, selected: true }).backgroundColor as string,
-      });
       const rangeNote = r?.isStart ? ", start of range" : r?.isEnd ? ", end of range" : r?.between ? ", in range" : "";
       const band =
         r && r.spans && (r.isStart || r.isEnd || r.between) ? (
@@ -489,12 +437,7 @@ export function createCalendar(skin: CalendarSkin) {
           />
         ) : null;
       return (
-        <View
-          key={dayNum}
-          style={{ position: "relative" }}
-          ref={dayTargets.register(dayNum)}
-          onLayout={() => dayTargets.measure(dayNum)}
-        >
+        <View key={dayNum} style={{ position: "relative" }}>
           {band}
           <RippleClip shape={cornerRadii(skin.dayCellBase)}>
             <Pressable
@@ -531,8 +474,8 @@ export function createCalendar(skin: CalendarSkin) {
               {...calendarDayAccessibility(isSelected)}
             >
               {selectedPuck ? <GlassPane layer="control" shape={daySurface} brand={tokens.primary} interactive /> : null}
-              <SelectionText style={[m.label, skin.dayLabel(tokens, state), { color: labelInk }]}>{dayNum}</SelectionText>
-              {count > 0 ? <Animated.View style={[skin.eventDot, skin.eventDotColor(tokens, state), { backgroundColor: dotInk }]} /> : null}
+              <Text style={[m.label, skin.dayLabel(tokens, state)]}>{dayNum}</Text>
+              {count > 0 ? <View style={[skin.eventDot, skin.eventDotColor(tokens, state)]} /> : null}
             </Pressable>
           </RippleClip>
         </View>
@@ -784,8 +727,7 @@ export function createCalendar(skin: CalendarSkin) {
           {header(month)}
           {formatToggle}
           {/* Week strip: weekday label over the selectable day cell, aligned to the timeline columns below. */}
-          <View ref={spaceRef} style={{ flexDirection: "row" }}>
-            {surfaces}
+          <View style={{ flexDirection: "row" }}>
             <View style={{ width: tm.axisWidth }} />
             {weekDays.map((dayNum, i) => (
               <View key={`strip-${i}`} style={{ flex: 1, alignItems: "center" }}>
@@ -834,8 +776,7 @@ export function createCalendar(skin: CalendarSkin) {
         </View>
 
         {/* Day grid: leading blanks, then one cell per day. */}
-        <View ref={spaceRef} style={[skin.grid, { width: m.gridWidth }]}>
-          {surfaces}
+        <View style={[skin.grid, { width: m.gridWidth }]}>
           {Array.from({ length: lead }, (_, i) => (
             <View key={`blank-${i}`} style={[skin.headCell, m.cell]} />
           ))}

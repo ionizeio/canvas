@@ -2,14 +2,12 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { forwardRef, useEffect, useRef, useState, type ReactNode } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import {
-  Animated,
   PanResponder,
   type LayoutChangeEvent,
   type GestureResponderEvent,
   type AccessibilityActionEvent,
 } from "react-native";
 import { View, Text, GlassSurface, useControllableState, useFillStyle, isRTL, FOCUS_RESET, type ColorTokens, type ViewProps, type ViewStyle, type TextStyle, type StyleProp, type LayoutStyle, type MeasureProps } from "../../style/index.js";
-import { useLiquidMotion } from "../../style/liquid-motion.js";
 import { GlassPane, paneStyle } from "../../style/glass-surface/glass-pane.js";
 import { clamp } from "../../style/math.js";
 
@@ -231,7 +229,7 @@ export function createSlider(skin: SliderSkin) {
     const [focused, setFocused] = useState(false);
 
     // Losing interactivity cancels the engaged decoration without changing the
-    // value. Preference changes cancel motion inside the shared bounds hook.
+    // value.
     useEffect(() => { if (disabled) setPressed(false); }, [disabled]);
 
     const onLayout = (e: LayoutChangeEvent) => {
@@ -339,12 +337,7 @@ export function createSlider(skin: SliderSkin) {
     const rowHeight = Math.max(skin.minRowHeight ?? 0, Math.max(thumbH, trackHeight) + 16);
     const thumbTop = rowHeight / 2 - thumbH / 2;
     const trackTop = rowHeight / 2 - trackHeight / 2;
-    const thumbFrame = useLiquidMotion({
-      x: rtl ? Math.max(0, trackWidth - thumbW) - thumbLeft : thumbLeft,
-      y: thumbTop, width: thumbW, height: thumbH,
-    }, { enabled: surface === "glass" && !disabled, pressed, profile: "drag" });
     const railShape = skin.track(tokens, size, !!disabled);
-
 
     // Segmented (M3 Expressive) geometry: active | gap | handle | gap | inactive.
     const activeWidth = Math.max(0, thumbLeft - gap);
@@ -495,18 +488,17 @@ export function createSlider(skin: SliderSkin) {
             from the PanResponder OR web keyboard `focused`. It carries pointerEvents="none"
             so it never competes with the parent for the touch responder, keeping the
             drag/jump on one code path. */}
-        <Animated.View style={[{ position: "absolute", pointerEvents: "none" }, thumbFrame]} testID={props.testID ? `${props.testID}-thumb-motion` : undefined}>
-          <GlassSurface
-            layer="control"
-            interactive
-            pointerEvents="none"
-            tint={skin.glassTint?.(tokens)}
-            style={[
-              skin.thumb(tokens, size, !!disabled, pressed || focused),
-              { position: "relative", width: "100%", height: "100%" },
-            ]}
-          />
-        </Animated.View>
+        <GlassSurface
+          layer="control"
+          interactive
+          pointerEvents="none"
+          testID={props.testID ? `${props.testID}-thumb` : undefined}
+          tint={skin.glassTint?.(tokens)}
+          style={[
+            skin.thumb(tokens, size, !!disabled, pressed || focused),
+            { left: rtl ? Math.max(0, trackWidth - thumbW) - thumbLeft : thumbLeft, top: thumbTop },
+          ]}
+        />
       </View>
     );
 

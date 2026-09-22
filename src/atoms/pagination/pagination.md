@@ -2,18 +2,11 @@
 
 Page-of-N navigation for tables and lists.
 
-In glass mode the numbered variant's selected page puck travels between the page
-cells as one measured surface with horizontal stretch, recoil and settle; the
-numbers, the chevrons, `aria-current`, focus and hit targets stay fixed. Cells are
-tracked by page number, never by slot, and beyond seven pages nearly every page
-change also shifts the window (an ellipsis moves, a number appears or drops out).
-A shift re-measures the cells before the puck moves: it travels when the page it
-sits on kept its frame (2 to 3 in `1 2 3 4 … 12` glides like any selection) and
-resets in place when that page moved or left the window (3 to 12 in `1 … 11 12`
-appears on 12), so a shift never invents travel from a stale slot; an ellipsis
-is never a target. The compact and with-size variants keep their anatomy. Reduce
-Motion selects the final bounds at once; solid mode keeps the skin's own
-selected cell.
+In glass mode the numbered variant's selected page is a brand-tinted
+control-layer puck behind its number and the other page cells are plain control
+pucks; beyond seven pages a page change also shifts the window (an ellipsis
+moves, a number appears or drops out). The compact and with-size variants keep
+their anatomy. Solid mode keeps the skin's own selected cell.
 
 ## Usage
 

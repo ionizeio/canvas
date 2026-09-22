@@ -2,14 +2,10 @@
 
 Underline, pill, vertical, with badges.
 
-In glass mode, filled selections travel as one measured surface with directional
-stretch, recoil and settling. Labels, badges, focus and tap targets stay fixed.
-The material keeps the platform skin's selected tint, with readable foreground
-ink before, during and after travel. iOS and web share the capsule segmented
-control, so both travel; Android underline tabs keep their ink indicator.
-Scrollable strips reserve room for the material at their edges.
-Reduce Motion selects the final bounds immediately; solid mode keeps the
-complete platform treatment.
+In glass mode a filled selection is a control-layer pane behind the selected
+label, in the platform skin's selected tint with readable foreground ink. iOS
+and web share the capsule segmented control; Android underline tabs keep their
+ink indicator. Solid mode keeps the complete platform treatment.
 
 ## Usage
 

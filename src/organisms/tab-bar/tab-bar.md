@@ -6,11 +6,9 @@ iOS and web share the iOS 26 anatomy: a capsule that floats above the content
 (which scrolls beneath it), inset from the sides, with the safe-area inset kept
 under the capsule, and the selected destination raised as a capsule covering its
 whole cell. Android docks the Material 3 bar full-bleed with its 56 by 32 icon
-pill. In glass mode the selection travels as one measured surface between
-destinations: the cell capsule on iOS and web, the icon pill on Android, with
-restrained deformation that never grows taller than the bar. Icons, labels,
-destinations and safe-area spacing remain fixed. Reduce Motion uses the final
-position immediately, and solid mode retains the ordinary platform surface.
+pill. In glass mode the selection is a control-layer pane on the active
+destination: the cell capsule on iOS and web, the icon pill on Android. Solid
+mode retains the ordinary platform surface.
 
 ## Usage
 

@@ -6,7 +6,7 @@ import { createSlider } from "../src/atoms/slider/slider.shared.tsx";
 import { iosSkin, androidSkin, webSkin } from "../src/atoms/slider/slider.styles.ts";
 import { lightColors, darkColors } from "../src/style/tokens.ts";
 
-// Moving thumbs use the liquid role while each platform keeps its own shape.
+// The thumb is a control-layer glass knob while each platform keeps its own shape.
 // The rail is static glass and the iOS skin retains its bright native tint.
 
 afterEach(cleanup);
@@ -24,11 +24,11 @@ describe("Slider Liquid Glass handle", () => {
     it(`${name} routes its native thumb geometry through the shared material`, () => {
       const Slider = createSlider(skin);
       const { container } = mount(<Slider testID="slider" defaultValue={50} />, "glass");
-      const frame = container.querySelector('[data-testid="slider-thumb-motion"]') as HTMLElement;
-      expect(frame.style.width).toBe(`${skin.thumbWidth("base")}px`);
-      expect(frame.style.height).toBe(`${skin.thumbHeight("base")}px`);
-      expect(frame.querySelector('[style*="backdrop-filter"]')).not.toBeNull();
-      expect(frame.style.transform).toBe("");
+      const knob = container.querySelector('[data-testid="slider-thumb"]') as HTMLElement;
+      expect(knob.style.width).toBe(`${skin.thumbWidth("base")}px`);
+      expect(knob.style.height).toBe(`${skin.thumbHeight("base")}px`);
+      expect(knob.querySelector('[style*="backdrop-filter"]')).not.toBeNull();
+      expect(knob.style.transform).toBe("");
     });
   }
 

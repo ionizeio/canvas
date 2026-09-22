@@ -43,21 +43,18 @@ const themed = (children: ReactNode, glass: boolean) => <ThemeProvider light gla
 
 describe("native material coordinate hosts", () => {
   for (const [platform, Switch] of [["web", WebSwitch], ["ios", IOSSwitch], ["android", AndroidSwitch]] as const) {
-    it(`${platform} Switch preserves the measured track, shape and state through both material directions`, () => withNativeHostProps(props => {
-      // No testID: a native test ID itself prevents flattening and would mask this defect.
+    it(`${platform} Switch preserves its track, shape and state through both material directions`, () => withNativeHostProps(props => {
+      // No testID: the track is a plain host whose identity must survive on its own.
       const children = <Switch defaultChecked>Live updates</Switch>;
       const result = render(themed(children, false));
       const control = screen.getByRole("switch");
       const track = control.lastElementChild as HTMLElement;
       const initial = [track.style.width, track.style.height, track.style.borderRadius, track.style.backgroundColor];
-      expect(props(track).collapsable).toBe(false);
-      expect(props(track).onLayout).toBeDefined();
       expect(props(track).testID).toBeUndefined();
       for (const glass of [true, false, true, false]) {
         result.rerender(themed(children, glass));
         expect(screen.getByRole("switch")).toBe(control);
         expect(control.lastElementChild).toBe(track);
-        expect(props(track).collapsable).toBe(false);
         expect(control.getAttribute("aria-checked")).toBe("true");
         expect([track.style.width, track.style.height, track.style.borderRadius]).toEqual(initial.slice(0, 3));
         if (!glass) expect(track.style.backgroundColor).toBe(initial[3]);
@@ -67,7 +64,6 @@ describe("native material coordinate hosts", () => {
       result.rerender(themed(children, true));
       expect(control.getAttribute("aria-checked")).toBe("false");
       expect(control.lastElementChild).toBe(track);
-      expect(props(track).collapsable).toBe(false);
     }));
   }
 

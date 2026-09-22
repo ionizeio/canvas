@@ -1,8 +1,5 @@
-import { useRef } from "react";
-import { Animated, StyleSheet } from "react-native";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { MeasuredSelection, SelectionText, useMeasuredTargets } from "../../style/measured-selection.js";
-import { View, Pressable, Text, RippleClip, cornerRadii, useControllableState, type StyleProp, type ViewStyle, type ColorTokens, type LayoutStyle, GlassPane, GlassSurface, paneStyle, isGlass } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useControllableState, type StyleProp, type ViewStyle, type ColorTokens, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import * as s from "./pagination.styles.js";
 import { type Size, type PaginationSkin } from "./pagination.styles.js";
 
@@ -132,18 +129,12 @@ function pageWindow(current: number, total: number): number[] {
 // GlassPane paints the material behind its label (the Pressable keeps its tap,
 // ripple and dim) and the cell drops its fill and hairline (the pane's material and
 // rim carry them). The selected page is BRAND-tinted glass with its label in
-// `primary-foreground`, and that ink follows the travelling puck rather than the
-// press (useMeasuredTargets.ink): the number keeps the resting ink until the puck
-// is under it. A hollow cell (the iOS/M3 chevrons and resting pages) stays bare, as
-// it is in solid mode.
+// `primary-foreground`; a hollow cell (the iOS/M3 chevrons and resting pages) stays
+// bare, as it is in solid mode.
 function surfaced(box: ViewStyle): boolean {
   const bg = box.backgroundColor;
   return (bg != null && bg !== "transparent") || (box.borderWidth ?? 0) > 0;
 }
-
-// The resting tile's veil sits where the pane sits (behind the label), so the pane
-// keeps its own absolute fill inside it.
-const styles = StyleSheet.create({ veil: { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, zIndex: -1 } });
 
 /** Build a Pagination component from a platform skin. */
 export function createPagination(skin: PaginationSkin) {
@@ -215,32 +206,6 @@ export function createPagination(skin: PaginationSkin) {
 
     const atStart = current <= 1;
     const atEnd = current >= total;
-
-    // Numbered pagination in glass mode: the selected page's brand puck travels
-    // as ONE measured control-layer surface between the page cells while the
-    // numbers, the chevrons and the hit targets stay fixed. Cells are keyed and
-    // measured by PAGE NUMBER, never by slot, and beyond seven pages nearly every
-    // page change also shifts the window (an ellipsis moves, a number appears or
-    // drops out): useMeasuredTargets re-measures the cells before the surface
-    // moves, travels when the page it sits on kept its frame (2 to 3 in
-    // "1 2 3 4 … 12" glides like any selection) and resets in place when that
-    // page moved or left the window (3 to 12 in "1 … 11 12" appears on 12). An
-    // ellipsis is never a target. Compact and with-size variants keep their
-    // anatomy; solid mode keeps the selected cell.
-    const window = variant === "numbered" ? pageWindow(current, total) : [];
-    const structure = JSON.stringify([variant, size, window]);
-    const rowRef = useRef<View>(null);
-    const cells = useMeasuredTargets<number>(structure, rowRef);
-    // The surface exists in glass mode only, so the target is asked for in glass
-    // mode only: in solid mode the cells paint the selection themselves.
-    const { layout: selectionLayout, resetKey, bounds } = cells.target("selected", glass && variant === "numbered" ? current : undefined);
-    const movingSelection = glass && variant === "numbered" && selectionLayout != null;
-    const selectedBox = skin.pageBox(tokens, true);
-    const selection = movingSelection ? (
-      <MeasuredSelection layout={selectionLayout} enabled={!disabled} resetKey={resetKey} bounds={bounds} testID={testID ? `${testID}-selection-motion` : undefined}>
-        <GlassSurface static layer="control" interactive brand={tokens.primary} style={[StyleSheet.absoluteFill, { borderRadius: selectedBox.borderRadius }]} testID={testID ? `${testID}-selection` : undefined} />
-      </MeasuredSelection>
-    ) : null;
 
     // The compact/with-size indicator: an item range ("Showing X-Y of N") when
     // itemCount is supplied, otherwise the page count ("Page X of N").
@@ -350,9 +315,10 @@ export function createPagination(skin: PaginationSkin) {
     }
 
     // Numbered (default): a windowed row of page buttons with ellipsis gaps.
+    const window = pageWindow(current, total);
+
     return (
-      <View ref={rowRef} testID={testID} style={[s.numberedRow, style]}>
-        {selection}
+      <View testID={testID} style={[s.numberedRow, style]}>
         {prev}
         {window.map((p, i) => {
           if (p === GAP) {
@@ -368,28 +334,12 @@ export function createPagination(skin: PaginationSkin) {
           }
           const selected = p === current;
           const pageBox = skin.pageBox(tokens, selected);
-          // The travelling surface carries the selected puck, so under it a cell
-          // paints only its RESTING tile (the web's bordered box; the iOS and M3
-          // resting cells are bare), and that tile yields to the surface as the
-          // surface covers it (`uncovered`), instead of vanishing at the press.
-          // Without a surface the selected cell paints the brand puck itself.
-          const ownBrand = glass && selected && !movingSelection;
-          const paneShape = ownBrand ? pageBox : skin.pageBox(tokens, false);
-          const pagePuck = glass && surfaced(paneShape);
-          // The label's ink: the skin's own per state, except that under glass the
-          // selected surface is a brand puck carrying `primary-foreground` (M3's tonal
-          // fill included), and it follows the surface (see the header).
-          const ink = cells.ink(p, selected, {
-            rest: skin.pageLabel(tokens, false).color as string,
-            covered: glass && surfaced(selectedBox) ? tokens["primary-foreground"] : skin.pageLabel(tokens, true).color as string,
-          });
-          const pane = pagePuck ? <GlassPane static layer="control" shape={paneShape} brand={ownBrand ? tokens.primary : undefined} /> : null;
+          const pagePuck = glass && surfaced(pageBox);
           return (
-            // The measurement wrapper reports the cell's frame in the row; the page
-            // cell's bounded Android ripple is clipped to its corners by the RippleClip
-            // inside it (no-op on iOS/web). See src/style/ripple-clip.
-            <View key={`page-${p}`} ref={cells.register(p)} onLayout={(event) => cells.record(p, event.nativeEvent.layout)}>
-            <RippleClip shape={cornerRadii(pageBox)}>
+            // The page cell's bounded Android ripple is clipped to its corners by this
+            // RippleClip parent (no-op on iOS/web). The list `key` rides the outer node.
+            // See src/style/ripple-clip.
+            <RippleClip key={`page-${p}`} shape={cornerRadii(pageBox)}>
               <Pressable
                 style={({ pressed }) => [
                   surfaced(pageBox) ? paneStyle(theme, pageBox) : pageBox,
@@ -408,11 +358,10 @@ export function createPagination(skin: PaginationSkin) {
                 aria-current={selected ? "page" : undefined}
                 aria-disabled={!!disabled}
               >
-                {pane && movingSelection ? <Animated.View pointerEvents="none" style={[styles.veil, { opacity: cells.uncovered(p, selected) }]}>{pane}</Animated.View> : pane}
-                <SelectionText style={[skin.pageLabel(tokens, selected), s.labelSize[size], { color: ink }]}>{p}</SelectionText>
+                {pagePuck ? <GlassPane static layer="control" shape={pageBox} brand={selected ? tokens.primary : undefined} /> : null}
+                <Text style={[skin.pageLabel(tokens, selected), s.labelSize[size], pagePuck && selected ? { color: tokens["primary-foreground"] } : null]}>{p}</Text>
               </Pressable>
             </RippleClip>
-            </View>
           );
         })}
         {next}

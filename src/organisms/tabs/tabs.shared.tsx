@@ -1,9 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { StyleSheet, type LayoutRectangle } from "react-native";
-import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useControllableState, useRovingFocus, useContainerBreakpoint, containerProbe, useReducedMotion, isRTL, type RovingItemProps, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutChangeEvent, type NativeSyntheticEvent, type NativeScrollEvent, GlassPane, GlassSurface, paneStyle, isGlass } from "../../style/index.js";
-import { MeasuredSelection } from "../../style/measured-selection.js";
-import { liquidMotionInsets } from "../../style/liquid-motion.js";
+import { useEffect, useRef, type ReactNode } from "react";
+import { StyleSheet } from "react-native";
+import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useControllableState, useRovingFocus, useContainerBreakpoint, containerProbe, useReducedMotion, isRTL, type RovingItemProps, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutChangeEvent, type NativeSyntheticEvent, type NativeScrollEvent, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import * as s from "./tabs.styles.js";
 import { type Variant } from "./tabs.styles.js";
 
@@ -22,7 +20,7 @@ import { type Variant } from "./tabs.styles.js";
 //     differs per OS: Android draws an underline rule (a 3px brand `primary`
 //     bar with muted inactive labels); iOS and web draw a gray capsule track
 //     with a raised pill on the selected tab (no underline), which under glass
-//     is the liquid surface that travels between tabs.
+//     is a control-layer pane behind the selected label.
 //   - `pills`: the row is a muted track; the active trigger is an elevated/tonal
 //     background pill while the rest sit flat and muted.
 //   - `vertical`: the triggers stack into a left-aligned column rail; the active
@@ -245,26 +243,26 @@ export function createTabs(skin: TabsSkin) {
     /** Frame observation on the trigger's outermost node (the RippleClip wrapper),
      *  so the overflow scroller knows where each trigger sits in the row. */
     onLayout?: (event: LayoutChangeEvent) => void;
-    measurementRef?: (node: View | null) => void;
-    movingSelection?: boolean;
-    filledGlass?: boolean;
   }
 
-  function Trigger({ label, badge, selected, variant, block, disabled, onPress, itemProps, onLayout, measurementRef, movingSelection, filledGlass }: TriggerProps) {
+  function Trigger({ label, badge, selected, variant, block, disabled, onPress, itemProps, onLayout }: TriggerProps) {
     const theme = useMaterialTheme({ layer: "control" });
     const { tokens, dark } = theme;
-    // A filled selection moves behind stable labels. Its skin tint and ordinary
-    // foreground remain readable both on the track and during partial coverage.
-    // True underline tabs retain their existing ink-only treatment.
+    // Under glass the SELECTED tab with a fill of its own is a CONTROL-layer pane: the
+    // GlassPane paints the material behind its label (the Pressable keeps its tap,
+    // ripple and dim), the trigger drops its fill and hairline (the pane's material and
+    // rim carry them), and its label reads in `foreground` over the skin's tint. An
+    // unselected trigger is bare on the track. A trigger with no fill of its own (the
+    // M3 underline tab) keeps its ink indicator and takes no material.
     const glass = isGlass(theme);
     const surfaced = (container: StyleProp<ViewStyle>) => {
       const bg = (StyleSheet.flatten(container) as ViewStyle).backgroundColor;
       return selected && bg != null && bg !== "transparent";
     };
     const puckOf = (container: StyleProp<ViewStyle>) =>
-      glass && surfaced(container) && !movingSelection ? <GlassPane layer="control" shape={container} tint={s.selectionTint(container, dark)} interactive /> : null;
+      glass && surfaced(container) ? <GlassPane layer="control" shape={container} tint={s.selectionTint(container, dark)} interactive /> : null;
     const triggerStyle = (container: StyleProp<ViewStyle>) => surfaced(container) ? [paneStyle(theme, container), glass ? s.clearSelectionShadow : null] : container;
-    const selectedInk: TextStyle | null = glass && filledGlass ? { color: tokens.foreground } : null;
+    const inkOf = (container: StyleProp<ViewStyle>): TextStyle | null => glass && surfaced(container) ? { color: tokens.foreground } : null;
     // The roving tab stop + web arrow-key handler ride onto the Pressable. `ref` is
     // passed explicitly (React never spreads it); `onKeyDown` is web-only, so the
     // pair goes through a cast (RN's Pressable types omit onKeyDown), the same idiom
@@ -291,7 +289,6 @@ export function createTabs(skin: TabsSkin) {
         // RippleClip parent (Android only). The rail stretches its children (alignItems
         // "stretch") and the trigger is width:"100%", so the wrapper fills the rail and the
         // trigger fills the wrapper; there is no flex/width on the container to move.
-        <View ref={measurementRef} onLayout={onLayout}>
         <RippleClip shape={cornerRadii(container)}>
           <Pressable
             ref={itemRef}
@@ -308,11 +305,10 @@ export function createTabs(skin: TabsSkin) {
             {puckOf(container)}
             {/* One line: when the rail flexes down in a narrow container the label
                 truncates instead of wrapping the rail taller. */}
-            <Text numberOfLines={1} style={[skin.verticalLabel(tokens, selected), selectedInk]}>{label}</Text>
+            <Text numberOfLines={1} style={[skin.verticalLabel(tokens, selected), inkOf(container)]}>{label}</Text>
             {badge != null ? <CountBadge muted={!selected}>{badge}</CountBadge> : null}
           </Pressable>
         </RippleClip>
-        </View>
       );
     }
 
@@ -330,8 +326,7 @@ export function createTabs(skin: TabsSkin) {
         // Round the pill trigger's bounded Android ripple to its capsule corners via this
         // RippleClip parent (Android only). Block-mode flex moves here so the tab still shares
         // the row width.
-        <View ref={measurementRef} onLayout={onLayout} style={block ? s.flex1 : null}>
-        <RippleClip shape={cornerRadii(container)}>
+        <RippleClip shape={cornerRadii(container)} style={block ? s.flex1 : null} onLayout={onLayout}>
           <Pressable
             ref={itemRef}
             {...(rovingProps as object)}
@@ -345,11 +340,10 @@ export function createTabs(skin: TabsSkin) {
             style={({ pressed }) => [triggerStyle(container), skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
           >
             {puckOf(container)}
-            <Text style={[skin.pillsLabel(tokens, selected), selectedInk]}>{label}</Text>
+            <Text style={[skin.pillsLabel(tokens, selected), inkOf(container)]}>{label}</Text>
             {badge != null ? <CountBadge muted={!selected}>{badge}</CountBadge> : null}
           </Pressable>
         </RippleClip>
-        </View>
       );
     }
 
@@ -370,8 +364,7 @@ export function createTabs(skin: TabsSkin) {
       // RippleClip parent (Android only; iOS draws a capsule pill instead). Block-mode flex
       // moves here so the tab still shares the row width. The absolute bottom indicator stays
       // inside the Pressable, which fills this wrapper.
-      <View ref={measurementRef} onLayout={onLayout} style={block ? s.flex1 : null}>
-      <RippleClip shape={cornerRadii(container)}>
+      <RippleClip shape={cornerRadii(container)} style={block ? s.flex1 : null} onLayout={onLayout}>
         <Pressable
           ref={itemRef}
           {...(rovingProps as object)}
@@ -385,12 +378,11 @@ export function createTabs(skin: TabsSkin) {
           style={({ pressed }) => [triggerStyle(container), skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
         >
           {puck}
-          <Text style={[skin.underlineLabel(tokens, selected), selectedInk]}>{label}</Text>
+          <Text style={[skin.underlineLabel(tokens, selected), inkOf(container)]}>{label}</Text>
           {badge != null ? <CountBadge muted={!selected}>{badge}</CountBadge> : null}
           <View style={skin.underlineIndicator(tokens, selected)} />
         </Pressable>
       </RippleClip>
-      </View>
     );
   }
 
@@ -425,17 +417,11 @@ export function createTabs(skin: TabsSkin) {
         root
       );
     const theme = useMaterialTheme({ layer: "functional" });
-    const { tokens, dark } = theme;
+    const { tokens } = theme;
     // Under glass a row that paints a TRACK (the pills bar, the iOS segmented track)
     // renders it as a FUNCTIONAL-layer pane behind the triggers, dropping its own fill
     // and hairline; the web/M3 underline row has no fill and keeps its ink rule.
     const glass = isGlass(theme);
-    const controlTheme = useMaterialTheme({ layer: "control" });
-    const selectedShape = StyleSheet.flatten(variant === "vertical"
-      ? [skin.verticalTrigger(tokens, true), skin.verticalFill(tokens, true)]
-      : variant === "pills" ? [skin.pillsTrigger(tokens, true), skin.pillsFill(tokens, true, dark)]
-        : skin.underlineTrigger(tokens, true, dark)) as ViewStyle;
-    const filledGlass = isGlass(controlTheme) && selectedShape.backgroundColor != null && selectedShape.backgroundColor !== "transparent";
     const isTrack = (row: ViewStyle) => row.backgroundColor != null && row.backgroundColor !== "transparent";
     const trackOf = (row: ViewStyle) => (glass && isTrack(row) ? <GlassPane layer="functional" shape={row} /> : null);
     const trackStyle = (row: ViewStyle) => isTrack(row) ? paneStyle(theme, row) : row;
@@ -504,23 +490,7 @@ export function createTabs(skin: TabsSkin) {
     // scroller imperatively when the active trigger would sit out of view.
     const scroller = useRef<ScrollView>(null);
     const scrollGeom = useRef({ viewport: 0, content: 0, offset: 0 });
-    const triggerRects = useRef<Array<LayoutRectangle | undefined>>([]);
-    const structure = JSON.stringify([variant, !!props.block, wrapping, isRTL(), tabs.map((item) => [labelOf(item), badgeOf(item)])]);
-    const rowRef = useRef<View>(null);
-    const layoutNodes = useRef<Array<View | null>>([]);
-    const [measurements, setMeasurements] = useState<{ structure: string; rects: Record<number, LayoutRectangle>; revision: number }>({ structure, rects: {}, revision: 0 });
-    const latestStructure = useRef(structure);
-    latestStructure.current = structure;
-    const measured = measurements.structure === structure ? measurements.rects : {};
-    const selectionLayout = measured[active];
-    const largest = Object.values(measured).reduce((bounds, rect) => ({ width: Math.max(bounds.width, rect.width), height: Math.max(bounds.height, rect.height) }), { width: 0, height: 0 });
-    const insets = filledGlass ? liquidMotionInsets(largest) : { horizontal: 0, vertical: 0 };
-    const movingSelection = filledGlass && selectionLayout != null;
-    const selection = movingSelection ? (
-      <MeasuredSelection layout={selectionLayout} enabled={!disabled && !itemDisabled[active]} resetKey={`${structure}:${measurements.revision}`} testID={testID ? `${testID}-selection-motion` : undefined}>
-        <GlassSurface layer="control" interactive tint={s.selectionTint(selectedShape, dark)} style={[StyleSheet.absoluteFill, s.selectionSurface(selectedShape)]} testID={testID ? `${testID}-selection` : undefined} />
-      </MeasuredSelection>
-    ) : null;
+    const triggerRects = useRef<Array<{ x: number; width: number } | undefined>>([]);
     // First positioning (a defaultActive/active starting off-screen) is a jump;
     // activations after that animate, unless the user prefers reduced motion.
     const settled = useRef(false);
@@ -530,7 +500,7 @@ export function createTabs(skin: TabsSkin) {
       const rect = triggerRects.current[active];
       if (!rect) return;
       const { viewport, content, offset } = scrollGeom.current;
-      const target = tabScrollTarget({ x: rect.x + insets.horizontal, width: rect.width }, viewport, content, offset);
+      const target = tabScrollTarget(rect, viewport, content, offset);
       if (target != null) scroller.current?.scrollTo({ x: target, animated });
     };
 
@@ -543,29 +513,14 @@ export function createTabs(skin: TabsSkin) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [active]);
 
-    const recordTriggerLayout = (i: number, layout: LayoutRectangle) => {
-      if (latestStructure.current !== structure || layout.width <= 0 || layout.height <= 0) return;
-      triggerRects.current[i] = layout;
-      setMeasurements((previous) => {
-        const rects = previous.structure === structure ? previous.rects : {};
-        const old = rects[i];
-        if (old && old.x === layout.x && old.y === layout.y && old.width === layout.width && old.height === layout.height) return previous;
-        return { structure, rects: { ...rects, [i]: layout }, revision: previous.revision + (old ? 1 : 0) };
-      });
+    const trackTriggerLayout = (i: number) => (event: LayoutChangeEvent) => {
+      const layout = event.nativeEvent?.layout;
+      if (!layout) return;
+      // The row is the scroll content's sole child at x 0, so a trigger's
+      // row-relative frame is its content-relative frame.
+      triggerRects.current[i] = { x: layout.x, width: layout.width };
       if (i === active) ensureActiveVisible(false);
     };
-    const trackTriggerLayout = (i: number) => (event: LayoutChangeEvent) => recordTriggerLayout(i, event.nativeEvent.layout);
-    // Native measurement reconciles unchanged hosts after a structural change;
-    // onLayout alone need not fire again when only the coordinate scope changes.
-    useLayoutEffect(() => {
-      triggerRects.current = [];
-      const row = rowRef.current;
-      if (!row) return;
-      layoutNodes.current.forEach((node, i) => node?.measureLayout(row, (x, y, width, height) => recordTriggerLayout(i, { x, y, width, height }), () => {}));
-      // The generation guards late native callbacks. Selection changes keep the
-      // existing measurements and are the only updates that should travel.
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [structure]);
     const onScrollerLayout = (event: LayoutChangeEvent) => {
       scrollGeom.current.viewport = event.nativeEvent.layout.width;
       ensureActiveVisible(false);
@@ -590,7 +545,6 @@ export function createTabs(skin: TabsSkin) {
         onScroll={onScrollerScroll}
         onContentSizeChange={onScrollerContent}
         onLayout={onScrollerLayout}
-        contentContainerStyle={filledGlass ? { paddingHorizontal: insets.horizontal, paddingVertical: insets.vertical } : undefined}
         style={[s.overflowScroller, style]}
       >
         {row}
@@ -609,10 +563,7 @@ export function createTabs(skin: TabsSkin) {
           disabled={disabled || itemDisabled[i]}
           onPress={() => setActive(i)}
           itemProps={rovingFor(i)}
-          onLayout={trackTriggerLayout(i)}
-          measurementRef={(node) => { layoutNodes.current[i] = node; }}
-          movingSelection={movingSelection}
-          filledGlass={filledGlass}
+          onLayout={props.block ? undefined : trackTriggerLayout(i)}
         />
       ));
 
@@ -620,8 +571,7 @@ export function createTabs(skin: TabsSkin) {
       // A left-aligned column rail of stacked triggers; width hugs its content
       // unless `block` stretches it to fill the available column.
       return withResponsiveProbe(
-        <View ref={rowRef} accessibilityRole="tablist" testID={testID} style={[verticalRail(!!props.block), style]}>
-          {selection}
+        <View accessibilityRole="tablist" testID={testID} style={[verticalRail(!!props.block), style]}>
           {tabs.map((item, i) => (
             <Trigger
               key={`${labelOf(item)}-${i}`}
@@ -633,10 +583,6 @@ export function createTabs(skin: TabsSkin) {
               disabled={disabled || itemDisabled[i]}
               onPress={() => setActive(i)}
               itemProps={rovingFor(i)}
-              onLayout={trackTriggerLayout(i)}
-              measurementRef={(node) => { layoutNodes.current[i] = node; }}
-              movingSelection={movingSelection}
-              filledGlass={filledGlass}
             />
           ))}
         </View>
@@ -648,9 +594,8 @@ export function createTabs(skin: TabsSkin) {
     // rides the overflow scroller, the outermost node then.
     const overflowRow = (track: ViewStyle, triggers: ReactNode) => {
       const row = (
-        <View ref={rowRef} accessibilityRole="tablist" testID={testID} style={[trackStyle(track), wrapping ? [s.wrapRow, style] : null]}>
+        <View accessibilityRole="tablist" testID={testID} style={[trackStyle(track), wrapping ? [s.wrapRow, style] : null]}>
           {trackOf(track)}
-          {selection}
           {triggers}
         </View>
       );
@@ -663,9 +608,8 @@ export function createTabs(skin: TabsSkin) {
       const pillsTrack = skin.pillsRow(tokens, wrapping);
       if (props.block) {
         return (
-          <View ref={rowRef} accessibilityRole="tablist" testID={testID} style={[trackStyle(pillsTrack), s.blockWidth(true), style]}>
+          <View accessibilityRole="tablist" testID={testID} style={[trackStyle(pillsTrack), s.blockWidth(true), style]}>
             {trackOf(pillsTrack)}
-            {selection}
             {horizontalTriggers("pills")}
           </View>
         );
@@ -679,9 +623,8 @@ export function createTabs(skin: TabsSkin) {
     const underlineTrack = skin.underlineRow(tokens, wrapping);
     if (props.block) {
       return withResponsiveProbe(
-        <View ref={rowRef} accessibilityRole="tablist" testID={testID} style={[trackStyle(underlineTrack), s.blockWidth(true), style]}>
+        <View accessibilityRole="tablist" testID={testID} style={[trackStyle(underlineTrack), s.blockWidth(true), style]}>
           {trackOf(underlineTrack)}
-          {selection}
           {horizontalTriggers("underline")}
         </View>,
       );

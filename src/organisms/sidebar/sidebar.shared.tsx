@@ -1,8 +1,7 @@
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import { Animated, StyleSheet, type GestureResponderEvent } from "react-native";
+import { Animated, type GestureResponderEvent } from "react-native";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { MeasuredSelection, useMeasuredTargets } from "../../style/measured-selection.js";
-import { selectionSurface, selectionTint } from "../../style/selection-tint.js";
+import { selectionTint } from "../../style/selection-tint.js";
 import {
   View,
   Pressable,
@@ -15,6 +14,9 @@ import {
   useReducedMotion,
   supportsNativeDriver,
   GlassSurface,
+  GlassPane,
+  paneStyle,
+  isGlass,
   breakpoints,
   useBreakpoint,
   devWarn,
@@ -142,8 +144,6 @@ export interface SidebarSkin {
   /** The back-row title type (the parent section's name). */
   drillBackTitle: (t: ColorTokens) => TextStyle;
 }
-
-const ROW_WRAPPER: ViewStyle = { alignSelf: "stretch" };
 
 // A row and a section are data, and they live in sidebar.item beside the badge
 // drawn from them, so the narrow drill-down can read both without importing this
@@ -299,7 +299,7 @@ export function createSidebar(skin: SidebarSkin) {
     const frame = frameOf(props);
     const { tokens, dark } = useTheme();
     const material = useMaterialTheme({ layer: "control" });
-    const glass = material.surface === "glass";
+    const glass = isGlass(material);
 
     // Controlled when the matching prop is provided, self-managed otherwise, so a
     // bare sidebar moves the highlight / collapses on interaction.
@@ -401,30 +401,14 @@ export function createSidebar(skin: SidebarSkin) {
       });
     }, [activeSectionKey, openControlled, independent]);
 
-    // In glass mode the active row's fill travels as ONE measured control-layer
-    // surface through the column (or the scroll body): vertical stretch, recoil and
-    // settle between rows, across sections, while icons, labels, badges, roles,
-    // aria-current and hit targets stay fixed. Every row wrapper reports its frame
-    // against the body node (the column itself in the legacy shape, the scroll
-    // content body in the shell), an ancestor of the rows on every platform, so
-    // section offsets and scrolling are already in the numbers. A structural
-    // change (the section set, an accordion toggle, the rail collapse, density)
-    // re-measures every row (useMeasuredTargets): the surface holds meanwhile,
-    // then travels when the row it sits on kept its frame and resets in place
-    // when that row moved or left; a row hidden inside a closed section has no
-    // target, so the surface withdraws until it is visible again. Solid mode
-    // keeps each skin's own row fill.
-    const structure = JSON.stringify([collapsed, density, indexed.map(({ key, section, rows }) => [key, !section.collapsible || openSet.has(key), rows.map((r) => r.item.id ?? r.item.label)])]);
-    const bodyRef = useRef<View>(null);
-    const rows = useMeasuredTargets<number>(structure, bodyRef);
-    const { layout: selectionLayout, resetKey } = rows.target("active", activeIndex);
-    const movingSelection = glass && selectionLayout != null;
-    const activeFill = StyleSheet.flatten([skin.row(tokens, density, collapsed), skin.rowFill(tokens, true)]) as ViewStyle;
-    const selection = movingSelection ? (
-      <MeasuredSelection layout={selectionLayout} enabled resetKey={resetKey} testID={testID ? `${testID}-selection-motion` : undefined}>
-        <GlassSurface layer="control" interactive tint={selectionTint(activeFill, dark)} style={[StyleSheet.absoluteFill, selectionSurface(activeFill)]} testID={testID ? `${testID}-selection` : undefined} />
-      </MeasuredSelection>
-    ) : null;
+    // Under glass the ACTIVE row is a CONTROL-layer pane: a GlassPane paints the
+    // material behind its icon, label and badge in the row's own shape, under the
+    // skin's selected hue at the translucent selection alpha (`selectionTint`), while
+    // the Pressable keeps its tap, ripple and dim and drops the fill it carries (the
+    // pane's material and rim carry it; `paneStyle`). Solid mode keeps each skin's
+    // own row fill.
+    const activeShape: StyleProp<ViewStyle> = [skin.row(tokens, density, collapsed), skin.rowFill(tokens, true)];
+    const activePane = glass ? <GlassPane layer="control" shape={activeShape} tint={selectionTint(activeShape, dark)} interactive /> : null;
 
     const shell = header != null || footer != null;
 
@@ -475,25 +459,19 @@ export function createSidebar(skin: SidebarSkin) {
     const renderRow = (item: SidebarItem, index: number) => {
       const activeRow = index === activeIndex;
       return (
-        // The measurement wrapper reports the row's frame against the body; the
-        // bounded Android ripple on a nav row is masked to a rectangle and cannot
-        // clip itself, so the RippleClip inside rounds it to the row's own corners
-        // (Android only; a transparent passthrough on iOS/web). The row fills the
-        // sidebar width, so both wrappers stretch to match.
-        <View
-          key={item.id ?? item.label}
-          style={ROW_WRAPPER}
-          ref={rows.register(index)}
-          onLayout={() => rows.measure(index)}
-        >
-        <RippleClip shape={cornerRadii(skin.row(tokens, density, collapsed))} style={ROW_WRAPPER}>
+        // The bounded Android ripple on a nav row is masked to a rectangle and cannot
+        // clip itself; this RippleClip parent rounds it to the row's own corners (Android
+        // only; a transparent passthrough on iOS/web). The row fills the sidebar width, so
+        // the wrapper stretches to match (the row inside it fills the wrapper in turn).
+        <RippleClip key={item.id ?? item.label} shape={cornerRadii(skin.row(tokens, density, collapsed))} style={{ alignSelf: "stretch" }}>
           <Pressable
             android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
             style={({ pressed }) => [
               skin.row(tokens, density, collapsed),
               // The active row carries its highlight persistently; on web a press paints it
-              // too. When the surface travels, the row itself drops the fill it carries.
-              movingSelection && activeRow ? skin.rowFill(tokens, !!(skin.pressedFill && pressed)) : skin.rowFill(tokens, activeRow || (skin.pressedFill && pressed)),
+              // too. Under glass the pane behind the active row paints that highlight, so
+              // the row itself drops the fill it carries.
+              glass && activeRow ? paneStyle(material, skin.rowFill(tokens, true)) : skin.rowFill(tokens, activeRow || (skin.pressedFill && pressed)),
               skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
               skin.focusOutlineReset,
             ]}
@@ -509,6 +487,7 @@ export function createSidebar(skin: SidebarSkin) {
             // Collapsed rail hides the label; keep the accessible name (+ badge count).
             accessibilityLabel={collapsed ? rowA11yLabel(item) : undefined}
           >
+            {activeRow ? activePane : null}
             {item.icon != null ? (
               <Icon {...{ [item.icon]: true }} {...skin.iconTint(activeRow)} size={skin.iconSize} decorative />
             ) : null}
@@ -522,7 +501,6 @@ export function createSidebar(skin: SidebarSkin) {
             )}
           </Pressable>
         </RippleClip>
-        </View>
       );
     };
 
@@ -616,8 +594,7 @@ export function createSidebar(skin: SidebarSkin) {
       // users get no way to jump to (or skip) the nav. Additive and backward
       // compatible: consumers using Sidebar for non-nav content can ignore it.
       return (
-        <GlassSurface testID={testID} role="navigation" style={column} hostRef={bodyRef}>
-          {selection}
+        <GlassSurface testID={testID} role="navigation" style={column}>
           {sectionsEl}
         </GlassSurface>
       );
@@ -665,16 +642,8 @@ export function createSidebar(skin: SidebarSkin) {
             </View>
           )
         ) : null}
-        <ScrollView style={skin.scroll}>
-          {/* The body the rows measure against wears the skin's content padding and
-              gap itself (the scroll content container carries none), so the sections
-              lay out exactly as before and the body is an ANCESTOR of every row:
-              native measureLayout only resolves against an ancestor (a sibling node
-              fails silently on Fabric, which left the iOS rail without travel). */}
-          <View ref={bodyRef} style={skin.scrollContent(tokens, collapsed)}>
-            {selection}
-            {sectionsEl}
-          </View>
+        <ScrollView style={skin.scroll} contentContainerStyle={skin.scrollContent(tokens, collapsed)}>
+          {sectionsEl}
         </ScrollView>
         {footer != null ? <View style={skin.footer(tokens, collapsed)}>{footerNode}</View> : null}
       </GlassSurface>

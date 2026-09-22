@@ -37,10 +37,10 @@ export const flex1: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%" };
 // opacity-50: the dimmed disabled look the component applies per trigger.
 export const disabledDim: ViewStyle = { opacity: 0.5 };
 
-// The selection tint and the travelling surface style live with the other moving
-// selections (Navbar, Sidebar) in src/style/selection-tint.ts; re-exported here so
-// the Tabs tests and skins keep their import.
-export { selectionTint, selectionSurface } from "../../style/selection-tint.js";
+// The selection tint lives with the other glass selections (Navbar, Sidebar, TabBar)
+// in src/style/selection-tint.ts; re-exported here so the Tabs tests and skins keep
+// their import.
+export { selectionTint } from "../../style/selection-tint.js";
 
 export const clearSelectionShadow: ViewStyle = shadow("none");
 

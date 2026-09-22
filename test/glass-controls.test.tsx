@@ -155,8 +155,8 @@ describe("brand-tinted glass pucks", () => {
       const fills = Array.from(strip.querySelectorAll("[style*='backdrop-filter']")).map((lens) => rgbaOf((lens.previousElementSibling as HTMLElement).style.backgroundColor));
       expect(fills[0]).toEqual(rgbaOf(LIGHT["glass-tint"]));
       // The web shares the capsule segmented control with iOS: the puck carries the
-      // raised thumb's fill (the light scheme's `background`) at the moving
-      // selection's opacity ceiling, not a brand tint.
+      // raised thumb's fill (the light scheme's `background`) at the selection tint's
+      // opacity ceiling, not a brand tint.
       expect(fills).toContainEqual(rgbaOf(selectionTint({ backgroundColor: lightColors.background }, false)!));
       const selected = strip.querySelector('[aria-selected="true"]') as HTMLElement;
       const label = Array.from(selected.querySelectorAll("*")).find((n) => n.textContent === "Overview" && (n as HTMLElement).style.color) as HTMLElement;

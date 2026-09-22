@@ -2,20 +2,11 @@
 
 Month grid, week timeline, and day timeline in one component. Events mark their days with a dot in the month grid and week strip, and timed events render as blocks on the week/day hour timelines. The view is a semantic boolean axis: pass `week` or `day`, or neither for the month grid (`day` wins over `week` when both are set).
 
-In glass mode the selected day's brand puck travels between the days of one
-month as one measured surface with stretch, recoil and settle, through the
-month grid and along the week strip; the day numbers, the event dots, today's
-tint and the pressed state stay fixed. A diagonal move (a row down and a column
-across) stretches along both axes and never rotates. Days are targets inside
-one scope: switching month or view, or a change of density or cell size,
-re-measures and resets the puck in place, so the 12th of one month never
-travels to the 12th of the next. In `range` mode the two endpoints are
-independent surfaces: the start travels when the pick restarts, the end appears
-in place when the range completes and withdraws when the pick restarts, and a
-one-day range leaves both on the same cell over the unchanged band. The day
-peek and the hover card open and close on the liquid popup material. Reduce
-Motion selects the final bounds at once; solid mode keeps the skin's own filled
-day.
+In glass mode the selected day is a brand-tinted control-layer puck behind its
+number and event dot, in the month grid and along the week strip; in `range`
+mode both endpoints carry the puck over the range band. The day peek and the
+hover card open and close on the liquid popup material. Solid mode keeps the
+skin's own filled day.
 
 ## Usage
 

@@ -2,7 +2,6 @@
   "version": 2,
   "evidenceLog": "tools/native/liquid-motion.md",
   "sources": [
-    "src/style/liquid-motion*.ts",
     "src/style/popup-motion.tsx",
     "src/style/motion.ts",
     "src/style/glass-surface/glass-lens.ts",
@@ -30,7 +29,6 @@
       "/testing/materials",
       "/testing/materials?geometry=1",
       "/testing/backdrop",
-      "/testing/tabs",
       "/testing/popup",
       "/testing/currents",
       "/testing/lattice",

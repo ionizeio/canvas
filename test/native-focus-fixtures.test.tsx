@@ -136,13 +136,9 @@ test("a fresh disabled Tabs scenario preserves its default selection and zero ca
   const view = render(<ThemeProvider><TabsBody key="enabled" /></ThemeProvider>);
   fireEvent.click(screen.getByRole("tab", { name: "Activity" }));
   view.rerender(<ThemeProvider><TabsBody key="disabled" disabled /></ThemeProvider>);
-  // The workspace tabs and the liquid harness's pill tabs both take the fixture's
-  // disabled flag; the harness TabBar has no disabled state, so it stays out.
-  for (const list of ["workspace-tabs", "liquid-tabs"]) {
-    for (const tab of within(screen.getByTestId(list)).getAllByRole("tab")) {
-      expect(tab.getAttribute("aria-disabled")).toBe("true");
-      fireEvent.click(tab);
-    }
+  for (const tab of within(screen.getByTestId("workspace-tabs")).getAllByRole("tab")) {
+    expect(tab.getAttribute("aria-disabled")).toBe("true");
+    fireEvent.click(tab);
   }
   expect(screen.getByRole("tab", { name: "Overview" }).getAttribute("aria-selected")).toBe("true");
   expect(text("tabs-selection")).toBe("Selected tab: Overview");

@@ -7,7 +7,6 @@ import {
   type LayoutChangeEvent,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
-  type View as RNView,
   type ViewProps,
 } from "react-native";
 import {
@@ -24,10 +23,8 @@ import {
   GlassSurface,
   GlassPane,
   paneStyle,
-  isGlass,
 } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
-import { MeasuredSelection, useMeasuredTargets } from "../../style/measured-selection.js";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 
 // Shared Carousel shell. The structure (a horizontally paged FlatList of slides
@@ -218,8 +215,7 @@ export function createCarousel(skin: CarouselSkin) {
       testID,
       style,
     } = props;
-    const theme = useMaterialTheme({ layer: "content" });
-    const { tokens } = theme;
+    const { tokens } = useMaterialTheme({ layer: "content" });
     const reduced = useReducedMotion();
     const count = items.length;
 
@@ -237,44 +233,6 @@ export function createCarousel(skin: CarouselSkin) {
     useEffect(() => {
       if (!controlled && internal !== current) setInternal(current);
     }, [controlled, internal, current]);
-
-    // Under glass the active dot's brand mark travels between the dots as one
-    // measured marker (ink, like the dots themselves: there is no material to
-    // refract at dot size) while the dots and their press targets stay still.
-    // The marker follows the COMMITTED slide, the same `current` the arrows, the
-    // keyboard, a controlled index and a finished swipe settle on; it does not
-    // track drag progress. Each dot's press target is measured against the dots
-    // row (the targets keep their size whichever dot is active, so their frames
-    // hold while the active dot itself widens), and the marker takes the skin's
-    // active dot size centred on that target. The dot beneath the marker renders
-    // as an inactive dot, so the strip never shows two brand marks in flight. A
-    // change of the slide set (count or keys) or of the strip's visibility
-    // re-measures the targets (useMeasuredTargets) and resets the marker in
-    // place; a loop from the last slide to the first travels back along the
-    // strip, over nothing but the dots.
-    const dotsShown = dotsVisible && count > 1;
-    const dotsStructure = JSON.stringify([dotsShown, items.map((item) => item.key)]);
-    const dotsRowRef = useRef<RNView>(null);
-    const dotTargets = useMeasuredTargets<number>(dotsStructure, dotsRowRef);
-    const dotGlass = isGlass(theme);
-    const activeDot = skin.dot(tokens, true);
-    const { layout: currentTarget, resetKey: markerResetKey } = dotTargets.target("marker", current);
-    const markerLayout =
-      currentTarget && typeof activeDot.width === "number" && typeof activeDot.height === "number"
-        ? {
-            x: currentTarget.x + (currentTarget.width - activeDot.width) / 2,
-            y: currentTarget.y + (currentTarget.height - activeDot.height) / 2,
-            width: activeDot.width,
-            height: activeDot.height,
-          }
-        : undefined;
-    const markerCarries = dotGlass && dotsShown && markerLayout != null;
-    const marker = markerCarries ? (
-      <MeasuredSelection layout={markerLayout} enabled resetKey={markerResetKey} testID={testID ? `${testID}-dot-motion` : undefined}>
-        <View style={[StyleSheet.absoluteFill, { borderRadius: activeDot.borderRadius, backgroundColor: activeDot.backgroundColor }]} testID={testID ? `${testID}-dot-marker` : undefined} />
-      </MeasuredSelection>
-    ) : null;
-
 
     // The measured viewport width. Width math is guarded against this 0 frame:
     // the FlatList renders only once a positive width has been measured.
@@ -425,14 +383,11 @@ export function createCarousel(skin: CarouselSkin) {
           ) : null}
         </View>
 
-        {dotsShown ? (
-          <View ref={dotsRowRef} role="group" accessibilityLabel="Choose a slide" style={skin.dotsRow(tokens)}>
-            {marker}
+        {dotsVisible && count > 1 ? (
+          <View role="group" accessibilityLabel="Choose a slide" style={skin.dotsRow(tokens)}>
             {items.map((item, i) => (
               <Pressable
                 key={item.key}
-                ref={dotTargets.register(i)}
-                onLayout={() => dotTargets.measure(i)}
                 onPress={() => goTo(i)}
                 android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
                 accessibilityRole="button"
@@ -444,7 +399,7 @@ export function createCarousel(skin: CarouselSkin) {
                   skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
                 ]}
               >
-                <View style={skin.dot(tokens, i === current && !markerCarries)} />
+                <View style={skin.dot(tokens, i === current)} />
               </Pressable>
             ))}
           </View>

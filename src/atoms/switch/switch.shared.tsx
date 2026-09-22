@@ -1,10 +1,9 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { forwardRef, useEffect, useState, type ReactNode } from "react";
+import { forwardRef, type ReactNode } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { useSpaceActivation } from "../../style/use-space-activation.js";
-import { Animated, type GestureResponderEvent } from "react-native";
-import { Pressable, View, Text, useControllableState, useMinTargetSlop, isRTL, type ColorTokens, type StyleProp, type ViewStyle, type TouchTargetSkin, type LayoutStyle, GlassPane, GlassSurface, paneStyle } from "../../style/index.js";
-import { useLiquidMotion } from "../../style/liquid-motion.js";
+import { type GestureResponderEvent } from "react-native";
+import { Pressable, View, Text, useControllableState, useMinTargetSlop, type ColorTokens, type StyleProp, type ViewStyle, type TouchTargetSkin, type LayoutStyle, GlassPane, GlassSurface, paneStyle } from "../../style/index.js";
 
 // Shared Switch shell. Uses React Native's primitives DIRECTLY (no engine className
 // layer) and reads the active brand tokens via so colors follow light/dark.
@@ -78,8 +77,9 @@ export function createSwitch(skin: SwitchSkin) {
     const size = sizeOf(props);
     // Under glass the track is a static pane at control density: a GlassPane paints the material
     // behind the thumb (BRAND-tinted while checked) and the track drops its fill and
-    // outline (the pane's material and rim carry them). The moving thumb owns its
-    // liquid material, independently of the stable track.
+    // outline (the pane's material and rim carry them). The thumb is a CONTROL-layer
+    // surface of its own, tinted with the skin's thumb fill and positioned by the skin
+    // inside the track; in solid mode it is the skin's plain knob.
 
     // Controlled when `checked` is provided, self-managed otherwise, so a bare
     // <Switch /> toggles out of the box (the standard library contract).
@@ -91,21 +91,8 @@ export function createSwitch(skin: SwitchSkin) {
         onValueChange?.(next);
       },
     );
-    const [pressed, setPressed] = useState(false);
-    useEffect(() => { if (disabled) setPressed(false); }, [disabled]);
-    const [measuredTrack, setMeasuredTrack] = useState<{ size: Size; width: number } | null>(null);
     const trackShape = skin.track(tokens, dark, checked, size);
     const thumbShape = skin.thumb(tokens, checked, size);
-    const { position, start, end, top, bottom, left, right, width, height, ...thumbSurface } = thumbShape;
-    const trackWidth = measuredTrack?.size === size ? measuredTrack.width : Number(trackShape.width);
-    const innerWidth = trackWidth - 2 * Number(trackShape.borderWidth ?? 0);
-    const thumbWidth = Number(width);
-    const thumbHeight = Number(height);
-    const logicalX = start != null ? Number(start) : innerWidth - Number(end ?? 0) - thumbWidth;
-    const thumbFrame = useLiquidMotion({
-      x: isRTL() ? innerWidth - logicalX - thumbWidth : logicalX,
-      y: Number(top ?? 0), width: thumbWidth, height: thumbHeight,
-    }, { enabled: glassThumb && !disabled, pressed, profile: "toggle" });
 
     const handlePress = (_event: GestureResponderEvent) => {
       setChecked(!checked);
@@ -123,8 +110,6 @@ export function createSwitch(skin: SwitchSkin) {
         {...(keyboard as object)}
         {...target}
         onPress={handlePress}
-        onPressIn={() => setPressed(true)}
-        onPressOut={() => setPressed(false)}
         disabled={disabled}
         testID={props.testID}
         accessibilityRole="switch"
@@ -154,26 +139,15 @@ export function createSwitch(skin: SwitchSkin) {
             ) : null}
           </View>
         ) : null}
-        <View
-          // This measured coordinate owner must survive transparent material mode.
-          // Fabric can flatten a borderless track after its opaque fill is cleared.
-          collapsable={false}
-          onLayout={(event) => {
-            const width = event.nativeEvent.layout.width;
-            setMeasuredTrack((old) => old?.size === size && old.width === width ? old : { size, width });
-          }}
-          style={paneStyle(theme, disabled && glassThumb ? [trackShape, { backgroundColor: tokens.muted }] : trackShape)}
-        >
+        <View style={paneStyle(theme, disabled && glassThumb ? [trackShape, { backgroundColor: tokens.muted }] : trackShape)}>
           <GlassPane static layer="control" shape={trackShape} brand={checked && !disabled ? tokens.primary : undefined} />
-          <Animated.View style={[{ position: "absolute", pointerEvents: "none" }, thumbFrame]} testID={props.testID ? `${props.testID}-thumb-motion` : undefined}>
-            <GlassSurface
-              layer="control"
-              interactive
-              pointerEvents="none"
-              tint={disabled ? tokens["muted-foreground"] : String(thumbSurface.backgroundColor)}
-              style={[thumbSurface, { width: "100%", height: "100%" }, disabled && glassThumb ? { backgroundColor: tokens["muted-foreground"] } : null]}
-            />
-          </Animated.View>
+          <GlassSurface
+            layer="control"
+            interactive
+            pointerEvents="none"
+            tint={disabled ? tokens["muted-foreground"] : String(thumbShape.backgroundColor)}
+            style={[thumbShape, disabled && glassThumb ? { backgroundColor: tokens["muted-foreground"] } : null]}
+          />
         </View>
       </Pressable>
     );

@@ -1,8 +1,6 @@
 import { useContext } from "react";
 import { Animated, StyleSheet, type LayoutChangeEvent, type LayoutRectangle } from "react-native";
-import { GlassSurface, alpha, useTheme } from "../../style/index.js";
-import { MeasuredSelection } from "../../style/measured-selection.js";
-import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
+import { GlassSurface, View, alpha, useTheme } from "../../style/index.js";
 import { PopupHandoffContext, shapeRadius } from "../../style/popup-handoff.js";
 import * as s from "./button-group.styles.js";
 
@@ -39,15 +37,21 @@ export function GroupGlass({ selected = false, testID }: { selected?: boolean; t
 }
 
 /**
- * The selection travels and deforms independently: it stretches into a droplet
- * in flight, then recoils across its resting shape as it lands. The shared
- * decorative frame leaves native material ancestors free of scale and opacity.
+ * The selected segment's material: the group's bright puck, a decorative sibling
+ * sitting at the measured frame of the selected segment, so the segment's own label,
+ * hit target and focus stay in place over it. `pressed` and `disabled` are the shell's
+ * call-site props; a static selection reads neither.
  */
-export function GlassSelection({ layout, pressed = false, disabled, testID }: { layout: LayoutRectangle; pressed?: boolean; disabled?: boolean; testID?: string }) {
-  const theme = useMaterialTheme({ layer: "functional" });
+export function GlassSelection({ layout, testID }: { layout: LayoutRectangle; pressed?: boolean; disabled?: boolean; testID?: string }) {
   return (
-    <MeasuredSelection layout={layout} enabled={theme.surface === "glass" && !disabled} pressed={pressed}>
+    <View
+      accessible={false}
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      aria-hidden
+      style={[s.glassSelectionPosition, { left: layout.x, top: layout.y, width: layout.width, height: layout.height }]}
+    >
       <GroupGlass selected testID={testID} />
-    </MeasuredSelection>
+    </View>
   );
 }
