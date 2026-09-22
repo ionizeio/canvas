@@ -144,7 +144,7 @@ export function FloatingLabel<S extends string>({
 
   // pos drives the TRANSFORM (translateY + scale): native driver where available
   // (one-shot, so the loop-freeze caveat does not apply), JS on web. Reduced
-  // motion snaps to the final frame (mirrors Entrance), the label still moves.
+  // motion snaps to the final frame; the label still moves.
   useEffect(() => {
     if (reduced) {
       pos.setValue(posTarget);

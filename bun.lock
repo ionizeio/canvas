@@ -47,7 +47,6 @@
       },
       "peerDependencies": {
         "@ionizeio/canvas-blur": "*",
-        "@shopify/react-native-skia": ">=2",
         "expo-blur": "*",
         "expo-clipboard": "*",
         "expo-glass-effect": "*",
@@ -59,7 +58,6 @@
       },
       "optionalPeers": [
         "@ionizeio/canvas-blur",
-        "@shopify/react-native-skia",
         "expo-blur",
         "expo-clipboard",
         "expo-glass-effect",
@@ -69,7 +67,7 @@
     },
     "packages/canvas-blur": {
       "name": "@ionizeio/canvas-blur",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "devDependencies": {
         "expo-modules-core": "~57.0.13",
       },
