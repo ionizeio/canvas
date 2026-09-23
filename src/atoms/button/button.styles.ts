@@ -2,6 +2,8 @@ import { primaryText } from "../../style/primary-text.js";
 import { actionFill, actionInk } from "../../style/action.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { shape, type ColorTokens } from "../../style/index.js";
+import { HOVER } from "../../style/motion.js";
+import { type HoverMotion } from "../../style/hover.js";
 
 // Co-located Button skins, one per platform. The BRAND survives on every platform
 // (fills/labels use the sky `primary` and the semantic tokens, never a platform
@@ -40,6 +42,12 @@ export interface ButtonSkin {
    * untouched. null (web) skips the measurement entirely: pointer targets stay visual.
    */
   minTarget: number | null;
+  /**
+   * Hover feedback: the rise a hovered button of this intent takes, or null for none.
+   * Never applied while disabled or loading. Omitted by the iOS and Android skins, which
+   * keep their platform buttons (and whose platforms deliver no pointer hover by default).
+   */
+  lift?: (intent: Intent) => HoverMotion | null;
 }
 
 // --- shared brand mapping (identical across platforms) ----------------------
@@ -121,6 +129,9 @@ export const webSkin: ButtonSkin = {
   pressedOpacity: 0.9,
   ripple: null,
   minTarget: null, // web is pointer-first: no touch-target extension, layout untouched
+  // Dark Factory's primary lift: the call to action rises 1 px under the pointer; every
+  // other intent's hover switches instantly, as DF's do.
+  lift: (intent) => (intent === "primary" ? HOVER.button : null),
 };
 
 // ---------- iOS (HIG / iOS 26+ Liquid Glass): capsule, semibold, dim on press ----------

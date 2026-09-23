@@ -46,8 +46,8 @@ until the phase that changes it rewrites them. These decisions bind all new work
    never create a kit component to satisfy an example (see "Dogfood the kit").
 9. **Hover.** DF's hover lifts are ported (a card rises 2 px over 180 ms with its
    shadow in step, a primary button 1 px over 150 ms, a nav row's wash fades in over
-   150 ms) as compositor-only transitions tuned against the `df-hover-lift` card; the
-   rest of the motion section stands.
+   150 ms) as transitions the browser runs itself, tuned against the `df-hover-lift`
+   card; the rest of the motion section stands.
 
 The reference cards for everything judged by eye (`df-argus-shell`, `df-frost`,
 `df-hover-lift`, `df-avatar`) are in `tools/native/liquid-motion.md` under
@@ -516,12 +516,22 @@ animations not worth that and had them deleted rather than re-engineered.
 
 On 2026-09-23 the owner added one new decision on top of that: Dark Factory's hover
 lifts are ported (the design language's item 9). They are hover feedback, not the
-removed liquid motion, and they run the way the loop primitive does: a transform and
-shadow transition the compositor animates on the web (the style switches on hover and
-the browser interpolates, so nothing commits through React per frame) and the native
-driver for pointer hover on iPad, with their values in `src/style/motion.ts` and every
-change judged against the `df-hover-lift` card. The DF page look in the docs is static
-scaffolding (item 7); it never animates.
+removed liquid motion, and like the loop primitive nothing in them commits through
+React per frame: the style switches when the hover does and the browser runs the
+transform, shadow or background transition itself. The primitive is
+`src/style/hover.tsx` (hover read on the control's RippleClip wrapper, which never
+moves, so a lifted surface cannot slide out from under a resting pointer; touch never
+hovers; a lifted card stacks at the raised layer, and lifts its Grid or Row span cell,
+while it lifts and settles, because react-native-web paints siblings in document order),
+the values are the `HOVER` table in `src/style/motion.ts`, and the skins own the
+feedback (the web Card, Button and Sidebar skins declare it). Every change is judged
+against the `df-hover-lift` card. The decision also named the native driver for pointer
+hover on iPad, but React Native 0.86 delivers no pointer hover on iOS or Android unless
+the host app opts into W3C pointer events natively (`RCTSetDispatchW3CPointerEvents` and
+the `shouldPressibilityUseW3CPointerEventsForHover` flag, both off by default), and
+Dark Factory's own app does not, so its lifts exist on the web only; the native half
+waits on the owner. The DF page look in the docs is static scaffolding (item 7); it
+never animates.
 
 Effects that remain judged by eye (the glass material and its frost, a gradient, a
 new functional transition) still go through the global `tuning-harness` skill:

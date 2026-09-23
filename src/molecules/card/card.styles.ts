@@ -1,5 +1,7 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, customShadow, shape } from "../../style/index.js";
+import { HOVER } from "../../style/motion.js";
+import { type HoverMotion } from "../../style/hover.js";
 
 // Per-OS Card skins. Card is a "Light" platform treatment: one structure and one
 // set of (semantic) colors live in card.shared.tsx; only the small native touches
@@ -15,7 +17,8 @@ import { type ColorTokens, shadow, customShadow, shape } from "../../style/index
 //
 // - Web is the Riskora card: the card corner (`shape.web.card`), a soft 1px hairline, the
 //   ambient standard shade at rest (raised lifts to md), a 24px inset; the default
-//   density also carries the card's own flat-child gap (padding implies rhythm).
+//   density also carries the card's own flat-child gap (padding implies rhythm). A
+//   pressable card takes Dark Factory's hover lift (`hover`).
 // - iOS follows HIG conventions: iOS has no card control, so the structure is kept
 //   and only iOS touches are applied: a larger 12pt radius with Apple's continuous
 //   (superellipse) corner curve, and the shared Light-treatment 1px border. Native
@@ -49,6 +52,13 @@ export interface CardSkin {
    *  inset that derived chrome spreads into its own row (Radio's `card` mode,
    *  which owns its internal ring-to-label gap). */
   padded: ViewStyle;
+  /**
+   * Hover feedback on a pressable card (one with `onPress`): the rise and its timing,
+   * and the elevation the hovered card takes for each resting one. Omitted: the card
+   * does not respond to hover (the iOS and Android skins, whose platforms deliver no
+   * pointer hover by default; the Android card is Material 3's).
+   */
+  hover?: { motion: HoverMotion; elevation: (e: Elevation) => Elevation };
 }
 
 // The shared Light-treatment surface colors (web + iOS, and Android's outlined
@@ -72,6 +82,10 @@ export const webSkin: CardSkin = {
   elevation: (e, t) => (e === "raised" ? shadow("md", t) : e === "flat" ? shadow("none") : shadow("DEFAULT", t)),
   density: WEB_DENSITY,
   padded: { padding: 24 },
+  // Dark Factory's card lift: a pressable card rises 2 px and its resting shade deepens
+  // to the hovered one (md, DF's hovered card) in step; a raised or flat card rises with
+  // its shade unchanged, as DF's other lifting surfaces do.
+  hover: { motion: HOVER.card, elevation: (e) => (e === "default" ? "raised" : e) },
 };
 
 // --- iOS (HIG conventions: continuous corner curve, flat resting surface) ----

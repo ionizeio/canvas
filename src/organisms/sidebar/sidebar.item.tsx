@@ -1,5 +1,9 @@
+import { type ReactNode } from "react";
+import { type ViewStyle } from "react-native";
 import { Badge } from "../../atoms/badge/badge.js";
 import { type IconName } from "../../atoms/icon/icon.js";
+import { RippleClip, cornerRadii } from "../../style/index.js";
+import { useHover, washStyle, type HoverMotion } from "../../style/hover.js";
 
 // One nav row: the shape a consumer passes in, and the trailing count the kit draws
 // from it. Both presentations of the Sidebar render the same row (the wide rail in
@@ -71,4 +75,30 @@ export function SidebarItemBadge({ item }: { item: SidebarItem }) {
   if (item.badge == null) return null;
   if (item.badgeError) return <Badge status error>{item.badge}</Badge>;
   return <Badge secondary>{item.badge}</Badge>;
+}
+
+/** A skin's hover wash, resolved for the current surface: its timing, the colour it paints, Reduce Motion. */
+export interface SidebarRowWash {
+  motion: HoverMotion;
+  color: string;
+  reduced: boolean;
+}
+
+const STRETCH: ViewStyle = { alignSelf: "stretch" };
+
+/**
+ * The wrapper every nav row sits in, in the rail and the drill-down alike. It is the
+ * RippleClip that rounds a bounded Android ripple to the row's corners (a passthrough
+ * elsewhere), and it stretches to the column like the row inside it. On a skin with a
+ * hover wash it is also the row's hover target and paints the wash in the row's shape
+ * beneath the row, so the row's own pressed and active fills still switch at once.
+ */
+export function SidebarRowFrame({ shape, wash, children }: { shape: ViewStyle; wash: SidebarRowWash | null; children: ReactNode }) {
+  const { hovered, target } = useHover(wash != null);
+  const radii = cornerRadii(shape);
+  return (
+    <RippleClip shape={radii} style={[STRETCH, wash != null ? [radii, washStyle(hovered, wash.color, wash.motion, wash.reduced)] : null]} {...target}>
+      {children}
+    </RippleClip>
+  );
 }

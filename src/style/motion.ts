@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { AccessibilityInfo, Platform, UIManager, type EasingFunction } from "react-native";
 
 // Whether the platform has React Native's native animated module, and therefore whether
@@ -79,26 +79,82 @@ export function keyframes(points: ReadonlyArray<readonly [number, number]>): Eas
   };
 }
 
+// Dark Factory's hover feedback (the design language's item 9), the one table of its
+// tunables, judged against the `df-hover-lift` reference card in
+// tools/native/liquid-motion.md: a pressable card rises 2 px while its resting shade
+// deepens in step, a primary button rises 1 px, a nav row's wash fades in, all on CSS
+// `ease` and symmetric on leave. Every other hover in the design language switches
+// instantly. Internal: the style barrel names this file's public exports, so these
+// values never become API (src/style/hover.tsx applies them).
+export const HOVER = {
+  /** A pressable card: the rise and the shade change run together. */
+  card: { distance: 2, duration: 180 },
+  /** A primary button. */
+  button: { distance: 1, duration: 150 },
+  /** A nav row's hover wash; nothing moves. */
+  wash: { distance: 0, duration: 150 },
+} as const;
+
+/** CSS `ease`, the curve of every hover transition, spelled out as the reference's own. */
+export const HOVER_EASING = "cubic-bezier(0.25, 0.1, 0.25, 1)";
+
 // Whether the user has asked the OS to reduce motion (iOS "Reduce Motion", Android
 // "Remove animations", and the web `prefers-reduced-motion` media query, which
 // react-native-web maps onto AccessibilityInfo). Components read this to drop or
 // shorten NON-ESSENTIAL animation (a skeleton shimmer, an accordion's expand
-// transition, a carousel's animated scroll) so the kit honors WCAG 2.3.3 on every
-// platform from one codebase. Essential, information-bearing motion (a loading
-// spinner, a determinate progress fill) is left intact.
+// transition, a carousel's animated scroll, a hover lift) so the kit honors WCAG 2.3.3
+// on every platform from one codebase. Essential, information-bearing motion (a
+// loading spinner, a determinate progress fill) is left intact.
 //
-// Returns false until the first async read resolves, then tracks live changes.
+// One subscription serves every consumer. Two reasons: the hover feedback puts this
+// hook in every Button, Card and Sidebar row, and react-native-web's AccessibilityInfo
+// keys its change handlers by the handler's string form, and every React state setter
+// is a bound function that stringifies to the same native-code placeholder, so one
+// subscription per component
+// overwrote the previous one's entry and an unmount removed the wrong media listener
+// while the others leaked. The shared listener is a named module function, subscribed
+// while any consumer is mounted and released with the last one, when the value resets
+// so the next consumer starts from the same unread state.
+let reducedMotion = false;
+const reducedMotionListeners = new Set<() => void>();
+let reducedMotionSubscription: { remove?: () => void } | undefined;
+
+function onReduceMotionChanged(value: boolean) {
+  if (value === reducedMotion) return;
+  reducedMotion = value;
+  for (const listener of reducedMotionListeners) listener();
+}
+
+function subscribeReducedMotion(listener: () => void): () => void {
+  reducedMotionListeners.add(listener);
+  if (reducedMotionSubscription == null) {
+    reducedMotionSubscription = AccessibilityInfo.addEventListener("reduceMotionChanged", onReduceMotionChanged) ?? {};
+  }
+  return () => {
+    reducedMotionListeners.delete(listener);
+    if (reducedMotionListeners.size > 0) return;
+    reducedMotionSubscription?.remove?.();
+    reducedMotionSubscription = undefined;
+    reducedMotion = false;
+  };
+}
+
+const readReducedMotion = () => reducedMotion;
+const serverReducedMotion = () => false;
+
+// Returns false until the first async read resolves, then tracks live changes. Each
+// consumer still reads the setting when it mounts (the read is a promise, not a
+// listener), so a consumer mounted after the setting changed never trusts a stale
+// value, and a test that stubs the read per render sees its own stub.
 export function useReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(false);
+  const reduced = useSyncExternalStore(subscribeReducedMotion, readReducedMotion, serverReducedMotion);
   useEffect(() => {
     let mounted = true;
     AccessibilityInfo.isReduceMotionEnabled().then((value) => {
-      if (mounted) setReduced(value);
+      if (mounted) onReduceMotionChanged(value);
     });
-    const sub = AccessibilityInfo.addEventListener("reduceMotionChanged", setReduced);
     return () => {
       mounted = false;
-      sub?.remove?.();
     };
   }, []);
   return reduced;

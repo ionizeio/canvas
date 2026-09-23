@@ -1,5 +1,6 @@
 import { Children, isValidElement, type ReactNode } from "react";
 import { GRID_CELL_AXIS, LayoutAxisProvider, View, useContainerWidth, useFillStyle, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { RaiseCell } from "../../style/hover.js";
 import { type FlexSkin } from "../layout/layout.styles.js";
 import { gapOf, type Gap } from "../layout/layout.shared.js";
 
@@ -122,11 +123,12 @@ export function createGrid(skin: FlexSkin) {
             cellWidth == null ? null : { width: wide ? cellWidth * 2 + gapPx : cellWidth };
           // A cell is a definite-width column stretched to its row's height: hug
           // components hug inside it, fill components fill it, and a Card grows
-          // to the row's height (the layout-axis context from sizing.ts).
+          // to the row's height (the layout-axis context from sizing.ts). It stacks
+          // above the other cells while a card in it is lifted (src/style/hover.tsx).
           return (
-            <View key={i} style={cell}>
+            <RaiseCell key={i} style={cell}>
               <LayoutAxisProvider value={GRID_CELL_AXIS}>{child}</LayoutAxisProvider>
-            </View>
+            </RaiseCell>
           );
         })}
       </View>

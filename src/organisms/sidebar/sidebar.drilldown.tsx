@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Animated, type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useReducedMotion, useHardwareBack, supportsNativeDriver } from "../../style/index.js";
+import { View, Pressable, Text, ScrollView, useTheme, useReducedMotion, useHardwareBack, supportsNativeDriver } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { type Density } from "./sidebar.styles.js";
-import { SidebarItemBadge, type SidebarItem, type SidebarSection } from "./sidebar.item.js";
+import { SidebarItemBadge, SidebarRowFrame, type SidebarItem, type SidebarRowWash, type SidebarSection } from "./sidebar.item.js";
 // Type-only, so it is erased whole and leaves no runtime edge back to the module
 // that builds this one.
 import type { SidebarSkin } from "./sidebar.shared.js";
@@ -47,6 +47,8 @@ export function createSidebarDrillDown(skin: SidebarSkin) {
   return function SidebarDrillDown({ groups, activeIndex, activeSectionKey, density, open, onSelect, onRequestClose, contentInsetBottom, fill = true }: SidebarDrillDownProps) {
     const { tokens } = useTheme();
     const reduced = useReducedMotion();
+    // The skin's hover wash for the leaf and drill rows, as the rail's.
+    const wash: SidebarRowWash | null = skin.wash ? { motion: skin.wash.motion, color: skin.wash.color(tokens), reduced } : null;
     // Two levels: null = the root list, a section key = drilled into that section.
     const [drilled, setDrilled] = useState<string | null>(null);
     const slide = useRef(new Animated.Value(0)).current;
@@ -96,10 +98,10 @@ export function createSidebarDrillDown(skin: SidebarSkin) {
     const renderLeaf = (item: SidebarItem, index: number) => {
       const active = index === activeIndex;
       return (
-        // Round the leaf row's bounded Android ripple to the row's corners via this
-        // RippleClip parent (Android only; a passthrough on iOS/web). The row fills the
-        // drawer width, so the wrapper stretches to match.
-        <RippleClip key={item.id ?? item.label} shape={cornerRadii(skin.row(tokens, density, false))} style={{ alignSelf: "stretch" }}>
+        // The frame rounds the leaf row's bounded Android ripple to the row's corners
+        // (Android only; a passthrough on iOS/web) and paints the hover wash. The row fills
+        // the drawer width, so the frame stretches to match.
+        <SidebarRowFrame key={item.id ?? item.label} shape={skin.row(tokens, density, false)} wash={wash}>
           <Pressable
             android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
             style={({ pressed }) => [
@@ -121,7 +123,7 @@ export function createSidebarDrillDown(skin: SidebarSkin) {
             </Text>
             <SidebarItemBadge item={item} />
           </Pressable>
-        </RippleClip>
+        </SidebarRowFrame>
       );
     };
 
@@ -129,10 +131,10 @@ export function createSidebarDrillDown(skin: SidebarSkin) {
     const renderDrillRow = (g: SidebarDrillGroup) => {
       const holdsActive = g.key === activeSectionKey;
       return (
-        // Round the drill row's bounded Android ripple to the row's corners via this
-        // RippleClip parent (Android only). The row fills the drawer width, so the wrapper
-        // stretches to match.
-        <RippleClip key={g.key} shape={cornerRadii(skin.row(tokens, density, false))} style={{ alignSelf: "stretch" }}>
+        // The frame rounds the drill row's bounded Android ripple to the row's corners
+        // (Android only) and paints the hover wash. The row fills the drawer width, so the
+        // frame stretches to match.
+        <SidebarRowFrame key={g.key} shape={skin.row(tokens, density, false)} wash={wash}>
           <Pressable
             android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
             style={({ pressed }) => [
@@ -154,7 +156,7 @@ export function createSidebarDrillDown(skin: SidebarSkin) {
             </Text>
             <Icon chevronRight muted size={skin.sectionChevronSize} decorative />
           </Pressable>
-        </RippleClip>
+        </SidebarRowFrame>
       );
     };
 

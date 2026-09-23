@@ -19,9 +19,13 @@
 // still owns the outer layout (`style`), keeping the node structure identical across
 // platforms. Route every rounded, bounded-ripple control through it; borderless ripples
 // (radial, unmasked) need no clip and must not use it.
+//
+// Being the control's outermost node, the one that never moves, it is also where hover
+// is read (the pointer handlers of src/style/hover.tsx): a surface that lifts inside it
+// would otherwise slide out from under a resting pointer.
 
 import { type ReactNode } from "react";
-import { Platform, StyleSheet, type LayoutChangeEvent, type StyleProp, type ViewStyle } from "react-native";
+import { Platform, StyleSheet, type LayoutChangeEvent, type PointerEvent, type StyleProp, type ViewStyle } from "react-native";
 import { View } from "./primitives.js";
 
 // The clip itself. Kept separate (not merged into `shape`) so the rounded outline comes
@@ -60,13 +64,19 @@ export interface RippleClipProps {
    * the same frame on every platform, clip or no clip.
    */
   onLayout?: (event: LayoutChangeEvent) => void;
+  /**
+   * Pointer enter and leave on the wrapper: the hover target of a control whose surface
+   * moves on hover (`useHover` in src/style/hover.tsx), since the wrapper never moves.
+   */
+  onPointerEnter?: (event: PointerEvent) => void;
+  onPointerLeave?: (event: PointerEvent) => void;
   children: ReactNode;
 }
 
 /** Rounded clip parent for a bounded-ripple pressable. See the file header for the why. */
-export function RippleClip({ shape, style, onLayout, children }: RippleClipProps): ReactNode {
+export function RippleClip({ shape, style, onLayout, onPointerEnter, onPointerLeave, children }: RippleClipProps): ReactNode {
   return (
-    <View onLayout={onLayout} style={[rippleClipWrapperStyle(shape, Platform.OS === "android"), style]}>{children}</View>
+    <View onLayout={onLayout} onPointerEnter={onPointerEnter} onPointerLeave={onPointerLeave} style={[rippleClipWrapperStyle(shape, Platform.OS === "android"), style]}>{children}</View>
   );
 }
 

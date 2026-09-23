@@ -9,7 +9,8 @@ import {
 } from "react-native";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { actionFill } from "../../style/action.js";
-import { View, Pressable, RippleClip, Text, useMinTargetSlop, useSizing, type LayoutStyle, type MeasureProps, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import { View, Pressable, RippleClip, Text, useMinTargetSlop, useReducedMotion, useSizing, type LayoutStyle, type MeasureProps, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import { liftStyle, useHover } from "../../style/hover.js";
 import { type ButtonSkin, type Intent, type Size, foregroundOf } from "./button.styles.js";
 
 // Shared Button shell. The structure (Pressable + optional loading spinner +
@@ -154,6 +155,13 @@ export function createButton(skin: ButtonSkin) {
     // there is no layout shift on any platform.
     const target = useMinTargetSlop(skin.minTarget);
 
+    // The skin's hover lift for this intent, read on the <RippleClip> wrapper (which never
+    // moves) and applied to the Pressable inside it. A disabled or loading button stays put.
+    const lift = skin.lift?.(intent) ?? null;
+    const { hovered: pointerOver, target: hoverTarget } = useHover(lift != null);
+    const reduced = useReducedMotion();
+    const lifted = lift != null && pointerOver && !(disabled || loading);
+
     // A real anchor on the web: react-native-web renders a Pressable carrying
     // `href` as an `<a>` (and forwards hrefAttrs' target/rel/download), while
     // native ignores both. Suppressed when disabled/loading, since a disabled
@@ -167,7 +175,7 @@ export function createButton(skin: ButtonSkin) {
     // the outermost node on every platform, so positioning is identical with or without the clip
     // and the Pressable stretches to fill a block button.
     return (
-      <RippleClip shape={clipShape} style={[sizing, style]}>
+      <RippleClip shape={clipShape} style={[sizing, style]} {...hoverTarget}>
         <Pressable
           ref={hostRef}
           {...(anchor ?? undefined)}
@@ -194,6 +202,7 @@ export function createButton(skin: ButtonSkin) {
             intent !== "ghost" && intent !== "link" ? paneStyle(theme, container) : container,
             puck ? { opacity: 1 } : null,
             !puck && skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+            lift != null ? liftStyle(lifted, lift, reduced) : null,
           ]}
         >
           {({ pressed }) => <>

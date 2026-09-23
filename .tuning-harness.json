@@ -42,12 +42,14 @@
     {
       "name": "df-hover-lift",
       "what": "Dark Factory's hover motion on Argus /roster: the card's 2 px lift with its shadow growing in step over 180 ms, the primary button's 1 px lift over 150 ms, the nav row's 0.08 wash over 150 ms, all on CSS ease and symmetric on leave",
-      "run": "recorded 2026-09-23 with record-motion.mjs --platform web (20 fps) and DF's tuning/actions modules; per-frame traces kept beside the strips",
+      "run": "recorded 2026-09-23 with record-motion.mjs --platform web (20 fps, 1280 x 800) and DF's tuning/actions modules; per-frame traces kept beside the strips (the strips re-sliced by the stamped clocks during MOT-1)",
       "strips": [
-        "tools/native/reference/df-hover-lift/card-in-057-064.png",
-        "tools/native/reference/df-hover-lift/card-out-101-108.png",
-        "tools/native/reference/df-hover-lift/primary-in-053-060.png",
-        "tools/native/reference/df-hover-lift/nav-in-053-060.png"
+        "tools/native/reference/df-hover-lift/card-in-032-039.png",
+        "tools/native/reference/df-hover-lift/card-out-057-064.png",
+        "tools/native/reference/df-hover-lift/primary-in-031-038.png",
+        "tools/native/reference/df-hover-lift/primary-out-053-060.png",
+        "tools/native/reference/df-hover-lift/nav-in-031-038.png",
+        "tools/native/reference/df-hover-lift/nav-out-053-060.png"
       ],
       "card": "tools/native/liquid-motion.md#df-hover-lift"
     },
@@ -64,7 +66,8 @@
   "harness": {
     "baseUrl": "http://localhost:8081",
     "routes": [
-      "/testing/materials"
+      "/testing/materials",
+      "/testing/hover"
     ],
     "fixtures": "examples/starter/smoke/fixtures",
     "notes": "bun run dev in docs/ starts Metro on 8081 and the native opener on 8790. Web motion evidence: record the shipped page with the tuning-harness skill's record-motion.mjs (the motion Playwright project was removed with the liquid motion on 2026-09-22). Native: the installed docs dev app on a booted simulator or emulator, recorded with the same script."

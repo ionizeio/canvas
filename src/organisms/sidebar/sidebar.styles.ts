@@ -2,6 +2,7 @@ import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, alpha, shape } from "../../style/index.js";
 import { INSET_FOCUS_RING } from "../../style/pressable.js";
+import { HOVER } from "../../style/motion.js";
 import { type SidebarSkin } from "./sidebar.shared.js";
 
 // Co-located Sidebar skins, one per platform. The shell resolves the density,
@@ -63,6 +64,9 @@ export const webSkin: SidebarSkin = {
   // Keyboard focus shows the kit's themed ring inside the full-width row, where the
   // column's scroll clip cannot cut it. No-op natively.
   focusRing: INSET_FOCUS_RING,
+  // Dark Factory's nav wash: the translucent `hover` fades in beneath a hovered row over
+  // 150 ms and back out on leave (`accent`, its composite on card, where a palette omits it).
+  wash: { motion: HOVER.wash, color: (t) => t.hover ?? t.accent },
 
   column: makeColumn(shape.web.card, 64, { gap: 16, padding: 12 }),
 

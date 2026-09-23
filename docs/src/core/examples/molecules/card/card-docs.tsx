@@ -13,6 +13,7 @@ import e_molecules_card_example_8 from "./example-8";
 import e_molecules_card_example_9 from "./example-9";
 import e_molecules_card_example_10 from "./example-10";
 import e_molecules_card_example_11 from "./example-11";
+import e_molecules_card_example_12 from "./example-12";
 import e_molecules_card_dont_0_do from "./dont-0-do";
 import e_molecules_card_dont_0_dont from "./dont-0-dont";
 import e_molecules_card_dont_1_do from "./dont-1-do";
@@ -35,7 +36,8 @@ export const docs: ComponentDocs = {
     { label: "Icon and footer", code: "<Card\n  title=\"Identity\"\n  icon={<Icon user size={16} />}\n  body=\"Name, primary email, and sign-in methods.\"\n  footer=\"Updated 2 minutes ago\"\n/>", render: e_molecules_card_example_8 },
     { label: "Media", code: "<Card flush>\n  <CardMedia src=\"/kira-tanaka.jpg\" alt=\"Portrait of Kira Tanaka\" />\n  <CardContent>\n    <Typography h5 semibold>Kira Tanaka</Typography>\n  </CardContent>\n</Card>", render: e_molecules_card_example_9 },
     { label: "Actions", code: "<Card flush>\n  <CardContent>\n    <Typography small>Rename the workspace. The URL updates everywhere.</Typography>\n  </CardContent>\n  <CardSeparator />\n  <CardFooter>\n    <Button ghost small>Cancel</Button>\n    <Button primary small>Save</Button>\n  </CardFooter>\n</Card>", render: e_molecules_card_example_10 },
-    { label: "Selectable", code: "<Card selected onPress={() => {}}>\n  <Typography lead semibold>Pro</Typography>\n</Card>", render: e_molecules_card_example_11 },
+    { label: "Pressable", code: "<Column relaxed>\n  <Card onPress={() => {}} title=\"Scout\" description=\"Research agent, v2.3\" />\n  <Card onPress={() => {}} title=\"Mint\" description=\"Release agent, v1.8\" />\n</Column>", render: e_molecules_card_example_11 },
+    { label: "Selectable", code: "<Card selected onPress={() => {}}>\n  <Typography lead semibold>Pro</Typography>\n</Card>", render: e_molecules_card_example_12 },
   ],
   donts: [
     { title: "stat", do: { caption: "One big number, a short label, a small delta. The metric is scannable in a glance.", code: "<Card padded>\n  <Row between alignStart>\n    <Column tight>\n      <Typography caption medium>Active identities</Typography>\n      <Typography h3 bold>12,348</Typography>\n      <Typography tiny muted>+142 today</Typography>\n    </Column>\n    <Emblem primary label=\"U\" />\n  </Row>\n</Card>", render: e_molecules_card_dont_0_do }, dont: { caption: "Prose where the number should be: the eye has nothing big to land on, so the card stops being a stat.", code: "<Card padded>\n  <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: \"500\", textTransform: \"uppercase\", letterSpacing: 0.4, color: tokens[\"muted-foreground\"] }}>This month</Text>\n  <Text style={{ marginTop: 4, fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens[\"card-foreground\"] }}>We onboarded 12,348 active identities, up 142 today, with churn holding steady.</Text>\n</Card>", render: e_molecules_card_dont_0_dont } },

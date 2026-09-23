@@ -1,6 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { type ReactNode } from "react";
-import { View, Pressable, Text, StyleSheet, useFillStyle, useTheme, useLayoutAxis, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, devWarn, GlassSurface, GlassPane, paneStyle, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Pressable, Text, StyleSheet, useFillStyle, useTheme, useLayoutAxis, useReducedMotion, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, devWarn, GlassSurface, GlassPane, paneStyle, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
+import { RAISED, liftStyle, useHover, useRaiseCell, useSettling } from "../../style/hover.js";
 import { Image } from "../../atoms/image/image.shared.js";
 import * as s from "./card.styles.js";
 import { type CardSkin, type Elevation, type Density } from "./card.styles.js";
@@ -24,7 +25,8 @@ import { type CardSkin, type Elevation, type Density } from "./card.styles.js";
 // - Elevation (pick one): `raised` > `flat` > default. `flat` drops the shadow;
 //   `raised` lifts it. (The exact resting/raised shadow is per-OS via the skin.)
 // - Interaction: pass `onPress` to make the whole card pressable; it gains the
-//   pressed affordance (Android ripple, iOS/web pressed dim) and the button role.
+//   pressed affordance (Android ripple, iOS/web pressed dim) and the button role,
+//   and on the web the hover lift (the skin's `hover`).
 // - Padding: a card with raw children pads its surface by DEFAULT (the common
 //   case, so a bare `<Card>content</Card>` reads right without ceremony), and the
 //   padded surface also SPACES its flat children (padding implies gap: the card
@@ -142,6 +144,13 @@ export function createCard(skin: CardSkin) {
     // Row with hugging siblings, and takes its measure from a Container step or a
     // Row span rather than a width of its own.
     const widthFill = useFillStyle("Card");
+    // Hover, read on the pressable card's wrapper (which never moves) for the skin's lift.
+    const { hovered: pointerOver, target: hoverTarget } = useHover(skin.hover != null && onPress != null);
+    const reduced = useReducedMotion();
+    // While it lifts and settles the card stacks above its neighbours (and lifts its layout
+    // cell above the next one), so its deeper shade falls over them, as the reference's does.
+    const raised = useSettling(pointerOver, reduced ? 0 : (skin.hover?.motion.duration ?? 0));
+    useRaiseCell(raised);
 
     // Empty strings count as "no content", so a cleared field never renders an empty
     // header, footer, or a stray separator: guard on truthiness rather than null for
@@ -278,20 +287,26 @@ export function createCard(skin: CardSkin) {
     // A pressable card swaps View for Pressable, adding the pressed affordance:
     // Android gets the surface ripple, iOS/web get the pressed opacity dim.
     if (onPress) {
+      // The skin's hover lift: the surface rises inside the wrapper, which is the hover
+      // target because it stays put, and takes the hovered elevation in step.
+      const hover = skin.hover;
+      const hovered = hover != null && pointerOver;
+      const shade = hover != null && hover.elevation(elev) !== elev;
       // The bounded ripple is clipped to the rounded card by the RippleClip parent (Android only).
       // A same-node overflow:"hidden" cannot clip it (see src/style/ripple-clip). Because that
       // parent-clip WOULD cut the child's own Android elevation shadow, the Android `elevation`
       // moves onto the wrapper (whose own shadow is drawn around its outline, unclipped) while the
-      // iOS `shadow*` stays on the inner node — so iOS is unchanged.
-      const { parent: elevParent, child: elevChild } = splitElevation(skin.elevation(elev, tokens));
+      // iOS `shadow*` stays on the inner node, so iOS is unchanged.
+      const { parent: elevParent, child: elevChild } = splitElevation(skin.elevation(hovered ? hover.elevation(elev) : elev, tokens));
+      const lift = hover != null ? liftStyle(hovered, hover.motion, reduced, shade) : null;
       return (
-        <RippleClip shape={cornerRadii(shape)} style={[elevParent, outer]}>
+        <RippleClip shape={cornerRadii(shape)} style={[elevParent, outer, raised ? RAISED : null]} {...hoverTarget}>
           <Pressable
             accessibilityRole="button"
             onPress={onPress}
             testID={testID}
             android_ripple={surfaceRipple(tokens)}
-            style={({ pressed }) => [paneStyle(theme, surface), elevChild, fill, pressDim(pressed)]}
+            style={({ pressed }) => [paneStyle(theme, surface), elevChild, fill, pressDim(pressed), lift]}
           >
             <GlassPane layer="content" shape={surface} tint={selected ? alpha(tokens.primary, 0.22) : undefined} />
             {inner}

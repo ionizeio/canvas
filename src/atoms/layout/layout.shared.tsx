@@ -14,6 +14,7 @@ import {
   type StyleProp,
   type ViewStyle,
 } from "../../style/index.js";
+import { RaiseCell } from "../../style/hover.js";
 import { type FlexSkin } from "./layout.styles.js";
 
 // Shared layout primitives: Row (horizontal) and Column (vertical). The kit had
@@ -215,16 +216,17 @@ function hasSpans(children: ReactNode): boolean {
   return Children.toArray(children).some((child) => isValidElement(child) && (child.props as FlexProps).span != null);
 }
 
-/** Wrap each spanning child in a px-wide cell; other children pass through. */
+/** Wrap each spanning child in a px-wide cell; other children pass through. A cell
+ *  stacks above its neighbours while a card in it is lifted (src/style/hover.tsx). */
 function spanCells(children: ReactNode, width: number, gap: number): ReactNode {
   return Children.toArray(children).map((child, i) => {
     const span = isValidElement(child) ? (child.props as FlexProps).span : undefined;
     if (span == null) return child;
     const cell = width > 0 ? { width: spanWidth(width, clampSpan(span), gap) } : null;
     return (
-      <View key={i} style={cell}>
+      <RaiseCell key={i} style={cell}>
         {child}
-      </View>
+      </RaiseCell>
     );
   });
 }

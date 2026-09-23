@@ -197,8 +197,8 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
         stage-level outlet, which paints above ALL device rows AND the code block, so
         it is neither clipped by the stage nor occluded by a lower row's trigger.
         Anchoring stays correct: AnchoredOverlay measures the trigger relative to this
-        outlet. Because overlays no longer render inside the stage card, the card can
-        keep its clean `overflow: "hidden"` rounded corners. */}
+        outlet. Because overlays no longer render inside the stage card, the card never
+        has to contain them (and it does not clip at all; see the card below). */}
     <OverlayProvider style={{ flex: 1, minWidth: 0 }}>
       <IconSearchContext.Provider value={query}>
       <View
@@ -254,7 +254,12 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
               clear hole. The cells below inherit it. The card is a fully-rounded, fully-bordered
               frame that sits a gap above the code block (never flush to it). When simulating,
               it narrows to the tier's width, centered, while the code block stays full width,
-              and the kit's viewport bucket is pinned to match. */}
+              and the kit's viewport bucket is pinned to match. It does not clip: the rows inset
+              every example, so only a shadow reaches past the frame, and a clip cut a lifted
+              card's hover shade a row's padding below the card, where Dark Factory's is still
+              at full strength (the `df-hover-lift` evidence rows). The rows carry no fill, so
+              the rounded corners stay clean without it, and overlays render at the stage's
+              outlet above. */}
           {/* onLayout attaches UNCONDITIONALLY: react-native-web registers its
               ResizeObserver in a mount-once effect, so toggling the prop from
               undefined to a handler on a live View never observes it (the
@@ -265,7 +270,9 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
             // switcher row or the code block) for tooling screenshots.
             {...(Platform.OS === "web" ? ({ dataSet: { previewCard: "" } } as object) : null)}
             onLayout={onCardLayout}
-            style={simulating ? { width: simulated.width ?? undefined, maxWidth: "100%", alignSelf: "center" } : null}
+            // Above the code block that follows it, so an example's shadow (a lifted card's
+            // hover shade) falls over the block's edge instead of being painted under it.
+            style={[{ zIndex: 1 }, simulating ? { width: simulated.width ?? undefined, maxWidth: "100%", alignSelf: "center" } : null]}
           >
             <DocsSurface
               fill="card"
@@ -273,7 +280,6 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
                 borderWidth: 1,
                 borderColor: tokens.border,
                 borderRadius: 12,
-                overflow: "hidden",
               }}
             >
               {previews.map((p, i) => (

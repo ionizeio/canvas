@@ -119,6 +119,17 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 </Card>
 ```
 
+### Pressable
+
+Pass `onPress` and the whole card becomes a control, with the button role. On the web it lifts under the pointer: it rises 2 px over 180 ms while its resting shade deepens to the raised one in step, and settles back when the pointer leaves (a `raised` or `flat` card rises with its shade unchanged). While it lifts and settles it stacks above the cards around it, so its deeper shade falls over the next one. Reduce Motion makes the change instant. iOS and Android keep their own press feedback.
+
+```tsx
+<Column relaxed>
+  <Card onPress={() => {}} title="Scout" description="Research agent, v2.3" />
+  <Card onPress={() => {}} title="Mint" description="Release agent, v1.8" />
+</Column>
+```
+
 ### Selectable
 
 ```tsx

@@ -7,8 +7,6 @@ import {
   Pressable,
   Text,
   ScrollView,
-  RippleClip,
-  cornerRadii,
   useTheme,
   useControllableState,
   useReducedMotion,
@@ -26,10 +24,11 @@ import {
   type ViewStyle,
   type TextStyle,
 } from "../../style/index.js";
+import { type HoverMotion } from "../../style/hover.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { Drawer } from "../drawer/drawer.js";
 import { type Density, type Frame } from "./sidebar.styles.js";
-import { SidebarItemBadge, type SidebarItem, type SidebarSection } from "./sidebar.item.js";
+import { SidebarItemBadge, SidebarRowFrame, type SidebarItem, type SidebarRowWash, type SidebarSection } from "./sidebar.item.js";
 import { createSidebarDrillDown } from "./sidebar.drilldown.js";
 
 /** The Icon color booleans a nav row's glyph can carry, per active state (the
@@ -84,6 +83,14 @@ export interface SidebarSkin {
    * The ring itself is the kit Pressable's (the palette's `ring`). No-op natively.
    */
   focusRing?: ViewStyle;
+  /**
+   * The hover wash on a nav row: its timing and its colour. Painted beneath the row by its
+   * frame (`SidebarRowFrame`), so the row's pressed and active fills still switch at once;
+   * a translucent colour reads over the rail's surface and over glass alike. Omitted by
+   * the iOS and Android skins, which keep their platform rows (and whose platforms deliver
+   * no pointer hover by default).
+   */
+  wash?: { motion: HoverMotion; color: (t: ColorTokens) => string };
 
   /** The outer navigation column, per frame. `collapsed` swaps to the rail width;
    *  `shell` (a header/footer is present) drops the inner padding/gap onto the
@@ -298,6 +305,9 @@ export function createSidebar(skin: SidebarSkin) {
     const { tokens, dark } = useTheme();
     const material = useMaterialTheme({ layer: "control" });
     const glass = isGlass(material);
+    // The skin's hover wash, resolved once for every row.
+    const reduced = useReducedMotion();
+    const wash: SidebarRowWash | null = skin.wash ? { motion: skin.wash.motion, color: skin.wash.color(tokens), reduced } : null;
 
     // Controlled when the matching prop is provided, self-managed otherwise, so a
     // bare sidebar moves the highlight / collapses on interaction.
@@ -458,10 +468,11 @@ export function createSidebar(skin: SidebarSkin) {
       const activeRow = index === activeIndex;
       return (
         // The bounded Android ripple on a nav row is masked to a rectangle and cannot
-        // clip itself; this RippleClip parent rounds it to the row's own corners (Android
+        // clip itself; the frame's RippleClip rounds it to the row's own corners (Android
         // only; a transparent passthrough on iOS/web). The row fills the sidebar width, so
-        // the wrapper stretches to match (the row inside it fills the wrapper in turn).
-        <RippleClip key={item.id ?? item.label} shape={cornerRadii(skin.row(tokens, density, collapsed))} style={{ alignSelf: "stretch" }}>
+        // the frame stretches to match (the row inside it fills the frame in turn), and it
+        // paints the skin's hover wash beneath the row.
+        <SidebarRowFrame key={item.id ?? item.label} shape={skin.row(tokens, density, collapsed)} wash={wash}>
           <Pressable
             android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
             style={({ pressed }) => [
@@ -498,7 +509,7 @@ export function createSidebar(skin: SidebarSkin) {
               </>
             )}
           </Pressable>
-        </RippleClip>
+        </SidebarRowFrame>
       );
     };
 
@@ -512,10 +523,10 @@ export function createSidebar(skin: SidebarSkin) {
       if (collapsed) {
         if (isCollapsible) {
           return (
-            // Collapsed-rail collapsible header button: round its bounded Android ripple to
-            // the row's corners via this RippleClip parent (Android only). The rail row fills
-            // the rail width, so the wrapper stretches to match.
-            <RippleClip key={key} shape={cornerRadii(skin.row(tokens, density, true))} style={{ alignSelf: "stretch" }}>
+            // Collapsed-rail collapsible header button: its frame rounds the bounded Android
+            // ripple to the row's corners (Android only) and paints the hover wash. The rail
+            // row fills the rail width, so the frame stretches to match.
+            <SidebarRowFrame key={key} shape={skin.row(tokens, density, true)} wash={wash}>
               <Pressable
                 android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
                 style={({ pressed }) => [
@@ -536,7 +547,7 @@ export function createSidebar(skin: SidebarSkin) {
                   <Icon {...{ [section.icon]: true }} {...skin.iconTint(holdsActive)} size={skin.iconSize} decorative />
                 ) : null}
               </Pressable>
-            </RippleClip>
+            </SidebarRowFrame>
           );
         }
         return (

@@ -542,3 +542,22 @@ name: Sealed Canvas native candidate after measured drag
           id: material-capture-stats
           text: 'Hosts: [0-9]+; active: 0; recordings: [0-9]+; frost: 0; listeners: 0'
       - takeScreenshot: material-overlays-released
+
+# Hover feedback is web only (React Native delivers no pointer hover on iOS or Android
+# by default), so on a device the hover fixture shows its controls at rest; its
+# pressable card and primary button still press.
+- openLink: canvas-smoke:///testing/hover
+- assertVisible:
+    id: hover-mode
+    text: 'Mode: solid; scheme: light; palette: blush'
+- tapOn:
+    id: hover-primary
+- assertVisible:
+    id: hover-presses
+    text: 'Presses: 1'
+- tapOn:
+    id: hover-card
+- assertVisible:
+    id: hover-presses
+    text: 'Presses: 2'
+- takeScreenshot: hover-at-rest

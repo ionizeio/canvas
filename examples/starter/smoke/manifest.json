@@ -6,6 +6,7 @@
     "diagnostics",
     "escape-layers",
     "form-autocomplete",
+    "hover",
     "listbox",
     "materials",
     "tabs"
@@ -17,6 +18,7 @@
     "diagnostics",
     "escape-layers",
     "form-autocomplete",
+    "hover",
     "listbox",
     "materials",
     "tabs"
