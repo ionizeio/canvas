@@ -236,7 +236,7 @@ fontWeights:
   black: "900"
 components:
   stats:
-    stat-radius: "20px"
+    stat-radius: "14px"
     stat-pad: "24px"
     stat-gap: "16px"
     stat-shadow: "0px 0px 20px rgba(13,18,27,0.06)"
@@ -244,101 +244,101 @@ components:
     stat-value-tracking: "0px"
     stat-label-tracking: "0px"
   emptystate:
-    empty-radius: "20px"
+    empty-radius: "14px"
   card:
-    card-radius: "20px"
+    card-radius: "14px"
     card-shadow: "0px 0px 20px rgba(13,18,27,0.06)"
     card-shadow-raised: "0px 0px 24px rgba(13,18,27,0.1)"
   autocomplete:
-    ac-radius: "12px"
-    ac-radius-bottom: "12px"
-    ac-menu-radius: "16px"
+    ac-radius: "10px"
+    ac-radius-bottom: "10px"
+    ac-menu-radius: "12px"
     ac-row-radius: "10px"
   avatar:
-    avatar-square-radius: "12px"
+    avatar-square-radius: "8px"
   buttongroup:
-    seg-radius: "12px"
+    seg-radius: "8px"
     seg-track-radius: "0px"
     seg-inner-radius: "0px"
   button:
-    btn-radius: "12px"
+    btn-radius: "8px"
   checkbox:
     check-radius: "6px"
   chip:
     chip-radius: "9999px"
   dropdown:
-    menu-radius: "16px"
+    menu-radius: "12px"
     menu-row-radius: "10px"
   emblem:
     emblem-radius-small: "8px"
     emblem-radius-default: "12px"
     emblem-radius-large: "16px"
   input:
-    field-radius: "12px"
-    field-radius-bottom: "12px"
+    field-radius: "10px"
+    field-radius-bottom: "10px"
   pagination:
-    page-radius: "12px"
+    page-radius: "8px"
   select:
-    select-radius: "12px"
-    select-radius-bottom: "12px"
-    select-panel-radius: "16px"
+    select-radius: "10px"
+    select-radius-bottom: "10px"
+    select-panel-radius: "12px"
     select-row-radius: "10px"
   stepper:
     stepper-btn-radius: "0px"
   textarea:
-    field-radius: "12px"
-    field-radius-bottom: "12px"
+    field-radius: "10px"
+    field-radius-bottom: "10px"
   accordion:
-    acc-card-radius: "20px"
+    acc-card-radius: "14px"
     acc-container-radius: "0px"
   alertdialog:
-    ad-radius: "16px"
+    ad-radius: "18px"
   alert:
-    alert-radius: "12px"
+    alert-radius: "8px"
   descriptionlist:
-    dl-radius: "20px"
+    dl-radius: "14px"
   feed:
-    feed-radius: "20px"
+    feed-radius: "14px"
   gridlist:
-    grid-gallery-radius: "12px"
+    grid-gallery-radius: "8px"
   mediaobject:
-    media-radius: "20px"
-    media-icon-radius: "12px"
+    media-radius: "14px"
+    media-icon-radius: "8px"
   stackedlist:
-    list-radius: "20px"
+    list-radius: "14px"
   actionsheet:
-    sheet-card-radius-top: "16px"
-    sheet-card-radius: "16px"
+    sheet-card-radius-top: "18px"
+    sheet-card-radius: "18px"
     sheet-row-radius: "0px"
   board:
-    board-col-radius: "20px"
-    board-card-radius: "12px"
+    board-col-radius: "14px"
+    board-card-radius: "8px"
   calendar:
-    cal-radius: "20px"
-    cal-chevron-radius: "12px"
+    cal-radius: "14px"
+    cal-chevron-radius: "8px"
   carousel:
-    carousel-slide-radius: "20px"
+    carousel-slide-radius: "14px"
   dialog:
-    dialog-radius: "16px"
+    dialog-radius: "18px"
   drawer:
-    drawer-side-radius: "30px"
-    drawer-sheet-radius: "30px"
+    drawer-side-radius: "22px"
+    drawer-sheet-radius: "22px"
   navbar:
-    nav-link-radius: "12px"
+    nav-link-radius: "8px"
   sidebar:
     side-toggle-radius: "8px"
-    side-row-radius: "12px"
+    side-row-radius: "8px"
   steps:
     steps-connector-radius: "0px"
   toast:
-    toast-radius: "16px"
+    toast-radius: "18px"
   badge:
     badge-radius: "9999px"
   inputotp:
-    otp-radius: "12px"
+    otp-radius: "10px"
     otp-inner-radius: "0px"
   popover:
-    popover-radius: "16px"
+    popover-radius: "12px"
   swatch:
     swatch-radius-small: "8px"
     swatch-radius-default: "12px"
@@ -346,9 +346,9 @@ components:
   tooltip:
     tip-radius: "8px"
   command:
-    cmd-radius: "16px"
+    cmd-radius: "12px"
   datatable:
-    table-radius: "20px"
+    table-radius: "14px"
   draghandle:
     drag-handle-size: "32px"
     drag-handle-radius: "8px"
@@ -795,13 +795,14 @@ are a `Row stacks`.
 
 Corner radius and the platform touch minimums, which differ by design: iOS rounds to a
 continuous 10 to 12, Material 3 uses its medium shape and a full pill on buttons, and
-the web follows the Riskora kit: 12 on every control and field, 16 on floating surfaces,
-20 on cards, 30 on the app shell (`shape` in `src/style/tokens.ts`).
+the web follows Dark Factory: 8 on rectangular controls, 10 on fields, 12 on menus and
+tiles, 14 on cards, 18 on dialogs, 22 on sheets and the app shell, and a pill on every
+capsule (`shape` in `src/style/tokens.ts`).
 
 <!-- @generated:shapes -->
 | Platform | Button | Card | Field | Minimum touch target |
 | --- | --- | --- | --- | --- |
-| web | 12px | 20px | 12px | 0px |
+| web | 8px | 14px | 10px | 0px |
 | ios | 9999px | 12px | 8px | 44px |
 | android | 9999px | 12px | 4px | 48px |
 <!-- @/generated -->

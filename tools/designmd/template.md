@@ -137,8 +137,9 @@ are a `Row stacks`.
 
 Corner radius and the platform touch minimums, which differ by design: iOS rounds to a
 continuous 10 to 12, Material 3 uses its medium shape and a full pill on buttons, and
-the web follows the Riskora kit: 12 on every control and field, 16 on floating surfaces,
-20 on cards, 30 on the app shell (`shape` in `src/style/tokens.ts`).
+the web follows Dark Factory: 8 on rectangular controls, 10 on fields, 12 on menus and
+tiles, 14 on cards, 18 on dialogs, 22 on sheets and the app shell, and a pill on every
+capsule (`shape` in `src/style/tokens.ts`).
 
 <!-- @generated:shapes -->
 <!-- @/generated -->

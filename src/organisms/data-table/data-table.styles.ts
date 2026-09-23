@@ -160,7 +160,7 @@ const DATA_CELL: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%" };
 // The Riskora table: the header is a soft 10px-cornered band with sentence-case
 // medium labels, rows are 56px tall and separated by DASHED hairlines, status
 // reads as pills, the row kebab is a 36px square with the control corner, and a
-// bordered table takes the 20px card corner. The band's own corners belong to
+// bordered table takes the card corner. The band's own corners belong to
 // the STANDALONE table (Riskora floats it inside a padded card); framed by an
 // outline or an `attached` parent it squares up, so the frame's corners are the
 // only rounded ones and no fill peeks out under the band's bottom corners.

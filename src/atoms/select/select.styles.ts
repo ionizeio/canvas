@@ -159,7 +159,7 @@ export const webSkin: SelectSkin = {
   valueText: (t, size, hasValue) => ({ color: hasValue ? t.foreground : t["muted-foreground"], ...TEXT_SIZE[size] }),
   chevron: (t, size) => ({ color: t["muted-foreground"], ...TEXT_SIZE[size] }),
   chevronGlyph: "▾",
-  // The list is the Riskora menu: a 16px-cornered card with an 8px inset, 40px
+  // The list is the Riskora menu: a card at the menu corner with an 8px inset, 40px
   // rows with a 10px corner, the soft panel fill marking the selected row.
   panel: (t) => ({
     maxHeight: 280,

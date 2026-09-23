@@ -13,7 +13,7 @@ import { type ColorTokens, shadow, customShadow, shape } from "../../style/index
 // CardSeparator) are STATIC shared members, so their insets and type are shared
 // (one value across platforms); only the main surface is skin-parameterized.
 //
-// - Web is the Riskora card: the 20px card corner, a soft 1px hairline, the
+// - Web is the Riskora card: the card corner (`shape.web.card`), a soft 1px hairline, the
 //   ambient standard shade at rest (raised lifts to md), a 24px inset; the default
 //   density also carries the card's own flat-child gap (padding implies rhythm).
 // - iOS follows HIG conventions: iOS has no card control, so the structure is kept

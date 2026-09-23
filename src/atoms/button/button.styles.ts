@@ -93,7 +93,7 @@ function androidRipple(_t: ColorTokens, intent: Intent) {
 const ROW: ViewStyle = { flexDirection: "row", alignItems: "center", justifyContent: "center" };
 
 // ---------- Web: the Riskora dashboard control ----------
-// A 12px-cornered rounded rectangle (every Riskora control shares the corner), 44px
+// A rounded rectangle at the control corner (every rectangular control shares it), 44px
 // tall at the base size (a 14/20 medium label inside 12px of vertical padding), 36
 // small and 52 large; icon buttons are the matching squares. Fills stay the semantic
 // intents: the sky primary carries the dark ink, `secondary` is the soft panel fill

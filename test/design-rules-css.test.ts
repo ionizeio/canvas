@@ -13,7 +13,7 @@ import {
   shadowLayers,
   type PlatformKey,
 } from "../tools/tokens/css-tokens.ts";
-import { breakpoints, radius, spacing, widths } from "../src/style/tokens.ts";
+import { breakpoints, radius, shape, spacing, widths } from "../src/style/tokens.ts";
 
 // Design rules, CSS side: the web hand-off under styles/tokens.
 //
@@ -306,13 +306,24 @@ describe("the scales agree with src/style/tokens.ts", () => {
     expect(pxValue(spacingDecls["target-android"])).toBe(48);
   });
 
-  it("a control is tighter than the card it sits on, on every platform", () => {
-    expect(pxValue(radiusDecls["radius-control"]) as number).toBeLessThan(
-      pxValue(radiusDecls["radius-card"]) as number,
-    );
-    expect(pxValue(radiusDecls["radius-control-ios"]) as number).toBeLessThan(
-      pxValue(radiusDecls["radius-card-ios"]) as number,
-    );
+  // A rectangular control is tighter than the card it sits on; a capsule control is a
+  // pill, which the comparison would read as the loosest corner of all.
+  const radiusOf = (name: string) => pxValue(resolveVars(radiusDecls[name] ?? "", radiusDecls));
+  it("a control is tighter than the card it sits on, or a capsule, on every platform", () => {
+    for (const [control, card] of [["radius-control", "radius-card"], ["radius-control-ios", "radius-card-ios"]]) {
+      const value = radiusOf(control) as number;
+      if (value === radiusOf("radius-pill")) continue;
+      expect(value, `--${control}`).toBeLessThan(radiusOf(card) as number);
+    }
+  });
+
+  it("the web shape table and the --radius-* hand-off are one table", () => {
+    for (const [role, value] of Object.entries(shape.web)) {
+      expect(radiusOf(`radius-${role}`), `--radius-${role}`).toBe(value);
+    }
+    expect(radiusOf("radius-control-ios")).toBe(shape.ios.control);
+    expect(radiusOf("radius-card-ios")).toBe(shape.ios.card);
+    expect(radiusOf("radius-card-android")).toBe(shape.android.card);
   });
 });
 

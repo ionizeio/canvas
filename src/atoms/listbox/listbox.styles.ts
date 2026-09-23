@@ -18,7 +18,7 @@ import { type ListboxSkin, type Size } from "./listbox.shared.js";
 // exactly as the previous single-file look did). Multi-select composes each
 // platform's Checkbox indicator separately, preserving its native shape and size.
 
-// A bordered container reads as a content card: the 12px control corner, hairline border, solid
+// A bordered container reads as a content card: the control corner, hairline border, solid
 // `card` fill, and an 8px inset so rows don't touch the edge. Listbox is an inline,
 // in-page list (the CONTENT layer, not a floating overlay), so it uses the solid `card`
 // token, NOT `popover`: `card` is the content layer's own fill. Under glass the shell

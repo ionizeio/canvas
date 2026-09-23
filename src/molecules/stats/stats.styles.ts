@@ -93,7 +93,7 @@ export function deltaTone(dark: boolean, down: boolean): TextStyle {
 
 // ---------- Web: the established Canvas look (lifted verbatim) ----------
 export const webSkin: StatsSkin = {
-  // The Riskora stat card: the 20px card corner, a soft hairline, the ambient shade,
+  // The Riskora stat card: the card corner, a soft hairline, the ambient shade,
   // a 24px inset (the "Total Coverage Value" tile).
   cardSurface: (tokens: ColorTokens): ViewStyle => ({
     borderRadius: shape.web.card,

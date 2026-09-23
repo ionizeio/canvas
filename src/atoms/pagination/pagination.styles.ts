@@ -90,7 +90,7 @@ export const controlPair: ViewStyle = { flexDirection: "row", alignItems: "cente
 const CELL_ROW: ViewStyle = { flexDirection: "row", alignItems: "center", justifyContent: "center" };
 
 // =============================================================================
-// Web: the Riskora pager (12px-cornered 40px tiles on the card fill, the current
+// Web: the Riskora pager (40px tiles at the control corner on the card fill, the current
 // page on the brand primary).
 // =============================================================================
 

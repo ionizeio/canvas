@@ -135,7 +135,7 @@ export const webSkin: AutocompleteSkin = {
     alignSelf: "stretch", alignItems: "center", justifyContent: "center", flexShrink: 0,
     width: 24, minHeight: 24,
   }),
-  // The list is the Riskora menu: a 16px-cornered card with an 8px inset and
+  // The list is the Riskora menu: a card at the menu corner with an 8px inset and
   // 40px rows with a 10px corner (matches Select's panel).
   popover: (t) => ({
     maxHeight: 280,

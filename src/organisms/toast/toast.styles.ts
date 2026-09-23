@@ -99,7 +99,7 @@ function inversePrimary(t: ColorTokens): string {
   return primaryText(isDarkFill(t.foreground) ? darkColors : lightColors);
 }
 
-// ---------- Web: the Riskora notification card (the 16px dialog corner) ----------
+// ---------- Web: the Riskora notification card (the dialog corner) ----------
 export const webSkin: ToastSkin = {
   container: (t) => capsule(t, shape.web.dialog),
   intentIcon: true,

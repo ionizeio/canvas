@@ -4,6 +4,7 @@ import { type ReactNode } from "react";
 import { Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Card, CardMedia, CardContent } from "../src/molecules/card/card.tsx";
+import { shape } from "../src/style/tokens.ts";
 
 afterEach(cleanup);
 const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
@@ -102,9 +103,9 @@ describe("CardMedia", () => {
     // Full bleed: the image fills the card's width and the given band height.
     expect(media.style.width).toBe("100%");
     expect(media.style.height).toBe("180px");
-    // The top corners nest inside the web card's 20px corner + 1px border...
-    expect(media.style.borderTopLeftRadius).toBe("19px");
-    expect(media.style.borderTopRightRadius).toBe("19px");
+    // The top corners nest inside the web card's corner, less its 1px border...
+    expect(media.style.borderTopLeftRadius).toBe(`${shape.web.card - 1}px`);
+    expect(media.style.borderTopRightRadius).toBe(`${shape.web.card - 1}px`);
     // ...and the bottom edge stays flat where the content continues.
     expect(media.style.borderBottomLeftRadius).toBe("");
     expect(media.style.borderBottomRightRadius).toBe("");

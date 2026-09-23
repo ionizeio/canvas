@@ -18,7 +18,7 @@ import { type ColorTokens, FOCUS_RESET, activeIndicator, shape, type FloatingLab
 //     and a flat bottom, a bottom active-indicator underline (1dp `border` at
 //     rest -> 2dp `ring` on focus, `destructive` on error), ~56dp tall; the
 //     action suffix uses android_ripple; disabled opacity 0.38.
-//   Web: the Riskora dashboard field — a white (`card`) box with the 12px control
+//   Web: the Riskora dashboard field — a white (`card`) box with the field
 //     corner and a full 1px border (error > focus > the resting `field-border`
 //     hairline, see src/style/field-colors.ts), 48 tall at the base size (40 small,
 //     56 large), 16px inset, opacity 0.5 disabled, action press opacity 0.9.

@@ -85,7 +85,7 @@ const ACTION_SPACING: ViewStyle = { marginTop: 16 };
 // ---- Web (the established Canvas look, lifted verbatim) ----------------------
 export const webSkin: EmptyStateSkin = {
   container: CONTAINER,
-  // The Riskora drop zone: the 20px card corner and a dashed hairline.
+  // The Riskora drop zone: the card corner and a dashed hairline.
   borderedBase: { borderRadius: shape.web.card, borderWidth: 1, borderStyle: "dashed" },
   borderedPad: {
     compact: { paddingHorizontal: 16, paddingVertical: 24 },

@@ -1,3 +1,4 @@
+import { shape } from "../../style/index.js";
 import { type SkeletonSkin } from "./skeleton.shared.js";
 
 // Per-OS Skeleton skins. Skeleton is a "Shared" treatment: neither iOS nor
@@ -9,13 +10,13 @@ import { type SkeletonSkin } from "./skeleton.shared.js";
 //
 // Radii match the Riskora web look: a 6px line placeholder reads as plain content, a
 // 12px button placeholder matches the control corner, a `rounded-full` avatar mirrors
-// the avatar circle, and a 20px card surface matches the real card.
+// the avatar circle, and a card-cornered surface matches the real card.
 
 export const webSkin: SkeletonSkin = {
   lineRadius: 6,
   buttonRadius: 12,
   avatarRadius: 9999,
-  cardRadius: 20,
+  cardRadius: shape.web.card,
 };
 
 // Shared treatment: identical to web on every platform (no native skeleton to match).

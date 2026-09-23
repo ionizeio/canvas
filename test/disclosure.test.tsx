@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach } from "bun:test";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
+import { shape } from "../src/style/tokens.ts";
 import { Accordion } from "../src/molecules/accordion/accordion.tsx";
 import { Collapsible } from "../src/molecules/collapsible/collapsible.tsx";
 import { ActionSheet } from "../src/organisms/action-sheet/action-sheet.tsx";
@@ -54,7 +55,7 @@ describe("Accordion", () => {
     );
     const el = getByTestId("a");
     expect(el.style.borderWidth).toBe("1px");
-    expect(el.style.borderRadius).toBe("20px");
+    expect(el.style.borderRadius).toBe(`${shape.web.card}px`);
     // The disclosure semantics survive the card surface.
     expect(container.querySelector("[aria-expanded]")?.getAttribute("aria-expanded")).toBe("false");
     fireEvent.click(screen.getByText("Section A"));
@@ -88,7 +89,7 @@ describe("Collapsible", () => {
     );
     const el = getByTestId("c");
     expect(el.style.borderWidth).toBe("1px");
-    expect(el.style.borderRadius).toBe("20px");
+    expect(el.style.borderRadius).toBe(`${shape.web.card}px`);
     expect(container.querySelector("[aria-expanded]")?.getAttribute("aria-expanded")).toBe("false");
     fireEvent.click(screen.getByText("Shipping"));
     expect(container.querySelector("[aria-expanded]")?.getAttribute("aria-expanded")).toBe("true");

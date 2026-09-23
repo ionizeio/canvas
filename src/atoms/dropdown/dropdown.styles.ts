@@ -100,7 +100,7 @@ export const customTrigger: ViewStyle = { alignSelf: "flex-start" };
 // my-1 h-px bg-border separators, an active:bg-accent pressed fill, and
 // text-red-700 dark:text-red-300 destructive rows (red-300 holds 4.5:1 on the Dark Factory
 // dark pressed fill, where red-400 fell to 4.3:1).
-// The Riskora menu: a 16px-cornered card with an 8px inset, 40px rows with a 10px
+// The Riskora menu: a card at the menu corner with an 8px inset, 40px rows with a 10px
 // corner and a 12px gutter (the Workflow node menu).
 export const webSkin: DropdownSkin = {
   menuCard: (t) => ({

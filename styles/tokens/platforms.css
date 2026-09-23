@@ -13,20 +13,20 @@
    Values are lifted verbatim from the upstream skins. */
 :root,[data-platform="web"]{
   /* Button — the Riskora control: 12px corner, 44px tall, medium label, opacity press */
-  --p-btn-radius:12px;--p-btn-pad-x:20px;--p-btn-pad-y:12px;--p-btn-gap:8px;
+  --p-btn-radius:8px;--p-btn-pad-x:20px;--p-btn-pad-y:12px;--p-btn-gap:8px;
   --p-btn-font:14px;--p-btn-lh:20px;--p-btn-weight:500;--p-btn-tracking:0px;
   --p-btn-pad-x-sm:14px;--p-btn-pad-y-sm:8px;--p-btn-font-sm:14px;--p-btn-lh-sm:20px;
   --p-btn-pad-x-lg:24px;--p-btn-pad-y-lg:14px;--p-btn-font-lg:16px;--p-btn-lh-lg:24px;
   --p-btn-square:44px;--p-btn-square-sm:36px;--p-btn-square-lg:52px;
   --p-press:0.9 /* @kind other */;--p-disabled:0.5 /* @kind other */;
   /* Card — the Riskora card: 20px corner, soft hairline, the ambient shade, 24px inset */
-  --p-card-radius:20px;--p-card-shadow:0px 0px 20px rgba(13,18,27,0.06);--p-card-shadow-raised:0px 0px 24px rgba(13,18,27,0.1);
+  --p-card-radius:14px;--p-card-shadow:0px 0px 20px rgba(13,18,27,0.06);--p-card-shadow-raised:0px 0px 24px rgba(13,18,27,0.1);
   --p-card-pad:24px;--p-card-gap:16px;--p-card-pad-compact:16px;--p-card-gap-compact:12px;
   --p-card-pad-comfortable:32px;--p-card-gap-comfortable:24px;--p-card-border:var(--border) /* @kind other */;
   /* Field — the Riskora box: 12px corner, full 1px border, 48px tall, card fill */
-  --p-field-radius:12px;--p-field-height:48px;--p-field-height-sm:40px;--p-field-height-lg:56px;
+  --p-field-radius:10px;--p-field-height:48px;--p-field-height-sm:40px;--p-field-height-lg:56px;
   --p-field-fill:var(--card);--p-field-pad-x:16px;--p-field-font:14px;--p-field-lh:20px;
-  --p-field-border-width:1px;--p-field-underline:0px;--p-field-radius-bottom:12px;
+  --p-field-border-width:1px;--p-field-underline:0px;--p-field-radius-bottom:10px;
   /* The resting border: the field hairline on web and iOS (below the 3:1 `input` boundary on purpose;
      why in src/style/field-colors.ts); Android draws its M3 underline instead. */
   --p-field-border:var(--field-border);--p-label-color:var(--foreground);--p-field-icon:16px;
@@ -55,12 +55,12 @@
   --p-chip-radius:9999px;--p-chip-pad-x:10px;--p-chip-pad-y:4px;--p-chip-font:12px;--p-chip-gap:6px;
   /* Chip glyphs (chip.styles.ts: 12px web/iOS remove glyph; the M3 selected checkmark shows on Android only) */
   --p-chip-remove:12px;--p-chip-check-display:none /* @kind other */;--p-chip-check-size:18px;
-  --p-avatar-square-radius:12px;
+  --p-avatar-square-radius:8px;
   /* Banners and overlays */
-  --p-alert-radius:12px;--p-alert-tracking:0px;
-  --p-overlay-radius:16px;--p-sheet-radius:30px;
+  --p-alert-radius:8px;--p-alert-tracking:0px;
+  --p-overlay-radius:18px;--p-sheet-radius:22px;
   /* Popover (popover.styles.tsx webSkin: 16px card, full 1px border, lg shadow, no beak) */
-  --p-popover-radius:16px;--p-popover-border:1px;--p-popover-shadow:0px 0px 40px rgba(13,18,27,0.14);--p-popover-beak-display:none /* @kind other */;
+  --p-popover-radius:12px;--p-popover-border:1px;--p-popover-shadow:0px 0px 40px rgba(13,18,27,0.14);--p-popover-beak-display:none /* @kind other */;
   /* Spinner (spinner.styles.tsx webSkin: the ActivityIndicator arc ring; iOS swaps in the spoke ring) */
   --p-spinner-arc-display:inline-block /* @kind other */;--p-spinner-spokes-display:none /* @kind other */;
   /* Tabs — underline rule, 2px brand indicator */
@@ -80,7 +80,7 @@
   /* Sidebar (sidebar.styles.ts webSkin) */
   --p-side-w:240px;--p-side-w-collapsed:64px;--p-side-fill:var(--background) /* @kind other */;
   --p-side-header-h:72px;--p-side-header-pad:16px;--p-side-body-pad:12px;--p-side-body-gap:16px;
-  --p-side-row-radius:12px;--p-side-row-pad-x:12px;--p-side-row-pad-y:14px;--p-side-row-gap:12px;
+  --p-side-row-radius:8px;--p-side-row-pad-x:12px;--p-side-row-pad-y:14px;--p-side-row-gap:12px;
   --p-side-label:14px;--p-side-label-lh:20px;--p-side-icon:20px;
   --p-side-title:12px;--p-side-title-lh:16px;--p-side-title-weight:500;--p-side-title-transform:uppercase /* @kind other */;--p-side-title-tracking:0.48px;
   /* Sidebar sections + collapse chrome (sidebar.styles.ts webSkin: group gap 4, 12/4 title inset,
@@ -95,22 +95,22 @@
   /* Navbar (navbars.styles.ts webSkin) */
   --p-nav-h:72px;--p-nav-pad-x:24px;--p-nav-fill:var(--background) /* @kind other */;--p-nav-rule:1px;
   --p-nav-brand:18px;--p-nav-brand-lh:28px;--p-nav-brand-weight:500;
-  --p-nav-links-gap:4px;--p-nav-link-radius:12px;--p-nav-link-pad-x:14px;--p-nav-link-pad-y:10px;
+  --p-nav-links-gap:4px;--p-nav-link-radius:8px;--p-nav-link-pad-x:14px;--p-nav-link-pad-y:10px;
   --p-nav-link-font:14px;--p-nav-link-lh:20px;
   /* Stats (stats.styles.ts webSkin) */
-  --p-stat-radius:20px;--p-stat-pad:24px;--p-stat-shadow:0px 0px 20px rgba(13,18,27,0.06);--p-stat-gap:16px;
+  --p-stat-radius:14px;--p-stat-pad:24px;--p-stat-shadow:0px 0px 20px rgba(13,18,27,0.06);--p-stat-gap:16px;
   --p-stat-label:16px;--p-stat-label-lh:24px;--p-stat-label-tracking:0px;
   --p-stat-value:36px;--p-stat-value-lh:44px;--p-stat-value-weight:400;--p-stat-value-tracking:0px;
   --p-stat-delta-tracking:0px;
   /* DataTable (data-table.styles.ts webSkin) */
-  --p-table-radius:20px;
+  --p-table-radius:14px;
   --p-table-head-font:14px;--p-table-head-lh:20px;--p-table-head-weight:500;--p-table-head-transform:none /* @kind other */;--p-table-head-tracking:0px;--p-table-head-pad-y:12px;
   --p-table-cell-font:14px;--p-table-cell-lh:20px;--p-table-cell-tracking:0px;--p-table-cell-pad-x:16px;--p-table-cell-pad-y:18px;--p-table-cell-pad-y-compact:10px;
   --p-min-target:0px;
   /* Breadcrumb (breadcrumb.styles.ts webSkin: no tracking, font-medium current page) */
   --p-crumb-tracking:0px;--p-crumb-sep-tracking:0px;--p-crumb-current-weight:500;
   /* EmptyState (empty-state.styles.ts webSkin: 8px bordered card, no tracking) */
-  --p-empty-radius:20px;--p-empty-title-tracking:0px;--p-empty-desc-tracking:0px;
+  --p-empty-radius:14px;--p-empty-title-tracking:0px;--p-empty-desc-tracking:0px;
   /* Sidebar row colors (sidebar.styles.ts webSkin: accent fill, muted label + glyph) */
   --p-side-active-fill:var(--accent);--p-side-active-label:var(--foreground);
   --p-side-label-color:var(--muted-foreground);--p-side-icon-color:var(--muted-foreground);--p-side-icon-active:currentColor;
@@ -123,14 +123,14 @@
   --p-seg-font-small:12px;--p-seg-font-default:14px;--p-seg-font-large:14px;
   --p-seg-lh-small:16px;--p-seg-lh-default:20px;--p-seg-lh-large:20px;
   --p-seg-track-pad:0px;--p-seg-track-radius:0px;--p-seg-track-border:0px;--p-seg-track-fill:transparent /* @kind other */;
-  --p-seg-border:1px;--p-seg-divider:1px /* @kind other */;--p-seg-overlap:-1px;--p-seg-radius:12px;--p-seg-inner-radius:0px;
+  --p-seg-border:1px;--p-seg-divider:1px /* @kind other */;--p-seg-overlap:-1px;--p-seg-radius:8px;--p-seg-inner-radius:0px;
   --p-seg-rest-fill:var(--background);--p-seg-selected-fill:var(--primary);--p-seg-selected-border:var(--primary);
   --p-seg-selected-label:var(--primary-foreground);--p-seg-selected-weight:500;--p-seg-selected-shadow:none;
   --p-seg-check-display:none /* @kind other */;
   /* Calendar (calendar.styles.ts webSkin) */
-  --p-cal-radius:20px;--p-cal-cell-default:36px;--p-cal-cell-compact:32px;--p-cal-head-h:32px;
+  --p-cal-radius:14px;--p-cal-cell-default:36px;--p-cal-cell-compact:32px;--p-cal-head-h:32px;
   --p-cal-label-default:14px;--p-cal-label-compact:12px;
-  --p-cal-chevron:32px;--p-cal-chevron-radius:12px;--p-cal-chevron-font:14px;--p-cal-chevron-weight:400;--p-cal-chevron-color:var(--foreground);
+  --p-cal-chevron:32px;--p-cal-chevron-radius:8px;--p-cal-chevron-font:14px;--p-cal-chevron-weight:400;--p-cal-chevron-color:var(--foreground);
   --p-cal-month-font:14px;--p-cal-month-lh:20px;--p-cal-month-weight:500;
   --p-cal-weekdays:"two" /* @kind other */;--p-cal-weekday-font:12px;--p-cal-weekday-weight:500;
   --p-cal-today-fill:color-mix(in oklab, var(--primary) 12%, transparent);--p-cal-today-ring:0px;--p-cal-day-weight:500;
@@ -147,13 +147,13 @@
   --p-emblem-radius-small:8px;--p-emblem-radius-default:12px;--p-emblem-radius-large:16px;
   --p-emblem-monogram-weight:600;--p-emblem-monogram-tracking:0px;
   /* StackedList (stacked-lists.styles.ts webSkin) */
-  --p-list-radius:20px;--p-list-border:1px;--p-list-shadow:0px 0px 20px rgba(13,18,27,0.06);
+  --p-list-radius:14px;--p-list-border:1px;--p-list-shadow:0px 0px 20px rgba(13,18,27,0.06);
   --p-list-row-pad-x:20px;--p-list-row-pad-y:12px;--p-list-row-gap:12px;--p-list-row-min-h:0px;--p-list-divider-inset:0px;
   --p-list-name:14px;--p-list-name-lh:20px;--p-list-name-weight:500;--p-list-name-tracking:0px;
   --p-list-sub:12px;--p-list-sub-lh:16px;--p-list-sub-tracking:0px;
   --p-list-header-pad-x:20px;--p-list-header-title:16px;--p-list-header-title-lh:24px;--p-list-header-title-weight:500;--p-list-header-title-tracking:0px;
   /* Toast (toast.styles.ts webSkin: the sonner-style card) */
-  --p-toast-radius:16px;--p-toast-fill:var(--popover);--p-toast-label:var(--popover-foreground);
+  --p-toast-radius:18px;--p-toast-fill:var(--popover);--p-toast-label:var(--popover-foreground);
   --p-toast-msg:14px;--p-toast-msg-lh:20px;--p-toast-msg-weight:500;--p-toast-msg-tracking:0px;
   --p-toast-desc:13px;--p-toast-desc-lh:18px;--p-toast-desc-color:var(--muted-foreground);--p-toast-desc-tracking:0px;
   --p-toast-gap:12px;--p-toast-pad-x:16px;
@@ -180,10 +180,10 @@
   --p-tabbar-inset-x:0px;--p-tabbar-inset-b:0px;--p-tabbar-radius:9999px;--p-tabbar-item-radius:9999px;
   --p-tabbar-fill:var(--popover) /* @kind other */;--p-tabbar-pad-bottom:0px;
   /* Select (select.styles.ts webSkin) */
-  --p-select-h:48px;--p-select-radius:12px;--p-select-radius-bottom:12px;--p-select-border:1px;--p-select-underline:0px;
+  --p-select-h:48px;--p-select-radius:10px;--p-select-radius-bottom:10px;--p-select-border:1px;--p-select-underline:0px;
   --p-select-border-color:var(--input);--p-select-underline-rest:var(--input);--p-select-fill:var(--card);--p-select-pad-x:16px;
   --p-select-font:14px;--p-select-lh:20px;--p-select-chevron:"▾" /* @kind other */;--p-select-chevron-color:var(--muted-foreground);--p-select-chevron-weight:400;
-  --p-select-panel-max:280px;--p-select-panel-radius:16px;--p-select-panel-border:1px;--p-select-panel-pad-x:8px;--p-select-panel-pad-y:8px;
+  --p-select-panel-max:280px;--p-select-panel-radius:12px;--p-select-panel-border:1px;--p-select-panel-pad-x:8px;--p-select-panel-pad-y:8px;
   --p-select-panel-shadow:0px 0px 40px rgba(13,18,27,0.14);
   --p-select-row-radius:10px;--p-select-row-pad-x:12px;--p-select-row-pad-y:10px;--p-select-row-gap:10px;--p-select-row-min-h:0px;
   --p-select-row-font:14px;--p-select-row-lh:20px;--p-select-row-selected-fill:var(--accent);
@@ -195,16 +195,16 @@
   --p-idpill-open-border-color:var(--input);
   --p-idpill-name:13px;--p-idpill-name-lh:16px;--p-idpill-name-weight:500;--p-idpill-tracking:0px;
   /* Autocomplete (autocomplete.styles.ts webSkin) */
-  --p-ac-h:48px;--p-ac-radius:12px;--p-ac-radius-bottom:12px;--p-ac-border:1px;--p-ac-underline:0px;
+  --p-ac-h:48px;--p-ac-radius:10px;--p-ac-radius-bottom:10px;--p-ac-border:1px;--p-ac-underline:0px;
   --p-ac-border-color:var(--input);--p-ac-underline-rest:var(--input);--p-ac-fill:var(--card);--p-ac-pad-x:16px;
   --p-ac-font:14px;--p-ac-lh:20px;--p-ac-chevron:var(--muted-foreground);
-  --p-ac-menu-max:280px;--p-ac-menu-radius:16px;--p-ac-menu-border:1px;--p-ac-menu-pad-x:8px;--p-ac-menu-pad-y:8px;
+  --p-ac-menu-max:280px;--p-ac-menu-radius:12px;--p-ac-menu-border:1px;--p-ac-menu-pad-x:8px;--p-ac-menu-pad-y:8px;
   --p-ac-menu-shadow:0px 0px 40px rgba(13,18,27,0.14);
   --p-ac-row-radius:10px;--p-ac-row-pad-x:12px;--p-ac-row-pad-y:10px;--p-ac-row-gap:10px;--p-ac-row-min-h:0px;--p-ac-row-separator:0px;
   --p-ac-row-font:14px;--p-ac-row-lh:20px;--p-ac-row-selected:var(--accent);
   --p-ac-check-w:14px;--p-ac-check-color:var(--popover-foreground);
   /* Dropdown menu (dropdown.styles.ts webSkin) */
-  --p-menu-radius:16px;--p-menu-border:1px;--p-menu-pad-x:8px;--p-menu-pad-y:8px;--p-menu-shadow:0px 0px 40px rgba(13,18,27,0.14);
+  --p-menu-radius:12px;--p-menu-border:1px;--p-menu-pad-x:8px;--p-menu-pad-y:8px;--p-menu-shadow:0px 0px 40px rgba(13,18,27,0.14);
   --p-menu-label-font:12px;--p-menu-label-lh:16px;--p-menu-label-weight:500;--p-menu-label-tracking:0px;--p-menu-label-pad-x:12px;--p-menu-label-pad-y:8px;
   --p-menu-sep-h:1px;--p-menu-sep-margin:6px;
   --p-menu-row-radius:10px;--p-menu-row-pad-x:12px;--p-menu-row-pad-y:10px;--p-menu-row-gap:10px;--p-menu-row-min-h:0px;
@@ -213,7 +213,7 @@
   /* Tooltip (tooltip.styles.ts webSkin) */
   --p-tip-radius:8px;--p-tip-shadow:0px 0px 24px rgba(13,18,27,0.1);--p-tip-weight:500;--p-tip-min-h:0px;
   /* Dialog (dialog.styles.ts webSkin) */
-  --p-dialog-scrim:rgba(0,0,0,0.6);--p-dialog-radius:16px;--p-dialog-border:1px;--p-dialog-shadow:0px 0px 60px rgba(13,18,27,0.18);
+  --p-dialog-scrim:rgba(0,0,0,0.6);--p-dialog-radius:18px;--p-dialog-border:1px;--p-dialog-shadow:0px 0px 60px rgba(13,18,27,0.18);
   --p-dialog-title:18px;--p-dialog-title-lh:28px;--p-dialog-title-weight:500;
   --p-dialog-body:14px;--p-dialog-body-lh:20px;--p-dialog-body-gap:8px;--p-dialog-footer-gap:8px;--p-dialog-footer-top:24px;
   --p-alert-btn-flex:0 0 auto /* @kind other */;--p-alert-btn-min-h:0px;--p-alert-btn-pad:8px 14px;--p-alert-btn-radius:12px;
@@ -222,7 +222,7 @@
   --p-alert-confirm-fill:var(--primary);--p-alert-confirm-label:var(--primary-foreground);
   --p-alert-confirm-destructive-fill:var(--destructive);--p-alert-confirm-destructive-label:var(--destructive-foreground);
   /* AlertDialog (alert-dialog.styles.ts webSkin — its own skin) */
-  --p-ad-scrim:rgba(0,0,0,0.6);--p-ad-radius:16px;--p-ad-border:1px;--p-ad-shadow:0px 0px 60px rgba(13,18,27,0.18);
+  --p-ad-scrim:rgba(0,0,0,0.6);--p-ad-radius:18px;--p-ad-border:1px;--p-ad-shadow:0px 0px 60px rgba(13,18,27,0.18);
   --p-ad-title:18px;--p-ad-title-lh:28px;--p-ad-title-weight:500;
   --p-ad-desc:14px;--p-ad-desc-lh:20px;--p-ad-desc-gap:8px;
   --p-ad-actions-justify:flex-end /* @kind other */;--p-ad-actions-gap:8px;
@@ -232,12 +232,12 @@
   --p-ad-confirm-destructive-fill:var(--destructive);--p-ad-confirm-destructive-label:var(--destructive-foreground);
   /* Drawer (drawer.styles.ts webSkin) */
   --p-drawer-scrim:rgba(0,0,0,0.5);--p-drawer-border:1px;--p-drawer-shadow:0px 0px 60px rgba(13,18,27,0.18);
-  --p-drawer-side-radius:30px;--p-drawer-sheet-radius:30px;--p-drawer-sheet-max:none /* @kind other */;
+  --p-drawer-side-radius:22px;--p-drawer-sheet-radius:22px;--p-drawer-sheet-max:none /* @kind other */;
   --p-drawer-handle-w:0px;--p-drawer-handle-h:0px;--p-drawer-handle-top:0px;
   /* ActionSheet (action-sheet.styles.ts webSkin — the iOS idiom on web too) */
   --p-sheet-scrim:rgba(0,0,0,0.4);--p-sheet-stack-pad:8px;--p-sheet-stack-gap:8px;
-  --p-sheet-card-radius:16px;--p-sheet-card-radius-top:16px;--p-sheet-card-pad:0px;--p-sheet-shadow:0px 0px 40px rgba(13,18,27,0.14);
-  --p-sheet-cancel-layout:separateCard /* @kind other */;--p-sheet-cancel-inset:0px;--p-sheet-cancel-radius:16px;--p-sheet-cancel-min-h:57px;--p-sheet-cancel-label:var(--popover-foreground);
+  --p-sheet-card-radius:18px;--p-sheet-card-radius-top:18px;--p-sheet-card-pad:0px;--p-sheet-shadow:0px 0px 40px rgba(13,18,27,0.14);
+  --p-sheet-cancel-layout:separateCard /* @kind other */;--p-sheet-cancel-inset:0px;--p-sheet-cancel-radius:18px;--p-sheet-cancel-min-h:57px;--p-sheet-cancel-label:var(--popover-foreground);
   --p-sheet-handle-display:none /* @kind other */;
   --p-sheet-header-pad:14px 16px;--p-sheet-header-align:center /* @kind other */;--p-sheet-header-gap:2px;--p-sheet-title-align:center /* @kind other */;
   --p-sheet-title:13px;--p-sheet-title-lh:18px;--p-sheet-title-weight:600;--p-sheet-title-tracking:0px;--p-sheet-title-color:var(--muted-foreground);
@@ -247,11 +247,11 @@
   --p-sheet-row-font:17px;--p-sheet-row-lh:22px;--p-sheet-row-weight:400;--p-sheet-row-tracking:0px;
   --p-sheet-row-label:var(--popover-foreground);--p-sheet-row-align:center /* @kind other */;--p-sheet-row-justify:center /* @kind other */;--p-sheet-row-text-align:center /* @kind other */;
   /* Command palette (command.styles.ts webSkin) */
-  --p-cmd-radius:16px;--p-cmd-search-pad-x:16px;--p-cmd-search-pad-y:14px;--p-cmd-search-gap:8px;--p-cmd-search-min-h:0px;--p-cmd-glyph:16px;
+  --p-cmd-radius:12px;--p-cmd-search-pad-x:16px;--p-cmd-search-pad-y:14px;--p-cmd-search-gap:8px;--p-cmd-search-min-h:0px;--p-cmd-glyph:16px;
   --p-cmd-row-pad-x:16px;--p-cmd-row-pad-y:10px;--p-cmd-row-min-h:40px;--p-cmd-row-font:14px;--p-cmd-row-lh:20px;--p-cmd-row-tracking:0px;
   /* Accordion (accordion.styles.ts webSkin — Radix/shadcn) */
   --p-acc-container-radius:0px;--p-acc-container-border:0px;--p-acc-container-fill:transparent;
-  --p-acc-card-radius:20px;--p-acc-card-inset:20px;--p-acc-sep-inset:0px;
+  --p-acc-card-radius:14px;--p-acc-card-inset:20px;--p-acc-sep-inset:0px;
   --p-acc-header-pad-x:0px;--p-acc-header-pad-y:16px;--p-acc-header-gap:16px;
   --p-acc-title:14px;--p-acc-title-lh:20px;--p-acc-title-weight:500;--p-acc-title-tracking:0px;
   --p-acc-desc:12px;--p-acc-desc-lh:16px;--p-acc-desc-tracking:0px;
@@ -265,7 +265,7 @@
   --p-page-pad-small:10px;--p-page-pad-default:12px;--p-page-pad-large:14px;
   --p-page-font-small:12px;--p-page-font-default:14px;--p-page-font-large:14px;
   --p-page-lh-small:16px;--p-page-lh-default:20px;--p-page-lh-large:20px;
-  --p-page-radius:12px;--p-page-border:1px;--p-page-weight:500;--p-page-rest-fill:var(--card);
+  --p-page-radius:8px;--p-page-border:1px;--p-page-weight:500;--p-page-rest-fill:var(--card);
   --p-page-selected-fill:var(--primary);--p-page-selected-border:var(--primary);--p-page-selected-label:var(--primary-foreground);
   /* Slider (slider.styles.ts webSkin — shadcn-matched) */
   --p-slider-track-h-small:6px;--p-slider-track-h-base:8px;--p-slider-track-h-large:10px;
@@ -287,28 +287,28 @@
   --p-otp-seam:0px;--p-otp-seam-active:0px;--p-otp-shared-edge:0 /* @kind other */;--p-otp-gap-small:0px;--p-otp-gap-base:0px;--p-otp-gap-large:0px;
   --p-otp-w-small:40px;--p-otp-w-base:48px;--p-otp-w-large:56px;
   --p-otp-h-small:40px;--p-otp-h-base:48px;--p-otp-h-large:56px;
-  --p-otp-radius:12px;--p-otp-inner-radius:0px;--p-otp-fill:var(--card);
+  --p-otp-radius:10px;--p-otp-inner-radius:0px;--p-otp-fill:var(--card);
   --p-otp-rest-border:1px;--p-otp-active-border:1px;--p-otp-rest-border-color:var(--input);--p-otp-active-border-color:var(--ring);
   --p-otp-active-ring:0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent) /* @kind other */;
   --p-otp-digit-small:15px;--p-otp-digit-base:18px;--p-otp-digit-large:22px;--p-otp-digit-weight:500;--p-otp-digit-tracking:0px;
   --p-otp-caret:var(--foreground);--p-otp-caret-blink:none /* @kind other */;
   /* DescriptionList (description-lists.styles.ts webSkin) */
-  --p-dl-radius:20px;--p-dl-shadow:0px 0px 20px rgba(13,18,27,0.06);--p-dl-pad:24px;--p-dl-row-gap:12px;
+  --p-dl-radius:14px;--p-dl-shadow:0px 0px 20px rgba(13,18,27,0.06);--p-dl-pad:24px;--p-dl-row-gap:12px;
   --p-dl-row-align:baseline /* @kind other */;--p-dl-row-min-h:0px;--p-dl-divided-pad:12px;
   --p-dl-term-font:14px;--p-dl-term-lh:20px;--p-dl-term-weight:400;--p-dl-term-tracking:0px;--p-dl-term-color:var(--muted-foreground);
   --p-dl-value-font:14px;--p-dl-value-lh:20px;--p-dl-value-weight:500;--p-dl-value-tracking:0px;--p-dl-value-color:var(--foreground);
   --p-dl-stacked-tracking:0.4px;--p-dl-header-weight:600;--p-dl-header-tracking:0px;
   /* MediaObject (media-objects.styles.ts webSkin) */
-  --p-media-gap:12px;--p-media-gap-compact:8px;--p-media-radius:20px;--p-media-border-color:var(--border) /* @kind other */;--p-media-shadow:none;
-  --p-media-icon-radius:12px;--p-media-glyph-tracking:0px;
+  --p-media-gap:12px;--p-media-gap-compact:8px;--p-media-radius:14px;--p-media-border-color:var(--border) /* @kind other */;--p-media-shadow:none;
+  --p-media-icon-radius:8px;--p-media-glyph-tracking:0px;
   --p-media-title-font:14px;--p-media-title-lh:20px;--p-media-title-weight:600;--p-media-title-tracking:0px;
   --p-media-desc-tracking:0px;--p-media-body-lh:28px;--p-media-body-tracking:0px;
   /* GridList (grid-lists.styles.ts webSkin) */
   --p-grid-gap:14px;--p-grid-gap-compact:8px;--p-grid-tile-pad:20px;--p-grid-tile-pad-compact:16px;
-  --p-grid-gallery-radius:12px;--p-grid-gallery-title-tracking:0px;--p-grid-subtitle-tracking:0px;
+  --p-grid-gallery-radius:8px;--p-grid-gallery-title-tracking:0px;--p-grid-subtitle-tracking:0px;
   --p-grid-card-title-weight:600;--p-grid-card-title-tracking:0px;
   /* Feed (feeds.styles.ts webSkin) */
-  --p-feed-radius:20px;--p-feed-pad:24px;--p-feed-pad-compact:20px;--p-feed-row-gap:24px;--p-feed-row-gap-compact:16px;
+  --p-feed-radius:14px;--p-feed-pad:24px;--p-feed-pad-compact:20px;--p-feed-row-gap:24px;--p-feed-row-gap-compact:16px;
   --p-feed-avatar-pad-y:16px;--p-feed-avatar-pad-y-compact:12px;
   --p-feed-line-font:14px;--p-feed-line-lh:20px;--p-feed-actor-weight:500;--p-feed-actor-tracking:0px;--p-feed-action-tracking:0px;
   --p-feed-time-font:12px;--p-feed-time-tracking:0px;--p-feed-initials-weight:500;--p-feed-initials-tracking:0px;
@@ -316,7 +316,7 @@
   --p-panel-title-weight:600;--p-panel-title-tracking:0px;--p-panel-desc-tracking:0px;
   --p-panel-inline-gap:24px;--p-panel-inline-align:flex-start /* @kind other */;
   /* Carousel (carousel.styles.ts webSkin — Embla/shadcn) */
-  --p-carousel-slide-radius:20px;--p-carousel-arrows:1 /* @kind other */;--p-carousel-dots:1 /* @kind other */;
+  --p-carousel-slide-radius:14px;--p-carousel-arrows:1 /* @kind other */;--p-carousel-dots:1 /* @kind other */;
   --p-carousel-arrow-size:40px;--p-carousel-arrow-border:1px;--p-carousel-arrow-fill:var(--card);--p-carousel-arrow-shadow:0px 1px 3px rgba(13,18,27,0.08);
   --p-carousel-dot:8px;--p-carousel-dot-active-w:18px;--p-carousel-dot-gap:6px;--p-carousel-dot-alpha:40%;
   --p-carousel-text-font:16px;--p-carousel-text-lh:24px;--p-carousel-text-weight:500;--p-carousel-text-tracking:0px;
@@ -325,11 +325,11 @@
 
   /* Board (board.styles.ts webSkin) */
   --p-board-lane-gap:16px;--p-board-lane-gap-compact:12px;
-  --p-board-col-radius:20px;--p-board-col-pad:12px;--p-board-col-pad-compact:8px;
+  --p-board-col-radius:14px;--p-board-col-pad:12px;--p-board-col-pad-compact:8px;
   --p-board-col-gap:10px;--p-board-col-gap-compact:8px;
   --p-board-col-label-font:14px;--p-board-col-label-lh:20px;--p-board-col-label-weight:500;--p-board-col-label-tracking:0px;
   --p-board-cardlist-gap:8px;--p-board-cardlist-gap-compact:6px;--p-board-cardlist-min-h:48px;
-  --p-board-card-radius:12px;
+  --p-board-card-radius:8px;
   --p-board-card-title-font:14px;--p-board-card-title-lh:20px;--p-board-card-title-weight:500;
   --p-board-card-desc-font:12px;--p-board-card-desc-lh:16px;
 

@@ -182,7 +182,7 @@ export const webSkin: CalendarSkin = {
   pressedOpacity: 0.9,
   ripple: null,
 
-  // The Riskora date card: the 20px card corner, a hairline, a 16px inset.
+  // The Riskora date card: the card corner, a hairline, a 16px inset.
   containerBase: {
     alignSelf: "flex-start",
     borderRadius: shape.web.card,

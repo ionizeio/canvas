@@ -47,7 +47,7 @@ const ANDROID_LABEL: Record<Size, TextStyle> = {
   large: { fontWeight: "500", fontSize: 18, lineHeight: 28, letterSpacing: 0.1 },
 };
 
-// Web: the Riskora look. Rounded square at the 12px control corner; the
+// Web: the Riskora look. Rounded square at the control corner; the
 // pressable trigger dims opacity on press, no ripple.
 export const webSkin: AvatarSkin = {
   roundedRadius: shape.web.control,

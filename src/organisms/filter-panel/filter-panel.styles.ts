@@ -158,7 +158,7 @@ function androidTitleText(tokens: ColorTokens): TextStyle {
 // ---------- Web: the established Canvas look ----------
 export const webSkin: FilterPanelSkin = {
   panelBase: PANEL_BASE,
-  // `bordered` wraps the panel as a rounded card: the 20px card corner on the card
+  // `bordered` wraps the panel as a rounded card: the card corner on the card
   // fill. The card token follows light/dark (and stays solid under glass), so read it
   // from tokens rather than hardcoding its hex.
   borderedSurface: (tokens) => ({

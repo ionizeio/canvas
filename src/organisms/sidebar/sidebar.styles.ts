@@ -52,7 +52,7 @@ function makeColumn(radius: number, collapsedWidth: number, pad: ViewStyle) {
 // Web: the established Canvas look (lifted verbatim from the original file).
 // =============================================================================
 
-// The Riskora settings rail: a 20px-cornered column, 12px-cornered rows that are
+// The Riskora settings rail: a column at the card corner, rows at the control corner that are
 // 48px tall (the active one on the soft `accent` panel), a 16px section eyebrow at
 // the medium weight, 20px glyphs.
 export const webSkin: SidebarSkin = {

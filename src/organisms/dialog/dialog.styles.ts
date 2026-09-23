@@ -167,7 +167,7 @@ export function cardWidth(size: Size): ViewStyle {
 // bg-black/50 backdrop; a 16/24 600 title, a 14/20 muted-foreground body, and a
 // right-aligned action row (gap-2, mt-6) of an outline Cancel + a primary/
 // destructive Confirm Button.
-// The Riskora dialog: a 16px-cornered card under a 60% scrim, the ambient xl shade,
+// The Riskora dialog: a card at the dialog corner under the theme's scrim, the ambient xl shade,
 // an 18px medium title over muted body copy.
 export const webSkin: DialogSkin = {
   backdrop: (t) => ({ borderRadius: shape.web.dialog, backgroundColor: scrimFill(t, 0.6) }),

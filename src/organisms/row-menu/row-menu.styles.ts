@@ -97,8 +97,8 @@ export const anchorLifted: ViewStyle = { zIndex: 50 };
 export const webSkin: RowMenuSkin = {
   minTarget: null,
   anchor: { position: "relative", alignSelf: "flex-start" },
-  // The Riskora row kebab: a 36px square with the 12px control corner; its menu is
-  // the 16px-cornered card with an 8px inset and 40px rows with a 10px corner.
+  // The Riskora row kebab: a 36px square with the control corner; its menu is
+  // the card at the menu corner with an 8px inset and 40px rows with a 10px corner.
   trigger: {
     width: 36,
     height: 36,
