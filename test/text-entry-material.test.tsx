@@ -13,25 +13,24 @@ import { InputOTP } from "../src/atoms/input-otp/input-otp.tsx";
 import { Stepper } from "../src/atoms/stepper/stepper.tsx";
 import { PhoneInput } from "../src/molecules/phone-input/phone-input.tsx";
 import { PhoneInput as PhoneInputIOS } from "../src/molecules/phone-input/phone-input.ios.tsx";
+import { clearSurfaceTint } from "../src/style/glass-surface/glass-surface.shared.tsx";
+import { WEB_FROST } from "../src/style/glass-surface/web-frost.ts";
+import { lightColors } from "../src/style/tokens.ts";
 
 const restores: Array<() => void> = [];
 let available = true;
 
+// The browser's one material question: does it render a CSS backdrop filter? `available`
+// is its answer, and a browser that says no gets every field's solid skin.
 beforeEach(() => {
   available = true;
   const css = Object.getOwnPropertyDescriptor(globalThis, "CSS");
-  const agent = Object.getOwnPropertyDescriptor(window.navigator, "userAgent");
   Object.defineProperty(globalThis, "CSS", { configurable: true, value: {
-    supports: (_property: string, value: string) => available && !value.startsWith("url("),
+    supports: () => available,
   } });
-  Object.defineProperty(window.navigator, "userAgent", {
-    configurable: true, value: "Mozilla/5.0 Version/18.0 Safari/605.1.15",
-  });
   restores.push(() => {
     if (css) Object.defineProperty(globalThis, "CSS", css);
     else delete (globalThis as unknown as Record<string, unknown>).CSS;
-    if (agent) Object.defineProperty(window.navigator, "userAgent", agent);
-    else delete (window.navigator as unknown as Record<string, unknown>).userAgent;
   });
 });
 
@@ -41,9 +40,17 @@ afterEach(() => {
 });
 
 const mode = (children: ReactNode, glass = true) => <ThemeProvider light glass={glass} solid={!glass}>{children}</ThemeProvider>;
-const materials = (root: ParentNode) => [...root.querySelectorAll<HTMLElement>("[style]")]
-  .filter(node => node.style.backdropFilter);
-const blur = (node: HTMLElement) => Number(node.style.backdropFilter.match(/^blur\(([\d.]+)/)?.[1]);
+// The material GlassBox paints behind a field. Counted by its wrapper, because a clear
+// field draws no frost: Dark Factory draws its fields as an unblurred translucent fill.
+const materials = (root: ParentNode) => [...root.querySelectorAll<HTMLElement>('[data-testid="glass-material"]')];
+// react-native-web stores an alpha as an 8-bit channel and prints it with two decimals,
+// so colours compare as numbers quantized the way it does.
+const rgbaOf = (value: string) => {
+  const m = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/.exec(value);
+  if (!m) return value;
+  const a = m[4] == null ? 1 : Number(m[4]);
+  return [Number(m[1]), Number(m[2]), Number(m[3]), Number((Math.round(a * 255) / 255).toFixed(2))];
+};
 
 describe("clear grouped field state borders", () => {
   const fields = [
@@ -138,13 +145,18 @@ describe("clear web text-entry material", () => {
   ];
 
   for (const [name, field] of fields) {
-    it(`${name} shares the clear grade and returns to its solid skin`, () => {
+    it(`${name} shares the clear material and returns to its solid skin`, () => {
       const result = render(mode(<View testID="field">{field}</View>));
-      const layers = materials(screen.getByTestId("field"));
-      expect(layers).toHaveLength(name === "InputOTP" ? 2 : 1);
-      for (const layer of layers) {
-        expect(blur(layer)).toBeGreaterThan(0);
-        expect(blur(layer)).toBeLessThan(1);
+      const painted = materials(screen.getByTestId("field"));
+      expect(painted).toHaveLength(name === "InputOTP" ? 2 : 1);
+      for (const material of painted) {
+        // A clear field frosts nothing: its under-fill (the light neutral veil), then the
+        // control layer's hairline rim in the palette's border colour, and no backdrop filter.
+        const layers = [...material.children] as HTMLElement[];
+        expect(layers).toHaveLength(2);
+        expect(material.querySelector('[style*="backdrop-filter"]')).toBeNull();
+        expect(rgbaOf(layers[0].style.backgroundColor)).toEqual(rgbaOf(clearSurfaceTint(lightColors, false)));
+        expect(layers[1].style.boxShadow).toBe(`inset 0 0 0 ${WEB_FROST.rimWidth}px ${lightColors.border}`);
       }
       result.rerender(mode(<View testID="field">{field}</View>, false));
       expect(materials(screen.getByTestId("field"))).toHaveLength(0);
@@ -211,7 +223,7 @@ describe("clear web text-entry material", () => {
   }
 
   for (const reducedMotion of [false, true]) {
-    it(`keeps clear grading without custom press feedback with Reduce Motion ${reducedMotion ? "on" : "off"}`, async () => {
+    it(`keeps the clear material without custom press feedback with Reduce Motion ${reducedMotion ? "on" : "off"}`, async () => {
       const reduced = spyOn(AccessibilityInfo, "isReduceMotionEnabled").mockResolvedValue(reducedMotion);
       restores.push(() => reduced.mockRestore());
       render(mode(<Input label="Name" testID="name" />));

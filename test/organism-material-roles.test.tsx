@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "bun:test";
+import { afterEach, describe, expect, it, spyOn } from "bun:test";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
@@ -12,6 +12,8 @@ import { Tabs } from "../src/organisms/tabs/tabs.tsx";
 import { Tabs as AndroidTabs } from "../src/organisms/tabs/tabs.android.tsx";
 import { Command } from "../src/organisms/command/command.tsx";
 import { DashboardGrid } from "../src/organisms/dashboard-grid/dashboard-grid.tsx";
+import * as materialRuntime from "../src/style/glass-surface/material-runtime.ts";
+import { WEB_FROST } from "../src/style/glass-surface/web-frost.ts";
 
 const restores: Array<() => void> = [];
 afterEach(() => {
@@ -19,29 +21,39 @@ afterEach(() => {
   restores.splice(0).reverse().forEach((restore) => restore());
 });
 
-function capabilities(lens: boolean, frost: boolean) {
-  const userAgent = Object.getOwnPropertyDescriptor(window.navigator, "userAgent");
+// The browser's one material question: does it render a CSS backdrop filter? The web's
+// only material is the frost, so a browser that answers no gets every solid skin.
+function browser(frost: boolean) {
   const css = Object.getOwnPropertyDescriptor(globalThis, "CSS");
-  Object.defineProperty(window.navigator, "userAgent", { configurable: true, value: lens
-    ? "Mozilla/5.0 Chrome/126.0.0.0 Safari/537.36"
-    : "Mozilla/5.0 Version/18.0 Safari/605.1.15" });
-  Object.defineProperty(globalThis, "CSS", { configurable: true,
-    value: { supports: (_property: string, value: string) => value.startsWith("url(") ? lens : frost } });
+  Object.defineProperty(globalThis, "CSS", { configurable: true, value: { supports: () => frost } });
   restores.push(() => {
     if (css) Object.defineProperty(globalThis, "CSS", css);
     else delete (globalThis as Record<string, unknown>).CSS;
-    if (userAgent) Object.defineProperty(window.navigator, "userAgent", userAgent);
-    else delete (window.navigator as unknown as Record<string, unknown>).userAgent;
   });
 }
 
-const materials = (root: ParentNode) => [...root.querySelectorAll<HTMLElement>("[style]")]
-  .filter((node) => node.style.backdropFilter);
+// A platform that renders Liquid Glass but no frost: iOS 26 with expo-glass-effect and
+// without expo-blur. Only there do the two roles render differently: a surface that
+// asks for the liquid material keeps it while a static one falls to its solid skin. The
+// web never reports liquid (its one material is the frost), so the capability hook is
+// stubbed; the shells that choose each role are shared by every skin, so the web host
+// shows which surfaces asked for which.
+function liquidWithoutFrost() {
+  const spy = spyOn(materialRuntime, "useMaterialCapabilities").mockImplementation(
+    () => ({ platform: "ios", frost: false, liquid: true, requiresTarget: false }),
+  );
+  restores.push(() => spy.mockRestore());
+}
+
+// The material GlassBox paints behind a surface, found by its wrapper so a clear surface
+// (which frosts nothing) counts too, and the frost layer inside one, if it has any.
+const materials = (root: ParentNode) => [...root.querySelectorAll<HTMLElement>('[data-testid="glass-material"]')];
+const frostOf = (material: HTMLElement) => material.querySelector<HTMLElement>('[style*="backdrop-filter"]');
 const mode = (children: ReactNode, glass: boolean) => <ThemeProvider light glass={glass} solid={!glass}>{children}</ThemeProvider>;
 
 describe("organism material roles", () => {
   it("preserves Command's unfilled Search trigger across material modes", () => {
-    capabilities(true, true);
+    browser(true);
     const children = <Command trigger groups={[{ heading: "Actions", items: [{ label: "New file" }] }]} />;
     const result = render(mode(children, true));
     const trigger = screen.getByRole("button", { name: /Search/ });
@@ -56,7 +68,7 @@ describe("organism material roles", () => {
   });
 
   it("restores DashboardGrid edit-cell fill when its inherited content frost is unavailable", () => {
-    capabilities(false, false);
+    browser(false);
     const children = <DashboardGrid unlocked items={[{ id: "a", span: 12, title: "Revenue", content: <Text>Revenue body</Text> }]} />;
     const result = render(mode(children, true));
     const editCell = screen.getByText("Revenue body").parentElement!;
@@ -68,7 +80,7 @@ describe("organism material roles", () => {
   });
 
   it("resolves selected Calendar days independently from the static calendar body", () => {
-    capabilities(true, false);
+    liquidWithoutFrost();
     render(mode(<Calendar selected={10} testID="calendar" />, true));
     const calendar = screen.getByTestId("calendar");
     const selected = within(calendar).getByRole("button", { name: "10, selected", exact: true });
@@ -79,7 +91,7 @@ describe("organism material roles", () => {
   });
 
   it("keeps Carousel actions liquid when slide frost is unavailable", () => {
-    capabilities(true, false);
+    liquidWithoutFrost();
     render(mode(<Carousel testID="carousel" showArrows items={[{ key: "a", content: null }, { key: "b", content: null }]} />, true));
     expect(materials(screen.getByTestId("carousel"))).toHaveLength(2);
     expect(materials(screen.getByRole("button", { name: "Next slide" }))).toHaveLength(1);
@@ -87,15 +99,15 @@ describe("organism material roles", () => {
   });
 
   it("dims disabled Carousel ink without dimming the liquid material", () => {
-    capabilities(true, true);
+    browser(true);
     const children = <Carousel showArrows items={[{ key: "a", content: null }, { key: "b", content: null }]} />;
     const result = render(mode(children, true));
     const previous = screen.getByRole("button", { name: "Previous slide" });
     expect(previous.getAttribute("aria-disabled")).toBe("true");
     const pane = materials(previous)[0];
     expect(pane).toBeDefined();
-    for (let parent = pane.parentElement; parent && parent !== previous.parentElement; parent = parent.parentElement) {
-      expect(!parent.style.opacity || Number(parent.style.opacity) === 1).toBe(true);
+    for (let node: HTMLElement | null = pane; node && node !== previous.parentElement; node = node.parentElement) {
+      expect(!node.style.opacity || Number(node.style.opacity) === 1).toBe(true);
     }
     expect((previous.lastElementChild as HTMLElement).style.opacity).toBe("0.4");
     result.rerender(mode(children, false));
@@ -104,7 +116,7 @@ describe("organism material roles", () => {
   });
 
   it("retains complete Calendar selection and table stripe recipes when all material is unavailable", () => {
-    capabilities(false, false);
+    browser(false);
     const children = <>
       <Calendar selected={10} testID="calendar" />
       <DataTable testID="table" bordered striped columns={["Name"]} rows={[["Ada"], ["Grace"]]} />
@@ -125,21 +137,21 @@ describe("organism material roles", () => {
   });
 
   it("uses stable step frost without painting an unfilled current ring", () => {
-    capabilities(true, true);
+    browser(true);
     render(mode(<Steps current={1} steps={[{ label: "Account" }, { label: "Profile" }, { label: "Review" }]} />, true));
     const current = screen.getByText("2").parentElement!;
     expect(materials(current)).toHaveLength(0);
     expect(current.style.borderColor).not.toContain("0.00");
     const upcoming = screen.getByText("3").parentElement!;
     expect(materials(upcoming)).toHaveLength(1);
-    expect(materials(upcoming)[0].style.backdropFilter).toMatch(/^blur\(/);
+    expect(frostOf(materials(upcoming)[0])?.style.backdropFilter).toBe(`blur(${WEB_FROST.blur}px)`);
   });
 
   it("keeps unfilled underline tabs unpainted and their ink indicator intact", () => {
     // The Android skin is the one that still draws an ink underline; the web
     // shares iOS's capsule segmented control, whose selected pill is a filled
     // surface and so becomes glass (the case below).
-    capabilities(true, true);
+    browser(true);
     const children = <AndroidTabs tabs={["Account", "Profile"]} />;
     const result = render(mode(children, false));
     const selected = screen.getByRole("tab", { name: "Account" });
@@ -151,7 +163,7 @@ describe("organism material roles", () => {
   });
 
   it("paints the web capsule tabs' selection as glass while keeping the same host", () => {
-    capabilities(true, true);
+    browser(true);
     const children = <Tabs tabs={["Account", "Profile"]} />;
     const result = render(mode(children, false));
     const selected = screen.getByRole("tab", { name: "Account" });
@@ -163,7 +175,7 @@ describe("organism material roles", () => {
 
   for (const initialGlass of [false, true]) {
     it(`preserves a DataTable editor, draft, focus and caret from ${initialGlass ? "glass" : "solid"}`, () => {
-      capabilities(true, true);
+      browser(true);
       const children = <DataTable inlineEdit columns={["Name"]} rows={[["Ada"]]} onCellCommit={() => {}} />;
       const result = render(mode(children, initialGlass));
       fireEvent.click(screen.getByText("Ada"));

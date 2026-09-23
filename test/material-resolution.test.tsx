@@ -12,17 +12,19 @@ import { lightColors } from "../src/style/tokens.ts";
 
 afterEach(cleanup);
 const requested = { surface: "glass", reducedTransparency: false, increasedContrast: false } as const;
-const ios: MaterialCapabilities = { platform: "ios", frost: true, liquid: true, lens: false, requiresTarget: false };
-const chrome: MaterialCapabilities = { platform: "web", frost: true, liquid: false, lens: true, requiresTarget: false };
-const android: MaterialCapabilities = { platform: "android", frost: true, liquid: false, lens: false, requiresTarget: true };
+const ios: MaterialCapabilities = { platform: "ios", frost: true, liquid: true, requiresTarget: false };
+// A browser that renders a CSS backdrop filter. The web's one material is the frost: it
+// has no liquid tier, so every role resolves to it.
+const web: MaterialCapabilities = { platform: "web", frost: true, liquid: false, requiresTarget: false };
+const android: MaterialCapabilities = { platform: "android", frost: true, liquid: false, requiresTarget: true };
 
 describe("material role and capability resolution", () => {
-  it("separates static roles from density on iOS and Chromium", () => {
-    for (const capabilities of [ios, chrome]) {
+  it("separates static roles from density on iOS and the web", () => {
+    for (const capabilities of [ios, web]) {
       expect(resolveMaterial(requested, { layer: "content" }, capabilities, false).renderer).toBe("frost");
       expect(resolveMaterial(requested, { layer: "control", static: true }, capabilities, false).renderer).toBe("frost");
       expect(resolveMaterial(requested, { layer: "dense", static: true }, capabilities, false).renderer).toBe("frost");
-      expect(resolveMaterial(requested, { layer: "dense" }, capabilities, false).renderer).toBe(capabilities.liquid ? "liquid" : "lens");
+      expect(resolveMaterial(requested, { layer: "dense" }, capabilities, false).renderer).toBe(capabilities.liquid ? "liquid" : "frost");
     }
   });
   it("requires a safe live Android target and never treats tint as material", () => {
@@ -32,7 +34,11 @@ describe("material role and capability resolution", () => {
   });
   it("uses complete solid for missing peers and preference overrides", () => {
     expect(resolveMaterial(requested, { static: true }, { ...ios, frost: false }, false).renderer).toBe("solid");
-    for (const capabilities of [ios, chrome, android]) {
+    // A browser without backdrop-filter renders no material at all, whatever the role.
+    for (const options of [{}, { layer: "content" as const }, { layer: "control" as const, static: true }, { layer: "dense" as const }]) {
+      expect(resolveMaterial(requested, options, { ...web, frost: false }, false)).toMatchObject({ renderer: "solid", fallback: "unavailable" });
+    }
+    for (const capabilities of [ios, web, android]) {
       for (const flags of [{ surface: "solid" as const }, { reducedTransparency: true }, { increasedContrast: true }]) {
         expect(resolveMaterial({ ...requested, ...flags }, {}, capabilities, true).renderer).toBe("solid");
       }
@@ -40,17 +46,19 @@ describe("material role and capability resolution", () => {
   });
 });
 
+// The browser's one material question: does it render a CSS backdrop filter?
 function browserSupport(enabled = true) {
-  const descriptor = Object.getOwnPropertyDescriptor(window.navigator, "userAgent");
-  Object.defineProperty(window.navigator, "userAgent", { value: "Chrome/140.0.0.0", configurable: true });
   const css = Object.getOwnPropertyDescriptor(globalThis, "CSS");
   Object.defineProperty(globalThis, "CSS", { value: { supports: () => enabled }, configurable: true });
   return () => {
     if (css) Object.defineProperty(globalThis, "CSS", css);
-    if (descriptor) Object.defineProperty(window.navigator, "userAgent", descriptor);
-    else delete (window.navigator as unknown as Record<string, unknown>).userAgent;
+    else delete (globalThis as Record<string, unknown>).CSS;
   };
 }
+
+// The material GlassBox paints behind a surface, found by its wrapper so a clear surface
+// (which frosts nothing) counts too.
+const materialsIn = (root: ParentNode) => root.querySelectorAll('[data-testid="glass-material"]');
 
 describe("material mode changes", () => {
   it("keeps the same live editor, local state, caret and scroll in both directions", () => {
@@ -82,7 +90,7 @@ describe("material mode changes", () => {
         expect([editor.selectionStart, editor.selectionEnd]).toEqual([2, 7]);
         expect(scroller.scrollTop).toBe(83);
         expect(mounts).toBe(1);
-        expect(result.container.querySelectorAll('[style*="backdrop-filter"]').length).toBe(glass ? 1 : 0);
+        expect(materialsIn(result.container).length).toBe(glass ? 1 : 0);
       }
     } finally { restore(); }
   });
@@ -99,7 +107,7 @@ describe("material mode changes", () => {
       expect(pane.style.backgroundColor).toMatch(/18, ?52, ?86/);
       expect(pane.style.borderWidth).toBe("2px");
       expect(pane.style.borderColor).toMatch(/171, ?205, ?239/);
-      expect(pane.querySelector('[style*="backdrop-filter"]')).toBeNull();
+      expect(materialsIn(pane).length).toBe(0);
     } finally { restore(); }
   });
 

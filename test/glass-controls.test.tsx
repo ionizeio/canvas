@@ -15,6 +15,7 @@ import { brandInk, brandTint, surfaceUnderFill, BRAND_TINT_ALPHA, BRAND_INK_CONT
 import { alpha, composite, contrastRatio } from "../src/style/color.ts";
 import { actionFill, actionInk } from "../src/style/action.ts";
 import { glassByScheme, lightColors, darkColors, palette, brandColors, type ColorTokens } from "../src/style/tokens.ts";
+import { WEB_TINTS } from "../src/style/glass-surface/web-frost.ts";
 import { statusHues, HUE_WASH } from "../src/style/status-hue.ts";
 
 // The CONTROL layer of the glass model: every control that paints a surface of its
@@ -32,152 +33,118 @@ import { statusHues, HUE_WASH } from "../src/style/status-hue.ts";
 //     holds 4.5:1 over the page, over a content pane and over a control puck.
 //
 // The material only renders on a material path, and with the expo peers stubbed the one
-// reachable here is the Chromium web LENS, so the DOM cases override the user agent the
-// way glass-lens.test.tsx does.
+// reachable here is the web frost, which renders wherever the browser supports a CSS
+// backdrop-filter (the test DOM's CSS.supports says it does).
 
 afterEach(cleanup);
 
-const CHROME_UA =
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
-
-function overrideUserAgent(value: string) {
-  Object.defineProperty(window.navigator, "userAgent", { value, configurable: true });
-  return () => {
-    delete (window.navigator as unknown as Record<string, unknown>)["userAgent"];
-  };
-}
-
 async function renderGlass(ui: React.ReactElement, solid = false) {
-  const restore = overrideUserAgent(CHROME_UA);
   const result = render(<ThemeProvider glass={!solid} solid={solid}>{ui}</ThemeProvider>);
   if (!solid) await waitFor(() => expect(materialLayers(result.container)).toBeGreaterThan(0));
-  return { ...result, restore };
+  return result;
 }
 
-// The material's lens layer is the one node carrying a `backdrop-filter`.
-const materialLayers = (root: HTMLElement) => root.querySelectorAll("[style*='backdrop-filter']").length;
-// The fill is the lens layer's sibling that paints a background: BEFORE the lens for a
-// layer tint (the material's body), AFTER it for a brand colour, which composites over
-// the material so the colour the ink solver saw is the colour that renders (the rim
+// The material is the wrapper GlassBox paints behind the content. Counting wrappers, not
+// backdrop-filtered layers, finds the clear surfaces too: a text field draws no frost.
+const materialLayers = (root: HTMLElement) => root.querySelectorAll('[data-testid="glass-material"]').length;
+// Inside the wrapper the fill is the layer that paints a background: BEFORE the frost
+// for a layer tint (the material's body), AFTER it for a brand colour, which composites
+// over the material so the colour the ink solver saw is the colour that renders (the rim
 // that follows paints a box shadow, never a background).
-const fillLayerOf = (root: HTMLElement): { fill: HTMLElement | null; over: boolean } => {
-  const lens = root.querySelector("[style*='backdrop-filter']") as HTMLElement | null;
-  const before = lens?.previousElementSibling as HTMLElement | null;
-  if (before?.style.backgroundColor) return { fill: before, over: false };
-  const after = lens?.nextElementSibling as HTMLElement | null;
-  return after?.style.backgroundColor ? { fill: after, over: true } : { fill: null, over: false };
+const fillOfMaterial = (material: Element | null): { fill: HTMLElement | null; over: boolean } => {
+  const layers = Array.from(material?.children ?? []) as HTMLElement[];
+  const frost = layers.findIndex((layer) => layer.style.backdropFilter);
+  const fill = layers.findIndex((layer) => layer.style.backgroundColor);
+  return fill < 0 ? { fill: null, over: false } : { fill: layers[fill], over: frost >= 0 && fill > frost };
 };
+const fillLayerOf = (root: HTMLElement) => fillOfMaterial(root.querySelector('[data-testid="glass-material"]'));
 const underFillOf = (root: HTMLElement): string => fillLayerOf(root).fill?.style.backgroundColor ?? "";
-// react-native-web prints every colour as `rgba(r, g, b, a)` with a two-decimal alpha, and
-// a hex alpha() string prints a bare one, so colours compare as numbers, not strings.
+// react-native-web stores an alpha as an 8-bit channel and prints it with two decimals,
+// and a hex alpha() string prints a bare one, so colours compare as numbers quantized
+// the way react-native-web does it, not as strings.
 const rgbaOf = (value: string) => {
   const m = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/.exec(value);
   if (!m) return value;
-  return [Number(m[1]), Number(m[2]), Number(m[3]), Math.round((m[4] == null ? 1 : Number(m[4])) * 100) / 100];
+  const a = m[4] == null ? 1 : Number(m[4]);
+  return [Number(m[1]), Number(m[2]), Number(m[3]), Number((Math.round(a * 255) / 255).toFixed(2))];
 };
 
-const LIGHT = glassByScheme.light;
+// The web renders the web frost's own tints (web-frost.ts); `glassByScheme` is the
+// native set (iOS, Android).
+const LIGHT = WEB_TINTS.light;
 
 describe("brand-tinted glass pucks", () => {
   it("a primary Button is a brand puck: the container fill goes transparent and the action colour is the under-fill", async () => {
-    const { container, restore } = await renderGlass(<Button primary testID="save">Save</Button>);
-    try {
-      const button = container.querySelector('[data-testid="save"]') as HTMLElement;
-      expect(button.style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
-      expect(materialLayers(button)).toBe(1);
-      expect(rgbaOf(underFillOf(button))).toEqual(rgbaOf(brandTint(actionFill(lightColors), lightColors.background, actionInk(lightColors))));
-    } finally {
-      restore();
-    }
+    const { container } = await renderGlass(<Button primary testID="save">Save</Button>);
+    const button = container.querySelector('[data-testid="save"]') as HTMLElement;
+    expect(button.style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
+    expect(materialLayers(button)).toBe(1);
+    expect(rgbaOf(underFillOf(button))).toEqual(rgbaOf(brandTint(actionFill(lightColors), lightColors.background, actionInk(lightColors))));
   });
 
   it("a destructive Button carries the destructive colour; ghost and link buttons take no material at all", async () => {
-    const { container, restore } = await renderGlass(
+    const { container } = await renderGlass(
       <>
         <Button destructive testID="delete">Delete</Button>
         <Button ghost testID="ghost">Cancel</Button>
         <Button link testID="link">Learn more</Button>
       </>,
     );
-    try {
-      const del = container.querySelector('[data-testid="delete"]') as HTMLElement;
-      expect(rgbaOf(underFillOf(del))).toEqual(rgbaOf(brandTint(lightColors.destructive, lightColors.background)));
-      expect(materialLayers(container.querySelector('[data-testid="ghost"]') as HTMLElement)).toBe(0);
-      expect(materialLayers(container.querySelector('[data-testid="link"]') as HTMLElement)).toBe(0);
-    } finally {
-      restore();
-    }
+    const del = container.querySelector('[data-testid="delete"]') as HTMLElement;
+    expect(rgbaOf(underFillOf(del))).toEqual(rgbaOf(brandTint(lightColors.destructive, lightColors.background)));
+    expect(materialLayers(container.querySelector('[data-testid="ghost"]') as HTMLElement)).toBe(0);
+    expect(materialLayers(container.querySelector('[data-testid="link"]') as HTMLElement)).toBe(0);
   });
 
   it("an outline Button is a plain control puck with its hairline dropped (the rim is the edge)", async () => {
-    const { container, restore } = await renderGlass(<Button outline testID="more">More</Button>);
-    try {
-      const button = container.querySelector('[data-testid="more"]') as HTMLElement;
-      expect(rgbaOf(underFillOf(button))).toEqual(rgbaOf(LIGHT["glass-tint-control"]));
-      expect(button.style.borderColor).toBe("rgba(0, 0, 0, 0.00)");
-    } finally {
-      restore();
-    }
+    const { container } = await renderGlass(<Button outline testID="more">More</Button>);
+    const button = container.querySelector('[data-testid="more"]') as HTMLElement;
+    expect(rgbaOf(underFillOf(button))).toEqual(rgbaOf(LIGHT["glass-tint-control"]));
+    expect(button.style.borderColor).toBe("rgba(0, 0, 0, 0.00)");
   });
 
   it("a checked Switch track is brand glass and an unchecked one the plain control material", async () => {
-    const { container, restore } = await renderGlass(
+    const { container } = await renderGlass(
       <>
         <Switch defaultChecked testID="on" accessibilityLabel="Notifications" />
         <Switch testID="off" accessibilityLabel="Marketing" />
       </>,
     );
-    try {
-      const on = container.querySelector('[data-testid="on"]') as HTMLElement;
-      const off = container.querySelector('[data-testid="off"]') as HTMLElement;
-      expect(rgbaOf(underFillOf(on))).toEqual(rgbaOf(brandTint(lightColors.primary, lightColors.background)));
-      expect(rgbaOf(underFillOf(off))).toEqual(rgbaOf(LIGHT["glass-tint-control"]));
-    } finally {
-      restore();
-    }
+    const on = container.querySelector('[data-testid="on"]') as HTMLElement;
+    const off = container.querySelector('[data-testid="off"]') as HTMLElement;
+    expect(rgbaOf(underFillOf(on))).toEqual(rgbaOf(brandTint(lightColors.primary, lightColors.background)));
+    expect(rgbaOf(underFillOf(off))).toEqual(rgbaOf(LIGHT["glass-tint-control"]));
   });
 
   it("a checked Checkbox box is brand glass with the check on top", async () => {
-    const { container, restore } = await renderGlass(<Checkbox defaultChecked testID="terms">Accept</Checkbox>);
-    try {
-      const row = container.querySelector('[data-testid="terms"]') as HTMLElement;
-      expect(rgbaOf(underFillOf(row))).toEqual(rgbaOf(brandTint(lightColors.primary, lightColors.background)));
-      expect(row.textContent).toContain("✓");
-    } finally {
-      restore();
-    }
+    const { container } = await renderGlass(<Checkbox defaultChecked testID="terms">Accept</Checkbox>);
+    const row = container.querySelector('[data-testid="terms"]') as HTMLElement;
+    expect(rgbaOf(underFillOf(row))).toEqual(rgbaOf(brandTint(lightColors.primary, lightColors.background)));
+    expect(row.textContent).toContain("✓");
   });
 
   it("the selected Tabs material uses its skin tint and stable foreground over a functional-layer track", async () => {
-    const { container, restore } = await renderGlass(<Tabs pills tabs={["Overview", "Activity"]} testID="tabs" />);
-    try {
-      const strip = container.querySelector('[data-testid="tabs"]') as HTMLElement;
-      // The track's own pane is the first material; the selected tab's puck follows.
-      const fills = Array.from(strip.querySelectorAll("[style*='backdrop-filter']")).map((lens) => rgbaOf((lens.previousElementSibling as HTMLElement).style.backgroundColor));
-      expect(fills[0]).toEqual(rgbaOf(LIGHT["glass-tint"]));
-      // The web shares the capsule segmented control with iOS: the puck carries the
-      // raised thumb's fill (the light scheme's `background`) at the selection tint's
-      // opacity ceiling, not a brand tint.
-      expect(fills).toContainEqual(rgbaOf(selectionTint({ backgroundColor: lightColors.background }, false)!));
-      const selected = strip.querySelector('[aria-selected="true"]') as HTMLElement;
-      const label = Array.from(selected.querySelectorAll("*")).find((n) => n.textContent === "Overview" && (n as HTMLElement).style.color) as HTMLElement;
-      expect(rgbaOf(label.style.color)).toEqual(rgbaOf(alpha(lightColors.foreground, 1)));
-    } finally {
-      restore();
-    }
+    const { container } = await renderGlass(<Tabs pills tabs={["Overview", "Activity"]} testID="tabs" />);
+    const strip = container.querySelector('[data-testid="tabs"]') as HTMLElement;
+    // The track's own pane is the first material; the selected tab's puck follows.
+    const fills = Array.from(strip.querySelectorAll('[data-testid="glass-material"]')).map((material) => rgbaOf(fillOfMaterial(material).fill?.style.backgroundColor ?? ""));
+    expect(fills[0]).toEqual(rgbaOf(LIGHT["glass-tint"]));
+    // The web shares the capsule segmented control with iOS: the puck carries the
+    // raised thumb's fill (the light scheme's `background`) at the selection tint's
+    // opacity ceiling, not a brand tint.
+    expect(fills).toContainEqual(rgbaOf(selectionTint({ backgroundColor: lightColors.background }, false)!));
+    const selected = strip.querySelector('[aria-selected="true"]') as HTMLElement;
+    const label = Array.from(selected.querySelectorAll("*")).find((n) => n.textContent === "Overview" && (n as HTMLElement).style.color) as HTMLElement;
+    expect(rgbaOf(label.style.color)).toEqual(rgbaOf(alpha(lightColors.foreground, 1)));
   });
 
   it("the current page of a Pagination is a brand puck; the rest of the web tiles are plain control pucks", async () => {
-    const { container, restore } = await renderGlass(<Pagination total={3} defaultPage={2} testID="pages" />);
-    try {
-      const pages = container.querySelector('[data-testid="pages"]') as HTMLElement;
-      const current = pages.querySelector('[aria-current="page"]') as HTMLElement;
-      expect(rgbaOf(underFillOf(current))).toEqual(rgbaOf(brandTint(lightColors.primary, lightColors.background)));
-      const other = Array.from(pages.querySelectorAll('[role="button"]')).find((n) => n.getAttribute("aria-current") == null && n.textContent === "1") as HTMLElement;
-      expect(rgbaOf(underFillOf(other))).toEqual(rgbaOf(LIGHT["glass-tint-control"]));
-    } finally {
-      restore();
-    }
+    const { container } = await renderGlass(<Pagination total={3} defaultPage={2} testID="pages" />);
+    const pages = container.querySelector('[data-testid="pages"]') as HTMLElement;
+    const current = pages.querySelector('[aria-current="page"]') as HTMLElement;
+    expect(rgbaOf(underFillOf(current))).toEqual(rgbaOf(brandTint(lightColors.primary, lightColors.background)));
+    const other = Array.from(pages.querySelectorAll('[role="button"]')).find((n) => n.getAttribute("aria-current") == null && n.textContent === "1") as HTMLElement;
+    expect(rgbaOf(underFillOf(other))).toEqual(rgbaOf(LIGHT["glass-tint-control"]));
   });
 
   it("paints a brand fill OVER the material and a layer tint beneath it", async () => {
@@ -186,22 +153,18 @@ describe("brand-tinted glass pucks", () => {
     // dark BlurView halved the brand's brightness on iOS, 2:1 for the ink) and the blur
     // pulled the dark surroundings into a small puck (3.4:1 on the web Calendar day).
     // Over the material the brand composites on the blurred page, as solved.
-    const { container, restore } = await renderGlass(
+    const { container } = await renderGlass(
       <>
         <Button primary testID="brand">Save</Button>
         <Button outline testID="plain">More</Button>
       </>,
     );
-    try {
-      const brand = fillLayerOf(container.querySelector('[data-testid="brand"]') as HTMLElement);
-      expect(brand.over).toBe(true);
-      expect(rgbaOf(brand.fill!.style.backgroundColor)).toEqual(rgbaOf(brandTint(actionFill(lightColors), lightColors.background, actionInk(lightColors))));
-      const plain = fillLayerOf(container.querySelector('[data-testid="plain"]') as HTMLElement);
-      expect(plain.over).toBe(false);
-      expect(rgbaOf(plain.fill!.style.backgroundColor)).toEqual(rgbaOf(LIGHT["glass-tint-control"]));
-    } finally {
-      restore();
-    }
+    const brand = fillLayerOf(container.querySelector('[data-testid="brand"]') as HTMLElement);
+    expect(brand.over).toBe(true);
+    expect(rgbaOf(brand.fill!.style.backgroundColor)).toEqual(rgbaOf(brandTint(actionFill(lightColors), lightColors.background, actionInk(lightColors))));
+    const plain = fillLayerOf(container.querySelector('[data-testid="plain"]') as HTMLElement);
+    expect(plain.over).toBe(false);
+    expect(rgbaOf(plain.fill!.style.backgroundColor)).toEqual(rgbaOf(LIGHT["glass-tint-control"]));
   });
 
   it("keeps the painted ink at 4.5:1 over the page in both schemes, densifying only as far as it needs", () => {
@@ -224,43 +187,42 @@ describe("brand-tinted glass pucks", () => {
 
 describe("hue washes", () => {
   it("a status Badge and a coloured Chip wash the material with the hue's mid step and step their label one deeper", async () => {
-    const { container, restore } = await renderGlass(
+    const { container } = await renderGlass(
       <>
         <Badge status success testID="status">Active</Badge>
         <Chip blue testID="chip">Design</Chip>
         <Kbd testID="kbd">⌘</Kbd>
       </>,
     );
-    try {
-      const badge = container.querySelector('[data-testid="status"]') as HTMLElement;
-      expect(rgbaOf(underFillOf(badge))).toEqual(rgbaOf(alpha(palette[`${statusHues.success}-500`], HUE_WASH.light)));
-      expect(badge.style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
-      const badgeLabel = Array.from(badge.querySelectorAll("*")).find((n) => n.textContent === "Active" && (n as HTMLElement).style.color) as HTMLElement;
-      expect(rgbaOf(badgeLabel.style.color)).toEqual(rgbaOf(alpha(palette[`${statusHues.success}-800`], 1)));
-      const chip = container.querySelector('[data-testid="chip"]') as HTMLElement;
-      expect(rgbaOf(underFillOf(chip))).toEqual(rgbaOf(alpha(palette["blue-500"], HUE_WASH.light)));
-      const chipLabel = Array.from(chip.querySelectorAll("*")).find((n) => n.textContent === "Design" && (n as HTMLElement).style.color) as HTMLElement;
-      expect(rgbaOf(chipLabel.style.color)).toEqual(rgbaOf(alpha(palette["blue-800"], 1)));
-      // A keycap is the plain control material.
-      expect(rgbaOf(underFillOf(container.querySelector('[data-testid="kbd"]') as HTMLElement))).toEqual(rgbaOf(LIGHT["glass-tint-control"]));
-    } finally {
-      restore();
-    }
+    const badge = container.querySelector('[data-testid="status"]') as HTMLElement;
+    expect(rgbaOf(underFillOf(badge))).toEqual(rgbaOf(alpha(palette[`${statusHues.success}-500`], HUE_WASH.light)));
+    expect(badge.style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
+    const badgeLabel = Array.from(badge.querySelectorAll("*")).find((n) => n.textContent === "Active" && (n as HTMLElement).style.color) as HTMLElement;
+    expect(rgbaOf(badgeLabel.style.color)).toEqual(rgbaOf(alpha(palette[`${statusHues.success}-800`], 1)));
+    const chip = container.querySelector('[data-testid="chip"]') as HTMLElement;
+    expect(rgbaOf(underFillOf(chip))).toEqual(rgbaOf(alpha(palette["blue-500"], HUE_WASH.light)));
+    const chipLabel = Array.from(chip.querySelectorAll("*")).find((n) => n.textContent === "Design" && (n as HTMLElement).style.color) as HTMLElement;
+    expect(rgbaOf(chipLabel.style.color)).toEqual(rgbaOf(alpha(palette["blue-800"], 1)));
+    // A keycap is the plain control material.
+    expect(rgbaOf(underFillOf(container.querySelector('[data-testid="kbd"]') as HTMLElement))).toEqual(rgbaOf(LIGHT["glass-tint-control"]));
   });
 
   it("holds every hue's deeper label at 4.5:1 over the page, over a content pane and over a control puck, in both schemes", () => {
     const hues = Object.keys(palette).filter((k) => k.endsWith("-500")).map((k) => k.slice(0, -4));
     expect(hues.length).toBeGreaterThan(10);
-    for (const scheme of ["light", "dark"] as const) {
-      const t = scheme === "light" ? lightColors : darkColors;
-      const g = glassByScheme[scheme];
-      const dark = scheme === "dark";
-      const bases = [t.background, composite(g["glass-tint-content"], t.background), composite(g["glass-tint-control"], composite(g["glass-tint-content"], t.background))];
-      for (const hue of hues) {
-        const wash = alpha(palette[`${hue}-500`], dark ? HUE_WASH.dark : HUE_WASH.light);
-        const ink = palette[`${hue}-${dark ? 300 : 800}`];
-        for (const base of bases) {
-          expect(contrastRatio(composite(wash, base), ink), `${scheme} ${hue} over ${base}`).toBeGreaterThanOrEqual(4.5);
+    // The panes differ by platform: the web frost's tints and the native set.
+    for (const [platform, tints] of [["web", WEB_TINTS], ["native", glassByScheme]] as const) {
+      for (const scheme of ["light", "dark"] as const) {
+        const t = scheme === "light" ? lightColors : darkColors;
+        const g = tints[scheme];
+        const dark = scheme === "dark";
+        const bases = [t.background, composite(g["glass-tint-content"], t.background), composite(g["glass-tint-control"], composite(g["glass-tint-content"], t.background))];
+        for (const hue of hues) {
+          const wash = alpha(palette[`${hue}-500`], dark ? HUE_WASH.dark : HUE_WASH.light);
+          const ink = palette[`${hue}-${dark ? 300 : 800}`];
+          for (const base of bases) {
+            expect(contrastRatio(composite(wash, base), ink), `${platform} ${scheme} ${hue} over ${base}`).toBeGreaterThanOrEqual(4.5);
+          }
         }
       }
     }
@@ -275,29 +237,25 @@ describe("hue washes", () => {
 
 describe("field boxes", () => {
   it("an Input box drops its fill and resting hairline for the pane, and an errored box keeps its destructive border over a destructive wash", async () => {
-    const { container, restore } = await renderGlass(
+    const { container } = await renderGlass(
       <>
         <Input label="Name" testID="name" />
         <Input label="Email" error testID="email" />
       </>,
     );
-    try {
-      const name = container.querySelector('[data-testid="name"]') as HTMLElement;
-      expect(name.style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
-      expect(name.style.borderColor).toBe("rgba(0, 0, 0, 0.00)");
-      expect(rgbaOf(underFillOf(name.parentElement as HTMLElement))).toEqual(rgbaOf(alpha(lightColors.card, 0.22)));
-      const email = container.querySelector('[data-testid="email"]') as HTMLElement;
-      expect(rgbaOf(email.style.borderColor)).toEqual(rgbaOf(alpha(lightColors.destructive, 1)));
-      expect(rgbaOf(underFillOf(email.parentElement as HTMLElement))).toEqual(rgbaOf(alpha(lightColors.destructive, 0.18)));
-    } finally {
-      restore();
-    }
+    const name = container.querySelector('[data-testid="name"]') as HTMLElement;
+    expect(name.style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
+    expect(name.style.borderColor).toBe("rgba(0, 0, 0, 0.00)");
+    expect(rgbaOf(underFillOf(name.parentElement as HTMLElement))).toEqual(rgbaOf(alpha(lightColors.card, 0.22)));
+    const email = container.querySelector('[data-testid="email"]') as HTMLElement;
+    expect(rgbaOf(email.style.borderColor)).toEqual(rgbaOf(alpha(lightColors.destructive, 1)));
+    expect(rgbaOf(underFillOf(email.parentElement as HTMLElement))).toEqual(rgbaOf(alpha(lightColors.destructive, 0.18)));
   });
 });
 
 describe("solid mode", () => {
   it("renders no material anywhere and keeps the opaque fills", async () => {
-    const { container, restore } = await renderGlass(
+    const { container } = await renderGlass(
       <>
         <Button primary testID="save">Save</Button>
         <Input label="Name" testID="name" />
@@ -310,13 +268,9 @@ describe("solid mode", () => {
       </>,
       true,
     );
-    try {
-      expect(materialLayers(container)).toBe(0);
-      expect(rgbaOf((container.querySelector('[data-testid="save"]') as HTMLElement).style.backgroundColor)).toEqual(rgbaOf(alpha(actionFill(lightColors), 1)));
-      expect(rgbaOf((container.querySelector('[data-testid="name"]') as HTMLElement).style.backgroundColor)).toEqual(rgbaOf(alpha(lightColors.card, 1)));
-    } finally {
-      restore();
-    }
+    expect(materialLayers(container)).toBe(0);
+    expect(rgbaOf((container.querySelector('[data-testid="save"]') as HTMLElement).style.backgroundColor)).toEqual(rgbaOf(alpha(actionFill(lightColors), 1)));
+    expect(rgbaOf((container.querySelector('[data-testid="name"]') as HTMLElement).style.backgroundColor)).toEqual(rgbaOf(alpha(lightColors.card, 1)));
   });
 
   it("the aurora is not a base the pucks are tuned against, but the brand ink still clears 4.5:1 over it", () => {

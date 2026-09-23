@@ -354,7 +354,7 @@ export function GlassBox({
   return (
     <View style={[style, solid ? null : clearedPaint(style), pointerEvents ? { pointerEvents } : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={onAccessibilityEscape ? false : undefined}>
       {material ? (
-        <View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[materialFill(style), { overflow: "hidden", zIndex: -1 }]}>
+        <View testID="glass-material" accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[materialFill(style), { overflow: "hidden", zIndex: -1 }]}>
           {material}
         </View>
       ) : null}

@@ -322,11 +322,11 @@ layers, each with its own under-fill token (`glass-tint*` in `src/style/tokens.t
 
 Those surfaces render through the shared `GlassSurface` primitive
 (`src/style/glass-surface`), which paints the active material per platform: Apple's
-real native Liquid Glass via `expo-glass-effect` on iOS 26+, a real LENS on Chromium
-web (an SVG displacement filter applied as the material's backdrop-filter, refraction
-concentrated at the rim; `glass-lens.ts`, no module needed), a genuine frosted blur
-via `expo-blur` on non-Chromium web, Android, and iOS < 26, and the layer's tint fill
-as a fallback when no material is available. Pass it the skin's shape style (it
+real native Liquid Glass via `expo-glass-effect` on iOS 26+, Dark Factory's plain frost
+on the web (the layer's tint, a 24px backdrop blur with no saturation shift and a 1px
+inset hairline; `glass-surface/web-frost.ts`, no module needed), a genuine frosted blur
+via `expo-blur` on Android and iOS < 26, and the layer's tint fill as a fallback when no
+material is available. Pass it the skin's shape style (it
 strips the fill and border and supplies the material) and its `layer`. Where the node
 that paints the surface also owns something else (a Pressable's tap, ripple and dim,
 a live region, a native TextInput), keep that node and render a `GlassPane` (the same
@@ -518,7 +518,7 @@ driver for pointer hover on iPad, with their values in `src/style/motion.ts` and
 change judged against the `df-hover-lift` card. The DF page look in the docs is static
 scaffolding (item 7); it never animates.
 
-Effects that remain judged by eye (the glass material and its lens, a gradient, a
+Effects that remain judged by eye (the glass material and its frost, a gradient, a
 new functional transition) still go through the global `tuning-harness` skill:
 record the reference first and write its card, harness for the inner loop, land the
 effect on the shipped surface (the docs page or app screen the user opens, in the
@@ -533,7 +533,7 @@ up to the removal are HISTORY of deleted code, its `## References` section keeps
 that work was judged against, and every row under a version 2 table names its
 `Surface` and its `Versus reference` verdict. `.tuning-harness.json` at the repo root
 (version 2) tells the global push gate which files are tunables (`src/style/motion.ts`
-and `src/style/glass-surface/glass-lens.ts`): a push whose newest tunable change has
+and `src/style/glass-surface/web-frost.ts`): a push whose newest tunable change has
 no evidence row in or after it is refused, and so is a row with an empty `Surface` or
 `Versus reference` cell or a `matches` written on a harness route. A pure refactor of
 those files with no visual change carries the commit trailer `Tuning-evidence:

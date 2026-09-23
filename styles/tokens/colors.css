@@ -64,20 +64,18 @@
   --delta-up:#0b7440;
   --delta-down:#9a1f2f;
 
-  /* Browser material handoff. Reading/content panes use static frost; functional
-     surfaces can use the lens where supported, with refraction at the rim.
-     Density does not select material or motion. `--glass-lens` requires the page's
-     #cds-glass-lens filter; `--glass-frost` supplies stable browser blur. Native
-     rendering resolves its own capabilities in src/style/glass-surface. */
-  --glass-tint:rgba(255,255,255,0.20);
-  /* One tint per LAYER: content panes, control pucks, and the dense lists/alerts. Why in tokens.ts. */
-  --glass-tint-content:rgba(255,255,255,0.62);--glass-tint-control:rgba(255,255,255,0.70);--glass-tint-dense:rgba(255,255,255,0.88);
-  --glass-blur:28px;
-  --glass-frost:blur(28px) saturate(190%) /* @kind other */;
-  --glass-lens:url(#cds-glass-lens) /* @kind other */;
-  --glass-illumination:radial-gradient(130% 130% at 50% 50%,rgba(255,255,255,0) 54%,rgba(255,255,255,0.14) 88%,rgba(255,255,255,0.30) 100%) /* @kind other */;
-  --glass-edge:rgba(255,255,255,0.62);
-  --glass-specular:inset 1.5px 1.5px 0 rgba(255,255,255,0.90),inset -1.5px -1.5px 0 rgba(255,255,255,0.30),inset 0 0 10px rgba(255,255,255,0.20),0 10px 34px rgba(0,0,0,0.15) /* @kind shadow */;
+  /* Browser material hand-off: Dark Factory's plain frost (src/style/glass-surface/
+     web-frost.ts). One tint per LAYER, a 24px backdrop blur with no saturation shift and a
+     1px inset hairline; no refraction, no specular highlight. --glass-lens and
+     --glass-illumination are deprecated aliases (the lens is gone), kept until a major. */
+  --glass-tint:rgba(255,255,255,0.52);
+  --glass-tint-content:rgba(255,255,255,0.72);--glass-tint-control:rgba(255,255,255,0.70);--glass-tint-dense:rgba(255,255,255,0.92);
+  --glass-blur:24px;
+  --glass-frost:blur(24px) /* @kind other */;
+  --glass-lens:var(--glass-frost) /* @kind other */;
+  --glass-illumination:none /* @kind other */;
+  --glass-edge:rgba(255,255,255,0.75);
+  --glass-specular:inset 0 0 0 1px var(--glass-edge) /* @kind shadow */;
   /* Scroll edge effect: content dissolves into the backdrop as it passes under a floating bar,
      which is what keeps the bar's labels legible over moving content. */
   --glass-scroll-edge:76px /* @kind shadow */;
@@ -124,12 +122,8 @@
   --panel-danger:#ff8b93;
   --delta-up:#5fd18a;
   --delta-down:#ffadb0;
-  /* Dark glass: less light behind it to bend, so the tint drops further and the rim carries more
-     of the read. Apple's dark material is dimmer, not brighter. */
-  --glass-tint:rgba(22,22,28,0.30);
-  --glass-tint-content:rgba(22,22,28,0.55);--glass-tint-control:rgba(255,255,255,0.12);--glass-tint-dense:rgba(22,22,28,0.84);
-  --glass-frost:blur(28px) saturate(200%) /* @kind other */;
-  --glass-illumination:radial-gradient(130% 130% at 50% 50%,rgba(255,255,255,0) 54%,rgba(255,255,255,0.05) 88%,rgba(255,255,255,0.13) 100%) /* @kind other */;
-  --glass-edge:rgba(255,255,255,0.20);
-  --glass-specular:inset 1.5px 1.5px 0 rgba(255,255,255,0.24),inset -1.5px -1.5px 0 rgba(255,255,255,0.07),inset 0 0 10px rgba(255,255,255,0.06),0 12px 38px rgba(0,0,0,0.50) /* @kind shadow */;
+  /* Dark frost: Dark Factory's near-clear shell (white 0.045) and deep card-coloured panes. */
+  --glass-tint:rgba(255,255,255,0.045);
+  --glass-tint-content:rgba(37,39,65,0.72);--glass-tint-control:rgba(255,255,255,0.06);--glass-tint-dense:rgba(37,39,65,0.92);
+  --glass-edge:rgba(255,255,255,0.08);
 }

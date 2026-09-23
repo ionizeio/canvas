@@ -4,7 +4,6 @@ import {
   alpha,
   useTheme,
   colorsByScheme,
-  glassByScheme,
   palette,
   statusHues,
   Swatch,
@@ -27,7 +26,7 @@ import { colorFormats } from "../../../ui/color";
 import { TokenH1, TokenLede, TokenSection, Callout, GradientFill } from "../../../ui/tokens-kit";
 
 // Every value on this page is read from the kit at render time (useTheme,
-// colorsByScheme, glassByScheme, palette). Nothing is restated here:
+// colorsByScheme, palette, the active glass tints). Nothing is restated here:
 // a hard-coded table is how this page used to end up publishing a five-color chart
 // palette the kit stopped shipping.
 
@@ -208,7 +207,7 @@ function samples(tokens: ColorTokens, keys: { key: keyof ColorTokens; name: stri
 }
 
 export default function ColorsScreen() {
-  const { tokens } = useTheme();
+  const { tokens, glass } = useTheme();
   // Two columns above md (768), by the kit's viewport bucket (desktop on the server).
   const wide = useResponsive({ base: true, md: false });
 
@@ -319,7 +318,7 @@ export default function ColorsScreen() {
         <TokenSection
           title="Glass"
           description="Glass is a theming-level surface mode, not a per-component prop: pass glass on the ThemeProvider and every surface takes the material together, layered, or solid to force the flat look; neither means the platform default."
-          anatomy={`Glass publishes its OWN fills instead of rewriting a semantic one, one per layer of the model: the functional shells paint glass-tint (${glassByScheme.light["glass-tint"]} in light, ${glassByScheme.dark["glass-tint"]} in dark), the content panes the denser glass-tint-content (${glassByScheme.light["glass-tint-content"]} / ${glassByScheme.dark["glass-tint-content"]}), the controls the bright glass-tint-control puck (${glassByScheme.light["glass-tint-control"]} / ${glassByScheme.dark["glass-tint-control"]}), and the read-and-act surfaces (menus, alert dialogs, toasts, tooltips) the densest glass-tint-dense (${glassByScheme.light["glass-tint-dense"]} / ${glassByScheme.dark["glass-tint-dense"]}). popover and card keep their opaque values in BOTH schemes, so solid mode is untouched and the fills stay independent; every surface takes its tint UNDER the real material.`}
+          anatomy={`Glass publishes its OWN fills instead of rewriting a semantic one, one per layer of the model, and each platform has its own set. Here, in the active scheme: the functional shells paint glass-tint (${glass["glass-tint"]}), the content panes the denser glass-tint-content (${glass["glass-tint-content"]}), the controls the glass-tint-control puck (${glass["glass-tint-control"]}), and the read-and-act surfaces (menus, alert dialogs, toasts, tooltips) the densest glass-tint-dense (${glass["glass-tint-dense"]}). The web's are Dark Factory's frost tints; iOS and Android keep their own (glassByScheme). popover and card keep their opaque values in BOTH schemes, so solid mode is untouched and the fills stay independent; every surface takes its tint UNDER the real material.`}
         >
           <Column cozy>
             {/* A live material sample: the bar floats over content, which is the only
@@ -364,7 +363,7 @@ export default function ColorsScreen() {
               Glass is layered. Navigation and overlays float in the sheer functional layer; the content panes beneath them take a denser tint so text keeps its contrast; the controls on those panes are bright pucks, brand-tinted where their fill is the brand; and the surfaces you read and act on (a menu, an alert, a toast) take the densest tint so nothing reads through their rows. Each layer bends the one beneath it.
             </Typography>
             <Typography tiny muted>
-              GlassSurface paints the real material per platform: Apple's Liquid Glass through expo-glass-effect on iOS 26+, a real lens on Chromium web (an SVG displacement filter that refracts the backdrop at the rim while the centre stays optically flat), a genuine frosted blur through expo-blur on non-Chromium web and Android, and the glass-tint fill above on its own as the final fallback. It is never a hand-painted blur on one component, and it never reaches into the semantic color set.
+              GlassSurface paints the real material per platform: Apple's Liquid Glass through expo-glass-effect on iOS 26+, Dark Factory's plain frost on the web (the layer's tint over a 24px backdrop blur, edged by a 1px hairline, with no refraction and no highlight), a genuine frosted blur through expo-blur on Android and older iOS, and the glass-tint fill above on its own as the final fallback. It is never a hand-painted blur on one component, and it never reaches into the semantic color set.
             </Typography>
             <Typography tiny muted>
               It only reads over something worth bending. Over a flat fill it renders flat, so a glass bar has to have content passing behind it.

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "bun:test";
+import { afterEach, describe, expect, it, spyOn } from "bun:test";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
@@ -19,9 +19,9 @@ import * as WebIdentity from "../src/atoms/avatar/avatar.tsx";
 import * as IOSIdentity from "../src/atoms/avatar/avatar.ios.tsx";
 import * as AndroidIdentity from "../src/atoms/avatar/avatar.android.tsx";
 import { Emblem } from "../src/atoms/emblem/emblem.tsx";
+import * as materialRuntime from "../src/style/glass-surface/material-runtime.ts";
+import { WEB_FROST } from "../src/style/glass-surface/web-frost.ts";
 
-const CHROME = "Mozilla/5.0 Chrome/126.0.0.0 Safari/537.36";
-const SAFARI = "Mozilla/5.0 Version/18.0 Safari/605.1.15";
 const restores: Array<() => void> = [];
 
 afterEach(() => {
@@ -29,28 +29,39 @@ afterEach(() => {
   restores.splice(0).reverse().forEach((restore) => restore());
 });
 
-function capabilities({ lens, frost }: { lens: boolean; frost: boolean }) {
-  const descriptor = Object.getOwnPropertyDescriptor(window.navigator, "userAgent");
-  Object.defineProperty(window.navigator, "userAgent", { configurable: true, value: lens ? CHROME : SAFARI });
+// The browser's one material question: does it render a CSS backdrop filter? The web's
+// only material is the frost, so a browser that answers no gets every solid skin.
+function browser({ frost }: { frost: boolean }) {
   const css = Object.getOwnPropertyDescriptor(globalThis, "CSS");
-  Object.defineProperty(globalThis, "CSS", {
-    configurable: true,
-    value: { supports: (_property: string, value: string) => value.startsWith("url(") ? lens : frost },
-  });
+  Object.defineProperty(globalThis, "CSS", { configurable: true, value: { supports: () => frost } });
   restores.push(() => {
     if (css) Object.defineProperty(globalThis, "CSS", css);
-    if (descriptor) Object.defineProperty(window.navigator, "userAgent", descriptor);
-    else delete (window.navigator as unknown as Record<string, unknown>).userAgent;
+    else delete (globalThis as unknown as Record<string, unknown>).CSS;
   });
 }
 
-const materials = (root: ParentNode) => [...root.querySelectorAll<HTMLElement>("[style]")]
-  .filter((node) => node.style.backdropFilter);
+// A platform that renders Liquid Glass but no frost: iOS 26 with expo-glass-effect and
+// without expo-blur. Only there do the two roles render differently: a surface that
+// asks for the liquid material keeps it while a static one falls to its solid skin. The
+// web never reports liquid (its one material is the frost), so the capability hook is
+// stubbed; the shells that choose each role are shared by every skin, so the web host
+// shows which surfaces asked for which.
+function liquidWithoutFrost() {
+  const spy = spyOn(materialRuntime, "useMaterialCapabilities").mockImplementation(
+    () => ({ platform: "ios", frost: false, liquid: true, requiresTarget: false }),
+  );
+  restores.push(() => spy.mockRestore());
+}
+
+// The material GlassBox paints behind a surface, found by its wrapper so a clear surface
+// (which frosts nothing) counts too, and the frost layer inside one, if it has any.
+const materials = (root: ParentNode) => [...root.querySelectorAll<HTMLElement>('[data-testid="glass-material"]')];
+const frostOf = (material: HTMLElement) => material.querySelector<HTMLElement>('[style*="backdrop-filter"]');
 const mode = (children: ReactNode, glass: boolean) => <ThemeProvider light glass={glass} solid={!glass}>{children}</ThemeProvider>;
 
 describe("atom surface roles and capability fallback", () => {
   it("uses liquid for web fields while native wells and metadata remain solid when frost is unavailable", () => {
-    capabilities({ lens: true, frost: false });
+    liquidWithoutFrost();
     render(mode(<>
       <Input label="Name" testID="name" />
       <InputIOS label="iOS name" testID="ios-name" />
@@ -70,28 +81,26 @@ describe("atom surface roles and capability fallback", () => {
     expect(screen.getByTestId("badge").style.backgroundColor).not.toBe("");
   });
 
-  it("keeps web fields clear and native appearance wells frosted on a frost-only browser", () => {
-    capabilities({ lens: false, frost: true });
+  it("keeps web fields clear and native appearance wells frosted where the browser renders the frost", () => {
+    browser({ frost: true });
     render(mode(<>
       <Input label="Name" testID="name" />
       <InputIOS label="iOS name" testID="ios-name" />
       <InputAndroid label="Android name" testID="android-name" />
     </>, true));
-    const blur = (id: string) => {
+    const material = (id: string) => {
       const painted = materials(screen.getByTestId(id).parentElement!);
       expect(painted).toHaveLength(1);
-      expect(painted[0].style.backdropFilter).toMatch(/^blur\(/);
-      expect(painted[0].style.backdropFilter).not.toContain("url(");
-      return Number(painted[0].style.backdropFilter.match(/^blur\(([\d.]+)/)![1]);
+      return painted[0];
     };
-    const clear = blur("name");
-    expect(clear).toBeGreaterThan(0);
-    expect(clear).toBeLessThan(blur("ios-name"));
-    expect(clear).toBeLessThan(blur("android-name"));
+    // The web field is clear: its material frosts nothing at all.
+    expect(frostOf(material("name"))).toBeNull();
+    // The native wells are static frost: Dark Factory's one blur, with no saturation shift.
+    for (const id of ["ios-name", "android-name"]) expect(frostOf(material(id))?.style.backdropFilter).toBe(`blur(${WEB_FROST.blur}px)`);
   });
 
   it("preserves complete solid fill and boundaries when no material can render", () => {
-    capabilities({ lens: false, frost: false });
+    browser({ frost: false });
     const children = <>
       <Button destructive testID="button">Delete</Button>
       <Badge testID="badge">Member</Badge>
@@ -116,7 +125,7 @@ describe("atom surface roles and capability fallback", () => {
   });
 
   it("keeps outline metadata unfilled while selected outline chips gain their selected surface", () => {
-    capabilities({ lens: true, frost: true });
+    browser({ frost: true });
     render(mode(<>
       <Badge outline testID="badge">Version</Badge>
       <Chip outline testID="chip">Topic</Chip>
@@ -132,7 +141,7 @@ describe("atom surface roles and capability fallback", () => {
   });
 
   it("does not make removable metadata liquid solely because it has a remove action", () => {
-    capabilities({ lens: true, frost: false });
+    liquidWithoutFrost();
     render(mode(<>
       <Chip testID="metadata" onRemove={() => {}}>Design</Chip>
       <Chip testID="action" selectable>Filter</Chip>
@@ -146,7 +155,7 @@ describe("atom surface roles and capability fallback", () => {
 describe("identity material ownership", () => {
   for (const [platform, { Avatar, AvatarGroup, AvatarMenu }] of [["web", WebIdentity], ["ios", IOSIdentity], ["android", AndroidIdentity]] as const) {
     it(`${platform} keeps identity static and reserves liquid material for the account capsule`, () => {
-      capabilities({ lens: true, frost: false });
+      liquidWithoutFrost();
       render(mode(<>
         <Avatar name="Rachel Chen" onPress={() => {}} testID="identity" />
         <AvatarGroup max={0} total={4} testID="group" />
@@ -159,7 +168,7 @@ describe("identity material ownership", () => {
     });
 
     it(`${platform} paints static identity frost and leaves photo pixels untouched`, () => {
-      capabilities({ lens: true, frost: true });
+      browser({ frost: true });
       render(mode(<>
         <Avatar name="Rachel Chen" testID="identity" />
         <AvatarGroup max={0} total={4} testID="group" />
@@ -167,9 +176,9 @@ describe("identity material ownership", () => {
         <Avatar name="Photo" src="https://example.test/avatar.png" testID="photo" />
       </>, true));
       for (const id of ["identity", "group", "emblem"]) {
-        const layers = materials(screen.getByTestId(id));
-        expect(layers).toHaveLength(1);
-        expect(layers[0].style.backdropFilter).toMatch(/^blur\(/);
+        const painted = materials(screen.getByTestId(id));
+        expect(painted).toHaveLength(1);
+        expect(frostOf(painted[0])?.style.backdropFilter).toBe(`blur(${WEB_FROST.blur}px)`);
       }
       expect(materials(screen.getByTestId("photo"))).toHaveLength(0);
       expect(screen.getByLabelText("Photo")).toBeDefined();
@@ -179,7 +188,7 @@ describe("identity material ownership", () => {
 
 describe("live editing survives material mode changes", () => {
   it("keeps the focused segment and uncontrolled selection when material changes both ways", () => {
-    capabilities({ lens: true, frost: true });
+    browser({ frost: true });
     const control = <ButtonGroup items={["Day", "Week", "Month"]} />;
     const result = render(mode(control, false));
     fireEvent.click(screen.getByRole("tab", { name: "Week" }));
@@ -195,7 +204,7 @@ describe("live editing survives material mode changes", () => {
   for (const kind of ["input", "textarea"] as const) {
     for (const labeled of [false, true]) {
       it(`${kind} keeps its host, focus, value and selection in both directions${labeled ? " with a label" : ""}`, () => {
-        capabilities({ lens: true, frost: true });
+        browser({ frost: true });
         const props = { label: labeled ? "Draft" : undefined, accessibilityLabel: "Draft", defaultValue: "initial", testID: "draft" };
         const field = kind === "input" ? <Input {...props} /> : <Textarea {...props} showCount />;
         const result = render(mode(field, false));

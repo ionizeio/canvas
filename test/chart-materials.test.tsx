@@ -10,6 +10,8 @@ import {
   Treemap, UptimeBar, WaterfallChart,
 } from "../src/charts/index.ts";
 import { ChartValueFlag } from "../src/charts/shared/chart-inspect.tsx";
+import * as materialRuntime from "../src/style/glass-surface/material-runtime.ts";
+import { WEB_FROST } from "../src/style/glass-surface/web-frost.ts";
 
 // These tests verify material ownership, fallback and state wiring in RNW.
 // SVG is stubbed by the harness; screenshots and native runs verify rendered ink.
@@ -19,22 +21,34 @@ afterEach(() => {
   restores.splice(0).reverse().forEach((restore) => restore());
 });
 
-function capabilities(frost: boolean, lens = true) {
-  const ua = Object.getOwnPropertyDescriptor(window.navigator, "userAgent");
+// The browser's one material question: does it render a CSS backdrop filter? The web's
+// only material is the frost, so a browser that answers no gets every solid skin.
+function browser(frost: boolean) {
   const css = Object.getOwnPropertyDescriptor(globalThis, "CSS");
-  Object.defineProperty(window.navigator, "userAgent", { configurable: true, value: "Mozilla/5.0 Chrome/126.0.0.0 Safari/537.36" });
-  Object.defineProperty(globalThis, "CSS", { configurable: true, value: {
-    supports: (_property: string, value: string) => value.startsWith("url(") ? lens : frost,
-  } });
+  Object.defineProperty(globalThis, "CSS", { configurable: true, value: { supports: () => frost } });
   restores.push(() => {
-    if (ua) Object.defineProperty(window.navigator, "userAgent", ua);
-    else delete (window.navigator as unknown as Record<string, unknown>).userAgent;
     if (css) Object.defineProperty(globalThis, "CSS", css);
     else delete (globalThis as unknown as Record<string, unknown>).CSS;
   });
 }
 
-const materials = (root: ParentNode) => [...root.querySelectorAll<HTMLElement>("[style]")].filter((node) => node.style.backdropFilter);
+// A platform that renders Liquid Glass but no frost: iOS 26 with expo-glass-effect and
+// without expo-blur. Only there do the two roles render differently: a surface that
+// asks for the liquid material keeps it while a static one falls to its solid skin. The
+// web never reports liquid (its one material is the frost), so the capability hook is
+// stubbed; the shells that choose each role are shared by every skin, so the web host
+// shows which surfaces asked for which.
+function liquidWithoutFrost() {
+  const spy = spyOn(materialRuntime, "useMaterialCapabilities").mockImplementation(
+    () => ({ platform: "ios", frost: false, liquid: true, requiresTarget: false }),
+  );
+  restores.push(() => spy.mockRestore());
+}
+
+// The material GlassBox paints behind a surface, found by its wrapper so a clear surface
+// (which frosts nothing) counts too, and the frost layer inside one, if it has any.
+const materials = (root: ParentNode) => [...root.querySelectorAll<HTMLElement>('[data-testid="glass-material"]')];
+const frostOf = (material: HTMLElement) => material.querySelector<HTMLElement>('[style*="backdrop-filter"]');
 const ui = (child: ReactElement, glass: boolean, dark = false) => <ThemeProvider glass={glass} solid={!glass} dark={dark} light={!dark}>{child}</ThemeProvider>;
 const series = [{ label: "Requests", values: [4, 7, 5] }];
 const labels = ["Mon", "Tue", "Wed"];
@@ -77,7 +91,7 @@ function solidStyle(node: HTMLElement) {
 
 for (const [name, chart] of Object.entries(framed)) {
   it(`${name} uses one stable frame and restores its complete opaque skin`, () => {
-    capabilities(true);
+    browser(true);
     const child = cloneElement(chart, { testID: "chart" });
     const result = render(ui(child, false));
     const host = screen.getByTestId("chart");
@@ -87,7 +101,7 @@ for (const [name, chart] of Object.entries(framed)) {
     result.rerender(ui(child, true));
     expect(screen.getByTestId("chart")).toBe(host);
     expect(materials(host)).toHaveLength(1);
-    expect(materials(host)[0].style.backdropFilter).toMatch(/^blur\(/);
+    expect(frostOf(materials(host)[0])?.style.backdropFilter).toBe(`blur(${WEB_FROST.blur}px)`);
     expect(dataNames()).toEqual(names);
     result.rerender(ui(child, false));
     expect(materials(host)).toHaveLength(0);
@@ -98,15 +112,15 @@ for (const [name, chart] of Object.entries(framed)) {
 
 for (const [name, chart] of Object.entries(intrinsic)) {
   it(`${name} retains its intrinsic unframed anatomy in glass mode`, () => {
-    capabilities(true);
+    browser(true);
     const result = render(ui(chart, true));
     expect(materials(result.container)).toHaveLength(0);
   });
 }
 
 describe("chart capability, accessibility and plain variants", () => {
-  it("restores every static frame when the browser supports liquid refraction but no frost", () => {
-    capabilities(false);
+  it("restores every static frame where Liquid Glass renders but no frost", () => {
+    liquidWithoutFrost();
     for (const dark of [false, true]) {
       for (const chart of Object.values(framed)) {
         const child = cloneElement(chart, { testID: "chart" });
@@ -123,7 +137,7 @@ describe("chart capability, accessibility and plain variants", () => {
   });
 
   it("preserves unpainted plain compositions without a hidden material pane", () => {
-    capabilities(true);
+    browser(true);
     for (const chart of [framed.BarList, framed.MetricBreakdown, framed.ServiceHealthList]) {
       const child = cloneElement(chart, { testID: "chart", plain: true });
       const result = render(ui(child, false));
@@ -137,7 +151,7 @@ describe("chart capability, accessibility and plain variants", () => {
 
   for (const preference of ["prefers-contrast", "prefers-reduced-transparency"]) {
     it(`uses a solid chart and flag under ${preference}`, () => {
-      capabilities(true);
+      browser(true);
       const media = spyOn(window, "matchMedia").mockImplementation((query) => ({
         matches: query.includes(preference), addEventListener() {}, removeEventListener() {},
       }) as unknown as MediaQueryList);
@@ -151,7 +165,7 @@ describe("chart capability, accessibility and plain variants", () => {
 });
 
 it("shares inspection material without changing a flag's positioning or value", () => {
-  capabilities(true);
+  browser(true);
   const child = <ChartValueFlag title="Tuesday" rows={[{ value: "7" }]} x={50} plotW={300} />;
   const result = render(ui(child, false));
   const host = screen.getByText("Tuesday").parentElement!;
@@ -166,7 +180,7 @@ it("shares inspection material without changing a flag's positioning or value", 
 });
 
 it("keeps Heatmap inspection selection and scrolling in both material directions", () => {
-  capabilities(true);
+  browser(true);
   const child = <Heatmap testID="heatmap" calendar values={[{ value: 0.8, count: 9, date: "2026-09-16" }]} />;
   const result = render(ui(child, false));
   const root = screen.getByTestId("heatmap");
@@ -187,7 +201,7 @@ it("keeps Heatmap inspection selection and scrolling in both material directions
 });
 
 it("keeps a selected Chart datum while switching appearance both ways", () => {
-  capabilities(true);
+  browser(true);
   const child = <Chart testID="chart" labels={labels} series={series} defaultSelected={1} />;
   const result = render(ui(child, false));
   for (const glass of [true, false, true]) {
@@ -198,7 +212,7 @@ it("keeps a selected Chart datum while switching appearance both ways", () => {
 });
 
 it("places MetricBreakdown latest value outside the plot without an opaque patch", () => {
-  capabilities(true);
+  browser(true);
   const result = render(ui(<MetricBreakdown value="16" label="Requests" spark={[4, 7, 5]} sparkUnit="req/s" />, true));
   const caption = screen.getByText("5 req/s").parentElement!;
   expect(caption.style.position).not.toBe("absolute");

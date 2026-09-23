@@ -16,6 +16,10 @@ afterEach(() => {
   else Reflect.deleteProperty(globalThis, "CSS");
 });
 
+// The material GlassBox paints behind the editor. A clear editor draws one with no frost
+// in it: Dark Factory draws its fields as an unblurred translucent fill.
+const materials = (root: ParentNode | null | undefined) => [...(root?.querySelectorAll<HTMLElement>('[data-testid="glass-material"]') ?? [])];
+
 function expectEditor(field: HTMLInputElement, current: HTMLElement, value: string) {
   expect(current).toBe(field);
   expect(document.activeElement).toBe(field);
@@ -41,7 +45,9 @@ describe("DataTable clear editor material", () => {
       for (const glass of [true, false, true]) {
         result.rerender(tree(glass));
         expectEditor(field, result.getByRole("textbox", { name: "Edit Name for Ada" }), "Ada Lovelace");
-        expect(field.parentElement?.querySelectorAll('[style*="backdrop-filter"]').length).toBe(glass ? 1 : 0);
+        const painted = materials(field.parentElement);
+        expect(painted).toHaveLength(glass ? 1 : 0);
+        for (const material of painted) expect(material.querySelector('[style*="backdrop-filter"]')).toBeNull();
         expect(commits).toEqual([]);
       }
       if (rowEditing) {
@@ -65,7 +71,7 @@ describe("DataTable clear editor material", () => {
       </ThemeProvider>);
       fireEvent.click(result.getByText("Ada"));
       const field = result.getByRole("textbox", { name: "Edit Name for Ada" });
-      expect(field.parentElement?.querySelector('[style*="backdrop-filter"]')).toBeNull();
+      expect(materials(field.parentElement)).toHaveLength(0);
       expect(field.parentElement?.getAttribute("role")).toBe("cell");
     });
   }

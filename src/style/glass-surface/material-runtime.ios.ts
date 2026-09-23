@@ -23,7 +23,7 @@ try {
 } catch { /* Optional peer absent. */ }
 
 export function materialCapabilities(): MaterialCapabilities {
-  return { platform: "ios", frost: FrostView !== undefined, liquid: LiquidView !== undefined && liquidGlassAvailable(), lens: false, requiresTarget: false };
+  return { platform: "ios", frost: FrostView !== undefined, liquid: LiquidView !== undefined && liquidGlassAvailable(), requiresTarget: false };
 }
 
 /** Native never hydrates server markup, so the hook is the plain read; it exists so shared callers have one name. */

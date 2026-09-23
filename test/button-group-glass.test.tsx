@@ -9,8 +9,9 @@ import { layoutElement, layoutEntrance } from "./entrance-layout.ts";
 afterEach(cleanup);
 
 const items = ["Day", "Week", "Month"];
-const materialLayers = (root: HTMLElement) => [...root.querySelectorAll<HTMLElement>("[style]")]
-  .filter((node) => node.style.backdropFilter);
+// The material GlassBox paints behind a surface, found by its wrapper so a clear surface
+// (which frosts nothing) counts too.
+const materialLayers = (root: HTMLElement) => [...root.querySelectorAll<HTMLElement>('[data-testid="glass-material"]')];
 
 describe("ButtonGroup theme material", () => {
   for (const [platform, Group] of [["web", WebGroup], ["ios", IOSGroup], ["android", AndroidGroup]] as const) {
@@ -18,16 +19,11 @@ describe("ButtonGroup theme material", () => {
       it(`${platform} ${kind} switches the material on and off with the theme`, async () => {
         // Exercise the actual shared renderer, without mocking GlassSurface. Native
         // entrypoints here check skin integration; device QA checks native materials.
-        Object.defineProperty(window.navigator, "userAgent", { configurable: true, value: "Mozilla/5.0 Chrome/126.0.0.0 Safari/537.36" });
-        try {
-          const group = <Group {...{ [kind]: true }} items={items} testID="group" />;
-          const { rerender } = render(<ThemeProvider glass>{group}</ThemeProvider>);
-          await waitFor(() => expect(materialLayers(screen.getByTestId("group")).length).toBeGreaterThan(0));
-          rerender(<ThemeProvider solid>{group}</ThemeProvider>);
-          expect(materialLayers(screen.getByTestId("group"))).toHaveLength(0);
-        } finally {
-          delete (window.navigator as unknown as Record<string, unknown>).userAgent;
-        }
+        const group = <Group {...{ [kind]: true }} items={items} testID="group" />;
+        const { rerender } = render(<ThemeProvider glass>{group}</ThemeProvider>);
+        await waitFor(() => expect(materialLayers(screen.getByTestId("group")).length).toBeGreaterThan(0));
+        rerender(<ThemeProvider solid>{group}</ThemeProvider>);
+        expect(materialLayers(screen.getByTestId("group"))).toHaveLength(0);
       });
     }
 

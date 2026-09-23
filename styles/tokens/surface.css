@@ -26,15 +26,13 @@
    glass per instance either: there is no per-component `glass` prop, in the CSS
    or in the kit.
 
-   The material itself (`--glass-tint*`, `--glass-lens`, `--glass-frost`,
-   `--glass-specular`) lives in colors.css. This file only decides WHEN it is on,
-   and gives the page a backdrop worth bending: over a flat fill a lens renders
-   flat. */
+   The material itself (`--glass-tint*`, `--glass-frost`, `--glass-specular`) lives in
+   colors.css. This file only decides WHEN it is on. The page behind the frost is the
+   app's own: `--surface-backdrop` is a deprecated alias, now `none`, since the kit
+   ships no page backdrop (the Dark Factory direction keeps page looks in the app). */
 [data-surface="glass"]{
   --surface-mode:glass /* @kind other */;
-  /* The aurora the frosted panes refract, the brand orb wash. Never behind
-     text-bearing UI on its own. */
-  --surface-backdrop:radial-gradient(95% 55% at 8% -6%,var(--orb-indigo),transparent 70%),radial-gradient(85% 50% at 96% 4%,var(--orb-violet),transparent 68%),radial-gradient(120% 65% at 60% 106%,var(--orb-cyan),transparent 72%) /* @kind other */;
+  --surface-backdrop:none /* @kind other */;
 }
 [data-surface="glass"] body,body[data-surface="glass"]{
   background-image:var(--surface-backdrop);background-attachment:fixed;
@@ -45,8 +43,8 @@
 
    Pointing every `--glass-tint*` at an opaque token is what turns the material
    OFF here: the functional and dense layers read the opaque `--popover`, the
-   content and control layers the opaque `--card`, so with the lens and the frost
-   set to none each glass pane collapses to a flat, fully opaque card, the web
+   content and control layers the opaque `--card`, so with the frost set to none
+   each glass pane collapses to a flat, fully opaque card, the web
    counterpart of the accessibility rungs GlassSurface applies natively
    (src/style/glass-surface). While glass swapped `--popover` translucent, this
    line resolved to that translucent value and the "reduce transparency" panel

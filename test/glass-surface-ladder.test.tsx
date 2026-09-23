@@ -2,7 +2,8 @@ import { describe, it, expect, afterEach, spyOn } from "bun:test";
 import { render, cleanup, waitFor, screen } from "@testing-library/react";
 import { Text } from "react-native";
 import { ThemeProvider, useTheme } from "../src/style/theme.tsx";
-import { glassByScheme, lightColors, darkColors } from "../src/style/tokens.ts";
+import { lightColors, darkColors } from "../src/style/tokens.ts";
+import { WEB_TINTS } from "../src/style/glass-surface/web-frost.ts";
 import { GlassSurface } from "../src/style/glass-surface/glass-surface.tsx";
 import { GlassSurface as IOSGlassSurface } from "../src/style/glass-surface/glass-surface.ios.tsx";
 import { GlassBox } from "../src/style/glass-surface/glass-surface.shared.tsx";
@@ -15,7 +16,8 @@ import { GlassBox } from "../src/style/glass-surface/glass-surface.shared.tsx";
 //
 // Also pinned here: what the ThemeProvider actually resolves. The surface mode changes no
 // semantic token at all now (`popover` is opaque in every mode); it selects the mode and
-// publishes the glass material's own tokens, and GlassSurface applies the ladder.
+// publishes the glass material's own tokens (on the web, the web frost's tints in
+// web-frost.ts), and GlassSurface applies the ladder.
 
 afterEach(cleanup);
 
@@ -45,7 +47,7 @@ describe("GlassSurface accessibility landmarks", () => {
           expect(node.style.borderWidth).toBe(increasedContrast ? "1px" : "");
           expect(node.style.opacity).toBe("");
           expect(node.children).toHaveLength(1);
-          expect(node.outerHTML).not.toMatch(/ff00ff|255, ?0, ?255|backdrop-filter|isinteractive|sheer|tint=/i);
+          expect(node.outerHTML).not.toMatch(/ff00ff|255, ?0, ?255|backdrop-filter|glass-material|isinteractive|sheer|tint=/i);
         } finally {
           spy.mockRestore();
         }
@@ -93,18 +95,18 @@ describe("glass and the semantic tokens", () => {
       </ThemeProvider>,
     );
     await waitFor(() =>
-      expect(screen.getByText(`glass|popover:${lightColors.popover}|tint:${glassByScheme.light["glass-tint"]}|rt:false|ic:false`)).toBeDefined(),
+      expect(screen.getByText(`glass|popover:${lightColors.popover}|tint:${WEB_TINTS.light["glass-tint"]}|rt:false|ic:false`)).toBeDefined(),
     );
   });
 
-  it("resolves the dark material's dimmer tint, with popover still opaque", async () => {
+  it("resolves the dark material's own tint, with popover still opaque", async () => {
     render(
       <ThemeProvider dark glass>
         <SurfaceProbe />
       </ThemeProvider>,
     );
     await waitFor(() =>
-      expect(screen.getByText(`glass|popover:${darkColors.popover}|tint:${glassByScheme.dark["glass-tint"]}|rt:false|ic:false`)).toBeDefined(),
+      expect(screen.getByText(`glass|popover:${darkColors.popover}|tint:${WEB_TINTS.dark["glass-tint"]}|rt:false|ic:false`)).toBeDefined(),
     );
   });
 
@@ -210,10 +212,11 @@ describe("GlassSurface reduce-transparency rung", () => {
         const style = node.getAttribute("style") ?? "";
         // The solid light popover (#ffffff), at full alpha.
         expect(style).toMatch(/background-color: rgba?\(255, ?255, ?255(, ?1(\.0+)?)?\)/);
-        // And no glass tint anywhere: the rung returns PlainSurface, so the material's
-        // under-fill layer is never rendered at all. (react-native-web writes an rgba
-        // color verbatim, so the token's own string is the substring to look for.)
-        expect(node.outerHTML).not.toContain(glassByScheme.light["glass-tint"]);
+        // And no glass material anywhere: the rung returns PlainSurface, so the material
+        // and its under-fill layer are never rendered at all. (The web's functional tint
+        // has a two-decimal alpha, so react-native-web prints the token's own string.)
+        expect(node.querySelector('[data-testid="glass-material"]')).toBeNull();
+        expect(node.outerHTML).not.toContain(WEB_TINTS.light["glass-tint"]);
       });
     } finally {
       spy.mockRestore();

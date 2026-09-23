@@ -21,7 +21,6 @@ export function materialCapabilities(): MaterialCapabilities {
   return {
     platform: "android",
     frost: nativeCaptureAvailable || FrostView !== undefined,
-    lens: false,
     liquid: false,
     requiresTarget: nativeCaptureAvailable || requiresBlurTarget,
   };

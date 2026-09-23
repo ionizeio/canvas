@@ -1,6 +1,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { brandColors, darkColors, glassByScheme, lightColors, palette } from "../src/style/tokens.ts";
+import { WEB_TINTS } from "../src/style/glass-surface/web-frost.ts";
 // The oklch conversion and the block parser moved to tools/tokens so the design-rule
 // tests and the DESIGN.md generator can read the hand-off with the same parser this
 // script trusts. Nothing can import from HERE: the checks below run at import time.
@@ -91,8 +92,9 @@ if (brandMissingInCss.length) {
 // And for the GLASS MATERIAL family. The material owns its fill (`glass-tint`) instead of
 // borrowing the semantic `popover` token, which is what let a change to menu opacity drag
 // the bars along with it. Its keys ARE the CSS names, so a name here with no `--name` in
-// the CSS would mean the web surface renders its glass from a token the native material
-// never sees.
+// the CSS would mean the web surface renders its glass from a token the kit never sees.
+// The CSS is the WEB hand-off, so its values are the web frost's tints (web-frost.ts);
+// the native set (glassByScheme) shares the keys and keeps its own values.
 const glassKeys = Object.keys(glassByScheme.light) as (keyof typeof glassByScheme.light)[];
 const glassMissingInCss = glassKeys.filter((k) => !cssValueTokens.has(k)).sort();
 if (glassMissingInCss.length) {
@@ -167,7 +169,7 @@ for (const [scheme, css] of [
   for (const key of glassKeys) {
     const raw = css[key];
     if (raw === undefined) continue; // the name check above already reports this
-    const jsValue = glassByScheme[scheme][key];
+    const jsValue = WEB_TINTS[scheme][key];
     const cssRgba = cssRgbaToCanonical(raw);
     const jsRgba = cssRgbaToCanonical(jsValue);
     if (cssRgba === null || jsRgba === null) {

@@ -238,11 +238,11 @@ export const colorsByScheme: Record<ColorScheme, ColorTokens> = {
  * foreground, boundary and elevation; layout and semantic state must survive.
  *
  * Keys are the CSS custom-property names verbatim (`glass-tint` is `--glass-tint` in
- * styles/tokens/colors.css, the WEB hand-off these values are read from, never
- * invented here); scripts/validate-tokens.ts fails the build when a key has no
- * matching `--name` in the shipped CSS or its value drifts from it. Values are rgba
- * so they compose over whatever sits behind the surface, on native and on
- * react-native-web.
+ * styles/tokens/colors.css). The CSS hand-off carries the WEB frost's tints, Dark
+ * Factory's (src/style/glass-surface/web-frost.ts), and scripts/validate-tokens.ts
+ * holds the two together. `glassByScheme` below is the NATIVE set: iOS Liquid Glass and
+ * frost and the Android blur read it, unchanged since the web took Dark Factory's frost.
+ * Values are rgba so they compose over whatever sits behind the surface.
  */
 export interface GlassTokens {
   /** The functional layer's under-fill (bars, sheets, popovers, dialogs). */
@@ -274,6 +274,11 @@ export const darkGlass: GlassTokens = {
   "glass-tint-dense": "rgba(22, 22, 28, 0.84)",
 };
 
+/**
+ * The native glass tints per scheme (iOS Liquid Glass and frost, the Android blur). The
+ * web's are Dark Factory's frost tints; read the active platform's through
+ * `useTheme().glass`.
+ */
 export const glassByScheme: Record<ColorScheme, GlassTokens> = {
   light: lightGlass,
   dark: darkGlass,

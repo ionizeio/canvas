@@ -2,7 +2,6 @@ import type { ComponentType } from "react";
 import type { StyleProp, ViewStyle } from "react-native";
 import { Platform } from "react-native";
 import type { MaterialCapabilities } from "./material-resolution.js";
-import { glassLensRenderable } from "./glass-lens.js";
 import { useHydrated } from "../use-hydrated.js";
 
 export interface FrostProps {
@@ -43,7 +42,7 @@ try {
   requiresBlurTarget = mod.BlurTargetView !== undefined;
 } catch { /* Optional peer absent: preserve the complete solid skin. */ }
 
-/** Browser frost uses the same RN style handoff as the existing shared lens. */
+/** Whether the browser renders a CSS backdrop filter, the one thing the web frost needs. */
 export function backdropFrostSupported(): boolean {
   return typeof CSS !== "undefined" && typeof CSS.supports === "function"
     && (CSS.supports("backdrop-filter", "blur(1px)") || CSS.supports("-webkit-backdrop-filter", "blur(1px)"));
@@ -51,24 +50,22 @@ export function backdropFrostSupported(): boolean {
 
 // This file is the web runtime, and the fallback for any platform without its own
 // (material-runtime.ios.ts and material-runtime.android.ts are the native ones): the
-// browser frosts through a CSS backdrop filter, the Chromium lens where the engine
-// renders it, and another platform through expo-blur's frost when installed.
+// browser frosts through a CSS backdrop filter, and another platform through
+// expo-blur's frost when installed.
 export function materialCapabilities(): MaterialCapabilities {
   const web = Platform.OS === "web";
   return {
     platform: web ? "web" : "other",
     frost: web ? backdropFrostSupported() : FrostView !== undefined,
-    lens: web && glassLensRenderable(),
     liquid: false,
     requiresTarget: false,
   };
 }
 
-// What a server assumes about the browser it is rendering for: frost, never the
-// lens. Frost is one `backdrop-filter` blur, which every evergreen engine renders,
-// and where an engine does not the markup still degrades to the layer's tint fill.
-// The lens is Chromium-only and needs a user agent to say so, which a server never has.
-const SERVER_WEB_CAPABILITIES: MaterialCapabilities = { platform: "web", frost: true, lens: false, liquid: false, requiresTarget: false };
+// What a server assumes about the browser it is rendering for: frost. It is one
+// `backdrop-filter` blur, which every evergreen engine renders, and where an engine does
+// not the markup still degrades to the layer's tint fill.
+const SERVER_WEB_CAPABILITIES: MaterialCapabilities = { platform: "web", frost: true, liquid: false, requiresTarget: false };
 
 /**
  * The capabilities a surface renders with, safe to read during render on every

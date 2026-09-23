@@ -8,6 +8,7 @@ import * as badgeSkins from "../src/atoms/badge/badge.styles.ts";
 import { createAlert } from "../src/molecules/alert/alert.shared.tsx";
 import * as alertSkins from "../src/molecules/alert/alert.styles.ts";
 import { colorsByScheme, glassByScheme, palette, type ColorTokens } from "../src/style/tokens.ts";
+import { WEB_TINTS } from "../src/style/glass-surface/web-frost.ts";
 import { androidSkin, iosSkin, webSkin } from "../src/atoms/button/button.styles.ts";
 import { blockDeclarations, cssColorToHex, stripComments } from "../tools/tokens/css-tokens.ts";
 import * as actionSheetSkins from "../src/organisms/action-sheet/action-sheet.styles.ts";
@@ -333,16 +334,17 @@ for (const scheme of ["light", "dark"] as const) {
 }
 
 
+// Each platform's glass tints: the web frost's own (web-frost.ts) and the native set.
 const dialogPlatforms = [
-  { name: "web", Component: Dialog, skin: dialogSkins.webSkin },
-  { name: "ios", Component: IOSDialog, skin: dialogSkins.iosSkin },
-  { name: "android", Component: AndroidDialog, skin: dialogSkins.androidSkin },
+  { name: "web", Component: Dialog, skin: dialogSkins.webSkin, glass: WEB_TINTS },
+  { name: "ios", Component: IOSDialog, skin: dialogSkins.iosSkin, glass: glassByScheme },
+  { name: "android", Component: AndroidDialog, skin: dialogSkins.androidSkin, glass: glassByScheme },
 ];
 
 describe("Dialog message contrast", () => {
   for (const scheme of ["light", "dark"] as const) for (const surface of ["solid", "glass"] as const) {
     const tokens = colorsByScheme[scheme];
-    for (const { name, Component, skin } of dialogPlatforms) {
+    for (const { name, Component, skin, glass } of dialogPlatforms) {
       it(`keeps actual ${scheme} ${surface} ${name} description and currency readable`, () => {
         render(<ThemeProvider scheme={scheme} surface={surface}>
           <Component open title="Refund payment" description="Refund the duplicate payment." withBody />
@@ -361,7 +363,7 @@ describe("Dialog message contrast", () => {
             // This is a tint-over-scrim model from the source tokens, not native
             // glass luminance. Device pixel acceptance validates the material.
             const background = surface === "glass"
-              ? composite(glassByScheme[scheme]["glass-tint"], composite(skin.backdrop(tokens).backgroundColor as string, tokens[underlying]))
+              ? composite(glass[scheme]["glass-tint"], composite(skin.backdrop(tokens).backgroundColor as string, tokens[underlying]))
               : rgba(skin.card(tokens).backgroundColor as string);
             expect(textContrast(rendered, background)).toBeGreaterThanOrEqual(4.5);
             if (scheme === "light" && surface === "glass") {
@@ -382,15 +384,15 @@ describe("Dialog message contrast", () => {
 
 
 const actionSheetPlatforms = [
-  { name: "web", Component: ActionSheet, skin: actionSheetSkins.webSkin },
-  { name: "ios", Component: IOSActionSheet, skin: actionSheetSkins.iosSkin },
-  { name: "android", Component: AndroidActionSheet, skin: actionSheetSkins.androidSkin },
+  { name: "web", Component: ActionSheet, skin: actionSheetSkins.webSkin, glass: WEB_TINTS },
+  { name: "ios", Component: IOSActionSheet, skin: actionSheetSkins.iosSkin, glass: glassByScheme },
+  { name: "android", Component: AndroidActionSheet, skin: actionSheetSkins.androidSkin, glass: glassByScheme },
 ];
 
 describe("ActionSheet message contrast", () => {
   for (const scheme of ["light", "dark"] as const) for (const surface of ["solid", "glass"] as const) {
     const tokens = colorsByScheme[scheme];
-    for (const { name, Component, skin } of actionSheetPlatforms) {
+    for (const { name, Component, skin, glass } of actionSheetPlatforms) {
       it(`keeps actual ${scheme} ${surface} ${name} header colors readable and preserves curated alpha`, () => {
         render(<ThemeProvider scheme={scheme} surface={surface}>
           <Component open title="Share document" message="Choose how to share this document." actions={[{ label: "Copy link", onPress: () => {} }]} />
@@ -413,7 +415,7 @@ describe("ActionSheet message contrast", () => {
             // Model the settled source scrim and tint, without claiming that a
             // native blur or Liquid Glass surface has this exact luminance.
             const background = surface === "glass"
-              ? composite(glassByScheme[scheme]["glass-tint"], composite(scrim, tokens[underlying]))
+              ? composite(glass[scheme]["glass-tint"], composite(scrim, tokens[underlying]))
               : rgba(skin.actionsCard(tokens).backgroundColor as string);
             expect(textContrast(rendered, background)).toBeGreaterThanOrEqual(4.5);
             if (promoted) expect(textContrast(original.color as string, background)).toBeLessThan(4.5);

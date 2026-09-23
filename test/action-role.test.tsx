@@ -84,23 +84,13 @@ describe("the action role", () => {
   });
 
   it("tints a glass primary puck with the action fill", async () => {
-    const restore = (() => {
-      Object.defineProperty(window.navigator, "userAgent", {
-        value: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
-        configurable: true,
-      });
-      return () => { delete (window.navigator as unknown as Record<string, unknown>)["userAgent"]; };
-    })();
-    try {
-      const { container } = render(<ThemeProvider light glass tokens={{ action: "#21804b", "action-foreground": "#ffffff" }}><Button primary testID="go">Go</Button></ThemeProvider>);
-      await waitFor(() => expect(container.querySelectorAll("[style*='backdrop-filter']").length).toBeGreaterThan(0));
-      const button = container.querySelector('[data-testid="go"]') as HTMLElement;
-      const lens = button.querySelector("[style*='backdrop-filter']") as HTMLElement;
-      const fill = (lens.nextElementSibling as HTMLElement | null)?.style.backgroundColor ?? "";
-      expect(rgb(fill)).toBe(rgb(brandTint("#21804b", lightColors.background)));
-    } finally {
-      restore();
-    }
+    const { container } = render(<ThemeProvider light glass tokens={{ action: "#21804b", "action-foreground": "#ffffff" }}><Button primary testID="go">Go</Button></ThemeProvider>);
+    await waitFor(() => expect(container.querySelectorAll('[data-testid="glass-material"]').length).toBeGreaterThan(0));
+    const button = container.querySelector('[data-testid="go"]') as HTMLElement;
+    // A brand fill paints over the frost, so it is the frost layer's next sibling.
+    const frost = button.querySelector('[data-testid="glass-material"] > [style*="backdrop-filter"]') as HTMLElement;
+    const fill = (frost.nextElementSibling as HTMLElement | null)?.style.backgroundColor ?? "";
+    expect(rgb(fill)).toBe(rgb(brandTint("#21804b", lightColors.background)));
   });
 });
 

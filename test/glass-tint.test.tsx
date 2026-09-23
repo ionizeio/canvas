@@ -3,10 +3,12 @@ import { render, cleanup, waitFor, screen } from "@testing-library/react";
 import { Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { GlassSurface } from "../src/style/glass-surface/glass-surface.tsx";
-import { SHEER_FILL_OPACITY, BRAND_TINT_ALPHA, surfaceUnderFill, surfaceIntensity, type GlassLayer } from "../src/style/glass-surface/glass-surface.shared.tsx";
+import { BRAND_TINT_ALPHA, clearSurfaceTint, surfaceUnderFill, surfaceIntensity, type GlassLayer } from "../src/style/glass-surface/glass-surface.shared.tsx";
+import { glassTintsFor } from "../src/style/glass-surface/glass-tints.ts";
+import { WEB_FROST, WEB_TINTS } from "../src/style/glass-surface/web-frost.ts";
 import { glassByScheme, lightColors, darkColors, brandColors } from "../src/style/tokens.ts";
 
-// The glass material's UNDER-FILL: the layer painted beneath the lens/frost/Liquid Glass
+// The glass material's UNDER-FILL: the layer painted beneath the frost or Liquid Glass
 // so a near-clear material still has a body.
 //
 // The bug this file pins: that fill used to be the semantic `popover` token, which the
@@ -16,29 +18,24 @@ import { glassByScheme, lightColors, darkColors, brandColors } from "../src/styl
 // The material owns `glass-tint` now; `popover` is opaque in every mode.
 //
 // The under-fill only renders on a MATERIAL path, and with the expo peers stubbed the one
-// material reachable in this DOM is the Chromium web LENS, so these tests override the
-// user agent the way glass-lens.test.tsx does. Layer order inside the clip box is
-// under-fill, lens, specular rim, then the content.
+// material reachable in this DOM is the web frost, which renders wherever the browser
+// supports a CSS backdrop-filter (the test DOM's CSS.supports says it does). Layer order
+// inside the clip box is under-fill, frost, hairline rim, then the content.
+//
+// The web renders the web frost's own tints (web-frost.ts, which the ThemeProvider
+// publishes as `theme.glass` there); `glassByScheme` is the native set (iOS Liquid Glass
+// and frost, the Android blur). The token-level checks below hold both sets.
 
 afterEach(cleanup);
 
-// Restore by deleting the own property: the real getter lives on the prototype.
-function overrideUserAgent(value: string) {
-  Object.defineProperty(window.navigator, "userAgent", { value, configurable: true });
-  return () => {
-    delete (window.navigator as unknown as Record<string, unknown>)["userAgent"];
-  };
-}
-
-const CHROME_UA =
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
-
-// react-native-web emits an rgba() color verbatim, so a token's own string is the exact
-// substring to look for, and the assertions below read from the token layer rather than
-// restating a literal. `#ffffff` normalizes to this fully opaque form.
-const LIGHT_TINT = glassByScheme.light["glass-tint"];
-const DARK_TINT = glassByScheme.dark["glass-tint"];
+// The assertions below read from the token layer rather than restating a literal, and
+// find a token's rendered form through `printed`. `#ffffff` normalizes to this fully
+// opaque form.
+const LIGHT_TINT = WEB_TINTS.light["glass-tint"];
+const DARK_TINT = WEB_TINTS.dark["glass-tint"];
 const OPAQUE_WHITE = "rgba(255, 255, 255, 1.00)";
+// Both tint sets, for the checks that hold on every platform.
+const TINT_SETS = [["web", WEB_TINTS], ["native", glassByScheme]] as const;
 
 function mockMatchMedia(matching: (query: string) => boolean) {
   return spyOn(window, "matchMedia").mockImplementation(
@@ -73,9 +70,9 @@ async function underFillOf(testID: string): Promise<HTMLElement | null> {
 
 // A skin-shaped surface: the skin paints its own opaque fill, which GlassSurface strips
 // and replaces with the material. Exactly what every real overlay/bar skin hands over.
-function Panel({ testID, tint, sheer, layer, brand }: { testID: string; tint?: string; sheer?: boolean; layer?: GlassLayer; brand?: string }) {
+function Panel({ testID, tint, sheer, layer, brand, clear }: { testID: string; tint?: string; sheer?: boolean; layer?: GlassLayer; brand?: string; clear?: boolean }) {
   return (
-    <GlassSurface testID={testID} style={{ backgroundColor: lightColors.popover, borderRadius: 12 }} tint={tint} sheer={sheer} layer={layer} brand={brand}>
+    <GlassSurface testID={testID} style={{ backgroundColor: lightColors.popover, borderRadius: 12 }} tint={tint} sheer={sheer} layer={layer} brand={brand} clear={clear}>
       <Text>panel</Text>
     </GlassSurface>
   );
@@ -103,91 +100,80 @@ function contrast(a: [number, number, number], b: [number, number, number]): num
   return (l1 + 0.05) / (l2 + 0.05);
 }
 const rgb = (hex: string): [number, number, number] => { const [r, g, b] = rgbaOf(hex); return [r, g, b]; };
+// A colour as react-native-web renders it: it stores the alpha as an 8-bit channel and
+// prints it with two decimals, so white at 0.045 renders as rgba(255, 255, 255, 0.04).
+function printed(value: string): string {
+  const [r, g, b, a] = rgbaOf(value);
+  return `rgba(${r}, ${g}, ${b}, ${(Math.round(a * 255) / 255).toFixed(2)})`;
+}
 
 describe("GlassSurface under-fill", () => {
   it("paints the light scheme's glass-tint, NOT the popover token", async () => {
-    const restore = overrideUserAgent(CHROME_UA);
-    try {
-      render(
-        <ThemeProvider light glass>
-          <Panel testID="light-gs" />
-        </ThemeProvider>,
-      );
-      const fill = await underFillOf("light-gs");
-      const style = fill!.getAttribute("style") ?? "";
-      // rgba(255, 255, 255, 0.20): white at a fifth alpha, the hand-off's --glass-tint.
-      expect(style).toContain(`background-color: ${LIGHT_TINT}`);
-      // The old behavior painted the swapped popover at 0.72 here, and the skin's own
-      // opaque #ffffff is what the material replaces. Neither may reappear.
-      expect(style).not.toContain("0.72");
-      expect(style).not.toContain(OPAQUE_WHITE);
-    } finally {
-      restore();
-    }
+    render(
+      <ThemeProvider light glass>
+        <Panel testID="light-gs" />
+      </ThemeProvider>,
+    );
+    const fill = await underFillOf("light-gs");
+    const style = fill!.getAttribute("style") ?? "";
+    // rgba(255, 255, 255, 0.52): white at about half alpha, Dark Factory's shell and the
+    // hand-off's --glass-tint.
+    expect(style).toContain(`background-color: ${printed(LIGHT_TINT)}`);
+    // The old behavior painted the swapped popover at 0.72 here, and the skin's own
+    // opaque #ffffff is what the material replaces. Neither may reappear.
+    expect(style).not.toContain("0.72");
+    expect(style).not.toContain(OPAQUE_WHITE);
   });
 
-  it("paints the dark scheme's dimmer glass-tint", async () => {
-    const restore = overrideUserAgent(CHROME_UA);
-    try {
-      render(
-        <ThemeProvider dark glass>
-          <Panel testID="dark-gs" />
-        </ThemeProvider>,
-      );
-      const fill = await underFillOf("dark-gs");
-      // rgba(22, 22, 28, 0.30): Apple's dark material is dimmer, not brighter.
-      expect(fill!.getAttribute("style") ?? "").toContain(`background-color: ${DARK_TINT}`);
-    } finally {
-      restore();
-    }
+  it("paints the dark scheme's own glass-tint", async () => {
+    render(
+      <ThemeProvider dark glass>
+        <Panel testID="dark-gs" />
+      </ThemeProvider>,
+    );
+    const fill = await underFillOf("dark-gs");
+    // rgba(255, 255, 255, 0.045): Dark Factory's near-clear dark shell, printed at its
+    // 8-bit alpha.
+    expect(fill!.getAttribute("style") ?? "").toContain(`background-color: ${printed(DARK_TINT)}`);
   });
 
   it("takes those tints from the token layer, which is not the popover token", async () => {
     // The two renders above assert against LIGHT_TINT / DARK_TINT, so this is what pins
-    // those to the published values, and to being something other than popover.
-    expect(LIGHT_TINT).toBe("rgba(255, 255, 255, 0.20)");
-    expect(DARK_TINT).toBe("rgba(22, 22, 28, 0.30)");
+    // those to what the ThemeProvider publishes on the web (the web frost's table, which
+    // the CSS hand-off carries; tokens.test.ts holds the two together), and to being
+    // something other than popover.
+    expect(glassTintsFor("light")["glass-tint"]).toBe(LIGHT_TINT);
+    expect(glassTintsFor("dark")["glass-tint"]).toBe(DARK_TINT);
     expect(LIGHT_TINT).not.toBe(lightColors.popover);
     expect(DARK_TINT).not.toBe(darkColors.popover);
   });
 
   it("still lets an explicit tint win (the Slider's bright Liquid Glass knob)", async () => {
-    const restore = overrideUserAgent(CHROME_UA);
-    try {
-      render(
-        <ThemeProvider dark glass>
-          <Panel testID="tinted-gs" tint="#ffffff" />
-        </ThemeProvider>,
-      );
-      const fill = await underFillOf("tinted-gs");
-      const style = fill!.getAttribute("style") ?? "";
-      // The knob stays bright white on dark, where the material's own tint is near-black.
-      expect(style).toContain(`background-color: ${OPAQUE_WHITE}`);
-      expect(style).not.toContain(DARK_TINT);
-    } finally {
-      restore();
-    }
+    render(
+      <ThemeProvider dark glass>
+        <Panel testID="tinted-gs" tint="#ffffff" />
+      </ThemeProvider>,
+    );
+    const fill = await underFillOf("tinted-gs");
+    const style = fill!.getAttribute("style") ?? "";
+    // The knob stays bright white on dark, where the material's own tint is near-clear.
+    expect(style).toContain(`background-color: ${OPAQUE_WHITE}`);
+    expect(style).not.toContain(printed(DARK_TINT));
   });
 
   it("thins only the static content tint on a sheer surface", async () => {
-    const restore = overrideUserAgent(CHROME_UA);
-    try {
-      render(
-        <ThemeProvider light glass>
-          <Panel testID="sheer-gs" sheer layer="content" />
-        </ThemeProvider>,
-      );
-      const fill = await underFillOf("sheer-gs");
-      const style = fill!.getAttribute("style") ?? "";
-      expect(style).toContain(`background-color: ${glassByScheme.light["glass-tint-content"]}`);
-      expect(style).toContain(`opacity: ${SHEER_FILL_OPACITY}`);
-    } finally {
-      restore();
-    }
+    render(
+      <ThemeProvider light glass>
+        <Panel testID="sheer-gs" sheer layer="content" />
+      </ThemeProvider>,
+    );
+    const fill = await underFillOf("sheer-gs");
+    const style = fill!.getAttribute("style") ?? "";
+    expect(style).toContain(`background-color: ${printed(WEB_TINTS.light["glass-tint-content"])}`);
+    expect(style).toContain(`opacity: ${WEB_FROST.sheerFillOpacity}`);
   });
 
   it("paints no tint at all under Reduce Transparency (the surface goes opaque)", async () => {
-    const restore = overrideUserAgent(CHROME_UA);
     const spy = mockMatchMedia((q) => q.includes("prefers-reduced-transparency"));
     try {
       render(
@@ -200,31 +186,26 @@ describe("GlassSurface under-fill", () => {
         // PlainSurface: one box carrying the skin's own opaque popover fill, no
         // material layers, so nothing tinted and nothing backdrop-filtered.
         expect(node.getAttribute("style") ?? "").toContain(`background-color: ${OPAQUE_WHITE}`);
-        expect(node.outerHTML).not.toContain(LIGHT_TINT);
+        expect(node.outerHTML).not.toContain(printed(LIGHT_TINT));
+        expect(node.querySelector('[data-testid="glass-material"]')).toBeNull();
         expect(node.querySelector("[style*='backdrop-filter']")).toBeNull();
       });
     } finally {
       spy.mockRestore();
-      restore();
     }
   });
 
   it("paints no tint in SOLID mode: the skin's own opaque fill survives untouched", async () => {
-    const restore = overrideUserAgent(CHROME_UA);
-    try {
-      render(
-        <ThemeProvider light solid>
-          <Panel testID="solid-gs" />
-        </ThemeProvider>,
-      );
-      await waitFor(() => {
-        const node = screen.getByTestId("solid-gs") as HTMLElement;
-        expect(node.getAttribute("style") ?? "").toContain(`background-color: ${OPAQUE_WHITE}`);
-        expect(node.outerHTML).not.toContain(LIGHT_TINT);
-      });
-    } finally {
-      restore();
-    }
+    render(
+      <ThemeProvider light solid>
+        <Panel testID="solid-gs" />
+      </ThemeProvider>,
+    );
+    await waitFor(() => {
+      const node = screen.getByTestId("solid-gs") as HTMLElement;
+      expect(node.getAttribute("style") ?? "").toContain(`background-color: ${OPAQUE_WHITE}`);
+      expect(node.outerHTML).not.toContain(printed(LIGHT_TINT));
+    });
   });
 });
 
@@ -232,57 +213,95 @@ describe("GlassSurface under-fill", () => {
 // by tint so nested glass reads as distinct planes and text keeps its floor on each.
 describe("GlassSurface layers", () => {
   it("paints each layer's own tint, from the token layer", () => {
-    for (const scheme of ["light", "dark"] as const) {
-      const g = glassByScheme[scheme];
-      expect(surfaceUnderFill(g, "functional")).toBe(g["glass-tint"]);
-      expect(surfaceUnderFill(g, "content")).toBe(g["glass-tint-content"]);
-      expect(surfaceUnderFill(g, "control")).toBe(g["glass-tint-control"]);
-      expect(surfaceUnderFill(g, "dense")).toBe(g["glass-tint-dense"]);
-      // Four distinct tints: a layer that shared another's would not read as its own plane.
-      expect(new Set([g["glass-tint"], g["glass-tint-content"], g["glass-tint-control"], g["glass-tint-dense"]]).size).toBe(4);
+    for (const [platform, tints] of TINT_SETS) {
+      for (const scheme of ["light", "dark"] as const) {
+        const g = tints[scheme];
+        expect(surfaceUnderFill(g, "functional")).toBe(g["glass-tint"]);
+        expect(surfaceUnderFill(g, "content")).toBe(g["glass-tint-content"]);
+        expect(surfaceUnderFill(g, "control")).toBe(g["glass-tint-control"]);
+        expect(surfaceUnderFill(g, "dense")).toBe(g["glass-tint-dense"]);
+        // Four distinct tints: a layer that shared another's would not read as its own plane.
+        expect(new Set([g["glass-tint"], g["glass-tint-content"], g["glass-tint-control"], g["glass-tint-dense"]]).size, `${platform} ${scheme}`).toBe(4);
+      }
     }
   });
 
   it("renders the content and dense tints on the material path", async () => {
-    const restore = overrideUserAgent(CHROME_UA);
-    try {
-      render(
-        <ThemeProvider light glass>
-          <Panel testID="content-gs" layer="content" />
-          <Panel testID="dense-gs" layer="dense" />
-          <Panel testID="control-gs" layer="control" />
-        </ThemeProvider>,
-      );
-      expect((await underFillOf("content-gs"))!.getAttribute("style") ?? "").toContain(`background-color: ${glassByScheme.light["glass-tint-content"]}`);
-      expect((await underFillOf("dense-gs"))!.getAttribute("style") ?? "").toContain(`background-color: ${glassByScheme.light["glass-tint-dense"]}`);
-      expect((await underFillOf("control-gs"))!.getAttribute("style") ?? "").toContain(`background-color: ${glassByScheme.light["glass-tint-control"]}`);
-    } finally {
-      restore();
+    render(
+      <ThemeProvider light glass>
+        <Panel testID="content-gs" layer="content" />
+        <Panel testID="dense-gs" layer="dense" />
+        <Panel testID="control-gs" layer="control" />
+      </ThemeProvider>,
+    );
+    expect((await underFillOf("content-gs"))!.getAttribute("style") ?? "").toContain(`background-color: ${printed(WEB_TINTS.light["glass-tint-content"])}`);
+    expect((await underFillOf("dense-gs"))!.getAttribute("style") ?? "").toContain(`background-color: ${printed(WEB_TINTS.light["glass-tint-dense"])}`);
+    expect((await underFillOf("control-gs"))!.getAttribute("style") ?? "").toContain(`background-color: ${printed(WEB_TINTS.light["glass-tint-control"])}`);
+  });
+
+  it("renders Dark Factory's frost on the web: the layer's tint, one 24px blur with no saturation, then a 1px inset hairline", async () => {
+    // The rim is Dark Factory's shell line on the floating and content layers, and the
+    // palette's hairline on the controls and the dense menus.
+    const rimColor = (layer: GlassLayer, scheme: "light" | "dark") =>
+      layer === "functional" || layer === "content" ? WEB_FROST.shellLine[scheme] : (scheme === "light" ? lightColors : darkColors).border;
+    const layers = [["functional", "glass-tint"], ["content", "glass-tint-content"], ["control", "glass-tint-control"], ["dense", "glass-tint-dense"]] as const;
+    for (const scheme of ["light", "dark"] as const) {
+      for (const [layer, tint] of layers) {
+        const id = `${scheme}-${layer}-frost`;
+        const view = render(
+          <ThemeProvider light={scheme === "light"} dark={scheme === "dark"} glass>
+            <Panel testID={id} layer={layer} />
+          </ThemeProvider>,
+        );
+        const painted = Array.from((await underFillOf(id))!.parentElement!.children) as HTMLElement[];
+        // Exactly the under-fill, the frost and the rim: no refraction layer, no highlight.
+        expect(painted).toHaveLength(3);
+        expect(painted[0].style.backgroundColor).toBe(printed(WEB_TINTS[scheme][tint]));
+        expect(painted[1].style.backdropFilter).toBe(`blur(${WEB_FROST.blur}px)`);
+        expect(painted[2].style.boxShadow).toBe(`inset 0 0 0 ${WEB_FROST.rimWidth}px ${rimColor(layer, scheme)}`);
+        view.unmount();
+      }
     }
+    // A clear surface (a field on its pane) frosts nothing: its light neutral veil and the
+    // same hairline, the unblurred translucent fill Dark Factory draws its fields with.
+    render(
+      <ThemeProvider light glass>
+        <Panel testID="clear-gs" layer="control" clear />
+      </ThemeProvider>,
+    );
+    const clear = Array.from((await underFillOf("clear-gs"))!.parentElement!.children) as HTMLElement[];
+    expect(clear).toHaveLength(2);
+    expect(clear[0].style.backgroundColor).toBe(printed(clearSurfaceTint(lightColors, false)));
+    expect(clear[1].style.boxShadow).toBe(`inset 0 0 0 ${WEB_FROST.rimWidth}px ${lightColors.border}`);
+    expect(screen.getByTestId("clear-gs").querySelector("[style*='backdrop-filter']")).toBeNull();
   });
 
   it("orders the tints by density: functional < content < dense, and the control puck is the light one in dark", () => {
     const a = (v: string) => rgbaOf(v)[3];
-    for (const scheme of ["light", "dark"] as const) {
-      const g = glassByScheme[scheme];
-      expect(a(g["glass-tint"])).toBeLessThan(a(g["glass-tint-content"]));
-      expect(a(g["glass-tint-content"])).toBeLessThan(a(g["glass-tint-dense"]));
+    for (const [platform, tints] of TINT_SETS) {
+      for (const scheme of ["light", "dark"] as const) {
+        const g = tints[scheme];
+        expect(a(g["glass-tint"]), `${platform} ${scheme}`).toBeLessThan(a(g["glass-tint-content"]));
+        expect(a(g["glass-tint-content"]), `${platform} ${scheme}`).toBeLessThan(a(g["glass-tint-dense"]));
+      }
+      expect(rgbaOf(tints.dark["glass-tint-control"]).slice(0, 3), platform).toEqual([255, 255, 255]);
     }
-    expect(rgbaOf(glassByScheme.dark["glass-tint-control"]).slice(0, 3)).toEqual([255, 255, 255]);
   });
 
   it("keeps foreground text at 4.5:1 on a content pane and a dense pane over the page AND over the brand aurora", () => {
     const aurora = [brandColors["orb-indigo"], brandColors["orb-violet"], brandColors["orb-cyan"]];
-    for (const scheme of ["light", "dark"] as const) {
-      const g = glassByScheme[scheme];
-      const t = scheme === "light" ? lightColors : darkColors;
-      for (const base of [t.background, ...aurora]) {
-        for (const tint of [g["glass-tint-content"], g["glass-tint-dense"]]) {
-          expect(contrast(over(tint, base), rgb(t.foreground)), `${scheme} foreground on ${tint} over ${base}`).toBeGreaterThanOrEqual(4.5);
+    for (const [platform, tints] of TINT_SETS) {
+      for (const scheme of ["light", "dark"] as const) {
+        const g = tints[scheme];
+        const t = scheme === "light" ? lightColors : darkColors;
+        for (const base of [t.background, ...aurora]) {
+          for (const tint of [g["glass-tint-content"], g["glass-tint-dense"]]) {
+            expect(contrast(over(tint, base), rgb(t.foreground)), `${platform} ${scheme} foreground on ${tint} over ${base}`).toBeGreaterThanOrEqual(4.5);
+          }
         }
         // The muted label role keeps the large-text floor on a content pane over the page.
+        expect(contrast(over(g["glass-tint-content"], t.background), rgb(t["muted-foreground"])), `${platform} ${scheme} muted`).toBeGreaterThanOrEqual(3);
       }
-      expect(contrast(over(g["glass-tint-content"], t.background), rgb(t["muted-foreground"]))).toBeGreaterThanOrEqual(3);
     }
   });
 
@@ -297,6 +316,9 @@ describe("GlassSurface layers", () => {
     }
   });
 
+  // The native frost's strength (expo-blur on Android and iOS < 26, and a platform without
+  // its own host). The web frost blurs every layer that frosts at Dark Factory's one
+  // 24px, pinned above.
   it("blurs a content pane a touch less than the functional layer, and a sheer surface least", () => {
     expect(surfaceIntensity("content", false)).toBeLessThan(surfaceIntensity("functional", false));
     expect(surfaceIntensity("control", false)).toBe(surfaceIntensity("functional", false));

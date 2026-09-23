@@ -176,7 +176,7 @@ export default function IntegrationScreen() {
           </P>
           <P muted>
             <InlineCode>expo-blur</InlineCode>: static frost on iOS, including content below iOS 26 Liquid Glass, and
-            supported legacy Android frost. Browser frost and lenses are built in and do not need this peer.
+            supported legacy Android frost. The browser frost is built in and does not need this peer.
           </P>
           <P muted>
             <InlineCode>@ionizeio/canvas-blur</InlineCode>: optional Android 12+ capture and frost for Expo SDK 57 native

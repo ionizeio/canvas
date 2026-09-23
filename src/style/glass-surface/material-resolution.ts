@@ -11,11 +11,10 @@ export interface MaterialCapabilities {
   platform: "web" | "ios" | "android" | "other";
   frost: boolean;
   liquid: boolean;
-  lens: boolean;
   requiresTarget: boolean;
 }
 
-export type MaterialRenderer = "solid" | "frost" | "liquid" | "lens";
+export type MaterialRenderer = "solid" | "frost" | "liquid";
 export type MaterialFallback = "preference" | "contrast" | "transparency" | "missing-target" | "unavailable";
 export interface MaterialResolution {
   renderer: MaterialRenderer;
@@ -36,7 +35,6 @@ export function resolveMaterial(
   if (theme.reducedTransparency) return solid("transparency");
   if (theme.surface !== "glass") return solid("preference");
   if (!stable && capabilities.liquid) return { renderer: "liquid", static: false };
-  if (!stable && capabilities.lens) return { renderer: "lens", static: false };
   if (!capabilities.frost) return solid("unavailable");
   if (capabilities.requiresTarget && !hasSafeTarget) return solid("missing-target");
   return { renderer: "frost", static: stable };

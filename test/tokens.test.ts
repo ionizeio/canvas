@@ -2,6 +2,7 @@ import { describe, it, expect } from "bun:test";
 import { readFileSync } from "node:fs";
 import { CSSMediaRule, CSSStyleRule, Window } from "happy-dom";
 import { lightColors, darkColors, colorsByScheme, glassByScheme, brandColors, palette } from "../src/style/tokens.ts";
+import { WEB_FROST, WEB_TINTS } from "../src/style/glass-surface/web-frost.ts";
 import { statusHues } from "../src/style/status-hue.ts";
 
 const REQUIRED = [
@@ -96,12 +97,17 @@ describe("statusHues", () => {
   });
 });
 
-describe("glassByScheme (the glass material's own tokens)", () => {
+describe("glassByScheme and WEB_TINTS (the glass material's own tokens)", () => {
   it("gives the material its own rgba fill in each scheme", () => {
-    // Read from the web hand-off (--glass-tint in styles/tokens/colors.css), never
-    // invented here; scripts/validate-tokens.ts fails the build on any drift.
+    // The native set: iOS Liquid Glass and frost and the Android blur read it, unchanged
+    // since the web took Dark Factory's frost. The web's set is WEB_TINTS, which the CSS
+    // hand-off carries (checked against the shipped stylesheet below, and by
+    // scripts/validate-tokens.ts).
     expect(glassByScheme.light["glass-tint"]).toBe("rgba(255, 255, 255, 0.20)");
     expect(glassByScheme.dark["glass-tint"]).toBe("rgba(22, 22, 28, 0.30)");
+    for (const scheme of ["light", "dark"] as const) {
+      for (const tint of Object.values(WEB_TINTS[scheme])) expect(tint).toMatch(/^rgba\(\d+, \d+, \d+, 0\.\d+\)$/);
+    }
   });
 
   it("overrides NO semantic token, so a dense menu and a sheer bar are independent", () => {
@@ -110,12 +116,14 @@ describe("glassByScheme (the glass material's own tokens)", () => {
     // dialogs) went see-through the moment glass turned on, and densifying one of
     // them would have densified the bars with it. The material carries its own
     // fills now, one per layer; the semantic set is untouched.
-    for (const scheme of ["light", "dark"] as const) {
-      // One tint per LAYER of the glass model (functional, content, control, dense),
-      // and nothing that names a semantic surface.
-      expect(Object.keys(glassByScheme[scheme])).toEqual(["glass-tint", "glass-tint-content", "glass-tint-control", "glass-tint-dense"]);
-      expect(glassByScheme[scheme]).not.toHaveProperty("popover");
-      expect(glassByScheme[scheme]).not.toHaveProperty("card");
+    for (const tints of [glassByScheme, WEB_TINTS]) {
+      for (const scheme of ["light", "dark"] as const) {
+        // One tint per LAYER of the glass model (functional, content, control, dense),
+        // and nothing that names a semantic surface.
+        expect(Object.keys(tints[scheme])).toEqual(["glass-tint", "glass-tint-content", "glass-tint-control", "glass-tint-dense"]);
+        expect(tints[scheme]).not.toHaveProperty("popover");
+        expect(tints[scheme]).not.toHaveProperty("card");
+      }
     }
     // popover and card stay opaque in both schemes, exactly as the hand-off ships them.
     for (const colors of [lightColors, darkColors]) {
@@ -128,8 +136,10 @@ describe("glassByScheme (the glass material's own tokens)", () => {
     // scripts/validate-tokens.ts matches these keys against `--<name>` in
     // styles/tokens/colors.css; a key renamed to a JS-style one would silently
     // drop out of that check, which is how the two layers drift.
-    for (const scheme of ["light", "dark"] as const) {
-      for (const key of Object.keys(glassByScheme[scheme])) expect(key).toMatch(/^glass-[a-z-]+$/);
+    for (const tints of [glassByScheme, WEB_TINTS]) {
+      for (const scheme of ["light", "dark"] as const) {
+        for (const key of Object.keys(tints[scheme])) expect(key).toMatch(/^glass-[a-z-]+$/);
+      }
     }
   });
 });
@@ -169,19 +179,37 @@ describe("CSS material handoff fallbacks", () => {
     return resolve;
   }
 
+  // An rgba() colour's four channels, so the stylesheet's spelling (no spaces) and the
+  // JS tables' (spaced) compare as values.
+  const channels = (value: string) => (/^rgba\(([^)]*)\)$/.exec(value)?.[1] ?? "").split(",").map(Number);
+
   for (const dark of [false, true]) {
     const scheme = dark ? "dark" : "light";
     it(`retains translucent ${scheme} material when no fallback is active`, () => {
       const value = materialValues(dark);
-      for (const tint of Object.keys(glassByScheme[scheme])) expect(value(`--${tint}`)).toMatch(/^rgba\(.+,0\.\d+\)$/);
-      expect(value("--glass-frost")).toContain("blur(");
-      expect(value("--glass-lens")).toContain("url(");
+      // The hand-off is the WEB material: Dark Factory's frost, whose table is web-frost.ts.
+      for (const [tint, fill] of Object.entries(WEB_TINTS[scheme])) {
+        expect(value(`--${tint}`)).toMatch(/^rgba\(.+,0\.\d+\)$/);
+        expect(channels(value(`--${tint}`))).toEqual(channels(fill));
+      }
+      // One blur with no saturation shift.
+      expect(value("--glass-blur")).toBe(`${WEB_FROST.blur}px`);
+      expect(value("--glass-frost")).toBe(`blur(${WEB_FROST.blur}px)`);
+      // The lens is gone: its token is a deprecated alias of the frost, and the
+      // illumination it drew went with it.
+      expect(value("--glass-lens")).toBe(value("--glass-frost"));
+      expect(value("--glass-illumination")).toBe("none");
+      // The rim is one inset hairline in Dark Factory's shell line, no specular highlight.
+      expect(channels(value("--glass-edge"))).toEqual(channels(WEB_FROST.shellLine[scheme]));
+      expect(value("--glass-specular")).toBe(`inset 0 0 0 ${WEB_FROST.rimWidth}px ${value("--glass-edge")}`);
+      // The page behind the frost is the app's own: the kit ships no backdrop.
+      expect(value("--surface-backdrop")).toBe("none");
     });
 
     for (const media of ["(prefers-reduced-transparency:reduce)", "(prefers-contrast:more)", "print"]) {
       it(`restores every ${scheme} material layer to an opaque skin for ${media}`, () => {
         const value = materialValues(dark, media);
-        for (const tint of Object.keys(glassByScheme[scheme])) {
+        for (const tint of Object.keys(WEB_TINTS[scheme])) {
           const fill = value(`--${tint}`);
           expect([value("--card"), value("--popover")]).toContain(fill);
           expect(fill).toMatch(/^oklch\([^/]+\)$/);

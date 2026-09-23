@@ -197,7 +197,7 @@ export default function ThemingScreen() {
           </Row>
           <H3>What changes</H3>
           <Column tight>
-            <Bullet>Shared GlassSurface and GlassPane rendering owns material selection and clipping. Native Liquid Glass, static frost and browser lens effects are different capabilities; a browser preview of an iOS skin does not prove native rendering</Bullet>
+            <Bullet>Shared GlassSurface and GlassPane rendering owns material selection and clipping. Native Liquid Glass, native frost and the browser's frost are different capabilities; a browser preview of an iOS skin does not prove native rendering</Bullet>
             <Bullet>No semantic token changes: popover and card keep the same opaque values they carry in solid mode. Glass adds its own fills, glass-tint, glass-tint-content, glass-tint-control and glass-tint-dense, painted under the material by the surfaces of each layer</Bullet>
             <Bullet>Brand and status meanings remain readable in every material. Check contrast against actual backgrounds, including scrolling content; a tint token or a decorative rim alone does not establish it</Bullet>
             <Bullet>Solid surfaces retain their full opaque treatment without glass capture. Reduce Transparency and Increase Contrast require readable opaque treatment; Reduce Motion removes nonessential movement without requiring opacity by itself</Bullet>

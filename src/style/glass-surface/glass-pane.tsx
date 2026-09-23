@@ -19,7 +19,7 @@ export interface GlassPaneProps {
   layer?: GlassLayer;
   /** Stable frost independent of control/content density. */
   static?: boolean;
-  /** Clear refraction with minimal frost instead of the usual material haze. */
+  /** An unblurred translucent fill instead of the frost (a field on its pane), as Dark Factory draws its inputs on the web. */
   clear?: boolean;
   /** The parent's shape style: its corner radii shape the pane's clip and rim. */
   shape?: StyleProp<ViewStyle>;
