@@ -11,6 +11,7 @@ import { createContext, useContext, type ReactNode, type RefObject } from "react
 import { View, StyleSheet, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
 import { type ColorTokens, type GlassTokens } from "../tokens.js";
 import { alpha, composite, contrastRatio, inkOn } from "../color.js";
+import { actionFill, actionInk } from "../action.js";
 
 /**
  * The layer of the glass model a surface belongs to, which picks its tint (see
@@ -183,13 +184,12 @@ export function clearSurfaceTint(tokens: ColorTokens, dark: boolean): string {
 }
 
 // The alpha at which a `brand` colour becomes the under-fill of a brand-tinted puck on
-// the lens and frost paths: as sheer as legibility allows. The puck carries the brand's
-// own ink (white on the sky primary and the red destructive; `inkOn` picks the same ink
-// the tokens pair with each fill), and that ink must keep WCAG 4.5:1 over the puck as
-// it composites on the PAGE, so `brandTint` starts at this floor and densifies the
-// colour in small steps until the ink clears the bar: sky-400 stays at the floor in
-// both schemes, the light-scheme destructive red (3.2:1 at the floor) climbs to 0.9.
-// (test/glass-tint.test.tsx pins both.)
+// the lens and frost paths: as sheer as legibility allows. The puck carries the ink the
+// skin paints on that brand (`brandInk`: the token pair the fill belongs to), and that
+// ink must keep WCAG 4.5:1 over the puck as it composites on the PAGE, so `brandTint`
+// starts at this floor and densifies the colour in small steps until the ink clears the
+// bar: sky-400 stays at the floor in both schemes, the light-scheme destructive red
+// (3.2:1 at the floor) climbs to 0.9. (test/glass-tint.test.tsx pins both.)
 export const BRAND_TINT_ALPHA = 0.66;
 export const BRAND_TINT_STEP = 0.02;
 export const BRAND_INK_CONTRAST = 4.5;
@@ -210,9 +210,25 @@ export function brandOverMaterial(brand: string | undefined, tint: string | unde
   return brand != null && tint == null;
 }
 
-/** The brand colour as a translucent under-fill whose ink stays legible over `page`. */
-export function brandTint(brand: string, page: string): string {
-  const ink = inkOn(brand);
+/**
+ * The ink a skin paints on a brand fill: the foreground of the token pair the fill
+ * belongs to (the call-to-action, primary, destructive, success or warning pair), else
+ * the stronger of black and white. Solving the tint for a guessed ink failed where the
+ * guess and the skin disagree: a fill both inks clear picks the stronger one, while the
+ * skin paints its own pair's.
+ */
+export function brandInk(tokens: ColorTokens, brand: string): string {
+  const is = (fill: string | undefined) => fill != null && fill.toLowerCase() === brand.toLowerCase();
+  if (is(actionFill(tokens))) return actionInk(tokens);
+  if (is(tokens.primary)) return tokens["primary-foreground"];
+  if (is(tokens.destructive)) return tokens["destructive-foreground"];
+  if (is(tokens.success)) return tokens["success-foreground"];
+  if (is(tokens.warning)) return tokens["warning-foreground"];
+  return inkOn(brand);
+}
+
+/** The brand colour as a translucent under-fill whose `ink` stays legible over `page`. */
+export function brandTint(brand: string, page: string, ink: string = inkOn(brand)): string {
   for (let a = BRAND_TINT_ALPHA; a < 1; a += BRAND_TINT_STEP) {
     const fill = alpha(brand, Math.round(a * 100) / 100);
     if (contrastRatio(composite(fill, page), ink) >= BRAND_INK_CONTRAST) return fill;
@@ -221,10 +237,11 @@ export function brandTint(brand: string, page: string): string {
 }
 
 /** The under-fill a surface paints beneath its material: `tint`, else the `brand`
- *  colour tinted for legibility over the page, else the layer's own token. */
-export function surfaceUnderFill(glass: GlassTokens, layer: GlassLayer, brand?: string, tint?: string, page?: string): string {
+ *  colour tinted so the ink painted on it stays legible over the page (both read from
+ *  `tokens`), else the layer's own token. */
+export function surfaceUnderFill(glass: GlassTokens, layer: GlassLayer, brand?: string, tint?: string, tokens?: ColorTokens): string {
   if (tint != null) return tint;
-  if (brand != null) return page != null ? brandTint(brand, page) : alpha(brand, BRAND_TINT_ALPHA);
+  if (brand != null) return tokens != null ? brandTint(brand, tokens.background, brandInk(tokens, brand)) : alpha(brand, BRAND_TINT_ALPHA);
   switch (layer) {
     case "content": return glass["glass-tint-content"];
     case "control": return glass["glass-tint-control"];

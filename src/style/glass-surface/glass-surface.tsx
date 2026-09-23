@@ -40,7 +40,7 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const fill = materialFill(style);
   const rim = specularRim(style, theme.dark);
   const frost = `blur(${intensity * 0.2}px) saturate(${clear ? 115 : 150}%)`;
-  const tintLayer = <View style={[fill, { backgroundColor: surfaceUnderFill(theme.glass, layer, brand, tint ?? (clear && brand == null ? clearSurfaceTint(theme.tokens, theme.dark) : undefined), theme.tokens.background), opacity: translucent ? SHEER_FILL_OPACITY : 1 }]} />;
+  const tintLayer = <View style={[fill, { backgroundColor: surfaceUnderFill(theme.glass, layer, brand, tint ?? (clear && brand == null ? clearSurfaceTint(theme.tokens, theme.dark) : undefined), theme.tokens), opacity: translucent ? SHEER_FILL_OPACITY : 1 }]} />;
   // The fill paints beneath the material, except for a brand colour (see brandOverMaterial).
   const over = brandOverMaterial(brand, tint);
   const material = solid ? null : <>

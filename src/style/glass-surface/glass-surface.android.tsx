@@ -31,7 +31,7 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const fill = materialFill(style);
   const rim = specularRim(style, theme.dark);
   const nativeCapture = NativeCaptureFrost !== undefined && target !== null && !solid;
-  const tintLayer = <View style={[fill, { backgroundColor: surfaceUnderFill(theme.glass, layer, brand, tint ?? (clear && brand == null ? clearSurfaceTint(theme.tokens, theme.dark) : undefined), theme.tokens.background), opacity: translucent ? SHEER_FILL_OPACITY : 1 }]} />;
+  const tintLayer = <View style={[fill, { backgroundColor: surfaceUnderFill(theme.glass, layer, brand, tint ?? (clear && brand == null ? clearSurfaceTint(theme.tokens, theme.dark) : undefined), theme.tokens), opacity: translucent ? SHEER_FILL_OPACITY : 1 }]} />;
   // The fill paints beneath the material, except over the capture frost (which samples
   // a separate plane) and for a brand colour (see brandOverMaterial).
   const over = nativeCapture || brandOverMaterial(brand, tint);

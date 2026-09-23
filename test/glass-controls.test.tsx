@@ -219,7 +219,7 @@ describe("brand-tinted glass pucks", () => {
       // The sky primary stays at the sheer floor; the light-scheme destructive red, which
       // sits at 3.2:1 there, is the one that climbs.
       expect(brandTint(t.primary, t.background)).toBe(alpha(t.primary, BRAND_TINT_ALPHA));
-      expect(surfaceUnderFill(glassByScheme[scheme], "control", t.primary, undefined, t.background)).toBe(alpha(t.primary, BRAND_TINT_ALPHA));
+      expect(surfaceUnderFill(glassByScheme[scheme], "control", t.primary, undefined, t)).toBe(alpha(t.primary, BRAND_TINT_ALPHA));
     }
     expect(brandTint(lightColors.destructive, lightColors.background)).not.toBe(alpha(lightColors.destructive, BRAND_TINT_ALPHA));
     expect(brandTint(darkColors.destructive, darkColors.background)).toBe(alpha(darkColors.destructive, BRAND_TINT_ALPHA));
