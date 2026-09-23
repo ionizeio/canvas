@@ -301,40 +301,59 @@ for (const platform of PLATFORMS) {
       });
     }
 
-    // The indicator is a selection visual, so it mirrors the SELECTION Checkbox: a
-    // one-setting Checkbox is the switch on iOS and Android (the design language's item 5).
-    it("Listbox and its private indicator keep the platform selection Checkbox artwork without its interaction", async () => {
-      const suffix = platform === "web" ? "" : `.${platform}`;
-      const { Checkbox } = await import(`../src/atoms/checkbox/checkbox${suffix}.tsx`);
-      const { CheckboxIndicator } = await import(`../src/atoms/checkbox/indicator/index${suffix}.tsx`);
-      const { Listbox } = await import(`../src/atoms/listbox/listbox${suffix}.tsx`);
-      for (const checked of [false, true]) {
-        for (const disabled of [false, true]) {
-          const publicControl = render(
-            <ThemeProvider><Checkbox selection checked={checked} disabled={disabled} accessibilityLabel="Choice" /></ThemeProvider>,
-          );
-          const checkbox = publicControl.getByRole("checkbox", { name: "Choice" });
-          const expectedArtwork = checkbox.firstElementChild?.outerHTML;
-          const expectedOpacity = getComputedStyle(checkbox).opacity;
-          publicControl.unmount();
-          const decorative = render(<ThemeProvider><CheckboxIndicator checked={checked} disabled={disabled} /></ThemeProvider>);
-          const indicator = decorative.container.firstElementChild as HTMLElement;
-          expect(indicator.firstElementChild?.outerHTML).toBe(expectedArtwork);
-          expect(getComputedStyle(indicator).opacity).toBe(expectedOpacity);
-          expect(decorative.container.querySelector('[role], [tabindex], button, input')).toBeNull();
-          decorative.unmount();
-
+    // iOS lists mark a chosen row with a trailing check (the design language's item 5,
+    // "one job, different control"), so the iOS multi-select row composes no Checkbox.
+    if (platform === "ios") {
+      it("Listbox multi-select marks each chosen row with a trailing check and no Checkbox artwork", async () => {
+        const { Listbox } = await import("../src/atoms/listbox/listbox.ios.tsx");
+        for (const checked of [false, true]) {
           const list = render(
-            <ThemeProvider><Listbox multi items={[{ label: "Choice" }]} selected={checked ? [0] : []} disabled={disabled} /></ThemeProvider>,
+            <ThemeProvider><Listbox multi items={[{ label: "Choice" }]} selected={checked ? [0] : []} /></ThemeProvider>,
           );
           const row = list.getByRole("checkbox", { name: "Choice" });
-          const composedIndicator = row.querySelector('[aria-hidden="true"]')?.firstElementChild as HTMLElement;
-          expect(composedIndicator.firstElementChild?.outerHTML).toBe(expectedArtwork);
-          expect(getComputedStyle(composedIndicator).opacity).toBe(expectedOpacity);
-          expect(composedIndicator.querySelector('[role], [tabindex], button, input')).toBeNull();
+          const marks = [...row.querySelectorAll<HTMLElement>('[aria-hidden="true"]')];
+          expect(marks.map((mark) => mark.textContent)).toEqual(["✓"]);
+          expect(marks[0].style.opacity === "0").toBe(!checked);
+          expect(row.querySelector('[role], [tabindex], button, input')).toBeNull();
           list.unmount();
         }
-      }
-    });
+      });
+    } else {
+      // The indicator is a selection visual, so it mirrors the SELECTION Checkbox: a
+      // one-setting Checkbox is the switch on Android (the design language's item 5).
+      it("Listbox and its private indicator keep the platform selection Checkbox artwork without its interaction", async () => {
+        const suffix = platform === "web" ? "" : `.${platform}`;
+        const { Checkbox } = await import(`../src/atoms/checkbox/checkbox${suffix}.tsx`);
+        const { CheckboxIndicator } = await import(`../src/atoms/checkbox/indicator/index${suffix}.tsx`);
+        const { Listbox } = await import(`../src/atoms/listbox/listbox${suffix}.tsx`);
+        for (const checked of [false, true]) {
+          for (const disabled of [false, true]) {
+            const publicControl = render(
+              <ThemeProvider><Checkbox selection checked={checked} disabled={disabled} accessibilityLabel="Choice" /></ThemeProvider>,
+            );
+            const checkbox = publicControl.getByRole("checkbox", { name: "Choice" });
+            const expectedArtwork = checkbox.firstElementChild?.outerHTML;
+            const expectedOpacity = getComputedStyle(checkbox).opacity;
+            publicControl.unmount();
+            const decorative = render(<ThemeProvider><CheckboxIndicator checked={checked} disabled={disabled} /></ThemeProvider>);
+            const indicator = decorative.container.firstElementChild as HTMLElement;
+            expect(indicator.firstElementChild?.outerHTML).toBe(expectedArtwork);
+            expect(getComputedStyle(indicator).opacity).toBe(expectedOpacity);
+            expect(decorative.container.querySelector('[role], [tabindex], button, input')).toBeNull();
+            decorative.unmount();
+
+            const list = render(
+              <ThemeProvider><Listbox multi items={[{ label: "Choice" }]} selected={checked ? [0] : []} disabled={disabled} /></ThemeProvider>,
+            );
+            const row = list.getByRole("checkbox", { name: "Choice" });
+            const composedIndicator = row.querySelector('[aria-hidden="true"]')?.firstElementChild as HTMLElement;
+            expect(composedIndicator.firstElementChild?.outerHTML).toBe(expectedArtwork);
+            expect(getComputedStyle(composedIndicator).opacity).toBe(expectedOpacity);
+            expect(composedIndicator.querySelector('[role], [tabindex], button, input')).toBeNull();
+            list.unmount();
+          }
+        }
+      });
+    }
   });
 }

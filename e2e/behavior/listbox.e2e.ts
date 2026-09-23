@@ -59,19 +59,24 @@ test("multi-select Tab skips decorative indicators and keeps one roving row", as
   await expect(group.locator('[tabindex="0"]')).toHaveCount(1);
 });
 
-test("Listbox multi previews retain each platform's selection indicator dimensions", async ({ page }, testInfo) => {
+test("Listbox multi previews mark a choice the way each platform does", async ({ page }, testInfo) => {
   await gotoDocs(page, "/components/listbox/multi");
-  for (const [platform, width] of [["ios", 22], ["android", 18], ["web", 20]] as const) {
+  for (const [platform, width] of [["android", 18], ["web", 20]] as const) {
     const group = platformRow(page, platform).getByRole("group", { name: "Teams" });
     const row = group.getByRole("checkbox", { name: "Backend", exact: true });
     await expect(row).toHaveAttribute("aria-checked", "true");
-    // Match the platform's selection Checkbox, border included: the iOS edit-mode
-    // circle (22), the Android M3 box (18), the web box (20). A bare nested import in
-    // the shared shell would make all three the same size.
+    // Match the platform's selection Checkbox, border included: the Android M3 box
+    // (18), the web box (20). A bare nested import in the shared shell would make
+    // both the same size.
     const box = row.locator('[aria-hidden="true"] > div > div');
     await expect(box).toHaveCSS("width", `${width}px`);
     await expect(box).toHaveCSS("height", `${width}px`);
   }
+  // An iOS list marks a chosen row with a trailing check and composes no Checkbox.
+  const iosRow = platformRow(page, "ios").getByRole("group", { name: "Teams" }).getByRole("checkbox", { name: "Backend", exact: true });
+  await expect(iosRow).toHaveAttribute("aria-checked", "true");
+  await expect(iosRow.locator('[aria-hidden="true"]')).toHaveText(["✓"]);
+  await expect(iosRow.locator('[aria-hidden="true"] > div > div')).toHaveCount(0);
   const findings = await scan(page, '[data-platform-row="web"]');
   await attach(testInfo, "listbox-multi", findings);
   expect(findings, describeViolations(findings)).toEqual([]);

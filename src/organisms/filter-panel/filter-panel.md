@@ -6,6 +6,10 @@ collapses to a "Filters (n)" outline button that opens the same panel inside a
 start-edge drawer, so a phone keeps its width for the results; `open` /
 `defaultOpen` / `onOpenChange` drive the drawer for controlled use.
 
+On iOS an option row marks a chosen filter the way an iOS list does: the label
+leads, the count follows, and a trailing check closes the row. The web and
+Android lead each row with the platform's selection checkbox.
+
 ## Usage
 
 ```tsx

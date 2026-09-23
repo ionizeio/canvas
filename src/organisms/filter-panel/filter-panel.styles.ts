@@ -17,8 +17,10 @@ import { type ButtonProps } from "../../atoms/button/button.shared.js";
 //     uppercase group headings, no row press feedback (the row was a plain View).
 //   iOS (HIG): filters live in a sheet/popover built from standard controls, so
 //     the panel reads as an iOS grouped surface — a softer 12px card radius, the
-//     group heading uses SF-style footnote tracking (slightly tighter), and the
-//     option row dims to ~0.8 opacity on press (the iOS press idiom).
+//     group heading uses SF-style footnote tracking (slightly tighter), the option
+//     row marks a chosen filter the way an iOS list does (the label leads, the
+//     count follows, and a trailing check in the accent closes the row), and the
+//     row dims to ~0.8 opacity on press (the iOS press idiom).
 //   Android (Material 3): the side-sheet surface — a larger 16dp card radius, the
 //     group heading uses M3 title-small tracking (+0.1) and is NOT uppercased
 //     (M3 section headers are sentence/Title case), and the option row shows a
@@ -55,8 +57,14 @@ export interface FilterPanelSkin {
   groupColumn: ViewStyle;
   /** Group heading type (the per-OS tracking/case touch lives here). */
   groupTitle: (tokens: ColorTokens) => TextStyle;
-  /** One option row: checkbox left, optional count badge right. */
+  /** One option row: the mark and label left, optional count badge right. */
   optionRow: ViewStyle;
+  /**
+   * How an option row marks its selection: the platform's selection Checkbox beside
+   * the label (the web and Android), or the label alone with a trailing check after
+   * its count (iOS lists).
+   */
+  optionMark: { kind: "indicator" } | { kind: "trailing"; label: (tokens: ColorTokens) => TextStyle; check: (tokens: ColorTokens) => TextStyle };
   /** iOS/web dim the row on press; Android uses a ripple instead (null). */
   rowPressedOpacity: number | null;
   /** Android ripple over the option row; null on iOS/web. */
@@ -184,6 +192,7 @@ export const webSkin: FilterPanelSkin = {
     color: tokens["muted-foreground"],
   }),
   optionRow: OPTION_ROW,
+  optionMark: { kind: "indicator" },
   // The web row was a plain View with no press feedback; keep it inert.
   rowPressedOpacity: null,
   rowRipple: null,
@@ -220,6 +229,13 @@ export const iosSkin: FilterPanelSkin = {
   }),
   // 44pt minimum tap target (HIG); the checkbox stays centered.
   optionRow: IOS_OPTION_ROW,
+  // The label keeps the Checkbox's label type at its base size (what the row showed
+  // beside the box), and the check is that size in semibold, in the accent.
+  optionMark: {
+    kind: "trailing",
+    label: (tokens) => ({ fontWeight: "500", fontSize: 14, lineHeight: 20, color: tokens.foreground }),
+    check: (tokens) => ({ fontWeight: "600", fontSize: 14, lineHeight: 20, color: tokens.primary }),
+  },
   // iOS press idiom: dim the row to ~0.8.
   rowPressedOpacity: 0.8,
   rowRipple: null,
@@ -256,6 +272,7 @@ export const androidSkin: FilterPanelSkin = {
   }),
   // 48dp minimum tap target (M3); the checkbox stays centered.
   optionRow: ANDROID_OPTION_ROW,
+  optionMark: { kind: "indicator" },
   // M3 row press is a ripple state layer, not an opacity dim.
   rowPressedOpacity: null,
   rowRipple: (tokens) => surfaceRipple(tokens),

@@ -7,16 +7,17 @@ import { type ListboxSkin, type Size } from "./listbox.shared.js";
 // bordered surface, the selected/press fill, and the label/detail colors follow
 // light/dark via tokens.card/accent).
 //
-// Listbox is a "Shared" platform treatment: iOS has no native listbox control
-// (selecting one option from a list is a pop-up button / picker menu there) and
-// Material 3 has no listbox either (the exposed dropdown menu is the select
-// idiom), so the shared row look (Catalyst's listbox) is correct everywhere. The
-// iosSkin and androidSkin are therefore the SAME object as webSkin. The Android
-// ripple is wired here (`android_ripple` is a harmless no-op on iOS/web, so it can
-// stay set on the shared skin without changing the iOS/web appearance), and no
-// opacity dim is applied (the accent press fill carries the press feedback,
-// exactly as the previous single-file look did). Multi-select composes each
-// platform's Checkbox indicator separately, preserving its native shape and size.
+// Neither iOS nor Material 3 has a listbox control (selecting one option from a
+// list is a pop-up button / picker menu on iOS, the exposed dropdown menu on
+// Android), so the row look (Catalyst's listbox) is the same everywhere and the
+// androidSkin is the SAME object as webSkin. The iosSkin differs only in how a row
+// marks its selection: iOS lists mark every chosen row with a trailing check in the
+// accent, in single and multi select alike, where the web and Android lead with a
+// checkmark gutter or the selection Checkbox (the design language's "one job,
+// different control"). The Android ripple is wired here (`android_ripple` is a
+// harmless no-op on iOS/web), and no opacity dim is applied (the accent press fill
+// carries the press feedback). Multi-select on the web and Android composes each
+// platform's selection Checkbox indicator, preserving its native shape and size.
 
 // A bordered container reads as a content card: the control corner, hairline border, solid
 // `card` fill, and an 8px inset so rows don't touch the edge. Listbox is an inline,
@@ -73,18 +74,16 @@ function detail(tokens: ColorTokens): TextStyle {
   return { fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] };
 }
 
-// The single shared skin. Web is the established Canvas look; iOS and Android
-// reuse the same object (Shared treatment), keeping their row geometry and
-// single-select checkmarks identical. Multi-select's platform-specific Checkbox
-// indicator is supplied by the entry file, outside this row skin. The ripple
-// stays set (a no-op off Android) and pressedOpacity is null (the accent press
-// fill is the feedback).
+// The web skin, which Android shares: a leading checkmark gutter and a filled chosen
+// row in single-select. Multi-select's platform-specific Checkbox indicator is
+// supplied by the entry file, outside this row skin. The ripple stays set (a no-op
+// off Android) and pressedOpacity is null (the accent press fill is the feedback).
 export const webSkin: ListboxSkin = {
   containerBordered,
   rowBase,
   rowSize,
   rowSelected,
-  checkmark,
+  mark: { kind: "gutter", checkmark },
   textStack,
   label,
   detail,
@@ -92,5 +91,11 @@ export const webSkin: ListboxSkin = {
   pressedOpacity: null,
 };
 
-export const iosSkin: ListboxSkin = webSkin;
+// iOS: the same rows, marked the iOS way: a semibold check in the accent at the row's
+// trailing edge, at the label's own size, on every chosen row. The press still fills
+// the row (the iOS cell highlight); being chosen does not.
+export const iosSkin: ListboxSkin = {
+  ...webSkin,
+  mark: { kind: "trailing", check: (tokens, size) => ({ fontWeight: "600", color: tokens.primary, ...LABEL_TYPE[size] }) },
+};
 export const androidSkin: ListboxSkin = webSkin;

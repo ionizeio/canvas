@@ -1,6 +1,6 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useMemo } from "react";
-import { View, Text, Pressable, useTheme, useControllableState, useBreakpoint, breakpoints, RippleClip, cornerRadii, type BreakpointKey, type StyleProp, type ViewStyle, GlassPane, paneStyle } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, useControllableState, useBreakpoint, breakpoints, RippleClip, cornerRadii, type BreakpointKey, type StyleProp, type TextStyle, type ViewStyle, GlassPane, paneStyle } from "../../style/index.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { CheckboxIndicator as WebCheckbox } from "../../atoms/checkbox/indicator/index.js";
@@ -26,7 +26,8 @@ import {
 // platform wrapper passes its own Checkbox visual/Badge/Button variant into
 // createFilterPanel (the way field passes the platform Input/Button), so the rows
 // and the header Clear action read native per OS without this organism re-skinning
-// any atom. The literal `.ios`/`.android` atom imports in those wrappers are
+// any atom. iOS marks a chosen filter with its list's trailing check instead of a
+// Checkbox (the skin's `optionMark`), so its wrapper passes no Checkbox visual. The literal `.ios`/`.android` atom imports in those wrappers are
 // required for the WEB docs 3-up, where a barrel import would resolve the web
 // atoms in every column.
 //
@@ -35,7 +36,7 @@ import {
 // feedback (Android ripple on the option rows; iOS/web opacity dim).
 
 export interface FilterOption {
-  /** Row label, shown beside the checkbox. */
+  /** Row label, shown beside the checkbox (on iOS, before the count and the trailing check). */
   label: string;
   /**
    * Stable key this option is identified by in the controlled `value`/`defaultValue`
@@ -117,8 +118,8 @@ function densityOf(p: FilterPanelProps): Density {
  * Build a FilterPanel component from a platform skin.
  *
  * The parts (`CheckboxVisual`, `Badge`, `Button`, `Drawer`) supply the
- * platform-correct option rows, the counts, the header Clear action and the narrow
- * window's drawer. Each platform's thin
+ * platform-correct option indicators (for a skin whose rows lead with the selection
+ * Checkbox), the counts, the header Clear action and the narrow window's drawer. Each platform's thin
  * `.tsx`/`.ios`/`.android` file passes the variants it already resolves for that
  * platform, so the panel matches its OS. They default to the WEB atoms because a
  * bare barrel import always resolves the WEB atoms in a browser bundler, which is
@@ -133,11 +134,17 @@ export interface FilterPanelParts {
   Drawer?: typeof WebDrawer;
 }
 
+// A trailing-marked row: the label takes the row so the count and the check sit at its
+// end, and the check keeps its width on an unchosen row so nothing reflows.
+const TRAILING_LABEL: TextStyle = { flexGrow: 1, flexShrink: 1 };
+const CHECK_HIDDEN: TextStyle = { opacity: 0 };
+
 export function createFilterPanel(skin: FilterPanelSkin, parts: FilterPanelParts = {}) {
   const CheckboxVisual = parts.CheckboxVisual ?? WebCheckbox;
   const Badge = parts.Badge ?? WebBadge;
   const Button = parts.Button ?? WebButton;
   const Drawer = parts.Drawer ?? WebDrawer;
+  const { optionMark } = skin;
   function OptionRow({ option, checked, onToggle }: { option: FilterOption; checked: boolean; onToggle: () => void }) {
     const { tokens } = useTheme();
     const keyboard = useSpaceActivation(false, onToggle);
@@ -156,12 +163,20 @@ export function createFilterPanel(skin: FilterPanelSkin, parts: FilterPanelParts
         aria-checked={checked}
         accessibilityLabel={option.count != null ? `${option.label}, ${option.count}` : option.label}
       >
-        {/* This row owns the only control. Shared Checkbox content preserves the
-            indicator, label typography and alignment without another tab stop. */}
-        <View style={{ flexShrink: 1 }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" aria-hidden>
-          <CheckboxVisual checked={checked}>{option.label}</CheckboxVisual>
-        </View>
+        {optionMark.kind === "indicator" ? (
+          // This row owns the only control. Shared Checkbox content preserves the
+          // indicator, label typography and alignment without another tab stop.
+          <View style={{ flexShrink: 1 }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" aria-hidden>
+            <CheckboxVisual checked={checked}>{option.label}</CheckboxVisual>
+          </View>
+        ) : (
+          <Text style={[optionMark.label(tokens), TRAILING_LABEL]}>{option.label}</Text>
+        )}
         {option.count != null ? <Badge secondary>{option.count}</Badge> : null}
+        {optionMark.kind === "trailing" ? (
+          // Decorative: the row's own checked state names the choice.
+          <Text aria-hidden style={[optionMark.check(tokens), checked ? null : CHECK_HIDDEN]}>✓</Text>
+        ) : null}
       </Pressable>
     );
   }

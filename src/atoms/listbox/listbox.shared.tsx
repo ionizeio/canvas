@@ -1,5 +1,6 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useState, type ComponentType } from "react";
+import { CheckboxIndicator as WebCheckboxIndicator } from "../checkbox/indicator/index.js";
 import { type Role } from "react-native";
 import { View, Pressable, Text, useControllableState, useFillStyle, useRovingFocus, isRTL, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, withInnerFill, GlassPane, paneStyle } from "../../style/index.js";
 
@@ -7,21 +8,23 @@ import { View, Pressable, Text, useControllableState, useFillStyle, useRovingFoc
 // (not a popover). Each row is a Pressable. Two selection modes, mutually
 // exclusive:
 //
-// 1. Single-select (default): the chosen row is filled with the accent and shows
-//    a leading checkmark ("✓"); at most one row is the value.
-// 2. Multi-select (`multi`): a named group of checkbox rows with decorative
-//    indicators, and any number of rows may be selected at once.
+// 1. Single-select (default): at most one row is the value.
+// 2. Multi-select (`multi`): a named group of checkbox rows, and any number of rows
+//    may be selected at once.
 //
-// The structure (rows, leading control, label/detail stack), the boolean-prop
-// axes (mode + size precedence, mirroring Button's intentOf), accessibility, and
-// the semantic color logic live here once; a platform file supplies only its
-// skin (shape, padding, label type, press feedback) and calls createListbox.
+// How a row marks its selection is the skin's `mark`. On the web and Android the
+// row leads with it: single-select fills the chosen row with the accent and shows a
+// leading checkmark ("✓"), multi-select shows the platform's selection Checkbox
+// (the Material 3 box on Android). iOS marks a choice in a list the way its own
+// lists do (the design language's "one job, different control"): a trailing check
+// on every chosen row, in both modes, with no leading column and no row fill.
 //
-// Listbox is a "Shared" platform treatment: iOS has no native listbox control
-// (one-of-a-list selection is a pop-up button / picker menu there) and Material 3
-// has no listbox either (the exposed dropdown menu is the select idiom), so the
-// single web look (Catalyst's listbox) is correct on every platform. The skin is
-// therefore identical across iOS / Android / web.
+// The structure (rows, the mark, label/detail stack), the boolean-prop axes (mode +
+// size precedence, mirroring Button's intentOf), accessibility, and the semantic
+// color logic live here once; a platform file supplies its skin (shape, padding,
+// label type, the mark, press feedback) and its selection Checkbox artwork, and
+// calls createListbox. Neither iOS nor Material 3 has a listbox control, so the row
+// look is the kit's own on every platform; only the mark follows the platform.
 
 // RN's Role union omits "listbox" (it is a valid ARIA role), so cast it once.
 const LISTBOX = "listbox" as Role;
@@ -51,7 +54,7 @@ export interface ListboxProps extends MeasureProps {
   items: ListboxItem[];
   /** Accessible name of the option list or multi-select checkbox group. Defaults to "Options". */
   accessibilityLabel?: string;
-  /** Multi-select: each row is a checkbox with a leading indicator instead of a single ✓. */
+  /** Multi-select: each row is a checkbox (a leading indicator on the web and Android, a trailing ✓ on iOS) instead of a single choice. */
   multi?: boolean;
   /** Wrap the list in a rounded, bordered content card with static glass in glass mode. */
   bordered?: boolean;
@@ -82,25 +85,38 @@ export interface ListboxProps extends MeasureProps {
   style?: LayoutStyle;
 }
 
-// The per-OS-varying style pieces a platform skin owns. For the Shared treatment
-// these are identical across platforms, but they live in the skin so the file
-// structure matches the rest of the kit and a future divergence is a one-line
-// change. Color-bearing pieces are functions of the active tokens (so the
-// bordered surface, the selected/press fill, and the label/detail colors follow
-// light/dark via tokens.card/accent); layout-only fragments are static objects.
-// `ripple` / `pressedOpacity` express the press feedback (Android ripple vs. opacity
-// dim) the platform applies.
+/** A leading mark: single-select fills the chosen row and shows a ✓ in a gutter; multi-select shows the selection Checkbox. */
+export interface GutterMark {
+  kind: "gutter";
+  /** Single-select checkmark column: a fixed-width gutter reserved on every row. */
+  checkmark: (tokens: ColorTokens) => TextStyle;
+}
+
+/** A trailing check on every chosen row, in both modes (iOS lists); the row is never filled for being chosen. */
+export interface TrailingMark {
+  kind: "trailing";
+  /** The check glyph, which keeps its width on an unchosen row so labels never reflow. */
+  check: (tokens: ColorTokens, size: Size) => TextStyle;
+}
+
+// The per-OS style pieces a platform skin owns. The row look is the kit's own on
+// every platform, and the mark is where the platforms differ (see above).
+// Color-bearing pieces are functions of the active tokens (so the bordered surface,
+// the selected/press fill, and the label/detail colors follow light/dark via
+// tokens.card/accent); layout-only fragments are static objects. `ripple` /
+// `pressedOpacity` express the press feedback (Android ripple vs. opacity dim) the
+// platform applies.
 export interface ListboxSkin {
   /** A bordered container reads as a content card: rounded, hairline border, solid `card` fill, inset. */
   containerBordered: (tokens: ColorTokens) => ViewStyle;
-  /** Each row: a horizontal flex shell with a leading control + label stack. */
+  /** Each row: a horizontal flex shell with the mark + label stack. */
   rowBase: ViewStyle;
   /** Per-row vertical padding by size. */
   rowSize: Record<Size, ViewStyle>;
-  /** The accent fill used for a selected single-select row and the press state. */
+  /** The accent fill used for a selected single-select row (gutter mark) and the press state. */
   rowSelected: (tokens: ColorTokens) => ViewStyle;
-  /** Single-select checkmark column: a fixed-width gutter reserved on every row. */
-  checkmark: (tokens: ColorTokens) => TextStyle;
+  /** How a row marks its selection. */
+  mark: GutterMark | TrailingMark;
   /** Label/detail stack: grows to fill the remaining row width. */
   textStack: ViewStyle;
   /** Label type + color per size. */
@@ -128,8 +144,18 @@ function sizeOf(p: ListboxProps): Size {
   return "medium";
 }
 
+/** The platform pieces a Listbox composes: the selection Checkbox artwork a gutter-marked multi-select row leads with. */
+export interface ListboxParts {
+  CheckboxIndicator?: ComponentType<{ checked?: boolean; disabled?: boolean }>;
+}
+
+// The trailing check keeps its width on an unchosen row, so choosing never reflows a label.
+const CHECK_HIDDEN: TextStyle = { opacity: 0 };
+
 /** Build a Listbox component from a platform skin. */
-export function createListbox(skin: ListboxSkin, CheckboxIndicator: ComponentType<{ checked?: boolean; disabled?: boolean }>) {
+export function createListbox(skin: ListboxSkin, parts: ListboxParts = {}) {
+  const CheckboxIndicator = parts.CheckboxIndicator ?? WebCheckboxIndicator;
+  const { mark } = skin;
   return function Listbox(props: ListboxProps) {
     const { items, bordered, disabled, onSelect, style } = props;
     const mode = modeOf(props);
@@ -206,12 +232,12 @@ export function createListbox(skin: ListboxSkin, CheckboxIndicator: ComponentTyp
           // Name the row from its data so the title and detail stay separated,
           // and a selected option's decorative checkmark is not announced.
           const rowName = [item.label, item.detail].filter(Boolean).join(", ");
-          // Single-select fills the chosen row; multi-select leaves the row plain
-          // and reflects state in the leading checkbox indicator instead.
+          // A gutter-marked single-select fills the chosen row; multi-select, and every
+          // trailing-marked row, leaves the row plain and shows the state in its mark.
           const rowBase: StyleProp<ViewStyle> = [
             skin.rowBase,
             skin.rowSize[size],
-            mode === "single" && selected ? withInnerFill(theme, skin.rowSelected(tokens), "firm") : null,
+            mark.kind === "gutter" && mode === "single" && selected ? withInnerFill(theme, skin.rowSelected(tokens), "firm") : null,
           ];
 
           // Pressable owns Enter activation on keyup. Handling it here as well
@@ -267,27 +293,33 @@ export function createListbox(skin: ListboxSkin, CheckboxIndicator: ComponentTyp
               }
               {...(mode === "multi" ? { "aria-checked": selected } : { "aria-selected": selected })}
             >
-              {mode === "multi" ? (
-                // The row owns every action. This private indicator reuses the
-                // Checkbox skin but contains only Views/Text, so hiding it cannot
-                // leave a nested Pressable in the keyboard tab order.
-                <View
-                  accessibilityElementsHidden
-                  importantForAccessibility="no-hide-descendants"
-                  aria-hidden
-                  style={{ pointerEvents: "none" }}
-                >
-                  <CheckboxIndicator checked={selected} disabled={disabled} />
-                </View>
-              ) : (
-                // Reserve the checkmark column on every row so labels stay aligned
-                // whether or not the row is selected.
-                <Text style={skin.checkmark(tokens)}>{selected ? "✓" : ""}</Text>
-              )}
+              {mark.kind === "gutter" ? (
+                mode === "multi" ? (
+                  // The row owns every action. This private indicator reuses the
+                  // Checkbox skin but contains only Views/Text, so hiding it cannot
+                  // leave a nested Pressable in the keyboard tab order.
+                  <View
+                    accessibilityElementsHidden
+                    importantForAccessibility="no-hide-descendants"
+                    aria-hidden
+                    style={{ pointerEvents: "none" }}
+                  >
+                    <CheckboxIndicator checked={selected} disabled={disabled} />
+                  </View>
+                ) : (
+                  // Reserve the checkmark column on every row so labels stay aligned
+                  // whether or not the row is selected.
+                  <Text style={mark.checkmark(tokens)}>{selected ? "✓" : ""}</Text>
+                )
+              ) : null}
               <View style={skin.textStack}>
                 <Text style={skin.label(tokens, size)}>{item.label}</Text>
                 {item.detail != null ? <Text style={skin.detail(tokens)}>{item.detail}</Text> : null}
               </View>
+              {mark.kind === "trailing" ? (
+                // Decorative: the row's own state names the choice.
+                <Text aria-hidden style={[mark.check(tokens, size), selected ? null : CHECK_HIDDEN]}>✓</Text>
+              ) : null}
             </Pressable>
           );
         })}
