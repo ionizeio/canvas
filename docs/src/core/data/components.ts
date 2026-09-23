@@ -78,7 +78,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "chip",
     name: "Chip",
-    description: "An interactive pill: filter chips, tags, and selectable tokens. A low-emphasis soft-tinted tag (never a saturated button fill), with an optional leading icon and label, tappable with onPress, and a trailing × remove button with onRemove. Color is a boolean axis: semantic status (success / warning / destructive / info / neutral) or a free-form palette hue (red … rose, gray); outline and primary set the emphasis.",
+    description: "An interactive pill: filter chips, tags, and selectable tokens. A low-emphasis tag: the quiet surface pill, or a coloured soft pill, with an optional leading icon and label, tappable with onPress, and a trailing × remove button with onRemove; a selected filter chip is the solid primary. Color is a boolean axis: semantic status (success / warning / destructive / info / neutral) or a free-form palette hue (red … rose, gray); outline and primary set the emphasis.",
     category: "Atoms",
   },
 

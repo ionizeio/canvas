@@ -6,8 +6,8 @@ export default function Example(scope: ExampleScope) {
   const { Row, Chip } = scope;
   return (
 <Row>
-  <Chip selectable outline defaultSelected>Design</Chip>
-  <Chip selectable outline>Engineering</Chip>
+  <Chip selectable defaultSelected>Design</Chip>
+  <Chip selectable>Engineering</Chip>
 </Row>
   );
 }

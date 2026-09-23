@@ -318,10 +318,12 @@ layers, each with its own under-fill token (`glass-tint*` in `src/style/tokens.t
   circles, the Slider knob, the Avatar. A BRAND fill (a primary or destructive Button,
   a checked Switch or Checkbox, a selected tab, page, day or step) is brand-tinted
   glass: `brand={tokens.primary}`, whose under-fill `brandTint` keeps as sheer as its
-  ink's WCAG 4.5:1 allows (on iOS 26 it is the GlassView's own `tintColor`). A HUE
-  wash (a status Badge, a coloured Chip) is the hue's 500 step at `HUE_WASH` with the
-  label one step deeper than the solid recipe. A control with no surface of its own
-  (a ghost or link Button, the iOS pagination chevrons) stays bare.
+  ink's WCAG 4.5:1 allows (on iOS 26 it is the GlassView's own `tintColor`). A toned
+  WASH (a soft Badge, a coloured Chip, a toned Alert) is its own soft wash, the pane's
+  `tint` in place of the layer's, under the same ink as in solid mode: `statusColors`
+  for the status tones, and a free Chip hue's 500 step at Dark Factory's soft alpha
+  under its deep 800/300 label (`HUE_WASH` is deprecated and unused). A control with no
+  surface of its own (a ghost or link Button, the iOS pagination chevrons) stays bare.
 - **Dense** (`glass-tint-dense`, the densest tint): the surfaces a user reads and
   acts on, the option lists (Dropdown, Select, Autocomplete, RowMenu, the SplitButton
   overflow, the PhoneInput country list, AvatarMenu), AlertDialog, Toast, Tooltip, the

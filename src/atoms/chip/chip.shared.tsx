@@ -1,5 +1,6 @@
 import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
-import { View, Text, Pressable, RippleClip, cornerRadii, useHugStyle, useControllableState, surfaceRipple, pressDim, palette, statusHues, HUE_WASH, type Hue, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, isGlass, alpha } from "../../style/index.js";
+import { View, Text, Pressable, RippleClip, cornerRadii, useHugStyle, useControllableState, surfaceRipple, pressDim, palette, statusColors, type StatusColorTone, type Hue, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, alpha } from "../../style/index.js";
+import { primaryText } from "../../style/primary-text.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { Icon } from "../icon/icon.js";
 
@@ -9,18 +10,22 @@ import { Icon } from "../icon/icon.js";
 // tappable with `onPress` (a filter toggle), and grows a trailing "×" remove
 // button with `onRemove`.
 //
-// A chip is a LOW-emphasis tag, not a call to action, so it never wears a saturated
-// button fill: every chip renders a SOFT tint (a light wash + subtle border + strong
-// text; the reverse in dark), the same recipe Badge's status pills use, so the two
-// read as one system. Two orthogonal axes drive the look:
-//   - Color: the tint's hue. A semantic status (success / warning / error / info /
-//     neutral) OR a free-form palette hue (red … rose, gray). Omit for the neutral tag.
+// A chip is a LOW-emphasis tag, not a call to action: the neutral chip is Dark
+// Factory's quiet card2 pill, and a coloured chip is its SOFT pill (the color's wash
+// under the color's ink, the recipe Alert and every toned surface share). Two
+// orthogonal axes drive the look:
+//   - Color: a semantic status (success / warning / error / info, from statusColors,
+//     so a success chip and a success badge are one state; neutral is the muted tag)
+//     OR a free-form palette hue (red … rose, gray). Omit for the neutral tag.
 //   - Emphasis: `outline` drops the fill for a border-only chip; `primary` is the
-//     brand-accent (indigo) tint and the state a selectable chip lights up to.
+//     primary color's soft pill. A selected filter chip is Dark Factory's selected chip,
+//     the solid primary with its foreground ink (or its color's soft pill, for a
+//     coloured chip).
 //
 // Chip is a "Light" platform treatment: one structure and semantic colors (here),
 // with the per-OS look in the skin: label type, shape, and the Android M3 anatomy
-// (32dp sizing, icon-side insets, the selected filter-chip checkmark).
+// (32dp sizing, icon-side insets, the idle outline, the tonal selected filter chip and
+// its checkmark).
 
 // Chromatic hues backed by the Tailwind palette; each renders a soft tinted tag.
 // The union itself lives beside `palette` in the style layer, since Badge, Alert and
@@ -49,8 +54,12 @@ export interface ChipSkin {
   sidePadding?: { text: number; icon: number };
   /** M3 selected filter-chip anatomy: while selected, the chip leads with a
    *  checkmark at this size and drops its outline (skin-threaded, like the
-   *  Accordion chevron). Omit on iOS/web: their selected look is the tint swap. */
+   *  Accordion chevron). Omit on iOS/web: their selected look is the fill alone. */
   selectedCheckSize?: number;
+  /** M3: an idle neutral chip draws its 1dp outline. Omit where the chip is borderless. */
+  outlined?: boolean;
+  /** M3: a selected chip takes the tonal fill (the primary's soft pill) instead of the solid primary. */
+  tonalSelected?: boolean;
 }
 
 export interface ChipProps {
@@ -67,10 +76,9 @@ export interface ChipProps {
   onRemove?: () => void;
   /**
    * Turns the chip into a filter toggle that owns its own selected state: pressing
-   * it lights up to the active tint (its color's fill, or the brand `primary`
-   * when the chip has no color) and back. Selection is controlled via `selected`,
-   * uncontrolled via `defaultSelected`. Give it an `outline` base so the unselected
-   * (border-only) and selected (filled) states read apart.
+   * it lights up (to the solid `primary`, the tonal primary on Android, or its
+   * color's soft pill when it has a color) and back. Selection is controlled via
+   * `selected`, uncontrolled via `defaultSelected`.
    */
   selectable?: boolean;
   /** Selected state for a selectable chip (CONTROLLED). Omit for uncontrolled use. */
@@ -111,8 +119,8 @@ export interface ChipProps {
   rose?: boolean;
   gray?: boolean;
   // Emphasis (orthogonal to color). `outline` is border-only; `primary` is the
-  // brand-accent (indigo) tint and the selectable "on" look. `secondary` is the
-  // default neutral tag (kept for back-compat; same as passing no color).
+  // primary color's soft pill. `secondary` is the default neutral tag (kept for
+  // back-compat; same as passing no color).
   secondary?: boolean;
   primary?: boolean;
   outline?: boolean;
@@ -126,60 +134,65 @@ export interface ChipProps {
 }
 
 // The three colors a chip paints with: container fill, border, and label/glyph text,
-// plus the hue wash a coloured chip's glass pane takes under glass (a neutral or
-// outline chip leaves it unset and inherits the surrounding surface).
+// plus what its glass pane takes under glass: a coloured chip's wash as the pane's tint
+// (in place of the control tint, so the ink reads as it does in solid mode), or a solid
+// selected chip's brand color.
 interface Appearance {
   bg: string;
   border: string;
   text: string;
   glassTint?: string;
+  brand?: string;
 }
 
-// The chosen hue from the color axis. Status names alias a hue (matching Badge);
-// literal hues resolve to themselves. `neutral`/`gray` carry no hue but flag the
-// muted-gray tag. Status names are scanned first so a semantic intent wins.
-function colorOf(p: ChipProps): { hue: Hue | null; mutedGray: boolean } {
-  // The status names resolve through the shared map, so a success chip and a
-  // success badge cannot end up on different greens.
-  if (p.success) return { hue: statusHues.success, mutedGray: false };
-  if (p.warning) return { hue: statusHues.warning, mutedGray: false };
-  if (p.destructive || p.error) return { hue: statusHues.error, mutedGray: false };
-  if (p.info) return { hue: statusHues.info, mutedGray: false };
-  if (p.neutral) return { hue: null, mutedGray: true };
-  for (const h of HUES) if ((p as Record<string, unknown>)[h]) return { hue: h, mutedGray: false };
-  if (p.gray) return { hue: null, mutedGray: true };
-  return { hue: null, mutedGray: false };
+// The chosen color from the color axis: a status tone, a palette hue, or the muted-gray
+// flag. Status names are scanned first so a semantic intent wins.
+function colorOf(p: ChipProps): { tone: StatusColorTone | null; hue: Hue | null; mutedGray: boolean } {
+  if (p.success) return { tone: "success", hue: null, mutedGray: false };
+  if (p.warning) return { tone: "warning", hue: null, mutedGray: false };
+  if (p.destructive || p.error) return { tone: "error", hue: null, mutedGray: false };
+  if (p.info) return { tone: "info", hue: null, mutedGray: false };
+  if (p.neutral) return { tone: null, hue: null, mutedGray: true };
+  for (const h of HUES) if ((p as Record<string, unknown>)[h]) return { tone: null, hue: h, mutedGray: false };
+  if (p.gray) return { tone: null, hue: null, mutedGray: true };
+  return { tone: null, hue: null, mutedGray: false };
 }
 
-// A chromatic hue's soft tint: a light 50 fill + 200 border + 700 text in light, a
-// deep 950 fill + 800 border + 400 text in dark (Badge's status recipe). `outline`
-// drops the fill for a border-only chip in the same hue.
-//
-// Under glass the soft fill becomes a WASH of the hue's mid step under the material
-// (the Alert's recipe) and the label steps one deeper (800 in light, 300 in dark): the
-// wash over the page, a content pane or a control puck is darker than the 50/950 fill,
-// and the deeper ink is what keeps every hue's label at 4.5:1 there (the 700/400 ink
-// drops to ~3.4:1 on orange and indigo; test/glass-controls.test.tsx pins the floor).
-function hueTint(hue: Hue, dark: boolean, outline: boolean, glass: boolean): Appearance {
-  const text = glass ? (dark ? palette[`${hue}-300`] : palette[`${hue}-800`]) : dark ? palette[`${hue}-400`] : palette[`${hue}-700`];
-  if (outline) {
-    return dark
-      ? { bg: "transparent", border: palette[`${hue}-700`], text }
-      : { bg: "transparent", border: palette[`${hue}-300`], text };
-  }
-  const glassTint = glass ? alpha(palette[`${hue}-500`], dark ? HUE_WASH.dark : HUE_WASH.light) : undefined;
-  return dark
-    ? { bg: palette[`${hue}-950`], border: palette[`${hue}-800`], text, glassTint }
-    : { bg: palette[`${hue}-50`], border: palette[`${hue}-200`], text, glassTint };
+// A status tone's soft pill (statusColors): the wash under the ink, or for `outline` a
+// border in the tone's solid color around the ink.
+function toneTint(tokens: ColorTokens, tone: StatusColorTone, outline: boolean): Appearance {
+  const { ink, wash, dot } = statusColors(tokens, tone);
+  return outline ? { bg: "transparent", border: dot, text: ink } : { bg: wash, border: "transparent", text: ink, glassTint: wash };
 }
 
-// The neutral (uncolored) chip: the default soft-secondary tag, a muted-gray tag
-// (`gray`/`neutral`), or a border-only outline. Neutral stays on the scheme-aware
-// semantic tokens (always legible) rather than the fixed palette.
-function neutralTint(tokens: ColorTokens, outline: boolean, mutedGray: boolean): Appearance {
+// Dark Factory's soft alpha (its accent2Soft): a free palette hue washes at this over
+// the surface, in both modes, under the hue's deep ink (800 light, 300 dark), which holds
+// 4.5:1 on every hue over the page, a content pane and a control puck
+// (test/glass-controls.test.tsx pins the floor).
+export const HUE_SOFT = { light: 0.14, dark: 0.16 } as const;
+
+function hueTint(hue: Hue, dark: boolean, outline: boolean): Appearance {
+  const text = palette[`${hue}-${dark ? 300 : 800}`];
+  if (outline) return { bg: "transparent", border: palette[`${hue}-${dark ? 700 : 300}`], text };
+  const wash = alpha(palette[`${hue}-500`], dark ? HUE_SOFT.dark : HUE_SOFT.light);
+  return { bg: wash, border: "transparent", text, glassTint: wash };
+}
+
+// The neutral (uncolored) chip: Dark Factory's card2 pill in the foreground, the
+// muted-gray tag (`gray`/`neutral`), or a border-only outline; on a skin that outlines
+// its idle chips (M3), the fill carries the `border` hairline too.
+function neutralTint(tokens: ColorTokens, outline: boolean, mutedGray: boolean, outlined: boolean): Appearance {
   if (outline) return { bg: "transparent", border: tokens.border, text: tokens.foreground };
-  if (mutedGray) return { bg: tokens.muted, border: tokens.border, text: tokens["muted-foreground"] };
-  return { bg: tokens.secondary, border: tokens.border, text: tokens["secondary-foreground"] };
+  const border = outlined ? tokens.border : "transparent";
+  if (mutedGray) return { bg: tokens.muted, border, text: tokens["muted-foreground"] };
+  return { bg: tokens.secondary, border, text: tokens.foreground };
+}
+
+// A selected filter chip with no color: Dark Factory's selected chip (the solid primary
+// under its foreground ink, brand-tinted glass under glass), or on M3 the tonal fill.
+function selectedTint(tokens: ColorTokens, tonal: boolean): Appearance {
+  if (tonal) return toneTint(tokens, "info", false);
+  return { bg: tokens.primary, border: "transparent", text: tokens["primary-foreground"], brand: tokens.primary };
 }
 
 /** Build a Chip from a platform skin. */
@@ -196,10 +209,9 @@ export function createChip(skin: ChipSkin) {
     const theme = useMaterialTheme({ static: staticMaterial, layer: "control" });
     const { tokens, dark } = theme;
     // Under glass the chip is a CONTROL-layer puck: a GlassPane paints the material
-    // behind its content (a coloured chip washes it with its hue), and the pill drops
+    // behind its content (a coloured chip washes it with its color), and the pill drops
     // its fill and hairline (the pane's material and rim carry them). The pressable
     // shell keeps its tap, ripple and dim over it.
-    const glass = isGlass(theme);
     // HUG: content width inside a stretching Column, content-sized in a Row.
     const hug = useHugStyle();
 
@@ -212,8 +224,8 @@ export function createChip(skin: ChipSkin) {
       props.onSelectedChange,
     );
 
-    const { hue, mutedGray } = colorOf(props);
-    const accent = props.primary === true; // brand-accent (indigo) tone / the "active" look
+    const { tone, hue, mutedGray } = colorOf(props);
+    const accent = props.primary === true; // the primary color's soft pill
     const outline = props.outline === true;
     const selectedActive = selectable && selectedState;
     const surfaced = !outline || selectedActive;
@@ -225,18 +237,20 @@ export function createChip(skin: ChipSkin) {
     // A tappable chip reports its toggle/active state to AT (see the Pressable below).
     const isSelected = selectable ? selectedState : accent;
 
-    // Resolve the paint. A selected filter chip lights up to a filled tint of its
-    // color (or the brand primary when it has none); otherwise the color axis + `outline`
-    // pick the tint, and `primary` maps to the indigo accent.
+    // Resolve the paint. A selected filter chip lights up to its color's soft pill, or
+    // with no color to the selected chip (solid primary; tonal on M3); otherwise the color
+    // axis + `outline` pick the tint, and `primary` is the primary color's soft pill.
     let appearance: Appearance;
     if (selectedActive) {
-      appearance = hueTint(hue ?? "indigo", dark, false, glass);
+      appearance = tone ? toneTint(tokens, tone, false) : hue ? hueTint(hue, dark, false) : selectedTint(tokens, !!skin.tonalSelected);
+    } else if (tone) {
+      appearance = toneTint(tokens, tone, outline);
     } else if (hue) {
-      appearance = hueTint(hue, dark, outline, glass);
+      appearance = hueTint(hue, dark, outline);
     } else if (accent) {
-      appearance = hueTint("indigo", dark, outline, glass);
+      appearance = outline ? { bg: "transparent", border: tokens.primary, text: primaryText(tokens) } : toneTint(tokens, "info", false);
     } else {
-      appearance = neutralTint(tokens, outline, mutedGray);
+      appearance = neutralTint(tokens, outline, mutedGray, !!skin.outlined);
     }
 
     const handlePress = () => {
@@ -286,7 +300,7 @@ export function createChip(skin: ChipSkin) {
 
     // The chip's content minus the remove control: the leading check/icon, the
     // label, and any trailing element.
-    const pane = surfaced ? <GlassPane static={staticMaterial} layer="control" shape={skin.base} tint={appearance.glassTint} interactive={!staticMaterial && !disabled} /> : null;
+    const pane = surfaced ? <GlassPane static={staticMaterial} layer="control" shape={skin.base} tint={appearance.glassTint} brand={appearance.brand} interactive={!staticMaterial && !disabled} /> : null;
     const bodyContent = (
       <>
         {selectedCheck != null ? (

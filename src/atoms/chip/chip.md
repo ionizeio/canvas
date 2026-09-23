@@ -1,12 +1,14 @@
 # Chip
 
 An interactive pill for filter chips, tags, and selectable tokens. A Chip is a
-LOW-emphasis tag, not a call to action, so it never wears a saturated button fill:
-every chip is a soft tint (a light wash, a subtle border, and strong text; reversed
-in dark, the same recipe Badge's status pills use). It carries an optional leading
-icon and a label, becomes tappable with `onPress`, and grows a trailing "×" remove
-button with `onRemove`, so no call site hand-composes a `borderRadius` +
-`backgroundColor` + padding Pressable.
+LOW-emphasis tag, not a call to action: the neutral chip is Dark Factory's quiet pill
+(the soft surface color under the foreground), and a coloured chip is its soft pill
+(the color's wash under the color's ink, the recipe Alert and the other toned surfaces
+share). A selected filter chip is Dark Factory's selected chip, the solid primary
+(the tonal primary on Android, where Material 3 draws its selected filter chip). It
+carries an optional leading icon and a label, becomes tappable with `onPress`, and
+grows a trailing "×" remove button with `onRemove`, so no call site hand-composes a
+`borderRadius` + `backgroundColor` + padding Pressable.
 
 Two orthogonal axes drive the look:
 
@@ -14,12 +16,12 @@ Two orthogonal axes drive the look:
   `warning`, `destructive`, `info`, `neutral`) or a free-form palette hue (`red`,
   `orange`, `amber`, `yellow`, `lime`, `green`, `emerald`, `teal`, `cyan`, `sky`,
   `blue`, `indigo`, `violet`, `fuchsia`, `purple`, `pink`, `rose`, `gray`). Status
-  names alias a hue (`success` → green, `warning` → amber, `destructive` → red, `info` →
-  blue), so they match Badge and their literal hue. Precedence when more than one is
-  set: status names first, then hues in the order above.
-- **Emphasis**. `outline` drops the fill for a border-only chip in the same hue;
-  `primary` is the brand-accent (indigo) tint and the state a selectable chip lights
-  up to. These compose with any color, e.g. `<Chip blue outline>`.
+  names read the theme's status colors (`statusColors`), so a success chip matches a
+  success Badge and Alert; `info` is the primary color. Precedence when more than one
+  is set: status names first, then hues in the order above.
+- **Emphasis**. `outline` drops the fill for a border-only chip in the same color;
+  `primary` is the primary color's soft pill. These compose with any color, e.g.
+  `<Chip blue outline>`.
 
 ## Usage
 
@@ -88,13 +90,13 @@ matches without threading the color through.
 
 ### Selectable
 
-Give a selectable chip an `outline` base so its unselected (border-only) and
-selected (filled tint) states read apart.
+A selectable chip is Dark Factory's filter chip: the quiet pill at rest and the solid
+primary once selected.
 
 ```tsx
 <Row>
-  <Chip selectable outline defaultSelected>Design</Chip>
-  <Chip selectable outline>Engineering</Chip>
+  <Chip selectable defaultSelected>Design</Chip>
+  <Chip selectable>Engineering</Chip>
 </Row>
 ```
 
@@ -102,13 +104,13 @@ selected (filled tint) states read apart.
 
 ### Removable filter
 
-**Do** — Use a Chip with `onRemove` so the pill and its "×" stay consistent and accessible.
+**Do**: Use a Chip with `onRemove` so the pill and its "×" stay consistent and accessible.
 
 ```tsx
 <Chip blue onRemove={() => {}}>Status: Active</Chip>
 ```
 
-**Don't** — Hand-build the pill from a raw Pressable with border-radius, padding, and a text "×".
+**Don't**: Hand-build the pill from a raw Pressable with border-radius, padding, and a text "×".
 
 ```tsx
 <Pressable style={{ flexDirection: "row", alignItems: "center", gap: 4, alignSelf: "flex-start", borderRadius: 9999, backgroundColor: "#4f46e5", paddingHorizontal: 10, paddingVertical: 4 }}>

@@ -13,6 +13,8 @@ import { Sparkline } from "../src/charts/sparkline/sparkline.tsx";
 import { Gauge, Heatmap } from "../src/index.ts";
 import { gaugeArc, gaugeFill } from "../src/charts/gauge/gauge.shared.tsx";
 import { lightColors, palette } from "../src/style/tokens.ts";
+import { channelsOf } from "../src/style/color.ts";
+import { statusColors } from "../src/style/status.ts";
 import { Typography } from "../src/atoms/typography/typography.tsx";
 import { Card } from "../src/molecules/card/card.tsx";
 import { Breadcrumb } from "../src/atoms/breadcrumb/breadcrumb.tsx";
@@ -172,14 +174,20 @@ describe("Chip", () => {
     expect(bg("primary")).not.toBe(bg("neutral"));
   });
 
-  it("a status name aliases its hue (success renders as green)", () => {
+  // A status name reads the theme's status colors (statusColors), the same as Badge and
+  // Alert, rather than aliasing a palette hue: a success chip is the success wash.
+  it("a status name reads the theme's status colors, not a palette hue", () => {
     const { container } = ui(
       <>
         <Chip testID="success" success>A</Chip>
         <Chip testID="green" green>B</Chip>
       </>,
     );
-    expect(at(container, "success").style.backgroundColor).toBe(at(container, "green").style.backgroundColor);
+    const success = channelsOf(at(container, "success").style.backgroundColor);
+    const expected = channelsOf(statusColors(lightColors, "success").wash)!;
+    expect(success?.slice(0, 3)).toEqual(expected.slice(0, 3));
+    expect(success?.[3]).toBeCloseTo(expected[3], 2);
+    expect(at(container, "success").style.backgroundColor).not.toBe(at(container, "green").style.backgroundColor);
   });
 
   it("outline drops the fill but keeps a colored border", () => {
@@ -234,12 +242,14 @@ describe("Chip (Android M3 selected filter anatomy)", () => {
     expect(pad("removable")).toEqual({ start: "16px", end: "8px" });
   });
 
-  it("the iOS skin keeps the tint-swap selected look (no checkmark, border kept)", () => {
-    const { container } = ui(<IOSChip testID="ic" selectable outline>Engineering</IOSChip>);
+  // iOS ships no chip control, so its chip is Dark Factory's: selecting fills it with the
+  // solid primary, with no Material checkmark.
+  it("the iOS skin selects to Dark Factory's solid primary (no checkmark)", () => {
+    const { container } = ui(<IOSChip testID="ic" selectable>Engineering</IOSChip>);
     const restingIcons = icons(container);
     fireEvent.click(container.querySelector('[role="button"]') as Element);
     expect(icons(container)).toBe(restingIcons);
-    expect(at(container, "ic").style.borderColor).not.toMatch(/transparent|rgba\(0, 0, 0, 0(\.0+)?\)/);
+    expect(channelsOf(at(container, "ic").style.backgroundColor)?.slice(0, 3)).toEqual(channelsOf(lightColors.primary)!.slice(0, 3));
   });
 });
 

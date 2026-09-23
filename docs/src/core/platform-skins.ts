@@ -111,7 +111,6 @@ import { Carousel as CarouselIOS } from "../../../src/organisms/carousel/carouse
 import { Carousel as CarouselAndroid } from "../../../src/organisms/carousel/carousel.android.js";
 import { Toast as ToastIOS, ToastProvider as ToastProviderIOS, useToast as useToastIOS } from "../../../src/organisms/toast/toast.ios.js";
 import { Toast as ToastAndroid, ToastProvider as ToastProviderAndroid, useToast as useToastAndroid } from "../../../src/organisms/toast/toast.android.js";
-import { Chip as ChipIOS } from "../../../src/atoms/chip/chip.ios.js";
 import { Chip as ChipAndroid } from "../../../src/atoms/chip/chip.android.js";
 import { Emblem as EmblemIOS } from "../../../src/atoms/emblem/emblem.ios.js";
 import { Emblem as EmblemAndroid } from "../../../src/atoms/emblem/emblem.android.js";
@@ -141,7 +140,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Command: CommandIOS, DataTable: DataTableIOS, Drawer: DrawerIOS, FilterPanel: FilterPanelIOS,
     Stepper: StepperIOS, InputOTP: InputOTPIOS, Collapsible: CollapsibleIOS,
     Carousel: CarouselIOS, Toast: ToastIOS, ToastProvider: ToastProviderIOS, useToast: useToastIOS,
-    Chip: ChipIOS, Emblem: EmblemIOS,
+    Emblem: EmblemIOS,
     Swatch: SwatchIOS, Board: BoardIOS, BreadcrumbItem: BreadcrumbItemIOS,
     DragDropProvider: DragDropProviderIOS, DropZone: DropZoneIOS, Draggable: DraggableIOS, DragHandle: DragHandleIOS,
     DashboardGrid: DashboardGridIOS, MetricBreakdown: MetricBreakdownIOS, GeoMap: GeoMapIOS,

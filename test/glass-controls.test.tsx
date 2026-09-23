@@ -17,8 +17,8 @@ import { alpha, composite, contrastRatio } from "../src/style/color.ts";
 import { actionFill, actionInk } from "../src/style/action.ts";
 import { lightColors, palette, brandColors } from "../src/style/tokens.ts";
 import { WEB_TINTS } from "../src/style/glass-surface/web-frost.ts";
-import { HUE_WASH } from "../src/style/status-hue.ts";
 import { statusColors } from "../src/style/status.ts";
+import { HUE_SOFT } from "../src/atoms/chip/chip.shared.tsx";
 import { LOOKS } from "./fixtures/looks.ts";
 
 // The CONTROL layer of the glass model: every control that paints a surface of its
@@ -188,7 +188,7 @@ describe("brand-tinted glass pucks", () => {
 });
 
 describe("hue washes", () => {
-  it("a coloured Chip washes the material with the hue's mid step and steps its label one deeper; a status Badge is the plain control material with its tone on the dot", async () => {
+  it("a coloured Chip washes the material with the hue's mid step at the soft alpha under its deep label; a status Badge is the plain control material with its tone on the dot", async () => {
     const { container } = await renderGlass(
       <>
         <Badge status success testID="status">Active</Badge>
@@ -208,14 +208,14 @@ describe("hue washes", () => {
     const soft = container.querySelector('[data-testid="soft"]') as HTMLElement;
     expect(rgbaOf(underFillOf(soft))).toEqual(rgbaOf(statusColors(lightColors, "error").wash));
     const chip = container.querySelector('[data-testid="chip"]') as HTMLElement;
-    expect(rgbaOf(underFillOf(chip))).toEqual(rgbaOf(alpha(palette["blue-500"], HUE_WASH.light)));
+    expect(rgbaOf(underFillOf(chip))).toEqual(rgbaOf(alpha(palette["blue-500"], HUE_SOFT.light)));
     const chipLabel = Array.from(chip.querySelectorAll("*")).find((n) => n.textContent === "Design" && (n as HTMLElement).style.color) as HTMLElement;
     expect(rgbaOf(chipLabel.style.color)).toEqual(rgbaOf(alpha(palette["blue-800"], 1)));
     // A keycap is the plain control material.
     expect(rgbaOf(underFillOf(container.querySelector('[data-testid="kbd"]') as HTMLElement))).toEqual(rgbaOf(LIGHT["glass-tint-control"]));
   });
 
-  it("holds every hue's deeper label at 4.5:1 over the page, over a content pane and over a control puck, in every palette", () => {
+  it("holds every hue's deeper label at 4.5:1 over its chip wash on the page, a content pane and a control puck, in every palette", () => {
     const hues = Object.keys(palette).filter((k) => k.endsWith("-500")).map((k) => k.slice(0, -4));
     expect(hues.length).toBeGreaterThan(10);
     // The panes differ by platform: the web frost's tints and the native set.
@@ -225,7 +225,7 @@ describe("hue washes", () => {
         const dark = look.scheme === "dark";
         const bases = [t.background, composite(g["glass-tint-content"], t.background), composite(g["glass-tint-control"], composite(g["glass-tint-content"], t.background))];
         for (const hue of hues) {
-          const wash = alpha(palette[`${hue}-500`], dark ? HUE_WASH.dark : HUE_WASH.light);
+          const wash = alpha(palette[`${hue}-500`], dark ? HUE_SOFT.dark : HUE_SOFT.light);
           const ink = palette[`${hue}-${dark ? 300 : 800}`];
           for (const base of bases) {
             expect(contrastRatio(composite(wash, base), ink), `${platform} ${scheme} ${hue} over ${base}`).toBeGreaterThanOrEqual(4.5);
@@ -260,7 +260,7 @@ describe("hue washes", () => {
   });
 
   it("the solid recipe's 700/400 label is what the deeper step replaces (it dips under 4.5:1 on the wash)", () => {
-    const wash = alpha(palette["orange-500"], HUE_WASH.light);
+    const wash = alpha(palette["orange-500"], HUE_SOFT.light);
     expect(contrastRatio(composite(wash, lightColors.background), palette["orange-700"])).toBeLessThan(4.5);
     expect(contrastRatio(composite(wash, lightColors.background), palette["orange-800"])).toBeGreaterThanOrEqual(4.5);
   });

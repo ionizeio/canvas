@@ -52,7 +52,7 @@
   --p-switch-thumb-shadow:none;
   /* Pills and tiles */
   --p-badge-radius:9999px;--p-badge-font:11px;--p-badge-weight:700;--p-badge-tracking:0px;
-  --p-chip-radius:9999px;--p-chip-pad-x:10px;--p-chip-pad-y:4px;--p-chip-font:12px;--p-chip-gap:6px;
+  --p-chip-radius:9999px;--p-chip-pad-x:10px;--p-chip-pad-y:4px;--p-chip-font:11px;--p-chip-gap:7px;
   /* Chip glyphs (chip.styles.ts: 12px web/iOS remove glyph; the M3 selected checkmark shows on Android only) */
   --p-chip-remove:12px;--p-chip-check-display:none /* @kind other */;--p-chip-check-size:18px;
   --p-avatar-square-radius:8px;

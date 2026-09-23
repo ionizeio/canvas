@@ -42,6 +42,11 @@ export const statusHues: Record<StatusTone, Hue> = {
   info: "blue",
 };
 
+/**
+ * @deprecated The kit no longer paints with it: Dark Factory's soft washes replaced it
+ * (`statusColors` for the status tones, and a Chip's free hue at Dark Factory's soft
+ * alpha). Kept, unchanged, for code that reads it, until a major release removes it.
+ */
 // The alpha of a hue's 500 step painted as a WASH under the glass material: the
 // tinted pane of an Alert, a status Badge, a coloured Chip. Dense enough to read as
 // the hue over the page and over a content pane, sheer enough that the material still
