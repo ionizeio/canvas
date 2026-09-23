@@ -3,7 +3,7 @@ import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js
 import { useCallback, useContext, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { type Role } from "react-native";
 import { View, Text, GlassSurface, AnchoredOverlay, useOverlayHost, useMeasuredWidth, usePopoverFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
-import { Button } from "../button/button.js";
+import { Button as WebButton } from "../button/button.js";
 import { type PopoverSkin, type Placement } from "./popover.styles.js";
 import * as s from "./popover.styles.js";
 import { useOverlayAnchor } from "../../style/anchored-overlay.js";
@@ -112,7 +112,17 @@ function placementOf(p: PopoverProps): Placement {
 }
 
 /** Build a Popover component from a platform skin. */
-export function createPopover(skin: PopoverSkin) {
+/**
+ * The components a Popover draws with that look different per platform. The web
+ * builds are the defaults; the iOS and Android entries pass their own, so the docs'
+ * platform columns render them truthfully (a device resolves them by platform either way).
+ */
+export interface PopoverParts {
+  Button?: typeof WebButton;
+}
+
+export function createPopover(skin: PopoverSkin, parts: PopoverParts = {}) {
+  const Button = parts.Button ?? WebButton;
   return function Popover(props: PopoverProps) {
     const { trigger, title, description, children, actionLabel, inline, onOpenChange, testID, style } = props;
     const { tokens, surface } = useMaterialTheme({ layer: "functional" });

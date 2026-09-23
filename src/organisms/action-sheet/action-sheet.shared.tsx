@@ -20,7 +20,7 @@ import {
   type StyleProp,
   type ViewStyle,
 } from "../../style/index.js";
-import { Button } from "../../atoms/button/button.js";
+import { Button as WebButton } from "../../atoms/button/button.js";
 import * as s from "./action-sheet.styles.js";
 import { type ActionSheetSkin } from "./action-sheet.styles.js";
 
@@ -98,7 +98,17 @@ export interface ActionSheetProps {
 }
 
 /** Build an ActionSheet component from a platform skin. */
-export function createActionSheet(skin: ActionSheetSkin) {
+/**
+ * The components a ActionSheet draws with that look different per platform. The web
+ * builds are the defaults; the iOS and Android entries pass their own, so the docs'
+ * platform columns render them truthfully (a device resolves them by platform either way).
+ */
+export interface ActionSheetParts {
+  Button?: typeof WebButton;
+}
+
+export function createActionSheet(skin: ActionSheetSkin, parts: ActionSheetParts = {}) {
+  const Button = parts.Button ?? WebButton;
   return function ActionSheet(props: ActionSheetProps) {
     const { open: openProp, onOpenChange, trigger, title, message, actions, cancelLabel = "Cancel", testID, style } = props;
     const theme = useMaterialTheme({ layer: "functional" });

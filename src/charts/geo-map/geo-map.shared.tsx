@@ -2,7 +2,7 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { useMemo, useRef, useState } from "react";
 import { PanResponder, StyleSheet } from "react-native";
 import Svg, { Circle, G, Path } from "react-native-svg";
-import { Button } from "../../atoms/button/button.js";
+import { Button as WebButton } from "../../atoms/button/button.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { Row } from "../../atoms/layout/layout.js";
 import {
@@ -262,7 +262,17 @@ function touchesOf(
 }
 
 /** Build a GeoMap from a platform skin. */
-export function createGeoMap(skin: ChartSkin) {
+/**
+ * The components a GeoMap draws with that look different per platform. The web
+ * builds are the defaults; the iOS and Android entries pass their own, so the docs'
+ * platform columns render them truthfully (a device resolves them by platform either way).
+ */
+export interface GeoMapParts {
+  Button?: typeof WebButton;
+}
+
+export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
+  const Button = parts.Button ?? WebButton;
   return function GeoMap(props: GeoMapProps) {
     const { points, title, testID, style } = props;
     const theme = useMaterialTheme({ layer: "content" });

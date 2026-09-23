@@ -1,6 +1,6 @@
 import { type ComponentType, useState } from "react";
 import { consumeEscapeKey } from "../../style/escape-layer.js";
-import { View, Text, TextInput, useTheme, useResponsive, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle, GlassSurface } from "../../style/index.js";
+import { View, Text, TextInput, useTheme, useContainerBreakpoint, containerProbe, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle, GlassSurface } from "../../style/index.js";
 import { Avatar as WebAvatar, AvatarGroup as WebAvatarGroup } from "../../atoms/avatar/avatar.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
@@ -245,9 +245,12 @@ export function createDescriptionList(
     // FILL: the list spans the parent it is given.
     const fill = useFillStyle("DescriptionList");
     const layout = layoutOf(props);
-    // The two-column term label narrows at phone widths (160 -> 120) so the
-    // value column keeps room to breathe.
-    const narrowTermColumn = useResponsive({ base: false, sm: true });
+    // The two-column term label narrows when the LIST is phone-narrow (160 -> 120) so
+    // the value column keeps room to breathe: a two-column list in a 320px desktop
+    // panel narrows too, and one on a wide tablet does not. The list fills its parent,
+    // so it measures itself, through an out-of-flow probe (its root may be a
+    // GlassSurface), seeded from the window until that first layout lands.
+    const { value: narrowTermColumn, onLayout: measureList } = useContainerBreakpoint({ base: false, sm: true }, { seedViewport: true });
     const hasHeader = card && !!title;
 
     // Inline-edit state. `editing` is the single row currently in edit mode and
@@ -361,6 +364,7 @@ export function createDescriptionList(
     const Root = card ? GlassSurface : View;
     return (
       <Root testID={testID} style={container} {...(card ? { layer: "content" as const } : null)}>
+        {layout === "twoColumn" ? <View style={containerProbe} onLayout={measureList} /> : null}
         {hasHeader ? (
           <View style={s.headerBand(tokens, skin)}>
             <Text style={skin.headerTitleType(tokens)}>{title}</Text>

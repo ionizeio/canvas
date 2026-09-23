@@ -1,6 +1,7 @@
 // Narrow-container fixes from the responsiveness rollout: the calendar month's
-// fluid cell math (pure) and the DescriptionList twoColumn term narrowing
-// (viewport-driven, exercised through test/viewport.ts).
+// fluid cell math (pure) and the DescriptionList twoColumn term narrowing (the list's
+// own width, seeded from the window until it measures; test/viewport.ts drives the
+// seed and test/entrance-layout.ts the measurement).
 import { describe, it, expect, afterEach } from "bun:test";
 import { render, cleanup, screen } from "@testing-library/react";
 import { ThemeProvider } from "../src/style/theme.tsx";
@@ -10,6 +11,7 @@ import { GridList } from "../src/molecules/grid-lists/grid-lists.tsx";
 import { Form } from "../src/molecules/form/form.tsx";
 import { Input } from "../src/atoms/input/input.tsx";
 import { resizeViewport } from "./viewport.ts";
+import { layoutElement } from "./entrance-layout.ts";
 
 afterEach(cleanup);
 
@@ -50,10 +52,22 @@ describe("DescriptionList twoColumn term narrowing", () => {
     expect((screen.getByText("Full name") as HTMLElement).style.width).toBe("160px");
   });
 
-  it("narrows the label column to 120px at phone widths", () => {
+  it("narrows the label column to 120px at phone widths, before it has measured itself", () => {
     ui();
     resizeViewport(375);
     expect((screen.getByText("Full name") as HTMLElement).style.width).toBe("120px");
+  });
+
+  it("follows its own width once measured, not the window's", () => {
+    const { container } = ui();
+    const probe = [...(container as HTMLElement).querySelectorAll("div")].find((node) => node.style.position === "absolute" && node.style.left === "0px" && node.style.right === "0px") as HTMLElement;
+    // A 320px panel in a desktop window: the list is phone-narrow.
+    layoutElement(probe, { width: 320, height: 0 });
+    expect((screen.getByText("Full name") as HTMLElement).style.width).toBe("120px");
+    // A wide container in a phone window: the list is not.
+    resizeViewport(375);
+    layoutElement(probe, { width: 900, height: 0 });
+    expect((screen.getByText("Full name") as HTMLElement).style.width).toBe("160px");
   });
 });
 

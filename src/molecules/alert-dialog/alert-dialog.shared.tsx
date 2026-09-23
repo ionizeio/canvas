@@ -3,10 +3,10 @@ import { useHardwareBack } from "../../style/use-hardware-back.js";
 import { type ReactNode, useId, useState } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
 import { Entrance, GlassSurface, Portal, Pressable, RippleClip, Text, View, cornerRadii, type StyleProp, type ViewStyle, useDialogFocus, useTheme } from "../../style/index.js";
-import { Button } from "../../atoms/button/button.js";
+import { Button as WebButton } from "../../atoms/button/button.js";
 import { Input as WebInput } from "../../atoms/input/input.js";
 import * as s from "./alert-dialog.styles.js";
-import { type Width, type AlertDialogSkin, type InputComponent } from "./alert-dialog.styles.js";
+import { type Width, type AlertDialogSkin } from "./alert-dialog.styles.js";
 
 // Shared AlertDialog shell. The structure (optional trigger + dim backdrop +
 // centered card + title/description + optional confirmation field + action row),
@@ -91,18 +91,19 @@ function widthOf(p: AlertDialogProps): Width {
 }
 
 /**
- * Build an AlertDialog component from a platform skin.
- *
- * `Input` is the platform-correct Input atom for the confirmation field
- * (`withInput`). Each platform's thin `.tsx`/`.ios`/`.android` file passes the
- * Input it already resolves for that platform, so the field matches the alert's
- * platform on every build path. This matters for the WEB docs 3-up preview: a
- * bare barrel import always resolves the WEB Input in a browser bundler, which
- * would paint a boxed, blue-focus-ring field inside the iOS/Android rows; the
- * iOS row must show the iOS-styled field (borderless, no focus box). On a real
- * device Metro resolves the right Input by extension regardless, so the default
- * (the web base) is correct there too. Defaults to the web base when omitted.
+ * The components an AlertDialog draws with that look different per platform: the
+ * action Buttons and the confirmation field's Input (`withInput`). Each platform's
+ * thin `.tsx`/`.ios`/`.android` file passes the builds it resolves for that platform,
+ * so the alert matches its platform on every build path. This matters for the WEB docs
+ * 3-up preview: a bare barrel import always resolves the WEB builds in a browser
+ * bundler, which would paint web buttons and a boxed field inside the iOS and Android
+ * rows. On a real device Metro resolves the right builds by extension regardless, so
+ * the defaults (the web bases) are correct there too.
  */
+export interface AlertDialogParts {
+  Button?: typeof WebButton;
+  Input?: typeof WebInput;
+}
 // Teleports its children into the nearest OverlayProvider when presenting as an
 // overlay, and renders them in place otherwise, so the contained default is
 // unchanged.
@@ -110,7 +111,10 @@ function Present({ overlay, children }: { overlay: boolean; children: ReactNode 
   return overlay ? <Portal>{children}</Portal> : <>{children}</>;
 }
 
-export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent = WebInput) {
+/** Build an AlertDialog component from a platform skin and its platform parts. */
+export function createAlertDialog(skin: AlertDialogSkin, parts: AlertDialogParts = {}) {
+  const Button = parts.Button ?? WebButton;
+  const Input = parts.Input ?? WebInput;
   return function AlertDialog(props: AlertDialogProps) {
     const {
       title,

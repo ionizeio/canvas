@@ -2,8 +2,8 @@ import { type ComponentType, type ReactNode } from "react";
 import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, useContainerBreakpoint, GlassPane, GlassSurface, paneStyle, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { selectionTint } from "../../style/selection-tint.js";
-import { Button } from "../../atoms/button/button.js";
-import { Avatar } from "../../atoms/avatar/avatar.js";
+import { Button as WebButton } from "../../atoms/button/button.js";
+import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { Dropdown as WebDropdown, type DropdownProps, type DropdownItem } from "../../atoms/dropdown/dropdown.js";
 import { type Surface } from "./navbars.styles.js";
@@ -135,16 +135,21 @@ function surfaceOf(p: NavbarProps): Surface {
 }
 
 // The platform-styled parts the bar composes: the Dropdown behind the narrow
-// menu button. Passed by each platform's thin wrapper (the literal `.ios`/
-// `.android` imports there are required for the WEB docs 3-up, where a barrel
-// import would resolve the web atom in every column); defaults to the web atom.
+// menu button, the action Button and the account Avatar. Passed by each platform's
+// thin wrapper (the literal `.ios`/`.android` imports there are required for the WEB
+// docs 3-up, where a barrel import would resolve the web atom in every column);
+// each defaults to the web atom.
 export interface NavbarParts {
   Dropdown?: ComponentType<DropdownProps>;
+  Button?: typeof WebButton;
+  Avatar?: typeof WebAvatar;
 }
 
-/** Build a Navbar component from a platform skin (plus the platform-correct Dropdown its narrow menu composes; defaults to the web base when omitted). */
+/** Build a Navbar component from a platform skin (plus the platform-correct parts it composes; each defaults to the web base when omitted). */
 export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
   const Dropdown = parts.Dropdown ?? WebDropdown;
+  const Button = parts.Button ?? WebButton;
+  const Avatar = parts.Avatar ?? WebAvatar;
   return function Navbar(props: NavbarProps) {
     const { brand, brandContent, links = [], actions, actionLabel, onAction, avatar, onSelect, testID, style } = props;
     const { tokens, dark } = useTheme();

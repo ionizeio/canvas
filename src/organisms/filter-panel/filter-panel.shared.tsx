@@ -5,7 +5,7 @@ import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { CheckboxIndicator as WebCheckbox } from "../../atoms/checkbox/indicator/index.js";
 import { useSpaceActivation } from "../../style/use-space-activation.js";
-import { Drawer } from "../drawer/drawer.js";
+import { Drawer as WebDrawer } from "../drawer/drawer.js";
 import {
   type Density,
   type FilterPanelSkin,
@@ -116,20 +116,28 @@ function densityOf(p: FilterPanelProps): Density {
 /**
  * Build a FilterPanel component from a platform skin.
  *
- * `CheckboxVisual` / `Badge` / `Button` supply the platform-correct option
- * rows, the counts, and the header Clear action. Each platform's thin
+ * The parts (`CheckboxVisual`, `Badge`, `Button`, `Drawer`) supply the
+ * platform-correct option rows, the counts, the header Clear action and the narrow
+ * window's drawer. Each platform's thin
  * `.tsx`/`.ios`/`.android` file passes the variants it already resolves for that
  * platform, so the panel matches its OS. They default to the WEB atoms because a
  * bare barrel import always resolves the WEB atoms in a browser bundler, which is
  * wrong in the docs 3-up; the device Metro resolves the right atoms by extension
  * regardless, so the defaults only matter for the web column.
  */
-export function createFilterPanel(
-  skin: FilterPanelSkin,
-  CheckboxVisual: CheckboxComponent = WebCheckbox,
-  Badge: BadgeComponent = WebBadge,
-  Button: ButtonComponent = WebButton,
-) {
+export interface FilterPanelParts {
+  CheckboxVisual?: CheckboxComponent;
+  Badge?: BadgeComponent;
+  Button?: ButtonComponent;
+  /** The start-edge drawer the panel becomes on narrow windows. */
+  Drawer?: typeof WebDrawer;
+}
+
+export function createFilterPanel(skin: FilterPanelSkin, parts: FilterPanelParts = {}) {
+  const CheckboxVisual = parts.CheckboxVisual ?? WebCheckbox;
+  const Badge = parts.Badge ?? WebBadge;
+  const Button = parts.Button ?? WebButton;
+  const Drawer = parts.Drawer ?? WebDrawer;
   function OptionRow({ option, checked, onToggle }: { option: FilterOption; checked: boolean; onToggle: () => void }) {
     const { tokens } = useTheme();
     const keyboard = useSpaceActivation(false, onToggle);

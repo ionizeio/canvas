@@ -3,7 +3,7 @@ import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { type GestureResponderEvent, type View as RNView, type ScrollView as RNScrollView } from "react-native";
 import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useControllableState, AnchoredOverlay, useMeasuredWidth, FILL, type StyleProp, type ViewStyle, type LayoutStyle, GlassSurface, GlassPane, paneStyle, isGlass } from "../../style/index.js";
-import { ButtonGroup } from "../../atoms/button-group/button-group.js";
+import { ButtonGroup as WebButtonGroup } from "../../atoms/button-group/button-group.js";
 import { type CalendarSkin, type DayState, type Density } from "./calendar.styles.js";
 import { calendarDayAccessibility } from "./calendar.accessibility.js";
 
@@ -217,7 +217,17 @@ function layoutLanes(events: CalendarEvent[]): { event: CalendarEvent; lane: num
 }
 
 /** Build a Calendar component from a platform skin. */
-export function createCalendar(skin: CalendarSkin) {
+/**
+ * The components a Calendar draws with that look different per platform. The web
+ * builds are the defaults; the iOS and Android entries pass their own, so the docs'
+ * platform columns render them truthfully (a device resolves them by platform either way).
+ */
+export interface CalendarParts {
+  ButtonGroup?: typeof WebButtonGroup;
+}
+
+export function createCalendar(skin: CalendarSkin, parts: CalendarParts = {}) {
+  const ButtonGroup = parts.ButtonGroup ?? WebButtonGroup;
   return function Calendar(props: CalendarProps) {
     const {
       month = "June 2026",

@@ -26,7 +26,8 @@ import {
 } from "../../style/index.js";
 import { type HoverMotion } from "../../style/hover.js";
 import { Icon } from "../../atoms/icon/icon.js";
-import { Drawer } from "../drawer/drawer.js";
+import { Drawer as WebDrawer } from "../drawer/drawer.js";
+import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { type Density, type Frame } from "./sidebar.styles.js";
 import { SidebarItemBadge, SidebarRowFrame, type SidebarItem, type SidebarRowWash, type SidebarSection } from "./sidebar.item.js";
 import { createSidebarDrillDown } from "./sidebar.drilldown.js";
@@ -277,7 +278,20 @@ function rowA11yLabel(item: SidebarItem): string {
 }
 
 /** Build a Sidebar component from a platform skin. */
-export function createSidebar(skin: SidebarSkin) {
+/**
+ * The components a Sidebar draws with that look different per platform. The web
+ * builds are the defaults; the iOS and Android entries pass their own, so the docs'
+ * platform columns render them truthfully (a device resolves them by platform either way).
+ */
+export interface SidebarParts {
+  Drawer?: typeof WebDrawer;
+  /** A row's trailing count. */
+  Badge?: typeof WebBadge;
+}
+
+export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
+  const Drawer = parts.Drawer ?? WebDrawer;
+  const Badge = parts.Badge ?? WebBadge;
   // The rotating disclosure chevron for a collapsible section header (mirrors the
   // kit Accordion: 0deg collapsed -> skin.sectionChevronSpinTo open; Reduce Motion
   // snaps it).
@@ -296,7 +310,7 @@ export function createSidebar(skin: SidebarSkin) {
   }
 
   // The narrow-viewport drill-down body, built once from this skin (mirrors SectionChevron).
-  const SidebarDrillDown = createSidebarDrillDown(skin);
+  const SidebarDrillDown = createSidebarDrillDown(skin, Badge);
 
   return function Sidebar(props: SidebarProps) {
     const { sections, items, onSelect, header, footer, collapsible, onToggleCollapse, testID, style } = props;
@@ -505,7 +519,7 @@ export function createSidebar(skin: SidebarSkin) {
                 <Text style={skin.label(tokens, activeRow, density)} numberOfLines={1}>
                   {item.label}
                 </Text>
-                <SidebarItemBadge item={item} />
+                <SidebarItemBadge item={item} Badge={Badge} />
               </>
             )}
           </Pressable>

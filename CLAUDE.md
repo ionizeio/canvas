@@ -36,6 +36,11 @@ until the phase that changes it rewrites them. These decisions bind all new work
    on iOS, overlays become sheets on phones. Substitution lives in the platform entry
    files (`createX(skin, parts)` parts injection), never in a `Platform.OS` branch in
    a shared shell, so the docs' three-up shows each platform truthfully.
+   `test/design-rules-shells.test.ts` holds the seams (no platform import in a shell,
+   a component that looks different per platform taken only as a part, a platform
+   check only for a listed mechanism, the window read only by the listed chrome), and
+   `check:skins` holds the docs registry to the same definition of "looks different"
+   (`tools/skins/divergence.ts`).
 6. **Glass.** The web's glass is DF's plain frost (white over a 24 px blur, a 1 px
    inset hairline); the Chromium lens goes. iOS Liquid Glass and the Android blur keep
    their own material and tints.

@@ -1,7 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useState, type ReactNode } from "react";
 import { View, Pressable, Text, useHugStyle, controlRipple, pressDim, type StyleProp, type ViewProps, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, inverseDenseTint } from "../../style/index.js";
-import { Button } from "../button/button.js";
+import { Button as WebButton } from "../button/button.js";
 import { Icon } from "../icon/icon.js";
 import {
   wrapper,
@@ -106,7 +106,17 @@ const BUBBLE_FIRST: Record<Placement, boolean> = {
 };
 
 /** Build a Tooltip component from a platform skin. */
-export function createTooltip(skin: TooltipSkin) {
+/**
+ * The components a Tooltip draws with that look different per platform. The web
+ * builds are the defaults; the iOS and Android entries pass their own, so the docs'
+ * platform columns render them truthfully (a device resolves them by platform either way).
+ */
+export interface TooltipParts {
+  Button?: typeof WebButton;
+}
+
+export function createTooltip(skin: TooltipSkin, parts: TooltipParts = {}) {
+  const Button = parts.Button ?? WebButton;
   return function Tooltip(props: TooltipProps) {
     const { children, label, trigger, iconTrigger: isIconTrigger, textTrigger: isTextTrigger, onOpenChange, testID, style } = props;
     const placement = placementOf(props);

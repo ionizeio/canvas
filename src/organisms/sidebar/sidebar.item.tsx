@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import { type ViewStyle } from "react-native";
-import { Badge } from "../../atoms/badge/badge.js";
 import { type IconName } from "../../atoms/icon/icon.js";
+import type { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { RippleClip, cornerRadii } from "../../style/index.js";
 import { useHover, washStyle, type HoverMotion } from "../../style/hover.js";
 
@@ -70,8 +70,9 @@ export interface SidebarSection {
 /** A row's trailing count. Two Badge families: the default secondary metadata pill,
  *  and `badgeError`'s error status pill (`status` is Badge's family switch, `error`
  *  its tone within that family) for a count that reports a problem. Lives here once
- *  so the rail row and the narrow drill-down leaf cannot drift apart. */
-export function SidebarItemBadge({ item }: { item: SidebarItem }) {
+ *  so the rail row and the narrow drill-down leaf cannot drift apart. `Badge` is the
+ *  platform's build, a Sidebar part. */
+export function SidebarItemBadge({ item, Badge }: { item: SidebarItem; Badge: typeof WebBadge }) {
   if (item.badge == null) return null;
   if (item.badgeError) return <Badge status error>{item.badge}</Badge>;
   return <Badge secondary>{item.badge}</Badge>;

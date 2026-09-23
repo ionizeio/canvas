@@ -12,86 +12,31 @@
 // every row) and Field (its Android row drew the label above the box instead of
 // floating it inside).
 //
-// What counts as "looks different". A platform file whose skin is an identity
-// alias of the web skin (`export const iosSkin: ChartSkin = webSkin;`, which every
-// chart does, data visualization being platform-neutral) renders identically by
-// construction, so its absence from the registry is correct and this check stays
-// quiet about it. A skin built as its own object, INCLUDING a spread of the web
-// skin with overrides (`{ ...webSkin, shape: { borderCurve: "continuous" } }`), is
-// a real divergence and must be registered.
+// What counts as "looks different" lives in tools/skins/divergence.ts, shared with the
+// kit's shells gate (test/design-rules-shells.test.ts): a platform entry diverges when
+// it builds from its own skin object (a spread of the web skin with overrides included)
+// rather than an identity alias of the web skin, or when it injects platform parts (the
+// shell draws the platform's Button, Drawer or DragDrop builds). An alias with no parts
+// renders identically by construction, so its absence from the registry is correct.
+// The check runs both ways: every divergent build must be registered, and a registered
+// name must be a divergent build, so the table never labels the web build a platform's.
 //
 // Run by CI (ci.yml) and `bun run check:skins`.
 //
-// Stays free of React Native so it runs in plain bun: the styles modules pull in
-// the kit's style layer, so skins are classified from source text rather than by
-// importing them, the same approach check-nav-sync.ts uses for pattern slugs.
-import { readdirSync, readFileSync, existsSync } from "node:fs";
+// Stays free of React Native so it runs in plain bun: the styles modules pull in the
+// kit's style layer, so skins are classified from source text rather than by importing
+// them, the same approach check-nav-sync.ts uses for pattern slugs.
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { componentSkins, type Platform } from "../../tools/skins/divergence.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const KIT = join(HERE, "..", "..", "src");
 const REGISTRY = join(HERE, "..", "src", "core", "platform-skins.ts");
-const GROUPS = ["atoms", "molecules", "organisms", "charts"];
 
-type Divergent = { dir: string; group: string; exportName: string; platforms: string[] };
-
-/** The skin identifier a platform entry builds from, and the module it came from. */
-function skinImport(source: string, skinName: string): string | null {
-  const m = source.match(new RegExp(`import\\s*\\{[^}]*\\b${skinName}\\b[^}]*\\}\\s*from\\s*"([^"]+)"`));
-  return m ? m[1] : null;
-}
-
-/**
- * True when the platform's skin is its own object rather than an identity alias of
- * the web skin. `export const iosSkin: T = webSkin;` is an alias; anything opening
- * a brace is not.
- */
-function isDivergentSkin(stylesSource: string, skinName: string): boolean {
-  const decl = stylesSource.match(new RegExp(`export const ${skinName}\\s*(?::[^=]+)?=\\s*([^;]+)`));
-  if (!decl) return false;
-  return !/^\s*webSkin\s*$/.test(decl[1]);
-}
-
-/** Resolve a platform file's skin module to a path on disk, .js specifier and all. */
-function resolveStyles(fromDir: string, specifier: string): string | null {
-  const asTs = join(fromDir, specifier.replace(/\.js$/, ".ts"));
-  return existsSync(asTs) ? asTs : null;
-}
-
-const divergent: Divergent[] = [];
-
-for (const group of GROUPS) {
-  const groupDir = join(KIT, group);
-  if (!existsSync(groupDir)) continue;
-  for (const dir of readdirSync(groupDir)) {
-    const compDir = join(groupDir, dir);
-    let files: string[];
-    try {
-      files = readdirSync(compDir);
-    } catch {
-      continue; // a file, not a component directory
-    }
-    const platforms: string[] = [];
-    let exportName = "";
-    for (const [ext, skinName] of [[".ios.tsx", "iosSkin"], [".android.tsx", "androidSkin"]] as const) {
-      const file = files.find((f) => f.endsWith(ext));
-      if (!file) continue;
-      const source = readFileSync(join(compDir, file), "utf8");
-      const exported = [...source.matchAll(/export const (\w+)\s*=/g)].map((m) => m[1]);
-      if (!exported.length) continue;
-      exportName = exported[0];
-      const specifier = skinImport(source, skinName);
-      if (!specifier) continue; // builds from something other than a named skin
-      const stylesPath = resolveStyles(compDir, specifier);
-      if (!stylesPath) continue;
-      if (isDivergentSkin(readFileSync(stylesPath, "utf8"), skinName)) {
-        platforms.push(ext === ".ios.tsx" ? "iOS" : "Android");
-      }
-    }
-    if (platforms.length && exportName) divergent.push({ dir, group, exportName, platforms });
-  }
-}
+const components = componentSkins(KIT);
+const divergent = components.filter((c) => Object.keys(c.divergent).length > 0);
 
 const registry = readFileSync(REGISTRY, "utf8");
 function registeredIn(table: "ios" | "android"): Set<string> {
@@ -102,27 +47,43 @@ function registeredIn(table: "ios" | "android"): Set<string> {
 const iosTable = registeredIn("ios");
 const androidTable = registeredIn("android");
 
+const TABLE: Record<Platform, Set<string>> = { iOS: iosTable, Android: androidTable };
+
 const missing: string[] = [];
 for (const c of divergent) {
-  const gaps: string[] = [];
-  if (c.platforms.includes("iOS") && !iosTable.has(c.exportName)) gaps.push("ios");
-  if (c.platforms.includes("Android") && !androidTable.has(c.exportName)) gaps.push("android");
-  if (gaps.length) missing.push(`  ${c.exportName} (src/${c.group}/${c.dir}) is absent from the ${gaps.join(" and ")} table`);
+  for (const platform of Object.keys(c.divergent) as Platform[]) {
+    for (const name of c.exports) {
+      if (!TABLE[platform].has(name)) missing.push(`  ${name} (src/${c.group}/${c.dir}) is absent from the ${platform === "iOS" ? "ios" : "android"} table: its entry ${c.divergent[platform]}`);
+    }
+  }
 }
 
-if (missing.length) {
-  console.error(
-    `check:skins - ${missing.length} component(s) render their own per-OS skin but are missing from ` +
-      `docs/src/core/platform-skins.ts, so the docs three-up shows the WEB build in those rows:\n` +
-      `${missing.join("\n")}\n\n` +
-      `Add the literal .ios.js / .android.js imports and the table entries. If a component genuinely ` +
-      `looks the same on every platform, make that explicit in its styles module (export const ` +
-      `iosSkin: T = webSkin;) and this check will stop asking.`,
-  );
+const stale: string[] = [];
+for (const platform of ["iOS", "Android"] as const) {
+  for (const name of TABLE[platform]) {
+    const owner = components.find((c) => c.exports.includes(name));
+    if (!owner || !owner.divergent[platform]) stale.push(`  ${name} is in the ${platform === "iOS" ? "ios" : "android"} table but its ${platform} build is the web build`);
+  }
+}
+
+if (missing.length || stale.length) {
+  if (missing.length) {
+    console.error(
+      `check:skins - ${missing.length} platform build(s) look different from the web but are missing from ` +
+        `docs/src/core/platform-skins.ts, so the docs three-up shows the WEB build in those rows:\n` +
+        `${missing.join("\n")}\n\n` +
+        `Add the literal .ios.js / .android.js imports and the table entries. If a component genuinely ` +
+        `looks the same on every platform, make that explicit in its styles module (export const ` +
+        `iosSkin: T = webSkin;) and inject no platform parts, and this check will stop asking.`,
+    );
+  }
+  if (stale.length) {
+    console.error(`check:skins - ${stale.length} registry entr(ies) name a build that is the web build on that platform:\n${stale.join("\n")}`);
+  }
   process.exit(1);
 }
 
 console.log(
-  `✓ platform-skins.ts covers every divergent skin (${divergent.length} components render per-OS; ` +
-    `${iosTable.size} iOS and ${androidTable.size} Android entries registered)`,
+  `✓ platform-skins.ts covers every divergent build (${divergent.length} components render per-OS; ` +
+    `${iosTable.size} iOS and ${androidTable.size} Android entries registered, none stale)`,
 );

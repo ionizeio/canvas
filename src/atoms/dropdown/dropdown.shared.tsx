@@ -2,7 +2,7 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { View, Pressable, Text, useHugStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, useRovingFocus, isRTL, RippleClip, cornerRadii, type StyleProp, type ViewStyle, withInnerFill } from "../../style/index.js";
-import { Button } from "../button/button.js";
+import { Button as WebButton } from "../button/button.js";
 import { Icon, type IconName } from "../icon/icon.js";
 import { wrapper, wrapperLifted, customTrigger, type DropdownSkin } from "./dropdown.styles.js";
 
@@ -130,7 +130,17 @@ const menuAnchor = (gap: number): ViewStyle => ({ position: "absolute", top: "10
 const menuAnchorEnd = (gap: number): ViewStyle => ({ position: "absolute", top: "100%", end: 0, zIndex: 50, marginTop: gap });
 
 /** Build a Dropdown component from a platform skin. */
-export function createDropdown(skin: DropdownSkin) {
+/**
+ * The components a Dropdown draws with that look different per platform. The web
+ * builds are the defaults; the iOS and Android entries pass their own, so the docs'
+ * platform columns render them truthfully (a device resolves them by platform either way).
+ */
+export interface DropdownParts {
+  Button?: typeof WebButton;
+}
+
+export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
+  const Button = parts.Button ?? WebButton;
   return function Dropdown(props: DropdownProps) {
     const { trigger, children, triggerLabel, label, title, description, items, open: openProp, onOpenChange, onSelect, alignEnd, disabled, testID, style } = props;
     const theme = useMaterialTheme({ layer: "dense" });

@@ -1,15 +1,8 @@
 import { destructiveText } from "../../style/destructive-text.js";
 import { scrimFill } from "../../style/scrim.js";
 import { primaryText } from "../../style/primary-text.js";
-import { type ComponentType } from "react";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, alpha, widths, shape } from "../../style/index.js";
-import { type InputProps } from "../../atoms/input/input.shared.js";
-
-// The confirmation field is rendered through the platform-correct Input atom,
-// passed to `createAlertDialog` by each platform's thin `.tsx`/`.ios`/`.android`
-// file. Typing it as the atom's component preserves the public Input API.
-export type InputComponent = ComponentType<InputProps>;
 
 // Co-located AlertDialog skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so they follow light/dark). The card is OPAQUE on every

@@ -61,8 +61,8 @@ import { Board as BoardIOS } from "../../../src/organisms/board/board.ios.js";
 import { Board as BoardAndroid } from "../../../src/organisms/board/board.android.js";
 import { Avatar as AvatarIOS, AvatarGroup as AvatarGroupIOS, AvatarMenu as AvatarMenuIOS } from "../../../src/atoms/avatar/avatar.ios.js";
 import { Avatar as AvatarAndroid, AvatarGroup as AvatarGroupAndroid, AvatarMenu as AvatarMenuAndroid } from "../../../src/atoms/avatar/avatar.android.js";
-import { Breadcrumb as BreadcrumbIOS } from "../../../src/atoms/breadcrumb/breadcrumb.ios.js";
-import { Breadcrumb as BreadcrumbAndroid } from "../../../src/atoms/breadcrumb/breadcrumb.android.js";
+import { Breadcrumb as BreadcrumbIOS, BreadcrumbItem as BreadcrumbItemIOS } from "../../../src/atoms/breadcrumb/breadcrumb.ios.js";
+import { Breadcrumb as BreadcrumbAndroid, BreadcrumbItem as BreadcrumbItemAndroid } from "../../../src/atoms/breadcrumb/breadcrumb.android.js";
 import { Slider as SliderIOS } from "../../../src/atoms/slider/slider.ios.js";
 import { Slider as SliderAndroid } from "../../../src/atoms/slider/slider.android.js";
 import { Progress as ProgressIOS } from "../../../src/atoms/progress/progress.ios.js";
@@ -119,6 +119,14 @@ import { Chip as ChipIOS } from "../../../src/atoms/chip/chip.ios.js";
 import { Chip as ChipAndroid } from "../../../src/atoms/chip/chip.android.js";
 import { Emblem as EmblemIOS } from "../../../src/atoms/emblem/emblem.ios.js";
 import { Emblem as EmblemAndroid } from "../../../src/atoms/emblem/emblem.android.js";
+import { DragDropProvider as DragDropProviderIOS, DropZone as DropZoneIOS, Draggable as DraggableIOS, DragHandle as DragHandleIOS } from "../../../src/organisms/drag-drop/drag-drop.ios.js";
+import { DragDropProvider as DragDropProviderAndroid, DropZone as DropZoneAndroid, Draggable as DraggableAndroid, DragHandle as DragHandleAndroid } from "../../../src/organisms/drag-drop/drag-drop.android.js";
+import { DashboardGrid as DashboardGridIOS } from "../../../src/organisms/dashboard-grid/dashboard-grid.ios.js";
+import { DashboardGrid as DashboardGridAndroid } from "../../../src/organisms/dashboard-grid/dashboard-grid.android.js";
+import { MetricBreakdown as MetricBreakdownIOS } from "../../../src/charts/metric-breakdown/metric-breakdown.ios.js";
+import { MetricBreakdown as MetricBreakdownAndroid } from "../../../src/charts/metric-breakdown/metric-breakdown.android.js";
+import { GeoMap as GeoMapIOS } from "../../../src/charts/geo-map/geo-map.ios.js";
+import { GeoMap as GeoMapAndroid } from "../../../src/charts/geo-map/geo-map.android.js";
 
 export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> = {
   ios: {
@@ -138,7 +146,9 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Stepper: StepperIOS, InputOTP: InputOTPIOS, Collapsible: CollapsibleIOS,
     Carousel: CarouselIOS, Toast: ToastIOS, ToastProvider: ToastProviderIOS, useToast: useToastIOS,
     Chip: ChipIOS, Emblem: EmblemIOS,
-    Swatch: SwatchIOS, Board: BoardIOS,
+    Swatch: SwatchIOS, Board: BoardIOS, BreadcrumbItem: BreadcrumbItemIOS,
+    DragDropProvider: DragDropProviderIOS, DropZone: DropZoneIOS, Draggable: DraggableIOS, DragHandle: DragHandleIOS,
+    DashboardGrid: DashboardGridIOS, MetricBreakdown: MetricBreakdownIOS, GeoMap: GeoMapIOS,
   },
   android: {
     Switch: SwitchAndroid, Button: ButtonAndroid, Checkbox: CheckboxAndroid, Listbox: ListboxAndroid, Radio: RadioAndroid,
@@ -157,6 +167,8 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Stepper: StepperAndroid, InputOTP: InputOTPAndroid, Collapsible: CollapsibleAndroid,
     Carousel: CarouselAndroid, Toast: ToastAndroid, ToastProvider: ToastProviderAndroid, useToast: useToastAndroid,
     Chip: ChipAndroid, Emblem: EmblemAndroid,
-    Swatch: SwatchAndroid, Board: BoardAndroid,
+    Swatch: SwatchAndroid, Board: BoardAndroid, BreadcrumbItem: BreadcrumbItemAndroid,
+    DragDropProvider: DragDropProviderAndroid, DropZone: DropZoneAndroid, Draggable: DraggableAndroid, DragHandle: DragHandleAndroid,
+    DashboardGrid: DashboardGridAndroid, MetricBreakdown: MetricBreakdownAndroid, GeoMap: GeoMapAndroid,
   },
 };

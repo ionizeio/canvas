@@ -4,8 +4,8 @@ import { useHardwareBack } from "../../style/use-hardware-back.js";
 import { useId, useState, type ReactNode } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
 import { View, Text, Pressable, RippleClip, cornerRadii, GlassSurface, Entrance, Portal, useDialogFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
-import { Button } from "../../atoms/button/button.js";
-import { Input } from "../../atoms/input/input.js";
+import { Button as WebButton } from "../../atoms/button/button.js";
+import { Input as WebInput } from "../../atoms/input/input.js";
 import * as s from "./dialog.styles.js";
 import { type Size, type DialogSkin } from "./dialog.styles.js";
 import { glassMessageStyle } from "../../style/glass-message.js";
@@ -110,7 +110,19 @@ function Present({ overlay, children }: { overlay: boolean; children: ReactNode 
 }
 
 /** Build a Dialog component from a platform skin. */
-export function createDialog(skin: DialogSkin) {
+/**
+ * The components a Dialog draws with that look different per platform. The web
+ * builds are the defaults; the iOS and Android entries pass their own, so the docs'
+ * platform columns render them truthfully (a device resolves them by platform either way).
+ */
+export interface DialogParts {
+  Button?: typeof WebButton;
+  Input?: typeof WebInput;
+}
+
+export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
+  const Button = parts.Button ?? WebButton;
+  const Input = parts.Input ?? WebInput;
   return function Dialog(props: DialogProps) {
     const {
       children,

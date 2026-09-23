@@ -6,7 +6,7 @@ import { CHART_ROOT } from "../shared/chart-frame.js";
 import { formatCompact } from "../shared/chart-math.js";
 import { BreakdownRows, type BreakdownRow } from "../shared/breakdown-rows.js";
 import { Sparkline } from "../sparkline/sparkline.js";
-import { Chip } from "../../atoms/chip/chip.js";
+import { Chip as WebChip } from "../../atoms/chip/chip.js";
 
 // Shared MetricBreakdown shell. The decomposed-metric dashboard card: a
 // preformatted headline value with its caption, an optional secondary rate
@@ -105,7 +105,17 @@ function captionStyle(tokens: ColorTokens) {
   };
 }
 
-export function createMetricBreakdown(skin: ChartSkin) {
+/**
+ * The components a MetricBreakdown draws with that look different per platform. The web
+ * builds are the defaults; the iOS and Android entries pass their own, so the docs'
+ * platform columns render them truthfully (a device resolves them by platform either way).
+ */
+export interface MetricBreakdownParts {
+  Chip?: typeof WebChip;
+}
+
+export function createMetricBreakdown(skin: ChartSkin, parts: MetricBreakdownParts = {}) {
+  const Chip = parts.Chip ?? WebChip;
   return function MetricBreakdown(props: MetricBreakdownProps) {
     const { value, label, rate, rateLabel, sparkUnit, breakdown, chips, chipsLabel, testID, style } = props;
     const theme = useMaterialTheme({ layer: "content" });

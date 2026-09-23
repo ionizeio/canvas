@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Animated, type GestureResponderEvent } from "react-native";
 import { View, Pressable, Text, ScrollView, useTheme, useReducedMotion, useHardwareBack, supportsNativeDriver } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
+import type { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { type Density } from "./sidebar.styles.js";
 import { SidebarItemBadge, SidebarRowFrame, type SidebarItem, type SidebarRowWash, type SidebarSection } from "./sidebar.item.js";
 // Type-only, so it is erased whole and leaves no runtime edge back to the module
@@ -43,7 +44,7 @@ export interface SidebarDrillDownProps {
 }
 
 /** Build the drill-down body from a Sidebar skin (mirrors createSidebar's skin closure). */
-export function createSidebarDrillDown(skin: SidebarSkin) {
+export function createSidebarDrillDown(skin: SidebarSkin, Badge: typeof WebBadge) {
   return function SidebarDrillDown({ groups, activeIndex, activeSectionKey, density, open, onSelect, onRequestClose, contentInsetBottom, fill = true }: SidebarDrillDownProps) {
     const { tokens } = useTheme();
     const reduced = useReducedMotion();
@@ -121,7 +122,7 @@ export function createSidebarDrillDown(skin: SidebarSkin) {
             <Text style={skin.label(tokens, active, density)} numberOfLines={1}>
               {item.label}
             </Text>
-            <SidebarItemBadge item={item} />
+            <SidebarItemBadge item={item} Badge={Badge} />
           </Pressable>
         </SidebarRowFrame>
       );

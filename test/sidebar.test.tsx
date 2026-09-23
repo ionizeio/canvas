@@ -194,7 +194,8 @@ describe("Sidebar responsive rail (wide)", () => {
 describe("Sidebar narrow drill-down (SidebarDrillDown)", () => {
   // Drive the drill-down presentation directly (it is what the responsive drawer renders below
   // the breakpoint), sidestepping the fixed-1280 test viewport that can't reach the drawer path.
-  const DrillDown = createSidebarDrillDown(webSkin);
+  // Built the way createSidebar builds it: the web skin with the web Badge part.
+  const DrillDown = createSidebarDrillDown(webSkin, Badge);
   const GROUPS = [
     { section: { id: "over", items: [{ id: "home", label: "Home" }] }, key: "over", rows: [{ item: { id: "home", label: "Home" }, index: 0 }] },
     {
