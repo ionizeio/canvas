@@ -120,6 +120,19 @@ for (const [scheme, js, css] of [
   for (const [name, jsValue] of Object.entries(js)) {
     const raw = css[name];
     if (raw === undefined) continue; // the name check above already reports this
+    // The translucent roles (the soft washes, the scrim, the shade, the field fill) are
+    // rgba by contract on both sides, and compare through the rgba canonicalizer like the
+    // glass family below: a value either side cannot parse as rgba is itself the drift.
+    if (jsValue.startsWith("rgba")) {
+      const cssRgba = cssRgbaToCanonical(raw);
+      const jsRgba = cssRgbaToCanonical(jsValue);
+      if (cssRgba === null || jsRgba === null) {
+        drifted.push(`  ${scheme.padEnd(5)} --${name.padEnd(24)} not an rgba() on both sides: css ${raw.trim()}  /  js ${jsValue}`);
+      } else if (cssRgba !== jsRgba) {
+        drifted.push(`  ${scheme.padEnd(5)} --${name.padEnd(24)} css ${cssRgba}  !=  js ${jsRgba}`);
+      }
+      continue;
+    }
     const cssHex = cssColorToHex(raw);
     if (cssHex === null) continue; // var() alias or non-color; nothing to compare
     if (cssHex !== jsValue.toLowerCase()) {

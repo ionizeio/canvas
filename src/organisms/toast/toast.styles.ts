@@ -90,7 +90,7 @@ function isDarkFill(color: string): boolean {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b < 128;
 }
 
-// The M3 inverse-primary role, brand-preserving: the OPPOSITE scheme's brand indigo,
+// The M3 inverse-primary role, brand-preserving: the OPPOSITE scheme's brand text color,
 // picked off the bar's own fill (`foreground`) so the action reads on the inverted
 // surface: the lighter dark-scheme text role on the near-black light-mode bar,
 // the deeper light-scheme text role on the near-white dark-mode bar. Keep the

@@ -1,4 +1,5 @@
 import { destructiveText } from "../../style/destructive-text.js";
+import { scrimFill } from "../../style/scrim.js";
 import { primaryText } from "../../style/primary-text.js";
 import { type ComponentType } from "react";
 import { type ViewStyle, type TextStyle } from "react-native";
@@ -63,7 +64,7 @@ export type ActionLayout = "buttons" | "capsule";
 // feedback onto each piece.
 export interface AlertDialogSkin {
   /** The contained dim scrim that centers the card within the preview area. */
-  backdrop: ViewStyle;
+  backdrop: (t: ColorTokens) => ViewStyle;
   /** The card base: shape, border (or lack of), padding, shadow. tokens drive fill. */
   card: (t: ColorTokens) => ViewStyle;
   /** Title type + alignment (centered on iOS, left on Android/web). */
@@ -89,7 +90,7 @@ export interface AlertDialogSkin {
    *  so a destructive confirm is a red LABEL on a transparent button, never a
    *  filled red button (mirrors the plain Dialog). */
   textButton: ViewStyle | null;
-  /** The Android text-button label; brand `primary` indigo, `destructive` reds an
+  /** The Android text-button label; brand `primary`, `destructive` reds an
    *  irreversible confirm. */
   textButtonLabel: ((t: ColorTokens, destructive: boolean) => TextStyle) | null;
   /** The Android ripple over a text button; null on the other platforms. */
@@ -154,13 +155,13 @@ export const cardBase: ViewStyle = { width: "100%" };
 // 16pt/600 title and 14pt muted description; a right-aligned action row (gap-2,
 // mt-6) of an outline Cancel Button plus a primary/destructive confirm Button.
 export const webSkin: AlertDialogSkin = {
-  backdrop: {
+  backdrop: (t) => ({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: shape.web.dialog,
-    backgroundColor: alpha("#000000", 0.6),
+    backgroundColor: scrimFill(t, 0.6),
     padding: 32,
-  },
+  }),
   card: (t) => ({
     borderRadius: shape.web.dialog,
     borderWidth: 1,
@@ -202,13 +203,13 @@ export const webSkin: AlertDialogSkin = {
 const IOS_RADIUS = 28;
 const IOS_CAPSULE_RADIUS = 999;
 export const iosSkin: AlertDialogSkin = {
-  backdrop: {
+  backdrop: (t) => ({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 8,
-    backgroundColor: alpha("#000000", 0.4),
+    backgroundColor: scrimFill(t, 0.4),
     padding: 32,
-  },
+  }),
   // Rounded card with content padding; no border, soft shadow.
   card: (t) => ({
     borderRadius: IOS_RADIUS,
@@ -280,13 +281,13 @@ export const iosSkin: AlertDialogSkin = {
 // `destructive` red. The shell renders these with its ghost (text) Buttons; press =
 // android_ripple, supplied here as the brand state layer.
 export const androidSkin: AlertDialogSkin = {
-  backdrop: {
+  backdrop: (t) => ({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 8,
-    backgroundColor: alpha("#000000", 0.32),
+    backgroundColor: scrimFill(t, 0.32),
     padding: 32,
-  },
+  }),
   card: (t) => ({
     borderRadius: 28,
     backgroundColor: t.popover,
@@ -305,7 +306,7 @@ export const androidSkin: AlertDialogSkin = {
   // requires a concrete value.
   cancelButton: { ghost: true },
   // M3 dialog actions are flat TEXT buttons (no fill): a Cancel then a Confirm,
-  // both in brand `primary` indigo, with a destructive confirm tinting only its
+  // both in brand `primary`, with a destructive confirm tinting only its
   // LABEL the `destructive` red — never a filled red button (mirrors the plain
   // Dialog's Android footer). Label = M3 Label Large (14/20, weight 500).
   textButton: {

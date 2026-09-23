@@ -93,7 +93,7 @@ describe("real destructive text consumers", () => {
         <p.Dropdown open trigger="Actions" items={items} onSelect={() => selected++} />
       </ThemeProvider>);
       sizeMenu(container);
-      const expected = p.name === "web" ? palette[scheme === "light" ? "red-700" : "red-400"] : tokens["destructive-text"];
+      const expected = p.name === "web" ? palette[scheme === "light" ? "red-700" : "red-300"] : tokens["destructive-text"];
       expect(rgb(screen.getByText("Delete").style.color)).toBe(rgb(expected));
       const unavailable = screen.getByRole("menuitem", { name: "Unavailable" });
       expect(unavailable.getAttribute("aria-disabled")).toBe("true");
@@ -106,7 +106,7 @@ describe("real destructive text consumers", () => {
         <p.RowMenu open items={items} onSelect={() => selected++} />
       </ThemeProvider>);
       sizeMenu(row.container);
-      expect(rgb(screen.getByText("Delete").style.color)).toBe(rgb(palette[scheme === "light" ? "red-700" : "red-400"]));
+      expect(rgb(screen.getByText("Delete").style.color)).toBe(rgb(palette[scheme === "light" ? "red-700" : "red-300"]));
       fireEvent.click(screen.getByRole("menuitem", { name: "Unavailable" }));
       expect(selected).toBe(1);
       fireEvent.click(screen.getByRole("menuitem", { name: "Delete" }));

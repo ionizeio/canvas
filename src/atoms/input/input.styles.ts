@@ -4,7 +4,7 @@ import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, FOCUS_RESET, activeIndicator, shape, type FloatingLabelStyles } from "../../style/index.js";
 
 // Co-located Input skins, one per platform. The BRAND survives on every platform
-// (the cursor/selection is always the sky `primary`, the focus accent is the
+// (the cursor/selection is always the brand `primary`, the focus accent is the
 // `ring`, never a platform default), and only the native SHAPE, sizing, fill,
 // border treatment, and press feedback change per OS:
 //   iOS: the "iOS Mobile Input Fields" reference (Figma N8TScrzAPwpmwxFS1032my,

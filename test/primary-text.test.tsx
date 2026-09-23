@@ -5,6 +5,7 @@ import { renderToString } from "react-dom/server";
 import { ThemeProvider, useTheme, type ThemeTokenOverrides } from "../src/style/theme.tsx";
 import { colorsByScheme, type ColorScheme } from "../src/style/tokens.ts";
 import { primaryText } from "../src/style/primary-text.ts";
+import { actionFill, actionInk } from "../src/style/action.ts";
 import { Typography } from "../src/atoms/typography/typography.tsx";
 import { Button } from "../src/atoms/button/button.tsx";
 import { Emblem } from "../src/atoms/emblem/emblem.tsx";
@@ -56,8 +57,10 @@ describe("primary-text compatibility", () => {
       render(<ThemeProvider scheme={scheme}><Probe /></ThemeProvider>);
       const tokens = colorsByScheme[scheme];
       expect(renderedColor("primary-text")).toBe(cssColor(primaryText(tokens)));
-      expect(cssColor(screen.getByRole("button", { name: "Filled action" }).style.backgroundColor)).toBe(cssColor(tokens.primary));
-      expect(cssColor(screen.getByText("Filled action").style.color)).toBe(cssColor(tokens["primary-foreground"]));
+      // The filled call-to-action paints the scheme's action pair (the Dark Factory green),
+      // apart from the brand text above.
+      expect(cssColor(screen.getByRole("button", { name: "Filled action" }).style.backgroundColor)).toBe(cssColor(actionFill(tokens)));
+      expect(cssColor(screen.getByText("Filled action").style.color)).toBe(cssColor(actionInk(tokens)));
       expect(cssColor(screen.getByText("Text action").style.color)).toBe(cssColor(primaryText(tokens)));
     });
 
@@ -80,7 +83,7 @@ describe("primary-text compatibility", () => {
       expect(renderedColor("primary-text")).toBe(cssColor(primaryText(colorsByScheme[scheme])));
       rerender(<ThemeProvider scheme={scheme} tokens={{ "primary-text": "#123456" }}><Probe /></ThemeProvider>);
       expect(renderedColor("primary-text")).toBe(cssColor("#123456"));
-      expect(cssColor(screen.getByRole("button", { name: "Filled action" }).style.backgroundColor)).toBe(cssColor(colorsByScheme[scheme].primary));
+      expect(cssColor(screen.getByRole("button", { name: "Filled action" }).style.backgroundColor)).toBe(cssColor(actionFill(colorsByScheme[scheme])));
     });
 
     for (const [platform, Monogram, Navigation] of [

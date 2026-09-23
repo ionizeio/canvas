@@ -16,8 +16,8 @@ const within = (a: string, b: string, step: number) =>
 
 describe("fieldBorder", () => {
   it("reads the field-border token in both schemes", () => {
-    expect(fieldBorder(lightColors)).toBe("#d1d5db");
-    expect(fieldBorder(darkColors)).toBe("#3a3a3c");
+    expect(fieldBorder(lightColors)).toBe(lightColors["field-border"]!);
+    expect(fieldBorder(darkColors)).toBe(darkColors["field-border"]!);
   });
 
   it("falls back to `input` for a legacy map that omits the token", () => {
@@ -36,8 +36,14 @@ describe("fieldErrorFill", () => {
     expect(within(fieldErrorFill(lightColors), "#fef2f2", 2)).toBe(true);
   });
 
-  it("reproduces the reference's dark error wash from card + destructive", () => {
-    expect(within(fieldErrorFill(darkColors), "#2c1b1b", 8)).toBe(true);
+  it("tints the dark card toward the destructive red without leaving the dark surface", () => {
+    // DF's dark card carries a violet cast the iOS field reference (#2c1b1b) never had, so
+    // the dark wash is checked by what it must do: read redder than the card, stay dark.
+    const [cr, cg, cb] = channels(darkColors.card);
+    const [r, g, b] = channels(fieldErrorFill(darkColors));
+    expect(r - cr).toBeGreaterThan(8);
+    expect(r - cr).toBeGreaterThan(Math.max(g - cg, b - cb));
+    expect(Math.max(r, g, b)).toBeLessThan(96);
   });
 
   it("follows a rebranded destructive hue", () => {

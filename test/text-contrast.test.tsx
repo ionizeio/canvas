@@ -7,7 +7,7 @@ import { createBadge } from "../src/atoms/badge/badge.shared.tsx";
 import * as badgeSkins from "../src/atoms/badge/badge.styles.ts";
 import { createAlert } from "../src/molecules/alert/alert.shared.tsx";
 import * as alertSkins from "../src/molecules/alert/alert.styles.ts";
-import { colorsByScheme, glassByScheme, type ColorTokens } from "../src/style/tokens.ts";
+import { colorsByScheme, glassByScheme, palette, type ColorTokens } from "../src/style/tokens.ts";
 import { androidSkin, iosSkin, webSkin } from "../src/atoms/button/button.styles.ts";
 import { blockDeclarations, cssColorToHex, stripComments } from "../tools/tokens/css-tokens.ts";
 import * as actionSheetSkins from "../src/organisms/action-sheet/action-sheet.styles.ts";
@@ -32,62 +32,16 @@ import * as textareaSkins from "../src/atoms/textarea/textarea.styles.ts";
 import * as dropdownSkins from "../src/atoms/dropdown/dropdown.styles.ts";
 import * as rowMenuSkins from "../src/organisms/row-menu/row-menu.styles.ts";
 import { destructiveText } from "../src/style/destructive-text.ts";
+import { scrimFill } from "../src/style/scrim.ts";
+import { type Rgba, type SrgbColor, rgba, composite, luminance, contrast, textContrast, paint, primaryTextSurfaces, neighborhood, opacity, groupState, destructiveStates } from "../tools/tokens/text-beds.ts";
 import { toneColor } from "../src/atoms/typography/typography.styles.ts";
 import { Tabs as AndroidTabs } from "../src/organisms/tabs/tabs.android.tsx";
 import { Calendar } from "../src/organisms/calendar/calendar.tsx";
+import { Avatar } from "../src/atoms/avatar/avatar.tsx";
+import { Avatar as IOSAvatar } from "../src/atoms/avatar/avatar.ios.tsx";
+import { Avatar as AndroidAvatar } from "../src/atoms/avatar/avatar.android.tsx";
 
 afterEach(cleanup);
-
-type Rgba = readonly [red: number, green: number, blue: number, alpha: number];
-type SrgbColor = string | Rgba;
-
-// Parse the hex and rgb/rgba forms used by the source tokens and rendered text.
-// Keep fractional channels throughout compositing, before WCAG linearization.
-function rgba(color: SrgbColor): Rgba {
-  if (typeof color !== "string") return color;
-  const hex = /^#([0-9a-f]{6})([0-9a-f]{2})?$/i.exec(color);
-  if (hex) return [
-    parseInt(hex[1]!.slice(0, 2), 16), parseInt(hex[1]!.slice(2, 4), 16), parseInt(hex[1]!.slice(4, 6), 16),
-    hex[2] ? parseInt(hex[2], 16) / 255 : 1,
-  ];
-  const functional = /^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*(?:,\s*([\d.]+)\s*)?\)$/.exec(color);
-  if (functional) {
-    const channels = functional.slice(1, 4).map(Number);
-    const alpha = functional[4] === undefined ? 1 : Number(functional[4]);
-    if (channels.every(channel => Number.isFinite(channel) && channel >= 0 && channel <= 255) &&
-        Number.isFinite(alpha) && alpha >= 0 && alpha <= 1) {
-      return [channels[0]!, channels[1]!, channels[2]!, alpha];
-    }
-  }
-  throw new Error(`Expected an sRGB color: ${color}`);
-}
-
-function composite(foreground: SrgbColor, background: SrgbColor): Rgba {
-  const front = rgba(foreground), back = rgba(background);
-  const alpha = front[3] + back[3] * (1 - front[3]);
-  if (alpha === 0) return [0, 0, 0, 0];
-  const channel = (index: 0 | 1 | 2) => (front[index] * front[3] + back[index] * back[3] * (1 - front[3])) / alpha;
-  return [channel(0), channel(1), channel(2), alpha];
-}
-
-function luminance(color: SrgbColor): number {
-  const channels = rgba(color);
-  if (channels[3] !== 1) throw new Error("Composite translucent colors onto an opaque backdrop before measuring contrast");
-  const [r, g, b] = channels.slice(0, 3).map(channel => {
-    const value = channel / 255;
-    return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
-  });
-  return r! * 0.2126 + g! * 0.7152 + b! * 0.0722;
-}
-
-function contrast(a: SrgbColor, b: SrgbColor): number {
-  const [low, high] = [luminance(a), luminance(b)].sort((x, y) => x - y);
-  return (high! + 0.05) / (low! + 0.05);
-}
-
-function textContrast(text: SrgbColor, background: SrgbColor): number {
-  return contrast(composite(text, background), background);
-}
 
 type PairedToken = Exclude<keyof ColorTokens, "primary-text" | "destructive-text">;
 const PAIRS: [PairedToken, PairedToken][] = [
@@ -173,92 +127,6 @@ const hexOf = (color: string): string => {
   return "#" + channels.slice(1).map((channel) => Number(channel).toString(16).padStart(2, "0")).join("");
 };
 
-function paint(style: { color?: unknown; backgroundColor?: unknown }, property: "color" | "backgroundColor" = "color"): string {
-  const value = style[property];
-  if (typeof value !== "string") throw new Error(`Expected a source ${property}, received ${String(value)}`);
-  return value;
-}
-
-// Pin the supported default surface set. Use the actual layered skin fills,
-// including the two built-in compositions a neutral-pair check cannot catch.
-function primaryTextSurfaces(tokens: ColorTokens): [string, SrgbColor][] {
-  const neutral = ["background", "card", "popover", "muted"] as const;
-  const tonal = paint(tabsSkins.androidSkin.pillsFill(tokens, true, false), "backgroundColor");
-  const navTile = paint(navbarSkins.iosSkin.linkTile(tokens, false), "backgroundColor");
-  return [
-    ...neutral.map((key): [string, SrgbColor] => [key, tokens[key]]),
-    ...neutral.map((key): [string, SrgbColor] => [`tonal selected on ${key}`, composite(tonal, tokens[key])]),
-    ...neutral.map((key): [string, SrgbColor] => [`iOS Navbar inactive on ${key}`, composite(navTile, tokens[key])]),
-    ["today within range", composite(
-      paint(calendarSkins.webSkin.dayCellState(tokens, { selected: false, today: true }), "backgroundColor"),
-      composite(paint(calendarSkins.webSkin.rangeBand(tokens), "backgroundColor"), tokens.card),
-    )],
-  ];
-}
-
-function neighborhood(color: SrgbColor): Rgba[] {
-  const [r, g, b, a] = rgba(color);
-  const bounded = (channel: number) => Math.max(0, Math.min(255, channel));
-  const values: Rgba[] = [];
-  for (const dr of [-1, 0, 1]) for (const dg of [-1, 0, 1]) for (const db of [-1, 0, 1]) {
-    values.push([bounded(r + dr), bounded(g + dg), bounded(b + db), a]);
-  }
-  return values;
-}
-
-interface TextState { name: string; text: SrgbColor; fill: SrgbColor }
-function opacity(color: SrgbColor, value: number): Rgba {
-  const [r, g, b, a] = rgba(color);
-  return [r, g, b, a * value];
-}
-
-// Parent opacity composites the entire painted group onto its parent. The text
-// does not first blend into the already-dimmed row a second time.
-function groupState(name: string, text: SrgbColor, fill: SrgbColor, parent: SrgbColor, dim = 1): TextState {
-  return { name, text: composite(opacity(text, dim), parent), fill: composite(opacity(fill, dim), parent) };
-}
-
-function destructiveStates(t: ColorTokens): TextState[] {
-  const text = destructiveText(t);
-  const states: TextState[] = (["background", "card", "popover", "muted"] as const)
-    .map(key => ({ name: key, text, fill: t[key] }));
-  const field = textareaSkins.androidSkin.field(t, { focused: false, error: true });
-  states.push({ name: "Android filled Textarea", text, fill: paint(field, "backgroundColor") });
-  const dialog = dialogSkins.iosSkin;
-  const capsule = paint(dialog.capsule!(t, true, true), "backgroundColor");
-  const dialogText = paint(dialog.capsuleLabel!(t, true, true));
-  states.push(groupState("iOS Dialog resting", dialogText, capsule, t.popover));
-  states.push(groupState("iOS Dialog pressed", dialogText, capsule, t.popover, dialog.capsulePressedOpacity!));
-  const alert = alertDialogSkins.iosSkin;
-  states.push(groupState("iOS AlertDialog pressed", paint(alert.confirmLabelStyle!(t, true)),
-    paint(alert.confirmFill!(t, true), "backgroundColor"), t.popover, alert.pressedOpacity!));
-  const dropdown = dropdownSkins.iosSkin;
-  states.push(groupState("iOS Dropdown pressed", paint(dropdown.itemTextColor(t, false, true)),
-    paint(dropdown.itemPressed!(t), "backgroundColor"), t.popover, dropdown.pressedOpacity!));
-  for (const [name, skin] of [["web", actionSheetSkins.webSkin], ["ios", actionSheetSkins.iosSkin], ["android", actionSheetSkins.androidSkin]] as const) {
-    const surface = paint(skin.actionsCard(t), "backgroundColor");
-    const fill = skin.rowFill ? composite(paint(skin.rowFill(t), "backgroundColor"), surface) : surface;
-    const label = paint(skin.rowLabel(t, true, false));
-    states.push(groupState(`${name} ActionSheet resting`, label, fill, surface));
-    if (skin.pressedOpacity != null) {
-      states.push(groupState(`${name} ActionSheet pressed`, label, fill, surface, skin.pressedOpacity));
-    } else if (skin.ripple) {
-      // The ripple is behind the label; test its full declared state-layer alpha.
-      states.push({ name: `${name} ActionSheet ripple`, text: label, fill: composite(skin.ripple(t).color, fill) });
-    }
-  }
-  for (const [name, skin] of [["web", dropdownSkins.webSkin], ["ios", dropdownSkins.iosSkin], ["android", dropdownSkins.androidSkin]] as const) {
-    const label = paint(skin.itemTextColor(t, t === colorsByScheme.dark, true));
-    if (skin.ripple) states.push({ name: `${name} Dropdown ripple`, text: label, fill: composite(skin.ripple(t).color, t.popover) });
-    else if (skin.pressedOpacity == null) states.push({ name: `${name} Dropdown pressed`, text: label, fill: paint(skin.itemPressed!(t), "backgroundColor") });
-  }
-  for (const [name, skin] of [["web", rowMenuSkins.webSkin], ["ios", rowMenuSkins.iosSkin], ["android", rowMenuSkins.androidSkin]] as const) {
-    const label = paint(skin.rowTextColor({ label: "Delete", destructive: true }, false, t, t === colorsByScheme.dark));
-    const fill = skin.ripple ? composite(skin.ripple(t).color, t.popover) : paint(skin.itemPressed(t), "backgroundColor");
-    states.push({ name: `${name} fixed-red RowMenu pressed`, text: label, fill });
-  }
-  return states;
-}
 
 describe("error and destructive text on authored enabled surfaces", () => {
   for (const scheme of ["light", "dark"] as const) {
@@ -295,9 +163,15 @@ describe("error and destructive text on authored enabled surfaces", () => {
     expect(web["p-alert-confirm-destructive-fill"]).toBe("var(--destructive)");
     expect(web["p-alert-confirm-destructive-label"]).toBe("var(--destructive-foreground)");
     expect(blockDeclarations(platformCss, '[data-platform="android"]').decls["p-textarea-fill"]).toBe("var(--muted)");
-    expect(blockDeclarations(css, ":root").decls["p-menu-destructive"]).toBe("#d02533");
-    expect(blockDeclarations(css, ".dark").decls["p-menu-destructive"]).toBe("#dc6565");
-    for (const t of Object.values(colorsByScheme)) expect(t.ring).toBe("#3da3f5");
+    // The web hand-off's fixed menu red is the menus' own palette step (red-700, red-300
+    // dark), independent of the semantic destructive roles.
+    expect(blockDeclarations(css, ":root").decls["p-menu-destructive"]).toBe(palette["red-700"]);
+    expect(blockDeclarations(css, ".dark").decls["p-menu-destructive"]).toBe(palette["red-300"]);
+    // The focus ring is a non-text indicator (WCAG 1.4.11): 3:1 on every surface it can
+    // sit on, in each scheme.
+    for (const t of Object.values(colorsByScheme)) {
+      for (const surface of [t.background, t.card, t.popover, t.muted]) expect(contrast(t.ring, surface)).toBeGreaterThanOrEqual(3);
+    }
   });
 });
 
@@ -525,8 +399,7 @@ describe("ActionSheet message contrast", () => {
           { node: screen.getByText("Share document"), original: skin.headerTitle(tokens) },
           { node: screen.getByText("Choose how to share this document."), original: skin.headerMessage(tokens) },
         ];
-        const dim = rgba(StyleSheet.flatten(actionSheetSkins.scrimDim).backgroundColor as string);
-        const scrim: Rgba = [dim[0], dim[1], dim[2], dim[3] * skin.scrimOpacity];
+        const scrim: Rgba = rgba(scrimFill(tokens, skin.scrimOpacity));
         for (const { node, original } of fields) {
           const rendered = node.style.color;
           const promoted = scheme === "light" && surface === "glass" && original.color === tokens["muted-foreground"];
@@ -550,5 +423,34 @@ describe("ActionSheet message contrast", () => {
         expect(rgba(screen.getByText("Cancel").style.color)).toEqual(rgba(skin.cancelLabel(tokens).color as string));
       });
     }
+  }
+});
+
+const avatarPlatforms = [
+  { name: "web", Component: Avatar },
+  { name: "ios", Component: IOSAvatar },
+  { name: "android", Component: AndroidAvatar },
+];
+
+describe("Avatar initials contrast", () => {
+  // Enough names to land on every one of the eight identity fills (the hash is the
+  // component's own, so the test asserts the coverage rather than assuming it).
+  const first = ["Ada", "Grace", "Alan", "Edsger", "Barbara", "Donald", "Frances", "Ken"];
+  const last = ["Byron", "Hopper", "Turing", "Dijkstra", "Liskov"];
+  const names = first.flatMap((f) => last.map((l) => `${f} ${l}`));
+  for (const scheme of ["light", "dark"] as const) for (const { name, Component } of avatarPlatforms) {
+    it(`keeps ${scheme} solid ${name} initials at 4.5:1 on every identity fill`, () => {
+      const fills = new Set<string>();
+      for (const person of names) {
+        render(<ThemeProvider scheme={scheme} solid><Component name={person} testID="identity" /></ThemeProvider>);
+        const container = screen.getByTestId("identity");
+        const fill = container.style.backgroundColor;
+        const initials = within(container).getByText(person.split(" ").map((part) => part[0]).join(""));
+        fills.add(fill);
+        expect(textContrast(initials.style.color, rgba(fill))).toBeGreaterThanOrEqual(4.5);
+        cleanup();
+      }
+      expect(fills.size).toBe(8);
+    });
   }
 });

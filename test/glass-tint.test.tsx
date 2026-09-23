@@ -289,8 +289,10 @@ describe("GlassSurface layers", () => {
   it("a brand puck carries the primary-foreground ink at 4.5:1 over the page in both schemes", () => {
     for (const scheme of ["light", "dark"] as const) {
       const t = scheme === "light" ? lightColors : darkColors;
-      const fill = surfaceUnderFill(glassByScheme[scheme], "control", t.primary);
-      expect(fill).toContain(`${BRAND_TINT_ALPHA}`);
+      // Without tokens the resolver can only return the sheer floor; with them it solves the
+      // tint for the ink the skin paints (the primary pair).
+      expect(surfaceUnderFill(glassByScheme[scheme], "control", t.primary)).toContain(`${BRAND_TINT_ALPHA}`);
+      const fill = surfaceUnderFill(glassByScheme[scheme], "control", t.primary, undefined, t);
       expect(contrast(over(fill, t.background), rgb(t["primary-foreground"]))).toBeGreaterThanOrEqual(4.5);
     }
   });

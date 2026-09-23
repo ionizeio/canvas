@@ -3,6 +3,7 @@ import { render, screen, cleanup, fireEvent, act } from "@testing-library/react"
 import type { ReactNode } from "react";
 import { Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
+import { lightColors } from "../src/style/tokens.ts";
 import { Drawer } from "../src/organisms/drawer/drawer.tsx";
 import { ActionSheet } from "../src/organisms/action-sheet/action-sheet.tsx";
 import { Popover } from "../src/atoms/popover/popover.tsx";
@@ -258,12 +259,12 @@ describe("Drawer (full-screen Modal overlay)", () => {
     // tap-to-close scrim (accessible={false} — a backdrop, not a labelled control). Reach the
     // scrim structurally from the panel content — Text -> SafeAreaView -> the panel surface
     // (GlassSurface, one plain box in solid mode) -> panelPos -> slide wrapper -> scrim — and
-    // confirm a "0, 0, 0" dim backdrop is its sibling, so a structural drift fails loudly
-    // here instead of silently.
+    // confirm the theme's scrim dim backdrop is its sibling, so a structural drift fails
+    // loudly here instead of silently.
     const panel = screen.getByText("Drawer body");
     const scrim = panel.parentElement!.parentElement!.parentElement!.parentElement!.parentElement!;
     const dim = scrim.parentElement!.firstElementChild as HTMLElement;
-    expect(dim.style.backgroundColor).toContain("0, 0, 0");
+    expect(dim.style.backgroundColor).toContain(/rgba?\((\d+, \d+, \d+)/.exec(lightColors.scrim!)![1]!);
     fireEvent.click(scrim);
     expect(openState).toBe(false);
   });

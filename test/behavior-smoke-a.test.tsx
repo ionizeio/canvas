@@ -6,6 +6,7 @@ import { Alert } from "../src/molecules/alert/alert.tsx";
 import { Stats } from "../src/molecules/stats/stats.tsx";
 import { EmptyState } from "../src/molecules/empty-state/empty-state.tsx";
 import { Button } from "../src/atoms/button/button.tsx";
+import { lightColors } from "../src/style/tokens.ts";
 
 // Behavioral coverage for three "Light"-treatment molecules that previously had
 // mount-smoke only. These pin the regressable branches each shell owns: Alert's
@@ -21,7 +22,8 @@ const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
 
 // Semantic hues the kit resolves for these tones (Tailwind 600 in light mode).
 const GREEN = "22, 163, 74"; // green-600 (a rise, from the palette hue ramp)
-const SUCCESS = "25, 117, 68"; // the success token (Riskora green/800)
+// The success token's channels, as react-native-web writes them into a style.
+const SUCCESS = [1, 3, 5].map((i) => parseInt(lightColors.success.slice(i, i + 2), 16)).join(", ");
 const RED = "220, 38, 38"; // red-600 (a decline)
 
 describe("Alert", () => {

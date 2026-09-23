@@ -116,13 +116,13 @@ jobs:
       - name: Check parity with the design hand-off
         run: bun run check-parity:check
 
-      # Compares every semantic colour token with the Figma variable it derives from (the
-      # vendored Riskora export under tools/figma). The other colour guards compare files that
-      # both live behind this commit, so they can only prove the kit is internally consistent;
-      # this one reads the design source. The export is a snapshot too: re-read the variables
-      # from the Figma file when the kit changes, since that refresh is the real check.
-      - name: Check colour tokens against the Figma variables
-        run: bun run check-figma
+      # Compares every semantic colour token with the table derived by rule from Dark
+      # Factory's palettes (tools/darkfactory/tokens.json, from the vendored DF theme), and
+      # the table with what the rules produce now. The other colour guards compare files
+      # that both live behind this commit; these two read the design source. The DF theme is
+      # a snapshot too: `bun run df:vendor:check` against a DF checkout is the refresh.
+      - name: Check colour tokens against the Dark Factory derivation
+        run: bun run check-df && bun run df:tokens:check
 
       - name: Check CSS + JS size budgets
         run: bun run check-size

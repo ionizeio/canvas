@@ -67,7 +67,7 @@ export interface ChipProps {
   onRemove?: () => void;
   /**
    * Turns the chip into a filter toggle that owns its own selected state: pressing
-   * it lights up to the active tint (its color's fill, or the brand `primary` indigo
+   * it lights up to the active tint (its color's fill, or the brand `primary`
    * when the chip has no color) and back. Selection is controlled via `selected`,
    * uncontrolled via `defaultSelected`. Give it an `outline` base so the unselected
    * (border-only) and selected (filled) states read apart.
@@ -226,7 +226,7 @@ export function createChip(skin: ChipSkin) {
     const isSelected = selectable ? selectedState : accent;
 
     // Resolve the paint. A selected filter chip lights up to a filled tint of its
-    // color (or brand indigo when it has none); otherwise the color axis + `outline`
+    // color (or the brand primary when it has none); otherwise the color axis + `outline`
     // pick the tint, and `primary` maps to the indigo accent.
     let appearance: Appearance;
     if (selectedActive) {

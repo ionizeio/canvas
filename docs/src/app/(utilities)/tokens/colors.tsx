@@ -6,7 +6,6 @@ import {
   colorsByScheme,
   glassByScheme,
   palette,
-  brandColors,
   statusHues,
   Swatch,
   Row,
@@ -28,7 +27,7 @@ import { colorFormats } from "../../../ui/color";
 import { TokenH1, TokenLede, TokenSection, Callout, GradientFill } from "../../../ui/tokens-kit";
 
 // Every value on this page is read from the kit at render time (useTheme,
-// colorsByScheme, glassByScheme, palette, brandColors). Nothing is restated here:
+// colorsByScheme, glassByScheme, palette). Nothing is restated here:
 // a hard-coded table is how this page used to end up publishing a five-color chart
 // palette the kit stopped shipping.
 
@@ -40,18 +39,20 @@ const BRAND_KEYS: { key: keyof ColorTokens; name: string }[] = [
   { key: "primary-foreground", name: "primary-foreground" },
   { key: "primary-text", name: "primary-text" },
   { key: "ring", name: "ring" },
+  { key: "action", name: "action" },
+  { key: "action-foreground", name: "action-foreground" },
 ];
 
 const NEUTRAL_KEYS: { key: keyof ColorTokens; name: string }[] = [
   { key: "background", name: "background" },
   { key: "card", name: "card" },
   { key: "muted", name: "muted" },
-  // border and input carry the same value in both schemes, so the sheet samples
-  // them once rather than shipping two identical chips.
-  { key: "border", name: "border / input" },
-  // The iOS field's resting hairline: the one neutral that sits below the 3:1
-  // control floor on purpose (the iOS input-field reference's gray-300).
+  { key: "border", name: "border" },
+  // The text field's resting hairline: the one neutral that sits below the 3:1
+  // control floor on purpose (Dark Factory's field line, densified to stand apart
+  // from border). Every other control edge is input, which holds the floor.
   { key: "field-border", name: "field-border" },
+  { key: "input", name: "input" },
   { key: "muted-foreground", name: "muted-foreground" },
   { key: "foreground", name: "foreground" },
 ];
@@ -65,6 +66,21 @@ const SEMANTIC_KEYS: { key: keyof ColorTokens; name: string }[] = [
   { key: "accent", name: "accent" },
 ];
 
+// The translucent roles: washes, the field fill, the modal scrim, the shadow tint and
+// the inverse surface. Optional in a custom token map, so a sample only renders when
+// the active map carries the role.
+const OVERLAY_KEYS: (keyof ColorTokens)[] = [
+  "primary-soft",
+  "success-soft",
+  "warning-soft",
+  "destructive-soft",
+  "field-fill",
+  "scrim",
+  "shade",
+  "inverse",
+  "inverse-foreground",
+];
+
 const CHART_KEYS: (keyof ColorTokens)[] = [
   "chart-1",
   "chart-2",
@@ -76,15 +92,15 @@ const CHART_KEYS: (keyof ColorTokens)[] = [
   "chart-8",
 ];
 
-// The six curated accents, as real palette steps rather than approximate HSL. Only
-// primary and ring move; see the section's note.
-const ACCENTS: { name: string; step: string }[] = [
-  { name: "Indigo (default)", step: "indigo-600" },
-  { name: "Violet", step: "violet-500" },
-  { name: "Teal", step: "teal-600" },
-  { name: "Rose", step: "rose-500" },
-  { name: "Amber", step: "amber-500" },
-  { name: "Slate", step: "slate-600" },
+// The default accent, read from the kit, then five curated alternatives as real
+// palette steps rather than approximate HSL; see the section's note on what moves.
+const ACCENTS: { name: string; color: string }[] = [
+  { name: "Violet (default)", color: colorsByScheme.light.primary },
+  { name: "Indigo", color: palette["indigo-600"] },
+  { name: "Teal", color: palette["teal-600"] },
+  { name: "Rose", color: palette["rose-500"] },
+  { name: "Amber", color: palette["amber-500"] },
+  { name: "Slate", color: palette["slate-600"] },
 ];
 
 const TOKENS_SRC = `// tokens.ts: plain values for every platform
@@ -107,18 +123,20 @@ const THEME_RUNTIME = `// ThemeProvider supplies the active scheme;
 // components read it through useTheme().
 const { tokens } = useTheme();
 
-tokens.primary; // Fill: "${colorsByScheme.light.primary}" light, "${colorsByScheme.dark.primary}" dark
+tokens.primary; // Selection: "${colorsByScheme.light.primary}" light, "${colorsByScheme.dark.primary}" dark
+tokens.action ?? tokens.primary; // Call to action, including legacy token maps
 tokens["primary-text"] ?? tokens.primary; // Brand text, including legacy token maps
 tokens["destructive-text"] ?? tokens.destructive; // Error text, including legacy token maps`;
 
 const DYNAMIC = `<Button primary>Save</Button>
 
 // You set the look with a prop, never a class. The skin
-// builds { backgroundColor: tokens.primary }, so one prop
+// builds { backgroundColor: tokens.action }, so one prop
 // resolves live per theme:
-//   light       → ${colorsByScheme.light.primary}
-//   dark        → ${colorsByScheme.dark.primary}
-//   teal accent → #0d9488`;
+//   light       → ${colorsByScheme.light.action}
+//   dark        → ${colorsByScheme.dark.action}
+//   teal accent → #0d9488 (a primary-only override
+//                 repaints action too)`;
 
 // Do / don't pairs, each grounded in a Canvas principle (semantic prop styling,
 // paired foregrounds, useTheme-routed values, glass as a surface mode). These are
@@ -170,14 +188,23 @@ function ramp(tone: StatusTone): string {
   return `${statusHues[tone]}-50 / 200 / 500 / 700`;
 }
 
-// Optional text roles fall back for legacy complete token objects.
-function colorValue(tokens: ColorTokens, key: keyof ColorTokens): string {
+// Optional text roles fall back for legacy complete token objects; the translucent
+// roles have no single fallback color, so they read undefined when a map omits them.
+function colorValue(tokens: ColorTokens, key: keyof ColorTokens): string | undefined {
   if (key === "primary-text") return tokens[key] ?? tokens.primary;
   if (key === "destructive-text") return tokens[key] ?? tokens.destructive;
   if (key === "field-border") return tokens[key] ?? tokens.input;
   if (key === "action") return tokens[key] ?? tokens.primary;
   if (key === "action-foreground") return tokens[key] ?? tokens["primary-foreground"];
   return tokens[key];
+}
+
+/** The samples for a list of roles, skipping any role the active map does not carry. */
+function samples(tokens: ColorTokens, keys: { key: keyof ColorTokens; name: string }[]) {
+  return keys.map(({ key, name }) => {
+    const color = colorValue(tokens, key);
+    return color ? <Sample key={key} color={color} name={name} /> : null;
+  });
 }
 
 export default function ColorsScreen() {
@@ -187,16 +214,17 @@ export default function ColorsScreen() {
 
   // The reference table carries both schemes in both notations, which is where the
   // density belongs once the samples above are calm.
-  const referenceRows = (Object.keys(colorsByScheme.light) as (keyof ColorTokens)[]).sort().map((key) => {
+  const referenceRows = (Object.keys(colorsByScheme.light) as (keyof ColorTokens)[]).sort().flatMap((key) => {
     const light = colorValue(colorsByScheme.light, key);
     const darkValue = colorValue(colorsByScheme.dark, key);
-    return [
+    if (!light || !darkValue) return [];
+    return [[
       `--${key}`,
       light,
       colorFormats(light)[2],
       darkValue,
       colorFormats(darkValue)[2],
-    ];
+    ]];
   });
 
   return (
@@ -213,13 +241,11 @@ export default function ColorsScreen() {
 
         <TokenSection
           title="Brand"
-          description="The brand has separate colors for filled controls, labels on those fills, and text on neutral surfaces. primary-text colors links, text actions, and focused Android field labels."
-          anatomy="ring is the one brand token that does NOT flip with the scheme: the same indigo-500 in light and dark, so the focus outline reads against a light page, a dark page, and the primary fill it may sit on."
+          description="Two brand colors with different jobs. primary is the selection color: checked, selected and current states, links and focus. action is the call to action: primary buttons, meters and count badges. Each has a partner for the label on its fill, and primary-text colors links, text actions and focused Android field labels on neutral surfaces."
+          anatomy="ring is Dark Factory's violet as drawn, so the focus outline holds 3:1 on the page, the card and the muted surfaces. primary is the same hue solved until its label clears 4.5:1, which puts it a step darker than the ring in light."
         >
           <Grid minTileWidth={150} cozy>
-            {BRAND_KEYS.map((t) => (
-              <Sample key={t.key} color={colorValue(tokens, t.key)} name={t.name} />
-            ))}
+            {samples(tokens, BRAND_KEYS)}
             {/* The one place the sheet shows the other scheme outright, because the
                 light/dark difference IS the point for the accent. */}
             <Sample color={colorsByScheme.dark.primary} name="primary (dark)" />
@@ -229,13 +255,11 @@ export default function ColorsScreen() {
 
         <TokenSection
           title="Neutrals"
-          description="The zinc-based surfaces, hairlines, and text greys everything else sits on."
-          anatomy="background and card are the same white in light mode, and foreground is near-black on both: the hairline border is what keeps those samples visible at all."
+          description="Dark Factory's lavender-tinted surfaces, hairlines and indigo-gray inks that everything else sits on."
+          anatomy="The surfaces and the inks share one hue family, so hierarchy comes from lightness rather than from a change of hue. background is the frosted page, card the white pane on it (a deep indigo in dark), and muted the quieter panel inside a card."
         >
           <Grid minTileWidth={150} cozy>
-            {NEUTRAL_KEYS.map((t) => (
-              <Sample key={t.key} color={colorValue(tokens, t.key)} name={t.name} />
-            ))}
+            {samples(tokens, NEUTRAL_KEYS)}
           </Grid>
         </TokenSection>
 
@@ -245,11 +269,19 @@ export default function ColorsScreen() {
           anatomy="Use destructive-foreground on a destructive fill, and destructive-text for error text and semantic destructive actions. The default text role also accounts for the kit's tonal capsules and enabled pressed states."
         >
           <Grid minTileWidth={150} cozy>
-            {SEMANTIC_KEYS.map((t) => (
-              <Sample key={t.key} color={colorValue(tokens, t.key)} name={t.name} />
-            ))}
+            {samples(tokens, SEMANTIC_KEYS)}
           </Grid>
           <Typography destructive small>Destructive text uses destructive-text.</Typography>
+        </TokenSection>
+
+        <TokenSection
+          title="Washes and overlays"
+          description="The translucent roles: the soft washes behind a toned badge, an alert band or a tonal selection, the field fill, the scrim that dims the page behind a modal, the shadow tint, and the inverse surface of a tooltip or a snackbar."
+          anatomy="Each is optional in a custom token map. scrim is the one every modal reads today; the rest are adopted skin by skin, and a map that omits a role keeps that skin's older recipe."
+        >
+          <Grid minTileWidth={150} cozy>
+            {samples(tokens, OVERLAY_KEYS.map((key) => ({ key, name: key })))}
+          </Grid>
         </TokenSection>
 
         <TokenSection
@@ -280,9 +312,7 @@ export default function ColorsScreen() {
           anatomy="The series is identical in light and dark on purpose: the set was validated against both card surfaces, so a chart keeps its colour identity when the scheme flips."
         >
           <Grid minTileWidth={200} cozy>
-            {CHART_KEYS.map((key) => (
-              <Sample key={key} color={colorValue(tokens, key)} name={key} />
-            ))}
+            {samples(tokens, CHART_KEYS.map((key) => ({ key, name: key })))}
           </Grid>
         </TokenSection>
 
@@ -298,8 +328,8 @@ export default function ColorsScreen() {
                 with a bar floating over it. Built from the raw primitives on purpose,
                 and every colour still comes from a token (primary-foreground is the
                 kit's "text on a saturated fill"), never a literal. */}
-            <GradientFill colors={[brandColors["orb-indigo"], brandColors["orb-cyan"]]} height={236}>
-              {/* A dark scrim over the orb wash: the material has to bend something,
+            <GradientFill colors={[colorsByScheme.light.primary, colorsByScheme.light["chart-3"]]} height={236}>
+              {/* A dark scrim over the violet-to-teal wash: the material has to bend something,
                   and it reads on a deep backdrop the way the design system's own
                   glass sheet shows it. */}
               <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: alpha(palette["zinc-950"], 0.55) }} />
@@ -347,35 +377,20 @@ export default function ColorsScreen() {
 
         <TokenSection
           title="Rebranding the accent"
-          description="The default accent is Indigo. These palette steps are starting points for a custom brand. Check your filled controls and text against their actual backgrounds in both schemes."
-          anatomy="ThemeProvider preserves an existing primary-only override by using it for primary-text too. Supply primary-text separately when links or text actions need a different shade. primary-foreground remains the label on the primary fill; it is not recalculated."
+          description="The default accent is Dark Factory's violet. These palette steps are starting points for a custom brand. Check your filled controls and text against their actual backgrounds in both schemes."
+          anatomy="ThemeProvider carries a primary-only override into primary-text and into action, so links and the call-to-action buttons follow a one-color rebrand. Supply primary-text for a different text shade, and action with action-foreground to keep a distinct call-to-action color. primary-foreground remains the label on the primary fill; it is not recalculated."
         >
           <Grid minTileWidth={150} cozy>
             {ACCENTS.map((a) => (
-              <Sample key={a.step} color={palette[a.step]} name={a.name} />
+              <Sample key={a.name} color={a.color} name={a.name} />
             ))}
           </Grid>
           <Typography small muted>
-            CSS hand-off rebrands set both --primary and --primary-text. Setting --primary-text: var(--primary) at the override scope retains the previous single-color behavior. CSS does not apply the ThemeProvider override cascade.
+            CSS hand-off rebrands set --primary, --primary-text and --action (with --action-foreground). Setting --primary-text: var(--primary) and --action: var(--primary) at the override scope gives the single-color behavior. CSS does not apply the ThemeProvider override cascade.
           </Typography>
           <Typography small muted>
             The same override rule applies to destructive and destructive-text. ThemeProvider uses a destructive-only override for semantic error text too; supply destructive-text separately for a readable text shade. CSS consumers set --destructive-text explicitly, or use --destructive-text: var(--destructive) for the previous behavior. Menus with a documented fixed red palette retain their independent colors. Check custom colors against their actual resting and pressed surfaces.
           </Typography>
-        </TokenSection>
-
-        <TokenSection
-          title="Brand constants"
-          description="Fixed brand colors that do not flip with the scheme. Never used as component fills: they carry the sign-in orbs and the avatar gradient, which runs orb-indigo to orb-violet."
-        >
-          {/* The gradient is a two-token composition, not a colour, so it is described
-              by the section rather than dressed up as a fourth sample: hand-building a
-              block with a label column beside it is the exact anatomy Swatch's own
-              Don't fence forbids. */}
-          <Grid minTileWidth={150} cozy>
-            {(Object.keys(brandColors) as (keyof typeof brandColors)[]).map((key) => (
-              <Sample key={key} color={brandColors[key]} name={key} />
-            ))}
-          </Grid>
         </TokenSection>
 
         <TokenSection
@@ -408,7 +423,7 @@ export default function ColorsScreen() {
               <Column cozy>
                 <CodeBlock code={DYNAMIC} />
                 <Typography small muted>
-                  The primary prop is the whole styling API; the button reads tokens.primary from useTheme(). Switch the scheme or point the accent at a new hue and the ThemeProvider swaps the token set, so every component bound to it re-renders with the new colour.
+                  The primary prop is the whole styling API; the button reads tokens.action from useTheme(). Switch the scheme or point the accent at a new hue and the ThemeProvider swaps the token set, so every component bound to it re-renders with the new colour.
                 </Typography>
               </Column>
             </Card>

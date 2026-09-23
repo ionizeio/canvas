@@ -18,7 +18,7 @@ import { type ProgressSkin, type Size } from "./progress.shared.js";
 //     track, and the 4x4dp stop indicator dot in the active color at the trailing edge
 //     (rendered by the shell via trackGap/stopIndicator; determinate only, per M3).
 //   Web: the Riskora meter: a chunkier FULLY ROUNDED track (12px at the base size) on
-//     the soft `muted` panel fill, with the sky `primary` fill.
+//     the soft `muted` panel fill, with the brand `primary` fill.
 
 // iOS: a thin 4pt bar across all sizes, nudged up/down a hair by the size axis so `small`
 // and `large` still read as distinct without ever losing the hairline iOS feel.
@@ -89,7 +89,7 @@ export const androidSkin: ProgressSkin = {
 export const webSkin: ProgressSkin = {
   height: WEB_HEIGHT,
   radius: WEB_RADIUS,
-  // Riskora: the soft panel fill as the inactive track, the sky primary as the fill.
+  // Riskora: the soft panel fill as the inactive track, the brand primary as the fill.
   trackColor: (t: ColorTokens) => t.muted,
   fillColor: (t: ColorTokens) => t.primary,
   label,

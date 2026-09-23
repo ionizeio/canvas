@@ -45,6 +45,7 @@ export interface DrawerSkin {
    * platform can dim differently in light vs dark (iOS light 0.2 / dark 0.48;
    * Android 0.32; web 0.5 — the latter two are scheme-invariant).
    */
+  /** The legacy dimming alpha per scheme, used only when the theme has no `scrim`. */
   scrimOpacity: (scheme: ColorScheme) => number;
   /** The panel surface shape per edge: fill, edge geometry, border, radius, elevation. */
   panelShape: (edge: Edge, width: number, t: ColorTokens) => ViewStyle;

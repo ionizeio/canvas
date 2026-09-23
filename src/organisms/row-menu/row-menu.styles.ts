@@ -93,7 +93,7 @@ export const anchorLifted: ViewStyle = { zIndex: 50 };
 // A bordered popover card (min-w 180, 6 radius, 1px `border`, `popover` fill,
 // p-1, shadow-lg) placed inline below the trigger; rounded-sm rows (px-2 py-1.5)
 // with a 2-radius corner; hairline `border` separators split groups; destructive
-// rows are red-700/red-400; the trigger and rows tint with `accent` on press.
+// rows are red-700/red-300; the trigger and rows tint with `accent` on press.
 export const webSkin: RowMenuSkin = {
   minTarget: null,
   anchor: { position: "relative", alignSelf: "flex-start" },
@@ -138,7 +138,7 @@ export const webSkin: RowMenuSkin = {
   rowTextSize: { fontSize: 14, lineHeight: 20 },
   iconSize: 16,
   rowTextColor: (item, links, t, dark) => {
-    if (item.destructive) return { color: dark ? palette["red-400"] : palette["red-700"] };
+    if (item.destructive) return { color: dark ? palette["red-300"] : palette["red-700"] };
     return { color: links ? t.foreground : t["popover-foreground"] };
   },
   triggerPressedOpacity: null,
@@ -202,7 +202,7 @@ export const iosSkin: RowMenuSkin = {
   rowTextSize: { fontSize: 17, lineHeight: 22 },
   iconSize: 20,
   rowTextColor: (item, links, t, dark) => {
-    if (item.destructive) return { color: dark ? palette["red-400"] : palette["red-700"] };
+    if (item.destructive) return { color: dark ? palette["red-300"] : palette["red-700"] };
     return { color: links ? t.foreground : t["popover-foreground"] };
   },
   triggerPressedOpacity: 0.8,
@@ -263,7 +263,7 @@ export const androidSkin: RowMenuSkin = {
   rowTextSize: { fontSize: 16, lineHeight: 24 },
   iconSize: 20,
   rowTextColor: (item, links, t, dark) => {
-    if (item.destructive) return { color: dark ? palette["red-400"] : palette["red-700"] };
+    if (item.destructive) return { color: dark ? palette["red-300"] : palette["red-700"] };
     return { color: links ? t.foreground : t["popover-foreground"] };
   },
   triggerPressedOpacity: null,

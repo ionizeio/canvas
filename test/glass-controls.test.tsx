@@ -11,8 +11,9 @@ import { Kbd } from "../src/atoms/kbd/kbd.tsx";
 import { Tabs } from "../src/organisms/tabs/tabs.tsx";
 import { selectionTint } from "../src/organisms/tabs/tabs.styles.ts";
 import { Pagination } from "../src/atoms/pagination/pagination.tsx";
-import { brandTint, surfaceUnderFill, BRAND_TINT_ALPHA, BRAND_INK_CONTRAST } from "../src/style/glass-surface/glass-surface.shared.tsx";
-import { alpha, composite, contrastRatio, inkOn } from "../src/style/color.ts";
+import { brandInk, brandTint, surfaceUnderFill, BRAND_TINT_ALPHA, BRAND_INK_CONTRAST } from "../src/style/glass-surface/glass-surface.shared.tsx";
+import { alpha, composite, contrastRatio } from "../src/style/color.ts";
+import { actionFill, actionInk } from "../src/style/action.ts";
 import { glassByScheme, lightColors, darkColors, palette, brandColors, type ColorTokens } from "../src/style/tokens.ts";
 import { statusHues, HUE_WASH } from "../src/style/status-hue.ts";
 
@@ -78,13 +79,13 @@ const rgbaOf = (value: string) => {
 const LIGHT = glassByScheme.light;
 
 describe("brand-tinted glass pucks", () => {
-  it("a primary Button is a brand puck: the container fill goes transparent and the primary colour is the under-fill", async () => {
+  it("a primary Button is a brand puck: the container fill goes transparent and the action colour is the under-fill", async () => {
     const { container, restore } = await renderGlass(<Button primary testID="save">Save</Button>);
     try {
       const button = container.querySelector('[data-testid="save"]') as HTMLElement;
       expect(button.style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
       expect(materialLayers(button)).toBe(1);
-      expect(rgbaOf(underFillOf(button))).toEqual(rgbaOf(brandTint(lightColors.primary, lightColors.background)));
+      expect(rgbaOf(underFillOf(button))).toEqual(rgbaOf(brandTint(actionFill(lightColors), lightColors.background, actionInk(lightColors))));
     } finally {
       restore();
     }
@@ -194,7 +195,7 @@ describe("brand-tinted glass pucks", () => {
     try {
       const brand = fillLayerOf(container.querySelector('[data-testid="brand"]') as HTMLElement);
       expect(brand.over).toBe(true);
-      expect(rgbaOf(brand.fill!.style.backgroundColor)).toEqual(rgbaOf(brandTint(lightColors.primary, lightColors.background)));
+      expect(rgbaOf(brand.fill!.style.backgroundColor)).toEqual(rgbaOf(brandTint(actionFill(lightColors), lightColors.background, actionInk(lightColors))));
       const plain = fillLayerOf(container.querySelector('[data-testid="plain"]') as HTMLElement);
       expect(plain.over).toBe(false);
       expect(rgbaOf(plain.fill!.style.backgroundColor)).toEqual(rgbaOf(LIGHT["glass-tint-control"]));
@@ -203,26 +204,21 @@ describe("brand-tinted glass pucks", () => {
     }
   });
 
-  it("keeps the brand ink at 4.5:1 over the page in both schemes, densifying only the colours that need it", () => {
+  it("keeps the painted ink at 4.5:1 over the page in both schemes, densifying only as far as it needs", () => {
     for (const scheme of ["light", "dark"] as const) {
       const t: ColorTokens = scheme === "light" ? lightColors : darkColors;
-      for (const brand of [t.primary, t.destructive]) {
-        const fill = brandTint(brand, t.background);
-        expect(contrastRatio(composite(fill, t.background), inkOn(brand)), `${scheme} ${brand}`).toBeGreaterThanOrEqual(BRAND_INK_CONTRAST);
-        // The ink `inkOn` picks has the polarity of the ink the kit's tokens pair with the
-        // fill (dark on the sky primary, white on the destructive red), and that real ink
-        // clears the bar too.
-        const tokenInk = brand === t.primary ? t["primary-foreground"] : t["destructive-foreground"];
-        expect(inkOn(brand) === "#ffffff").toBe(contrastRatio("#ffffff", tokenInk) < contrastRatio("#0a0a0a", tokenInk));
-        expect(contrastRatio(composite(fill, t.background), tokenInk), `${scheme} ${brand} token ink`).toBeGreaterThanOrEqual(BRAND_INK_CONTRAST);
+      for (const brand of [t.primary, actionFill(t), t.destructive]) {
+        // The ink is the one the skin paints on the brand (its token pair), not the stronger
+        // of black and white (see brandInk).
+        const ink = brandInk(t, brand);
+        const fill = surfaceUnderFill(glassByScheme[scheme], "control", brand, undefined, t);
+        expect(fill).toBe(brandTint(brand, t.background, ink));
+        expect(contrastRatio(composite(fill, t.background), ink), `${scheme} ${brand}`).toBeGreaterThanOrEqual(BRAND_INK_CONTRAST);
+        // Never sheerer than the floor; where the floor already clears, it stays there.
+        const floor = alpha(brand, BRAND_TINT_ALPHA);
+        if (contrastRatio(composite(floor, t.background), ink) >= BRAND_INK_CONTRAST) expect(fill).toBe(floor);
       }
-      // The sky primary stays at the sheer floor; the light-scheme destructive red, which
-      // sits at 3.2:1 there, is the one that climbs.
-      expect(brandTint(t.primary, t.background)).toBe(alpha(t.primary, BRAND_TINT_ALPHA));
-      expect(surfaceUnderFill(glassByScheme[scheme], "control", t.primary, undefined, t)).toBe(alpha(t.primary, BRAND_TINT_ALPHA));
     }
-    expect(brandTint(lightColors.destructive, lightColors.background)).not.toBe(alpha(lightColors.destructive, BRAND_TINT_ALPHA));
-    expect(brandTint(darkColors.destructive, darkColors.background)).toBe(alpha(darkColors.destructive, BRAND_TINT_ALPHA));
   });
 });
 
@@ -316,7 +312,7 @@ describe("solid mode", () => {
     );
     try {
       expect(materialLayers(container)).toBe(0);
-      expect(rgbaOf((container.querySelector('[data-testid="save"]') as HTMLElement).style.backgroundColor)).toEqual(rgbaOf(alpha(lightColors.primary, 1)));
+      expect(rgbaOf((container.querySelector('[data-testid="save"]') as HTMLElement).style.backgroundColor)).toEqual(rgbaOf(alpha(actionFill(lightColors), 1)));
       expect(rgbaOf((container.querySelector('[data-testid="name"]') as HTMLElement).style.backgroundColor)).toEqual(rgbaOf(alpha(lightColors.card, 1)));
     } finally {
       restore();

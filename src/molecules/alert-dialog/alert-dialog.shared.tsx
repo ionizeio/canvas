@@ -219,7 +219,7 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
         </View>
       ) : skin.textButton != null ? (
         // Android (M3): flat TEXT buttons, Cancel then Confirm — no fill, brand
-        // `primary` indigo labels, a destructive confirm in the `destructive`
+        // `primary` labels, a destructive confirm in the `destructive`
         // red, each with an android_ripple. This keeps the destructive confirm a
         // red LABEL on a transparent button (never a filled red button) and
         // mirrors the plain Dialog's Android footer.
@@ -299,7 +299,7 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
             aria-labelledby={title != null ? titleId : undefined}
             aria-describedby={description != null ? descriptionId : undefined}
             style={[
-              skin.backdrop,
+              skin.backdrop(tokens),
               trigger != null && !overlay ? s.triggerGap : null,
               overlay ? s.backdropOverlay : { minHeight: 200, minWidth: 0 },
             ]}

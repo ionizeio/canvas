@@ -2,7 +2,6 @@ import { Children, cloneElement, isValidElement, useState, type ReactElement, ty
 import { View, Pressable, Text, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type ImageStyle, type LayoutStyle } from "../../style/index.js";
 import { GlassPane, paneStyle } from "../../style/glass-surface/glass-pane.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { isGlass } from "../../style/glass-fill.js";
 import { inkOn } from "../../style/color.js";
 import { Image } from "../image/image.js";
 
@@ -139,8 +138,9 @@ function radiusFor(skin: AvatarSkin, shape: Shape): number {
 
 // The categorical fill palette for the initials fallback: the design system's
 // chart tokens, a curated set built to keep N things distinct in both light and
-// dark. White initials read on all eight. Photos and the neutral glass trigger
-// never use it.
+// dark. The series is tuned to 3:1 against the surfaces, which leaves white initials
+// short of 4.5:1, so the initials take `inkOn(fill)`, the better of white and
+// near-black, in both surface modes. Photos and the neutral glass trigger never use it.
 const PALETTE_KEYS = ["chart-1", "chart-2", "chart-3", "chart-4", "chart-5", "chart-6", "chart-7", "chart-8"] as const;
 
 // Map an identity string (the name, else the initials) to a palette index. A
@@ -206,9 +206,7 @@ export function createAvatar(skin: AvatarSkin) {
     // pixels; initials retain a deterministic colour through the frosted material.
     const colored = glyph !== "";
     const background = colored ? tokens[PALETTE_KEYS[paletteIndexFor(identity)]] : tokens.muted;
-    const foreground = colored
-      ? isGlass(theme) ? inkOn(background) : tokens["primary-foreground"]
-      : tokens["muted-foreground"];
+    const foreground = colored ? inkOn(background) : tokens["muted-foreground"];
     const shapeStyle = containerStyle(tokens, skin, size, shape, !!ring, background);
     const separator = ring ? { borderWidth: RING_WIDTH, borderColor: theme.increasedContrast ? tokens.foreground : tokens.background } : null;
     const container: StyleProp<ViewStyle> = [showPhoto ? shapeStyle : paneStyle(theme, shapeStyle), separator, style];

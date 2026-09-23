@@ -22,7 +22,7 @@ import { type ColorTokens, palette, shadow, alpha, shape } from "../../style/ind
 //   Web: the established Canvas look (the current dropdown, lifted verbatim) — a
 //     bordered popover card (6 radius, `border`, `popover` fill, shadow-lg,
 //     padding 4), rows with rounded-sm px-2 py-1.5 layout, hairline `border`
-//     separators, an `accent` pressed/active fill, and `red-700/red-400`
+//     separators, an `accent` pressed/active fill, and `red-700/red-300`
 //     destructive rows.
 
 // The contract a platform skin fulfills. The shell renders the wrapper, the
@@ -98,7 +98,8 @@ export const customTrigger: ViewStyle = { alignSelf: "flex-start" };
 // shadow-lg) positioned absolutely below the trigger; rows with the
 // flex-row items-center gap-2 rounded-sm px-2 py-1.5 layout, hairline
 // my-1 h-px bg-border separators, an active:bg-accent pressed fill, and
-// text-red-700 dark:text-red-400 destructive rows.
+// text-red-700 dark:text-red-300 destructive rows (red-300 holds 4.5:1 on the Dark Factory
+// dark pressed fill, where red-400 fell to 4.3:1).
 // The Riskora menu: a 16px-cornered card with an 8px inset, 40px rows with a 10px
 // corner and a 12px gutter (the Workflow node menu).
 export const webSkin: DropdownSkin = {
@@ -136,7 +137,7 @@ export const webSkin: DropdownSkin = {
   itemTextType: { fontSize: 14, lineHeight: 20 },
   iconSize: 16,
   itemTextColor: (t, dark, destructive) => {
-    if (destructive) return { color: dark ? palette["red-400"] : palette["red-700"] };
+    if (destructive) return { color: dark ? palette["red-300"] : palette["red-700"] };
     return { color: t["popover-foreground"] };
   },
   shortcut: (t) => ({

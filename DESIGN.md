@@ -6,72 +6,90 @@ description: >-
   natively on iOS and Android and, through React Native Web, in the browser. Every
   visual variation is a semantic boolean prop; there is no style escape hatch.
 colors:
-  background: "#f8fafe"
-  foreground: "#0d121b"
+  background: "#f5f2fe"
+  foreground: "#3b3c5c"
   card: "#ffffff"
-  card-foreground: "#0d121b"
+  card-foreground: "#3b3c5c"
   popover: "#ffffff"
-  popover-foreground: "#0d121b"
-  primary: "#3da3f5"
-  primary-text: "#0061b5"
-  primary-foreground: "#0d121b"
-  secondary: "#f6f7f8"
-  secondary-foreground: "#0d121b"
-  muted: "#f6f7f8"
-  muted-foreground: "#525864"
-  accent: "#f6f7f8"
-  accent-foreground: "#0d121b"
-  destructive: "#d02533"
-  destructive-text: "#b0001a"
+  popover-foreground: "#3b3c5c"
+  primary: "#7262e5"
+  primary-text: "#5d48c9"
+  primary-foreground: "#ffffff"
+  primary-soft: "rgba(123, 108, 240, 0.14)"
+  action: "#21804b"
+  action-foreground: "#ffffff"
+  secondary: "#f5f2fc"
+  secondary-foreground: "#3b3c5c"
+  muted: "#f5f2fc"
+  muted-foreground: "#696b8d"
+  accent: "#f4f3fe"
+  accent-foreground: "#3b3c5c"
+  destructive: "#b53a44"
+  destructive-text: "#9a1f2f"
   destructive-foreground: "#ffffff"
-  success: "#197544"
+  destructive-soft: "rgba(181, 58, 68, 0.12)"
+  success: "#0b7440"
   success-foreground: "#ffffff"
-  warning: "#ad4e1e"
+  success-soft: "rgba(33, 128, 75, 0.12)"
+  warning: "#965801"
   warning-foreground: "#ffffff"
-  border: "#f1f2f3"
-  input: "#8b8f97"
-  field-border: "#d1d5db"
-  ring: "#3da3f5"
+  warning-soft: "rgba(240, 160, 40, 0.18)"
+  border: "#eae8f3"
+  input: "#898ba0"
+  field-border: "#d6d3e7"
+  field-fill: "rgba(255, 255, 255, 0.7)"
+  ring: "#7b6cf0"
+  scrim: "rgba(40, 30, 90, 0.28)"
+  shade: "rgba(121, 100, 214, 0.22)"
+  inverse: "#26264a"
+  inverse-foreground: "#ffffff"
 colorsDark:
-  background: "#111213"
-  foreground: "#ffffff"
-  card: "#18191c"
-  card-foreground: "#ffffff"
-  popover: "#18191c"
-  popover-foreground: "#ffffff"
-  primary: "#68cdff"
-  primary-text: "#68cdff"
-  primary-foreground: "#0d121b"
-  secondary: "#212327"
-  secondary-foreground: "#ffffff"
-  muted: "#212327"
-  muted-foreground: "#99a0ad"
-  accent: "#212327"
-  accent-foreground: "#ffffff"
-  destructive: "#d53b44"
-  destructive-text: "#fe9b98"
-  destructive-foreground: "#ffffff"
-  success: "#35c26d"
-  success-foreground: "#052e16"
-  warning: "#ff9a68"
-  warning-foreground: "#451a03"
-  border: "#222427"
-  input: "#696d74"
-  field-border: "#3a3a3c"
-  ring: "#3da3f5"
+  background: "#272544"
+  foreground: "#ebebf7"
+  card: "#252741"
+  card-foreground: "#ebebf7"
+  popover: "#252741"
+  popover-foreground: "#ebebf7"
+  primary: "#a496ff"
+  primary-text: "#b8b0ff"
+  primary-foreground: "#221f3a"
+  primary-soft: "rgba(164, 150, 255, 0.16)"
+  action: "#5fd18a"
+  action-foreground: "#0d2a17"
+  secondary: "#2d2f4c"
+  secondary-foreground: "#ebebf7"
+  muted: "#2d2f4c"
+  muted-foreground: "#a3a5c6"
+  accent: "#323254"
+  accent-foreground: "#ebebf7"
+  destructive: "#ff8b93"
+  destructive-text: "#ffadb0"
+  destructive-foreground: "#38181b"
+  destructive-soft: "rgba(255, 139, 147, 0.16)"
+  success: "#5fd18a"
+  success-foreground: "#0d2a17"
+  success-soft: "rgba(95, 209, 138, 0.16)"
+  warning: "#ffc46b"
+  warning-foreground: "#311f03"
+  warning-soft: "rgba(255, 180, 80, 0.16)"
+  border: "#3b3d54"
+  input: "#7c7e93"
+  field-border: "#44455c"
+  field-fill: "rgba(255, 255, 255, 0.06)"
+  ring: "#a496ff"
+  scrim: "rgba(5, 5, 20, 0.55)"
+  shade: "rgba(0, 0, 0, 0.5)"
+  inverse: "#26264a"
+  inverse-foreground: "#ffffff"
 chart:
-  chart-1: "#3da3f5"
-  chart-2: "#fb8c4c"
-  chart-3: "#2eb872"
-  chart-4: "#6676ff"
-  chart-5: "#f0a41a"
-  chart-6: "#14b8a6"
-  chart-7: "#ec4899"
-  chart-8: "#8b5cf6"
-brand:
-  orb-indigo: "#3da3f5"
-  orb-violet: "#6676ff"
-  orb-cyan: "#68cdff"
+  chart-1: "#7b6cf0"
+  chart-2: "#03919d"
+  chart-3: "#d36225"
+  chart-4: "#d25798"
+  chart-5: "#4382e3"
+  chart-6: "#009574"
+  chart-7: "#b560cf"
+  chart-8: "#a37e05"
 typography:
   display:
     fontFamily: "\"Urbanist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
@@ -274,8 +292,9 @@ One component API, three native looks. Canvas is a React Native UI kit that rend
 natively on iOS and Android and, through React Native Web, in a browser, from a single
 codebase. Each component ships a shared shell and a skin per platform, so a Button is
 an iOS capsule with a semibold label, a Material 3 stadium with a ripple, and a
-12px-rounded web control in the Riskora dashboard language (sky accent, Urbanist, charcoal
-and white surfaces), without the caller choosing between them.
+12px-rounded web control in Dark Factory's colors (a green call to action, a violet
+selection color, white cards on a lavender page), without the caller choosing between
+them.
 
 The rest of this document is what an agent or a developer needs to build with the kit
 and get it right: the values, and the four rules that are easy to break by accident.
@@ -326,42 +345,65 @@ appears.
 
 ## Colors
 
-Semantic tokens, one set per scheme, taken from the Riskora Dashboard UI Kit (the Figma
-source of truth, vendored at `tools/figma/riskora-variables.json`) and solved to the kit's
-contrast floors where the source fell short. Components read them through `useTheme()`; the
-scheme follows the OS unless `<ThemeProvider dark>` or `<ThemeProvider light>` forces
-one. On the web the same values ship as custom properties in `styles/canvas.css`, where
-dark keys off a `.dark` class on the root rather than `prefers-color-scheme`.
+Semantic tokens, one set per scheme, derived from Dark Factory's palettes (blush for
+light, its single dark palette for dark; the source is vendored at
+`tools/darkfactory/theme.json`). Every role is a Dark Factory value or a recorded rule over
+Dark Factory values in `tools/darkfactory/derive-tokens.ts`, which solves a role to the
+kit's contrast floors where the raw value falls short; `bun run check-df` holds the shipped
+values to that derivation. Components read them through `useTheme()`; the scheme follows
+the OS unless `<ThemeProvider dark>` or `<ThemeProvider light>` forces one. On the web the
+same values ship as custom properties in `styles/canvas.css`, where dark keys off a `.dark`
+class on the root rather than `prefers-color-scheme`.
+
+Two roles carry the brand, and they differ on purpose. `primary` is the selection color:
+checked, selected and current states, links and the focus ring. `action` is the
+call-to-action fill: primary buttons, meters, count badges. A theme that overrides
+`primary` alone repaints both, since `action` follows an overriding `primary` unless the
+theme sets it too. `scrim` dims the page behind every modal. The `-soft` washes, `shade`
+(the shadow tint), `inverse` and `inverse-foreground` (the surface of a tooltip or a
+snackbar) and `field-fill` are optional roles the skins adopt as they take the Dark
+Factory look; a theme that omits them keeps the older fallbacks.
 
 <!-- @generated:colors -->
 | Token | Light | Dark |
 | --- | --- | --- |
-| `background` | `#f8fafe` | `#111213` |
-| `foreground` | `#0d121b` | `#ffffff` |
-| `card` | `#ffffff` | `#18191c` |
-| `card-foreground` | `#0d121b` | `#ffffff` |
-| `popover` | `#ffffff` | `#18191c` |
-| `popover-foreground` | `#0d121b` | `#ffffff` |
-| `primary` | `#3da3f5` | `#68cdff` |
-| `primary-text` | `#0061b5` | `#68cdff` |
-| `primary-foreground` | `#0d121b` | `#0d121b` |
-| `secondary` | `#f6f7f8` | `#212327` |
-| `secondary-foreground` | `#0d121b` | `#ffffff` |
-| `muted` | `#f6f7f8` | `#212327` |
-| `muted-foreground` | `#525864` | `#99a0ad` |
-| `accent` | `#f6f7f8` | `#212327` |
-| `accent-foreground` | `#0d121b` | `#ffffff` |
-| `destructive` | `#d02533` | `#d53b44` |
-| `destructive-text` | `#b0001a` | `#fe9b98` |
-| `destructive-foreground` | `#ffffff` | `#ffffff` |
-| `success` | `#197544` | `#35c26d` |
-| `success-foreground` | `#ffffff` | `#052e16` |
-| `warning` | `#ad4e1e` | `#ff9a68` |
-| `warning-foreground` | `#ffffff` | `#451a03` |
-| `border` | `#f1f2f3` | `#222427` |
-| `input` | `#8b8f97` | `#696d74` |
-| `field-border` | `#d1d5db` | `#3a3a3c` |
-| `ring` | `#3da3f5` | `#3da3f5` |
+| `background` | `#f5f2fe` | `#272544` |
+| `foreground` | `#3b3c5c` | `#ebebf7` |
+| `card` | `#ffffff` | `#252741` |
+| `card-foreground` | `#3b3c5c` | `#ebebf7` |
+| `popover` | `#ffffff` | `#252741` |
+| `popover-foreground` | `#3b3c5c` | `#ebebf7` |
+| `primary` | `#7262e5` | `#a496ff` |
+| `primary-text` | `#5d48c9` | `#b8b0ff` |
+| `primary-foreground` | `#ffffff` | `#221f3a` |
+| `primary-soft` | `rgba(123, 108, 240, 0.14)` | `rgba(164, 150, 255, 0.16)` |
+| `action` | `#21804b` | `#5fd18a` |
+| `action-foreground` | `#ffffff` | `#0d2a17` |
+| `secondary` | `#f5f2fc` | `#2d2f4c` |
+| `secondary-foreground` | `#3b3c5c` | `#ebebf7` |
+| `muted` | `#f5f2fc` | `#2d2f4c` |
+| `muted-foreground` | `#696b8d` | `#a3a5c6` |
+| `accent` | `#f4f3fe` | `#323254` |
+| `accent-foreground` | `#3b3c5c` | `#ebebf7` |
+| `destructive` | `#b53a44` | `#ff8b93` |
+| `destructive-text` | `#9a1f2f` | `#ffadb0` |
+| `destructive-foreground` | `#ffffff` | `#38181b` |
+| `destructive-soft` | `rgba(181, 58, 68, 0.12)` | `rgba(255, 139, 147, 0.16)` |
+| `success` | `#0b7440` | `#5fd18a` |
+| `success-foreground` | `#ffffff` | `#0d2a17` |
+| `success-soft` | `rgba(33, 128, 75, 0.12)` | `rgba(95, 209, 138, 0.16)` |
+| `warning` | `#965801` | `#ffc46b` |
+| `warning-foreground` | `#ffffff` | `#311f03` |
+| `warning-soft` | `rgba(240, 160, 40, 0.18)` | `rgba(255, 180, 80, 0.16)` |
+| `border` | `#eae8f3` | `#3b3d54` |
+| `input` | `#898ba0` | `#7c7e93` |
+| `field-border` | `#d6d3e7` | `#44455c` |
+| `field-fill` | `rgba(255, 255, 255, 0.7)` | `rgba(255, 255, 255, 0.06)` |
+| `ring` | `#7b6cf0` | `#a496ff` |
+| `scrim` | `rgba(40, 30, 90, 0.28)` | `rgba(5, 5, 20, 0.55)` |
+| `shade` | `rgba(121, 100, 214, 0.22)` | `rgba(0, 0, 0, 0.5)` |
+| `inverse` | `#26264a` | `#26264a` |
+| `inverse-foreground` | `#ffffff` | `#ffffff` |
 <!-- @/generated -->
 
 The chart series is a fixed assignment: series one is always `chart-1`, and filtering a

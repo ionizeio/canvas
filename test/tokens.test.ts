@@ -32,8 +32,7 @@ describe("color tokens", () => {
   });
 
   it("light and dark use distinct surface + text colors", () => {
-    expect(lightColors.background).toBe("#f8fafe");
-    expect(darkColors.background).toBe("#111213");
+    expect(lightColors.background).not.toBe(darkColors.background);
     expect(lightColors.foreground).not.toBe(darkColors.foreground);
     expect(lightColors.primary).not.toBe(darkColors.primary);
   });
@@ -119,10 +118,10 @@ describe("glassByScheme (the glass material's own tokens)", () => {
       expect(glassByScheme[scheme]).not.toHaveProperty("card");
     }
     // popover and card stay opaque in both schemes, exactly as the hand-off ships them.
-    expect(lightColors.popover).toBe("#ffffff");
-    expect(darkColors.popover).toBe("#18191c");
-    expect(lightColors.card).toBe("#ffffff");
-    expect(darkColors.card).toBe("#18191c");
+    for (const colors of [lightColors, darkColors]) {
+      expect(colors.popover).toMatch(/^#[0-9a-f]{6}$/);
+      expect(colors.card).toMatch(/^#[0-9a-f]{6}$/);
+    }
   });
 
   it("keys the family by its CSS custom-property name, so the hand-off stays cross-checked", () => {
@@ -257,12 +256,12 @@ describe("control boundary contrast (WCAG 1.4.11)", () => {
     });
   }
 
-  it("`field-border` is the iOS field's resting hairline: between `border` and `input`, below the floor on purpose", () => {
-    // The iOS input-field reference (Figma N8TScrzAPwpmwxFS1032my) rests its fields
-    // on gray-300 / systemGray4, a disclosed WCAG 1.4.11 trade-off scoped to the iOS
-    // field skins (src/style/field-colors.ts). It must stay distinct from both
-    // neighbours: collapsing it onto `input` would re-heavy the iOS box, collapsing
-    // it onto `border` would make the box vanish on the card.
+  it("`field-border` is the field's resting hairline: between `border` and `input`, below the floor on purpose", () => {
+    // A text field rests on Dark Factory's line densified until the box reads apart
+    // from a divider (tools/darkfactory/derive-tokens.ts), a disclosed WCAG 1.4.11
+    // trade-off scoped to the field skins (src/style/field-colors.ts). It must stay
+    // distinct from both neighbours: collapsing it onto `input` would re-heavy the box,
+    // collapsing it onto `border` would make the box vanish on the card.
     for (const t of [lightColors, darkColors]) {
       const rest = t["field-border"]!;
       expect(rest).toMatch(/^#[0-9a-f]{6}$/);
@@ -270,8 +269,6 @@ describe("control boundary contrast (WCAG 1.4.11)", () => {
       expect(contrast(rest, t.card)).toBeGreaterThan(contrast(t.border, t.card));
       expect(contrast(rest, t.card)).toBeLessThan(contrast(t.input, t.card));
     }
-    expect(lightColors["field-border"]).toBe("#d1d5db");
-    expect(darkColors["field-border"]).toBe("#3a3a3c");
   });
 
   it("does NOT hold `border` to the control floor, keeping the separator hairline", () => {

@@ -161,9 +161,11 @@ const brand = { primary: "#7c3aed" };
 `primary` colors filled controls, and `primary-foreground` colors their labels.
 The optional `action` and `action-foreground` roles color the call-to-action (the
 primary Button and the split button's action) apart from `primary`, which keeps
-what is selected, checked, current, linked or focused. Omitted, actions paint with
-`primary`; a `tokens={{ primary: ... }}` rebrand repaints actions with its primary
-pair unless you pass `action` too.
+what is selected, checked, current, linked or focused. The default palette, Dark
+Factory's, sets the two apart: a green call to action beside a violet selection
+color. Omitted from a custom token map, actions paint with `primary`; a
+`tokens={{ primary: ... }}` rebrand repaints actions with its primary pair unless you
+pass `action` too.
 The optional `primary-text` token colors brand text on neutral surfaces, including
 links, text actions, and focused Android field labels. The default palette gives
 that text its own contrast-safe shade in each scheme. Existing `tokens={{ primary: ... }}` overrides keep their
@@ -197,9 +199,10 @@ native rebuild; Expo Go does not contain it.
 The maintained [material inventory](tools/materials/README.md) records intended
 coverage and verification obligations, not completed runtime evidence.
 
-CSS hand-off consumers should override both `--primary` and `--primary-text` when
-rebranding. To retain the previous single-color behavior, set
-`--primary-text: var(--primary)` at the override scope. CSS does not perform the
+CSS hand-off consumers should override `--primary`, `--primary-text` and `--action`
+(with `--action-foreground`) when rebranding. For a single-color brand, set
+`--primary-text: var(--primary)`, `--action: var(--primary)` and
+`--action-foreground: var(--primary-foreground)` at the override scope. CSS does not perform the
 `ThemeProvider` override cascade. The same rule applies to destructive colors:
 set `--destructive-text` explicitly, or use `--destructive-text: var(--destructive)`
 to retain the previous single-color behavior.

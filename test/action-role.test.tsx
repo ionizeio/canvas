@@ -11,9 +11,9 @@ import { Typography } from "../src/atoms/typography/typography.tsx";
 
 // `action` / `action-foreground`: the call-to-action fill and its ink, apart from
 // `primary` (what is selected, checked, current, linked or focused). The Dark Factory
-// design language paints actions green and selection violet; until the palette lands
-// the scheme maps carry no action role and every action paints with `primary`, so this
-// file pins both the seam (actions read the action role) and its no-change fallback.
+// design language paints actions green and selection violet; a legacy map without the
+// role paints actions with `primary`. This file pins the seam, the fallback and the
+// override rules.
 
 afterEach(cleanup);
 
@@ -36,14 +36,23 @@ function Actions() {
 
 describe("the action role", () => {
   for (const scheme of ["light", "dark"] as const) {
-    it(`paints ${scheme} actions with primary while the scheme carries no action role`, () => {
+    it(`paints ${scheme} actions with the scheme's action pair, apart from primary`, () => {
       render(<ThemeProvider scheme={scheme}><Actions /></ThemeProvider>);
       const tokens = colorsByScheme[scheme];
-      expect(fillOf("Save")).toBe(rgb(actionFill(tokens)));
-      expect(fillOf("Save")).toBe(rgb(tokens.primary));
-      expect(inkOf("Save")).toBe(rgb(actionInk(tokens)));
+      expect(tokens.action).toBeDefined();
+      expect(fillOf("Save")).toBe(rgb(tokens.action!));
+      expect(fillOf("Save")).not.toBe(rgb(tokens.primary));
+      expect(inkOf("Save")).toBe(rgb(tokens["action-foreground"]!));
     });
   }
+
+  it("paints actions with primary for a legacy map without the role", () => {
+    const legacy = { ...lightColors };
+    delete legacy.action;
+    delete legacy["action-foreground"];
+    expect(actionFill(legacy)).toBe(legacy.primary);
+    expect(actionInk(legacy)).toBe(legacy["primary-foreground"]);
+  });
 
   it("repaints actions with a primary-only rebrand, fill and ink together", () => {
     const tokens: ThemeTokenOverrides = { primary: "#7c3aed", "primary-foreground": "#ffffff" };

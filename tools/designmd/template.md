@@ -12,8 +12,9 @@ One component API, three native looks. Canvas is a React Native UI kit that rend
 natively on iOS and Android and, through React Native Web, in a browser, from a single
 codebase. Each component ships a shared shell and a skin per platform, so a Button is
 an iOS capsule with a semibold label, a Material 3 stadium with a ripple, and a
-12px-rounded web control in the Riskora dashboard language (sky accent, Urbanist, charcoal
-and white surfaces), without the caller choosing between them.
+12px-rounded web control in Dark Factory's colors (a green call to action, a violet
+selection color, white cards on a lavender page), without the caller choosing between
+them.
 
 The rest of this document is what an agent or a developer needs to build with the kit
 and get it right: the values, and the four rules that are easy to break by accident.
@@ -64,12 +65,24 @@ appears.
 
 ## Colors
 
-Semantic tokens, one set per scheme, taken from the Riskora Dashboard UI Kit (the Figma
-source of truth, vendored at `tools/figma/riskora-variables.json`) and solved to the kit's
-contrast floors where the source fell short. Components read them through `useTheme()`; the
-scheme follows the OS unless `<ThemeProvider dark>` or `<ThemeProvider light>` forces
-one. On the web the same values ship as custom properties in `styles/canvas.css`, where
-dark keys off a `.dark` class on the root rather than `prefers-color-scheme`.
+Semantic tokens, one set per scheme, derived from Dark Factory's palettes (blush for
+light, its single dark palette for dark; the source is vendored at
+`tools/darkfactory/theme.json`). Every role is a Dark Factory value or a recorded rule over
+Dark Factory values in `tools/darkfactory/derive-tokens.ts`, which solves a role to the
+kit's contrast floors where the raw value falls short; `bun run check-df` holds the shipped
+values to that derivation. Components read them through `useTheme()`; the scheme follows
+the OS unless `<ThemeProvider dark>` or `<ThemeProvider light>` forces one. On the web the
+same values ship as custom properties in `styles/canvas.css`, where dark keys off a `.dark`
+class on the root rather than `prefers-color-scheme`.
+
+Two roles carry the brand, and they differ on purpose. `primary` is the selection color:
+checked, selected and current states, links and the focus ring. `action` is the
+call-to-action fill: primary buttons, meters, count badges. A theme that overrides
+`primary` alone repaints both, since `action` follows an overriding `primary` unless the
+theme sets it too. `scrim` dims the page behind every modal. The `-soft` washes, `shade`
+(the shadow tint), `inverse` and `inverse-foreground` (the surface of a tooltip or a
+snackbar) and `field-fill` are optional roles the skins adopt as they take the Dark
+Factory look; a theme that omits them keeps the older fallbacks.
 
 <!-- @generated:colors -->
 <!-- @/generated -->

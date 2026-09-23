@@ -43,7 +43,7 @@ export type CancelLayout = "separateCard" | "lastRow";
 // maps the active platform's shape/structure/sizing/type/feedback onto each piece,
 // reading the tokens so light/dark keep working.
 export interface ActionSheetSkin {
-  /** The scrim dimming alpha behind the sheet (iOS/web ~0.4, Android ~0.32). */
+  /** The legacy dimming alpha behind the sheet (iOS/web ~0.4, Android ~0.32), used only when the theme has no `scrim`. */
   scrimOpacity: number;
   /** Where the Cancel affordance lives: a separate card (iOS/web) or the last row (Android). */
   cancelLayout: CancelLayout;
@@ -100,14 +100,15 @@ export interface ActionSheetSkin {
 // the action rows.
 export const scrim: ViewStyle = { flex: 1, flexDirection: "column", justifyContent: "flex-end" };
 
-// The dim layer itself: a full-bleed black fill whose opacity the shell animates
-// from 0 to the skin's `scrimOpacity`. Black is fixed here and the alpha rides on
-// `opacity` so the fade can run on the native driver (an animated backgroundColor
-// cannot). It is inert to touch so the dismiss Pressable stacked over it takes
-// every tap; that pointerEvents goes through StyleSheet.create because
+// The dim layer itself: a full-bleed fill in the theme's scrim (`scrimFill`: the
+// `scrim` role, or black at the skin's `scrimOpacity` for a legacy token map) whose
+// opacity the shell animates from 0 to 1. The resting alpha lives in the color and the
+// fade rides on `opacity` so it can run on the native driver (an animated
+// backgroundColor cannot). It is inert to touch so the dismiss Pressable stacked over
+// it takes every tap; that pointerEvents goes through StyleSheet.create because
 // react-native-web silently drops the declaration from an inline style object.
 export const scrimDim = StyleSheet.create({
-  dim: { backgroundColor: "rgb(0, 0, 0)", pointerEvents: "none" },
+  dim: { pointerEvents: "none" },
 }).dim;
 
 // The sheet content layer. It sits ABOVE the absolute-fill dismiss backdrop (a
@@ -190,7 +191,7 @@ export const iosSkin: ActionSheetSkin = {
   handle: null,
   header: { paddingTop: 8, paddingHorizontal: 8, paddingBottom: 24, gap: 10, alignItems: "flex-start" },
   headerTitle: (t) => ({ fontSize: 17, lineHeight: 22, fontWeight: "600", letterSpacing: -0.43, color: t.foreground }),
-  headerMessage: (t) => ({ fontSize: 15, lineHeight: 18, fontWeight: "400", letterSpacing: -0.24, color: alpha(t.foreground, 0.72) }),
+  headerMessage: (t) => ({ fontSize: 15, lineHeight: 18, fontWeight: "400", letterSpacing: -0.24, color: alpha(t.foreground, 0.85) }),
   divider: null,
   row: {
     minHeight: 48,

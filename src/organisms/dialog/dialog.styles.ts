@@ -1,4 +1,5 @@
 import { destructiveText } from "../../style/destructive-text.js";
+import { scrimFill } from "../../style/scrim.js";
 import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, alpha, widths, shape } from "../../style/index.js";
@@ -169,7 +170,7 @@ export function cardWidth(size: Size): ViewStyle {
 // The Riskora dialog: a 16px-cornered card under a 60% scrim, the ambient xl shade,
 // an 18px medium title over muted body copy.
 export const webSkin: DialogSkin = {
-  backdrop: () => ({ borderRadius: shape.web.dialog, backgroundColor: alpha("#000000", 0.6) }),
+  backdrop: (t) => ({ borderRadius: shape.web.dialog, backgroundColor: scrimFill(t, 0.6) }),
   card: (t) => ({
     borderRadius: shape.web.dialog,
     borderWidth: 1,
@@ -205,7 +206,7 @@ export const webSkin: DialogSkin = {
 const IOS_RADIUS = 28;
 const IOS_CAPSULE_RADIUS = 22;
 export const iosSkin: DialogSkin = {
-  backdrop: () => ({ borderRadius: 8, backgroundColor: alpha("#000000", 0.3) }),
+  backdrop: (t) => ({ borderRadius: 8, backgroundColor: scrimFill(t, 0.3) }),
   card: (t) => ({
     borderRadius: IOS_RADIUS,
     backgroundColor: t.popover,
@@ -271,7 +272,7 @@ export const iosSkin: DialogSkin = {
 // brand-indigo text, an android_ripple on each, and NO dividers.
 const ANDROID_RADIUS = 28;
 export const androidSkin: DialogSkin = {
-  backdrop: () => ({ borderRadius: 8, backgroundColor: alpha("#000000", 0.32) }),
+  backdrop: (t) => ({ borderRadius: 8, backgroundColor: scrimFill(t, 0.32) }),
   card: (t) => ({
     borderRadius: ANDROID_RADIUS,
     backgroundColor: t.popover,

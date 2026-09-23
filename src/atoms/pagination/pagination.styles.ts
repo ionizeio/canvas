@@ -91,7 +91,7 @@ const CELL_ROW: ViewStyle = { flexDirection: "row", alignItems: "center", justif
 
 // =============================================================================
 // Web: the Riskora pager (12px-cornered 40px tiles on the card fill, the current
-// page on the sky primary).
+// page on the brand primary).
 // =============================================================================
 
 export const webSkin: PaginationSkin = {
@@ -255,7 +255,7 @@ export const androidSkin: PaginationSkin = {
     return { fontWeight: "500", color: t.foreground };
   },
   pageLabel(t, selected) {
-    // labelMedium; the active page reads in brand indigo (onSecondaryContainer ≈ primary).
+    // labelMedium; the active page reads in the brand color (onSecondaryContainer ≈ primary).
     return { fontWeight: "500", color: selected ? primaryText(t) : t.foreground };
   },
   mutedLabel(t) {

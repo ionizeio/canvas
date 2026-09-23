@@ -1,6 +1,5 @@
 import { describe, it, expect } from "bun:test";
 import { alpha, mixOklab } from "../src/style/color.ts";
-import { lightColors, darkColors } from "../src/style/tokens.ts";
 
 describe("alpha", () => {
   it("converts a 6-digit hex to rgba with the given alpha", () => {
@@ -54,10 +53,11 @@ describe("mixOklab", () => {
     expect(mixOklab("#f4f4f5", "#09090b", 1)).toBe("rgb(9, 9, 11)");
   });
 
-  it("computes the identity pill's 6% open fill in both schemes", () => {
-    // color-mix(in oklab, var(--foreground) 6%, var(--secondary)) per scheme.
-    expect(mixOklab(lightColors.secondary, lightColors.foreground, 0.06)).toBe("rgb(230, 231, 233)");
-    expect(mixOklab(darkColors.secondary, darkColors.foreground, 0.06)).toBe("rgb(44, 46, 50)");
+  it("computes a 6% mix of an ink into a near-white and a near-black surface", () => {
+    // color-mix(in oklab, <ink> 6%, <surface>), locked on fixed inputs so the transform
+    // is checked independently of the palette (the identity pill's former pair).
+    expect(mixOklab("#f6f7f8", "#0d121b", 0.06)).toBe("rgb(230, 231, 233)");
+    expect(mixOklab("#212327", "#ffffff", 0.06)).toBe("rgb(44, 46, 50)");
   });
 
   it("lands away from the sRGB channel lerp it replaces", () => {
@@ -66,10 +66,8 @@ describe("mixOklab", () => {
       const ch = (c: string, i: number) => parseInt(c.slice(1 + i * 2, 3 + i * 2), 16);
       return `rgb(${[0, 1, 2].map((i) => Math.round(ch(base, i) + (ch(over, i) - ch(base, i)) * t)).join(", ")})`;
     };
-    expect(srgb(lightColors.secondary, lightColors.foreground, 0.06)).toBe("rgb(232, 233, 235)");
-    expect(mixOklab(lightColors.secondary, lightColors.foreground, 0.06)).not.toBe(
-      srgb(lightColors.secondary, lightColors.foreground, 0.06),
-    );
+    expect(srgb("#f6f7f8", "#0d121b", 0.06)).toBe("rgb(232, 233, 235)");
+    expect(mixOklab("#f6f7f8", "#0d121b", 0.06)).not.toBe(srgb("#f6f7f8", "#0d121b", 0.06));
   });
 
   it("expands a 3-digit hex before mixing", () => {

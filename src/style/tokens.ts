@@ -46,8 +46,8 @@ export interface ColorTokens {
   /**
    * The RESTING border of a text field on the web and iOS skins (Input, Textarea,
    * Select, Autocomplete, InputOTP, Stepper, PhoneInput, the Command trigger), and
-   * only there: a gray-300 hairline on a white box, the iOS field look the design
-   * source draws, which sits BELOW the 3:1 control floor `input` holds (see
+   * only there: Dark Factory's field line densified on the card until it stands apart
+   * from the `border` hairline, which sits BELOW the 3:1 control floor `input` holds (see
    * `fieldBorder` in src/style/field-colors.ts for the disclosed trade-off). Focus
    * and error still paint `ring` and `destructive`, and every non-field control
    * (checkbox, radio, switch, pagination, the outline button) keeps `input`. Omit
@@ -55,6 +55,25 @@ export interface ColorTokens {
    */
   "field-border"?: string;
   ring: string;
+  /**
+   * The soft washes (Dark Factory's `*Soft`): a status or selection color at low alpha,
+   * the fill behind a toned badge, an alert band or a tonal selection. Translucent
+   * (`rgba`) by contract: composite one on the surface it sits on before measuring it.
+   * Omit in legacy maps; a skin then washes the role's own color itself.
+   */
+  "primary-soft"?: string;
+  "success-soft"?: string;
+  "warning-soft"?: string;
+  "destructive-soft"?: string;
+  /** A text field's own fill (DF's translucent white well). Translucent. Omit to fill with `card`. */
+  "field-fill"?: string;
+  /** The modal backdrop (DF's tinted dim). Translucent. Omit to dim with black. */
+  scrim?: string;
+  /** The elevation tint (DF's palette-tinted shadow color). Translucent. Omit to shade with the ink. */
+  shade?: string;
+  /** The inverse surface (DF's dark toast pill) and the ink on it. Omit to invert `foreground`. */
+  inverse?: string;
+  "inverse-foreground"?: string;
   // Categorical data-viz series colors, assigned to series in fixed order
   // (series 1 is always chart-1, never re-ranked when a series is filtered
   // out). One validated palette serves both schemes: every value passes the
@@ -74,121 +93,111 @@ export interface ColorTokens {
 
 // The semantic color values below are the sRGB rendering of the WEB hand-off
 // (styles/tokens/colors.css), which is the single source of truth for what these
-// tokens ARE: `--destructive:oklch(0.556 0.204 23.58)` there is `#d02533` here.
-// RN cannot parse oklch(), so the hand-off's values are carried as the hex they
-// resolve to, and scripts/validate-tokens.ts converts the CSS back to sRGB and
-// fails the build on any drift. Change a value in the CSS hand-off first, never
-// only here. (The `chart-*` series and the Tailwind v3 `palette` below are
-// authored as hex on both sides and compared verbatim.)
+// tokens ARE. RN cannot parse oklch(), so the hand-off's values are carried as the hex
+// they resolve to (and the translucent roles as the same rgba), and
+// scripts/validate-tokens.ts fails the build on any drift. Change a value in the CSS
+// hand-off first, never only here.
 //
-// The values are the Riskora Dashboard UI Kit's (Figma file YLbmaRirWTzivAzXirDTmX;
-// the vendored export is tools/figma/riskora-variables.json): a sky/400 brand on a
-// charcoal-and-white neutral family, with every pair solved to the kit's contrast
-// floors where the source falls short (the CSS hand-off says which, and why).
+// The values are Dark Factory's (CLAUDE.md, "Design language: Dark Factory"): its blush
+// palette for the light scheme and its dark palette for the dark scheme, each role a DF
+// value, a formula over DF values, or a DF color whose lightness was moved the least that
+// clears a kit legibility floor. tools/darkfactory/derive-tokens.ts derives them from
+// the vendored DF theme and tools/darkfactory/tokens.json records each role's source;
+// scripts/check-df-parity.ts keeps the hand-off and this file equal to that table.
 export const lightColors: ColorTokens = {
-  background: "#f8fafe",
-  foreground: "#0d121b",
+  background: "#f5f2fe",
+  foreground: "#3b3c5c",
   card: "#ffffff",
-  "card-foreground": "#0d121b",
+  "card-foreground": "#3b3c5c",
   popover: "#ffffff",
-  "popover-foreground": "#0d121b",
-  primary: "#3da3f5",
-  "primary-text": "#0061b5",
-  // The dark ink, in both schemes: Riskora's own dark-mode label on a sky fill.
-  // White-on-sky is 2.7:1 and fails the 4.5:1 text floor.
-  "primary-foreground": "#0d121b",
-  secondary: "#f6f7f8",
-  "secondary-foreground": "#0d121b",
-  muted: "#f6f7f8",
-  "muted-foreground": "#525864",
-  accent: "#f6f7f8",
-  "accent-foreground": "#0d121b",
-  destructive: "#d02533",
-  // Riskora red/700 clears 4.5:1 on every light surface by itself, so the fill and
-  // the text role share one value here (dark below lifts the text role separately).
-  "destructive-text": "#b0001a",
+  "popover-foreground": "#3b3c5c",
+  primary: "#7262e5",
+  "primary-text": "#5d48c9",
+  "primary-foreground": "#ffffff",
+  "primary-soft": "rgba(123, 108, 240, 0.14)",
+  action: "#21804b",
+  "action-foreground": "#ffffff",
+  secondary: "#f5f2fc",
+  "secondary-foreground": "#3b3c5c",
+  muted: "#f5f2fc",
+  "muted-foreground": "#696b8d",
+  accent: "#f4f3fe",
+  "accent-foreground": "#3b3c5c",
+  destructive: "#b53a44",
+  "destructive-text": "#9a1f2f",
   "destructive-foreground": "#ffffff",
-  success: "#197544",
+  "destructive-soft": "rgba(181, 58, 68, 0.12)",
+  success: "#0b7440",
   "success-foreground": "#ffffff",
-  warning: "#ad4e1e",
+  "success-soft": "rgba(33, 128, 75, 0.12)",
+  warning: "#965801",
   "warning-foreground": "#ffffff",
-  border: "#f1f2f3",
-  // `input` and `border` part company here, and the split is the point of having
-  // two names. `border` separates two SURFACES (a card edge, a divider, a table
-  // rule) and carries no contrast floor: it is read against the fills either side
-  // of it. `input` is the BOUNDARY OF A CONTROL (the fields, checkbox, radio, the
-  // switch track, select, autocomplete, pagination, and the outline Button), which
-  // is what WCAG 2.2 SC 1.4.11 holds to 3:1 against whatever it sits on. Both
-  // shipped the same hairline value until 2.55.1, which left every unfilled
-  // control at 1.27:1 in light and 1.34:1 in dark: a silhouette the eye cannot
-  // find. Each value here is the lightest one on the border hue that still clears
-  // 3:1 against ALL THREE surfaces a control is placed on (the page, a card or
-  // popover, and a muted panel), so re-tuning either means re-solving it, not
-  // nudging it by eye. test/tokens.test.ts pins the floor, and asserts `border`
-  // stays BELOW it so the two cannot be collapsed back together.
-  input: "#8b8f97",
-  // The iOS field's resting hairline, from the "iOS Mobile Input Fields" Figma kit
-  // (file N8TScrzAPwpmwxFS1032my, Border/Default): Tailwind gray-300 on a white box,
-  // 1.47:1 against `card`. This is a DELIBERATE, disclosed departure from the 3:1
-  // boundary `input` holds (WCAG 1.4.11), chosen on 2026-09-16 so the iOS fields
-  // read as the iOS reference rather than as the web's heavier outline, and
-  // extended to the web field skins the same day at the user's request (the 3:1
-  // outline read as a white frame on the dark card). Only the field skins' resting
-  // state reads it (through `fieldBorder`); focus and error keep their
-  // full-strength `ring` / `destructive` borders, the non-field controls keep
-  // `input`, and the `card` box on the tinted page carries the rest of the read.
-  "field-border": "#d1d5db",
-  ring: "#3da3f5", // one ring value in both schemes; see colors.css
-  "chart-1": "#3da3f5", // Riskora sky/400
-  "chart-2": "#fb8c4c", // Riskora orange/400 (the bar highlight)
-  "chart-3": "#2eb872", // green
-  "chart-4": "#6676ff", // Riskora blue/300
-  "chart-5": "#f0a41a", // amber
-  "chart-6": "#14b8a6", // teal
-  "chart-7": "#ec4899", // pink
-  "chart-8": "#8b5cf6", // violet
+  "warning-soft": "rgba(240, 160, 40, 0.18)",
+  border: "#eae8f3",
+  input: "#898ba0",
+  "field-border": "#d6d3e7",
+  "field-fill": "rgba(255, 255, 255, 0.7)",
+  ring: "#7b6cf0",
+  scrim: "rgba(40, 30, 90, 0.28)",
+  shade: "rgba(121, 100, 214, 0.22)",
+  inverse: "#26264a",
+  "inverse-foreground": "#ffffff",
+  "chart-1": "#7b6cf0",
+  "chart-2": "#03919d",
+  "chart-3": "#d36225",
+  "chart-4": "#d25798",
+  "chart-5": "#4382e3",
+  "chart-6": "#009574",
+  "chart-7": "#b560cf",
+  "chart-8": "#a37e05",
 };
 
 export const darkColors: ColorTokens = {
-  background: "#111213",
-  foreground: "#ffffff",
-  card: "#18191c",
-  "card-foreground": "#ffffff",
-  popover: "#18191c",
-  "popover-foreground": "#ffffff",
-  primary: "#68cdff",
-  "primary-text": "#68cdff",
-  "primary-foreground": "#0d121b",
-  secondary: "#212327",
-  "secondary-foreground": "#ffffff",
-  muted: "#212327",
-  "muted-foreground": "#99a0ad",
-  accent: "#212327",
-  "accent-foreground": "#ffffff",
-  destructive: "#d53b44",
-  "destructive-text": "#fe9b98",
-  "destructive-foreground": "#ffffff",
-  success: "#35c26d",
-  "success-foreground": "#052e16",
-  warning: "#ff9a68",
-  "warning-foreground": "#451a03",
-  border: "#222427",
-  // Control boundary held to 3:1; see the light `input` above for the full note.
-  input: "#696d74",
-  // iOS systemGray4 dark (the same Figma kit's dark Border/Default), 1.5:1 on `card`;
-  // see the light note above for why the iOS resting field border sits below 3:1.
-  "field-border": "#3a3a3c",
-  ring: "#3da3f5",
-  // Same series values as light: the palette was validated against both
-  // surfaces, so brand overrides stay consistent across schemes by default.
-  "chart-1": "#3da3f5",
-  "chart-2": "#fb8c4c",
-  "chart-3": "#2eb872",
-  "chart-4": "#6676ff",
-  "chart-5": "#f0a41a",
-  "chart-6": "#14b8a6",
-  "chart-7": "#ec4899",
-  "chart-8": "#8b5cf6",
+  background: "#272544",
+  foreground: "#ebebf7",
+  card: "#252741",
+  "card-foreground": "#ebebf7",
+  popover: "#252741",
+  "popover-foreground": "#ebebf7",
+  primary: "#a496ff",
+  "primary-text": "#b8b0ff",
+  "primary-foreground": "#221f3a",
+  "primary-soft": "rgba(164, 150, 255, 0.16)",
+  action: "#5fd18a",
+  "action-foreground": "#0d2a17",
+  secondary: "#2d2f4c",
+  "secondary-foreground": "#ebebf7",
+  muted: "#2d2f4c",
+  "muted-foreground": "#a3a5c6",
+  accent: "#323254",
+  "accent-foreground": "#ebebf7",
+  destructive: "#ff8b93",
+  "destructive-text": "#ffadb0",
+  "destructive-foreground": "#38181b",
+  "destructive-soft": "rgba(255, 139, 147, 0.16)",
+  success: "#5fd18a",
+  "success-foreground": "#0d2a17",
+  "success-soft": "rgba(95, 209, 138, 0.16)",
+  warning: "#ffc46b",
+  "warning-foreground": "#311f03",
+  "warning-soft": "rgba(255, 180, 80, 0.16)",
+  border: "#3b3d54",
+  input: "#7c7e93",
+  "field-border": "#44455c",
+  "field-fill": "rgba(255, 255, 255, 0.06)",
+  ring: "#a496ff",
+  scrim: "rgba(5, 5, 20, 0.55)",
+  shade: "rgba(0, 0, 0, 0.5)",
+  inverse: "#26264a",
+  "inverse-foreground": "#ffffff",
+  "chart-1": "#7b6cf0",
+  "chart-2": "#03919d",
+  "chart-3": "#d36225",
+  "chart-4": "#d25798",
+  "chart-5": "#4382e3",
+  "chart-6": "#009574",
+  "chart-7": "#b560cf",
+  "chart-8": "#a37e05",
 };
 
 export const colorsByScheme: Record<ColorScheme, ColorTokens> = {
@@ -285,8 +294,13 @@ export interface BrandColors {
 }
 
 // The keys are historical (the orbs were indigo/violet/cyan and renaming them would
-// break consumers reading `brandColors["orb-indigo"]`); the values are the Riskora
-// sky family: sky/400, blue/300, sky/400 dark.
+// break consumers reading `brandColors["orb-indigo"]`); the values are the former
+// Riskora sky family: sky/400, blue/300, sky/400 dark.
+/**
+ * @deprecated The brand orbs painted the removed Backdrop organism, and the kit's colors
+ * are Dark Factory's now; nothing in the kit reads these. Kept, with their former values,
+ * until an owner-authorized major removes them (the `--orb-*` custom properties too).
+ */
 export const brandColors: BrandColors = {
   "orb-indigo": "#3da3f5",
   "orb-violet": "#6676ff",

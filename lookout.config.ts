@@ -185,7 +185,7 @@ const config: LookoutConfig = {
   rubric: "./lookout.rubric.md",
 
   neverFile: [
-    "brand sky primary instead of Material dynamic color: the kit's palette is the Riskora token set by design",
+    "the Dark Factory palette (a violet selection color, a green call to action) instead of Material dynamic color: the kit's palette is Dark Factory's by design",
     "no tonal container / surface-tint palette on Android: by-design token approximation",
     "the brand type family (Urbanist) everywhere, with titles at the regular weight: only size, weight, and line-height must map to platform roles",
     "glass mode stripping hairline borders: intended material behavior",
@@ -194,7 +194,7 @@ const config: LookoutConfig = {
     "the small uppercase platform watermark (iOS / ANDROID / WEB) in each preview row corner: a docs harness label, not component content",
     "the iOS and Android rows on WEB captures are browser previews of the native skins: judge their metrics and anatomy, but material and feedback fidelity only from device shots",
     "Lucide-derived outline glyphs at one 1.75 stroke: the kit's icon set, drawn from a single constant",
-    "white cards on a faintly tinted light page, soft hairline card borders and the ambient (no-offset) shadow ladder: the Riskora surfaces this kit is built on",
+    "white cards on a lavender-tinted light page, soft hairline card borders and the ambient (no-offset) shadow ladder: the surfaces this kit is built on",
     "the circular indicator in Spinner and in a loading Button: information-bearing motion by design; Skeleton is the shimmer",
     "pill-shaped chips and badges on the iOS and Android rows: platform shape, not a rounding accident",
     "10pt tab-bar labels on iOS rows: the HIG size for that control",

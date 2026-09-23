@@ -96,15 +96,20 @@ function radius(v: string): number {
   return typeof l === "number" ? l : 8;
 }
 
-const COLOR_TOKENS = new Set<keyof ColorTokens>([
+const COLOR_TOKEN_KEYS = [
   "background", "foreground", "card", "card-foreground", "popover", "popover-foreground",
   "primary", "primary-text", "primary-foreground", "action", "action-foreground", "secondary", "secondary-foreground", "muted", "muted-foreground",
   "accent", "accent-foreground", "destructive", "destructive-text", "destructive-foreground",
   "border", "input", "field-border", "ring",
-]);
+] as const satisfies readonly (keyof ColorTokens)[];
+type MockupColor = (typeof COLOR_TOKEN_KEYS)[number];
+const COLOR_TOKENS = new Set<string>(COLOR_TOKEN_KEYS);
+function isMockupColor(name: string): name is MockupColor {
+  return COLOR_TOKENS.has(name);
+}
 // The optional text roles fall back for legacy complete token objects, exactly as
 // the tokens screen resolves them.
-function tokenColor(tokens: ColorTokens, key: keyof ColorTokens): string {
+function tokenColor(tokens: ColorTokens, key: MockupColor): string {
   if (key === "primary-text") return tokens[key] ?? tokens.primary;
   if (key === "destructive-text") return tokens[key] ?? tokens.destructive;
   if (key === "field-border") return tokens[key] ?? tokens.input;
@@ -119,8 +124,8 @@ function color(v: string, tokens: ColorTokens): string | undefined {
   // color-mix(in oklch, var(--X) N%, transparent) -> alpha(token, N/100)
   const mix = v.match(/color-mix\(in oklch,\s*var\(--([a-z-]+)\)\s*([0-9.]+)%/);
   if (mix) {
-    const tok = mix[1] as keyof ColorTokens;
-    if (COLOR_TOKENS.has(tok)) return alpha(tokenColor(tokens, tok), parseFloat(mix[2]) / 100);
+    const tok = mix[1];
+    if (isMockupColor(tok)) return alpha(tokenColor(tokens, tok), parseFloat(mix[2]) / 100);
   }
   if (v.startsWith("linear-gradient") || v.startsWith("radial-gradient")) {
     const inner = v.match(/var\(--([a-z-]+)\)|#[0-9a-fA-F]{3,8}|hsl\([^)]*\)|rgba?\([^)]*\)/);
@@ -128,8 +133,8 @@ function color(v: string, tokens: ColorTokens): string | undefined {
   }
   const vm = v.match(/^var\(--([a-z-]+)/);
   if (vm) {
-    const tok = vm[1] as keyof ColorTokens;
-    return COLOR_TOKENS.has(tok) ? tokenColor(tokens, tok) : undefined;
+    const tok = vm[1];
+    return isMockupColor(tok) ? tokenColor(tokens, tok) : undefined;
   }
   return v; // hex / hsl / rgb / named
 }
@@ -208,7 +213,7 @@ function parseStyle(styleStr: string, tokens: ColorTokens) {
       case "box-shadow": {
         // RN Web renders the boxShadow style string; resolve var() colors so the focus
         // rings and card elevation track the theme. (Native ignores it gracefully.)
-        const resolved = val.replace(/var\(--([a-z-]+)\)/g, (_w, name: string) => (COLOR_TOKENS.has(name as keyof ColorTokens) ? tokenColor(tokens, name as keyof ColorTokens) : "transparent"));
+        const resolved = val.replace(/var\(--([a-z-]+)\)/g, (_w, name: string) => (isMockupColor(name) ? tokenColor(tokens, name) : "transparent"));
         view.boxShadow = resolved;
         break;
       }

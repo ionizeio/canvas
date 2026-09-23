@@ -138,37 +138,54 @@ describe("elevation in the hand-off", () => {
 });
 
 describe("one neutral family", () => {
-  // Mixing a warm gray with a cool one in the same interface is the defect; every
-  // neutral here should sit on one hue with almost no chroma. The chromatic tokens
-  // (primary, destructive, success, warning, ring) are intents and are excluded, as
-  // are the chart series and the brand orbs.
+  // Mixing a warm gray with a cool one in the same interface is the defect. Dark Factory's
+  // neutrals are TINTED on purpose (indigo-slate inks over blush-violet surfaces), so the
+  // rule is read per class: the surfaces share one hue, the inks share one hue, the two
+  // classes sit in one family (medians within 25 degrees), and a neutral stays quiet next
+  // to the intents (its chroma at most 0.06 and at most half the least intent's). `accent`
+  // is DF's hover wash, a tint of the brand, so it is checked against `primary` instead.
+  // A zero-chroma value (white) has no meaningful hue and says nothing either way.
   const colorsCss = read("colors");
-  const NEUTRALS = [
-    "background", "foreground", "card", "card-foreground", "popover", "popover-foreground",
-    "secondary", "secondary-foreground", "muted", "muted-foreground", "accent",
-    "accent-foreground", "border", "input",
-  ];
+  const SURFACES = ["background", "card", "popover", "secondary", "muted", "border"];
+  const INKS = ["foreground", "card-foreground", "popover-foreground", "secondary-foreground", "muted-foreground", "accent-foreground", "input"];
+  const INTENTS = ["primary", "action", "destructive", "success", "warning"];
+  const parse = (value: string | undefined) => {
+    const m = /^oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\)$/.exec((value ?? "").trim());
+    return m ? { chroma: Number(m[2]), hue: Number(m[3]) } : null;
+  };
+  const median = (hues: number[]) => [...hues].sort((a, b) => a - b)[Math.floor(hues.length / 2)]!;
 
   for (const scheme of [":root", ".dark"] as const) {
-    const decls = declarationsIn(colorsCss, scheme);
-    const parsed = NEUTRALS.map((name) => {
-      const m = /^oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\)$/.exec((decls[name] ?? "").trim());
-      return m ? { name, chroma: Number(m[2]), hue: Number(m[3]) } : null;
-    }).filter((v): v is { name: string; chroma: number; hue: number } => v !== null);
+    const decls = scheme === ":root" ? declarationsIn(colorsCss, ":root") : { ...declarationsIn(colorsCss, ":root"), ...declarationsIn(colorsCss, ".dark") };
+    const classOf = (names: string[]) => names.map((name) => ({ name, ...parse(decls[name])! }));
+    const surfaces = classOf(SURFACES);
+    const inks = classOf(INKS);
 
-    it(`${scheme} neutrals carry almost no chroma`, () => {
-      expect(parsed.length).toBeGreaterThan(8);
-      for (const { name, chroma } of parsed) {
-        expect(chroma, `--${name}`).toBeLessThanOrEqual(0.02);
+    it(`${scheme} neutrals carry a quiet tint`, () => {
+      for (const { name, chroma } of [...surfaces, ...inks]) {
+        expect(Number.isFinite(chroma), `--${name} is oklch()`).toBe(true);
+        expect(chroma, `--${name}`).toBeLessThanOrEqual(0.06);
       }
+      const loudest = Math.max(...[...surfaces, ...inks].map((n) => n.chroma));
+      for (const name of INTENTS) expect(parse(decls[name])!.chroma, `--${name}`).toBeGreaterThanOrEqual(2 * loudest);
     });
 
-    it(`${scheme} neutrals share one hue`, () => {
-      // A zero-chroma value has no meaningful hue, so it says nothing either way.
-      const hues = parsed.filter((p) => p.chroma > 0).map((p) => p.hue).sort((a, b) => a - b);
-      expect(hues.length).toBeGreaterThan(4);
-      const median = hues[Math.floor(hues.length / 2)];
-      for (const hue of hues) expect(Math.abs(hue - median)).toBeLessThanOrEqual(6);
+    it(`${scheme} surfaces share one hue and inks share one hue, in one family`, () => {
+      const medians = [surfaces, inks].map((members) => {
+        const hues = members.filter((m) => m.chroma > 0).map((m) => m.hue);
+        expect(hues.length).toBeGreaterThan(2);
+        const m = median(hues);
+        for (const member of members.filter((n) => n.chroma > 0)) expect(Math.abs(member.hue - m), `--${member.name}`).toBeLessThanOrEqual(6);
+        return m;
+      });
+      expect(Math.abs(medians[0]! - medians[1]!)).toBeLessThanOrEqual(25);
+    });
+
+    it(`${scheme} accent is a tint of the brand`, () => {
+      const accent = parse(decls.accent)!;
+      const primary = parse(decls.primary)!;
+      expect(accent.chroma).toBeLessThanOrEqual(0.06);
+      expect(Math.abs(accent.hue - primary.hue)).toBeLessThanOrEqual(10);
     });
   }
 });

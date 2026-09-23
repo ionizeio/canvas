@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach, spyOn } from "bun:test";
 import { render, cleanup, waitFor, screen } from "@testing-library/react";
 import { Text } from "react-native";
 import { ThemeProvider, useTheme } from "../src/style/theme.tsx";
-import { glassByScheme } from "../src/style/tokens.ts";
+import { glassByScheme, lightColors, darkColors } from "../src/style/tokens.ts";
 import { GlassSurface } from "../src/style/glass-surface/glass-surface.tsx";
 import { GlassSurface as IOSGlassSurface } from "../src/style/glass-surface/glass-surface.ios.tsx";
 import { GlassBox } from "../src/style/glass-surface/glass-surface.shared.tsx";
@@ -93,7 +93,7 @@ describe("glass and the semantic tokens", () => {
       </ThemeProvider>,
     );
     await waitFor(() =>
-      expect(screen.getByText("glass|popover:#ffffff|tint:rgba(255, 255, 255, 0.20)|rt:false|ic:false")).toBeDefined(),
+      expect(screen.getByText(`glass|popover:${lightColors.popover}|tint:${glassByScheme.light["glass-tint"]}|rt:false|ic:false`)).toBeDefined(),
     );
   });
 
@@ -104,7 +104,7 @@ describe("glass and the semantic tokens", () => {
       </ThemeProvider>,
     );
     await waitFor(() =>
-      expect(screen.getByText("glass|popover:#18191c|tint:rgba(22, 22, 28, 0.30)|rt:false|ic:false")).toBeDefined(),
+      expect(screen.getByText(`glass|popover:${darkColors.popover}|tint:${glassByScheme.dark["glass-tint"]}|rt:false|ic:false`)).toBeDefined(),
     );
   });
 
@@ -160,8 +160,9 @@ describe("GlassSurface increase-contrast border", () => {
       await waitFor(() => {
         const node = screen.getByTestId("gs") as HTMLElement;
         expect(node.style.borderWidth).toBe("1px");
-        // foreground token #0d121b => rgb(13, 18, 27)
-        expect(node.getAttribute("style")).toContain("border-color: rgba(13, 18, 27");
+        // The foreground token, as react-native-web writes it.
+        const [r, g, b] = [1, 3, 5].map((i) => parseInt(lightColors.foreground.slice(i, i + 2), 16));
+        expect(node.getAttribute("style")).toContain(`border-color: rgba(${r}, ${g}, ${b}`);
       });
     } finally {
       spy.mockRestore();

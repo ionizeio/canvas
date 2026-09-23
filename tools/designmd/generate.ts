@@ -36,7 +36,6 @@ import {
 import { SKIN_FAMILIES } from "../tokens/skin-families.ts";
 import {
   breakpoints,
-  brandColors,
   darkColors,
   widths,
   fontWeight,
@@ -237,8 +236,6 @@ const frontmatter = [
   yamlMap(semantic(darkColors), "  "),
   "chart:",
   yamlMap(chartSeries(lightColors), "  "),
-  "brand:",
-  yamlMap(brandColors as unknown as Record<string, string>, "  "),
   "typography:",
   yamlNested(typography(), "  "),
   "spacing:",

@@ -1,3 +1,4 @@
+import { scrimFill } from "../../style/scrim.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useCallback, useEffect, useRef, useState, Fragment } from "react";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
@@ -160,7 +161,8 @@ export function createActionSheet(skin: ActionSheetSkin) {
     }, [open, mounted, progress, reduced]);
 
     const slide = progress.interpolate({ inputRange: [0, 1], outputRange: [sheetH || 600, 0] });
-    const dimOpacity = progress.interpolate({ inputRange: [0, 1], outputRange: [0, skin.scrimOpacity] });
+    const dimOpacity = progress.interpolate({ inputRange: [0, 1], outputRange: [0, 1] });
+    const dimFill = scrimFill(tokens, skin.scrimOpacity);
 
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
     const hasHeader = title != null || message != null;
@@ -268,7 +270,7 @@ export function createActionSheet(skin: ActionSheetSkin) {
                     never moves, so the backdrop settles over the page while the sheet
                     rises. Purely decorative (the Pressable above it carries the dismiss
                     role), so it is unannounced. */}
-                <Animated.View style={[StyleSheet.absoluteFill, s.scrimDim, { opacity: dimOpacity }]} />
+                <Animated.View style={[StyleSheet.absoluteFill, s.scrimDim, { backgroundColor: dimFill, opacity: dimOpacity }]} />
                 <Pressable
                   style={StyleSheet.absoluteFill}
                   onPress={close}

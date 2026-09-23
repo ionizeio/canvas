@@ -1,3 +1,4 @@
+import { scrimFill } from "../../style/scrim.js";
 import { useCallback, useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { OverlayProvider } from "../../style/portal.js";
@@ -161,9 +162,11 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
         ? width
         : -width;
     const slide = progress.interpolate({ inputRange: [0, 1], outputRange: [fromOffset, 0] });
-    // The scrim dim resolves per color scheme (iOS dims lighter in light, darker in dark).
-    const scrimAlpha = skin.scrimOpacity(scheme);
-    const dimOpacity = progress.interpolate({ inputRange: [0, 1], outputRange: [0, scrimAlpha] });
+    // The scrim is the theme's `scrim` role; a legacy token map dims with black at the
+    // skin's per-scheme alpha (iOS dims lighter in light, darker in dark). The resting
+    // alpha lives in the color and the fade in the opacity (see scrimFill).
+    const dimFill = scrimFill(tokens, skin.scrimOpacity(scheme));
+    const dimOpacity = progress.interpolate({ inputRange: [0, 1], outputRange: [0, 1] });
     const slideTransform = isVertical ? [{ translateY: slide }] : [{ translateX: slide }];
 
     // A sheet caps its width (Android M3 640dp) and centers on wide windows; the cap
@@ -256,7 +259,7 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
                         layout; the panel rides in on translateX/translateY. The dim is a dismiss
                         affordance, not a control, so it is unannounced; hardware back and accessibility escape dismiss. */}
                     <View style={{ flex: 1 }} collapsable={false} onAccessibilityEscape={escapeScope.onAccessibilityEscape}>
-                      <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: "rgb(0, 0, 0)", opacity: dimOpacity }]} />
+                      <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: dimFill, opacity: dimOpacity }]} />
                       <Pressable accessible={false} focusable={false} tabIndex={-1} importantForAccessibility="no" style={s.scrim(edge, 0)} onPress={() => setOpen(false)}>
                         <Animated.View style={{ transform: slideTransform }}>{panel}</Animated.View>
                       </Pressable>

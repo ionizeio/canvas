@@ -1,62 +1,68 @@
-/* Semantic color tokens. :root is light; .dark on <html> selects dark. See
-   src/style/tokens.ts for native counterparts and contrast constraints, and
-   tools/figma/riskora-variables.json for the Riskora source variable each derives
-   from and every documented deviation. */
+/* Semantic color tokens: Dark Factory's blush palette (:root) and its dark palette
+   (.dark on <html>), derived by tools/darkfactory/derive-tokens.ts; each role's DF
+   source and the floor it was solved to are in tools/darkfactory/tokens.json. The
+   rgba roles are translucent by contract. src/style/tokens.ts mirrors the values. */
 :root{
-  --background:oklch(0.985 0.006 262);
-  --foreground:oklch(0.183 0.02 262);
+  --background:oklch(0.967 0.016 297.5);
+  --foreground:oklch(0.37 0.055 282);
   --card:oklch(1 0 0);
-  --card-foreground:oklch(0.183 0.02 262);
+  --card-foreground:oklch(0.37 0.055 282);
   --popover:oklch(1 0 0);
-  --popover-foreground:oklch(0.183 0.02 262);
-  --primary:oklch(0.694 0.152 246.867);
-  --primary-text:oklch(0.48 0.17 245);
-  --primary-foreground:oklch(0.183 0.02 262);
-  --secondary:oklch(0.976 0.002 262);
-  --secondary-foreground:oklch(0.183 0.02 262);
-  --muted:oklch(0.976 0.002 262);
-  --muted-foreground:oklch(0.46 0.02 262);
-  --accent:oklch(0.976 0.002 262);
-  --accent-foreground:oklch(0.183 0.02 262);
-  --destructive:oklch(0.556 0.204 23.58);
-  --destructive-text:oklch(0.47 0.2 23.58);
+  --popover-foreground:oklch(0.37 0.055 282);
+  --primary:oklch(0.581 0.191 284.4);
+  --primary-text:oklch(0.501 0.191 284.4);
+  --primary-foreground:oklch(1 0 0);
+  --primary-soft:rgba(123,108,240,0.14);
+  --action:oklch(0.532 0.12 154);
+  --action-foreground:oklch(1 0 0);
+  --secondary:oklch(0.966 0.014 299.8);
+  --secondary-foreground:oklch(0.37 0.055 282);
+  --muted:oklch(0.966 0.014 299.8);
+  --muted-foreground:oklch(0.54 0.053 281.9);
+  --accent:oklch(0.968 0.015 290.3);
+  --accent-foreground:oklch(0.37 0.055 282);
+  --destructive:oklch(0.53 0.158 19.9);
+  --destructive-text:oklch(0.452 0.158 19.9);
   --destructive-foreground:oklch(1 0 0);
-  --success:oklch(0.498 0.114 154.365);
+  --destructive-soft:rgba(181,58,68,0.12);
+  --success:oklch(0.491 0.12 154);
   --success-foreground:oklch(1 0 0);
-  --warning:oklch(0.538 0.138 43.874);
+  --success-soft:rgba(33,128,75,0.12);
+  --warning:oklch(0.52 0.117 64.3);
   --warning-foreground:oklch(1 0 0);
-  --border:oklch(0.961 0.002 262);
-  /* `input` is a control boundary (WCAG 1.4.11: 3:1 vs page, card and muted
-     panel); `border` only separates surfaces. Solve, do not eyeball. Why in
-     src/style/tokens.ts. Dark below is solved the same way. */
-  --input:oklch(0.65 0.012 262);
-  /* Field RESTING hairline (web + iOS), below 3:1 on purpose; why in tokens.ts. */
-  --field-border:oklch(0.871 0.009 257);
-  /* One ring value in both schemes: it reads on a light page and a dark page. */
-  --ring:oklch(0.694 0.152 246.867);
+  --warning-soft:rgba(240,160,40,0.18);
+  --border:oklch(0.936 0.015 294.5);
+  --input:oklch(0.642 0.031 281.2);
+  --field-border:oklch(0.875 0.027 292.7);
+  --field-fill:rgba(255,255,255,0.7);
+  --ring:oklch(0.613 0.191 284.4);
+  --scrim:rgba(40,30,90,0.28);
+  --shade:rgba(121,100,214,0.22);
+  --inverse:oklch(0.288 0.065 281.6);
+  --inverse-foreground:oklch(1 0 0);
 
-  /* Data-viz series palette. Fixed assignment order — series 1 is always chart-1,
-     never re-ranked when a series is filtered out. Same values in both schemes. */
-  --chart-1:#3da3f5;
-  --chart-2:#fb8c4c;
-  --chart-3:#2eb872;
-  --chart-4:#6676ff;
-  --chart-5:#f0a41a;
-  --chart-6:#14b8a6;
-  --chart-7:#ec4899;
-  --chart-8:#8b5cf6;
+  /* Data-viz series, anchored on DF hues, in the dataviz validator's colorblind-safe order
+     (tools/darkfactory/derive-tokens.ts). Fixed assignment order; same in both schemes. */
+  --chart-1:#7b6cf0;
+  --chart-2:#03919d;
+  --chart-3:#d36225;
+  --chart-4:#d25798;
+  --chart-5:#4382e3;
+  --chart-6:#009574;
+  --chart-7:#b560cf;
+  --chart-8:#a37e05;
 
-  /* Brand constants (do not flip with theme): avatar gradient, sign-in orbs. The
-     keys are historical; the values are the sky family. */
+  /* Deprecated brand constants, kept as aliases until a major; nothing reads them. */
   --orb-indigo:#3da3f5;
   --orb-violet:#6676ff;
   --orb-cyan:#68cdff;
 
-  /* Fixed palette for menu/panel text and activity deltas. */
-  --p-menu-destructive:#d02533;
-  --panel-danger:#d02533;
-  --delta-up:#1a7544;
-  --delta-down:#d02533;
+  /* Fixed colors for menu and panel text and activity deltas: they keep their value
+     under a semantic override. The menu red is the menus' own red-700 (red-300 dark). */
+  --p-menu-destructive:#b91c1c;
+  --panel-danger:#b53a44;
+  --delta-up:#0b7440;
+  --delta-down:#9a1f2f;
 
   /* Browser material handoff. Reading/content panes use static frost; functional
      surfaces can use the lens where supported, with refraction at the rim.
@@ -77,37 +83,47 @@
   --glass-scroll-edge:76px /* @kind shadow */;
 }
 .dark{
-  --background:oklch(0.18 0.004 262);
-  --foreground:oklch(1 0 0);
-  --card:oklch(0.215 0.006 262);
-  --card-foreground:oklch(1 0 0);
-  --popover:oklch(0.215 0.006 262);
-  --popover-foreground:oklch(1 0 0);
-  --primary:oklch(0.807 0.118 232.325);
-  --primary-text:oklch(0.807 0.118 232.325);
-  --primary-foreground:oklch(0.183 0.02 262);
-  --secondary:oklch(0.257 0.008 262);
-  --secondary-foreground:oklch(1 0 0);
-  --muted:oklch(0.257 0.008 262);
-  --muted-foreground:oklch(0.705 0.02 262);
-  --accent:oklch(0.257 0.008 262);
-  --accent-foreground:oklch(1 0 0);
-  --destructive:oklch(0.585 0.19 22.342);
-  --destructive-text:oklch(0.79 0.12 22);
-  --destructive-foreground:oklch(1 0 0);
-  --success:oklch(0.72 0.17 152);
-  --success-foreground:oklch(0.266 0.063 152.934);
-  --warning:oklch(0.781 0.138 46.412);
-  --warning-foreground:oklch(0.279 0.074 45.635);
-  --border:oklch(0.26 0.006 262);
-  --input:oklch(0.532 0.012 262);
-  --field-border:oklch(0.350 0.002 259);
-  --ring:oklch(0.694 0.152 246.867);
-  --p-menu-destructive:#dc6565;
-  /* iOS resolves its drawer scrim per scheme: 0.2 light, 0.48 dark. */
-  --panel-danger:#dc6565;
-  --delta-up:#4ade80;
-  --delta-down:#dc6565;
+  --background:oklch(0.283 0.056 285.2);
+  --foreground:oklch(0.944 0.016 286.1);
+  --card:oklch(0.284 0.048 279.5);
+  --card-foreground:oklch(0.944 0.016 286.1);
+  --popover:oklch(0.284 0.048 279.5);
+  --popover-foreground:oklch(0.944 0.016 286.1);
+  --primary:oklch(0.729 0.15 288.2);
+  --primary-text:oklch(0.792 0.111 288.2);
+  --primary-foreground:oklch(0.257 0.05 287.4);
+  --primary-soft:rgba(164,150,255,0.16);
+  --action:oklch(0.776 0.146 153.8);
+  --action-foreground:oklch(0.257 0.05 152.5);
+  --secondary:oklch(0.317 0.052 280);
+  --secondary-foreground:oklch(0.944 0.016 286.1);
+  --muted:oklch(0.317 0.052 280);
+  --muted-foreground:oklch(0.731 0.048 282.4);
+  --accent:oklch(0.334 0.059 282.7);
+  --accent-foreground:oklch(0.944 0.016 286.1);
+  --destructive:oklch(0.765 0.14 16.6);
+  --destructive-text:oklch(0.827 0.097 16.6);
+  --destructive-foreground:oklch(0.257 0.051 15.4);
+  --destructive-soft:rgba(255,139,147,0.16);
+  --success:oklch(0.776 0.146 153.8);
+  --success-foreground:oklch(0.257 0.05 152.5);
+  --success-soft:rgba(95,209,138,0.16);
+  --warning:oklch(0.856 0.126 76);
+  --warning-foreground:oklch(0.256 0.05 74.8);
+  --warning-soft:rgba(255,180,80,0.16);
+  --border:oklch(0.368 0.04 280.4);
+  --input:oklch(0.599 0.032 281.1);
+  --field-border:oklch(0.399 0.039 282.6);
+  --field-fill:rgba(255,255,255,0.06);
+  --ring:oklch(0.729 0.15 288.2);
+  --scrim:rgba(5,5,20,0.55);
+  --shade:rgba(0,0,0,0.5);
+  --inverse:oklch(0.288 0.065 281.6);
+  --inverse-foreground:oklch(1 0 0);
+  --p-menu-destructive:#fca5a5;
+  --panel-danger:#ff8b93;
+  --delta-up:#5fd18a;
+  --delta-down:#ffadb0;
   /* Dark glass: less light behind it to bend, so the tint drops further and the rim carries more
      of the read. Apple's dark material is dimmer, not brighter. */
   --glass-tint:rgba(22,22,28,0.30);
