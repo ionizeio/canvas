@@ -67,6 +67,8 @@
     "e2e:baselines:pull": "bun e2e/support/pull-baselines.ts",
     "validate-tokens": "bun scripts/validate-tokens.ts",
     "check-size": "bun scripts/check-size.ts",
+    "df:vendor": "bun scripts/vendor-dark-factory.ts",
+    "df:vendor:check": "bun scripts/vendor-dark-factory.ts --check",
     "check:interactions": "bun scripts/check-interaction-coverage.ts",
     "check:materials": "bun scripts/check-material-coverage.ts",
     "check-parity": "bun scripts/check-handoff-parity.ts",
