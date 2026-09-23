@@ -10,10 +10,14 @@
  * Both blocks resolved to plausible numbers, so nothing failed.
  *
  * This table is what test/design-rules-skins.test.ts compares, and it is meant to grow.
- * It covers the object-shaped skins first, since a skin whose value is a function of
- * (tokens, intent, size) has to be invoked with a plausible argument set before it can
- * be read, and a check that guesses at those arguments would fail for the wrong reason.
- * Adding a family here is the cheapest way to widen the guard.
+ * A skin whose value is a function of (tokens, intent, size) is invoked with the default
+ * arguments (the base size, the resting state), and every such check was first swept
+ * across the other arguments to confirm the value it reads does not depend on them, so a
+ * check never fails for a guess. Every corner radius in the hand-off that a skin sets is
+ * held here, except the few with no single-module reading: a slider and a stepper whose
+ * iOS capsule is half their height at each size, and the Dialog and AlertDialog footer
+ * buttons, which are kit Buttons. Adding a family here is the cheapest way to widen the
+ * guard.
  */
 
 /** A skin value, already reduced to something comparable with a CSS declaration. */
@@ -55,6 +59,13 @@ const num = (value: unknown): SkinValue => (typeof value === "number" ? value : 
 function styleOf(value: unknown, tokens: Record<string, string>, ...args: unknown[]): Record<string, unknown> | null {
   if (typeof value !== "function") return null;
   const result = (value as (...a: unknown[]) => unknown)(tokens, ...args);
+  return typeof result === "object" && result !== null ? (result as Record<string, unknown>) : null;
+}
+
+/** Call a skin field with exactly these arguments (no colour tokens put first), or return null. */
+function invoke(value: unknown, ...args: unknown[]): Record<string, unknown> | null {
+  if (typeof value !== "function") return null;
+  const result = (value as (...a: unknown[]) => unknown)(...args);
   return typeof result === "object" && result !== null ? (result as Record<string, unknown>) : null;
 }
 
@@ -110,6 +121,314 @@ export const SKIN_FAMILIES: SkinFamily[] = [
         token: "p-card-shadow-raised",
         read: (s) => boxShadow(callElevation(s.elevation, "raised")),
       },
+    ],
+  },
+  {
+    name: "Autocomplete",
+    module: "atoms/autocomplete/autocomplete",
+    checks: [
+      { token: "p-ac-radius", read: (s, t) => { const f = styleOf(s.field, t, "default", false); return num(f?.borderTopStartRadius ?? f?.borderRadius); } },
+      { token: "p-ac-radius-bottom", read: (s, t) => { const f = styleOf(s.field, t, "default", false); return num(f?.borderBottomStartRadius ?? f?.borderRadius); } },
+      { token: "p-ac-menu-radius", read: (s, t) => num(styleOf(s.popover, t)?.borderRadius) },
+      { token: "p-ac-row-radius", read: (s) => num(at(s, "row", "borderRadius")) ?? 0 },
+    ],
+  },
+  {
+    name: "Avatar",
+    module: "atoms/avatar/avatar",
+    checks: [
+      { token: "p-avatar-square-radius", read: (s) => num(at(s, "roundedRadius")) },
+    ],
+  },
+  {
+    name: "ButtonGroup",
+    module: "atoms/button-group/button-group",
+    checks: [
+      { token: "p-seg-radius", read: (s) => { const c = invoke(s.joinCorners, 0, 3); return num(c?.borderTopStartRadius ?? c?.borderRadius) ?? 0; } },
+      { token: "p-seg-track-radius", read: (s, t) => num(styleOf(s.segmentedWrap, t)?.borderRadius) ?? 0 },
+      { token: "p-seg-inner-radius", read: (s) => { const c = invoke(s.joinCorners, 1, 3); return num(c?.borderTopStartRadius ?? c?.borderRadius) ?? 0; } },
+    ],
+  },
+  {
+    name: "Button",
+    module: "atoms/button/button",
+    checks: [
+      { token: "p-btn-radius", read: (s, t) => num(styleOf(s.container, t, "primary", "base", { icon: false, block: false, dim: false })?.borderRadius) },
+    ],
+  },
+  {
+    name: "Checkbox",
+    module: "atoms/checkbox/checkbox",
+    checks: [
+      { token: "p-check-radius", read: (s, t) => num(styleOf(s.box, t, false, "base", false)?.borderRadius) },
+    ],
+  },
+  {
+    name: "Chip",
+    module: "atoms/chip/chip",
+    checks: [
+      { token: "p-chip-radius", read: (s) => num(at(s, "base", "borderRadius")) },
+    ],
+  },
+  {
+    name: "Dropdown",
+    module: "atoms/dropdown/dropdown",
+    checks: [
+      { token: "p-menu-radius", read: (s, t) => num(styleOf(s.menuCard, t)?.borderRadius) },
+      { token: "p-menu-row-radius", read: (s) => num(at(s, "itemRow", "borderRadius")) ?? 0 },
+    ],
+  },
+  {
+    name: "Emblem",
+    module: "atoms/emblem/emblem",
+    checks: [
+      { token: "p-emblem-radius-small", read: (s) => num(at(s, "radius", "small")) },
+      { token: "p-emblem-radius-default", read: (s) => num(at(s, "radius", "default")) },
+      { token: "p-emblem-radius-large", read: (s) => num(at(s, "radius", "large")) },
+    ],
+  },
+  {
+    name: "Input",
+    module: "atoms/input/input",
+    checks: [
+      { token: "p-field-radius", read: (s, t) => { const f = styleOf(s.bareField, t, "input", false, false); return num(f?.borderTopStartRadius ?? f?.borderRadius); } },
+      { token: "p-field-radius-bottom", read: (s, t) => { const f = styleOf(s.bareField, t, "input", false, false); return num(f?.borderBottomStartRadius ?? f?.borderRadius); } },
+    ],
+  },
+  {
+    name: "Pagination",
+    module: "atoms/pagination/pagination",
+    checks: [
+      { token: "p-page-radius", read: (s, t) => num(styleOf(s.pageBox, t, false)?.borderRadius) },
+    ],
+  },
+  {
+    name: "Select",
+    module: "atoms/select/select",
+    checks: [
+      { token: "p-select-radius", read: (s, t) => { const f = styleOf(s.trigger, t, "default", false); return num(f?.borderTopStartRadius ?? f?.borderRadius); } },
+      { token: "p-select-radius-bottom", read: (s, t) => { const f = styleOf(s.trigger, t, "default", false); return num(f?.borderBottomStartRadius ?? f?.borderRadius); } },
+      { token: "p-select-panel-radius", read: (s, t) => num(styleOf(s.panel, t)?.borderRadius) },
+      { token: "p-select-row-radius", read: (s, t) => num(styleOf(s.optionRow, t, false)?.borderRadius) ?? 0 },
+    ],
+  },
+  {
+    name: "Stepper",
+    module: "atoms/stepper/stepper",
+    checks: [
+      { token: "p-stepper-btn-radius", read: (s, t) => num(styleOf(s.button, t, "base", "left", false, false)?.borderRadius) ?? 0 },
+    ],
+  },
+  {
+    name: "Textarea",
+    module: "atoms/textarea/textarea",
+    checks: [
+      { token: "p-field-radius", read: (s, t) => { const f = styleOf(s.field, t, { error: false, focused: false }); return num(f?.borderTopStartRadius ?? f?.borderRadius); } },
+      { token: "p-field-radius-bottom", read: (s, t) => { const f = styleOf(s.field, t, { error: false, focused: false }); return num(f?.borderBottomStartRadius ?? f?.borderRadius); } },
+    ],
+  },
+  {
+    name: "Accordion",
+    module: "molecules/accordion/accordion",
+    checks: [
+      { token: "p-acc-card-radius", read: (s, t) => num(styleOf(s.cardContainer, t)?.borderRadius) },
+      { token: "p-acc-container-radius", read: (s, t) => num(styleOf(s.container, t)?.borderRadius) ?? 0 },
+    ],
+  },
+  {
+    name: "AlertDialog",
+    module: "molecules/alert-dialog/alert-dialog",
+    checks: [
+      { token: "p-ad-radius", read: (s, t) => num(styleOf(s.card, t)?.borderRadius) },
+    ],
+  },
+  {
+    name: "Alert",
+    module: "molecules/alert/alert",
+    checks: [
+      { token: "p-alert-radius", read: (s) => num(at(s, "container", "borderRadius")) },
+    ],
+  },
+  {
+    name: "DescriptionList",
+    module: "molecules/description-lists/description-lists",
+    checks: [
+      { token: "p-dl-radius", read: (s) => num(at(s, "cardRadius")) },
+    ],
+  },
+  {
+    name: "Feed",
+    module: "molecules/feeds/feeds",
+    checks: [
+      { token: "p-feed-radius", read: (s, t) => num(styleOf(s.cardSurface, t)?.borderRadius) },
+    ],
+  },
+  {
+    name: "GridList",
+    module: "molecules/grid-lists/grid-lists",
+    checks: [
+      { token: "p-grid-gallery-radius", read: (s) => num(at(s, "galleryRadius")) },
+    ],
+  },
+  {
+    name: "MediaObject",
+    module: "molecules/media-objects/media-objects",
+    checks: [
+      { token: "p-media-radius", read: (s) => num(at(s, "borderedSurface", "borderRadius")) },
+      { token: "p-media-icon-radius", read: (s) => num(at(s, "iconBox", "borderRadius")) },
+    ],
+  },
+  {
+    name: "StackedList",
+    module: "molecules/stacked-lists/stacked-lists",
+    checks: [
+      { token: "p-list-radius", read: (s, t) => num(styleOf(s.cardSurface, t)?.borderRadius) },
+    ],
+  },
+  {
+    name: "ActionSheet",
+    module: "organisms/action-sheet/action-sheet",
+    checks: [
+      { token: "p-sheet-card-radius-top", read: (s, t) => { const c = styleOf(s.actionsCard, t); return num(c?.borderTopStartRadius ?? c?.borderRadius) ?? 0; } },
+      { token: "p-sheet-card-radius", read: (s, t) => { const c = styleOf(s.actionsCard, t); return num(c?.borderBottomStartRadius ?? c?.borderRadius) ?? 0; } },
+      { token: "p-sheet-row-radius", read: (s) => num(at(s, "row", "borderRadius")) ?? 0 },
+    ],
+  },
+  {
+    name: "Board",
+    module: "organisms/board/board",
+    checks: [
+      { token: "p-board-col-radius", read: (s, t) => num(styleOf(s.column, t, false)?.borderRadius) },
+      { token: "p-board-card-radius", read: (s) => num(at(s, "pressableBody", "borderRadius")) },
+    ],
+  },
+  {
+    name: "Calendar",
+    module: "organisms/calendar/calendar",
+    checks: [
+      { token: "p-cal-radius", read: (s) => num(at(s, "containerBase", "borderRadius")) },
+      { token: "p-cal-chevron-radius", read: (s) => num(at(s, "chevron", "borderRadius")) },
+    ],
+  },
+  {
+    name: "Carousel",
+    module: "organisms/carousel/carousel",
+    checks: [
+      { token: "p-carousel-slide-radius", read: (s, t) => num(styleOf(s.slide, t)?.borderRadius) },
+    ],
+  },
+  {
+    name: "Dialog",
+    module: "organisms/dialog/dialog",
+    checks: [
+      { token: "p-dialog-radius", read: (s, t) => num(styleOf(s.card, t)?.borderRadius) },
+    ],
+  },
+  {
+    name: "Drawer",
+    module: "organisms/drawer/drawer",
+    checks: [
+      { token: "p-drawer-side-radius", read: (s, t) => num(invoke(s.panelShape, "left", 320, t)?.borderTopEndRadius) },
+      { token: "p-drawer-sheet-radius", read: (s, t) => num(invoke(s.panelShape, "bottom", 320, t)?.borderTopStartRadius) },
+    ],
+  },
+  {
+    name: "Navbar",
+    module: "organisms/navbars/navbars",
+    checks: [
+      { token: "p-nav-link-radius", read: (s, t) => num(styleOf(s.linkTile, t, false)?.borderRadius) },
+    ],
+  },
+  {
+    name: "Sidebar",
+    module: "organisms/sidebar/sidebar",
+    checks: [
+      { token: "p-side-toggle-radius", read: (s, t) => num(styleOf(s.collapseToggle, t)?.borderRadius) ?? 0 },
+      { token: "p-side-row-radius", read: (s, t) => num(styleOf(s.row, t, "default", false)?.borderRadius) },
+    ],
+  },
+  {
+    name: "Steps",
+    module: "organisms/steps/steps",
+    checks: [
+      { token: "p-steps-connector-radius", read: (s, t) => num(styleOf(s.connector, t, false)?.borderRadius) ?? 0 },
+    ],
+  },
+  {
+    name: "Toast",
+    module: "organisms/toast/toast",
+    checks: [
+      { token: "p-toast-radius", read: (s, t) => num(styleOf(s.container, t)?.borderRadius) },
+    ],
+  },
+  {
+    name: "Badge",
+    module: "atoms/badge/badge",
+    checks: [{ token: "p-badge-radius", read: (s) => num(at(s, "metaBase", "borderRadius")) }],
+  },
+  {
+    name: "InputOTP",
+    module: "atoms/input-otp/input-otp",
+    checks: [
+      { token: "p-otp-radius", read: (s, t) => { const c = styleOf(s.cell, t, "base", { active: false, filled: false, groupStart: true, groupEnd: true }); return num(c?.borderTopStartRadius ?? c?.borderRadius); } },
+      { token: "p-otp-inner-radius", read: (s, t) => { const c = styleOf(s.cell, t, "base", { active: false, filled: false, groupStart: false, groupEnd: false }); return num(c?.borderTopStartRadius ?? c?.borderRadius) ?? 0; } },
+    ],
+  },
+  {
+    name: "Popover",
+    module: "atoms/popover/popover",
+    checks: [{ token: "p-popover-radius", read: (s, t) => num(styleOf(s.card, t)?.borderRadius) }],
+  },
+  {
+    name: "Swatch",
+    module: "atoms/swatch/swatch",
+    checks: [
+      { token: "p-swatch-radius-small", read: (s) => num(at(s, "radius", "small")) },
+      { token: "p-swatch-radius-default", read: (s) => num(at(s, "radius", "default")) },
+      { token: "p-swatch-radius-large", read: (s) => num(at(s, "radius", "large")) },
+    ],
+  },
+  {
+    name: "Tooltip",
+    module: "atoms/tooltip/tooltip",
+    checks: [{ token: "p-tip-radius", read: (s, t) => num(styleOf(s.bubble, t)?.borderRadius) }],
+  },
+  {
+    name: "Command",
+    module: "organisms/command/command",
+    checks: [{ token: "p-cmd-radius", read: (s) => num(at(s, "cardShape", "borderRadius")) }],
+  },
+  {
+    name: "DataTable",
+    module: "organisms/data-table/data-table",
+    checks: [{ token: "p-table-radius", read: (s, t) => num(styleOf(s.borderedOutline, t)?.borderRadius) }],
+  },
+  {
+    name: "DragHandle",
+    module: "organisms/drag-drop/drag-drop",
+    checks: [
+      { token: "p-drag-handle-size", read: (s) => num(at(s, "handle", "width")) },
+      { token: "p-drag-handle-radius", read: (s) => num(at(s, "handle", "borderRadius")) },
+      { token: "p-drag-handle-icon", read: (s) => num(at(s, "handleIconSize")) },
+    ],
+  },
+  {
+    name: "TabBar",
+    module: "organisms/tab-bar/tab-bar",
+    checks: [
+      { token: "p-tabbar-radius", read: (s) => num(at(s, "bar", "borderRadius")) ?? 0 },
+      { token: "p-tabbar-item-radius", read: (s) => num(at(s, "item", "borderRadius")) ?? 0 },
+    ],
+  },
+  {
+    name: "Tabs",
+    module: "organisms/tabs/tabs",
+    checks: [
+      { token: "p-tab-track-radius", read: (s, t) => num(styleOf(s.underlineRow, t, false)?.borderRadius) ?? 0 },
+      { token: "p-tab-item-radius", read: (s, t) => num(styleOf(s.underlineTrigger, t, false, false)?.borderRadius) ?? 0 },
+      { token: "p-tab-pill-track-radius", read: (s, t) => num(styleOf(s.pillsRow, t, false)?.borderRadius) ?? 0 },
+      { token: "p-tab-pill-radius", read: (s, t) => num(styleOf(s.pillsTrigger, t)?.borderRadius) ?? 0 },
+      { token: "p-tab-v-radius", read: (s, t) => num(styleOf(s.verticalTrigger, t)?.borderRadius) ?? 0 },
     ],
   },
 ];

@@ -8,7 +8,7 @@ import { type InputOTPSkin, type Size } from "./input-otp.shared.js";
 // platform: the active/focused cell always lights up in the indigo `primary`/`ring`,
 // never a platform default (no iOS system blue, no M3 default). Only the native
 // SHAPE, sizing, and structure of the segmented field change per OS:
-//   iOS (HIG): rounded-square cells (~12 radius) on a `secondary` field fill, SEPARATED
+//   iOS (HIG): rounded-square cells (the 8 field radius) on a `secondary` field fill, SEPARATED
 //     by a small gap; the active cell is ring-highlighted in `primary` (a 2pt brand
 //     border). Base cell ~44x52.
 //   Android (Material 3): OUTLINED cells (1dp `border`), SEPARATED by a gap, M3 medium

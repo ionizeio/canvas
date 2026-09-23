@@ -70,7 +70,8 @@ describe("the web hand-off still says what the skins say", () => {
   for (const family of SKIN_FAMILIES) {
     for (const platform of PLATFORMS) {
       it(`${family.name} on ${platform}`, async () => {
-        const mod = (await import(join(ROOT, "src", `${family.module}.styles.ts`))) as Record<string, Skin>;
+        // A .js specifier resolves to the .styles.ts or .styles.tsx source alike.
+        const mod = (await import(join(ROOT, "src", `${family.module}.styles.js`))) as Record<string, Skin>;
         const skin = mod[`${platform}Skin`];
         expect(skin, `${family.module} exports no ${platform}Skin`).toBeDefined();
 

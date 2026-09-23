@@ -64,17 +64,17 @@
   /* Spinner (spinner.styles.tsx webSkin: the ActivityIndicator arc ring; iOS swaps in the spoke ring) */
   --p-spinner-arc-display:inline-block /* @kind other */;--p-spinner-spokes-display:none /* @kind other */;
   /* Tabs — underline rule, 2px brand indicator */
-  --p-tab-track-bg:transparent;--p-tab-track-radius:0px;--p-tab-track-pad:0px;--p-tab-rule:1px;
-  --p-tab-item-radius:0px;--p-tab-item-pad-x:16px;--p-tab-item-pad-y:12px;
+  --p-tab-track-bg:transparent;--p-tab-track-radius:9999px;--p-tab-track-pad:0px;--p-tab-rule:1px;
+  --p-tab-item-radius:9999px;--p-tab-item-pad-x:16px;--p-tab-item-pad-y:12px;
   --p-tab-selected-bg:transparent;--p-tab-selected-shadow:none;
   --p-tab-indicator-h:2px;--p-tab-font:14px;--p-tab-lh:20px;
   --p-tab-label-selected:var(--foreground);
   /* Tabs pills + vertical (tabs.styles.ts webSkin: muted radius-8 track with a raised white thumb; accent-filled rail) */
-  --p-tab-pill-track-radius:16px;--p-tab-pill-track-pad:8px;--p-tab-pill-gap:8px;
-  --p-tab-pill-radius:12px;--p-tab-pill-pad-x:16px;--p-tab-pill-pad-y:10px;
+  --p-tab-pill-track-radius:9999px;--p-tab-pill-track-pad:8px;--p-tab-pill-gap:8px;
+  --p-tab-pill-radius:9999px;--p-tab-pill-pad-x:16px;--p-tab-pill-pad-y:10px;
   --p-tab-pill-selected-bg:color-mix(in oklab, var(--primary) 14%, transparent);--p-tab-pill-selected-shadow:none;
   --p-tab-pill-label:var(--muted-foreground);--p-tab-pill-selected-weight:500;
-  --p-tab-v-radius:12px;--p-tab-v-pad-x:12px;--p-tab-v-pad-y:12px;--p-tab-v-font:14px;--p-tab-v-lh:20px;
+  --p-tab-v-radius:8px;--p-tab-v-pad-x:12px;--p-tab-v-pad-y:12px;--p-tab-v-font:14px;--p-tab-v-lh:20px;
   --p-tab-v-weight:500;--p-tab-v-selected-weight:500;
   --p-tab-v-selected-fill:var(--accent);--p-tab-v-selected-label:var(--accent-foreground);--p-tab-v-label:var(--muted-foreground);
   /* Sidebar (sidebar.styles.ts webSkin) */
@@ -123,7 +123,7 @@
   --p-seg-font-small:12px;--p-seg-font-default:14px;--p-seg-font-large:14px;
   --p-seg-lh-small:16px;--p-seg-lh-default:20px;--p-seg-lh-large:20px;
   --p-seg-track-pad:0px;--p-seg-track-radius:0px;--p-seg-track-border:0px;--p-seg-track-fill:transparent /* @kind other */;
-  --p-seg-border:1px;--p-seg-divider:1px /* @kind other */;--p-seg-overlap:-1px;--p-seg-radius:6px;--p-seg-inner-radius:0px;
+  --p-seg-border:1px;--p-seg-divider:1px /* @kind other */;--p-seg-overlap:-1px;--p-seg-radius:12px;--p-seg-inner-radius:0px;
   --p-seg-rest-fill:var(--background);--p-seg-selected-fill:var(--primary);--p-seg-selected-border:var(--primary);
   --p-seg-selected-label:var(--primary-foreground);--p-seg-selected-weight:500;--p-seg-selected-shadow:none;
   --p-seg-check-display:none /* @kind other */;
@@ -177,7 +177,7 @@
   --p-tabbar-rule:1px;--p-tabbar-pad-top:6px;--p-tabbar-h:52px;--p-tabbar-item-pad-y:6px;--p-tabbar-gap:3px;
   --p-tabbar-label:11px;--p-tabbar-label-lh:14px;--p-tabbar-label-tracking:-0.1px;
   --p-tabbar-pill-w:48px;--p-tabbar-pill-h:28px;--p-tabbar-pill-opacity:1 /* @kind other */;
-  --p-tabbar-inset-x:0px;--p-tabbar-inset-b:0px;--p-tabbar-radius:0px;--p-tabbar-item-radius:0px;
+  --p-tabbar-inset-x:0px;--p-tabbar-inset-b:0px;--p-tabbar-radius:9999px;--p-tabbar-item-radius:9999px;
   --p-tabbar-fill:var(--popover) /* @kind other */;--p-tabbar-pad-bottom:0px;
   /* Select (select.styles.ts webSkin) */
   --p-select-h:48px;--p-select-radius:12px;--p-select-radius-bottom:12px;--p-select-border:1px;--p-select-underline:0px;
@@ -251,7 +251,7 @@
   --p-cmd-row-pad-x:16px;--p-cmd-row-pad-y:10px;--p-cmd-row-min-h:40px;--p-cmd-row-font:14px;--p-cmd-row-lh:20px;--p-cmd-row-tracking:0px;
   /* Accordion (accordion.styles.ts webSkin — Radix/shadcn) */
   --p-acc-container-radius:0px;--p-acc-container-border:0px;--p-acc-container-fill:transparent;
-  --p-acc-card-radius:8px;--p-acc-card-inset:20px;--p-acc-sep-inset:0px;
+  --p-acc-card-radius:20px;--p-acc-card-inset:20px;--p-acc-sep-inset:0px;
   --p-acc-header-pad-x:0px;--p-acc-header-pad-y:16px;--p-acc-header-gap:16px;
   --p-acc-title:14px;--p-acc-title-lh:20px;--p-acc-title-weight:500;--p-acc-title-tracking:0px;
   --p-acc-desc:12px;--p-acc-desc-lh:16px;--p-acc-desc-tracking:0px;
@@ -334,7 +334,7 @@
   --p-board-card-desc-font:12px;--p-board-card-desc-lh:16px;
 
   /* DragHandle (drag-drop.styles.ts webSkin: compact 28px grip, 16px gripVertical glyph) */
-  --p-drag-handle-size:28px;--p-drag-handle-radius:6px;--p-drag-handle-icon:16px;
+  --p-drag-handle-size:32px;--p-drag-handle-radius:8px;--p-drag-handle-icon:16px;
 
   /* Swatch (swatch.styles.ts webSkin) */
   --p-swatch-box-small:40px;--p-swatch-box-default:56px;--p-swatch-box-large:72px;
@@ -459,7 +459,7 @@
   --p-otp-seam:1px;--p-otp-seam-active:2px;--p-otp-shared-edge:1 /* @kind other */;--p-otp-gap-small:6px;--p-otp-gap-base:8px;--p-otp-gap-large:10px;
   --p-otp-w-small:38px;--p-otp-w-base:44px;--p-otp-w-large:52px;
   --p-otp-h-small:44px;--p-otp-h-base:52px;--p-otp-h-large:60px;
-  --p-otp-radius:12px;--p-otp-inner-radius:12px;--p-otp-fill:var(--secondary);
+  --p-otp-radius:8px;--p-otp-inner-radius:8px;--p-otp-fill:var(--secondary);
   --p-otp-rest-border:0px;--p-otp-active-border:2px;--p-otp-rest-border-color:transparent;--p-otp-active-border-color:var(--primary);
   --p-otp-active-ring:none /* @kind other */;--p-otp-digit-weight:600;
   --p-otp-caret:var(--primary);--p-otp-caret-blink:canvas-caret 1s steps(2,start) infinite /* @kind other */;
@@ -514,14 +514,14 @@
   --p-idpill-fill:transparent;--p-idpill-open-fill:var(--secondary);--p-idpill-open-border-color:var(--border);
   --p-idpill-name:15px;--p-idpill-name-lh:20px;--p-idpill-name-weight:600;--p-idpill-tracking:-0.15px;
   /* Autocomplete — iOS 27: a filled 10pt continuous field, 26pt menu, check-only selection */
-  --p-ac-h:44px;--p-ac-radius:10px;--p-ac-radius-bottom:10px;--p-ac-fill:var(--secondary);
+  --p-ac-h:44px;--p-ac-radius:8px;--p-ac-radius-bottom:8px;--p-ac-fill:var(--secondary);
   --p-ac-font:15px;--p-ac-lh:20px;--p-ac-chevron:var(--primary);
   --p-ac-menu-max:260px;--p-ac-menu-radius:26px;--p-ac-menu-border:0px;--p-ac-menu-pad-x:0px;--p-ac-menu-pad-y:6px;
   --p-ac-row-radius:0px;--p-ac-row-pad-x:16px;--p-ac-row-pad-y:11px;--p-ac-row-gap:10px;--p-ac-row-min-h:42px;--p-ac-row-separator:1px;
   --p-ac-row-font:17px;--p-ac-row-lh:22px;--p-ac-row-selected:transparent;
   --p-ac-check-w:18px;--p-ac-check-color:var(--primary);
   /* Select — iOS 26 pop-up button + Liquid Glass menu */
-  --p-select-h:44px;--p-select-radius:12px;--p-select-radius-bottom:12px;--p-select-border-color:var(--border);--p-select-pad-x:14px;
+  --p-select-h:44px;--p-select-radius:8px;--p-select-radius-bottom:8px;--p-select-border-color:var(--border);--p-select-pad-x:14px;
   --p-select-font:15px;--p-select-lh:20px;--p-select-chevron:"⇅" /* @kind other */;--p-select-chevron-color:var(--primary);--p-select-chevron-weight:600;
   --p-select-panel-max:320px;--p-select-panel-radius:26px;--p-select-panel-border:0px;--p-select-panel-pad-x:0px;--p-select-panel-pad-y:4px;
   --p-select-row-radius:0px;--p-select-row-pad-x:16px;--p-select-row-pad-y:11px;--p-select-row-gap:10px;--p-select-row-min-h:42px;
@@ -576,8 +576,9 @@
 
   /* Swatch (swatch.styles.ts iosSkin: continuous-curve noted, not faked; HIG name tracking) */
   --p-swatch-box-small:40px;--p-swatch-box-default:56px;--p-swatch-box-large:72px;
-  --p-swatch-radius-small:6px;--p-swatch-radius-default:8px;--p-swatch-radius-large:10px;
   --p-swatch-name-tracking:-0.08px;--p-swatch-mono-tracking:0px;--p-swatch-value-weight:500;
+  /* Declared where the skin differs from the web value this block would otherwise inherit. */
+  --p-badge-radius:6px;--p-tip-radius:6px;--p-sheet-card-radius-top:34px;--p-side-toggle-radius:0px;
 }
 
 /* Material 3: stadium buttons, elevated cards with no visible outline, filled
@@ -839,6 +840,8 @@
   --p-swatch-box-small:40px;--p-swatch-box-default:56px;--p-swatch-box-large:72px;
   --p-swatch-radius-small:8px;--p-swatch-radius-default:12px;--p-swatch-radius-large:16px;
   --p-swatch-name-tracking:0.1px;--p-swatch-mono-tracking:0.1px;--p-swatch-value-weight:500;
+  /* Declared where the skin differs from the web value this block would otherwise inherit. */
+  --p-acc-card-radius:12px;--p-cmd-radius:8px;--p-table-radius:8px;--p-tab-track-radius:0px;--p-tab-item-radius:0px;--p-tabbar-radius:0px;--p-tabbar-item-radius:0px;
 }
 
 /* iOS skin values that resolve PER SCHEME upstream: the drawer scrim

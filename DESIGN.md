@@ -249,6 +249,119 @@ components:
     card-radius: "20px"
     card-shadow: "0px 0px 20px rgba(13,18,27,0.06)"
     card-shadow-raised: "0px 0px 24px rgba(13,18,27,0.1)"
+  autocomplete:
+    ac-radius: "12px"
+    ac-radius-bottom: "12px"
+    ac-menu-radius: "16px"
+    ac-row-radius: "10px"
+  avatar:
+    avatar-square-radius: "12px"
+  buttongroup:
+    seg-radius: "12px"
+    seg-track-radius: "0px"
+    seg-inner-radius: "0px"
+  button:
+    btn-radius: "12px"
+  checkbox:
+    check-radius: "6px"
+  chip:
+    chip-radius: "9999px"
+  dropdown:
+    menu-radius: "16px"
+    menu-row-radius: "10px"
+  emblem:
+    emblem-radius-small: "8px"
+    emblem-radius-default: "12px"
+    emblem-radius-large: "16px"
+  input:
+    field-radius: "12px"
+    field-radius-bottom: "12px"
+  pagination:
+    page-radius: "12px"
+  select:
+    select-radius: "12px"
+    select-radius-bottom: "12px"
+    select-panel-radius: "16px"
+    select-row-radius: "10px"
+  stepper:
+    stepper-btn-radius: "0px"
+  textarea:
+    field-radius: "12px"
+    field-radius-bottom: "12px"
+  accordion:
+    acc-card-radius: "20px"
+    acc-container-radius: "0px"
+  alertdialog:
+    ad-radius: "16px"
+  alert:
+    alert-radius: "12px"
+  descriptionlist:
+    dl-radius: "20px"
+  feed:
+    feed-radius: "20px"
+  gridlist:
+    grid-gallery-radius: "12px"
+  mediaobject:
+    media-radius: "20px"
+    media-icon-radius: "12px"
+  stackedlist:
+    list-radius: "20px"
+  actionsheet:
+    sheet-card-radius-top: "16px"
+    sheet-card-radius: "16px"
+    sheet-row-radius: "0px"
+  board:
+    board-col-radius: "20px"
+    board-card-radius: "12px"
+  calendar:
+    cal-radius: "20px"
+    cal-chevron-radius: "12px"
+  carousel:
+    carousel-slide-radius: "20px"
+  dialog:
+    dialog-radius: "16px"
+  drawer:
+    drawer-side-radius: "30px"
+    drawer-sheet-radius: "30px"
+  navbar:
+    nav-link-radius: "12px"
+  sidebar:
+    side-toggle-radius: "8px"
+    side-row-radius: "12px"
+  steps:
+    steps-connector-radius: "0px"
+  toast:
+    toast-radius: "16px"
+  badge:
+    badge-radius: "9999px"
+  inputotp:
+    otp-radius: "12px"
+    otp-inner-radius: "0px"
+  popover:
+    popover-radius: "16px"
+  swatch:
+    swatch-radius-small: "8px"
+    swatch-radius-default: "12px"
+    swatch-radius-large: "16px"
+  tooltip:
+    tip-radius: "8px"
+  command:
+    cmd-radius: "16px"
+  datatable:
+    table-radius: "20px"
+  draghandle:
+    drag-handle-size: "32px"
+    drag-handle-radius: "8px"
+    drag-handle-icon: "16px"
+  tabbar:
+    tabbar-radius: "9999px"
+    tabbar-item-radius: "9999px"
+  tabs:
+    tab-track-radius: "9999px"
+    tab-item-radius: "9999px"
+    tab-pill-track-radius: "9999px"
+    tab-pill-radius: "9999px"
+    tab-v-radius: "8px"
 platformSkins:
   ios:
     stats:
@@ -265,6 +378,107 @@ platformSkins:
       card-radius: "12px"
       card-shadow: none
       card-shadow-raised: "0px 1px 3px rgba(13,18,27,0.08)"
+    autocomplete:
+      ac-radius: "8px"
+      ac-radius-bottom: "8px"
+      ac-menu-radius: "26px"
+      ac-row-radius: "0px"
+    avatar:
+      avatar-square-radius: "10px"
+    buttongroup:
+      seg-radius: "9999px"
+      seg-track-radius: "9999px"
+      seg-inner-radius: "9999px"
+    button:
+      btn-radius: "9999px"
+    checkbox:
+      check-radius: "5px"
+    dropdown:
+      menu-radius: "26px"
+      menu-row-radius: "0px"
+    input:
+      field-radius: "8px"
+      field-radius-bottom: "8px"
+    pagination:
+      page-radius: "8px"
+    select:
+      select-radius: "8px"
+      select-radius-bottom: "8px"
+      select-panel-radius: "26px"
+      select-row-radius: "0px"
+    textarea:
+      field-radius: "8px"
+      field-radius-bottom: "8px"
+    accordion:
+      acc-card-radius: "12px"
+      acc-container-radius: "12px"
+    alertdialog:
+      ad-radius: "28px"
+    alert:
+      alert-radius: "10px"
+    descriptionlist:
+      dl-radius: "26px"
+    feed:
+      feed-radius: "12px"
+    gridlist:
+      grid-gallery-radius: "10px"
+    mediaobject:
+      media-radius: "10px"
+      media-icon-radius: "8px"
+    stackedlist:
+      list-radius: "26px"
+    actionsheet:
+      sheet-card-radius-top: "34px"
+      sheet-card-radius: "34px"
+      sheet-row-radius: "9999px"
+    board:
+      board-col-radius: "26px"
+      board-card-radius: "8px"
+    calendar:
+      cal-radius: "12px"
+      cal-chevron-radius: "9999px"
+    carousel:
+      carousel-slide-radius: "12px"
+    dialog:
+      dialog-radius: "28px"
+    drawer:
+      drawer-side-radius: "38px"
+      drawer-sheet-radius: "38px"
+    navbar:
+      nav-link-radius: "9999px"
+    sidebar:
+      side-toggle-radius: "0px"
+      side-row-radius: "9999px"
+    steps:
+      steps-connector-radius: "9999px"
+    toast:
+      toast-radius: "16px"
+    badge:
+      badge-radius: "6px"
+    inputotp:
+      otp-radius: "8px"
+      otp-inner-radius: "8px"
+    popover:
+      popover-radius: "26px"
+    tooltip:
+      tip-radius: "6px"
+    command:
+      cmd-radius: "16px"
+    datatable:
+      table-radius: "10px"
+    draghandle:
+      drag-handle-size: "32px"
+      drag-handle-radius: "8px"
+      drag-handle-icon: "18px"
+    tabbar:
+      tabbar-radius: "9999px"
+      tabbar-item-radius: "9999px"
+    tabs:
+      tab-track-radius: "9999px"
+      tab-item-radius: "9999px"
+      tab-pill-track-radius: "9999px"
+      tab-pill-radius: "9999px"
+      tab-v-radius: "8px"
   android:
     stats:
       stat-radius: "12px"
@@ -280,6 +494,117 @@ platformSkins:
       card-radius: "12px"
       card-shadow: "0px 1px 3px rgba(13,18,27,0.08)"
       card-shadow-raised: "0px 4px 6px rgba(0,0,0,0.1)"
+    autocomplete:
+      ac-radius: "4px"
+      ac-radius-bottom: "0px"
+      ac-menu-radius: "4px"
+      ac-row-radius: "0px"
+    avatar:
+      avatar-square-radius: "12px"
+    buttongroup:
+      seg-radius: "0px"
+      seg-track-radius: "9999px"
+      seg-inner-radius: "0px"
+    button:
+      btn-radius: "9999px"
+    checkbox:
+      check-radius: "2px"
+    chip:
+      chip-radius: "8px"
+    dropdown:
+      menu-radius: "4px"
+      menu-row-radius: "0px"
+    emblem:
+      emblem-radius-small: "8px"
+      emblem-radius-default: "12px"
+      emblem-radius-large: "16px"
+    input:
+      field-radius: "4px"
+      field-radius-bottom: "0px"
+    pagination:
+      page-radius: "8px"
+    select:
+      select-radius: "4px"
+      select-radius-bottom: "0px"
+      select-panel-radius: "4px"
+      select-row-radius: "0px"
+    stepper:
+      stepper-btn-radius: "9999px"
+    textarea:
+      field-radius: "4px"
+      field-radius-bottom: "0px"
+    accordion:
+      acc-card-radius: "12px"
+    alertdialog:
+      ad-radius: "28px"
+    alert:
+      alert-radius: "12px"
+    descriptionlist:
+      dl-radius: "12px"
+    feed:
+      feed-radius: "12px"
+    gridlist:
+      grid-gallery-radius: "12px"
+    mediaobject:
+      media-radius: "12px"
+      media-icon-radius: "12px"
+    stackedlist:
+      list-radius: "12px"
+    actionsheet:
+      sheet-card-radius-top: "28px"
+      sheet-card-radius: "0px"
+    board:
+      board-col-radius: "16px"
+      board-card-radius: "8px"
+    calendar:
+      cal-radius: "12px"
+      cal-chevron-radius: "9999px"
+    carousel:
+      carousel-slide-radius: "28px"
+    dialog:
+      dialog-radius: "28px"
+    drawer:
+      drawer-side-radius: "16px"
+      drawer-sheet-radius: "28px"
+    navbar:
+      nav-link-radius: "9999px"
+    sidebar:
+      side-toggle-radius: "9999px"
+      side-row-radius: "9999px"
+    steps:
+      steps-connector-radius: "0px"
+    toast:
+      toast-radius: "4px"
+    badge:
+      badge-radius: "8px"
+    inputotp:
+      otp-radius: "12px"
+      otp-inner-radius: "12px"
+    popover:
+      popover-radius: "12px"
+    swatch:
+      swatch-radius-small: "8px"
+      swatch-radius-default: "12px"
+      swatch-radius-large: "16px"
+    tooltip:
+      tip-radius: "4px"
+    command:
+      cmd-radius: "8px"
+    datatable:
+      table-radius: "8px"
+    draghandle:
+      drag-handle-size: "40px"
+      drag-handle-radius: "20px"
+      drag-handle-icon: "20px"
+    tabbar:
+      tabbar-radius: "0px"
+      tabbar-item-radius: "0px"
+    tabs:
+      tab-track-radius: "0px"
+      tab-item-radius: "0px"
+      tab-pill-track-radius: "9999px"
+      tab-pill-radius: "9999px"
+      tab-v-radius: "9999px"
 ---
 
 <!-- The frontmatter above and the token tables below are GENERATED from
