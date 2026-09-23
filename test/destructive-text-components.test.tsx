@@ -85,7 +85,9 @@ describe("real destructive text consumers", () => {
       });
     }
 
-    it(`${scheme} ${p.name} Dropdown and RowMenu preserve distinct brand policies and disabled rows`, () => {
+    // Every menu paints a destructive row in the destructive-text role (the error ink), on
+    // every platform, so a brand's text-grade red reaches its menus too.
+    it(`${scheme} ${p.name} Dropdown and RowMenu paint destructive rows in the destructive-text role and keep disabled rows inert`, () => {
       let selected = 0;
       const tokens = { destructive: "#613020", "destructive-text": "#b25340" };
       const items = [{ label: "Delete", destructive: true }, { label: "Unavailable", destructive: true, disabled: true }];
@@ -93,8 +95,7 @@ describe("real destructive text consumers", () => {
         <p.Dropdown open trigger="Actions" items={items} onSelect={() => selected++} />
       </ThemeProvider>);
       sizeMenu(container);
-      const expected = p.name === "web" ? palette[scheme === "light" ? "red-700" : "red-300"] : tokens["destructive-text"];
-      expect(rgb(screen.getByText("Delete").style.color)).toBe(rgb(expected));
+      expect(rgb(screen.getByText("Delete").style.color)).toBe(rgb(tokens["destructive-text"]));
       const unavailable = screen.getByRole("menuitem", { name: "Unavailable" });
       expect(unavailable.getAttribute("aria-disabled")).toBe("true");
       fireEvent.click(unavailable);
@@ -106,7 +107,7 @@ describe("real destructive text consumers", () => {
         <p.RowMenu open items={items} onSelect={() => selected++} />
       </ThemeProvider>);
       sizeMenu(row.container);
-      expect(rgb(screen.getByText("Delete").style.color)).toBe(rgb(palette[scheme === "light" ? "red-700" : "red-300"]));
+      expect(rgb(screen.getByText("Delete").style.color)).toBe(rgb(tokens["destructive-text"]));
       fireEvent.click(screen.getByRole("menuitem", { name: "Unavailable" }));
       expect(selected).toBe(1);
       fireEvent.click(screen.getByRole("menuitem", { name: "Delete" }));

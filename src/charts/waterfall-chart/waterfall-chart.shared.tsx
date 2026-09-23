@@ -1,6 +1,6 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { Line, Rect } from "react-native-svg";
-import { View, Text, useControllableState, palette, devWarn, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import { View, Text, useControllableState, statusColors, devWarn, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
 import { CartesianFrame, CHART_ROOT } from "../shared/chart-frame.js";
@@ -73,9 +73,10 @@ export function createWaterfallChart(skin: ChartSkin) {
     const { bars, min, max } = waterfallLayout(steps);
     const labels = steps.map((st) => st.label);
 
-    // Fixed semantic coloring: rises green, falls red, totals primary.
+    // Fixed semantic coloring: rises in the success color, falls in the error color
+    // (statusColors' solid dots), totals primary.
     const barFill = (kind: "rise" | "fall" | "total"): string =>
-      kind === "rise" ? palette["green-500"] : kind === "fall" ? palette["red-500"] : tokens.primary;
+      kind === "rise" ? statusColors(tokens, "success").dot : kind === "fall" ? statusColors(tokens, "error").dot : tokens.primary;
 
     // The accessible name walks the bridge: signed steps and running totals.
     const phrase = (i: number): string => {

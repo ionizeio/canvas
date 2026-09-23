@@ -1,4 +1,4 @@
-import { View, palette, statusHues, type ColorTokens } from "../../style/index.js";
+import { View, statusColors, type ColorTokens } from "../../style/index.js";
 
 // The period-pill strip shared by UptimeBar and ServiceHealthList: a single
 // row of flex-grown pills, one per period, colored by the period's status.
@@ -31,14 +31,14 @@ export function periodStatus(p: UptimePeriod): PeriodStatus {
 }
 
 /**
- * The pill fill per status: the shared status hues (so a degraded pill reads
- * the same amber as a warning badge), and the muted token for unknown.
+ * The pill fill per status: the solid status colors (statusColors' dot, so a degraded
+ * pill reads the same warning as a warning badge), and the muted token for unknown.
  */
 export function statusColor(tokens: ColorTokens, status: PeriodStatus): string {
-  if (status === "down") return palette["red-500"];
-  if (status === "degraded") return palette[`${statusHues.warning}-500`];
+  if (status === "down") return statusColors(tokens, "error").dot;
+  if (status === "degraded") return statusColors(tokens, "warning").dot;
   if (status === "unknown") return tokens.muted;
-  return palette["green-500"];
+  return statusColors(tokens, "success").dot;
 }
 
 /**

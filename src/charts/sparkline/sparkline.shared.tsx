@@ -1,6 +1,6 @@
 import { useId, useState } from "react";
 import Svg, { Circle, Defs, LinearGradient, Path, Stop } from "react-native-svg";
-import { View, useTheme, alpha, palette, devWarn, FILL, type ColorTokens, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { View, useTheme, alpha, statusColors, devWarn, FILL, type ColorTokens, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { type SparklineSkin } from "./sparkline.styles.js";
 
 // Shared Sparkline shell. A compact trend strip that plots a series of values,
@@ -83,7 +83,7 @@ function toneColor(tokens: ColorTokens, tone: Tone): string {
     case "primary":
       return tokens.primary;
     case "success":
-      return palette["green-500"];
+      return statusColors(tokens, "success").dot;
     case "destructive":
       return tokens.destructive;
     case "muted":

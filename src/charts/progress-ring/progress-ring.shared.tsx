@@ -1,5 +1,5 @@
 import Svg, { Path } from "react-native-svg";
-import { View, Text, useTheme, palette, statusHues, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Text, useTheme, statusColors, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 
 // ProgressRing is a "Shared" platform treatment (data visualization is
 // platform-neutral): one implementation serves iOS, Android, and the web.
@@ -34,9 +34,9 @@ export interface ProgressRingProps {
 // Gauge recipe so the two dials always agree. Exported for tests (not
 // re-exported from the barrel).
 export function ringFill(tokens: ColorTokens, p: ProgressRingProps): string {
-  if (p.success) return palette["green-500"];
-  if (p.warning) return palette[`${statusHues.warning}-500`];
-  if (p.destructive) return palette["red-500"];
+  if (p.success) return statusColors(tokens, "success").dot;
+  if (p.warning) return statusColors(tokens, "warning").dot;
+  if (p.destructive) return statusColors(tokens, "error").dot;
   return tokens.primary;
 }
 

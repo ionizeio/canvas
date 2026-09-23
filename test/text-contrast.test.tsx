@@ -156,7 +156,7 @@ describe("error and destructive text on authored enabled surfaces", () => {
     });
   }
 
-  it("keeps CSS text aliases separate from fills, indicators and fixed-red menus", () => {
+  it("keeps CSS text aliases separate from fills and indicators, with menus on the error ink", () => {
     const platformCss = readFileSync(new URL("../styles/tokens/platforms.css", import.meta.url), "utf8");
     for (const platform of ["ios", "android"] as const) {
       const block = blockDeclarations(platformCss, `[data-platform="${platform}"]`).decls;
@@ -169,10 +169,10 @@ describe("error and destructive text on authored enabled surfaces", () => {
     expect(web["p-alert-confirm-destructive-fill"]).toBe("var(--destructive)");
     expect(web["p-alert-confirm-destructive-label"]).toBe("var(--destructive-foreground)");
     expect(blockDeclarations(platformCss, '[data-platform="android"]').decls["p-textarea-fill"]).toBe("var(--muted)");
-    // The web hand-off's fixed menu red is the menus' own palette step (red-700, red-300
-    // dark), independent of the semantic destructive roles.
-    expect(blockDeclarations(css, ":root").decls["p-menu-destructive"]).toBe(palette["red-700"]);
-    expect(blockDeclarations(css, ".dark").decls["p-menu-destructive"]).toBe(palette["red-300"]);
+    // The web hand-off's menu red is the error ink the menus paint (statusColors), the
+    // destructive-text role, so it follows the palette and a brand's override.
+    expect(blockDeclarations(css, ":root").decls["p-menu-destructive"]).toBe("var(--destructive-text)");
+    expect(blockDeclarations(css, ".dark").decls["p-menu-destructive"]).toBe("var(--destructive-text)");
     // The focus ring is a non-text indicator (WCAG 1.4.11): 3:1 on every surface it can
     // sit on, in each palette.
     for (const { tokens: t } of LOOKS) {

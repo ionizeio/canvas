@@ -97,7 +97,7 @@ export interface BreakdownRowsProps {
 
 /** The shared renderer. Each row is one accessible item; the bar is decorative. */
 export function BreakdownRows({ rows, share, percent, tone, compact, formatValue, onPressRow }: BreakdownRowsProps) {
-  const { tokens, dark } = useTheme();
+  const { tokens } = useTheme();
   // Negative and non-finite values cannot carry a proportional bar; they are
   // treated as 0 (the consumers devWarn).
   const values = rows.map((r) => (Number.isFinite(r.value) && r.value > 0 ? r.value : 0));
@@ -135,7 +135,7 @@ export function BreakdownRows({ rows, share, percent, tone, compact, formatValue
                 <Text
                   style={[
                     { fontSize: 11, lineHeight: 16, fontWeight: "500", minWidth: deltaWidth, textAlign: "right" },
-                    row.steady ? { color: tokens["muted-foreground"] } : deltaTone(dark, !!row.down),
+                    row.steady ? { color: tokens["muted-foreground"] } : deltaTone(tokens, !!row.down),
                   ]}
                 >
                   {row.delta}

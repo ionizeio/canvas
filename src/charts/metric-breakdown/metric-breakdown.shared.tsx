@@ -1,5 +1,5 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { View, Text, palette, statusHues, devWarn, tabularNums, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import { View, Text, statusColors, devWarn, tabularNums, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
 import { CHART_ROOT } from "../shared/chart-frame.js";
@@ -83,13 +83,13 @@ export interface MetricBreakdownProps {
   style?: LayoutStyle;
 }
 
-// The rate readout's color: the gaugeFill recipe for the toned states, the
-// muted foreground otherwise (a rate is contextual until a tone claims it).
-// Exported for tests (not re-exported from the barrel).
+// The rate readout's color: the tone's ink for the toned states (it is text, so it takes
+// the text-grade color, statusColors' ink), the muted foreground otherwise (a rate is
+// contextual until a tone claims it). Exported for tests (not re-exported from the barrel).
 export function rateColor(tokens: ColorTokens, p: MetricBreakdownProps): string {
-  if (p.rateSuccess) return palette["green-500"];
-  if (p.rateWarning) return palette[`${statusHues.warning}-500`];
-  if (p.rateDestructive) return palette["red-500"];
+  if (p.rateSuccess) return statusColors(tokens, "success").ink;
+  if (p.rateWarning) return statusColors(tokens, "warning").ink;
+  if (p.rateDestructive) return statusColors(tokens, "error").ink;
   return tokens["muted-foreground"];
 }
 

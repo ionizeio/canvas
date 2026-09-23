@@ -324,8 +324,8 @@ describe("Charts — Gauge & Heatmap", () => {
   // The harness stubs react-native-svg, so the arc's stroke cannot be read off
   // the DOM; the tone resolver is asserted directly (the Progress toneFill
   // precedent), plus a render smoke through the accessible name.
-  it("Gauge's warning tone fills with the shared statusHues amber", () => {
-    expect(gaugeFill(lightColors, { value: 81, warning: true })).toBe(palette["amber-500"]);
+  it("Gauge's warning tone fills with the warning status color", () => {
+    expect(gaugeFill(lightColors, { value: 81, warning: true })).toBe(statusColors(lightColors, "warning").dot);
     const { container } = ui(<Gauge warning value={81} label="Budget used" />);
     const name = container.querySelector("[aria-label]")?.getAttribute("aria-label") ?? "";
     expect(name).toContain("Budget used");
@@ -333,9 +333,9 @@ describe("Charts — Gauge & Heatmap", () => {
   });
 
   it("Gauge tone precedence: success > warning > destructive, else primary", () => {
-    expect(gaugeFill(lightColors, { value: 1, success: true, warning: true })).toBe(palette["green-500"]);
-    expect(gaugeFill(lightColors, { value: 1, warning: true, destructive: true })).toBe(palette["amber-500"]);
-    expect(gaugeFill(lightColors, { value: 1, destructive: true })).toBe(palette["red-500"]);
+    expect(gaugeFill(lightColors, { value: 1, success: true, warning: true })).toBe(statusColors(lightColors, "success").dot);
+    expect(gaugeFill(lightColors, { value: 1, warning: true, destructive: true })).toBe(statusColors(lightColors, "warning").dot);
+    expect(gaugeFill(lightColors, { value: 1, destructive: true })).toBe(statusColors(lightColors, "error").dot);
     expect(gaugeFill(lightColors, { value: 1 })).toBe(lightColors.primary);
   });
 

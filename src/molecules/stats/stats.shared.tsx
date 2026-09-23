@@ -169,7 +169,7 @@ export function createStats(skin: StatsSkin) {
   // One metric: label, value, optional delta. Tappable when an onPress is given.
   function StatItemView({ item, surface, framed, onPress }: { item: StatItem; surface: Surface; framed?: boolean; onPress?: () => void }): ReactNode {
     const theme = useMaterialTheme({ static: true });
-    const { tokens, dark } = theme;
+    const { tokens } = theme;
     // Under glass a card-surface metric is a CONTENT-layer pane (the material rides
     // inside the pressable so the tap, ripple and dim stay on the Pressable).
     // Split the surface shape (radius/border/fill/padding) from the outer flex sizing:
@@ -199,7 +199,7 @@ export function createStats(skin: StatsSkin) {
         )}
         <Text style={[skin.valueText(tokens), accentStyle]}>{item.value}</Text>
         {item.delta != null && item.delta !== "" ? (
-          <Text style={[skin.deltaBase, item.steady ? { color: tokens["muted-foreground"] } : deltaTone(dark, !!item.down)]}>{item.delta}</Text>
+          <Text style={[skin.deltaBase, item.steady ? { color: tokens["muted-foreground"] } : deltaTone(tokens, !!item.down)]}>{item.delta}</Text>
         ) : null}
         {item.spark != null && item.spark.length > 0 ? (
           <Sparkline values={item.spark} track={framed} accessibilityLabel={item.sparkLabel ?? `${item.label} trend`} style={sparkStrip} />

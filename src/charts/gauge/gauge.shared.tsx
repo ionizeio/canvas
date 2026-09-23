@@ -1,5 +1,5 @@
 import Svg, { Path } from "react-native-svg";
-import { View, Text, useTheme, palette, statusHues, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Text, useTheme, statusColors, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 
 // Gauge is a "Shared" platform treatment (data visualization is
 // platform-neutral): one implementation serves iOS, Android, and the web.
@@ -28,13 +28,13 @@ export interface GaugeProps {
 }
 
 // Tone precedence within the axis: success > warning > destructive (first match
-// wins; no tone falls back to the brand primary). The warning hue resolves
-// through the shared statusHues map so a warning gauge reads the same amber as a
-// warning badge or alert. Exported for tests (not re-exported from the barrel).
+// wins; no tone falls back to the brand primary). Each tone is its solid status color
+// (statusColors' dot), so a warning gauge reads the same as a warning badge or alert.
+// Exported for tests (not re-exported from the barrel).
 export function gaugeFill(tokens: ColorTokens, p: GaugeProps): string {
-  if (p.success) return palette["green-500"];
-  if (p.warning) return palette[`${statusHues.warning}-500`];
-  if (p.destructive) return palette["red-500"];
+  if (p.success) return statusColors(tokens, "success").dot;
+  if (p.warning) return statusColors(tokens, "warning").dot;
+  if (p.destructive) return statusColors(tokens, "error").dot;
   return tokens.primary;
 }
 

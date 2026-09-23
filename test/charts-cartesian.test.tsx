@@ -15,6 +15,7 @@ import { BoxPlot } from "../src/charts/box-plot/box-plot.tsx";
 import { WaterfallChart } from "../src/charts/waterfall-chart/waterfall-chart.tsx";
 import { seriesColor } from "../src/charts/shared/charts.styles.ts";
 import { lightColors, palette } from "../src/style/tokens.ts";
+import { statusColors } from "../src/style/status.ts";
 
 // LineChart / AreaChart: the a11y contract (the plot is an img whose accessible
 // name carries every value, series-prefixed; the legend stays reachable outside
@@ -213,6 +214,9 @@ describe("Chart (stacked columns)", () => {
 });
 
 describe("per-series semantic tones", () => {
+  // A toned series takes its solid status color (statusColors' dot), as a Badge's dot does.
+  const SUCCESS = statusColors(lightColors, "success").dot;
+  const ERROR = statusColors(lightColors, "error").dot;
   // A series that MEANS success or failure colors by that meaning; every other
   // series keeps its chart-1..8 ramp position.
   const signIns = [
@@ -222,12 +226,12 @@ describe("per-series semantic tones", () => {
 
   it("seriesColor resolves series tone > chart tone > ramp position", () => {
     const t = lightColors;
-    expect(seriesColor(t, { label: "Granted", values: [], success: true }, 0)).toBe(palette["green-500"]);
-    expect(seriesColor(t, { label: "Denied", values: [], destructive: true }, 1)).toBe(palette["red-500"]);
+    expect(seriesColor(t, { label: "Granted", values: [], success: true }, 0)).toBe(SUCCESS);
+    expect(seriesColor(t, { label: "Denied", values: [], destructive: true }, 1)).toBe(ERROR);
     // Both set: success wins, matching the chart-level tone precedence.
-    expect(seriesColor(t, { label: "Both", values: [], success: true, destructive: true }, 0)).toBe(palette["green-500"]);
+    expect(seriesColor(t, { label: "Both", values: [], success: true, destructive: true }, 0)).toBe(SUCCESS);
     // No series tone: the chart-level tone when there is one (single-series)...
-    expect(seriesColor(t, { label: "Web", values: [] }, 0, "destructive")).toBe(palette["red-500"]);
+    expect(seriesColor(t, { label: "Web", values: [] }, 0, "destructive")).toBe(ERROR);
     // ...else the ramp, which still follows the series index, never its rank.
     expect(seriesColor(t, { label: "Web", values: [] }, 2)).toBe(t["chart-3"]);
     expect(seriesColor(t, undefined, 1)).toBe(t["chart-2"]);
@@ -236,8 +240,8 @@ describe("per-series semantic tones", () => {
   it("paints the grouped Chart's bars and legend dots by meaning", () => {
     const { container } = ui(<Chart labels={["Q1", "Q2"]} series={signIns} />);
     const styles = Array.from(container.querySelectorAll("div")).map((el) => el.getAttribute("style") ?? "");
-    const green = styles.filter((st) => st.includes(asRgba(palette["green-500"])));
-    const red = styles.filter((st) => st.includes(asRgba(palette["red-500"])));
+    const green = styles.filter((st) => st.includes(asRgba(SUCCESS)));
+    const red = styles.filter((st) => st.includes(asRgba(ERROR)));
     // Two categories' bars plus the legend dot, for each series.
     expect(green.length).toBe(3);
     expect(red.length).toBe(3);
@@ -250,7 +254,7 @@ describe("per-series semantic tones", () => {
       <Chart labels={["Q1"]} series={[{ label: "Granted", values: [9], success: true }, { label: "Pending", values: [2] }]} />,
     );
     const styles = Array.from(container.querySelectorAll("div")).map((el) => el.getAttribute("style") ?? "");
-    expect(styles.some((st) => st.includes(asRgba(palette["green-500"])))).toBe(true);
+    expect(styles.some((st) => st.includes(asRgba(SUCCESS)))).toBe(true);
     // Identity follows the series index: the second series is still chart-2.
     expect(styles.some((st) => st.includes(asRgba(lightColors["chart-2"])))).toBe(true);
   });
@@ -259,8 +263,8 @@ describe("per-series semantic tones", () => {
     const { container } = ui(<LineChart labels={["Q1", "Q2"]} series={signIns} />);
     const styles = Array.from(container.querySelectorAll("div")).map((el) => el.getAttribute("style") ?? "");
     // The marks are SVG (stubbed in this harness); the legend dots are Views.
-    expect(styles.some((st) => st.includes(asRgba(palette["green-500"])))).toBe(true);
-    expect(styles.some((st) => st.includes(asRgba(palette["red-500"])))).toBe(true);
+    expect(styles.some((st) => st.includes(asRgba(SUCCESS)))).toBe(true);
+    expect(styles.some((st) => st.includes(asRgba(ERROR)))).toBe(true);
   });
 
   it("leaves an untoned multi-series chart on the ramp", () => {
@@ -268,7 +272,7 @@ describe("per-series semantic tones", () => {
     const styles = Array.from(container.querySelectorAll("div")).map((el) => el.getAttribute("style") ?? "");
     expect(styles.some((st) => st.includes(asRgba(lightColors["chart-1"])))).toBe(true);
     expect(styles.some((st) => st.includes(asRgba(lightColors["chart-2"])))).toBe(true);
-    expect(styles.some((st) => st.includes(asRgba(palette["green-500"])))).toBe(false);
+    expect(styles.some((st) => st.includes(asRgba(SUCCESS)))).toBe(false);
   });
 });
 

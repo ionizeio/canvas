@@ -1,5 +1,6 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { palette, shadow, alpha, TOUCH_TARGET, type ColorTokens, type TouchTargetSkin, shape } from "../../style/index.js";
+import { destructiveText } from "../../style/destructive-text.js";
+import { shadow, alpha, TOUCH_TARGET, type ColorTokens, type TouchTargetSkin, shape } from "../../style/index.js";
 import { type IconName } from "../../atoms/icon/icon.js";
 
 // Co-located RowMenu skins, one per platform, all driven by the brand tokens
@@ -137,8 +138,8 @@ export const webSkin: RowMenuSkin = {
   separator: (t) => ({ marginVertical: 6, height: 1, backgroundColor: t.border }),
   rowTextSize: { fontSize: 14, lineHeight: 20 },
   iconSize: 16,
-  rowTextColor: (item, links, t, dark) => {
-    if (item.destructive) return { color: dark ? palette["red-300"] : palette["red-700"] };
+  rowTextColor: (item, links, t) => {
+    if (item.destructive) return { color: destructiveText(t) };
     return { color: links ? t.foreground : t["popover-foreground"] };
   },
   triggerPressedOpacity: null,
@@ -201,8 +202,8 @@ export const iosSkin: RowMenuSkin = {
   separator: (t) => ({ height: 1, backgroundColor: t.border, marginVertical: 4 }),
   rowTextSize: { fontSize: 17, lineHeight: 22 },
   iconSize: 20,
-  rowTextColor: (item, links, t, dark) => {
-    if (item.destructive) return { color: dark ? palette["red-300"] : palette["red-700"] };
+  rowTextColor: (item, links, t) => {
+    if (item.destructive) return { color: destructiveText(t) };
     return { color: links ? t.foreground : t["popover-foreground"] };
   },
   triggerPressedOpacity: 0.8,
@@ -262,8 +263,8 @@ export const androidSkin: RowMenuSkin = {
   separator: (t) => ({ height: 1, backgroundColor: t.border, marginVertical: 4 }),
   rowTextSize: { fontSize: 16, lineHeight: 24 },
   iconSize: 20,
-  rowTextColor: (item, links, t, dark) => {
-    if (item.destructive) return { color: dark ? palette["red-300"] : palette["red-700"] };
+  rowTextColor: (item, links, t) => {
+    if (item.destructive) return { color: destructiveText(t) };
     return { color: links ? t.foreground : t["popover-foreground"] };
   },
   triggerPressedOpacity: null,

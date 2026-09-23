@@ -136,7 +136,7 @@ export function createActionPanel(
 ) {
   return function ActionPanel(props: ActionPanelProps) {
     const { title, description, actionLabel, onAction, toggle, checked, defaultChecked, onToggle, children, testID, style } = props;
-    const { tokens, dark } = useTheme();
+    const { tokens } = useTheme();
     const tone = toneOf(props);
     // The toggle affordance always reads as an inline settings row.
     const layout = toggle ? "inline" : layoutOf(props);
@@ -146,7 +146,7 @@ export function createActionPanel(
     const copy = (
       <View style={[{ gap: skin.copyGap }, layout === "inline" ? copyGrow : null]}>
         {title != null ? (
-          <Text style={[skin.titleType, { color: titleColor(tokens, dark, tone) }]}>{title}</Text>
+          <Text style={[skin.titleType, { color: titleColor(tokens, tone) }]}>{title}</Text>
         ) : null}
         {description != null ? (
           <Text style={[skin.descriptionType, { color: tokens["muted-foreground"] }]}>{description}</Text>

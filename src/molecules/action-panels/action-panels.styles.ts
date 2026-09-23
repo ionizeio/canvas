@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, palette } from "../../style/index.js";
+import { type ColorTokens, statusColors } from "../../style/index.js";
 
 // Co-located ActionPanel skins, one per platform. ActionPanel is a "Light"
 // platform treatment: ONE structure (a settings card with a copy block and a
@@ -53,15 +53,11 @@ export interface ActionPanelSkin {
   inlineAlign: ViewStyle["alignItems"];
 }
 
-// The danger-zone red rides the Tailwind palette (fixed per scheme so it stays a
-// red rather than following the semantic tokens); this is platform-neutral and
-// therefore lives here as a helper the shell calls, shared by every skin.
-export function titleColor(tokens: ColorTokens, dark: boolean, tone: Tone): string {
-  return tone === "destructive"
-    ? dark
-      ? palette["red-400"]
-      : palette["red-700"]
-    : tokens["card-foreground"];
+// The danger-zone title is the error ink (the destructive-text role, text-grade on the
+// card); this is platform-neutral and therefore lives here as a helper the shell calls,
+// shared by every skin.
+export function titleColor(tokens: ColorTokens, tone: Tone): string {
+  return tone === "destructive" ? statusColors(tokens, "error").ink : tokens["card-foreground"];
 }
 
 // ---------- Web: the established Canvas look (lifted verbatim) ----------

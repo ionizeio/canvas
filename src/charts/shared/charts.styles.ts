@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, palette, shadow, shape } from "../../style/index.js";
+import { type ColorTokens, statusColors, shadow, shape } from "../../style/index.js";
 import { type ChartSeries, type ChartSkin } from "./types.js";
 
 // Co-located Chart styles. Layout-only fragments are static objects; anything
@@ -45,11 +45,12 @@ export const titleDefault: TextStyle = { marginBottom: 16, fontSize: 16, lineHei
 
 // --- bar fill ---------------------------------------------------------------
 
-// The fill for each bar, by tone. Token primary by default; saturated palette
-// hues for the success / destructive tones so the chart reads in either scheme.
+// The fill for each bar, by tone. Token primary by default; the success / destructive
+// tones take their solid status colors (statusColors' dot), so a chart's bars read as the
+// same state as a Badge or an Alert, in either scheme.
 export function barFill(tokens: ColorTokens, tone: Tone): string {
-  if (tone === "success") return palette["green-500"];
-  if (tone === "destructive") return palette["red-500"];
+  if (tone === "success") return statusColors(tokens, "success").dot;
+  if (tone === "destructive") return statusColors(tokens, "error").dot;
   return tokens.primary;
 }
 

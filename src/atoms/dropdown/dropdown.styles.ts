@@ -1,6 +1,6 @@
 import { destructiveText } from "../../style/destructive-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, palette, shadow, alpha, shape } from "../../style/index.js";
+import { type ColorTokens, shadow, alpha, shape } from "../../style/index.js";
 
 // Co-located Dropdown skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so they follow light/dark). The menu card paints the
@@ -136,8 +136,8 @@ export const webSkin: DropdownSkin = {
   itemPressed: (t) => ({ backgroundColor: t.accent }),
   itemTextType: { fontSize: 14, lineHeight: 20 },
   iconSize: 16,
-  itemTextColor: (t, dark, destructive) => {
-    if (destructive) return { color: dark ? palette["red-300"] : palette["red-700"] };
+  itemTextColor: (t, _dark, destructive) => {
+    if (destructive) return { color: destructiveText(t) };
     return { color: t["popover-foreground"] };
   },
   shortcut: (t) => ({

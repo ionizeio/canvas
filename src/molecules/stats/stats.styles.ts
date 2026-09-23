@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { palette, shadow, alpha, surfaceRipple, tabularNums, shape, type ColorTokens } from "../../style/index.js";
+import { statusColors, shadow, alpha, surfaceRipple, tabularNums, shape, type ColorTokens } from "../../style/index.js";
 import { SPARK_STRIP_HEIGHT } from "../../charts/sparkline/sparkline.styles.js";
 import { type StatsSkin } from "./stats.shared.js";
 
@@ -84,11 +84,10 @@ export const headerRow: ViewStyle = { flexDirection: "row", alignItems: "center"
 // rather than pushing each other apart.
 export const headerTrailing: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 8 };
 
-// Delta tone: a rise reads green (text-green-600 dark:text-green-400), a decline
-// reads red (text-red-600 dark:text-red-400). Semantic color, shared.
-export function deltaTone(dark: boolean, down: boolean): TextStyle {
-  const hue = down ? "red" : "green";
-  return { color: dark ? palette[`${hue}-400`] : palette[`${hue}-600`] };
+// Delta tone: a rise reads in the success ink, a decline in the error ink (statusColors,
+// both text-grade on the card). Semantic color, shared.
+export function deltaTone(tokens: ColorTokens, down: boolean): TextStyle {
+  return { color: statusColors(tokens, down ? "error" : "success").ink };
 }
 
 // ---------- Web: the established Canvas look (lifted verbatim) ----------

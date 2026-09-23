@@ -60,12 +60,14 @@
   --orb-violet:#6676ff;
   --orb-cyan:#68cdff;
 
-  /* Fixed colors for menu and panel text and activity deltas: they keep their value
-     under a semantic override. The menu red is the menus' own red-700 (red-300 dark). */
-  --p-menu-destructive:#b91c1c;
-  --panel-danger:#b53a44;
-  --delta-up:#0b7440;
-  --delta-down:#9a1f2f;
+  /* Menu and panel error text and activity deltas: the status colors the components
+     paint (statusColors: the error ink for the menus' destructive rows, the danger
+     panel's title and a decline; the success color for a rise), so they follow the
+     palette and any override of those roles. */
+  --p-menu-destructive:var(--destructive-text);
+  --panel-danger:var(--destructive-text);
+  --delta-up:var(--success);
+  --delta-down:var(--destructive-text);
 
   /* Browser material hand-off: Dark Factory's plain frost (src/style/glass-surface/
      web-frost.ts). One tint per LAYER, a 24px backdrop blur with no saturation shift and a
@@ -175,10 +177,10 @@
   --inverse:oklch(0.288 0.065 281.6);
   --inverse-foreground:oklch(1 0 0);
   --inverse-primary:oklch(0.77 0.124 288.2);
-  --p-menu-destructive:#fca5a5;
-  --panel-danger:#ff8b93;
-  --delta-up:#5fd18a;
-  --delta-down:#ffadb0;
+  --p-menu-destructive:var(--destructive-text);
+  --panel-danger:var(--destructive-text);
+  --delta-up:var(--success);
+  --delta-down:var(--destructive-text);
   /* Dark frost: Dark Factory's near-clear shell (white 0.045) and deep card-coloured panes. */
   --glass-tint:rgba(255,255,255,0.045);
   --glass-tint-content:rgba(37,39,65,0.72);--glass-tint-control:rgba(255,255,255,0.06);--glass-tint-dense:rgba(37,39,65,0.92);
