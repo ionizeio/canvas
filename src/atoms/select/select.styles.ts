@@ -146,11 +146,13 @@ export const webSkin: SelectSkin = {
   // Inline (toolbar) label: a muted medium-weight small label; no marginBottom
   // since it sits beside the value in the trigger row, not above it.
   inlineLabel: (t, size) => ({ fontWeight: "500", color: t["muted-foreground"], ...TEXT_SIZE[size] }),
-  trigger: (t, size) => ({
+  // The resting `field-border` hairline turning `ring` while the list is open, as Dark
+  // Factory's select frame does (the trigger's keyboard focus shows the kit's ring).
+  trigger: (t, size, open) => ({
     ...TRIGGER_ROW,
     borderRadius: shape.web.field,
     borderWidth: 1,
-    borderColor: fieldBorder(t),
+    borderColor: open ? t.ring : fieldBorder(t),
     backgroundColor: t.card,
     paddingHorizontal: 16,
     height: WEB_TRIGGER_BOX[size],

@@ -177,6 +177,11 @@ export function createAutocomplete(skin: AutocompleteSkin) {
     // toggles it, a select closes it. `defaultOpen` seeds it open initially.
     const [internalOpen, setInternalOpen] = useState(props.defaultOpen ?? false);
     const open = !disabled && (openProp ?? internalOpen);
+    // The field is ACTIVE while it holds focus or its list is open: its border (or the M3
+    // indicator) paints the active state, which is the field's keyboard focus indicator,
+    // so it stays on after Escape closes the list over a still-focused field.
+    const [focused, setFocused] = useState(false);
+    const active = open || focused;
     const [activeKey, setActiveKey] = useState<string | null>(null);
     const setOpen = (next: boolean) => {
       if (disabled) return;
@@ -246,13 +251,13 @@ export function createAutocomplete(skin: AutocompleteSkin) {
     const floating = hasLabel && skin.floatingLabel;
     const above = hasLabel && !floating;
     const populated = fieldValue !== "";
-    const fieldShape = skin.field(tokens, size, open);
+    const fieldShape = skin.field(tokens, size, active);
     const fieldHeight = asNum((fieldShape as { height?: unknown }).height, 56);
     // GlassPane paints behind the editor and toggle. Clear web fields paint the
-    // open-state outline in the foreground, outside the lens's sampled backdrop.
-    // Native fields keep their original border or bottom indicator.
+    // active-state outline in the foreground, over the material. Native fields keep
+    // their original border or bottom indicator.
     const glass = isGlass(theme);
-    const glassField: ViewStyle | null = glass ? { backgroundColor: "transparent", borderColor: open && !entryMaterial.foregroundStateBorder ? fieldShape.borderColor : "transparent" } : null;
+    const glassField: ViewStyle | null = glass ? { backgroundColor: "transparent", borderColor: active && !entryMaterial.foregroundStateBorder ? fieldShape.borderColor : "transparent" } : null;
 
     return (
       <View style={[wrapper, open && !host ? wrapperLifted : null, widthCap, style]}>
@@ -265,7 +270,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
           ref={fieldRef}
           onLayout={onTriggerLayout}
           style={[
-            paneStyle(theme, fieldShape),
+            paneStyle(theme, fieldShape, active),
             glassField,
             disabled ? { opacity: skin.disabledOpacity } : null,
           ]}
@@ -273,7 +278,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
           <GlassPane {...entryMaterial.paneProps} shape={fieldShape} />
           <TextInput
             ref={accessibilityReturn.inputRef}
-            // The field paints its own focus state (the skin's open border), so
+            // The field paints its own focus state (the skin's active border), so
             // the RNW default outline is suppressed; no-op on native.
             textAlignVertical="center"
             style={[
@@ -304,9 +309,13 @@ export function createAutocomplete(skin: AutocompleteSkin) {
             }}
             onFocus={() => {
               accessibilityReturn.cancel();
+              setFocused(true);
               if (!open) setOpen(true);
             }}
-            onBlur={accessibilityReturn.cancel}
+            onBlur={() => {
+              accessibilityReturn.cancel();
+              setFocused(false);
+            }}
             // A press on a field that already holds the caret fires no focus event, so
             // without this there is no way back into a list you dismissed with Escape
             // while your query is still sitting in the field.
@@ -406,13 +415,13 @@ export function createAutocomplete(skin: AutocompleteSkin) {
               label={label!}
               required={required}
               labelId={labelId}
-              focused={open}
+              focused={active}
               populated={populated}
               isError={false}
               height={fieldHeight}
             />
           ) : null}
-          {entryMaterial.stateBorder(fieldShape, open)}
+          {entryMaterial.stateBorder(fieldShape, active)}
         </View>
 
         <AnchoredOverlay

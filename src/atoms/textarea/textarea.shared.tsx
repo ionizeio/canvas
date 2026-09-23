@@ -1,5 +1,6 @@
 import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { useInputEscapeBridge } from "../../style/escape-layer.js";
+import { INSET_FOCUS_RING, useFocusRingStyle } from "../../style/pressable.js";
 import { forwardRef, useId, useState } from "react";
 import { type TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from "react-native";
 import { View, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, FOCUS_RESET, type MeasureProps, type SizingKey, type StyleProp, type TextStyle, type ViewStyle, GlassPane, paneStyle, isGlass, alpha, PANE_SIBLING_INPUT } from "../../style/index.js";
@@ -119,6 +120,7 @@ export function createTextarea(skin: TextareaSkin) {
     const { value, onChangeText, placeholder, label, required, rows, disabled, flush, showCount, style } = props;
     const size = sizeOf(props);
     const [focused, setFocused] = useState(false);
+    const focusRing = useFocusRingStyle();
     const entryMaterial = useTextEntryMaterial(!!skin.liquid);
     const { theme } = entryMaterial;
     const { tokens } = theme;
@@ -233,11 +235,14 @@ export function createTextarea(skin: TextareaSkin) {
     };
     const fieldPane = <GlassPane {...entryMaterial.paneProps} shape={fieldShape} tint={isError ? alpha(tokens.destructive, 0.18) : undefined} />;
     const fieldStyle: StyleProp<TextStyle>[] = [
-      paneStyle(theme, fieldShape),
+      paneStyle(theme, fieldShape, focused || isError),
       glass ? { ...PANE_SIBLING_INPUT, backgroundColor: "transparent", borderColor: focused || isError ? (fieldShape.borderColor as string) : "transparent" } : null,
       skin.text ? skin.text(size) : sizeText(size),
       minHeight(rows),
-      FOCUS_RESET,
+      // A framed field paints its own focus state (its border turns `ring`), so the
+      // browser ring is suppressed; a flush field has no frame to paint, so it keeps the
+      // kit's themed ring, drawn inside it where the toolbar card's clip cannot cut it.
+      flush ? [focusRing, INSET_FOCUS_RING] : FOCUS_RESET,
     ];
     const disabledDim = disabled ? { opacity: 0.5 } : null;
 

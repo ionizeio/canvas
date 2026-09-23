@@ -148,6 +148,8 @@ export function createCommand(skin: CommandSkin) {
     // open. `defaultOpen` forces it open initially even in trigger mode.
     const [internalOpen, setInternalOpen] = useState(() => props.defaultOpen ?? !trigger);
     const open = openProp ?? internalOpen;
+    // The search field's focus, painted on the search row's rule (its focus indicator).
+    const [searchFocused, setSearchFocused] = useState(false);
     const setOpen = (next: boolean) => {
       if (openProp === undefined) setInternalOpen(next);
       onOpenChange?.(next);
@@ -250,7 +252,7 @@ export function createCommand(skin: CommandSkin) {
     // color emoji (which ignores tint and renders full-color on device).
     const cardContent = (
       <>
-        <View accessibilityRole="search" style={skin.searchRow(tokens)}>
+        <View accessibilityRole="search" style={skin.searchRow(tokens, searchFocused)}>
           <Icon search muted decorative size={skin.searchGlyphSize} />
           <TextInput
             ref={searchRef}
@@ -259,6 +261,8 @@ export function createCommand(skin: CommandSkin) {
             // muted placeholder color; typed text repaints with `foreground`.
             style={[skin.searchPlaceholder(tokens), searchInput, { color: tokens.foreground }, FOCUS_RESET]}
             value={query}
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => setSearchFocused(false)}
             onChangeText={(text) => {
               setQuery(text);
               // Each keystroke changes what is visible; snap the highlight back

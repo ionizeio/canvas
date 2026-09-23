@@ -11,7 +11,7 @@ import { FrostView, useMaterialCapabilities, requiresBlurTarget } from "./materi
 import { resolveMaterial } from "./material-resolution.js";
 import { WEB_FROST, webRimColor } from "./web-frost.js";
 import {
-  GlassBox, CLEAR_INTENSITY, brandOverMaterial, clearSurfaceTint, contrastBorder, frostMethodProps,
+  GlassBox, CLEAR_INTENSITY, brandOverMaterial, clearSurfaceTint, contrastBorderFor, frostMethodProps,
   materialFill, surfaceUnderFill, surfaceIntensity, type GlassSurfaceProps,
 } from "./glass-surface.shared.js";
 
@@ -43,5 +43,5 @@ export function GlassSurface(props: GlassSurfaceProps) {
     {over ? tintLayer : null}
     <View style={rim} />
   </>;
-  return <GlassBox {...props} style={theme.increasedContrast ? [style, contrastBorder(theme.tokens)] : style} solid={solid} material={material} />;
+  return <GlassBox {...props} style={theme.increasedContrast ? [style, contrastBorderFor(theme.tokens, style, props.stateBorder)] : style} solid={solid} material={material} />;
 }

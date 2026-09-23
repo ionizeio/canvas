@@ -43,16 +43,19 @@ const WEB_FIELD_W: Record<Size, number> = { small: 48, base: 56, large: 64 };
 
 export const webSkin: StepperSkin = {
   liquid: true,
-  group: (t, size) => ({
+  // The box's resting `field-border` hairline turns `ring` while the value field holds
+  // focus: the field's keyboard focus indicator (the field suppresses the browser ring).
+  group: (t, size, _disabled, focused) => ({
     flexDirection: "row",
     alignItems: "stretch",
     height: WEB_HEIGHT[size],
     borderWidth: 1,
-    borderColor: fieldBorder(t),
+    borderColor: focused ? t.ring : fieldBorder(t),
     borderRadius: 6,
     backgroundColor: t.background,
     overflow: "hidden",
   }),
+  groupShowsFocus: true,
   button: (_t, size, _side) => ({
     ...ROW_CENTER,
     width: WEB_BTN_W[size],

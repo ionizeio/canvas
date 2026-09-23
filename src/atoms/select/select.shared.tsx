@@ -246,7 +246,7 @@ export function createSelect(skin: SelectSkin) {
           ref={hostRef}
           onLayout={onTriggerLayout}
           style={({ pressed }) => [
-            paneStyle(theme, triggerShape),
+            paneStyle(theme, triggerShape, open),
             glassTrigger,
             !glass && disabled ? { opacity: skin.disabledOpacity } : null,
             !glass && skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,

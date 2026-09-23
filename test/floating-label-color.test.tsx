@@ -59,7 +59,7 @@ describe("floating labels use text roles without recoloring control indicators",
       });
     }
 
-    it(`${scheme} Autocomplete uses its real open state for the label tint`, async () => {
+    it(`${scheme} Autocomplete tints its label while active: focused or open`, async () => {
       render(<ThemeProvider scheme={scheme}><Autocomplete label="Fruit" options={["Apple", "Pear"]} /></ThemeProvider>);
       const field = screen.getByRole("combobox", { name: "Fruit" });
       await labelColor("Fruit", t["muted-foreground"]);
@@ -68,8 +68,12 @@ describe("floating labels use text roles without recoloring control indicators",
       expect(field.getAttribute("aria-expanded")).toBe("true");
       fireEvent.keyDown(field, { key: "Escape" });
       fireEvent.keyUp(field, { key: "Escape" });
-      await labelColor("Fruit", t["muted-foreground"]);
+      // Escape closes the list but the field keeps focus, so it stays active: the tint
+      // and the indicator are its keyboard focus cue (it suppresses the browser ring).
       expect(field.getAttribute("aria-expanded")).toBe("false");
+      await labelColor("Fruit", primaryText(t));
+      fireEvent.blur(field);
+      await labelColor("Fruit", t["muted-foreground"]);
     });
 
     it(`${scheme} Select uses open/close without acquiring an error API`, async () => {

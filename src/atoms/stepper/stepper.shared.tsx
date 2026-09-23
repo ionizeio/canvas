@@ -29,6 +29,7 @@ import {
 } from "../../style/index.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useTextEntryMaterial } from "../../style/text-entry-material.js";
+import { useFocusRingStyle } from "../../style/pressable.js";
 import { clamp } from "../../style/math.js";
 import { Icon } from "../icon/icon.js";
 import { addDecimal } from "./stepper.math.js";
@@ -103,8 +104,18 @@ export interface StepperProps {
 export interface StepperSkin {
   /** Clear Liquid Glass text entry on the web appearance. */
   liquid?: boolean;
-  /** The outer group container (the [ − | value | + ] shell shape). */
-  group: (t: ColorTokens, size: Size, disabled: boolean) => ViewStyle;
+  /**
+   * The outer group container (the [ − | value | + ] shell shape). `focused` is the
+   * value field holding focus: a skin whose group has a border paints its focus state
+   * there (the web box turns its border `ring`) and sets `groupShowsFocus`.
+   */
+  group: (t: ColorTokens, size: Size, disabled: boolean, focused: boolean) => ViewStyle;
+  /**
+   * The group's border is the value field's keyboard focus indicator, so the field
+   * suppresses the browser's ring. A skin whose field sits bare (no box of its own to
+   * paint) leaves it unset, and the field keeps the kit's themed ring.
+   */
+  groupShowsFocus?: boolean;
   /** One ± button cell; `side` lets the skin round the matching outer corner. */
   button: (t: ColorTokens, size: Size, side: "left" | "right", disabled: boolean, pressed: boolean) => ViewStyle;
   /** The editable center field surface (and its type scale). */
@@ -189,12 +200,16 @@ export function createStepper(skin: StepperSkin) {
     // no material and each outlined M3 circle becomes its own puck. The node drops
     // its fill and outline under glass (the pane's material and rim carry them).
     const glass = isGlass(theme);
-    const groupShape = skin.group(tokens, size, !!disabled);
+    // The value field's focus: the web box paints it on the group's border; a bare field
+    // keeps the kit's themed ring.
+    const [focused, setFocused] = useState(false);
+    const focusRing = useFocusRingStyle();
+    const groupShape = skin.group(tokens, size, !!disabled, focused);
     const groupFill = (StyleSheet.flatten(groupShape) as ViewStyle).backgroundColor;
     const groupSurfaced = groupFill != null && groupFill !== "transparent";
     const liquidActions = !groupSurfaced && isGlass(actionTheme);
     const disabledInk = liquidActions && disabled ? { opacity: 0.5 } : null;
-    const groupStyle = groupSurfaced ? paneStyle(theme, groupShape) : groupShape;
+    const groupStyle = groupSurfaced ? paneStyle(theme, groupShape, focused && !!skin.groupShowsFocus) : groupShape;
     const groupPane = groupSurfaced ? <GlassPane {...entryMaterial.paneProps} shape={groupShape} /> : null;
     const buttonPane = (shape: ViewStyle, inactive: boolean) => (groupSurfaced ? null : <GlassPane layer="control" shape={shape} interactive={!inactive} />);
 
@@ -373,7 +388,11 @@ export function createStepper(skin: StepperSkin) {
         value={shown}
         onChangeText={onChangeText}
         onKeyPress={onKeyPress}
-        onBlur={() => commit()}
+        onFocus={() => setFocused(true)}
+        onBlur={() => {
+          setFocused(false);
+          commit();
+        }}
         onEndEditing={commit}
         editable={!disabled}
         inputMode="numeric"
@@ -386,7 +405,7 @@ export function createStepper(skin: StepperSkin) {
         // Required is surfaced programmatically (aria-required), matching Input;
         // omitted entirely when optional so no aria-required="false" is emitted.
         aria-required={required || undefined}
-        style={[skin.field(tokens, size, !!disabled), FOCUS_RESET, glass ? PANE_SIBLING_INPUT : null, disabledInk]}
+        style={[skin.field(tokens, size, !!disabled), skin.groupShowsFocus ? FOCUS_RESET : focusRing, glass ? PANE_SIBLING_INPUT : null, disabledInk]}
       />
     );
 
@@ -438,6 +457,7 @@ export function createStepper(skin: StepperSkin) {
             {Field}
             {makeDivider("d2")}
             {PlusButton}
+            {skin.groupShowsFocus ? entryMaterial.stateBorder(groupShape, focused) : null}
           </View>
         )}
       </View>

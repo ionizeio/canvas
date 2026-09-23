@@ -46,6 +46,12 @@ export interface GlassSurfaceProps {
    *  own opaque fill). The fill is stripped under glass; the material supplies its own
    *  (the `glass-tint` token, or `tint` below). */
   style?: StyleProp<ViewStyle>;
+  /**
+   * The style's border currently shows a state (a focused knob, an open trigger): under
+   * Increase Contrast it keeps its colour instead of taking the contrasting hairline (see
+   * `contrastBorderFor`). Defaults to false.
+   */
+  stateBorder?: boolean;
   children?: ReactNode;
   pointerEvents?: ViewProps["pointerEvents"];
   /** Layout callback forwarded to the ROOT element of every material branch, so
@@ -276,6 +282,20 @@ export function contrastBorder(tokens: ColorTokens): ViewStyle {
   return { borderWidth: CONTRAST_BORDER_WIDTH, borderColor: tokens.foreground };
 }
 
+/**
+ * The Increase Contrast border for one surface. A resting surface takes the contrasting
+ * hairline. A surface whose border shows a STATE (a focused or errored field, an open
+ * trigger, a focused slider knob) keeps that colour, since it is the state's only
+ * indicator (overwriting a field's `ring` focus border would leave a keyboard user no
+ * focus cue at all), and only gains the contrast width where its own is thinner. A style
+ * that names no border colour has no state border to keep, so it takes the hairline.
+ */
+export function contrastBorderFor(tokens: ColorTokens, style: StyleProp<ViewStyle>, stateBorder = false): ViewStyle {
+  const flat = (StyleSheet.flatten(style) ?? {}) as ViewStyle;
+  if (!stateBorder || flat.borderColor == null) return contrastBorder(tokens);
+  return { borderWidth: Math.max(CONTRAST_BORDER_WIDTH, flat.borderWidth ?? 0) };
+}
+
 // Keys that must live on the OUTER box: shadow (overflow:hidden would clip it),
 // absolute positioning, outer-margin/self-alignment, and SIZING (flex/width/
 // height) so the surface fills or sizes within its parent exactly as the single-
@@ -386,7 +406,7 @@ export function degradedGlassSurface(
   props: GlassSurfaceProps,
 ): ReactNode | null {
   if (!flags.increasedContrast && !flags.reducedTransparency) return null;
-  const style = flags.increasedContrast ? [props.style, contrastBorder(flags.tokens)] : props.style;
+  const style = flags.increasedContrast ? [props.style, contrastBorderFor(flags.tokens, props.style, props.stateBorder)] : props.style;
   return (
     <PlainSurface style={style} pointerEvents={props.pointerEvents} testID={props.testID} role={props.role} onLayout={props.onLayout} onAccessibilityEscape={props.onAccessibilityEscape}>
       {props.children}

@@ -1,5 +1,6 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, surfaceRipple, shape } from "../../style/index.js";
+import { activeIndicator } from "../../style/active-indicator.js";
 import { fieldBorder } from "../../style/field-colors.js";
 
 // Co-located Command skins, one per platform, all driven by the brand tokens
@@ -40,8 +41,12 @@ import { fieldBorder } from "../../style/field-colors.js";
 // row state to RN style objects for the search row and the result rows, and
 // declares its press-feedback mode (iOS/web dim or tint inline, Android ripples).
 export interface CommandSkin {
-  /** The search row at the top of the panel: gap, padding, hairline under it. */
-  searchRow: (t: ColorTokens) => ViewStyle;
+  /**
+   * The search row at the top of the panel: gap, padding, and the hairline under it,
+   * which turns `ring` and thickens while the search field holds focus (the field's
+   * keyboard focus indicator; the field suppresses the browser ring for it).
+   */
+  searchRow: (t: ColorTokens, focused: boolean) => ViewStyle;
   /** The leading magnifier glyph size (px), rendered through the kit `Icon`
    *  atom (`search`, tinted muted-foreground) — never a color emoji. */
   searchGlyphSize: number;
@@ -206,14 +211,13 @@ export function footerText(tokens: ColorTokens): TextStyle {
 // `accent` fill for both the active and the pressed row (active:bg-accent). The
 // press feedback IS the accent fill (no opacity dim, no ripple).
 export const webSkin: CommandSkin = {
-  searchRow: (t) => ({
+  searchRow: (t, focused) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    borderBottomWidth: 1,
-    borderColor: t.border,
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingTop: 14,
+    ...activeIndicator({ active: focused, restColor: t.border, activeColor: t.ring, gap: 13 }),
   }),
   // A 16px search icon; the kit uses a real monochrome Icon tinted muted-foreground
   // (never a color emoji).
@@ -253,14 +257,13 @@ export const webSkin: CommandSkin = {
 // `accent` (not the iOS system fill) and the row dims to ~0.8 opacity on press;
 // no ripple.
 export const iosSkin: CommandSkin = {
-  searchRow: (t) => ({
+  searchRow: (t, focused) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    borderBottomWidth: 1,
-    borderColor: t.border,
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingTop: 14,
+    ...activeIndicator({ active: focused, restColor: t.border, activeColor: t.ring, gap: 13 }),
     minHeight: 44,
   }),
   // A 20px monochrome search Icon (muted-foreground) pairs with the 17/22
@@ -310,14 +313,13 @@ export const iosSkin: CommandSkin = {
 // an android_ripple (the surfaceRipple M3 state layer: on-surface ink at ~10%,
 // bounded).
 export const androidSkin: CommandSkin = {
-  searchRow: (t) => ({
+  searchRow: (t, focused) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    borderBottomWidth: 1,
-    borderColor: t.border,
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingTop: 14,
+    ...activeIndicator({ active: focused, restColor: t.border, activeColor: t.ring, gap: 13 }),
     minHeight: 48,
   }),
   // A 20dp monochrome search Icon (muted-foreground ≈ M3 on-surface-variant) —

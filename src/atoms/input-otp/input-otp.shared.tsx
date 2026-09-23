@@ -330,7 +330,7 @@ export function createInputOTP(skin: InputOTPSkin) {
                       <View
                         key={index}
                         style={[
-                          paneStyle(theme, cellShape),
+                          paneStyle(theme, cellShape, active),
                           glass ? { backgroundColor: "transparent", borderColor: active ? cellShape.borderColor : "transparent" } : null,
                           { pointerEvents: "none" },
                         ]}

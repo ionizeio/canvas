@@ -349,7 +349,7 @@ export function createInput(skin: InputSkin) {
       // top of the indicator. No-op on native; matches the grouped path and the
       // Autocomplete/Textarea/Stepper shells.
       const bareShape = skin.bareField(tokens, borderColor, focused, isError);
-      const bareStyle = [paneStyle(theme, bareShape), skin.bareBox(size), text, FOCUS_RESET, glass ? glassBox : null];
+      const bareStyle = [paneStyle(theme, bareShape, focused || isError), skin.bareBox(size), text, FOCUS_RESET, glass ? glassBox : null];
       const disabledDim = disabled ? { opacity: skin.disabledOpacity } : null;
       // The puck behind a bare field (nothing in solid mode).
       const barePane = <GlassPane {...paneProps} shape={bareShape} tint={paneTint} />;
@@ -434,7 +434,7 @@ export function createInput(skin: InputSkin) {
     const groupedField = (
       <View
         style={[
-          paneStyle(theme, groupShape),
+          paneStyle(theme, groupShape, focused || isError),
           { minHeight: height },
           glass ? glassBox : null,
           foregroundStateBorder ? { borderColor: "transparent" } : null,

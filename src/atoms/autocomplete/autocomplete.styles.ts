@@ -38,8 +38,12 @@ export interface AutocompleteSkin extends FloatingLabelStyles<Size> {
    *  On Android the label FLOATS inside the field instead (see FloatingLabelStyles:
    *  `floatingLabel`, `labelRest`/`labelFloated`/`labelReserve`). */
   label: (t: ColorTokens, size: Size) => TextStyle;
-  /** The editable field surface: shape, fill, border/underline for the open state. */
-  field: (t: ColorTokens, size: Size, open: boolean) => ViewStyle;
+  /**
+   * The editable field surface: shape, fill, and the border/underline of its active
+   * state (the field holds focus or its list is open), which is also the field's keyboard
+   * focus indicator: the field suppresses the browser's ring for it.
+   */
+  field: (t: ColorTokens, size: Size, active: boolean) => ViewStyle;
   /** The field's value text (foreground), or muted for the placeholder. */
   fieldText: (t: ColorTokens, size: Size, muted: boolean) => TextStyle;
   /** The trailing disclosure chevron. */
@@ -118,13 +122,15 @@ export const webSkin: AutocompleteSkin = {
   liquid: true,
   text: webText,
   label: (t, size) => ({ marginBottom: 6, fontWeight: "500", color: t.foreground, ...TEXT_SIZE[size] }),
-  field: (t, size) => ({
+  // The resting `field-border` hairline turning `ring` while the field is active (focused
+  // or open), the field's own focus indicator.
+  field: (t, size, active) => ({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     borderRadius: shape.web.field,
     borderWidth: 1,
-    borderColor: fieldBorder(t),
+    borderColor: active ? t.ring : fieldBorder(t),
     backgroundColor: t.card,
     paddingHorizontal: 16,
     height: WEB_FIELD_BOX[size],
@@ -209,15 +215,15 @@ export const iosSkin: AutocompleteSkin = {
   text: (size) => IOS_TEXT[size],
   label: (t, size) => ({ marginBottom: 8, fontWeight: "400", letterSpacing: -0.15, color: t["muted-foreground"], ...IOS_LABEL[size] }),
   // The reference's field box (see input.styles.ts): `card` fill, the 8pt corner,
-  // the resting `field-border` hairline turning `ring` while the list is open.
-  field: (t, size, open) => ({
+  // the resting `field-border` hairline turning `ring` while the field is active.
+  field: (t, size, active) => ({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     borderRadius: shape.ios.field,
     borderCurve: "continuous",
     borderWidth: 1,
-    borderColor: open ? t.ring : fieldBorder(t),
+    borderColor: active ? t.ring : fieldBorder(t),
     backgroundColor: t.card,
     paddingHorizontal: 12,
     height: IOS_FIELD_BOX[size],
@@ -289,7 +295,7 @@ export const androidSkin: AutocompleteSkin = {
     return { fontSize: 16, lineHeight: 24 };
   },
   label: (t, size) => ({ marginBottom: 6, fontWeight: "500", color: t.foreground, ...TEXT_SIZE[size] }),
-  field: (t, size, open) => ({
+  field: (t, size, active) => ({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -298,8 +304,8 @@ export const androidSkin: AutocompleteSkin = {
     borderBottomStartRadius: 0,
     borderBottomEndRadius: 0,
     // M3 active indicator: a clear muted rest baseline thickening to the brand `ring`
-    // on open. activeIndicator keeps the content-box height fixed across the change.
-    ...activeIndicator({ active: open, restColor: t["muted-foreground"], activeColor: t.ring }),
+    // while active. activeIndicator keeps the content-box height fixed across the change.
+    ...activeIndicator({ active, restColor: t["muted-foreground"], activeColor: t.ring }),
     backgroundColor: t.muted,
     paddingHorizontal: 16,
     height: ANDROID_FIELD_BOX[size],

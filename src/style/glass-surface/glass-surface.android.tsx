@@ -11,7 +11,7 @@ import { NativeCaptureFrost } from "./capture-runtime.js";
 import { useReadyCaptureTarget, useCaptureDemand } from "./capture-target.js";
 import { resolveMaterial } from "./material-resolution.js";
 import {
-  GlassBox, CLEAR_INTENSITY, brandOverMaterial, clearSurfaceTint, contrastBorder, frostMethodProps, GlassBlurTargetContext,
+  GlassBox, CLEAR_INTENSITY, brandOverMaterial, clearSurfaceTint, contrastBorderFor, frostMethodProps, GlassBlurTargetContext,
   SHEER_FILL_OPACITY, materialFill, specularRim, surfaceUnderFill, surfaceIntensity, type GlassSurfaceProps,
 } from "./glass-surface.shared.js";
 
@@ -42,5 +42,5 @@ export function GlassSurface(props: GlassSurfaceProps) {
     {over ? tintLayer : null}
     <View style={rim} />
   </>;
-  return <GlassBox {...props} style={theme.increasedContrast ? [style, contrastBorder(theme.tokens)] : style} solid={solid} material={material} />;
+  return <GlassBox {...props} style={theme.increasedContrast ? [style, contrastBorderFor(theme.tokens, style, props.stateBorder)] : style} solid={solid} material={material} />;
 }

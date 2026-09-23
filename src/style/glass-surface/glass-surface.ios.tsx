@@ -4,7 +4,7 @@ import { useTheme } from "../theme.js";
 import { FrostView, LiquidView, useMaterialCapabilities } from "./material-runtime.ios.js";
 import { resolveMaterial } from "./material-resolution.js";
 import {
-  GlassBox, CLEAR_INTENSITY, brandOverMaterial, clearSurfaceTint, contrastBorder, SHEER_FILL_OPACITY, materialFill,
+  GlassBox, CLEAR_INTENSITY, brandOverMaterial, clearSurfaceTint, contrastBorderFor, SHEER_FILL_OPACITY, materialFill,
   specularRim, surfaceUnderFill, surfaceIntensity, type GlassSurfaceProps,
 } from "./glass-surface.shared.js";
 
@@ -29,5 +29,5 @@ export function GlassSurface(props: GlassSurfaceProps) {
     {paintsFill && over ? fillLayer : null}
     {!native ? <View style={rim} /> : null}
   </>;
-  return <GlassBox {...props} style={theme.increasedContrast ? [style, contrastBorder(theme.tokens)] : style} solid={solid} material={material} />;
+  return <GlassBox {...props} style={theme.increasedContrast ? [style, contrastBorderFor(theme.tokens, style, props.stateBorder)] : style} solid={solid} material={material} />;
 }

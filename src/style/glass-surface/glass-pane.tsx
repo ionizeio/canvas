@@ -12,7 +12,7 @@ import { StyleSheet, type StyleProp, type ViewStyle } from "react-native";
 import { useTheme, type ThemeValue } from "../theme.js";
 import { isGlass } from "../glass-fill.js";
 import { GlassSurface } from "./glass-surface.js";
-import { contrastBorder, type GlassLayer } from "./glass-surface.shared.js";
+import { contrastBorderFor, type GlassLayer } from "./glass-surface.shared.js";
 
 export interface GlassPaneProps {
   /** The layer of the glass model the parent belongs to (see GlassSurface). */
@@ -62,12 +62,14 @@ export function GlassPane({ layer = "control", shape, tint, brand, interactive, 
 /**
  * A surface style for a node that renders a GlassPane behind its content: under
  * glass its opaque fill and its border are dropped (the pane's material and rim carry
- * them; a border would double the rim), in solid mode it is returned unchanged.
+ * them; a border would double the rim), in solid mode it is returned unchanged. Under
+ * Increase Contrast it takes the contrasting border, except that a border showing a
+ * state (`stateBorder`: a focused or errored field, an open trigger) keeps its colour.
  */
-export function paneStyle(appearance: boolean | ThemeValue, style: StyleProp<ViewStyle>): StyleProp<ViewStyle> {
+export function paneStyle(appearance: boolean | ThemeValue, style: StyleProp<ViewStyle>, stateBorder = false): StyleProp<ViewStyle> {
   const glass = typeof appearance === "boolean" ? appearance : isGlass(appearance);
   if (!glass) return typeof appearance !== "boolean" && appearance.increasedContrast
-    ? [style, contrastBorder(appearance.tokens)] : style;
+    ? [style, contrastBorderFor(appearance.tokens, style, stateBorder)] : style;
   const flat = (StyleSheet.flatten(style) ?? {}) as Record<string, unknown>;
   const clear: Record<string, unknown> = { backgroundColor: "transparent", borderColor: "transparent" };
   for (const key of Object.keys(flat)) {

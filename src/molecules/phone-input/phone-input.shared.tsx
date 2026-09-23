@@ -200,7 +200,7 @@ export function createPhoneInput(skin: PhoneInputSkin) {
       <View
         ref={boxRef}
         onLayout={onBoxLayout}
-        style={[paneStyle(theme, boxShape), { minHeight: field.groupedHeight(size) }, glassBox]}
+        style={[paneStyle(theme, boxShape, active || isError), { minHeight: field.groupedHeight(size) }, glassBox]}
       >
         <GlassPane {...entryMaterial.paneProps} shape={boxShape} tint={isError ? alpha(tokens.destructive, 0.18) : undefined} />
         <Pressable

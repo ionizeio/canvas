@@ -494,6 +494,9 @@ export function createSlider(skin: SliderSkin) {
           pointerEvents="none"
           testID={props.testID ? `${props.testID}-thumb` : undefined}
           tint={skin.glassTint?.(tokens)}
+          // A pressed or focused knob's border is its state (the web skin's focus ring),
+          // so Increase Contrast keeps its colour instead of the contrasting hairline.
+          stateBorder={(pressed || focused) && !disabled}
           style={[
             skin.thumb(tokens, size, !!disabled, pressed || focused),
             { left: rtl ? Math.max(0, trackWidth - thumbW) - thumbLeft : thumbLeft, top: thumbTop },
