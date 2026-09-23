@@ -222,10 +222,13 @@ describe("StackedList badge tone", () => {
     expect(getByText("Degraded")).toBeTruthy();
   });
 
+  // The status pill carries its tone on the leading dot (the label keeps the foreground).
   it("gives differently toned badges different colours", () => {
-    const ok = ui(<StackedList items={[{ name: "a", detail: "d", badge: "S", success: true }]} />).getByText("S").style.color;
+    const dotOf = (label: HTMLElement) => (label.previousElementSibling as HTMLElement).style.backgroundColor;
+    const ok = dotOf(ui(<StackedList items={[{ name: "a", detail: "d", badge: "S", success: true }]} />).getByText("S"));
     cleanup();
-    const bad = ui(<StackedList items={[{ name: "a", detail: "d", badge: "S", error: true }]} />).getByText("S").style.color;
+    const bad = dotOf(ui(<StackedList items={[{ name: "a", detail: "d", badge: "S", error: true }]} />).getByText("S"));
+    expect(ok).toBeTruthy();
     expect(ok).not.toBe(bad);
   });
 

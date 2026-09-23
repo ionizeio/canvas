@@ -51,13 +51,13 @@
   --p-switch-thumb-off-w:20px;--p-switch-thumb-off-h:20px;--p-switch-thumb-off-fill:var(--background);--p-switch-thumb-off-x:2px;
   --p-switch-thumb-shadow:none;
   /* Pills and tiles */
-  --p-badge-radius:9999px;--p-badge-font:12px;--p-badge-weight:500;--p-badge-tracking:0px;
+  --p-badge-radius:9999px;--p-badge-font:11px;--p-badge-weight:700;--p-badge-tracking:0px;
   --p-chip-radius:9999px;--p-chip-pad-x:10px;--p-chip-pad-y:4px;--p-chip-font:12px;--p-chip-gap:6px;
   /* Chip glyphs (chip.styles.ts: 12px web/iOS remove glyph; the M3 selected checkmark shows on Android only) */
   --p-chip-remove:12px;--p-chip-check-display:none /* @kind other */;--p-chip-check-size:18px;
   --p-avatar-square-radius:8px;
   /* Banners and overlays */
-  --p-alert-radius:8px;--p-alert-tracking:0px;
+  --p-alert-radius:12px;--p-alert-tracking:0px;
   --p-overlay-radius:18px;--p-sheet-radius:22px;
   /* Popover (popover.styles.tsx webSkin: 16px card, full 1px border, lg shadow, no beak) */
   --p-popover-radius:12px;--p-popover-border:1px;--p-popover-shadow:var(--shadow-lg);--p-popover-beak-display:none /* @kind other */;
@@ -366,9 +366,7 @@
   /* Switch (switch.styles.ts IOS_OFF_TRACK): systemGray3 off track, never the washed-out input token; the white capsule knob keeps its soft shadow in both states */
   --p-switch-off-track:#c7c7cc;--p-switch-thumb-off-w:28px;--p-switch-thumb-off-h:24px;--p-switch-thumb-off-fill:#ffffff;
   --p-switch-thumb-shadow:0px 1px 2px rgba(0,0,0,0.2);
-  --p-badge-weight:600;
   --p-avatar-square-radius:10px;
-  --p-alert-radius:10px;--p-alert-tracking:-0.15px;
   /* Stats (stats.styles.ts iosSkin: flat 12pt inset surface, 18pt inset, SF tracking) */
   --p-stat-radius:12px;--p-stat-pad:18px;--p-stat-shadow:none;--p-stat-gap:12px;
   --p-stat-label:14px;--p-stat-label-lh:20px;--p-stat-label-tracking:-0.15px;--p-stat-value:24px;--p-stat-value-lh:30px;--p-stat-value-weight:600;--p-stat-value-tracking:-0.5px;
@@ -582,7 +580,7 @@
   --p-swatch-box-small:40px;--p-swatch-box-default:56px;--p-swatch-box-large:72px;
   --p-swatch-name-tracking:-0.08px;--p-swatch-mono-tracking:0px;--p-swatch-value-weight:500;
   /* Declared where the skin differs from the web value this block would otherwise inherit. */
-  --p-badge-radius:6px;--p-tip-radius:6px;--p-sheet-card-radius-top:34px;--p-side-toggle-radius:0px;
+  --p-tip-radius:6px;--p-sheet-card-radius-top:34px;--p-side-toggle-radius:0px;
 }
 
 /* Material 3: stadium buttons, elevated cards with no visible outline, filled
@@ -615,13 +613,11 @@
   /* Switch (switch.styles.ts androidSkin, M3 unselected anatomy): a 2dp outlined muted track with a small centered 16dp muted-foreground dot handle, no fill */
   --p-switch-off-track:var(--muted);--p-switch-off-ring:inset 0 0 0 2px var(--border);--p-switch-thumb-inset:4px;
   --p-switch-thumb-off-fill:var(--muted-foreground);--p-switch-thumb-off-x:6px;
-  --p-badge-radius:8px;--p-badge-font:11px;--p-badge-tracking:0.5px;
   --p-chip-radius:8px;--p-chip-pad-x:16px;--p-chip-pad-y:6px;--p-chip-font:14px;--p-chip-gap:8px;
   /* Chip (M3): 18dp remove glyph; the selected filter chip leads with an 18dp check and drops its
      outline (the border-color token resolves only here; web/iOS fall back to the tone border). */
   --p-chip-remove:18px;--p-chip-check-display:inline-flex /* @kind other */;--p-chip-selected-border-color:transparent;
   --p-avatar-square-radius:12px;
-  --p-alert-radius:12px;--p-alert-tracking:0.25px;
   --p-overlay-radius:12px;--p-sheet-radius:12px;
   /* Popover (M3, no native popover): a 12dp borderless card on md elevation, no beak */
   --p-popover-radius:12px;--p-popover-border:0px;--p-popover-shadow:var(--shadow-md);

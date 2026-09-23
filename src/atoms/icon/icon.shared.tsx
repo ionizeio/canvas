@@ -1,5 +1,5 @@
 import Svg, { Circle, Ellipse, Line, Path, Polygon, Polyline, Rect } from "react-native-svg";
-import { View, useTheme, palette, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { View, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { ICONS, NAMES, type Shape, type IconGlyphProps } from "./icon.glyphs.js";
 import { ICON_STROKE_WIDTH } from "./icon.stroke.js";
 
@@ -97,13 +97,13 @@ function nameOf(p: IconProps): string {
   return "shield";
 }
 
-// First-match color precedence; defaults to foreground. `success` rides the
-// palette green at the same light/dark shades Alert uses for its success icon.
-function strokeOf(p: IconProps, tokens: ColorTokens, dark: boolean): string {
+// First-match color precedence; defaults to foreground. Every tone reads the theme's
+// roles: `success` is the success role, the solid color a success Alert gives its icon.
+function strokeOf(p: IconProps, tokens: ColorTokens): string {
   if (p.primary) return tokens.primary;
   if (p.primaryForeground) return tokens["primary-foreground"];
   if (p.destructive) return tokens.destructive;
-  if (p.success) return dark ? palette["green-400"] : palette["green-600"];
+  if (p.success) return tokens.success;
   if (p.warning) return tokens.warning;
   if (p.muted) return tokens["muted-foreground"];
   return p.color ?? tokens.foreground;
@@ -165,14 +165,14 @@ function Glyph({
 }
 
 export function Icon(props: IconProps) {
-  const { tokens, dark } = useTheme();
+  const { tokens } = useTheme();
 
   const wrapped = props.decorative || props.accessibilityLabel != null;
   const glyph = (
     <Glyph
       shapes={ICONS[nameOf(props)]}
       size={props.size ?? 24}
-      stroke={strokeOf(props, tokens, dark)}
+      stroke={strokeOf(props, tokens)}
       // When a wrapper View is the root it carries the testID instead.
       testID={wrapped ? undefined : props.testID}
       style={wrapped ? undefined : props.style}

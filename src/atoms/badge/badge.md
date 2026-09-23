@@ -1,6 +1,6 @@
 # Badge
 
-Two families on one Badge component, picked by boolean props. The metadata badge is a rectangular pill for labels like schema, role, or tag (tones: default, secondary, outline, destructive; add `mono` for token names). The status badge (`status`) is a rounded pill with a leading dot for live state like active, pending, or failed (tones: success, warning, error, info, neutral).
+Two families on one Badge component, picked by boolean props, both Dark Factory's pill. The metadata badge labels a schema, role, or tag (tones: `secondary`, the quiet surface pill and the default; `default`, the solid call-to-action pill; `outline`, a hairline pill; `destructive`, the soft red pill; add `mono` for token names). The status badge (`status`) is Dark Factory's live-state pill for state like active, pending, or failed: a quiet pill whose leading dot carries the tone (success, warning, error, info, neutral) beside a label in the foreground. The tone colors come from `statusColors`, the helper every toned surface in the kit reads, so a warning badge and a warning alert are the same state.
 
 If more than one tone is passed, Badge resolves the highest-precedence one: `default` > `destructive` > `secondary` > `outline` for metadata (`secondary` when none is passed), and `success` > `error` > `warning` > `info` > `neutral` for status (`neutral` when none is passed).
 
@@ -70,7 +70,7 @@ Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (
 
 ### Grouping
 
-**Do** — Reach for `BadgeGroup` to lay out a series of badges; it owns the wrap, the gap, and the vertical centering.
+**Do**: Reach for `BadgeGroup` to lay out a series of badges; it owns the wrap, the gap, and the vertical centering.
 
 ```tsx
 <BadgeGroup>
@@ -80,7 +80,7 @@ Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (
 </BadgeGroup>
 ```
 
-**Don't** — Hand-rolling a flex row for a badge series re-invents the gap and wrap and drifts from the kit's spacing scale.
+**Don't**: Hand-rolling a flex row for a badge series re-invents the gap and wrap and drifts from the kit's spacing scale.
 
 ```tsx
 <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
@@ -92,7 +92,7 @@ Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (
 
 ### Metadata badge
 
-**Do** — Neutral tags for metadata; reserve color and the status-badge dot for live state.
+**Do**: Neutral tags for metadata; reserve color and the status-badge dot for live state.
 
 ```tsx
 <BadgeGroup>
@@ -103,7 +103,7 @@ Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (
 </BadgeGroup>
 ```
 
-**Don't** — Borrowing status colors for plain metadata reads as severity that isn't there; a red tag looks like an error.
+**Don't**: Borrowing status colors for plain metadata reads as severity that isn't there; a red tag looks like an error.
 
 ```tsx
 <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
@@ -116,13 +116,13 @@ Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (
 
 ### Status badge
 
-**Do** — Always pair the dot with a word: active, pending, failed.
+**Do**: Always pair the dot with a word: active, pending, failed.
 
 ```tsx
 <Badge status error>Failed</Badge>
 ```
 
-**Don't** — A bare colored dot isn't a label and fails for color-blind users.
+**Don't**: A bare colored dot isn't a label and fails for color-blind users.
 
 ```tsx
 <Badge status error />
@@ -130,7 +130,7 @@ Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (
 
 ### Identity row
 
-**Do** — Show only the one or two badges relevant to this view.
+**Do**: Show only the one or two badges relevant to this view.
 
 ```tsx
 <Row wrap alignCenter snug>
@@ -142,7 +142,7 @@ Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (
 </Row>
 ```
 
-**Don't** — A wall of badges after a name buries the one that matters.
+**Don't**: A wall of badges after a name buries the one that matters.
 
 ```tsx
 <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
@@ -158,7 +158,7 @@ Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (
 
 ### Token / code badge
 
-**Do** — Use the mono variant for tokens, scopes, and event names.
+**Do**: Use the mono variant for tokens, scopes, and event names.
 
 ```tsx
 <BadgeGroup tight>
@@ -168,7 +168,7 @@ Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (
 </BadgeGroup>
 ```
 
-**Don't** — Proportional type makes identifiers hard to scan and compare.
+**Don't**: Proportional type makes identifiers hard to scan and compare.
 
 ```tsx
 <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4 }}>
@@ -180,7 +180,7 @@ Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (
 
 ### Default variant
 
-**Do** — Reserve the default fill for the single tag you want noticed first; keep the rest secondary.
+**Do**: Reserve the default fill for the single tag you want noticed first; keep the rest secondary.
 
 ```tsx
 <BadgeGroup>
@@ -190,7 +190,7 @@ Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (
 </BadgeGroup>
 ```
 
-**Don't** — The solid primary fill is the loudest badge; using it for every tag makes the whole row shout and nothing leads.
+**Don't**: The solid call-to-action fill is the loudest badge; using it for every tag makes the whole row shout and nothing leads.
 
 ```tsx
 <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
@@ -203,7 +203,7 @@ Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (
 
 ### Secondary variant
 
-**Do** — Keep secondary for static metadata (role, team) and switch to the status-badge for anything live.
+**Do**: Keep secondary for static metadata (role, team) and switch to the status-badge for anything live.
 
 ```tsx
 <BadgeGroup>
@@ -213,7 +213,7 @@ Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (
 </BadgeGroup>
 ```
 
-**Don't** — A muted gray pill reads as static metadata, so live state shown as a secondary badge looks inert and goes unnoticed.
+**Don't**: A muted gray pill reads as static metadata, so live state shown as a secondary badge looks inert and goes unnoticed.
 
 ```tsx
 <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
@@ -225,7 +225,7 @@ Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (
 
 ### Outline variant
 
-**Do** — Use outline on a plain surface where the quiet border has contrast, for low-priority secondary tags.
+**Do**: Use outline on a plain surface where the quiet border has contrast, for low-priority secondary tags.
 
 ```tsx
 <Card padded>
@@ -236,7 +236,7 @@ Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (
 </Card>
 ```
 
-**Don't** — The thin border is the whole badge; on a colored or busy surface it disappears and the label floats unboxed.
+**Don't**: The thin border is the whole badge; on a colored or busy surface it disappears and the label floats unboxed.
 
 ```tsx
 <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6, borderRadius: 6, backgroundColor: tokens.primary, padding: 12 }}>
@@ -247,7 +247,7 @@ Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (
 
 ### Destructive variant
 
-**Do** — Reserve destructive for genuinely destructive or error semantics like revoked or banned.
+**Do**: Reserve destructive for genuinely destructive or error semantics like revoked or banned.
 
 ```tsx
 <BadgeGroup>
@@ -257,7 +257,7 @@ Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (
 </BadgeGroup>
 ```
 
-**Don't** — Solid red signals error or danger, so using it to color-code neutral categories raises a false alarm.
+**Don't**: Solid red signals error or danger, so using it to color-code neutral categories raises a false alarm.
 
 ```tsx
 <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>

@@ -118,7 +118,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "badge",
     name: "Badge",
-    description: "Two families on one Badge component, picked by boolean props. The metadata badge is a rectangular pill for labels like schema, role, or tag (tones: default, secondary, outline, destructive; add <code>mono</code> for token names). The status badge (<code>status</code>) is a rounded pill with a leading dot for live state like active, pending, or failed (tones: success, warning, error, info, neutral).",
+    description: "Two families on one Badge component, picked by boolean props, both Dark Factory's pill. The metadata badge labels a schema, role, or tag (tones: <code>secondary</code>, the quiet surface pill and the default; <code>default</code>, the solid call-to-action pill; <code>outline</code>, a hairline pill; <code>destructive</code>, the soft red pill; add <code>mono</code> for token names). The status badge (<code>status</code>) is Dark Factory's live-state pill for state like active, pending, or failed: a quiet pill whose leading dot carries the tone (success, warning, error, info, neutral) beside a label in the foreground.",
     category: "Atoms",
   },
 

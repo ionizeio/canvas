@@ -2,6 +2,8 @@
 
 Inline notification banners: info, success, warning, and destructive, plus a full-width announcement bar. A banner fills the parent it is given, so a column of alerts is the same measure top to bottom and a banner over a form lines up with the fields; a Container step sets the measure when the layout calls for one. For a blocking confirmation prompt, see Alert Dialog.
 
+A toned banner is Dark Factory's soft panel: the tone's wash with no border, the title in the tone's color, the body in the foreground, and the icon in the tone's solid color, from `statusColors` (the helper Badge and every toned surface read). The neutral banner is the card with a hairline.
+
 ## Usage
 
 Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onDismiss` reports it, and a controlled `dismissed` prop hands that state to the parent instead. Action buttons are real Buttons: wire each one's `onPress`.
@@ -109,13 +111,13 @@ Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onD
 
 ### info
 
-**Do** — Reserve info for passive, non-urgent context (notices, tips); escalate to warning or destructive when action is required.
+**Do**: Reserve info for passive, non-urgent context (notices, tips); escalate to warning or destructive when action is required.
 
 ```tsx
 <Alert info icon={<Icon info size={16} />} title="Heads up" description="Maintenance window scheduled for Sunday 2:00 UTC." />
 ```
 
-**Don't** — Dressing an act-now message in the neutral info tone hides the urgency; users skim past it like an FYI.
+**Don't**: Dressing an act-now message in the neutral info tone hides the urgency; users skim past it like an FYI.
 
 ```tsx
 <Alert info icon={<Icon info size={16} />} title="Trial expires today" description="Upgrade now or you'll lose access to your projects." />
@@ -123,7 +125,7 @@ Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onD
 
 ### success
 
-**Do** — Make confirmations transient: auto-dismiss or give a Dismiss control so the success state clears once acknowledged.
+**Do**: Make confirmations transient: auto-dismiss or give a Dismiss control so the success state clears once acknowledged.
 
 ```tsx
 <Alert
@@ -135,7 +137,7 @@ Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onD
 />
 ```
 
-**Don't** — A success banner pinned with no way to dismiss it lingers as visual noise long after the action is done.
+**Don't**: A success banner pinned with no way to dismiss it lingers as visual noise long after the action is done.
 
 ```tsx
 <Alert success icon="✓" title="Saved" description="Your changes have been saved successfully." />
@@ -143,7 +145,7 @@ Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onD
 
 ### warning
 
-**Do** — State the consequence, the deadline, and the action: name what's wrong and give a button to resolve it.
+**Do**: State the consequence, the deadline, and the action: name what's wrong and give a button to resolve it.
 
 ```tsx
 <Alert
@@ -155,7 +157,7 @@ Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onD
 />
 ```
 
-**Don't** — A warning with no specifics or next step leaves the user guessing what to fix and by when.
+**Don't**: A warning with no specifics or next step leaves the user guessing what to fix and by when.
 
 ```tsx
 <Alert warning icon={<Icon alertTriangle size={16} />} title="Action required" description="Something needs your attention." />
@@ -163,13 +165,13 @@ Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onD
 
 ### destructive
 
-**Do** — Match the variant to the severity: reserve destructive for genuine failures, success for confirmations.
+**Do**: Match the variant to the severity: reserve destructive for genuine failures, success for confirmations.
 
 ```tsx
 <Alert destructive icon="✕" title="Something went wrong" description="Could not save your changes. Please try again." />
 ```
 
-**Don't** — Using the destructive variant for non-errors cries wolf; users learn to tune out red and miss real failures.
+**Don't**: Using the destructive variant for non-errors cries wolf; users learn to tune out red and miss real failures.
 
 ```tsx
 <Alert destructive icon="✕" title="Saved" description="Your changes have been saved successfully." />

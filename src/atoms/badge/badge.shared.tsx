@@ -1,23 +1,26 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { type ReactNode } from "react";
-import { View, Text, useHugStyle, palette, statusHues, HUE_WASH, MONO_FONT, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, isGlass, alpha } from "../../style/index.js";
+import { View, Text, useHugStyle, statusColors, MONO_FONT, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle } from "../../style/index.js";
+import { actionFill, actionInk } from "../../style/action.js";
 
 // Shared Badge shell. The structure (a metadata pill, or a status pill with a leading
 // dot), the boolean-prop axes, and the semantic color logic live here once; a platform
 // file supplies only its skin (shape, padding, label type, dot size) and calls createBadge.
 //
-// Two families of badge.
+// Two families of badge, both Dark Factory's Pill.
 //
-// 1. The metadata badge: a rounded pill for static labels like schema, role, or tag.
-//    Configured by a tone axis (default / secondary / outline / destructive) plus a `mono`
-//    modifier for token / event names.
-// 2. The status badge (`status`): a fully rounded pill carrying a leading dot, for live
-//    state like active / pending / failed. Configured by a status-tone axis (success /
-//    warning / error / info / neutral).
+// 1. The metadata badge: a pill for static labels like schema, role, or tag. Configured
+//    by a tone axis (default / secondary / outline / destructive) plus a `mono` modifier
+//    for token / event names. `secondary` (the default) is Dark Factory's surface pill,
+//    `default` its solid pill in the call-to-action color, `destructive` its soft red
+//    pill, and `outline` a hairline pill.
+// 2. The status badge (`status`): Dark Factory's live-state pill, a quiet surface pill
+//    whose leading dot carries the tone, for state like active / pending / failed.
+//    Configured by a status-tone axis (success / warning / error / info / neutral).
 //
-// Badge is a "Light" platform treatment: one structure and one set of (semantic) colors,
-// with per-OS touches limited to shape radius, label type, and dot size — so the skin
-// carries only those, not the colors.
+// The colors come from the theme's roles through statusColors (src/style/status.ts), the
+// same place Alert and the other toned surfaces read theirs, so a "warning" badge and a
+// "warning" alert in one view are the same state.
 
 export type Tone = "default" | "secondary" | "outline" | "destructive";
 export type Status = "success" | "warning" | "error" | "info" | "neutral";
@@ -37,7 +40,7 @@ export interface BadgeProps {
   children?: ReactNode;
   // Family: metadata badge (default) vs. status badge (with a dot).
   status?: boolean;
-  // Metadata tone (pick one; default is the solid primary fill).
+  // Metadata tone (pick one; default is the `secondary` surface pill).
   default?: boolean;
   secondary?: boolean;
   outline?: boolean;
@@ -82,74 +85,49 @@ function statusOf(p: BadgeProps): Status {
   return "neutral";
 }
 
-// Semantic colors (platform-neutral): the metadata badge uses semantic tokens; the status
-// badge uses the Tailwind palette (a soft 50/200/700 surface in light, a 950/800/400 surface
-// in dark) with a saturated 500 dot, and neutral stays on the semantic muted token.
+// Semantic colors (platform-neutral), all from the theme's roles.
 function metaContainer(tokens: ColorTokens, tone: Tone): ViewStyle {
   switch (tone) {
-    case "default": return { borderColor: "transparent", backgroundColor: tokens.primary };
-    case "secondary": return { borderColor: "transparent", backgroundColor: tokens.secondary };
+    case "default": return { borderColor: "transparent", backgroundColor: actionFill(tokens) };
+    case "secondary": return { borderColor: "transparent", backgroundColor: tokens.muted };
     case "outline": return { borderColor: tokens.border, backgroundColor: "transparent" };
-    case "destructive": return { borderColor: "transparent", backgroundColor: tokens.destructive };
+    case "destructive": return { borderColor: "transparent", backgroundColor: statusColors(tokens, "error").wash };
   }
 }
 
 function metaLabel(tokens: ColorTokens, tone: Tone): TextStyle {
   switch (tone) {
-    case "default": return { color: tokens["primary-foreground"] };
-    case "secondary": return { color: tokens["secondary-foreground"] };
+    case "default": return { color: actionInk(tokens) };
+    case "secondary": return { color: tokens["muted-foreground"] };
     case "outline": return { color: tokens.foreground };
-    case "destructive": return { color: tokens["destructive-foreground"] };
+    case "destructive": return { color: statusColors(tokens, "error").ink };
   }
 }
 
-// The palette hue per status comes from the style layer's shared statusHues map
-// (src/style/status-hue), the same one Alert's banner reads, so the two never
-// drift. Neutral rides the semantic tokens instead of a palette hue.
+// The status pill is the quiet surface pill in every tone: the dot says the state, and the
+// label keeps the foreground so it reads the same whatever the tone.
+const statusContainer = (tokens: ColorTokens): ViewStyle => ({ borderColor: "transparent", backgroundColor: tokens.muted });
+const statusLabel = (tokens: ColorTokens): TextStyle => ({ color: tokens.foreground });
 
-function statusContainer(tokens: ColorTokens, dark: boolean, status: Status): ViewStyle {
-  if (status === "neutral") return { borderColor: tokens.border, backgroundColor: tokens.muted };
-  const hue = statusHues[status];
-  return dark
-    ? { borderColor: palette[`${hue}-800`], backgroundColor: palette[`${hue}-950`] }
-    : { borderColor: palette[`${hue}-200`], backgroundColor: palette[`${hue}-50`] };
-}
-
-// Under glass the label steps one deeper (800 light / 300 dark): the hue wash the
-// pane takes is darker than the 50/950 fill, and the deeper ink holds 4.5:1 there.
-function statusLabel(tokens: ColorTokens, dark: boolean, status: Status, glass: boolean): TextStyle {
-  if (status === "neutral") return { color: tokens["muted-foreground"] };
-  const hue = statusHues[status];
-  if (glass) return { color: dark ? palette[`${hue}-300`] : palette[`${hue}-800`] };
-  return { color: dark ? palette[`${hue}-400`] : palette[`${hue}-700`] };
-}
-
-function statusDotColor(tokens: ColorTokens, status: Status): string {
-  if (status === "neutral") return tokens["muted-foreground"];
-  return palette[`${statusHues[status]}-500`];
-}
-
-// Under glass a badge is a static pane at control density: a GlassPane paints the material behind
-// the label and the box drops its fill and hairline (the pane's material and rim carry
-// them). The brand fills (`default`, `destructive`) are BRAND-tinted glass with their
-// foreground on top; a status badge washes the material with its hue's mid step (the
-// Alert's recipe) under the same 700/400 label; the rest take the plain control material.
+// Under glass a badge is a static pane at control density: a GlassPane paints the material
+// behind the label and the box drops its fill and hairline (the pane's material and rim
+// carry them). The solid pill is call-to-action-tinted glass with its ink on top, the soft
+// destructive pill washes the material with its own wash under the same ink, and the rest
+// take the plain control material.
 
 function metaBrand(tokens: ColorTokens, tone: Tone): string | undefined {
-  return tone === "default" ? tokens.primary : tone === "destructive" ? tokens.destructive : undefined;
+  return tone === "default" ? actionFill(tokens) : undefined;
 }
 
-function statusTint(dark: boolean, status: Status): string | undefined {
-  if (status === "neutral") return undefined;
-  return alpha(palette[`${statusHues[status]}-500`], dark ? HUE_WASH.dark : HUE_WASH.light);
+function metaTint(tokens: ColorTokens, tone: Tone): string | undefined {
+  return tone === "destructive" ? statusColors(tokens, "error").wash : undefined;
 }
 
 export function createBadge(skin: BadgeSkin) {
   return function Badge(props: BadgeProps) {
     const { children, mono, style, accessibilityLabel, testID } = props;
     const theme = useMaterialTheme({ static: true, layer: "control" });
-    const { tokens, dark } = theme;
-    const glass = isGlass(theme);
+    const { tokens } = theme;
     // HUG: content width inside a stretching Column, content-sized in a Row.
     const hug = useHugStyle();
 
@@ -173,7 +151,7 @@ export function createBadge(skin: BadgeSkin) {
       const role = statusName == null ? null : children == null ? "img" : "group";
       return (
         <View
-          style={[paneStyle(theme, [skin.statusBase, statusContainer(tokens, dark, tone)]), hug, style]}
+          style={[paneStyle(theme, [skin.statusBase, statusContainer(tokens)]), hug, style]}
           testID={testID}
           {...(role === "img"
             ? { accessibilityRole: "image" as const, role: "img" as const }
@@ -183,10 +161,10 @@ export function createBadge(skin: BadgeSkin) {
           accessibilityLabel={statusName}
           aria-label={statusName}
         >
-          <GlassPane static layer="control" shape={skin.statusBase} tint={statusTint(dark, tone)} />
-          <View style={{ height: skin.dotSize, width: skin.dotSize, borderRadius: 9999, backgroundColor: statusDotColor(tokens, tone) }} />
+          <GlassPane static layer="control" shape={skin.statusBase} />
+          <View style={{ height: skin.dotSize, width: skin.dotSize, borderRadius: 9999, backgroundColor: statusColors(tokens, tone).dot }} />
           {children != null ? (
-            <Text style={[skin.labelType, statusLabel(tokens, dark, tone, glass)]}>{children}</Text>
+            <Text style={[skin.labelType, statusLabel(tokens)]}>{children}</Text>
           ) : null}
         </View>
       );
@@ -201,7 +179,7 @@ export function createBadge(skin: BadgeSkin) {
 
     return (
       <View style={[surfaced || theme.increasedContrast ? paneStyle(theme, [skin.metaBase, metaContainer(tokens, tone)]) : [skin.metaBase, metaContainer(tokens, tone)], hug, style]} testID={testID}>
-        {surfaced ? <GlassPane static layer="control" shape={skin.metaBase} brand={metaBrand(tokens, tone)} /> : null}
+        {surfaced ? <GlassPane static layer="control" shape={skin.metaBase} brand={metaBrand(tokens, tone)} tint={metaTint(tokens, tone)} /> : null}
         {children != null ? (
           <Text style={[skin.labelType, metaLabel(tokens, tone), monoStyle]}>{children}</Text>
         ) : null}

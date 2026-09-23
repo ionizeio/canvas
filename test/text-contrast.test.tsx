@@ -9,6 +9,7 @@ import { createAlert } from "../src/molecules/alert/alert.shared.tsx";
 import * as alertSkins from "../src/molecules/alert/alert.styles.ts";
 import { darkColors, lightColors, palette, type ColorTokens } from "../src/style/tokens.ts";
 import { inverseDenseTint } from "../src/style/glass-fill.ts";
+import { composite as compositeOver, contrastRatio } from "../src/style/color.ts";
 import { LOOKS, lookProps, type Look } from "./fixtures/looks.ts";
 import { oklchOf } from "../tools/darkfactory/derive-tokens.ts";
 import { androidSkin, iosSkin, webSkin } from "../src/atoms/button/button.styles.ts";
@@ -383,10 +384,14 @@ for (const look of LOOKS) {
           <Alert {...toneProps} title="Title" description="Description" testID="alert" />
         </ThemeProvider>);
         for (const [id, labels] of [["badge", ["Status"]], ["alert", ["Title", "Description"]]] as const) {
-          const fill = hexOf(screen.getByTestId(id).style.backgroundColor);
-          for (const label of labels) {
-            const text = hexOf(screen.getByText(label).style.color);
-            expect(contrast(fill, text)).toBeGreaterThanOrEqual(4.5);
+          // A toned Alert's fill is its translucent wash (statusColors), so it is read over
+          // the surfaces an alert sits on: the card and the page.
+          const rendered = screen.getByTestId(id).style.backgroundColor;
+          for (const surface of [look.tokens.card, look.tokens.background]) {
+            const fill = compositeOver(rendered, surface);
+            for (const label of labels) {
+              expect(contrastRatio(fill, screen.getByText(label).style.color), `${tone} ${id} ${label}`).toBeGreaterThanOrEqual(4.5);
+            }
           }
         }
         view.unmount();

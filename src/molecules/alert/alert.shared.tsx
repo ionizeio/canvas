@@ -8,8 +8,7 @@ import {
   useFillStyle,
   controlRipple,
   pressDim,
-  palette,
-  statusHues,
+  statusColors,
   type ColorTokens,
   type LayoutStyle,
   type ViewStyle,
@@ -17,7 +16,6 @@ import {
   GlassPane,
   paneStyle,
   isGlass,
-  alpha,
 } from "../../style/index.js";
 
 // Shared Alert shell. The structure (a leading icon glyph, a bold title, a
@@ -26,20 +24,18 @@ import {
 // skin (shape radius, density/spacing, type tracking, dismiss press feedback) and
 // calls createAlert.
 //
-// A bordered banner that surfaces an inline notification. Configured by a tone axis
-// (info / success / warning / error, plus a neutral default), and an optional `icon`
-// glyph. Each tone is theme-aware: a soft 50/200 surface with a 600/700/800 type ramp
-// in light mode, and a 950/800 surface with a 200/300/400 ramp in dark mode (branching
-// on the active scheme). The neutral default uses the semantic card / border / foreground
-// tokens.
+// A banner that surfaces an inline notification. Configured by a tone axis (info /
+// success / warning / error, plus a neutral default), and an optional `icon` glyph. A
+// toned alert is Dark Factory's soft panel: the tone's wash as the fill with no visible
+// border, the title in the tone's ink, the body in the foreground, and the icon in the
+// tone's solid color, all from statusColors (src/style/status.ts), the same place Badge
+// and the other toned surfaces read theirs. The neutral default is the card with a
+// border hairline, a foreground title and a muted body.
 //
-// Alert is a "Light" platform treatment. Neither iOS nor Material 3 ships an inline
-// alert banner (iOS alerts are modal — see alert-dialog; M3 dropped the M2 banner), so
-// there is no native shape to match; the per-OS skins keep the one structure and apply
-// only platform conventions: iOS uses SF/HIG corner + type tracking, Android uses the
-// M3 medium shape + M3 type tracking + ripple, and web keeps the current shadcn look.
-// The semantic colors are identical on every platform, so the skin carries shape, density,
-// type, and dismiss press feedback only — not the colors.
+// Neither iOS nor Material 3 ships an inline alert banner (iOS alerts are modal, see
+// alert-dialog; M3 dropped the M2 banner), so there is no native shape to match and the
+// native skins are the web skin; the dismiss control still meets each platform's
+// minimum touch target and keeps the Android ripple.
 
 export type Tone = "info" | "success" | "warning" | "error" | "neutral";
 
@@ -125,50 +121,33 @@ function toneOf(p: AlertProps): Tone {
   return "neutral";
 }
 
-// The palette hue per toned alert comes from the style layer's shared statusHues
-// map (src/style/status-hue), the same one Badge's status pill reads, so the two
-// never drift. Neutral rides the semantic tokens instead of a palette hue.
-
-// Container border + fill. Light: 200 border / 50 surface; dark: 800 / 950.
-// Neutral: semantic card surface with the border token.
-// The under-fill of a toned alert's glass pane: the hue at a tint that keeps the tone
-// readable over the material (neutral takes the content layer's own tint).
-function paneTint(tokens: ColorTokens, dark: boolean, tone: Tone): string | undefined {
-  if (tone === "neutral") return undefined;
-  const hue = statusHues[tone];
-  return alpha(palette[`${hue}-${dark ? 500 : 400}`], dark ? 0.28 : 0.30);
-}
-
-function containerColor(tokens: ColorTokens, dark: boolean, tone: Tone): ViewStyle {
+// The colors per tone, from statusColors. A toned alert's edge is transparent (the wash is
+// the panel); the neutral card keeps its border hairline.
+function containerColor(tokens: ColorTokens, tone: Tone): ViewStyle {
   if (tone === "neutral") return { borderColor: tokens.border, backgroundColor: tokens.card };
-  const hue = statusHues[tone];
-  return dark
-    ? { borderColor: palette[`${hue}-800`], backgroundColor: palette[`${hue}-950`] }
-    : { borderColor: palette[`${hue}-200`], backgroundColor: palette[`${hue}-50`] };
+  return { borderColor: "transparent", backgroundColor: statusColors(tokens, tone).wash };
 }
 
-// Icon color. Light: 600; dark: 400. Neutral: muted-foreground.
-function iconColor(tokens: ColorTokens, dark: boolean, tone: Tone): TextStyle {
-  if (tone === "neutral") return { color: tokens["muted-foreground"] };
-  const hue = statusHues[tone];
-  return { color: dark ? palette[`${hue}-400`] : palette[`${hue}-600`] };
+// The under-fill of a toned alert's glass pane: its own wash over the content material
+// (neutral takes the content layer's own tint).
+function paneTint(tokens: ColorTokens, tone: Tone): string | undefined {
+  return tone === "neutral" ? undefined : statusColors(tokens, tone).wash;
 }
 
-// Title color. Light: 800; dark: 200. Neutral: foreground.
-function titleColor(tokens: ColorTokens, dark: boolean, tone: Tone): TextStyle {
-  if (tone === "neutral") return { color: tokens.foreground };
-  const hue = statusHues[tone];
-  return { color: dark ? palette[`${hue}-200`] : palette[`${hue}-800`] };
+// The icon (and the dismiss glyph): the tone's solid color; muted on the neutral card.
+function iconColor(tokens: ColorTokens, tone: Tone): TextStyle {
+  return { color: tone === "neutral" ? tokens["muted-foreground"] : statusColors(tokens, tone).dot };
 }
 
-// Body color. Light: 700; dark: 300. Neutral: muted-foreground. Under glass the body
-// steps to the title's 800/200: the hue wash over the page (and over a content pane) is
-// darker than the 50/950 fill, and 700/300 slips under 4.5:1 on green and amber there.
-function bodyColor(tokens: ColorTokens, dark: boolean, tone: Tone, glass: boolean): TextStyle {
-  if (tone === "neutral") return { color: tokens["muted-foreground"] };
-  if (glass) return titleColor(tokens, dark, tone);
-  const hue = statusHues[tone];
-  return { color: dark ? palette[`${hue}-300`] : palette[`${hue}-700`] };
+// The title names the tone in its ink; the neutral title is the foreground.
+function titleColor(tokens: ColorTokens, tone: Tone): TextStyle {
+  return { color: tone === "neutral" ? tokens.foreground : statusColors(tokens, tone).ink };
+}
+
+// The body reads in the foreground over a wash (the tone's ink stays on the title), and
+// muted on the neutral card.
+function bodyColor(tokens: ColorTokens, tone: Tone): TextStyle {
+  return { color: tone === "neutral" ? tokens["muted-foreground"] : tokens.foreground };
 }
 
 export function createAlert(skin: AlertSkin) {
@@ -179,7 +158,7 @@ export function createAlert(skin: AlertSkin) {
   return function Alert(props: AlertProps) {
     const { title, description, icon, children, actions, dismissible, onDismiss, testID, style } = props;
     const theme = useMaterialTheme({ static: true });
-    const { tokens, dark } = theme;
+    const { tokens } = theme;
     const glass = isGlass(theme);
     const tone = toneOf(props);
     const fill = useFillStyle("Alert");
@@ -200,7 +179,7 @@ export function createAlert(skin: AlertSkin) {
     // non-Icon element ignores the injected prop.
     const tintedIcon = isValidElement(icon)
       ? cloneElement(icon as ReactElement<Record<string, unknown>>, {
-          color: (icon.props as Record<string, unknown>).color ?? iconColor(tokens, dark, tone).color,
+          color: (icon.props as Record<string, unknown>).color ?? iconColor(tokens, tone).color,
         })
       : null;
 
@@ -219,25 +198,25 @@ export function createAlert(skin: AlertSkin) {
         accessibilityRole="alert"
         accessibilityLiveRegion={live}
         aria-live={live}
-        style={[paneStyle(theme, [skin.container, containerColor(tokens, dark, tone)]), glass ? { borderColor: containerColor(tokens, dark, tone).borderColor } : null, fill, style]}
+        style={[paneStyle(theme, [skin.container, containerColor(tokens, tone)]), glass ? { borderColor: containerColor(tokens, tone).borderColor } : null, fill, style]}
       >
         {/* Under glass the alert is a CONTENT-layer pane (a toned alert tints it with its
-            hue) painted behind the live-region root, which keeps its semantics and its
-            tone-coloured edge. Renders nothing in solid mode. */}
-        <GlassPane layer="content" shape={[skin.container, containerColor(tokens, dark, tone)]} tint={paneTint(tokens, dark, tone)} />
+            wash) painted behind the live-region root, which keeps its semantics and its
+            edge. Renders nothing in solid mode. */}
+        <GlassPane layer="content" shape={[skin.container, containerColor(tokens, tone)]} tint={paneTint(tokens, tone)} />
         {icon != null ? (
           tintedIcon != null ? (
             <View style={iconSlot}>{tintedIcon}</View>
           ) : (
-            <Text style={[skin.iconType, iconColor(tokens, dark, tone)]}>{icon}</Text>
+            <Text style={[skin.iconType, iconColor(tokens, tone)]}>{icon}</Text>
           )
         ) : null}
         <View style={CONTENT}>
           {title != null && title !== "" ? (
-            <Text style={[skin.titleType, titleColor(tokens, dark, tone)]}>{title}</Text>
+            <Text style={[skin.titleType, titleColor(tokens, tone)]}>{title}</Text>
           ) : null}
           {description != null && description !== "" ? (
-            <Text style={[skin.bodyType, bodyColor(tokens, dark, tone, glass)]}>{description}</Text>
+            <Text style={[skin.bodyType, bodyColor(tokens, tone)]}>{description}</Text>
           ) : null}
           {children}
           {actions != null ? <View style={skin.actions}>{actions}</View> : null}
@@ -251,7 +230,7 @@ export function createAlert(skin: AlertSkin) {
             android_ripple={controlRipple(tokens)}
             style={({ pressed }) => [skin.dismissButton, pressDim(pressed, skin.dismissPressedOpacity)]}
           >
-            <Text style={[skin.dismissType, iconColor(tokens, dark, tone)]}>×</Text>
+            <Text style={[skin.dismissType, iconColor(tokens, tone)]}>×</Text>
           </Pressable>
         ) : null}
       </View>

@@ -340,7 +340,7 @@ components:
   alertdialog:
     ad-radius: "18px"
   alert:
-    alert-radius: "8px"
+    alert-radius: "12px"
   descriptionlist:
     dl-shadow: "var(--shadow-sm)"
     dl-radius: "14px"
@@ -466,8 +466,6 @@ platformSkins:
       acc-container-radius: "12px"
     alertdialog:
       ad-radius: "28px"
-    alert:
-      alert-radius: "10px"
     descriptionlist:
       dl-shadow: none
       dl-radius: "26px"
@@ -508,8 +506,6 @@ platformSkins:
       steps-connector-radius: "9999px"
     toast:
       toast-radius: "16px"
-    badge:
-      badge-radius: "6px"
     inputotp:
       otp-radius: "8px"
       otp-inner-radius: "8px"
@@ -594,8 +590,6 @@ platformSkins:
       acc-card-radius: "12px"
     alertdialog:
       ad-radius: "28px"
-    alert:
-      alert-radius: "12px"
     descriptionlist:
       dl-shadow: none
       dl-radius: "12px"
@@ -636,8 +630,6 @@ platformSkins:
       steps-connector-radius: "0px"
     toast:
       toast-radius: "4px"
-    badge:
-      badge-radius: "8px"
     inputotp:
       otp-radius: "12px"
       otp-inner-radius: "12px"

@@ -8,6 +8,7 @@ import { Checkbox } from "../src/atoms/checkbox/checkbox.tsx";
 import { Badge } from "../src/atoms/badge/badge.tsx";
 import { Chip } from "../src/atoms/chip/chip.tsx";
 import { Kbd } from "../src/atoms/kbd/kbd.tsx";
+import { Alert } from "../src/molecules/alert/alert.tsx";
 import { Tabs } from "../src/organisms/tabs/tabs.tsx";
 import { selectionTint } from "../src/organisms/tabs/tabs.styles.ts";
 import { Pagination } from "../src/atoms/pagination/pagination.tsx";
@@ -16,7 +17,8 @@ import { alpha, composite, contrastRatio } from "../src/style/color.ts";
 import { actionFill, actionInk } from "../src/style/action.ts";
 import { lightColors, palette, brandColors } from "../src/style/tokens.ts";
 import { WEB_TINTS } from "../src/style/glass-surface/web-frost.ts";
-import { statusHues, HUE_WASH } from "../src/style/status-hue.ts";
+import { HUE_WASH } from "../src/style/status-hue.ts";
+import { statusColors } from "../src/style/status.ts";
 import { LOOKS } from "./fixtures/looks.ts";
 
 // The CONTROL layer of the glass model: every control that paints a surface of its
@@ -186,19 +188,25 @@ describe("brand-tinted glass pucks", () => {
 });
 
 describe("hue washes", () => {
-  it("a status Badge and a coloured Chip wash the material with the hue's mid step and step their label one deeper", async () => {
+  it("a coloured Chip washes the material with the hue's mid step and steps its label one deeper; a status Badge is the plain control material with its tone on the dot", async () => {
     const { container } = await renderGlass(
       <>
         <Badge status success testID="status">Active</Badge>
+        <Badge destructive testID="soft">Blocked</Badge>
         <Chip blue testID="chip">Design</Chip>
         <Kbd testID="kbd">⌘</Kbd>
       </>,
     );
+    // Dark Factory's live-state pill: the quiet surface pill, the foreground label, the tone's dot.
     const badge = container.querySelector('[data-testid="status"]') as HTMLElement;
-    expect(rgbaOf(underFillOf(badge))).toEqual(rgbaOf(alpha(palette[`${statusHues.success}-500`], HUE_WASH.light)));
+    expect(rgbaOf(underFillOf(badge))).toEqual(rgbaOf(LIGHT["glass-tint-control"]));
     expect(badge.style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
     const badgeLabel = Array.from(badge.querySelectorAll("*")).find((n) => n.textContent === "Active" && (n as HTMLElement).style.color) as HTMLElement;
-    expect(rgbaOf(badgeLabel.style.color)).toEqual(rgbaOf(alpha(palette[`${statusHues.success}-800`], 1)));
+    expect(rgbaOf(badgeLabel.style.color)).toEqual(rgbaOf(alpha(lightColors.foreground, 1)));
+    expect(rgbaOf((badgeLabel.previousElementSibling as HTMLElement).style.backgroundColor)).toEqual(rgbaOf(alpha(statusColors(lightColors, "success").dot, 1)));
+    // The soft destructive pill washes the material with its own wash, under its ink.
+    const soft = container.querySelector('[data-testid="soft"]') as HTMLElement;
+    expect(rgbaOf(underFillOf(soft))).toEqual(rgbaOf(statusColors(lightColors, "error").wash));
     const chip = container.querySelector('[data-testid="chip"]') as HTMLElement;
     expect(rgbaOf(underFillOf(chip))).toEqual(rgbaOf(alpha(palette["blue-500"], HUE_WASH.light)));
     const chipLabel = Array.from(chip.querySelectorAll("*")).find((n) => n.textContent === "Design" && (n as HTMLElement).style.color) as HTMLElement;
@@ -223,6 +231,30 @@ describe("hue washes", () => {
             expect(contrastRatio(composite(wash, base), ink), `${platform} ${scheme} ${hue} over ${base}`).toBeGreaterThanOrEqual(4.5);
           }
         }
+      }
+    }
+  });
+
+  it("paints a toned pane's wash IN PLACE of the layer's tint, so its ink reads as it does over the page", async () => {
+    // A pane's tint replaces the layer's under-fill (surfaceUnderFill): the soft Badge's
+    // control puck and the toned Alert's content pane are the wash alone over the material.
+    // Composited over the control puck instead, the lighter dark-mode inks would fall under
+    // 4.5:1 on the native frost (success about 3.96:1), which is why the wash never stacks on it.
+    const { container } = await renderGlass(
+      <>
+        <Badge destructive testID="soft">Blocked</Badge>
+        <Alert success title="Saved" description="Every change is stored." testID="alert" />
+      </>,
+    );
+    expect(rgbaOf(underFillOf(container.querySelector('[data-testid="soft"]') as HTMLElement))).toEqual(rgbaOf(statusColors(lightColors, "error").wash));
+    expect(rgbaOf(underFillOf(container.querySelector('[data-testid="alert"]') as HTMLElement))).toEqual(rgbaOf(statusColors(lightColors, "success").wash));
+    for (const look of LOOKS) {
+      const t = look.tokens;
+      for (const tone of ["success", "warning", "error", "info"] as const) {
+        const { ink, wash } = statusColors(t, tone);
+        const bed = composite(wash, t.background);
+        expect(contrastRatio(bed, ink), `${look.name} ${tone} ink`).toBeGreaterThanOrEqual(4.5);
+        expect(contrastRatio(bed, t.foreground), `${look.name} ${tone} Alert body`).toBeGreaterThanOrEqual(4.5);
       }
     }
   });
