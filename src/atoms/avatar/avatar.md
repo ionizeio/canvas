@@ -1,6 +1,6 @@
 # Avatar
 
-A photo when the account has one, falling back to one or two initials in white on a colour picked deterministically from the name, so each person stays visually distinct in a stack or list. A pressable avatar (`onPress`) keeps interactive Liquid Glass on iOS 26+ under glass surface mode. Sizes scale font proportionally (40% of diameter), down to `tiny`, the 24px disc a capsule is built around, which holds the 12px glyph rather than shrinking past legibility. `AvatarMenu` builds the signed-in account control on the same circle: one capsule trigger carrying the avatar, the name, and the email, opening the account menu under that same identity.
+A photo when the account has one, falling back to one or two initials on a colour picked deterministically from the name, so each person stays visually distinct in a stack or list. The initials take whichever of white or near-black reads better on that colour, so they hold 4.5:1 on every fill. A pressable avatar (`onPress`) keeps interactive Liquid Glass on iOS 26+ under glass surface mode. Sizes scale font proportionally (40% of diameter), down to `tiny`, the 24px disc a capsule is built around, which holds the 12px glyph rather than shrinking past legibility. `AvatarMenu` builds the signed-in account control on the same circle: one capsule trigger carrying the avatar, the name, and the email, opening the account menu under that same identity.
 
 ## Usage
 

@@ -6,7 +6,7 @@ import { inkOn } from "../../style/color.js";
 import { Image } from "../image/image.js";
 
 // Shared Avatar shell. The structure (a photo when the account has one, falling
-// back to one or two initials in white on a deterministic per-name colour), the
+// back to one or two initials on a deterministic per-name colour), the
 // boolean-prop axes, the initials reduction, accessibility, and the optional
 // Pressable trigger all live here once; a platform file supplies only its skin
 // (rounded-square radius, initials type per size, and press feedback) and calls

@@ -328,7 +328,7 @@ export default function ColorsScreen() {
                 with a bar floating over it. Built from the raw primitives on purpose,
                 and every colour still comes from a token (primary-foreground is the
                 kit's "text on a saturated fill"), never a literal. */}
-            <GradientFill colors={[colorsByScheme.light.primary, colorsByScheme.light["chart-3"]]} height={236}>
+            <GradientFill colors={[colorsByScheme.light.primary, colorsByScheme.light["chart-2"]]} height={236}>
               {/* A dark scrim over the violet-to-teal wash: the material has to bend something,
                   and it reads on a deep backdrop the way the design system's own
                   glass sheet shows it. */}
