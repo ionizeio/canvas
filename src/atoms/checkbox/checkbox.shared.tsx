@@ -1,4 +1,4 @@
-import { forwardRef, type ReactNode } from "react";
+import { forwardRef, type ComponentType, type ReactNode, type RefAttributes } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { type GestureResponderEvent } from "react-native";
@@ -11,7 +11,14 @@ import { CheckboxContent, CHECKBOX_ROW } from "./indicator/shared.js";
 // accessibility, onChange/onValueChange, indeterminate) lives here once; a platform
 // file supplies only its skin (box shape/sizing/border, glyph color, press feedback)
 // and calls createCheckbox. iOS has no native checkbox, so every skin is hand-drawn
-// from the brand tokens — no platform default color ever leaks in.
+// from the brand tokens; no platform default color ever leaks in.
+//
+// One job, different control (the design language's item 5): a Checkbox that is ONE
+// on/off setting is the platform's switch on iOS and Android (Material 3 uses a switch
+// for a single setting on phones too), so those entries pass their Switch as the
+// `Standalone` part and the shell renders it; a Checkbox that selects items in a list
+// (`selection`, or `indeterminate`, a list's select-all) stays a checkbox, which iOS
+// draws as the edit-mode selection circle.
 
 export interface CheckboxProps {
   /** Label text (the option's title) shown beside the box. */
@@ -30,9 +37,18 @@ export interface CheckboxProps {
   defaultChecked?: boolean;
   /**
    * Mixed state: some-but-not-all selected. Shown as a dash, not a tick.
-   * Takes visual precedence over `checked`.
+   * Takes visual precedence over `checked`. Implies `selection`: a mixed state
+   * belongs to a list's select-all, and a switch has none.
    */
   indeterminate?: boolean;
+  /**
+   * A checkbox that selects an item in a list or a bulk selection (a table's rows, a
+   * list in edit mode, a select-all), rather than one on/off setting. The web draws
+   * the checkbox, iOS the edit-mode selection circle, Android the Material 3 checkbox.
+   * Without it a Checkbox is one setting, which iOS and Android render as their
+   * switch (role `switch`), so a settings row reads the way each platform writes it.
+   */
+  selection?: boolean;
   /** Fired with the next checked value when the row is pressed (both modes). Web keyboard activation supports Space on release and Enter. */
   onChange?: (next: boolean) => void;
   /** Alias of onChange, for parity with RN's value-style callbacks. */
@@ -82,11 +98,37 @@ export interface CheckboxSkin {
   ripple: ((tokens: ColorTokens) => { color: string; borderless: boolean; radius?: number }) | null;
 }
 
-/** Build a Checkbox component from a platform skin.
+/**
+ * The components a Checkbox draws with that differ per platform. `Standalone` is the
+ * control a one-setting Checkbox renders instead of a checkbox (the iOS and Android
+ * switch), taking the Checkbox's props less the list-selection ones; the web passes
+ * none and keeps the checkbox.
+ */
+export interface CheckboxParts {
+  Standalone?: ComponentType<Omit<CheckboxProps, "indeterminate" | "selection"> & RefAttributes<View>>;
+}
+
+/** Build a Checkbox component from a platform skin and its platform parts.
  * @ref Ref to the interactive checkbox row, including its label. Typed as a React Native View. On web, React Native Web exposes its DOM host; focus() and blur() move browser focus. Native host behavior depends on the platform and React Native version. Calling focus() does not activate the control or call accessibility focus APIs.
  */
-export function createCheckbox(skin: CheckboxSkin) {
+export function createCheckbox(skin: CheckboxSkin, parts: CheckboxParts = {}) {
+  const Standalone = parts.Standalone;
+  const Box = createCheckboxBox(skin);
+  // Two components rather than an early return, so a Checkbox that gains or loses
+  // `selection` swaps controls instead of changing its hooks.
   const Checkbox = forwardRef<View, CheckboxProps>(function Checkbox(props, ref) {
+    if (Standalone != null && !props.selection && !props.indeterminate) {
+      const { selection: _selection, indeterminate: _indeterminate, ...setting } = props;
+      return <Standalone ref={ref} {...setting} />;
+    }
+    return <Box ref={ref} {...props} />;
+  });
+  Checkbox.displayName = "Checkbox";
+  return Checkbox;
+}
+
+function createCheckboxBox(skin: CheckboxSkin) {
+  const CheckboxBox = forwardRef<View, CheckboxProps>(function CheckboxBox(props, ref) {
     const hostRef = useComposedRefs(ref);
     const { children, description, indeterminate, onChange, onValueChange, disabled, style } = props;
     const size = sizeOf(props);
@@ -143,6 +185,6 @@ export function createCheckbox(skin: CheckboxSkin) {
       </Pressable>
     );
   });
-  Checkbox.displayName = "Checkbox";
-  return Checkbox;
+  CheckboxBox.displayName = "Checkbox";
+  return CheckboxBox;
 }

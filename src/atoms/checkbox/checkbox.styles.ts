@@ -7,9 +7,11 @@ import { type CheckboxSkin, type Size } from "./checkbox.shared.js";
 // BRAND survives on every platform (the filled box is always the indigo `primary`,
 // never a platform default), and only the native SHAPE, sizing, border weight, and
 // press feedback change per OS:
-//   iOS (HIG): no native checkbox; the de-facto rounded square (~5 radius), a
-//     hairline 1px border when empty, brand fill + white check when checked, the
-//     control nudged to ~20pt; press = opacity dim (~0.8).
+//   iOS (HIG): no native checkbox, so a one-setting Checkbox is the iOS switch (the
+//     entry passes it as the Standalone part) and the box drawn here is only ever a
+//     SELECTION: the edit-mode selection circle, a 22pt ring in the control boundary
+//     when empty, the brand fill with a white check (or dash) when selected; press =
+//     opacity dim (~0.8).
 //   Android (Material 3): an 18dp square with a 2dp corner radius and a 2dp outline
 //     when empty, brand fill + white check when checked; press = android_ripple over
 //     a 40dp state layer; disabled opacity 0.38.
@@ -18,7 +20,7 @@ import { type CheckboxSkin, type Size } from "./checkbox.shared.js";
 
 // Box dimensions per size.
 const WEB_BOX: Record<Size, number> = { small: 16, base: 20, large: 24 };
-const IOS_BOX: Record<Size, number> = { small: 18, base: 20, large: 24 };
+const IOS_BOX: Record<Size, number> = { small: 20, base: 22, large: 26 };
 const ANDROID_BOX: Record<Size, number> = { small: 18, base: 18, large: 20 };
 
 // Glyph (check / dash) type per box family. The check sits inside the box, so the
@@ -27,7 +29,7 @@ function glyphType(fontSize: number): TextStyle {
   return { fontSize, lineHeight: fontSize };
 }
 const WEB_GLYPH: Record<Size, number> = { small: 12, base: 14, large: 16 };
-const IOS_GLYPH: Record<Size, number> = { small: 13, base: 14, large: 17 };
+const IOS_GLYPH: Record<Size, number> = { small: 12, base: 13, large: 15 };
 const ANDROID_GLYPH: Record<Size, number> = { small: 13, base: 13, large: 15 };
 
 // Label type per size (shared across platforms; the label is brand type, not a
@@ -87,17 +89,19 @@ export const webSkin: CheckboxSkin = {
   ripple: null,
 };
 
-// ---------- iOS (HIG): rounded square, hairline border, dim on press ----------
+// ---------- iOS (HIG): the edit-mode selection circle, dim on press ----------
 export const iosSkin: CheckboxSkin = {
   box: (t, filled, size, nudge) => ({
     ...boxBase(IOS_BOX[size], nudge),
-    borderRadius: size === "small" ? 4 : size === "large" ? 6 : 5,
-    borderWidth: 1, // hairline when empty; the fill hides it when checked
+    borderRadius: IOS_BOX[size] / 2,
+    // The empty ring is the control boundary (`input`, 3:1 on every surface); the
+    // fill hides it when selected.
+    borderWidth: 1.5,
     ...(filled
       ? { borderColor: t.primary, backgroundColor: t.primary }
       : { borderColor: t.input, backgroundColor: "transparent" }),
   }),
-  glyph: (_t, size) => ({ fontWeight: "600", color: "#ffffff", ...glyphType(IOS_GLYPH[size]) }),
+  glyph: (_t, size) => ({ fontWeight: "700", color: "#ffffff", ...glyphType(IOS_GLYPH[size]) }),
   label,
   description,
   disabledOpacity: 0.5,

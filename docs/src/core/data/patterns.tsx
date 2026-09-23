@@ -53,7 +53,7 @@ const PATTERNS: PatternDoc[] = [
       },
       {
         title: "Cross-platform support",
-        description: "Canvas components announce their role and state to assistive tech identically on iOS, Android, and the web. react-native-web does not forward accessibilityState or accessibilityValue to the DOM, so each component also carries the matching aria-* attribute (React Native maps it back to the native state). You get VoiceOver, TalkBack, and web screen-reader support from one codebase.",
+        description: "Canvas components announce their role and state to assistive tech on iOS, Android, and the web from one codebase, and the role follows the control each platform draws: a one-setting Checkbox is the switch on iOS and Android and announces as one there, while a selection Checkbox stays a checkbox everywhere. react-native-web does not forward accessibilityState or accessibilityValue to the DOM, so each component also carries the matching aria-* attribute (React Native maps it back to the native state). You get VoiceOver, TalkBack, and web screen-reader support from one codebase.",
         html: `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px">
   <div class="section-card" style="padding:16px">
     <div style="font-size:13px;font-weight:600;margin-bottom:8px">Disclosure</div>

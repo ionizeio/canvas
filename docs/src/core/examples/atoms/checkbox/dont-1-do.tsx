@@ -6,11 +6,11 @@ export default function Example(scope: ExampleScope) {
   const { Checkbox, Select, Column } = scope;
   return (
 <Column snug>
-  <Checkbox indeterminate>Select all</Checkbox>
+  <Checkbox selection indeterminate>Select all</Checkbox>
   <Column snug indent>
-    <Checkbox defaultChecked>Read</Checkbox>
-    <Checkbox>Write</Checkbox>
-    <Checkbox>Delete</Checkbox>
+    <Checkbox selection defaultChecked>Read</Checkbox>
+    <Checkbox selection>Write</Checkbox>
+    <Checkbox selection>Delete</Checkbox>
   </Column>
 </Column>
   );

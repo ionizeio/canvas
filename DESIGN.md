@@ -444,7 +444,7 @@ platformSkins:
     button:
       btn-radius: "9999px"
     checkbox:
-      check-radius: "5px"
+      check-radius: "11px"
     dropdown:
       menu-radius: "26px"
       menu-row-radius: "0px"

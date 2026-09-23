@@ -659,6 +659,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
             <View style={skin.selectCol} role="columnheader">
               <Checkbox
                 small
+                selection
                 checked={allSelected}
                 indeterminate={someSelected && !allSelected}
                 onChange={toggleAll}
@@ -830,6 +831,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
               pressable the touch). */}
           <Checkbox
             small
+            selection
             checked={!!isSelected}
             onChange={() => toggleRow(row, r)}
             accessibilityLabel={rowLabel(row) || `Select row ${r + 1}`}

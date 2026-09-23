@@ -361,7 +361,7 @@
   --p-field-fill:var(--card);--p-field-radius-bottom:8px;--p-field-pad-x:12px;--p-field-font:16px;--p-field-lh:24px;
   --p-field-border:var(--field-border);--p-label-color:var(--muted-foreground);--p-field-icon:20px;
   --p-label-weight:400;--p-label-tracking:-0.15px;
-  --p-check-size:20px;--p-check-radius:5px;--p-check-border:1px;
+  --p-check-size:22px;--p-check-radius:11px;--p-check-border:1.5px;
   --p-switch-w:46px;--p-switch-h:28px;--p-switch-thumb-w:28px;--p-switch-thumb-h:24px;--p-switch-thumb-fill:#ffffff;
   /* Switch (switch.styles.ts IOS_OFF_TRACK): systemGray3 off track, never the washed-out input token; the white capsule knob keeps its soft shadow in both states */
   --p-switch-off-track:#c7c7cc;--p-switch-thumb-off-w:28px;--p-switch-thumb-off-h:24px;--p-switch-thumb-off-fill:#ffffff;

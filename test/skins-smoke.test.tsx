@@ -290,7 +290,9 @@ for (const platform of PLATFORMS) {
       });
     }
 
-    it("Listbox and its private indicator keep the platform Checkbox artwork without its interaction", async () => {
+    // The indicator is a selection visual, so it mirrors the SELECTION Checkbox: a
+    // one-setting Checkbox is the switch on iOS and Android (the design language's item 5).
+    it("Listbox and its private indicator keep the platform selection Checkbox artwork without its interaction", async () => {
       const suffix = platform === "web" ? "" : `.${platform}`;
       const { Checkbox } = await import(`../src/atoms/checkbox/checkbox${suffix}.tsx`);
       const { CheckboxIndicator } = await import(`../src/atoms/checkbox/indicator/index${suffix}.tsx`);
@@ -298,7 +300,7 @@ for (const platform of PLATFORMS) {
       for (const checked of [false, true]) {
         for (const disabled of [false, true]) {
           const publicControl = render(
-            <ThemeProvider><Checkbox checked={checked} disabled={disabled} accessibilityLabel="Choice" /></ThemeProvider>,
+            <ThemeProvider><Checkbox selection checked={checked} disabled={disabled} accessibilityLabel="Choice" /></ThemeProvider>,
           );
           const checkbox = publicControl.getByRole("checkbox", { name: "Choice" });
           const expectedArtwork = checkbox.firstElementChild?.outerHTML;

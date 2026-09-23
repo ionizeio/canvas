@@ -13,6 +13,7 @@ export default function Example(scope: ExampleScope) {
     return (
       <Column>
         <Checkbox
+          selection
           checked={all}
           indeterminate={some}
           onChange={(next) => setSelected(next ? perms : [])}
@@ -23,6 +24,7 @@ export default function Example(scope: ExampleScope) {
           {perms.map((p) => (
             <Checkbox
               key={p}
+              selection
               checked={selected.includes(p)}
               onChange={(next) =>
                 setSelected(next ? [...selected, p] : selected.filter((x) => x !== p))

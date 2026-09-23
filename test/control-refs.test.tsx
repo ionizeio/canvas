@@ -16,9 +16,12 @@ afterEach(cleanup);
 const themed = (node: ReactNode) => <ThemeProvider>{node}</ThemeProvider>;
 const ui = (node: ReactNode) => render(themed(node));
 
+// A one-setting Checkbox is the platform switch on iOS and Android (the design language's
+// item 5), so its host announces `switch` there; a selection Checkbox stays a checkbox.
 const cases = [
   { name: "Button", dir: "button", role: "button", props: { children: "Save" } },
-  { name: "Checkbox", dir: "checkbox", role: "checkbox", props: { children: "Agree", description: "Terms" } },
+  { name: "Checkbox", dir: "checkbox", role: "checkbox", nativeRole: "switch", props: { children: "Agree", description: "Terms" } },
+  { name: "Checkbox", label: "selection Checkbox", dir: "checkbox", role: "checkbox", props: { children: "Row 1", selection: true } },
   { name: "Switch", dir: "switch", role: "switch", props: { children: "Wi-Fi", description: "Connection" } },
   { name: "Radio", dir: "radio", role: "radio", props: { children: "Daily", card: true } },
   { name: "Select", dir: "select", role: "button", props: { label: "Fruit", options: ["Apple", "Pear"] } },
@@ -26,11 +29,13 @@ const cases = [
 ] as const;
 
 for (const platform of ["web", "ios", "android"]) {
-  for (const { name, dir, role, props } of cases) {
+  for (const testCase of cases) {
+    const { name, dir, props } = testCase;
+    const role = platform !== "web" && "nativeRole" in testCase ? testCase.nativeRole : testCase.role;
     const suffix = platform === "web" ? "" : `.${platform}`;
     const module = await import(`../src/atoms/${dir}/${dir}${suffix}.tsx`);
     const Control = module[name] as ElementType;
-    describe(`${platform} ${name} host ref`, () => {
+    describe(`${platform} ${"label" in testCase ? testCase.label : name} host ref`, () => {
       it("exposes the interactive host, focuses without activation and clears on unmount", () => {
         const ref = createRef<View>();
         let activations = 0;

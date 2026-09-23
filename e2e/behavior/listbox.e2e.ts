@@ -59,15 +59,15 @@ test("multi-select Tab skips decorative indicators and keeps one roving row", as
   await expect(group.locator('[tabindex="0"]')).toHaveCount(1);
 });
 
-test("Listbox multi previews retain each platform's checkbox dimensions", async ({ page }, testInfo) => {
+test("Listbox multi previews retain each platform's selection indicator dimensions", async ({ page }, testInfo) => {
   await gotoDocs(page, "/components/listbox/multi");
-  for (const [platform, width] of [["ios", 20], ["android", 18], ["web", 20]] as const) {
+  for (const [platform, width] of [["ios", 22], ["android", 18], ["web", 20]] as const) {
     const group = platformRow(page, platform).getByRole("group", { name: "Teams" });
     const row = group.getByRole("checkbox", { name: "Backend", exact: true });
     await expect(row).toHaveAttribute("aria-checked", "true");
-    // Match the platform Checkbox's base square, including its border (the web
-    // square grew from 16 to 20 with the Riskora restyle of the web skins). A bare
-    // nested import in the shared shell would make all three the same size.
+    // Match the platform's selection Checkbox, border included: the iOS edit-mode
+    // circle (22), the Android M3 box (18), the web box (20). A bare nested import in
+    // the shared shell would make all three the same size.
     const box = row.locator('[aria-hidden="true"] > div > div');
     await expect(box).toHaveCSS("width", `${width}px`);
     await expect(box).toHaveCSS("height", `${width}px`);

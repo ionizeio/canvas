@@ -2,6 +2,8 @@
 
 Multi-select option, single yes/no, grouped lists.
 
+One job, a platform's own control: a Checkbox that is one setting (a yes/no, a consent, an opt-in) renders the platform's switch on iOS and Android, where a single setting is a switch (Material 3 on phones included), and stays a checkbox on the web; its role follows what renders (`switch` there, `checkbox` here). A Checkbox that selects items in a list, a table's rows or a "select all" parent takes `selection`: the web keeps the checkbox, Android the Material 3 checkbox, and iOS draws the edit-mode selection circle. `indeterminate` implies `selection`, since a mixed state belongs to a "select all" parent and a switch has none.
+
 Pass `ref` to access the interactive checkbox row, including its label. Use `useRef<ComponentRef<typeof Checkbox>>(null)` from React, or `useRef<View>(null)` with React Native's `View` type. Object and callback refs are supported and detach on unmount. Calling `ref.current?.focus()` or `.blur()` delegates to the host without activating the control. Browser focus is supported; native focus depends on the platform and React Native version, and is separate from accessibility focus.
 
 On the web, Space activates the focused control on key release, and Enter also activates it. Holding Space does not repeat the change. Moving focus away, disabling the control, or composing text cancels a pending Space press.
@@ -46,11 +48,12 @@ On the web, Space activates the focused control on key release, and Enter also a
 
 ### Nested group
 
-A parent "select all" over a group of children. Wire the parent's `checked` and
-`indeterminate` from the children's state: `checked` when every child is on,
-`indeterminate` when only some are, and toggling the parent selects or clears the
-whole group. (`Stateful` is a docs-only state holder so this fence can show the
-controlled wiring; in an app that state lives in your own component.)
+A parent "select all" over a group of children: a list selection, so every box takes
+`selection`. Wire the parent's `checked` and `indeterminate` from the children's
+state: `checked` when every child is on, `indeterminate` when only some are, and
+toggling the parent selects or clears the whole group. (`Stateful` is a docs-only
+state holder so this fence can show the controlled wiring; in an app that state lives
+in your own component.)
 
 ```tsx
 <Stateful initial={["Read"]}>
@@ -61,6 +64,7 @@ controlled wiring; in an app that state lives in your own component.)
     return (
       <Column>
         <Checkbox
+          selection
           checked={all}
           indeterminate={some}
           onChange={(next) => setSelected(next ? perms : [])}
@@ -71,6 +75,7 @@ controlled wiring; in an app that state lives in your own component.)
           {perms.map((p) => (
             <Checkbox
               key={p}
+              selection
               checked={selected.includes(p)}
               onChange={(next) =>
                 setSelected(next ? [...selected, p] : selected.filter((x) => x !== p))
@@ -90,13 +95,13 @@ controlled wiring; in an app that state lives in your own component.)
 
 ### Unchecked
 
-**Do** — Leave opt-in consent unchecked so agreeing is a deliberate act the user takes.
+**Do**: Leave opt-in consent unchecked so agreeing is a deliberate act the user takes.
 
 ```tsx
 <Checkbox>Email me product news, offers, and survey invitations.</Checkbox>
 ```
 
-**Don't** — A consent box that starts checked opts users in by default; under GDPR pre-ticked consent is not consent.
+**Don't**: A consent box that starts checked opts users in by default; under GDPR pre-ticked consent is not consent.
 
 ```tsx
 <Checkbox defaultChecked>Email me product news, offers, and survey invitations.</Checkbox>
@@ -104,41 +109,41 @@ controlled wiring; in an app that state lives in your own component.)
 
 ### Checked
 
-**Do** — Show the parent indeterminate (a dash, not a tick) when only some children are checked.
+**Do**: Show the parent indeterminate (a dash, not a tick) when only some children are checked.
 
 ```tsx
 <Column snug>
-  <Checkbox indeterminate>Select all</Checkbox>
+  <Checkbox selection indeterminate>Select all</Checkbox>
   <Column snug indent>
-    <Checkbox defaultChecked>Read</Checkbox>
-    <Checkbox>Write</Checkbox>
-    <Checkbox>Delete</Checkbox>
+    <Checkbox selection defaultChecked>Read</Checkbox>
+    <Checkbox selection>Write</Checkbox>
+    <Checkbox selection>Delete</Checkbox>
   </Column>
 </Column>
 ```
 
-**Don't** — A fully checked parent claims every child is selected when only one is, so the state reads as a lie.
+**Don't**: A fully checked parent claims every child is selected when only one is, so the state reads as a lie.
 
 ```tsx
 <View style={{ gap: 8 }}>
-  <Checkbox defaultChecked>Select all</Checkbox>
+  <Checkbox selection defaultChecked>Select all</Checkbox>
   <View style={{ marginLeft: 24, gap: 8 }}>
-    <Checkbox defaultChecked>Read</Checkbox>
-    <Checkbox>Write</Checkbox>
-    <Checkbox>Delete</Checkbox>
+    <Checkbox selection defaultChecked>Read</Checkbox>
+    <Checkbox selection>Write</Checkbox>
+    <Checkbox selection>Delete</Checkbox>
   </View>
 </View>
 ```
 
 ### Disabled
 
-**Do** — Say why it's unavailable, like a plan gate, or don't show it at all.
+**Do**: Say why it's unavailable, like a plan gate, or don't show it at all.
 
 ```tsx
 <Checkbox disabled description="Available on the Pro plan">Export to CSV</Checkbox>
 ```
 
-**Don't** — A disabled option with no reason leaves users stuck and guessing.
+**Don't**: A disabled option with no reason leaves users stuck and guessing.
 
 ```tsx
 <Checkbox disabled>Export to CSV</Checkbox>
@@ -146,7 +151,7 @@ controlled wiring; in an app that state lives in your own component.)
 
 ### Selection
 
-**Do** — Radios for one-of-many; reserve checkboxes for independent multi-select.
+**Do**: Radios for one-of-many; reserve checkboxes for independent multi-select.
 
 ```tsx
 <Column snug>
@@ -159,7 +164,7 @@ controlled wiring; in an app that state lives in your own component.)
 </Column>
 ```
 
-**Don't** — Checkboxes allow multiple selections; for a one-of choice they let users pick contradictory options.
+**Don't**: Checkboxes allow multiple selections; for a one-of choice they let users pick contradictory options.
 
 ```tsx
 <View style={{ gap: 8 }}>
@@ -172,7 +177,7 @@ controlled wiring; in an app that state lives in your own component.)
 
 ### With description
 
-**Do** — Pass a `description` and the control stacks the title over its secondary line for you, box aligned to the first text line and the whole row tappable.
+**Do**: Pass a `description` and the control stacks the title over its secondary line for you, box aligned to the first text line and the whole row tappable.
 
 ```tsx
 <Checkbox defaultChecked description="Get notified when activity happens on your account.">
@@ -180,7 +185,7 @@ controlled wiring; in an app that state lives in your own component.)
 </Checkbox>
 ```
 
-**Don't** — A detached checkbox makes only the 16px box tappable; the label text does nothing.
+**Don't**: A detached checkbox makes only the 16px box tappable; the label text does nothing.
 
 ```tsx
 <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
