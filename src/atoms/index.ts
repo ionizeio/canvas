@@ -24,7 +24,6 @@ export * from "./popover/popover.js";
 export * from "./progress/progress.js";
 export * from "./qrcode/qrcode.js";
 export * from "./radio/radio.js";
-export * from "./radio/radio-group.js";
 export * from "./reveal/reveal.js";
 export * from "./reveal/reveal-group.js";
 export * from "./select/select.js";

@@ -20,6 +20,9 @@ export interface RadioGroupContextValue {
   /** Roving-focus props for the radio with this value (the group's arrow-key nav);
    *  undefined when the group is disabled or the value is not a known option. */
   itemProps?: (value: string | number) => RovingItemProps | undefined;
+  /** The options are the rows of one inset-grouped list (iOS), so each plain option
+   *  takes the list's cell insets and row highlight. */
+  list?: boolean;
 }
 
 export const RadioGroupContext = createContext<RadioGroupContextValue | null>(null);

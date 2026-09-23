@@ -4,7 +4,7 @@ import { createElement, createRef, StrictMode, type ElementType, type ReactNode,
 import type { View } from "react-native";
 import { Button } from "../src/atoms/button/button.tsx";
 import { Radio } from "../src/atoms/radio/radio.tsx";
-import { RadioGroup } from "../src/atoms/radio/radio-group.tsx";
+import { RadioGroup } from "../src/atoms/radio/radio.tsx";
 import { Select } from "../src/atoms/select/select.tsx";
 import { Slider } from "../src/atoms/slider/slider.tsx";
 import { Dialog } from "../src/organisms/dialog/dialog.tsx";

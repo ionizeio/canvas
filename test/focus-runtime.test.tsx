@@ -6,7 +6,7 @@ import { Autocomplete } from "../src/atoms/autocomplete/autocomplete.tsx";
 import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
 import { Listbox } from "../src/atoms/listbox/listbox.tsx";
 import { Radio } from "../src/atoms/radio/radio.tsx";
-import { RadioGroup } from "../src/atoms/radio/radio-group.tsx";
+import { RadioGroup } from "../src/atoms/radio/radio.tsx";
 import { Form } from "../src/molecules/form/form.tsx";
 import { Tabs } from "../src/organisms/tabs/tabs.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";

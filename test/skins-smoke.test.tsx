@@ -102,6 +102,17 @@ const CASES: SkinCase[] = [
   { name: "Progress", dir: "atoms/progress", file: "progress", props: { value: 0.6 } },
   { name: "QRCode", dir: "atoms/qrcode", file: "qrcode", props: { value: "https://example.com" } },
   { name: "Radio", dir: "atoms/radio", file: "radio", props: { checked: false }, children: "Option" },
+  {
+    // The group builds from the Radio skin, so iOS mounts its checkmark list section here.
+    name: "RadioGroup",
+    dir: "atoms/radio",
+    file: "radio",
+    props: { defaultValue: "a", label: "Letter" },
+    children: (mod) => [
+      createElement(mod.Radio as never, { key: "a", value: "a" }, "A"),
+      createElement(mod.Radio as never, { key: "b", value: "b" }, "B"),
+    ],
+  },
   { name: "Reveal", dir: "atoms/reveal", file: "reveal", children: txt("Revealed content") },
   { name: "Select", dir: "atoms/select", file: "select", props: { options: ["A", "B", "C"], value: "A", open: true, label: "Letter", required: true } },
   { name: "Skeleton", dir: "atoms/skeleton", file: "skeleton" },

@@ -13,8 +13,8 @@ import { Checkbox as CheckboxIOS } from "../../../src/atoms/checkbox/checkbox.io
 import { Checkbox as CheckboxAndroid } from "../../../src/atoms/checkbox/checkbox.android.js";
 import { Listbox as ListboxIOS } from "../../../src/atoms/listbox/listbox.ios.js";
 import { Listbox as ListboxAndroid } from "../../../src/atoms/listbox/listbox.android.js";
-import { Radio as RadioIOS } from "../../../src/atoms/radio/radio.ios.js";
-import { Radio as RadioAndroid } from "../../../src/atoms/radio/radio.android.js";
+import { Radio as RadioIOS, RadioGroup as RadioGroupIOS } from "../../../src/atoms/radio/radio.ios.js";
+import { Radio as RadioAndroid, RadioGroup as RadioGroupAndroid } from "../../../src/atoms/radio/radio.android.js";
 import { Input as InputIOS } from "../../../src/atoms/input/input.ios.js";
 import { Input as InputAndroid } from "../../../src/atoms/input/input.android.js";
 import { Textarea as TextareaIOS } from "../../../src/atoms/textarea/textarea.ios.js";
@@ -130,7 +130,7 @@ import { GeoMap as GeoMapAndroid } from "../../../src/charts/geo-map/geo-map.and
 
 export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> = {
   ios: {
-    Switch: SwitchIOS, Button: ButtonIOS, Checkbox: CheckboxIOS, Listbox: ListboxIOS, Radio: RadioIOS,
+    Switch: SwitchIOS, Button: ButtonIOS, Checkbox: CheckboxIOS, Listbox: ListboxIOS, Radio: RadioIOS, RadioGroup: RadioGroupIOS,
     Input: InputIOS, Textarea: TextareaIOS, ButtonGroup: ButtonGroupIOS, Select: SelectIOS,
     Autocomplete: AutocompleteIOS, Dropdown: DropdownIOS, Popover: PopoverIOS, Tooltip: TooltipIOS,
     RowMenu: RowMenuIOS, Dialog: DialogIOS, AlertDialog: AlertDialogIOS,
@@ -151,7 +151,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     DashboardGrid: DashboardGridIOS, MetricBreakdown: MetricBreakdownIOS, GeoMap: GeoMapIOS,
   },
   android: {
-    Switch: SwitchAndroid, Button: ButtonAndroid, Checkbox: CheckboxAndroid, Listbox: ListboxAndroid, Radio: RadioAndroid,
+    Switch: SwitchAndroid, Button: ButtonAndroid, Checkbox: CheckboxAndroid, Listbox: ListboxAndroid, Radio: RadioAndroid, RadioGroup: RadioGroupAndroid,
     Input: InputAndroid, Textarea: TextareaAndroid, ButtonGroup: ButtonGroupAndroid, Select: SelectAndroid,
     Autocomplete: AutocompleteAndroid, Dropdown: DropdownAndroid, Popover: PopoverAndroid, Tooltip: TooltipAndroid,
     RowMenu: RowMenuAndroid, Dialog: DialogAndroid, AlertDialog: AlertDialogAndroid,

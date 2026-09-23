@@ -7,7 +7,7 @@ import { layoutEntrances } from "./entrance-layout.ts";
 import { resetDevWarnings } from "../src/style/dev-warn.ts";
 import { Pagination } from "../src/atoms/pagination/pagination.tsx";
 import { Radio } from "../src/atoms/radio/radio.tsx";
-import { RadioGroup } from "../src/atoms/radio/radio-group.tsx";
+import { RadioGroup } from "../src/atoms/radio/radio.tsx";
 import { Autocomplete } from "../src/atoms/autocomplete/autocomplete.tsx";
 import { ButtonGroup } from "../src/atoms/button-group/button-group.tsx";
 import { Listbox } from "../src/atoms/listbox/listbox.tsx";

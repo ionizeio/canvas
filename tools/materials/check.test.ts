@@ -52,10 +52,13 @@ test("inherited primitives require composition evidence without inventing surfac
   const routes = materialComponentRoutes();
   expect(new Set(routes.map(({ path }) => path)).size).toBe(routes.length);
   expect(routes.some(({ path }) => !path.startsWith("/components/"))).toBe(false);
-  for (const name of ["Row", "Column", "Grid", "GridItem", "CardHeader", "RadioGroup", "ToastProvider"]) {
+  for (const name of ["Row", "Column", "Grid", "GridItem", "CardHeader", "ToastProvider"]) {
     expect(materialCoverage.find((entry) => entry.name === name)?.roles).toEqual(["inherited"]);
   }
-  // Similar names and structural wrappers can still own distinct sub-surfaces.
+  // Similar names and structural wrappers can still own distinct sub-surfaces. RadioGroup
+  // is a structural owner on the web and Android, but on iOS its options form the
+  // checkmark list, whose inset-grouped section is a stable content pane.
+  expect(materialCoverage.find((entry) => entry.name === "RadioGroup")?.roles).toEqual(["static", "inherited"]);
   expect(materialCoverage.find((entry) => entry.name === "Alert")?.roles).toEqual(["static"]);
   expect(materialCoverage.find((entry) => entry.name === "AlertDialog")?.roles).toEqual(["liquid"]);
   expect(materialCoverage.find((entry) => entry.name === "AvatarGroup")?.roles).toEqual(["static", "inherited"]);

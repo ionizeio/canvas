@@ -4,7 +4,7 @@ import { type ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { layoutEntrances, layoutHostedEntrance } from "./entrance-layout.ts";
 import { Tabs } from "../src/organisms/tabs/tabs.tsx";
-import { RadioGroup } from "../src/atoms/radio/radio-group.tsx";
+import { RadioGroup } from "../src/atoms/radio/radio.tsx";
 import { Radio } from "../src/atoms/radio/radio.tsx";
 import { Listbox } from "../src/atoms/listbox/listbox.tsx";
 import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";

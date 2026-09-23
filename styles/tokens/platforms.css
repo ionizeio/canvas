@@ -534,9 +534,13 @@
   --p-menu-row-radius:0px;--p-menu-row-pad-x:16px;--p-menu-row-pad-y:11px;--p-menu-row-gap:12px;--p-menu-row-min-h:44px;
   --p-menu-row-font:17px;--p-menu-row-lh:22px;--p-menu-destructive:var(--destructive-text);
   --p-menu-shortcut-font:15px;--p-menu-shortcut-lh:20px;--p-menu-shortcut-tracking:0.5px;
-  /* Radio — iOS: a 22pt ring with a 1.5px border and a 10pt dot */
-  --p-radio-ring-small:20px;--p-radio-ring-default:22px;--p-radio-ring-large:24px;
-  --p-radio-dot-small:8px;--p-radio-dot-default:10px;--p-radio-dot-large:10px;--p-radio-border:1.5px;
+  /* Radio: iOS has no radio button, so a single choice is a checkmark list and draws
+     no ring or dot: the label leads, the chosen row carries a trailing primary check,
+     and a group's rows are 44pt cells with 16pt insets and inset hairline separators
+     inside a 26pt inset-grouped section (radio.styles.ts iosSkin) */
+  --p-radio-ring-small:0px;--p-radio-ring-default:0px;--p-radio-ring-large:0px;
+  --p-radio-dot-small:0px;--p-radio-dot-default:0px;--p-radio-dot-large:0px;--p-radio-border:0px;
+  --p-radio-row-min-h:44px;--p-radio-row-pad-x:16px;--p-radio-row-pad-y:11px;--p-radio-section-radius:26px;
   /* Textarea — iOS: the same white reference box as the Input */
   --p-textarea-fill:var(--card);--p-field-caption-tracking:-0.08px;
   /* Form — SwiftUI Form / HIG "Entering data": footnote-emphasized headings, roomier stack */

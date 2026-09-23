@@ -15,7 +15,7 @@ import { Icon } from "../src/atoms/icon/icon.tsx";
 import { Column, Row } from "../src/atoms/layout/layout.tsx";
 import { Listbox } from "../src/atoms/listbox/listbox.tsx";
 import { Radio } from "../src/atoms/radio/radio.tsx";
-import { RadioGroup } from "../src/atoms/radio/radio-group.tsx";
+import { RadioGroup } from "../src/atoms/radio/radio.tsx";
 import { Select } from "../src/atoms/select/select.tsx";
 import { Slider } from "../src/atoms/slider/slider.tsx";
 import { Switch } from "../src/atoms/switch/switch.tsx";

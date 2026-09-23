@@ -3,22 +3,25 @@ import { forwardRef, type ReactNode } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, surfaceRipple, RippleClip, cornerRadii, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, GlassPane, paneStyle, isGlass, alpha } from "../../style/index.js";
+import { View, Pressable, Text, surfaceRipple, RippleClip, cornerRadii, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, GlassPane, paneStyle, isGlass, alpha, withInnerFill } from "../../style/index.js";
 import { useRadioGroup } from "./radio-context.js";
 
 // Shared Radio shell. Uses React Native's primitives DIRECTLY and reads the active
 // brand tokens via so colors follow light/dark and the glass surface. The
-// shared structure (the ring + dot + label row, the size precedence, accessibility,
-// the controlled checked/selected alias, the onChange handler) lives here once; a
-// platform file supplies only its skin (ring shape/sizing/border, dot fill, press
-// feedback) and calls createRadio. iOS has no native radio, so every skin is
-// hand-drawn from the brand tokens — no platform default color ever leaks in.
+// shared structure (the mark + label row, the size precedence, accessibility, the
+// controlled checked/selected alias, the onChange handler) lives here once; a
+// platform file supplies only its skin (how the choice is marked, its sizing, the list
+// a group forms, press feedback) and calls createRadio. Every skin is hand-drawn from
+// the brand tokens, so no platform default color ever leaks in.
 //
-// A radio is a single circular control that fills with a centered dot when it is the
-// chosen option in its group. The group (one selected option at a time) is the
-// caller's job; this component renders one control in the state it is told to
-// (controlled). Selecting swaps the ring from the neutral input border to primary
-// and reveals the primary dot.
+// On the web and Android a radio is a circular control that fills with a centered dot
+// when it is the chosen option; selecting swaps the ring from the neutral border to
+// primary and reveals the primary dot. iOS has no radio button, so its skin marks the
+// choice the way an iOS picker does: the label leads and the chosen row carries a
+// trailing check, and a RadioGroup's options form one inset-grouped list (the
+// design language's "one job, different control"). The group (one selected option at
+// a time) is RadioGroup's job; standalone, this component renders one control in the
+// state it is told to (controlled).
 
 export interface RadioProps {
   /**
@@ -45,12 +48,13 @@ export interface RadioProps {
    */
   description?: ReactNode;
   /**
-   * Render the whole control as a selectable option CARD: the ring plus the title and
-   * description sit inside Card chrome (bordered, padded), and the ENTIRE card is the
-   * tap target. When this radio is the chosen option, the card takes Card's own
-   * `selected` treatment (a primary border and a soft primary tint), so the whole tile
-   * reads as chosen, not just the dot. Pairs with `description` for a plan/tier picker,
-   * and is still group-wired through `value` inside a `<RadioGroup>`.
+   * Render the whole control as a selectable option CARD: the mark (the ring, or the
+   * trailing check on iOS) plus the title and description sit inside Card chrome
+   * (bordered, padded), and the ENTIRE card is the tap target. When this radio is the
+   * chosen option, the card takes Card's own `selected` treatment (a primary border and
+   * a soft primary tint), so the whole tile reads as chosen, not just the mark. Pairs
+   * with `description` for a plan/tier picker, and is still group-wired through `value`
+   * inside a `<RadioGroup>`.
    */
   card?: boolean;
   // Size (pick one; default is the 16px control).
@@ -71,14 +75,41 @@ function sizeOf(p: RadioProps): Size {
   return "default";
 }
 
-// The only thing a platform skin owns: the ring, dot, and label styles for a given
-// state and size, plus the press/disabled feedback. Everything else is the shell.
-export interface RadioSkin {
+/** A radio button: a circular control that fills with a centered dot when chosen. */
+export interface RingMark {
+  kind: "ring";
   /** The circular control. `checked` swaps the neutral border for primary. `nudge` aligns the ring to a label's first line. */
   ring: (tokens: ColorTokens, size: Size, checked: boolean, nudge: boolean) => ViewStyle;
   /** The centered fill dot, rendered only when checked. */
   dot: (tokens: ColorTokens, size: Size) => ViewStyle;
-  /** The label text to the right of the ring. */
+}
+
+/** A checkmark row (iOS, which has no radio button): the label leads and the chosen option carries a trailing check. */
+export interface CheckMark {
+  kind: "check";
+  /** The trailing check glyph shown on the chosen option. */
+  glyph: (tokens: ColorTokens, size: Size) => TextStyle;
+}
+
+/** The inset-grouped list a RadioGroup's options form on a platform whose single choice is a checkmark list. */
+export interface RadioListSkin {
+  /** The section around the options (the list's fill, corner and clip). */
+  section: (tokens: ColorTokens) => ViewStyle;
+  /** The hairline drawn between two rows. */
+  separator: (tokens: ColorTokens) => ViewStyle;
+  /** A row's insets inside the section. */
+  cell: ViewStyle;
+  /** The row highlight while pressed. */
+  cellPressed: (tokens: ColorTokens) => ViewStyle;
+}
+
+// The only thing a platform skin owns: how the chosen option is marked, the label
+// styles for a given state and size, the list a group forms (if any), plus the
+// press/disabled feedback. Everything else is the shell.
+export interface RadioSkin {
+  /** How the control marks the chosen option: a ring and dot, or a trailing check. */
+  mark: RingMark | CheckMark;
+  /** The label text beside the mark. */
   label: (tokens: ColorTokens, size: Size, disabled: boolean) => TextStyle;
   /** The muted secondary description line, rendered under the label when present. */
   description: (tokens: ColorTokens, size: Size, disabled: boolean) => TextStyle;
@@ -88,6 +119,11 @@ export interface RadioSkin {
    * `checked`, it applies Card's own `selected` treatment (primary border + soft tint).
    */
   card: (tokens: ColorTokens, checked: boolean) => ViewStyle;
+  /**
+   * The inset-grouped list a RadioGroup's plain options form (iOS's inline picker), or
+   * null where a group stays a stack of controls (the web and Android).
+   */
+  list: RadioListSkin | null;
   /** Opacity applied to the row when disabled. */
   disabledOpacity: number;
   /** iOS/web dim the row on press; Android uses a ripple instead (null). */
@@ -99,6 +135,13 @@ export interface RadioSkin {
 // The pressable row: control beside an optional label, control top-aligned so a
 // multi-line label hangs from the ring's first line.
 const ROW: ViewStyle = { flexDirection: "row", alignItems: "flex-start", gap: 8 };
+
+// A checkmark row: the text takes the row and the check trails at its end, centered on
+// the row the way iOS centers a cell's accessory beside a two-line title.
+const CHECK_ROW: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 12 };
+const CHECK_TEXT: ViewStyle & TextStyle = { flexGrow: 1 };
+// The check keeps its width on an unchosen row, so choosing an option never reflows its label.
+const CHECK_HIDDEN: TextStyle = { opacity: 0 };
 
 // Stacks the title over its description beside the ring. The 8px gap matches the
 // kit's default column spacing (the arrangement callers used to hand-compose), so
@@ -131,6 +174,10 @@ export function createRadio(skin: RadioSkin) {
     const inGroup = group != null && props.value !== undefined;
     const isChecked = inGroup ? group.value === props.value : !!(checked ?? selected);
     const disabled = !!props.disabled || !!group?.disabled;
+    // A plain option inside a group that forms a list (iOS) is one of the section's rows:
+    // it takes the cell insets and the row highlight. A card stays its own tile.
+    const cell = group?.list && !card ? skin.list : null;
+    const { mark } = skin;
 
     const handlePress = (event: GestureResponderEvent) => {
       if (inGroup) group.select(props.value as string | number, event);
@@ -179,30 +226,41 @@ export function createRadio(skin: RadioSkin) {
         aria-checked={isChecked}
         android_ripple={ripple}
         style={({ pressed }) => [
-          ROW,
+          mark.kind === "check" ? CHECK_ROW : ROW,
+          cell ? cell.cell : null,
           // Card mode: the pressable IS the card surface (border, radius, fill, padding).
           cardChrome ? paneStyle(theme, cardChrome) : null,
           disabled ? { opacity: skin.disabledOpacity } : null,
-          skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+          // A list row highlights while pressed (the iOS cell highlight, an ink tint over
+          // glass); anywhere else the skin's own dim.
+          cell && pressed ? withInnerFill(theme, cell.cellPressed(tokens), "firm") : null,
+          !cell && skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
           // In card mode the outer layout `style` rides the RippleClip wrapper (the
           // outermost node), so the clip and the caller's layout stay in lockstep.
           card ? null : style,
         ]}
       >
         {cardChrome ? <GlassPane layer="content" shape={cardChrome} tint={isChecked ? alpha(tokens.primary, 0.22) : undefined} /> : null}
-        <View style={paneStyle(theme, skin.ring(tokens, size, isChecked, hasText))}>
-          <GlassPane static layer="control" shape={skin.ring(tokens, size, isChecked, hasText)} brand={isChecked ? tokens.primary : undefined} />
-          {isChecked ? <View style={[skin.dot(tokens, size), glass ? { backgroundColor: tokens["primary-foreground"] } : null]} /> : null}
-        </View>
+        {mark.kind === "ring" ? (
+          <View style={paneStyle(theme, mark.ring(tokens, size, isChecked, hasText))}>
+            <GlassPane static layer="control" shape={mark.ring(tokens, size, isChecked, hasText)} brand={isChecked ? tokens.primary : undefined} />
+            {isChecked ? <View style={[mark.dot(tokens, size), glass ? { backgroundColor: tokens["primary-foreground"] } : null]} /> : null}
+          </View>
+        ) : null}
         {hasText ? (
           description != null ? (
-            <View style={TEXT_COLUMN}>
+            <View style={[TEXT_COLUMN, mark.kind === "check" ? CHECK_TEXT : null]}>
               {children != null ? <Text style={skin.label(tokens, size, !!disabled)}>{children}</Text> : null}
               <Text style={skin.description(tokens, size, !!disabled)}>{description}</Text>
             </View>
           ) : (
-            <Text style={skin.label(tokens, size, !!disabled)}>{children}</Text>
+            <Text style={[skin.label(tokens, size, !!disabled), mark.kind === "check" ? CHECK_TEXT : null]}>{children}</Text>
           )
+        ) : null}
+        {mark.kind === "check" ? (
+          // The row's checked state already names the choice, so the glyph is hidden
+          // from assistive technology (it would otherwise join the row's name).
+          <Text aria-hidden style={[mark.glyph(tokens, size), isChecked ? null : CHECK_HIDDEN]}>✓</Text>
         ) : null}
       </Pressable>
     );

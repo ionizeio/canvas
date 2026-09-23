@@ -4,7 +4,7 @@ import { type ReactNode } from "react";
 import { Checkbox } from "../src/atoms/checkbox/checkbox.tsx";
 import { Switch } from "../src/atoms/switch/switch.tsx";
 import { Radio } from "../src/atoms/radio/radio.tsx";
-import { RadioGroup } from "../src/atoms/radio/radio-group.tsx";
+import { RadioGroup } from "../src/atoms/radio/radio.tsx";
 import { Button } from "../src/atoms/button/button.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
 
