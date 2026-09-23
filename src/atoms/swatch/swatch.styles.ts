@@ -1,12 +1,9 @@
 import { type TextStyle, type ViewStyle } from "react-native";
 import { type SwatchSize } from "./swatch.shared.js";
 
-// Co-located Swatch skins. Swatch is a "Light" treatment, exactly like Emblem: the
-// block sizes, the label lockup, and every color (in the shell) are platform-neutral;
-// only the corner radius, the iOS corner curve, and the label type shift per OS
-// (Material rounds containers more than iOS/web; iOS draws its tiles with the
-// continuous superellipse curve; Material label type carries positive tracking while
-// iOS tracks its labels slightly tighter).
+// Co-located Swatch skins. The block sizes, the label lockup, and every color (in the
+// shell) are platform-neutral, and no platform ships a color sample, so every platform
+// takes Dark Factory's tile (the web skin below), as Emblem does.
 //
 // The skins carry SHAPE and TYPE metrics only. No skin holds a color: the fill is the
 // caller's `color`, and the hairline plus the three label colors come from the active
@@ -38,38 +35,19 @@ const gap = 8;
 const lineGap = 2;
 
 // Web: the Riskora rounded square (12 at the default size), with a 500-weight name over its mono lines.
+// Dark Factory's tile corners (10 / 12 / 14), the continuous corner curve where the
+// platform draws one (iOS; ignored elsewhere), and its label weights. A color sample has
+// no platform control, so the native skins are the web skin.
 export const webSkin: SwatchSkin = {
   box,
-  radius: { small: 8, default: 12, large: 16 },
-  shape: {},
+  radius: { small: 10, default: 12, large: 14 },
+  shape: { borderCurve: "continuous" },
   gap,
   lineGap,
-  name: { fontWeight: "500" },
+  name: { fontWeight: "700" },
   value: { fontWeight: "500" },
   detail: { fontWeight: "400" },
 };
 
-// iOS: the same rounded square, drawn with Apple's continuous (superellipse) corner
-// curve to match the tile idiom (borderCurve is an iOS-only RN style prop, a no-op
-// elsewhere). HIG labels track slightly tighter than the web default, so the name
-// pulls in by 0.08. The mono lines keep neutral tracking: Menlo's fixed advance
-// already sets their rhythm, and tightening it would break the column alignment that
-// makes a stack of hex values scannable.
-export const iosSkin: SwatchSkin = {
-  ...webSkin,
-  shape: { borderCurve: "continuous" },
-  name: { fontWeight: "500", letterSpacing: -0.08 },
-};
-
-// Material 3 rounds containers more (the M3 container ladder: 8 / 12 / 16), and its
-// label type carries +0.1 tracking, which M3 applies to every label line.
-export const androidSkin: SwatchSkin = {
-  box,
-  radius: { small: 8, default: 12, large: 16 },
-  shape: {},
-  gap,
-  lineGap,
-  name: { fontWeight: "500", letterSpacing: 0.1 },
-  value: { fontWeight: "500", letterSpacing: 0.1 },
-  detail: { fontWeight: "400", letterSpacing: 0.1 },
-};
+export const iosSkin: SwatchSkin = webSkin;
+export const androidSkin: SwatchSkin = webSkin;

@@ -1,7 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { Animated, Easing, type LayoutChangeEvent } from "react-native";
-import { View, Text, useFillStyle, useReducedMotion, supportsNativeDriver, palette, type ColorTokens, type LayoutStyle, type MeasureProps, type ViewStyle, type TextStyle, type StyleProp, GlassPane, isGlass, innerFill } from "../../style/index.js";
+import { View, Text, useFillStyle, useReducedMotion, supportsNativeDriver, statusColors, type ColorTokens, type LayoutStyle, type MeasureProps, type ViewStyle, type TextStyle, type StyleProp, GlassPane, isGlass, innerFill } from "../../style/index.js";
 
 // Shared Progress shell. Uses React Native's primitives DIRECTLY (no engine className
 // layer) and reads the active brand tokens via so the track/fill colors follow
@@ -46,7 +46,7 @@ export interface ProgressProps extends MeasureProps {
    * line. Indeterminate has no measurable value, so this renders nothing then.
    */
   showValue?: boolean;
-  // Tone axis (the active fill color; pick one, default is the brand primary). `warning` tints the bar amber, `danger` red, for a metric over a soft threshold or a hard limit (a WIP meter over its cap); the track stays neutral. Pair with copy: the tone adds no accessible value.
+  // Tone axis (the active fill color; pick one, default is the call-to-action fill). `warning` paints the bar in the warning color, `danger` in the destructive color, for a metric over a soft threshold or a hard limit (a WIP meter over its cap); the track stays neutral. Pair with copy: the tone adds no accessible value.
   warning?: boolean;
   danger?: boolean;
   // Size axis (track thickness; pick one, default is the medium track).
@@ -78,15 +78,12 @@ export function toneOf(p: ProgressProps): Tone {
   return "default";
 }
 
-// The tone fill draws from the same Tailwind palette vocabulary the Badge status pills use
-// (amber for warning, red for danger), so the whole kit speaks one semantic-color language.
-// A saturated 500 in light, one step lighter (400) in dark so the bar keeps contrast against
-// the darker track. `default` keeps the skin's brand `primary` fill (computed by the caller).
+// The tone fill is the tone's solid color from statusColors (src/style/status.ts), the
+// same place Badge, Alert and Chip read their tones, so a warning bar and a warning badge
+// are one state. `default` keeps the skin's `action` fill (computed by the caller).
 // Exported for tests (not re-exported from the package barrel).
-const TONE_HUE: Record<Exclude<Tone, "default">, string> = { warning: "amber", danger: "red" };
-export function toneFill(tone: Exclude<Tone, "default">, dark: boolean): string {
-  const hue = TONE_HUE[tone];
-  return dark ? palette[`${hue}-400`] : palette[`${hue}-500`];
+export function toneFill(tone: Exclude<Tone, "default">, tokens: ColorTokens): string {
+  return statusColors(tokens, tone === "danger" ? "error" : "warning").dot;
 }
 
 // Clamp the value to a 0..1 fraction (the public contract). NaN/undefined collapse to 0.
@@ -164,7 +161,7 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
   return function Progress(props: ProgressProps) {
     const { value, indeterminate, children, description, accessibilityLabel, testID, style } = props;
     const theme = useMaterialTheme({ static: true, layer: "control" });
-    const { tokens, dark } = theme;
+    const { tokens } = theme;
     const size = sizeOf(props);
     const tone = toneOf(props);
     // Under glass the rail is a static pane at control density: the continuous track paints a
@@ -178,11 +175,11 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
     const height = skin.height[size];
     const radius = skin.radius[size];
     const trackColor = glass ? innerFill(theme, "muted", "soft") : skin.trackColor(tokens);
-    // The active fill: the skin's brand `primary` by default, or the semantic tone color
-    // (amber/red) when `warning`/`danger` is set. Every fill render path below reads this one
+    // The active fill: the skin's `action` fill by default, or the tone's solid color when
+    // `warning`/`danger` is set. Every fill render path below reads this one
     // value, so the tone flows through the continuous, segmented, indeterminate, and stop-dot
     // anatomies alike.
-    const fillColor = tone === "default" ? skin.fillColor(tokens) : toneFill(tone, dark);
+    const fillColor = tone === "default" ? skin.fillColor(tokens) : toneFill(tone, tokens);
     const fraction = clampValue(value);
 
     // Measured track width, needed to slide the indeterminate bar in absolute px (a

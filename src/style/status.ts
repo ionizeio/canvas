@@ -1,6 +1,7 @@
 import { alpha } from "./color.js";
 import { destructiveText } from "./destructive-text.js";
 import { primaryText } from "./primary-text.js";
+import { SOFT_ALPHA } from "./soft-roles.js";
 import type { StatusTone } from "./status-hue.js";
 import type { ColorTokens } from "./tokens.js";
 
@@ -29,8 +30,9 @@ export interface StatusColors {
   dot: string;
 }
 
-// Dark Factory's wash alphas (its `*Soft` colors), used when a token map omits the soft roles.
-const WASH = { success: 0.12, warning: 0.18, error: 0.12, info: 0.14 } as const;
+// Dark Factory's light wash alphas, used when a token map omits the soft roles (the theme
+// always supplies them, derived for a rebrand, so this reaches only a raw token map).
+const WASH = SOFT_ALPHA.light;
 
 /** The ink, wash and dot of a status tone, from the theme's color roles. */
 export function statusColors(tokens: ColorTokens, tone: StatusColorTone): StatusColors {

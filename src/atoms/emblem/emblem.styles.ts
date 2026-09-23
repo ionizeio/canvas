@@ -1,12 +1,9 @@
 import { type TextStyle, type ViewStyle } from "react-native";
 import { type EmblemSize } from "./emblem.shared.js";
 
-// Co-located Emblem skins. Emblem is a "Light" treatment: the box, icon size,
-// and semantic tint (in the shell) are platform-neutral; only the corner radius,
-// the iOS corner curve, and the monogram label type shift per OS (Material rounds
-// icon containers more than iOS/web; iOS draws its app-icon tiles with the
-// continuous superellipse curve; Material label type is 500 weight with positive
-// tracking).
+// Co-located Emblem skins. The box, icon size, and semantic tint (in the shell) are
+// platform-neutral, and no platform ships an icon tile, so every platform takes Dark
+// Factory's tile (the web skin below).
 
 export interface EmblemSkin {
   /** Square edge per size, in px. */
@@ -25,28 +22,16 @@ const box: Record<EmblemSize, number> = { small: 32, default: 40, large: 48 };
 const iconSize: Record<EmblemSize, number> = { small: 16, default: 20, large: 24 };
 
 // Web: the Riskora identity tile (a 12px rounded square at the default size).
+// Dark Factory's tile: its corner grows with the tile (10 / 12 / 14), the continuous corner
+// curve where the platform draws one (iOS; ignored elsewhere), and a bold monogram. No
+// platform ships an icon tile, so the native skins are the web skin.
 export const webSkin: EmblemSkin = {
   box,
   iconSize,
-  radius: { small: 8, default: 12, large: 16 },
-  shape: {},
-  monogram: { fontWeight: "600" },
-};
-
-// iOS: the same rounded square, drawn with Apple's continuous (superellipse)
-// corner curve to match the app-icon idiom. borderCurve is an iOS-only RN style
-// prop (a no-op elsewhere).
-export const iosSkin: EmblemSkin = {
-  ...webSkin,
+  radius: { small: 10, default: 12, large: 14 },
   shape: { borderCurve: "continuous" },
+  monogram: { fontWeight: "700" },
 };
 
-// Material 3 rounds the icon container more; the monogram reads as a Material
-// label (500 weight, +0.1 tracking, the kit's Avatar-initials precedent).
-export const androidSkin: EmblemSkin = {
-  box,
-  iconSize,
-  radius: { small: 8, default: 12, large: 16 },
-  shape: {},
-  monogram: { fontWeight: "500", letterSpacing: 0.1 },
-};
+export const iosSkin: EmblemSkin = webSkin;
+export const androidSkin: EmblemSkin = webSkin;

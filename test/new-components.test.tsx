@@ -273,12 +273,13 @@ describe("Emblem", () => {
     expect(pri).not.toBe(mut); // tone drives a distinct fill
   });
 
-  it("warning tints the surface with the amber wash and paints the monogram to match", () => {
+  it("warning tints the surface with the warning wash and paints the monogram in its ink", () => {
     const { container, getByText } = ui(<Emblem warning label="W" testID="warn" />);
-    // The light-scheme warning token at the shared 12% tint recipe.
-    const [r, g, b] = [1, 3, 5].map((i) => parseInt(lightColors.warning.slice(i, i + 2), 16));
-    expect(at(container, "warn").style.backgroundColor).toBe(`rgba(${r}, ${g}, ${b}, 0.12)`);
-    // The monogram paints in the solid warning token, not the muted foreground.
+    // The warning tone's soft wash and ink from statusColors (the warning-soft role and
+    // the warning token), not the muted foreground.
+    const { wash, ink } = statusColors(lightColors, "warning");
+    expect(channelsOf(at(container, "warn").style.backgroundColor)).toEqual(channelsOf(wash));
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(ink.slice(i, i + 2), 16));
     expect((getByText("W") as HTMLElement).style.color).toBe(`rgba(${r}, ${g}, ${b}, 1.00)`);
   });
 

@@ -315,9 +315,9 @@ components:
     menu-radius: "12px"
     menu-row-radius: "10px"
   emblem:
-    emblem-radius-small: "8px"
+    emblem-radius-small: "10px"
     emblem-radius-default: "12px"
-    emblem-radius-large: "16px"
+    emblem-radius-large: "14px"
   input:
     field-radius: "10px"
     field-radius-bottom: "10px"
@@ -391,9 +391,9 @@ components:
     popover-radius: "12px"
     popover-shadow: "var(--shadow-lg)"
   swatch:
-    swatch-radius-small: "8px"
+    swatch-radius-small: "10px"
     swatch-radius-default: "12px"
-    swatch-radius-large: "16px"
+    swatch-radius-large: "14px"
   tooltip:
     tip-radius: "8px"
     tip-shadow: "var(--shadow-md)"
@@ -566,10 +566,6 @@ platformSkins:
       menu-shadow: "var(--shadow-md)"
       menu-radius: "4px"
       menu-row-radius: "0px"
-    emblem:
-      emblem-radius-small: "8px"
-      emblem-radius-default: "12px"
-      emblem-radius-large: "16px"
     input:
       field-radius: "4px"
       field-radius-bottom: "0px"
@@ -636,10 +632,6 @@ platformSkins:
     popover:
       popover-radius: "12px"
       popover-shadow: "var(--shadow-md)"
-    swatch:
-      swatch-radius-small: "8px"
-      swatch-radius-default: "12px"
-      swatch-radius-large: "16px"
     tooltip:
       tip-radius: "4px"
       tip-shadow: none

@@ -1,11 +1,14 @@
 import { alpha, tabularNums, type ColorTokens, type TextStyle } from "../../style/index.js";
+import { actionFill } from "../../style/action.js";
+import { typeScale } from "../../style/type-scale.js";
 import { type ProgressSkin, type Size } from "./progress.shared.js";
 
 // Co-located Progress skins, one per platform, all driven by the brand tokens (passed in
-// from useTheme so they follow light/dark). The BRAND survives on every platform: the
-// active fill is always the brand `primary`, never a platform default. Only the native
-// SHAPE of the bar (track thickness, end radius, and the inactive-track tone) changes per
-// OS, matched to each platform's real progress reference:
+// from useTheme so they follow light/dark). A progress bar is a meter, so its active fill
+// is the call-to-action `action` color on every platform (Dark Factory fills its meters
+// with its green accent), never a platform default. Only the native SHAPE of the bar
+// (track thickness, end radius, and the inactive-track tone) changes per OS, matched to
+// each platform's real progress reference:
 //
 //   iOS (UIProgressView / SwiftUI ProgressView, iOS 27 kit Progress Indicators, Table
 //     View Row symbol): a THIN ~4pt track with FULLY ROUNDED ends (radius = height/2 → a
@@ -17,8 +20,9 @@ import { type ProgressSkin, type Size } from "./progress.shared.js";
 //     plus the M3 segmented anatomy: a 4dp GAP between the active indicator and the
 //     track, and the 4x4dp stop indicator dot in the active color at the trailing edge
 //     (rendered by the shell via trackGap/stopIndicator; determinate only, per M3).
-//   Web: the Riskora meter: a chunkier FULLY ROUNDED track (12px at the base size) on
-//     the soft `muted` panel fill, with the brand `primary` fill.
+//   Web: Dark Factory's meter: a slim FULLY ROUNDED bar (6px at the base size) whose
+//     rest is its line color (`border`, the rest of its dot meter), in its dense label
+//     type.
 
 // iOS: a thin 4pt bar across all sizes, nudged up/down a hair by the size axis so `small`
 // and `large` still read as distinct without ever losing the hairline iOS feel.
@@ -32,10 +36,10 @@ const ANDROID_HEIGHT: Record<Size, number> = { small: 3, base: 4, large: 8 };
 // M3 rounds the ends fully (radius = height / 2).
 const ANDROID_RADIUS: Record<Size, number> = { small: 1.5, base: 2, large: 4 };
 
-// Web (shadcn/Radix): h-2 (8px) default, fully rounded; the size axis steps the thickness
-// while keeping the rounded-full ends.
-const WEB_HEIGHT: Record<Size, number> = { small: 8, base: 12, large: 20 };
-const WEB_RADIUS: Record<Size, number> = { small: 4, base: 6, large: 10 };
+// Web (Dark Factory): 6px default, fully rounded; the size axis steps it 4/6/8 while
+// keeping the rounded ends.
+const WEB_HEIGHT: Record<Size, number> = { small: 4, base: 6, large: 8 };
+const WEB_RADIUS: Record<Size, number> = { small: 2, base: 3, large: 4 };
 
 // Header type shared across every platform (the label is brand type, not a platform face,
 // matching Checkbox/Radio/Switch). The canonical scale: the title line is 14/20 medium
@@ -61,7 +65,7 @@ export const iosSkin: ProgressSkin = {
   // Dark; a 25% wash of the neutral `muted-foreground` token (#71717b light / #9f9fa9
   // dark) lands on both effective grays while staying on the theme's neutral ramp.
   trackColor: (t: ColorTokens) => alpha(t["muted-foreground"], 0.25),
-  fillColor: (t: ColorTokens) => t.primary,
+  fillColor: (t: ColorTokens) => actionFill(t),
   label,
   description,
   valueReadout,
@@ -72,9 +76,9 @@ export const androidSkin: ProgressSkin = {
   height: ANDROID_HEIGHT,
   radius: ANDROID_RADIUS,
   // M3 inactive track = secondary container; the `secondary` token is the closest
-  // semantic surface in light and dark. Active indicator + stop indicator = primary.
+  // semantic surface in light and dark. Active indicator + stop indicator = the action fill.
   trackColor: (t: ColorTokens) => t.secondary,
-  fillColor: (t: ColorTokens) => t.primary,
+  fillColor: (t: ColorTokens) => actionFill(t),
   label,
   description,
   valueReadout,
@@ -86,14 +90,25 @@ export const androidSkin: ProgressSkin = {
   stopIndicator: true,
 };
 
+// Dark Factory's dense type for the web header: the label, its muted line, and the value.
+function dfLabel(t: ColorTokens): TextStyle {
+  return { ...typeScale.label, flexShrink: 1, color: t.foreground };
+}
+function dfDescription(t: ColorTokens): TextStyle {
+  return { ...typeScale.caption, fontWeight: "500", color: t["muted-foreground"] };
+}
+function dfValueReadout(t: ColorTokens): TextStyle {
+  return { ...typeScale.label, color: t["muted-foreground"], ...tabularNums() };
+}
+
 export const webSkin: ProgressSkin = {
   height: WEB_HEIGHT,
   radius: WEB_RADIUS,
-  // Riskora: the soft panel fill as the inactive track, the brand primary as the fill.
-  trackColor: (t: ColorTokens) => t.muted,
-  fillColor: (t: ColorTokens) => t.primary,
-  label,
-  description,
-  valueReadout,
+  // Dark Factory: its line color as the rest of the meter, the call-to-action as the fill.
+  trackColor: (t: ColorTokens) => t.border,
+  fillColor: (t: ColorTokens) => actionFill(t),
+  label: dfLabel,
+  description: dfDescription,
+  valueReadout: dfValueReadout,
   indeterminateWidth: 0.3,
 };

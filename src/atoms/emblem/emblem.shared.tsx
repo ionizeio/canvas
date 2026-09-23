@@ -1,6 +1,5 @@
-import { primaryText } from "../../style/primary-text.js";
 import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
-import { View, Text, alpha, type ColorTokens, type ViewStyle, type LayoutStyle, innerFill } from "../../style/index.js";
+import { View, Text, statusColors, type ColorTokens, type ViewStyle, type LayoutStyle, innerFill } from "../../style/index.js";
 import { GlassPane, paneStyle } from "../../style/glass-surface/glass-pane.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { type EmblemSkin } from "./emblem.styles.js";
@@ -56,23 +55,15 @@ function sizeOf(p: EmblemProps): EmblemSize {
   return "default";
 }
 
-// Tinted surface fill per tone (a soft wash of the tone color; `muted` uses the
-// solid muted token, which under glass becomes an ink tint so the tile stays a wash
-// over the pane it sits on, like the tone washes already are).
+// Tinted surface fill per tone: the tone's soft wash from statusColors (primary is the
+// info tone, the primary family); `muted` uses the solid muted token, which under glass
+// becomes an ink tint so the tile stays a wash over the pane it sits on, like the tone
+// washes already are.
+const STATUS_TONE = { primary: "info", destructive: "error", success: "success", warning: "warning" } as const;
+
 function tintBg(theme: Parameters<typeof innerFill>[0], tone: Tone): string {
-  const { tokens } = theme;
-  switch (tone) {
-    case "primary":
-      return alpha(tokens.primary, 0.12);
-    case "destructive":
-      return alpha(tokens.destructive, 0.12);
-    case "success":
-      return alpha(tokens.success, 0.12);
-    case "warning":
-      return alpha(tokens.warning, 0.12);
-    case "muted":
-      return innerFill(theme, "muted", "soft");
-  }
+  if (tone === "muted") return innerFill(theme, "muted", "soft");
+  return statusColors(theme.tokens, STATUS_TONE[tone]).wash;
 }
 
 // The Icon color boolean to inject per tone (so the glyph matches its tint).
@@ -84,20 +75,10 @@ const ICON_TINT: Record<Tone, Record<string, boolean>> = {
   muted: { muted: true },
 };
 
-// Solid tone color for a monogram label (the `label` path).
+// The monogram label's color: the tone's ink (text-grade over its wash), muted-foreground
+// on the muted tile.
 function labelColor(tokens: ColorTokens, tone: Tone): string {
-  switch (tone) {
-    case "primary":
-      return primaryText(tokens);
-    case "destructive":
-      return tokens.destructive;
-    case "success":
-      return tokens.success;
-    case "warning":
-      return tokens.warning;
-    case "muted":
-      return tokens["muted-foreground"];
-  }
+  return tone === "muted" ? tokens["muted-foreground"] : statusColors(tokens, STATUS_TONE[tone]).ink;
 }
 
 /** Build an Emblem from a platform skin. */

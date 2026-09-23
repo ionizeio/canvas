@@ -8,6 +8,7 @@ import { useColorScheme } from "react-native";
 import { colorsFor, type BreakpointKey, type ColorScheme, type ColorTokens, type GlassTokens, type Palette } from "./tokens.js";
 import { type ThemeFonts } from "./fonts.js";
 import { actionOverride } from "./action.js";
+import { softOverride } from "./soft-roles.js";
 import { glassTintsFor } from "./glass-surface/glass-tints.js";
 import { SsrBreakpointContext } from "./responsive.js";
 import { liquidGlassAvailable } from "./glass-surface/liquid-glass.js";
@@ -249,6 +250,9 @@ export function ThemeProvider({ dark, light, scheme, ssrScheme, mint, ssrPalette
       // A primary-only rebrand repaints the call-to-action too, fill and ink together;
       // an explicit `action` wins (see actionOverride).
       ...actionOverride(paletteBase, brand),
+      // A rebranded tone color repaints its soft wash too, at Dark Factory's alpha for
+      // the scheme; an explicit soft role wins (see softOverride).
+      ...softOverride(active, paletteBase, brand),
     } : paletteBase;
     return {
       scheme: active,

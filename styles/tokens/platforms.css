@@ -138,14 +138,14 @@
   /* Collapsible (collapsible.styles.ts webSkin: the Radix caret, 0→90°) */
   --p-collapse-glyph:"chevron-right" /* @kind other */;--p-collapse-spin:90deg /* @kind other */;
   /* Progress (progress.styles.ts webSkin: shadcn h-2 track at primary/20) */
-  --p-progress-h-small:8px;--p-progress-h-base:12px;--p-progress-h-large:20px;
-  --p-progress-track:var(--muted);
+  --p-progress-h-small:4px;--p-progress-h-base:6px;--p-progress-h-large:8px;
+  --p-progress-track:var(--border);
   --p-progress-gap:0px;--p-progress-stop:0px;--p-progress-stop-opacity:0 /* @kind other */;
   /* Emblem (emblem.styles.ts webSkin: the Catalyst rounded square) */
   --p-emblem-box-small:32px;--p-emblem-box-default:40px;--p-emblem-box-large:48px;
   --p-emblem-icon-small:16px;--p-emblem-icon-default:20px;--p-emblem-icon-large:24px;
-  --p-emblem-radius-small:8px;--p-emblem-radius-default:12px;--p-emblem-radius-large:16px;
-  --p-emblem-monogram-weight:600;--p-emblem-monogram-tracking:0px;
+  --p-emblem-radius-small:10px;--p-emblem-radius-default:12px;--p-emblem-radius-large:14px;
+  --p-emblem-monogram-weight:700;--p-emblem-monogram-tracking:0px;
   /* StackedList (stacked-lists.styles.ts webSkin) */
   --p-list-radius:14px;--p-list-border:1px;--p-list-shadow:var(--shadow);
   --p-list-row-pad-x:20px;--p-list-row-pad-y:12px;--p-list-row-gap:12px;--p-list-row-min-h:0px;--p-list-divider-inset:0px;
@@ -338,7 +338,7 @@
 
   /* Swatch (swatch.styles.ts webSkin) */
   --p-swatch-box-small:40px;--p-swatch-box-default:56px;--p-swatch-box-large:72px;
-  --p-swatch-radius-small:8px;--p-swatch-radius-default:12px;--p-swatch-radius-large:16px;
+  --p-swatch-radius-small:10px;--p-swatch-radius-default:12px;--p-swatch-radius-large:14px;
   --p-swatch-name-tracking:0px;--p-swatch-mono-tracking:0px;--p-swatch-value-weight:500;
 }
 
@@ -576,9 +576,6 @@
   /* DragHandle (drag-drop.styles.ts iosSkin: 32pt grip, visually compact inside the 44pt row target; 18px glyph) */
   --p-drag-handle-size:32px;--p-drag-handle-radius:8px;--p-drag-handle-icon:18px;
 
-  /* Swatch (swatch.styles.ts iosSkin: continuous-curve noted, not faked; HIG name tracking) */
-  --p-swatch-box-small:40px;--p-swatch-box-default:56px;--p-swatch-box-large:72px;
-  --p-swatch-name-tracking:-0.08px;--p-swatch-mono-tracking:0px;--p-swatch-value-weight:500;
   /* Declared where the skin differs from the web value this block would otherwise inherit. */
   --p-tip-radius:6px;--p-sheet-card-radius-top:34px;--p-side-toggle-radius:0px;
 }
@@ -804,9 +801,6 @@
   /* Progress — M3 linear indicator: 4dp track on secondary, 4dp gap, stop-indicator dot */
   --p-progress-h-small:3px;--p-progress-h-base:4px;--p-progress-h-large:8px;
   --p-progress-track:var(--secondary);--p-progress-gap:4px;--p-progress-stop:4px;--p-progress-stop-opacity:1 /* @kind other */;
-  /* Emblem — M3 rounds icon containers more; monogram is an M3 label */
-  --p-emblem-radius-small:8px;--p-emblem-radius-default:12px;--p-emblem-radius-large:16px;
-  --p-emblem-monogram-weight:500;--p-emblem-monogram-tracking:0.1px;
   /* StackedList — M3 outlined card, 72dp two-line rows, body-large name */
   --p-list-radius:12px;--p-list-shadow:none;
   --p-list-row-pad-x:16px;--p-list-row-pad-y:12px;--p-list-row-gap:16px;--p-list-row-min-h:72px;
@@ -837,10 +831,6 @@
   /* DragHandle (drag-drop.styles.ts androidSkin: 40dp circular grip, the M3 min touch target; 20px glyph) */
   --p-drag-handle-size:40px;--p-drag-handle-radius:20px;--p-drag-handle-icon:20px;
 
-  /* Swatch (swatch.styles.ts androidSkin: M3 container ladder + label tracking) */
-  --p-swatch-box-small:40px;--p-swatch-box-default:56px;--p-swatch-box-large:72px;
-  --p-swatch-radius-small:8px;--p-swatch-radius-default:12px;--p-swatch-radius-large:16px;
-  --p-swatch-name-tracking:0.1px;--p-swatch-mono-tracking:0.1px;--p-swatch-value-weight:500;
   /* Declared where the skin differs from the web value this block would otherwise inherit. */
   --p-acc-card-radius:12px;--p-cmd-radius:8px;--p-table-radius:8px;--p-tab-track-radius:0px;--p-tab-item-radius:0px;--p-tabbar-radius:0px;--p-tabbar-item-radius:0px;
 }

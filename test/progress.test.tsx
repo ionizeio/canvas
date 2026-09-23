@@ -7,6 +7,7 @@ import { ThemeProvider } from "../src/style/index.ts";
 import { Progress } from "../src/atoms/progress/progress.tsx"; // web skin (continuous)
 import { Progress as ProgressAndroid } from "../src/atoms/progress/progress.android.tsx"; // M3 segmented
 import { toneOf, toneFill } from "../src/atoms/progress/progress.shared.tsx";
+import { darkColors, lightColors } from "../src/style/tokens.ts";
 
 afterEach(cleanup);
 
@@ -117,11 +118,12 @@ describe("Progress tone axis", async () => {
     expect(toneOf({ warning: true, danger: true })).toBe("danger");
   });
 
-  it("maps each tone to the Badge palette (amber/red), lighter in dark", () => {
-    expect(toneFill("warning", false)).toBe("#f59e0b"); // amber-500
-    expect(toneFill("warning", true)).toBe("#fbbf24"); // amber-400
-    expect(toneFill("danger", false)).toBe("#ef4444"); // red-500
-    expect(toneFill("danger", true)).toBe("#f87171"); // red-400
+  // The tone fill is the tone's solid color from statusColors, the same as a Badge's dot.
+  it("maps each tone to the theme's status color, in either scheme", () => {
+    for (const tokens of [lightColors, darkColors]) {
+      expect(toneFill("warning", tokens)).toBe(tokens.warning);
+      expect(toneFill("danger", tokens)).toBe(tokens.destructive);
+    }
   });
 
   it("recolors the rendered fill so warning, danger, and default all differ", async () => {

@@ -53,8 +53,6 @@ import { Sidebar as SidebarIOS } from "../../../src/organisms/sidebar/sidebar.io
 import { Sidebar as SidebarAndroid } from "../../../src/organisms/sidebar/sidebar.android.js";
 import { Calendar as CalendarIOS } from "../../../src/organisms/calendar/calendar.ios.js";
 import { Calendar as CalendarAndroid } from "../../../src/organisms/calendar/calendar.android.js";
-import { Swatch as SwatchIOS } from "../../../src/atoms/swatch/swatch.ios.js";
-import { Swatch as SwatchAndroid } from "../../../src/atoms/swatch/swatch.android.js";
 import { Board as BoardIOS } from "../../../src/organisms/board/board.ios.js";
 import { Board as BoardAndroid } from "../../../src/organisms/board/board.android.js";
 import { Avatar as AvatarIOS, AvatarGroup as AvatarGroupIOS, AvatarMenu as AvatarMenuIOS } from "../../../src/atoms/avatar/avatar.ios.js";
@@ -112,8 +110,6 @@ import { Carousel as CarouselAndroid } from "../../../src/organisms/carousel/car
 import { Toast as ToastIOS, ToastProvider as ToastProviderIOS, useToast as useToastIOS } from "../../../src/organisms/toast/toast.ios.js";
 import { Toast as ToastAndroid, ToastProvider as ToastProviderAndroid, useToast as useToastAndroid } from "../../../src/organisms/toast/toast.android.js";
 import { Chip as ChipAndroid } from "../../../src/atoms/chip/chip.android.js";
-import { Emblem as EmblemIOS } from "../../../src/atoms/emblem/emblem.ios.js";
-import { Emblem as EmblemAndroid } from "../../../src/atoms/emblem/emblem.android.js";
 import { DragDropProvider as DragDropProviderIOS, DropZone as DropZoneIOS, Draggable as DraggableIOS, DragHandle as DragHandleIOS } from "../../../src/organisms/drag-drop/drag-drop.ios.js";
 import { DragDropProvider as DragDropProviderAndroid, DropZone as DropZoneAndroid, Draggable as DraggableAndroid, DragHandle as DragHandleAndroid } from "../../../src/organisms/drag-drop/drag-drop.android.js";
 import { DashboardGrid as DashboardGridIOS } from "../../../src/organisms/dashboard-grid/dashboard-grid.ios.js";
@@ -140,8 +136,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Command: CommandIOS, DataTable: DataTableIOS, Drawer: DrawerIOS, FilterPanel: FilterPanelIOS,
     Stepper: StepperIOS, InputOTP: InputOTPIOS, Collapsible: CollapsibleIOS,
     Carousel: CarouselIOS, Toast: ToastIOS, ToastProvider: ToastProviderIOS, useToast: useToastIOS,
-    Emblem: EmblemIOS,
-    Swatch: SwatchIOS, Board: BoardIOS, BreadcrumbItem: BreadcrumbItemIOS,
+    Board: BoardIOS, BreadcrumbItem: BreadcrumbItemIOS,
     DragDropProvider: DragDropProviderIOS, DropZone: DropZoneIOS, Draggable: DraggableIOS, DragHandle: DragHandleIOS,
     DashboardGrid: DashboardGridIOS, MetricBreakdown: MetricBreakdownIOS, GeoMap: GeoMapIOS,
   },
@@ -161,8 +156,8 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Command: CommandAndroid, DataTable: DataTableAndroid, Drawer: DrawerAndroid, FilterPanel: FilterPanelAndroid,
     Stepper: StepperAndroid, InputOTP: InputOTPAndroid, Collapsible: CollapsibleAndroid,
     Carousel: CarouselAndroid, Toast: ToastAndroid, ToastProvider: ToastProviderAndroid, useToast: useToastAndroid,
-    Chip: ChipAndroid, Emblem: EmblemAndroid,
-    Swatch: SwatchAndroid, Board: BoardAndroid, BreadcrumbItem: BreadcrumbItemAndroid,
+    Chip: ChipAndroid,
+    Board: BoardAndroid, BreadcrumbItem: BreadcrumbItemAndroid,
     DragDropProvider: DragDropProviderAndroid, DropZone: DropZoneAndroid, Draggable: DraggableAndroid, DragHandle: DragHandleAndroid,
     DashboardGrid: DashboardGridAndroid, MetricBreakdown: MetricBreakdownAndroid, GeoMap: GeoMapAndroid,
   },
