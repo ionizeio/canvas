@@ -39,8 +39,8 @@ class matches; cite them as "M3 <value> (canvas rubric)":
 
 ## Platform reference: Web rows
 
-- The established Canvas look: 12px controls and fields, 20px cards, medium-weight
-  labels, titles at the regular weight, Dark Factory's colors (a green call to action
+- The established Canvas look: 12px controls and fields, 20px cards, Dark Factory's
+  dense type (bold titles, 12.5 medium body), Dark Factory's colors (a green call to action
   and a violet selection color on white cards over a lavender page),
   visible focus treatment on keyboard focus, hover affordances.
 - No minimum touch target; pointer targets are visual-sized.

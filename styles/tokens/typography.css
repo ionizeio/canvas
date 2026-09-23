@@ -1,7 +1,6 @@
-/* Type. Two faces, one scale (px values, matching src/style/tokens.ts fontSize:
-   size / line-height pairs). The sans face is Dark Factory's Manrope and the code face
-   Geist Mono; the scale is still the Riskora kit's, titles at the regular weight (400)
-   and labels at medium (500), so hierarchy comes from size, not from bold. Custom fonts don't auto-map weight in
+/* Type. Two faces and a neutral size ladder (px values, matching src/style/tokens.ts
+   fontSize: size / line-height pairs). The sans face is Dark Factory's Manrope and the
+   code face Geist Mono. Custom fonts don't auto-map weight in
    React Native, so the kit selects a face per weight (ThemeProvider `fonts`); on the
    web the weight axis is enough when the family is registered with a weight range. */
 :root{
@@ -33,18 +32,20 @@
   --tracking-wider:0.8px;
   --tracking-widest:1.6px;
 
-  /* Semantic roles (Typography atom). Riskora's Title ladder (H1 64 down to H6 20) at
-     the regular weight; Paragraph X Large / Medium / Small / X Small for lead / body /
-     small / tiny; caption is Subheading X Small: 12/16 medium, uppercase, +4% tracking. */
-  --role-display:var(--weight-normal) var(--text-7xl)/var(--leading-7xl) var(--font-sans);
-  --role-h1:var(--weight-normal) var(--text-6xl)/var(--leading-6xl) var(--font-sans);
-  --role-h2:var(--weight-normal) var(--text-5xl)/var(--leading-5xl) var(--font-sans);
-  --role-h3:var(--weight-normal) var(--text-4xl)/var(--leading-4xl) var(--font-sans);
-  --role-h4:var(--weight-normal) var(--text-3xl)/var(--leading-3xl) var(--font-sans);
-  --role-h5:var(--weight-normal) var(--text-xl)/var(--leading-xl) var(--font-sans);
-  --role-lead:var(--weight-normal) var(--text-xl)/var(--leading-xl) var(--font-sans);
-  --role-body:var(--weight-normal) var(--text-base)/var(--leading-base) var(--font-sans);
-  --role-small:var(--weight-normal) var(--text-sm)/var(--leading-sm) var(--font-sans);
-  --role-tiny:var(--weight-normal) var(--text-xs)/var(--leading-xs) var(--font-sans);
-  --role-caption:var(--weight-medium) var(--text-xs)/var(--leading-xs) var(--font-sans);
+  /* Semantic roles (Typography atom), Dark Factory's dense scale: bold titles stepping
+     from the display 24 down to the heading 14, body 12.5 medium, the 11.5 and 11
+     semibold labels for small and tiny, and the eyebrow for caption (uppercase and
+     tracked +0.16em in the component; raised from 9.5 to the 10px floor). The Typography
+     roles in src/atoms/typography carry the same values (test/df-type-scale.test.ts). */
+  --role-display:var(--weight-bold) 24px/27px var(--font-sans);
+  --role-h1:var(--weight-bold) 20px/25px var(--font-sans);
+  --role-h2:var(--weight-bold) 17px/22px var(--font-sans);
+  --role-h3:var(--weight-bold) 16px/20px var(--font-sans);
+  --role-h4:var(--weight-bold) 15px/20px var(--font-sans);
+  --role-h5:var(--weight-bold) 14px/19px var(--font-sans);
+  --role-lead:var(--weight-medium) 14px/21px var(--font-sans);
+  --role-body:var(--weight-medium) 12.5px/19px var(--font-sans);
+  --role-small:var(--weight-semibold) 11.5px/17px var(--font-sans);
+  --role-tiny:var(--weight-semibold) 11px/15px var(--font-sans);
+  --role-caption:var(--weight-bold) 10px/13px var(--font-sans);
 }

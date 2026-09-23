@@ -93,59 +93,59 @@ chart:
 typography:
   display:
     fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
-    fontSize: "64px"
-    fontWeight: 400
-    lineHeight: "70px"
+    fontSize: "24px"
+    fontWeight: 700
+    lineHeight: "27px"
   h1:
     fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
-    fontSize: "55px"
-    fontWeight: 400
-    lineHeight: "64px"
+    fontSize: "20px"
+    fontWeight: 700
+    lineHeight: "25px"
   h2:
     fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
-    fontSize: "40px"
-    fontWeight: 400
-    lineHeight: "48px"
+    fontSize: "17px"
+    fontWeight: 700
+    lineHeight: "22px"
   h3:
     fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
-    fontSize: "36px"
-    fontWeight: 400
-    lineHeight: "44px"
+    fontSize: "16px"
+    fontWeight: 700
+    lineHeight: "20px"
   h4:
     fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
-    fontSize: "28px"
-    fontWeight: 400
-    lineHeight: "36px"
+    fontSize: "15px"
+    fontWeight: 700
+    lineHeight: "20px"
   h5:
     fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
-    fontSize: "20px"
-    fontWeight: 400
-    lineHeight: "30px"
+    fontSize: "14px"
+    fontWeight: 700
+    lineHeight: "19px"
   lead:
     fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
-    fontSize: "20px"
-    fontWeight: 400
-    lineHeight: "30px"
+    fontSize: "14px"
+    fontWeight: 500
+    lineHeight: "21px"
   body:
     fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
-    fontSize: "16px"
-    fontWeight: 400
-    lineHeight: "24px"
+    fontSize: "12.5px"
+    fontWeight: 500
+    lineHeight: "19px"
   small:
     fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
-    fontSize: "14px"
-    fontWeight: 400
-    lineHeight: "20px"
+    fontSize: "11.5px"
+    fontWeight: 600
+    lineHeight: "17px"
   tiny:
     fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
-    fontSize: "12px"
-    fontWeight: 400
-    lineHeight: "16px"
+    fontSize: "11px"
+    fontWeight: 600
+    lineHeight: "15px"
   caption:
     fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
-    fontSize: "12px"
-    fontWeight: 500
-    lineHeight: "16px"
+    fontSize: "10px"
+    fontWeight: 700
+    lineHeight: "13px"
 spacing:
   "0": "0px"
   "1": "4px"
@@ -427,26 +427,29 @@ a supported way to get one.
 
 ## Typography
 
-Two faces, Manrope and Geist Mono, and one scale (the Riskora ladder, titles at the regular
-weight so hierarchy comes from size). The semantic roles below are what the
-Typography component renders. Headings lead tighter than body copy; every body role
-sits at 14px or above, and the one role below it, `tiny`, is for captions and metadata
-rather than for anything a reader has to work through.
+Two faces, Manrope and Geist Mono, and one scale: Dark Factory's dense one, bold titles
+stepping down from the display 24 to the heading 14, body copy at 12.5 medium. The
+semantic roles below are what the Typography component renders. Headings lead tighter
+than body copy. Reading copy sits at 12px or above and small labels at 11 (the smallest
+reading and label styles iOS and Material 3 define), and the roles under that, `tiny` and
+the uppercase `caption` eyebrow at 10, are for metadata and labels rather than for
+anything a reader has to work through. Dynamic Type, Android font scale and browser zoom
+all still apply.
 
 <!-- @generated:typography -->
 | Role | Size | Line height | Weight |
 | --- | --- | --- | --- |
-| `display` | 64px | 70px | 400 |
-| `h1` | 55px | 64px | 400 |
-| `h2` | 40px | 48px | 400 |
-| `h3` | 36px | 44px | 400 |
-| `h4` | 28px | 36px | 400 |
-| `h5` | 20px | 30px | 400 |
-| `lead` | 20px | 30px | 400 |
-| `body` | 16px | 24px | 400 |
-| `small` | 14px | 20px | 400 |
-| `tiny` | 12px | 16px | 400 |
-| `caption` | 12px | 16px | 500 |
+| `display` | 24px | 27px | 700 |
+| `h1` | 20px | 25px | 700 |
+| `h2` | 17px | 22px | 700 |
+| `h3` | 16px | 20px | 700 |
+| `h4` | 15px | 20px | 700 |
+| `h5` | 14px | 19px | 700 |
+| `lead` | 14px | 21px | 500 |
+| `body` | 12.5px | 19px | 500 |
+| `small` | 11.5px | 17px | 600 |
+| `tiny` | 11px | 15px | 600 |
+| `caption` | 10px | 13px | 700 |
 <!-- @/generated -->
 
 ## Layout

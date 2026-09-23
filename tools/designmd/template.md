@@ -108,11 +108,14 @@ a supported way to get one.
 
 ## Typography
 
-Two faces, Manrope and Geist Mono, and one scale (the Riskora ladder, titles at the regular
-weight so hierarchy comes from size). The semantic roles below are what the
-Typography component renders. Headings lead tighter than body copy; every body role
-sits at 14px or above, and the one role below it, `tiny`, is for captions and metadata
-rather than for anything a reader has to work through.
+Two faces, Manrope and Geist Mono, and one scale: Dark Factory's dense one, bold titles
+stepping down from the display 24 to the heading 14, body copy at 12.5 medium. The
+semantic roles below are what the Typography component renders. Headings lead tighter
+than body copy. Reading copy sits at 12px or above and small labels at 11 (the smallest
+reading and label styles iOS and Material 3 define), and the roles under that, `tiny` and
+the uppercase `caption` eyebrow at 10, are for metadata and labels rather than for
+anything a reader has to work through. Dynamic Type, Android font scale and browser zoom
+all still apply.
 
 <!-- @generated:typography -->
 <!-- @/generated -->

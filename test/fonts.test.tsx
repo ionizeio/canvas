@@ -88,8 +88,8 @@ describe("the themed primitives", () => {
     expect(getComputedStyle(screen.getByText("Plain")).fontWeight).not.toBe("700");
     // Button labels are medium; the web skin's fontWeight resolves to the 500 face.
     expect(getComputedStyle(screen.getByText("Save")).fontFamily).toBe("Manrope_500Medium");
-    // Typography titles are regular in the Riskora ladder.
-    expect(getComputedStyle(screen.getByText("Title")).fontFamily).toBe("Manrope_400Regular");
+    // Typography titles are bold in the Dark Factory scale: the h2 role asks for 700.
+    expect(getComputedStyle(screen.getByText("Title")).fontFamily).toBe("Manrope_700Bold");
     // The code role asks for MONO_FONT and gets the registered mono face.
     expect(getComputedStyle(screen.getByText("--primary")).fontFamily).toBe("GeistMono_400Regular");
     expect(getComputedStyle(screen.getByDisplayValue("typed")).fontFamily).toBe("Manrope_400Regular");

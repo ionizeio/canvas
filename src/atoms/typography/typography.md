@@ -303,7 +303,7 @@ Type scale classes for headings, body text, and helper styles.
 </Row>
 ```
 
-**Don't** — tiny is for metadata, not legal prose; long copy at 12px strains the eye.
+**Don't** — tiny is for metadata, not legal prose; long copy at 11px strains the eye.
 
 ```tsx
 <Typography tiny>These terms govern your use of the service and your data; please read them carefully before you continue past this screen.</Typography>

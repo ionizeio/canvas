@@ -2,6 +2,7 @@ import { destructiveText } from "../../style/destructive-text.js";
 import { primaryText } from "../../style/primary-text.js";
 import { type TextStyle } from "react-native";
 import { alpha, type ColorTokens } from "../../style/index.js";
+import { typeScale } from "../../style/type-scale.js";
 import { type TypographySkin } from "./typography.shared.js";
 
 // Co-located Typography styles. One axis (role), each role mapping to a single
@@ -38,53 +39,41 @@ export type Role =
   | "code"
   | "mono";
 
-// Type + layout per role, color-free (the parts that don't read a token).
-// The Riskora type ladder (styles/tokens/typography.css carries the same values as
-// `--role-*`): the Title styles H1 64 down to H6 20 at the REGULAR weight, so the
-// hierarchy is carried by size alone and a heading never shouts; the Paragraph
-// styles X Large / Medium / Small / X Small for lead / body / small / tiny; caption
-// is Subheading X Small (12/16 medium, uppercase, +4% tracking); `code` carries the
-// self-start pill box (radius + padding).
+// Type + layout per role, color-free (the parts that don't read a token). Every role
+// is a Dark Factory text style (src/style/type-scale.ts, derived from Dark Factory's
+// theme): the titles are bold and the hierarchy steps down in size from the display
+// 24 to the heading 14; body is Dark Factory's 12.5/19 medium; small, muted and tiny
+// are its 11.5 and 11 semibold labels; caption is its eyebrow (uppercase, tracked,
+// raised from 9.5 to the 10px floor). `lead` is the heading size at the body weight
+// and leading. `code` and `mono` are Geist Mono at the small and label sizes (Dark
+// Factory has no mono), and `code` carries the self-start pill box (radius + padding).
 const roleType: Record<Role, TextStyle> = {
-  // Title/H1 Title: 64, leading 1.09
-  display: { fontSize: 64, lineHeight: 70, fontWeight: "400" },
-  // Title/H2 Title: 55 (the page title on every Riskora screen)
-  h1: { fontSize: 55, lineHeight: 64, fontWeight: "400" },
-  // Title/H3 Title: 40/48
-  h2: { fontSize: 40, lineHeight: 48, fontWeight: "400" },
-  // Title/H4 Title: 36
-  h3: { fontSize: 36, lineHeight: 44, fontWeight: "400" },
-  // Title/H5 Title: 28
-  h4: { fontSize: 28, lineHeight: 36, fontWeight: "400" },
-  // Title/H6 Title: 20 (a card or section title)
-  h5: { fontSize: 20, lineHeight: 30, fontWeight: "400" },
-  // Paragraph/X Large: 20 (weight comes from the weight axis)
-  lead: { fontSize: 20, lineHeight: 30 },
-  // Paragraph/Medium: 16, leading 1.5
-  body: { fontSize: 16, lineHeight: 24 },
-  // Paragraph/Small: 14/20
-  small: { fontSize: 14, lineHeight: 20 },
-  // Paragraph/X Small: 12/16
-  tiny: { fontSize: 12, lineHeight: 16 },
-  // Paragraph/Small in the muted ink
-  muted: { fontSize: 14, lineHeight: 20 },
-  // Subheading/X Small: 12/16 medium, uppercase, 4% tracking (0.48px at 12)
-  caption: { fontSize: 12, lineHeight: 16, fontWeight: "500", textTransform: "uppercase", letterSpacing: 0.48 },
-  // rounded bg-muted px-1.5 py-0.5 text-sm (fill added in roleColor). The pill is
-  // HUG: the shell appends `useHugStyle()` for this role instead of a static
-  // alignSelf, so it keeps its content width in a Column without pinning a Row child.
+  display: typeScale.display,
+  h1: typeScale.featuredTitle,
+  h2: typeScale.dialogTitle,
+  h3: typeScale.drawerTitle,
+  h4: typeScale.title,
+  h5: typeScale.heading,
+  lead: { fontSize: typeScale.heading.fontSize, lineHeight: 21, fontWeight: typeScale.body.fontWeight },
+  body: typeScale.body,
+  small: typeScale.small,
+  tiny: typeScale.caption,
+  muted: typeScale.small,
+  caption: typeScale.eyebrow,
+  // A muted pill (the fill is added in roleColor). The pill is HUG: the shell appends
+  // `useHugStyle()` for this role instead of a static alignSelf, so it keeps its content
+  // width in a Column without pinning a Row child.
   code: {
     borderRadius: 6,
     paddingHorizontal: 6,
     paddingVertical: 2,
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: typeScale.small.fontSize,
+    lineHeight: typeScale.small.lineHeight,
   },
-  // text-sm
-  mono: { fontSize: 14, lineHeight: 20 },
+  mono: { fontSize: typeScale.label.fontSize, lineHeight: typeScale.label.lineHeight },
 };
 
-// Web base skin: the Riskora type scale.
+// Web base skin: the Dark Factory type scale.
 export const webSkin: TypographySkin = { roleType };
 
 // iOS (HIG) and Material 3 skins. Typography is a Shared treatment, so both
@@ -167,8 +156,8 @@ export function weightStyle(weight: Weight): TextStyle {
 // Leading axis: an orthogonal line-height layer over the role's own line box. When
 // no leading prop is set the role's line height stands.
 //
-// Why the axis exists: the roles bake a reading line height (`lead` 16/24, `tiny`
-// 12/16), which is right for prose and too airy for a STACKED LOCKUP, where two lines
+// Why the axis exists: the roles bake a reading line height (`lead` 14/21, `tiny`
+// 11/15), which is right for prose and too airy for a STACKED LOCKUP, where two lines
 // read as one unit (a wordmark over its tagline, a title over its subtitle). There the
 // half-leading of both lines lands between them: 4px under a `lead` line plus 2px over
 // a `tiny` one is 6px of dead air that no gap prop can remove, because a Column's gap
@@ -182,10 +171,10 @@ export type Leading = "tight";
 const TIGHT_RATIO = 1.25;
 
 // `tight` only ever TIGHTENS: the result is the role's own line height or the capped
-// one, whichever is smaller. Without the min, the ratio would LOOSEN the display scale,
-// whose line boxes are already at or below 1.25 (display 48/48 = 1.0, h1 36/40 = 1.11,
-// h2 30/36 = 1.2), so `<Typography display tightLeading>` would silently grow its line
-// box to 60. The clamp makes the prop safe on every role, which is what lets it be a
+// one, whichever is smaller. Without the min, the ratio would LOOSEN the roles whose
+// line boxes are already at or below 1.25 (display 24/27 = 1.13, h1 20/25 = 1.25, h3
+// 16/20 = 1.25), so `<Typography display tightLeading>` would silently grow its line
+// box to 30. The clamp makes the prop safe on every role, which is what lets it be a
 // free-standing axis rather than one that is only valid on some roles.
 export function leadingStyle(roleType: TextStyle, leading: Leading): TextStyle | null {
   const fontSize = roleType.fontSize;

@@ -233,16 +233,24 @@ describe("type", () => {
   const decls = declarationsIn(typeCss, ":root");
   const role = (name: string) => parseFontShorthand(resolveVars(decls[`role-${name}`] ?? "", decls));
 
-  it("body copy never drops below 14px", () => {
-    // The floor every mobile-aware guideline agrees on; below it, body text stops
-    // being comfortably readable on a phone.
-    expect(role("body").size).toBeGreaterThanOrEqual(14);
-    expect(role("small").size).toBeGreaterThanOrEqual(14);
-    expect(role("lead").size).toBeGreaterThanOrEqual(14);
+  // The floors are the platforms' own smallest reading styles, by the owner's decision
+  // of 2026-09-23 to take Dark Factory's dense scale (body 12.5): Material 3 body-small
+  // (12sp) and Apple's caption 1 (12pt) for reading copy, Material 3 label-small (11sp)
+  // and Apple's caption 2 (11pt) for small labels, and the 10px source floor below that.
+  // Dynamic Type, Android font scale and browser zoom still apply on top: the kit never
+  // sets allowFontScaling or maxFontSizeMultiplier.
+  it("reading copy never drops below the platforms' smallest reading style (12px)", () => {
+    expect(role("body").size).toBeGreaterThanOrEqual(12);
+    expect(role("lead").size).toBeGreaterThanOrEqual(12);
   });
 
-  it("even the smallest role stays legible", () => {
-    expect(role("tiny").size).toBeGreaterThanOrEqual(12);
+  it("small labels hold the platforms' smallest label (11px)", () => {
+    expect(role("small").size).toBeGreaterThanOrEqual(11);
+  });
+
+  it("even the smallest role stays at the 10px source floor", () => {
+    expect(role("tiny").size).toBeGreaterThanOrEqual(10);
+    expect(role("caption").size).toBeGreaterThanOrEqual(10);
   });
 
   it("headings lead tighter than body copy", () => {

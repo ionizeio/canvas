@@ -4,22 +4,22 @@ import { PageNav } from "../../../ui/page-nav";
 import { sans, geistMono } from "../../../ui/fonts";
 import { TokenH1, TokenLede, TokenSection, Surface, Grid } from "../../../ui/tokens-kit";
 
-// The Canvas type scale is the Typography component's roles: the Riskora ladder, now
-// set in Manrope, titles at the regular weight so hierarchy comes from size alone. The
+// The Canvas type scale is the Typography component's roles: Dark Factory's dense
+// scale in Manrope, bold titles stepping down in size from the display 24. The
 // specimen rows render the real <Typography> role (src/atoms/typography), so the
 // preview reflects the package values rather than a copy; the `spec` column is the
 // human-readable summary of roleType.
 const SCALE = [
-  { name: "Display", role: "display", spec: "64 / 70 · regular", use: "Hero titles. One per screen, at most." },
-  { name: "H1", role: "h1", spec: "55 / 64 · regular", use: "Top-level page titles." },
-  { name: "H2", role: "h2", spec: "40 / 48 · regular", use: "Major page sections." },
-  { name: "H3", role: "h3", spec: "36 / 44 · regular", use: "Subsections; in-app page titles." },
-  { name: "H4", role: "h4", spec: "28 / 36 · regular", use: "Card titles, dialog headings." },
-  { name: "H5", role: "h5", spec: "20 / 30 · regular", use: "Section and card titles, form section labels." },
-  { name: "Lead", role: "lead", spec: "20 / 30 · regular", use: "Lead paragraphs, identity names." },
-  { name: "Body", role: "body", spec: "16 / 24 · regular", use: "Default reading text." },
-  { name: "Small", role: "small", spec: "14 / 20 · muted", muted: true, use: "Secondary text, helpers." },
-  { name: "Tiny", role: "tiny", spec: "12 / 16 · muted", muted: true, use: "Metadata, timestamps, labels." },
+  { name: "Display", role: "display", spec: "24 / 27 · bold", use: "Hero titles. One per screen, at most." },
+  { name: "H1", role: "h1", spec: "20 / 25 · bold", use: "Top-level page titles." },
+  { name: "H2", role: "h2", spec: "17 / 22 · bold", use: "Major page sections, dialog titles." },
+  { name: "H3", role: "h3", spec: "16 / 20 · bold", use: "Subsections, sheet and drawer titles." },
+  { name: "H4", role: "h4", spec: "15 / 20 · bold", use: "In-app page titles, card titles." },
+  { name: "H5", role: "h5", spec: "14 / 19 · bold", use: "Section and card headings, form section labels." },
+  { name: "Lead", role: "lead", spec: "14 / 21 · medium", use: "Lead paragraphs, identity names." },
+  { name: "Body", role: "body", spec: "12.5 / 19 · medium", use: "Default reading text." },
+  { name: "Small", role: "small", spec: "11.5 / 17 · semibold · muted", muted: true, use: "Secondary text, helpers." },
+  { name: "Tiny", role: "tiny", spec: "11 / 15 · semibold · muted", muted: true, use: "Metadata, timestamps, labels." },
 ] as const;
 
 // Helper roles beyond the size scale, also boolean props on Typography: a muted
@@ -27,16 +27,17 @@ const SCALE = [
 // muted pill fill; mono is bare). Rendered with the real component as well.
 const HELPERS = [
   { name: "Muted", role: "muted", sample: "Sphinx of black quartz, judge my vow.", use: "De-emphasised body text." },
-  { name: "Caption", role: "caption", sample: "Section label", use: "Eyebrows, uppercase section labels (12/16 medium, 4% tracking)." },
+  { name: "Caption", role: "caption", sample: "Section label", use: "Eyebrows, uppercase section labels (10/13 bold, 16% tracking)." },
   { name: "Code", role: "code", sample: "--primary", use: "Inline code, tokens, IDs (muted pill)." },
   { name: "Mono", role: "mono", sample: "01HZK7M8N9P0Q1R2", use: "Monospace values, no fill." },
 ] as const;
 
 const WEIGHTS = [
-  { w: "400" as const, name: "Regular", use: "Body text and every title role (the default weight)" },
-  { w: "500" as const, name: "Medium", use: "Labels, table values, buttons, captions" },
-  { w: "600" as const, name: "Semibold", use: "Emphasis inside a paragraph, a stat value" },
-  { w: "700" as const, name: "Bold", use: "The Subheading eyebrow at 16" },
+  { w: "400" as const, name: "Regular", use: "The regular weight prop; no role defaults to it" },
+  { w: "500" as const, name: "Medium", use: "Body and lead copy, button labels" },
+  { w: "600" as const, name: "Semibold", use: "Small and tiny labels, emphasis inside a paragraph" },
+  { w: "700" as const, name: "Bold", use: "Every title role and the caption eyebrow" },
+  { w: "800" as const, name: "ExtraBold", use: "Stat values and stage labels in Dark Factory's scale" },
 ];
 
 // The uppercase eyebrow used by the font cards and the "Patterns in use" cards:
@@ -202,7 +203,7 @@ export default function TypographyScreen() {
         <TokenSection
           title="Type scale"
           description="Each role pairs a size with a line-height. Select one with a boolean prop on Typography (e.g. <Typography h2>), never a raw font-size."
-          anatomy="display (64/70) and h1 (55/64) are distinct roles, not a shared rule; every title sits at the regular weight, so the hierarchy is size. Roles are mutually exclusive, first-match precedence."
+          anatomy="display (24/27) and h1 (20/25) are distinct roles, not a shared rule; every title is bold, so the hierarchy steps down in size. Roles are mutually exclusive, first-match precedence."
         >
           <Surface padding={0} style={{ overflow: "hidden" }}>
             {SCALE.map((s, i) => <ScaleRow key={s.role} s={s} i={i} />)}
@@ -226,7 +227,7 @@ export default function TypographyScreen() {
           </Surface>
         </TokenSection>
 
-        <TokenSection title="Weights" description="Manrope runs from 200 to 800, and the kit's roles use the four below; the docs register 400 to 800, each as its own face, and ThemeProvider fonts maps a style's fontWeight onto the nearest registered one, since RN does not auto-map fontWeight for custom fonts.">
+        <TokenSection title="Weights" description="Manrope runs from 200 to 800. The docs register the five below, each as its own face, and ThemeProvider fonts maps a style's fontWeight onto the nearest registered one, since RN does not auto-map fontWeight for custom fonts.">
           <Surface padding={0} style={{ overflow: "hidden" }}>
             {WEIGHTS.map((row, i) => <WeightRow key={row.w} row={row} i={i} />)}
           </Surface>
