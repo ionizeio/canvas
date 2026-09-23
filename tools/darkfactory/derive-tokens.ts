@@ -22,7 +22,8 @@ import { join } from "node:path";
 import { composite, contrastRatio, mixOklab } from "../../src/style/color.ts";
 import { oklchToHex } from "../tokens/css-tokens.ts";
 import { contrast, composite as compositeRgba, destructiveStates, neighborhood, primaryTextSurfaces, rgba, type SrgbColor } from "../tokens/text-beds.ts";
-import type { ColorTokens } from "../../src/style/tokens.ts";
+import { glassByScheme, type ColorTokens } from "../../src/style/tokens.ts";
+import { WEB_TINTS } from "../../src/style/glass-surface/web-frost.ts";
 
 export type Kind = "from" | "derive" | "solved" | "kit";
 export interface Derived {
@@ -311,6 +312,20 @@ export function derivePalette(name: PaletteName): DerivedPalette {
   from("shade", "shadow");
   from("inverse", "toastBg");
   from("inverse-foreground", "toastText");
+  // The brand on the inverse surface (Material 3's inverse-primary): the action a
+  // snackbar carries on the toast pill. DF's toast has no action of its own, so the role
+  // is the palette's own accent2 moved the fewest lightness steps that read at 4.5:1 on
+  // every bed the pill makes, the text and the bed each perturbed by one 8-bit step,
+  // keeping each palette's hue there instead of borrowing another palette's brand.
+  {
+    const beds = inverseBeds(name, out.inverse!.value, out["inverse-foreground"]!.value, [out.background!.value, out.card!.value]);
+    const direction = contrastRatio(out.inverse!.value, "#ffffff") >= contrastRatio(out.inverse!.value, "#000000") ? 1 : -1;
+    const s = solveLightness(p.accent2!, direction, (hex) => beds.every((bed) => {
+      for (const fg of neighborhood(hex)) for (const bg of neighborhood(bed)) if (contrast(fg, bg) < BODY_TEXT) return false;
+      return true;
+    }));
+    put("inverse-primary", s.hex, s.steps ? "solved" : "from", s.steps ? `DF accent2, ${s.steps} lightness steps to ${BODY_TEXT}:1 on the toast pill, solid and under glass, resting and pressed` : "DF accent2", s.css);
+  }
 
   // The two text roles the kit paints over skin composites (a tonal pill, a nav tile, a
   // calendar band, the pressed and ripple states of the menus and sheets) are solved
@@ -350,6 +365,22 @@ export function derivePalette(name: PaletteName): DerivedPalette {
 }
 
 const chartTokens = () => Object.fromEntries(CHART_SERIES.map((c, i) => [`chart-${i + 1}`, c]));
+
+/**
+ * Every bed the toast pill makes for the text on it: the solid pill, and the pill under
+ * glass, which the snackbar paints as its dense tint (inverseDenseTint: the fill at the
+ * dense layer's alpha, the web frost's for the palette and the native one for its scheme)
+ * over the palette's page and card; each resting and pressed (the pill's ink at 0.12, the
+ * Android ripple). test/text-contrast.test.tsx checks the same beds.
+ */
+export function inverseBeds(name: PaletteName, pill: string, ink: string, backdrops: string[]): string[] {
+  const scheme = name === "dark" ? "dark" : "light";
+  const web = name === "mint" ? WEB_TINTS.mint : WEB_TINTS[scheme];
+  const alphaOf = (rgbaValue: string) => Number(/rgba?\([^)]*,\s*([\d.]+)\)/.exec(rgbaValue)![1]);
+  const alphas = [alphaOf(web["glass-tint-dense"]), alphaOf(glassByScheme[scheme]["glass-tint-dense"])];
+  const resting = [pill, ...alphas.flatMap((a) => backdrops.map((backdrop) => over(withAlpha(pill, a), backdrop)))];
+  return resting.flatMap((bed) => [bed, over(withAlpha(ink, 0.12), bed)]);
+}
 
 // DF has no chart palette. These eight series are anchored on DF hues (its violet, the
 // promo teal and peach, the orb pink, mint's blue, the orb mint, the promo magenta, a

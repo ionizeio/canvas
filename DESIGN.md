@@ -43,6 +43,46 @@ colors:
   shade: "rgba(121, 100, 214, 0.22)"
   inverse: "#26264a"
   inverse-foreground: "#ffffff"
+  inverse-primary: "#cecfff"
+colorsMint:
+  background: "#f0f7fd"
+  foreground: "#2e3d4f"
+  card: "#ffffff"
+  card-foreground: "#2e3d4f"
+  popover: "#ffffff"
+  popover-foreground: "#2e3d4f"
+  primary: "#3474d4"
+  primary-text: "#1a5bb9"
+  primary-foreground: "#ffffff"
+  primary-soft: "rgba(63, 127, 224, 0.14)"
+  action: "#1f8049"
+  action-foreground: "#ffffff"
+  secondary: "#f1f6fb"
+  secondary-foreground: "#2e3d4f"
+  muted: "#f1f6fb"
+  muted-foreground: "#5f7083"
+  accent: "#f0f5fd"
+  accent-foreground: "#2e3d4f"
+  destructive: "#b53a44"
+  destructive-text: "#9a1f2f"
+  destructive-foreground: "#ffffff"
+  destructive-soft: "rgba(181, 58, 68, 0.12)"
+  success: "#0b753f"
+  success-foreground: "#ffffff"
+  success-soft: "rgba(31, 128, 73, 0.12)"
+  warning: "#8a5200"
+  warning-foreground: "#ffffff"
+  warning-soft: "rgba(240, 160, 40, 0.18)"
+  border: "#e4eaf1"
+  input: "#858e9a"
+  field-border: "#ccd6e5"
+  field-fill: "rgba(255, 255, 255, 0.75)"
+  ring: "#3f7fe0"
+  scrim: "rgba(20, 50, 90, 0.28)"
+  shade: "rgba(60, 110, 190, 0.2)"
+  inverse: "#26264a"
+  inverse-foreground: "#ffffff"
+  inverse-primary: "#b9d4ff"
 colorsDark:
   background: "#272544"
   foreground: "#ebebf7"
@@ -81,6 +121,7 @@ colorsDark:
   shade: "rgba(0, 0, 0, 0.5)"
   inverse: "#26264a"
   inverse-foreground: "#ffffff"
+  inverse-primary: "#b1a7ff"
 chart:
   chart-1: "#7b6cf0"
   chart-2: "#03919d"
@@ -689,65 +730,71 @@ appears.
 
 ## Colors
 
-Semantic tokens, one set per scheme, derived from Dark Factory's palettes (blush for
-light, its single dark palette for dark; the source is vendored at
-`tools/darkfactory/theme.json`). Every role is a Dark Factory value or a recorded rule over
-Dark Factory values in `tools/darkfactory/derive-tokens.ts`, which solves a role to the
-kit's contrast floors where the raw value falls short; `bun run check-df` holds the shipped
-values to that derivation. Components read them through `useTheme()`; the scheme follows
-the OS unless `<ThemeProvider dark>` or `<ThemeProvider light>` forces one. On the web the
-same values ship as custom properties in `styles/canvas.css`, where dark keys off a `.dark`
-class on the root rather than `prefers-color-scheme`.
+Semantic tokens, one set per palette, derived from Dark Factory's palettes: blush (the
+light default), mint (the light alternative) and its single dark palette (the source is
+vendored at `tools/darkfactory/theme.json`). Every role is a Dark Factory value or a
+recorded rule over Dark Factory values in `tools/darkfactory/derive-tokens.ts`, which
+solves a role to the kit's contrast floors where the raw value falls short; `bun run
+check-df` holds the shipped values to that derivation. Components read them through
+`useTheme()`; the scheme follows the OS unless `<ThemeProvider dark>` or `<ThemeProvider
+light>` forces one, and `<ThemeProvider mint>` paints the light scheme in mint. The dark
+scheme has one palette, so `dark` wins over `mint`. On the web the same values ship as
+custom properties in `styles/canvas.css`, where dark keys off a `.dark` class on the root
+rather than `prefers-color-scheme` and mint off `data-palette="mint"` (`setPalette`), with
+`.dark` winning when both are set.
 
 Two roles carry the brand, and they differ on purpose. `primary` is the selection color:
 checked, selected and current states, links and the focus ring. `action` is the
 call-to-action fill: primary buttons, meters, count badges. A theme that overrides
 `primary` alone repaints both, since `action` follows an overriding `primary` unless the
-theme sets it too. `scrim` dims the page behind every modal. The `-soft` washes, `shade`
-(the shadow tint), `inverse` and `inverse-foreground` (the surface of a tooltip or a
-snackbar) and `field-fill` are optional roles the skins adopt as they take the Dark
-Factory look; a theme that omits them keeps the older fallbacks.
+theme sets it too. `scrim` dims the page behind every modal. `inverse`,
+`inverse-foreground` and `inverse-primary` are the toast pill, its ink and the action on
+it (the Android snackbar paints them; `inverse-primary` is the palette's own brand hue
+lightened to read on the pill). The `-soft` washes, `shade` (the shadow tint) and
+`field-fill` are optional roles the skins adopt as they take the Dark Factory look; a
+theme that omits any of these keeps the older fallbacks.
 
 <!-- @generated:colors -->
-| Token | Light | Dark |
-| --- | --- | --- |
-| `background` | `#f5f2fe` | `#272544` |
-| `foreground` | `#3b3c5c` | `#ebebf7` |
-| `card` | `#ffffff` | `#252741` |
-| `card-foreground` | `#3b3c5c` | `#ebebf7` |
-| `popover` | `#ffffff` | `#252741` |
-| `popover-foreground` | `#3b3c5c` | `#ebebf7` |
-| `primary` | `#7262e5` | `#a496ff` |
-| `primary-text` | `#5d48c9` | `#b8b0ff` |
-| `primary-foreground` | `#ffffff` | `#221f3a` |
-| `primary-soft` | `rgba(123, 108, 240, 0.14)` | `rgba(164, 150, 255, 0.16)` |
-| `action` | `#21804b` | `#5fd18a` |
-| `action-foreground` | `#ffffff` | `#0d2a17` |
-| `secondary` | `#f5f2fc` | `#2d2f4c` |
-| `secondary-foreground` | `#3b3c5c` | `#ebebf7` |
-| `muted` | `#f5f2fc` | `#2d2f4c` |
-| `muted-foreground` | `#696b8d` | `#a3a5c6` |
-| `accent` | `#f4f3fe` | `#323254` |
-| `accent-foreground` | `#3b3c5c` | `#ebebf7` |
-| `destructive` | `#b53a44` | `#ff8b93` |
-| `destructive-text` | `#9a1f2f` | `#ffadb0` |
-| `destructive-foreground` | `#ffffff` | `#38181b` |
-| `destructive-soft` | `rgba(181, 58, 68, 0.12)` | `rgba(255, 139, 147, 0.16)` |
-| `success` | `#0b7440` | `#5fd18a` |
-| `success-foreground` | `#ffffff` | `#0d2a17` |
-| `success-soft` | `rgba(33, 128, 75, 0.12)` | `rgba(95, 209, 138, 0.16)` |
-| `warning` | `#965801` | `#ffc46b` |
-| `warning-foreground` | `#ffffff` | `#311f03` |
-| `warning-soft` | `rgba(240, 160, 40, 0.18)` | `rgba(255, 180, 80, 0.16)` |
-| `border` | `#eae8f3` | `#3b3d54` |
-| `input` | `#898ba0` | `#7c7e93` |
-| `field-border` | `#d6d3e7` | `#44455c` |
-| `field-fill` | `rgba(255, 255, 255, 0.7)` | `rgba(255, 255, 255, 0.06)` |
-| `ring` | `#7b6cf0` | `#a496ff` |
-| `scrim` | `rgba(40, 30, 90, 0.28)` | `rgba(5, 5, 20, 0.55)` |
-| `shade` | `rgba(121, 100, 214, 0.22)` | `rgba(0, 0, 0, 0.5)` |
-| `inverse` | `#26264a` | `#26264a` |
-| `inverse-foreground` | `#ffffff` | `#ffffff` |
+| Token | Blush (light) | Mint (light) | Dark |
+| --- | --- | --- | --- |
+| `background` | `#f5f2fe` | `#f0f7fd` | `#272544` |
+| `foreground` | `#3b3c5c` | `#2e3d4f` | `#ebebf7` |
+| `card` | `#ffffff` | `#ffffff` | `#252741` |
+| `card-foreground` | `#3b3c5c` | `#2e3d4f` | `#ebebf7` |
+| `popover` | `#ffffff` | `#ffffff` | `#252741` |
+| `popover-foreground` | `#3b3c5c` | `#2e3d4f` | `#ebebf7` |
+| `primary` | `#7262e5` | `#3474d4` | `#a496ff` |
+| `primary-text` | `#5d48c9` | `#1a5bb9` | `#b8b0ff` |
+| `primary-foreground` | `#ffffff` | `#ffffff` | `#221f3a` |
+| `primary-soft` | `rgba(123, 108, 240, 0.14)` | `rgba(63, 127, 224, 0.14)` | `rgba(164, 150, 255, 0.16)` |
+| `action` | `#21804b` | `#1f8049` | `#5fd18a` |
+| `action-foreground` | `#ffffff` | `#ffffff` | `#0d2a17` |
+| `secondary` | `#f5f2fc` | `#f1f6fb` | `#2d2f4c` |
+| `secondary-foreground` | `#3b3c5c` | `#2e3d4f` | `#ebebf7` |
+| `muted` | `#f5f2fc` | `#f1f6fb` | `#2d2f4c` |
+| `muted-foreground` | `#696b8d` | `#5f7083` | `#a3a5c6` |
+| `accent` | `#f4f3fe` | `#f0f5fd` | `#323254` |
+| `accent-foreground` | `#3b3c5c` | `#2e3d4f` | `#ebebf7` |
+| `destructive` | `#b53a44` | `#b53a44` | `#ff8b93` |
+| `destructive-text` | `#9a1f2f` | `#9a1f2f` | `#ffadb0` |
+| `destructive-foreground` | `#ffffff` | `#ffffff` | `#38181b` |
+| `destructive-soft` | `rgba(181, 58, 68, 0.12)` | `rgba(181, 58, 68, 0.12)` | `rgba(255, 139, 147, 0.16)` |
+| `success` | `#0b7440` | `#0b753f` | `#5fd18a` |
+| `success-foreground` | `#ffffff` | `#ffffff` | `#0d2a17` |
+| `success-soft` | `rgba(33, 128, 75, 0.12)` | `rgba(31, 128, 73, 0.12)` | `rgba(95, 209, 138, 0.16)` |
+| `warning` | `#965801` | `#8a5200` | `#ffc46b` |
+| `warning-foreground` | `#ffffff` | `#ffffff` | `#311f03` |
+| `warning-soft` | `rgba(240, 160, 40, 0.18)` | `rgba(240, 160, 40, 0.18)` | `rgba(255, 180, 80, 0.16)` |
+| `border` | `#eae8f3` | `#e4eaf1` | `#3b3d54` |
+| `input` | `#898ba0` | `#858e9a` | `#7c7e93` |
+| `field-border` | `#d6d3e7` | `#ccd6e5` | `#44455c` |
+| `field-fill` | `rgba(255, 255, 255, 0.7)` | `rgba(255, 255, 255, 0.75)` | `rgba(255, 255, 255, 0.06)` |
+| `ring` | `#7b6cf0` | `#3f7fe0` | `#a496ff` |
+| `scrim` | `rgba(40, 30, 90, 0.28)` | `rgba(20, 50, 90, 0.28)` | `rgba(5, 5, 20, 0.55)` |
+| `shade` | `rgba(121, 100, 214, 0.22)` | `rgba(60, 110, 190, 0.2)` | `rgba(0, 0, 0, 0.5)` |
+| `inverse` | `#26264a` | `#26264a` | `#26264a` |
+| `inverse-foreground` | `#ffffff` | `#ffffff` | `#ffffff` |
+| `inverse-primary` | `#cecfff` | `#b9d4ff` | `#b1a7ff` |
 <!-- @/generated -->
 
 The chart series is a fixed assignment: series one is always `chart-1`, and filtering a

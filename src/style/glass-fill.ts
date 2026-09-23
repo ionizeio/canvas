@@ -48,13 +48,15 @@ export function withInnerFill(theme: Pick<ThemeValue, "tokens" | "surface" | "da
 }
 
 /**
- * The dense-layer tint for an INVERSE surface: a tooltip bubble or the M3 snackbar,
- * which paint the scheme's ink as their fill and the page colour as their text. The
- * dense token is the page colour at the dense alpha, so on those it would put light
- * text on a light pane; this is the ink at the same alpha instead, so the surface
- * keeps its inverse reading and its text its contrast while it takes the material.
+ * The dense-layer tint for an INVERSE surface: a tooltip bubble, which paints the
+ * scheme's ink as its fill and the page colour as its text, or the M3 snackbar, which
+ * paints the toast pill (`inverse`) with its own light ink. The dense token is the page
+ * colour at the dense alpha, so on those it would put light text on a light pane; this
+ * is the surface's own fill (`fill`, the ink by default) at the same alpha instead, so
+ * the surface keeps its inverse reading and its text its contrast while it takes the
+ * material.
  */
-export function inverseDenseTint(theme: Pick<ThemeValue, "tokens" | "glass">): string {
+export function inverseDenseTint(theme: Pick<ThemeValue, "tokens" | "glass">, fill: string = theme.tokens.foreground): string {
   const dense = channelsOf(theme.glass["glass-tint-dense"]);
-  return alpha(theme.tokens.foreground, dense ? dense[3] : 0.88);
+  return alpha(fill, dense ? dense[3] : 0.88);
 }

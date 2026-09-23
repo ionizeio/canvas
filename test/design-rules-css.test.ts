@@ -13,8 +13,9 @@ import {
   shadowLayers,
   type PlatformKey,
 } from "../tools/tokens/css-tokens.ts";
-import { breakpoints, darkColors, lightColors, radius, shape, spacing, widths } from "../src/style/tokens.ts";
+import { breakpoints, radius, shape, spacing, widths } from "../src/style/tokens.ts";
 import { isRing, renderedContrast, shadeLayers, SHADE_LIMIT } from "../tools/tokens/shade.ts";
+import { LOOKS } from "./fixtures/looks.ts";
 
 // Design rules, CSS side: the web hand-off under styles/tokens.
 //
@@ -88,10 +89,11 @@ describe("elevation in the hand-off", () => {
   // The shadows spell var(--shadow-*) over the palette's --shade, so each one is judged
   // resolved against each palette, on that palette's page, card and popover.
   const colorsCss = read("colors");
-  const palettes = [
-    { name: "light", decls: { ...declarationsIn(colorsCss, ":root"), ...rootShadows }, tokens: lightColors },
-    { name: "dark", decls: { ...declarationsIn(colorsCss, ":root"), ...declarationsIn(colorsCss, ".dark"), ...rootShadows }, tokens: darkColors },
-  ] as const;
+  const palettes = LOOKS.map((look) => ({
+    name: look.name,
+    decls: { ...declarationsIn(colorsCss, ":root"), ...declarationsIn(colorsCss, look.selector), ...rootShadows },
+    tokens: look.tokens,
+  }));
   // The top layer: the dialog's shade, a separator over a scrim or arbitrary content
   // rather than depth on the page (like the scrims below, held to the direction rule only).
   const isTopLayer = (name: string, raw: string) => name === "shadow-xl" || raw.includes("var(--shadow-xl)");
@@ -172,8 +174,9 @@ describe("one neutral family", () => {
   };
   const median = (hues: number[]) => [...hues].sort((a, b) => a - b)[Math.floor(hues.length / 2)]!;
 
-  for (const scheme of [":root", ".dark"] as const) {
-    const decls = scheme === ":root" ? declarationsIn(colorsCss, ":root") : { ...declarationsIn(colorsCss, ":root"), ...declarationsIn(colorsCss, ".dark") };
+  for (const look of LOOKS) {
+    const scheme = look.selector;
+    const decls = { ...declarationsIn(colorsCss, ":root"), ...declarationsIn(colorsCss, look.selector) };
     const classOf = (names: string[]) => names.map((name) => ({ name, ...parse(decls[name])! }));
     const surfaces = classOf(SURFACES);
     const inks = classOf(INKS);

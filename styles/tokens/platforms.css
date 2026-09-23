@@ -813,11 +813,12 @@
   --p-list-name:16px;--p-list-name-lh:24px;--p-list-name-weight:400;--p-list-name-tracking:0.5px;
   --p-list-sub:14px;--p-list-sub-lh:20px;--p-list-sub-tracking:0.25px;
   --p-list-header-pad-x:16px;--p-list-header-title:16px;--p-list-header-title-lh:24px;--p-list-header-title-weight:500;--p-list-header-title-tracking:0.15px;
-  /* Toast — M3 snackbar: 4dp bar on the INVERSE surface, 14sp regular body; the M3
-     snackbar anatomy has no leading icon slot, so the auto intent glyph hides */
-  --p-toast-radius:4px;--p-toast-fill:var(--foreground);--p-toast-label:var(--background);
+  /* Toast, the M3 snackbar: 4dp bar on the INVERSE surface (Dark Factory's toast pill, the
+     same in every palette and scheme), 14sp regular body; the M3 snackbar anatomy has no
+     leading icon slot, so the auto intent glyph hides */
+  --p-toast-radius:4px;--p-toast-fill:var(--inverse);--p-toast-label:var(--inverse-foreground);
   --p-toast-msg:14px;--p-toast-msg-lh:20px;--p-toast-msg-weight:400;--p-toast-msg-tracking:0px;
-  --p-toast-desc-color:color-mix(in oklab, var(--background) 70%, transparent);--p-toast-gap:8px;
+  --p-toast-desc-color:color-mix(in oklab, var(--inverse-foreground) 70%, transparent);--p-toast-gap:8px;
   --p-toast-glyph:none;
   /* EmptyState — M3 medium shape, title-medium */
   --p-empty-radius:12px;--p-empty-title-weight:500;--p-empty-title-tracking:0.15px;--p-empty-desc-tracking:0.25px;

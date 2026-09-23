@@ -14,9 +14,10 @@ import { Pagination } from "../src/atoms/pagination/pagination.tsx";
 import { brandInk, brandTint, surfaceUnderFill, BRAND_TINT_ALPHA, BRAND_INK_CONTRAST } from "../src/style/glass-surface/glass-surface.shared.tsx";
 import { alpha, composite, contrastRatio } from "../src/style/color.ts";
 import { actionFill, actionInk } from "../src/style/action.ts";
-import { glassByScheme, lightColors, darkColors, palette, brandColors, type ColorTokens } from "../src/style/tokens.ts";
+import { lightColors, palette, brandColors } from "../src/style/tokens.ts";
 import { WEB_TINTS } from "../src/style/glass-surface/web-frost.ts";
 import { statusHues, HUE_WASH } from "../src/style/status-hue.ts";
+import { LOOKS } from "./fixtures/looks.ts";
 
 // The CONTROL layer of the glass model: every control that paints a surface of its
 // own (a field box, a button, a switch track, a checkbox, a badge, a chip, a keycap,
@@ -167,14 +168,13 @@ describe("brand-tinted glass pucks", () => {
     expect(rgbaOf(plain.fill!.style.backgroundColor)).toEqual(rgbaOf(LIGHT["glass-tint-control"]));
   });
 
-  it("keeps the painted ink at 4.5:1 over the page in both schemes, densifying only as far as it needs", () => {
-    for (const scheme of ["light", "dark"] as const) {
-      const t: ColorTokens = scheme === "light" ? lightColors : darkColors;
+  it("keeps the painted ink at 4.5:1 over the page in every palette, densifying only as far as it needs", () => {
+    for (const { name: scheme, tokens: t, nativeGlass } of LOOKS) {
       for (const brand of [t.primary, actionFill(t), t.destructive]) {
         // The ink is the one the skin paints on the brand (its token pair), not the stronger
         // of black and white (see brandInk).
         const ink = brandInk(t, brand);
-        const fill = surfaceUnderFill(glassByScheme[scheme], "control", brand, undefined, t);
+        const fill = surfaceUnderFill(nativeGlass, "control", brand, undefined, t);
         expect(fill).toBe(brandTint(brand, t.background, ink));
         expect(contrastRatio(composite(fill, t.background), ink), `${scheme} ${brand}`).toBeGreaterThanOrEqual(BRAND_INK_CONTRAST);
         // Never sheerer than the floor; where the floor already clears, it stays there.
@@ -207,15 +207,14 @@ describe("hue washes", () => {
     expect(rgbaOf(underFillOf(container.querySelector('[data-testid="kbd"]') as HTMLElement))).toEqual(rgbaOf(LIGHT["glass-tint-control"]));
   });
 
-  it("holds every hue's deeper label at 4.5:1 over the page, over a content pane and over a control puck, in both schemes", () => {
+  it("holds every hue's deeper label at 4.5:1 over the page, over a content pane and over a control puck, in every palette", () => {
     const hues = Object.keys(palette).filter((k) => k.endsWith("-500")).map((k) => k.slice(0, -4));
     expect(hues.length).toBeGreaterThan(10);
     // The panes differ by platform: the web frost's tints and the native set.
-    for (const [platform, tints] of [["web", WEB_TINTS], ["native", glassByScheme]] as const) {
-      for (const scheme of ["light", "dark"] as const) {
-        const t = scheme === "light" ? lightColors : darkColors;
-        const g = tints[scheme];
-        const dark = scheme === "dark";
+    for (const look of LOOKS) {
+      for (const [platform, g] of [["web", look.webGlass], ["native", look.nativeGlass]] as const) {
+        const { name: scheme, tokens: t } = look;
+        const dark = look.scheme === "dark";
         const bases = [t.background, composite(g["glass-tint-content"], t.background), composite(g["glass-tint-control"], composite(g["glass-tint-content"], t.background))];
         for (const hue of hues) {
           const wash = alpha(palette[`${hue}-500`], dark ? HUE_WASH.dark : HUE_WASH.light);
@@ -274,8 +273,7 @@ describe("solid mode", () => {
   });
 
   it("the aurora is not a base the pucks are tuned against, but the brand ink still clears 4.5:1 over it", () => {
-    for (const scheme of ["light", "dark"] as const) {
-      const t = scheme === "light" ? lightColors : darkColors;
+    for (const { name: scheme, tokens: t } of LOOKS) {
       for (const orb of [brandColors["orb-indigo"], brandColors["orb-violet"], brandColors["orb-cyan"]]) {
         expect(contrastRatio(composite(brandTint(t.primary, t.background), orb), t["primary-foreground"]), `${scheme} primary over ${orb}`).toBeGreaterThanOrEqual(4.5);
       }

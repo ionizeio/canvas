@@ -36,10 +36,10 @@ import { channelsOf } from "../src/style/color.ts";
 // and still glass at the rim. AnchoredOverlay's `dense` selects that layer for the
 // anchored cards; `opaque` remains for a consumer that wants the plain box outright.
 //
-// Two of them are INVERSE surfaces (the tooltip bubble on every skin, the M3
-// snackbar): they paint the scheme's ink as their fill and the page colour as their
-// text, so their dense tint is the ink at the dense alpha (`inverseDenseTint`) and
-// the text keeps its contrast.
+// Two of them are INVERSE surfaces: the tooltip bubble on every skin paints the
+// scheme's ink as its fill and the page colour as its text, and the M3 snackbar paints
+// the toast pill (`inverse`) with its own light ink. Their dense tint is that fill at
+// the dense alpha (`inverseDenseTint`), so the text keeps its contrast.
 //
 // The functional-layer overlays (Popover, Command, Dialog, ActionSheet, Drawer, the
 // bars) keep the sheer tint. These cases render the web frost, which the test DOM
@@ -244,7 +244,7 @@ describe("AlertDialog, Toast and Tooltip are dense glass under glass", () => {
     expect(rgbaOf(underFillOf(region))).toEqual(DENSE);
   });
 
-  it("the M3 snackbar and the Tooltip bubble are INVERSE surfaces: the ink at the dense alpha, so their inverse text stays legible", async () => {
+  it("the M3 snackbar and the Tooltip bubble are INVERSE surfaces: their own fill at the dense alpha, so their inverse text stays legible", async () => {
     const { Toast: AndroidToast } = createToastSystem(androidToastSkin);
     const { container } = render(
       <ThemeProvider glass>
@@ -253,15 +253,20 @@ describe("AlertDialog, Toast and Tooltip are dense glass under glass", () => {
       </ThemeProvider>,
     );
     await waitFor(() => expect(container.querySelector('[role="status"]')).not.toBeNull());
-    const inverse = rgbaOf(inverseDenseTint({ tokens: lightColors, glass: WEB_TINTS.light }));
-    // The ink at the dense token's own alpha.
-    const ink = channelsOf(lightColors.foreground)!;
-    expect(inverse).toEqual([ink[0], ink[1], ink[2], DENSE[3]]);
-    expect(rgbaOf(underFillOf(container.querySelector('[role="status"]') as HTMLElement))).toEqual(inverse);
+    const theme = { tokens: lightColors, glass: WEB_TINTS.light };
+    // The snackbar paints the toast pill (`inverse`), at the dense token's own alpha.
+    const pill = rgbaOf(inverseDenseTint(theme, lightColors.inverse!));
+    const pillFill = channelsOf(lightColors.inverse!)!;
+    expect(pill).toEqual([pillFill[0], pillFill[1], pillFill[2], DENSE[3]]);
+    expect(rgbaOf(underFillOf(container.querySelector('[role="status"]') as HTMLElement))).toEqual(pill);
+    // The Tooltip bubble paints the scheme's ink, the helper's default fill.
+    const ink = rgbaOf(inverseDenseTint(theme));
+    const inkFill = channelsOf(lightColors.foreground)!;
+    expect(ink).toEqual([inkFill[0], inkFill[1], inkFill[2], DENSE[3]]);
     await waitFor(() => expect(container.querySelector('[role="alert"]')).not.toBeNull());
     const bubble = container.querySelector('[role="alert"]') as HTMLElement;
     expect(bubble.style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
-    expect(rgbaOf(underFillOf(bubble))).toEqual(inverse);
+    expect(rgbaOf(underFillOf(bubble))).toEqual(ink);
   });
 
   it("keeps all three byte-identical to solid mode when the surface is solid", async () => {

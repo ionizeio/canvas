@@ -7,8 +7,10 @@ import { createBadge } from "../src/atoms/badge/badge.shared.tsx";
 import * as badgeSkins from "../src/atoms/badge/badge.styles.ts";
 import { createAlert } from "../src/molecules/alert/alert.shared.tsx";
 import * as alertSkins from "../src/molecules/alert/alert.styles.ts";
-import { colorsByScheme, glassByScheme, palette, type ColorTokens } from "../src/style/tokens.ts";
-import { WEB_TINTS } from "../src/style/glass-surface/web-frost.ts";
+import { darkColors, lightColors, palette, type ColorTokens } from "../src/style/tokens.ts";
+import { inverseDenseTint } from "../src/style/glass-fill.ts";
+import { LOOKS, lookProps, type Look } from "./fixtures/looks.ts";
+import { oklchOf } from "../tools/darkfactory/derive-tokens.ts";
 import { androidSkin, iosSkin, webSkin } from "../src/atoms/button/button.styles.ts";
 import { blockDeclarations, cssColorToHex, stripComments } from "../tools/tokens/css-tokens.ts";
 import * as actionSheetSkins from "../src/organisms/action-sheet/action-sheet.styles.ts";
@@ -44,6 +46,8 @@ import { Avatar as AndroidAvatar } from "../src/atoms/avatar/avatar.android.tsx"
 
 afterEach(cleanup);
 
+const hueOf = (hex: string) => oklchOf(hex)[2];
+
 type PairedToken = Exclude<keyof ColorTokens, "primary-text" | "destructive-text">;
 const PAIRS: [PairedToken, PairedToken][] = [
   ["background", "foreground"], ["card", "card-foreground"], ["popover", "popover-foreground"],
@@ -69,9 +73,9 @@ describe("normal text contrast (WCAG 1.4.3)", () => {
     expect(() => contrast("rgba(0, 0, 0, 0.5)", "#ffffff")).toThrow("Composite translucent colors");
   });
 
-  for (const scheme of ["light", "dark"] as const) {
-    const tokens = colorsByScheme[scheme];
-    const declarations = blockDeclarations(css, scheme === "light" ? ":root" : ".dark").decls;
+  for (const look of LOOKS) {
+    const { name: scheme, tokens } = look;
+    const declarations = blockDeclarations(css, look.selector).decls;
     it(`keeps every resting ${scheme} web ActionSheet action and Cancel readable`, () => {
       const fill = actionSheetSkins.webSkin.actionsCard(tokens).backgroundColor as string;
       const cancelFill = actionSheetSkins.webSkin.cancelCard!(tokens).backgroundColor as string;
@@ -130,10 +134,10 @@ const hexOf = (color: string): string => {
 
 
 describe("error and destructive text on authored enabled surfaces", () => {
-  for (const scheme of ["light", "dark"] as const) {
-    const t = colorsByScheme[scheme];
+  for (const look of LOOKS) {
+    const { name: scheme, tokens: t } = look;
     it(`keeps ${scheme} error/action text readable through surface and press rounding`, () => {
-      const declarations = blockDeclarations(css, scheme === "light" ? ":root" : ".dark").decls;
+      const declarations = blockDeclarations(css, look.selector).decls;
       expect(cssColorToHex(declarations["destructive-text"])).toBe(destructiveText(t));
       for (const { name, text, fill } of destructiveStates(t)) {
         for (const foreground of neighborhood(text)) for (const background of neighborhood(fill)) {
@@ -169,8 +173,8 @@ describe("error and destructive text on authored enabled surfaces", () => {
     expect(blockDeclarations(css, ":root").decls["p-menu-destructive"]).toBe(palette["red-700"]);
     expect(blockDeclarations(css, ".dark").decls["p-menu-destructive"]).toBe(palette["red-300"]);
     // The focus ring is a non-text indicator (WCAG 1.4.11): 3:1 on every surface it can
-    // sit on, in each scheme.
-    for (const t of Object.values(colorsByScheme)) {
+    // sit on, in each palette.
+    for (const { tokens: t } of LOOKS) {
       for (const surface of [t.background, t.card, t.popover, t.muted]) expect(contrast(t.ring, surface)).toBeGreaterThanOrEqual(3);
     }
   });
@@ -204,13 +208,13 @@ describe("primary text on authored surfaces", () => {
     expect(baseRule("a").color).toBe("var(--primary-text)");
   });
 
-  for (const scheme of ["light", "dark"] as const) {
-    const tokens = colorsByScheme[scheme];
+  for (const look of LOOKS) {
+    const { name: scheme, tokens } = look;
     it(`keeps ${scheme} RN/CSS primary text readable through the full rounding neighborhood`, () => {
       const text = tokens["primary-text"];
       expect(typeof text).toBe("string");
       if (!text) throw new Error("Default themes must resolve primary-text");
-      const declarations = blockDeclarations(css, scheme === "light" ? ":root" : ".dark").decls;
+      const declarations = blockDeclarations(css, look.selector).decls;
       expect(cssColorToHex(declarations["primary-text"])).toBe(text);
       for (const [name, fill] of primaryTextSurfaces(tokens)) {
         expect(contrast(text, fill), name).toBeGreaterThanOrEqual(4.65);
@@ -273,13 +277,34 @@ describe("primary text on authored surfaces", () => {
           .toBe(tokens.primary);
       }
       for (const [name, style] of styles) expect(paint(style), name).toBe(expected);
-      const inverse = paint(toastSkins.androidSkin.actionLabel(tokens));
-      expect(inverse).toBe(colorsByScheme[scheme === "light" ? "dark" : "light"]["primary-text"]);
-      expect(contrast(inverse, tokens.foreground)).toBeGreaterThanOrEqual(4.5);
+    });
+
+    // The M3 snackbar's action is the palette's own brand on the toast pill, never another
+    // palette's: it keeps the palette's primary hue (mint's action is blue, not the dark
+    // palette's violet) and reads at 4.5:1 on the pill as the shell paints it: solid, and
+    // under glass at the inverse dense tint (the web frost's alpha and the native one) over
+    // the page and a card, each resting and under the pressed ripple.
+    it(`paints the ${scheme} Android snackbar action in the palette's inverse primary on the pill`, () => {
+      const bar = paint(toastSkins.androidSkin.container(tokens, true), "backgroundColor");
+      expect(bar).toBe(tokens.inverse!);
+      expect(paint(toastSkins.androidSkin.message(tokens))).toBe(tokens["inverse-foreground"]!);
+      const action = paint(toastSkins.androidSkin.actionLabel(tokens));
+      expect(action).toBe(tokens["inverse-primary"]!);
+      const glassPills = [look.webGlass, look.nativeGlass].flatMap((glass) =>
+        [tokens.background, tokens.card].map((backdrop) => composite(inverseDenseTint({ tokens, glass }, bar), backdrop)));
+      const ripple = toastSkins.androidSkin.ripple!(tokens).color;
+      for (const resting of [rgba(bar), ...glassPills]) {
+        for (const bed of [resting, composite(ripple, resting)]) {
+          for (const foreground of neighborhood(action)) for (const background of neighborhood(bed)) {
+            expect(contrast(foreground, background), `${scheme} action on ${bed}`).toBeGreaterThanOrEqual(4.5);
+          }
+        }
+      }
+      expect(Math.abs(hueOf(action) - hueOf(tokens.primary))).toBeLessThanOrEqual(2);
     });
 
     it(`renders the actual ${scheme} Android pill label over its selected fill and muted track`, () => {
-      render(<ThemeProvider scheme={scheme}><AndroidTabs pills tabs={["Overview", "Activity"]} /></ThemeProvider>);
+      render(<ThemeProvider {...lookProps(look)}><AndroidTabs pills tabs={["Overview", "Activity"]} /></ThemeProvider>);
       const track = screen.getByRole("tablist");
       for (const name of ["Overview", "Activity"]) {
         const tab = screen.getByRole("tab", { name });
@@ -289,12 +314,12 @@ describe("primary text on authored surfaces", () => {
         const background = composite(tab.style.backgroundColor, track.style.backgroundColor);
         expect(hexOf(label.style.color)).toBe(tokens["primary-text"]);
         expect(contrast(label.style.color, background)).toBeGreaterThanOrEqual(4.65);
-        if (scheme === "dark" && tokens.primary !== tokens["primary-text"]) expect(contrast(tokens.primary, background)).toBeLessThan(4.5);
+        if (look.scheme === "dark" && tokens.primary !== tokens["primary-text"]) expect(contrast(tokens.primary, background)).toBeLessThan(4.5);
       }
     });
 
     it(`renders the actual ${scheme} Web Calendar today over the range band`, () => {
-      render(<ThemeProvider scheme={scheme}><Calendar range defaultRangeStart={2} defaultRangeEnd={6} today={4} month="September 2026" testID="calendar" /></ThemeProvider>);
+      render(<ThemeProvider {...lookProps(look)}><Calendar range defaultRangeStart={2} defaultRangeEnd={6} today={4} month="September 2026" testID="calendar" /></ThemeProvider>);
       const today = screen.getByRole("button", { name: "4, today, in range" });
       const band = today.parentElement?.parentElement?.firstElementChild as HTMLElement | undefined;
       expect(band?.style.backgroundColor).toBeTruthy();
@@ -311,12 +336,49 @@ describe("primary text on authored surfaces", () => {
   }
 });
 
-for (const scheme of ["light", "dark"] as const) {
+// A token map from before the inverse roles (a consumer's complete legacy map) keeps the
+// snackbar it had: the scheme's ink as the bar, the page colour as its text, and for the
+// action the brand text of the palette whose surfaces match the bar's lightness (the dark
+// palette's on a dark bar, the light palette's on a light one), each at 4.5:1 on the bar.
+describe("the inverse roles' fallbacks for legacy token maps", () => {
+  const legacy = (t: ColorTokens, keep: (keyof ColorTokens)[] = []): ColorTokens => {
+    const map: Partial<ColorTokens> = { ...t };
+    for (const role of ["inverse", "inverse-foreground", "inverse-primary"] as const) if (!keep.includes(role)) delete map[role];
+    return map as ColorTokens;
+  };
+  const snackbar = (t: ColorTokens) => ({
+    bar: paint(toastSkins.androidSkin.container(t, true), "backgroundColor"),
+    text: paint(toastSkins.androidSkin.message(t)),
+    action: paint(toastSkins.androidSkin.actionLabel(t)),
+  });
+
+  it("inverts a light map: the ink as the bar, the page as its text, the dark palette's brand text as the action", () => {
+    const painted = snackbar(legacy(lightColors));
+    expect(painted).toEqual({ bar: lightColors.foreground, text: lightColors.background, action: darkColors["primary-text"]! });
+    expect(contrast(painted.action, painted.bar)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("inverts a dark map: the light ink as the bar and the light palette's brand text as the action", () => {
+    const painted = snackbar(legacy(darkColors));
+    expect(painted).toEqual({ bar: darkColors.foreground, text: darkColors.background, action: lightColors["primary-text"]! });
+    expect(contrast(painted.action, painted.bar)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("picks the brand text by the bar's lightness when a map sets the pill but not its action", () => {
+    // Dark Factory's pill is dark in the dark scheme too, so the dark palette's text serves.
+    const painted = snackbar(legacy(darkColors, ["inverse", "inverse-foreground"]));
+    expect(painted).toEqual({ bar: darkColors.inverse!, text: darkColors["inverse-foreground"]!, action: darkColors["primary-text"]! });
+    expect(contrast(painted.action, painted.bar)).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+for (const look of LOOKS) {
+  const scheme = look.name;
   for (const { name, Badge, Alert } of renderedPlatforms) {
     it(`keeps actual ${scheme} ${name} Badge and Alert status text readable`, () => {
       for (const tone of ["neutral", "success", "warning", "error", "info"] as const) {
         const toneProps = tone === "neutral" ? {} : { [tone]: true };
-        const view = render(<ThemeProvider scheme={scheme}>
+        const view = render(<ThemeProvider {...lookProps(look)}>
           <Badge status {...toneProps} testID="badge">Status</Badge>
           <Alert {...toneProps} title="Title" description="Description" testID="alert" />
         </ThemeProvider>);
@@ -335,18 +397,21 @@ for (const scheme of ["light", "dark"] as const) {
 
 
 // Each platform's glass tints: the web frost's own (web-frost.ts) and the native set.
+const webGlass = (look: Look) => look.webGlass;
+const nativeGlass = (look: Look) => look.nativeGlass;
 const dialogPlatforms = [
-  { name: "web", Component: Dialog, skin: dialogSkins.webSkin, glass: WEB_TINTS },
-  { name: "ios", Component: IOSDialog, skin: dialogSkins.iosSkin, glass: glassByScheme },
-  { name: "android", Component: AndroidDialog, skin: dialogSkins.androidSkin, glass: glassByScheme },
+  { name: "web", Component: Dialog, skin: dialogSkins.webSkin, glassOf: webGlass },
+  { name: "ios", Component: IOSDialog, skin: dialogSkins.iosSkin, glassOf: nativeGlass },
+  { name: "android", Component: AndroidDialog, skin: dialogSkins.androidSkin, glassOf: nativeGlass },
 ];
 
 describe("Dialog message contrast", () => {
-  for (const scheme of ["light", "dark"] as const) for (const surface of ["solid", "glass"] as const) {
-    const tokens = colorsByScheme[scheme];
-    for (const { name, Component, skin, glass } of dialogPlatforms) {
+  for (const look of LOOKS) for (const surface of ["solid", "glass"] as const) {
+    const { name: scheme, tokens } = look;
+    const light = look.scheme === "light";
+    for (const { name, Component, skin, glassOf } of dialogPlatforms) {
       it(`keeps actual ${scheme} ${surface} ${name} description and currency readable`, () => {
-        render(<ThemeProvider scheme={scheme} surface={surface}>
+        render(<ThemeProvider {...lookProps(look)} surface={surface}>
           <Component open title="Refund payment" description="Refund the duplicate payment." withBody />
         </ThemeProvider>);
         const fields = [
@@ -355,7 +420,7 @@ describe("Dialog message contrast", () => {
         ];
         for (const { node, original } of fields) {
           const rendered = node.style.color;
-          const expected = scheme === "light" && surface === "glass" ? tokens["popover-foreground"] : original.color;
+          const expected = light && surface === "glass" ? tokens["popover-foreground"] : original.color;
           expect(hexOf(rendered)).toBe(expected);
           expect(Number.parseFloat(getComputedStyle(node).fontSize)).toBe(original.fontSize);
           expect(Number.parseFloat(getComputedStyle(node).lineHeight)).toBe(original.lineHeight);
@@ -363,10 +428,10 @@ describe("Dialog message contrast", () => {
             // This is a tint-over-scrim model from the source tokens, not native
             // glass luminance. Device pixel acceptance validates the material.
             const background = surface === "glass"
-              ? composite(glass[scheme]["glass-tint"], composite(skin.backdrop(tokens).backgroundColor as string, tokens[underlying]))
+              ? composite(glassOf(look)["glass-tint"], composite(skin.backdrop(tokens).backgroundColor as string, tokens[underlying]))
               : rgba(skin.card(tokens).backgroundColor as string);
             expect(textContrast(rendered, background)).toBeGreaterThanOrEqual(4.5);
-            if (scheme === "light" && surface === "glass") {
+            if (light && surface === "glass") {
               expect(textContrast(original.color as string, background)).toBeLessThan(4.5);
             }
           }
@@ -384,17 +449,17 @@ describe("Dialog message contrast", () => {
 
 
 const actionSheetPlatforms = [
-  { name: "web", Component: ActionSheet, skin: actionSheetSkins.webSkin, glass: WEB_TINTS },
-  { name: "ios", Component: IOSActionSheet, skin: actionSheetSkins.iosSkin, glass: glassByScheme },
-  { name: "android", Component: AndroidActionSheet, skin: actionSheetSkins.androidSkin, glass: glassByScheme },
+  { name: "web", Component: ActionSheet, skin: actionSheetSkins.webSkin, glassOf: webGlass },
+  { name: "ios", Component: IOSActionSheet, skin: actionSheetSkins.iosSkin, glassOf: nativeGlass },
+  { name: "android", Component: AndroidActionSheet, skin: actionSheetSkins.androidSkin, glassOf: nativeGlass },
 ];
 
 describe("ActionSheet message contrast", () => {
-  for (const scheme of ["light", "dark"] as const) for (const surface of ["solid", "glass"] as const) {
-    const tokens = colorsByScheme[scheme];
-    for (const { name, Component, skin, glass } of actionSheetPlatforms) {
+  for (const look of LOOKS) for (const surface of ["solid", "glass"] as const) {
+    const { name: scheme, tokens } = look;
+    for (const { name, Component, skin, glassOf } of actionSheetPlatforms) {
       it(`keeps actual ${scheme} ${surface} ${name} header colors readable and preserves curated alpha`, () => {
-        render(<ThemeProvider scheme={scheme} surface={surface}>
+        render(<ThemeProvider {...lookProps(look)} surface={surface}>
           <Component open title="Share document" message="Choose how to share this document." actions={[{ label: "Copy link", onPress: () => {} }]} />
         </ThemeProvider>);
         const fields = [
@@ -404,7 +469,7 @@ describe("ActionSheet message contrast", () => {
         const scrim: Rgba = rgba(scrimFill(tokens, skin.scrimOpacity));
         for (const { node, original } of fields) {
           const rendered = node.style.color;
-          const promoted = scheme === "light" && surface === "glass" && original.color === tokens["muted-foreground"];
+          const promoted = look.scheme === "light" && surface === "glass" && original.color === tokens["muted-foreground"];
           const expected = promoted ? tokens["popover-foreground"] : original.color as string;
           // Compare the alpha too: the readable iOS secondary label remains
           // translucent foreground, and stronger titles keep their skin color.
@@ -415,7 +480,7 @@ describe("ActionSheet message contrast", () => {
             // Model the settled source scrim and tint, without claiming that a
             // native blur or Liquid Glass surface has this exact luminance.
             const background = surface === "glass"
-              ? composite(glass[scheme]["glass-tint"], composite(scrim, tokens[underlying]))
+              ? composite(glassOf(look)["glass-tint"], composite(scrim, tokens[underlying]))
               : rgba(skin.actionsCard(tokens).backgroundColor as string);
             expect(textContrast(rendered, background)).toBeGreaterThanOrEqual(4.5);
             if (promoted) expect(textContrast(original.color as string, background)).toBeLessThan(4.5);
@@ -440,11 +505,11 @@ describe("Avatar initials contrast", () => {
   const first = ["Ada", "Grace", "Alan", "Edsger", "Barbara", "Donald", "Frances", "Ken"];
   const last = ["Byron", "Hopper", "Turing", "Dijkstra", "Liskov"];
   const names = first.flatMap((f) => last.map((l) => `${f} ${l}`));
-  for (const scheme of ["light", "dark"] as const) for (const { name, Component } of avatarPlatforms) {
-    it(`keeps ${scheme} solid ${name} initials at 4.5:1 on every identity fill`, () => {
+  for (const look of LOOKS) for (const { name, Component } of avatarPlatforms) {
+    it(`keeps ${look.name} solid ${name} initials at 4.5:1 on every identity fill`, () => {
       const fills = new Set<string>();
       for (const person of names) {
-        render(<ThemeProvider scheme={scheme} solid><Component name={person} testID="identity" /></ThemeProvider>);
+        render(<ThemeProvider {...lookProps(look)} solid><Component name={person} testID="identity" /></ThemeProvider>);
         const container = screen.getByTestId("identity");
         const fill = container.style.backgroundColor;
         const initials = within(container).getByText(person.split(" ").map((part) => part[0]).join(""));

@@ -99,9 +99,17 @@ function blockBody(css: string, selector: string): string | null {
 }
 
 /**
- * Pull the declarations out of one selector block, so the light (:root) and dark
- * (.dark) color sets can be compared against their own JS counterpart. Later
- * declarations win, exactly as the cascade resolves them.
+ * The selector of the mint palette's block in styles/tokens/colors.css: the attribute,
+ * excluded on a `.dark` element and under one (Dark Factory has one dark palette), the
+ * exclusion inside :where() so the block keeps the specificity of one attribute and the
+ * accessibility fallbacks in surface.css still win over its frost tints.
+ */
+export const MINT_SELECTOR = '[data-palette="mint"]:not(:where(.dark, .dark *))';
+
+/**
+ * Pull the declarations out of one selector block, so the light (:root), mint
+ * (MINT_SELECTOR) and dark (.dark) color sets can be compared against their own JS
+ * counterpart. Later declarations win, exactly as the cascade resolves them.
  */
 export function declarationsIn(css: string, selector: string): Record<string, string> {
   const out: Record<string, string> = {};

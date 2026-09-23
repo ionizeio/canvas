@@ -1,11 +1,11 @@
-import { View, Text, Row, Column, ButtonGroup, useTheme } from "@ionizeio/canvas";
+import { View, Text, Row, Column, ButtonGroup, Button, Card, Checkbox, Switch, ThemeProvider, Typography, useTheme } from "@ionizeio/canvas";
 import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
 import { H3, P, Rule, InlineCode } from "../../ui/prose";
 import { PageNav } from "../../ui/page-nav";
 import { CodeBlock } from "../../ui/code-block";
 import { Callout } from "../../ui/tokens-kit";
-import { sans } from "../../ui/fonts";
+import { CANVAS_FONTS, sans } from "../../ui/fonts";
 import { useDocsTheme } from "../../theme/docs-theme";
 
 // The page's teaching snippets. The helper ones mirror src/theme.ts behavior
@@ -14,7 +14,8 @@ import { useDocsTheme } from "../../theme/docs-theme";
 const NATIVE_PROVIDER = `import { ThemeProvider } from "@ionizeio/canvas";
 
 // Wrap the app once. ThemeProvider follows the OS appearance by default;
-// pass the dark / light boolean to force a scheme, and glass for the material.
+// pass the dark / light boolean to force a scheme, mint for the mint palette,
+// and glass for the material.
 export function App() {
   return (
     <ThemeProvider dark glass>
@@ -25,9 +26,10 @@ export function App() {
 const USE_THEME = `import { useTheme } from "@ionizeio/canvas";
 
 // Read the active theme anywhere under the provider.
-const { scheme, surface, tokens, dark } = useTheme();
-// scheme:  "light" | "dark"      surface: "solid" | "glass"
-// tokens:  active color tokens   dark:    scheme === "dark"`;
+const { scheme, palette, surface, tokens, dark } = useTheme();
+// scheme:  "light" | "dark"      palette: "blush" | "mint"
+// surface: "solid" | "glass"     tokens:  active color tokens
+// dark:    scheme === "dark"`;
 const DARK_TOGGLE = `<!-- Light (default) -->
 <html>
 
@@ -44,6 +46,26 @@ const SYSTEM_PREF = `import { setTheme } from "@ionizeio/canvas";
 const mq = window.matchMedia("(prefers-color-scheme: dark)");
 setTheme(mq.matches ? "dark" : "light");
 mq.addEventListener("change", (e) => setTheme(e.matches ? "dark" : "light"));`;
+const PALETTE = `import { ThemeProvider } from "@ionizeio/canvas";
+
+// Blush is the light default; mint is the light alternative. Dark Factory
+// has one dark palette, so dark wins: <ThemeProvider dark mint> paints dark.
+export function App() {
+  return (
+    <ThemeProvider mint>
+      <Screens />
+    </ThemeProvider>
+  );
+}`;
+const JS_PALETTE = `import { ThemeProvider, getPalette, setPalette } from "@ionizeio/canvas";
+
+getPalette();          // "blush" | "mint", the persisted choice
+setPalette("mint");    // persists it, and sets data-palette="mint" on <html>
+setPalette("blush");   // persists it, and removes the attribute
+
+// The CSS handoff reads data-palette, and .dark still wins over it. Pass the
+// same choice to ThemeProvider so React Native components follow it.
+<ThemeProvider mint={getPalette() === "mint"}>...</ThemeProvider>`;
 const GLASS = `import { ThemeProvider, getSurface } from "@ionizeio/canvas";
 
 // Web: the same provider and the same booleans. getSurface() reads the choice
@@ -62,8 +84,8 @@ getSurface();            // "solid" | "glass", the persisted choice
 setSurface("glass");     // persists it, and sets data-surface="glass" on <html>
 setSurface("solid");     // persists it, and removes the attribute
 
-// The CSS handoff reads data-surface for the material mode and page backdrop.
-// Also pass the choice to ThemeProvider so React Native components follow it.`;
+// The CSS handoff reads data-surface for the material mode. Also pass the
+// choice to ThemeProvider so React Native components follow it.`;
 const DENSITY = `// Density is per component, on every platform; omit both for the default.
 <Card compact>...</Card>
 <Card comfortable>...</Card>
@@ -76,15 +98,38 @@ setDensity("regular");   // persists it, and removes the attribute
 
 // The CSS handoff adjusts supported card and table spacing tokens. Map the
 // preference to component booleans (compact / comfortable) for React Native.`;
-const COMBINING = `// One provider carries scheme and surface; density rides each component.
-<ThemeProvider dark glass>
+const COMBINING = `// One provider carries scheme, palette and surface; density rides each component.
+<ThemeProvider light mint glass>
   <Card compact>...</Card>
 </ThemeProvider>`;
-const JS_COMBINE = `import { setTheme, setSurface, setDensity } from "@ionizeio/canvas";
+const JS_COMBINE = `import { setTheme, setPalette, setSurface, setDensity } from "@ionizeio/canvas";
 
 setTheme("dark");       // flips .dark on <html>: the CSS token layer re-themes
+setPalette("mint");     // sets data-palette on <html>; .dark still wins
 setSurface("glass");    // updates CSS handoff; also sync into ThemeProvider
 setDensity("compact");  // updates CSS spacing; also map to component booleans`;
+
+// One palette's preview: the same kit components under a nested provider in that
+// palette. Both render in the light scheme, where the palettes differ, and solid, so the
+// palette's own fills show whatever material the page is in.
+function PalettePreview({ mint, label }: { mint?: boolean; label: string }) {
+  return (
+    <ThemeProvider light mint={mint} solid fonts={CANVAS_FONTS}>
+      <Card>
+        <Column snug>
+          <Typography h5>{label}</Typography>
+          <Row snug wrap>
+            <Button primary small>Save</Button>
+            <Button outline small>Cancel</Button>
+          </Row>
+          <Checkbox defaultChecked>Email updates</Checkbox>
+          <Switch defaultChecked>Sync</Switch>
+          <Button link small>View details</Button>
+        </Column>
+      </Card>
+    </ThemeProvider>
+  );
+}
 
 function Bullet({ children }: { children: React.ReactNode }) {
   const { tokens } = useTheme();
@@ -104,7 +149,7 @@ export default function ThemingScreen() {
       <View style={{ gap: 28 }}>
         <PageHeader
           title="Theming"
-          description="Three theming axes (light/dark, glass surface, density) on one model: ThemeProvider carries scheme and glass on every platform; on the web, helpers persist all three choices and update the CSS handoff attributes."
+          description="Four theming axes (light/dark, palette, glass surface, density) on one model: ThemeProvider carries scheme, palette and glass on every platform; on the web, helpers persist all four choices and update the CSS handoff attributes."
         />
 
         <Section title="Native (ThemeProvider)">
@@ -126,8 +171,9 @@ export default function ThemingScreen() {
           </Callout>
           <Callout label="Server rendering (SSR/SSG)">
             When the app server-renders (Next.js and the like) and the client scheme can differ from the server default (a stored
-            preference, the OS), also pass <InlineCode>ssrScheme</InlineCode> with the scheme the server resolves. The provider
-            repeats it for the hydration render so the HTML matches, then applies the requested scheme after mount.
+            preference, the OS), also pass <InlineCode>ssrScheme</InlineCode> with the scheme the server resolves, and{" "}
+            <InlineCode>ssrPalette</InlineCode> likewise for a stored palette. The provider repeats them for the hydration render
+            so the HTML matches, then applies the requested scheme and palette after mount.
             Without it React keeps the server&apos;s inline colors on elements that never re-render, leaving components stuck in
             the server&apos;s scheme.
           </Callout>
@@ -157,7 +203,8 @@ export default function ThemingScreen() {
           <H3>Clear text fields</H3>
           <P>
             In glass mode, web Input, Textarea, Autocomplete, InputOTP, Stepper, PhoneInput and DataTable editors
-            use a clear material with a light tint and minimal blur. Text, selection and the caret stay sharp.
+            use a clear material: Dark Factory&apos;s field well, a light tint and a hairline with no blur, so the page reads
+            through unsoftened. Text, selection and the caret stay sharp.
             The fields stay still when clicked or typed into. Native fields keep their platform material.
             Bare and underlined editors retain their existing shape.
           </P>
@@ -166,6 +213,32 @@ export default function ThemingScreen() {
           <H3>Respecting system preference</H3>
           <P muted>On the web the helpers do not auto-detect <InlineCode>prefers-color-scheme</InlineCode>. Wire it yourself:</P>
           <CodeBlock code={SYSTEM_PREF} />
+        </Section>
+
+        <Rule />
+
+        <Section title="Palettes">
+          <P>
+            The light scheme comes in two Dark Factory palettes: blush, the default, and mint. Pass the{" "}
+            <InlineCode>mint</InlineCode> boolean to <InlineCode>ThemeProvider</InlineCode> for mint and omit it for blush.
+            Dark Factory ships one dark palette, so <InlineCode>dark</InlineCode> wins over <InlineCode>mint</InlineCode>: a dark
+            provider paints the same colors whichever light palette it names. <InlineCode>useTheme()</InlineCode> reports the
+            requested palette as <InlineCode>palette</InlineCode>, and <InlineCode>mintColors</InlineCode> and{" "}
+            <InlineCode>colorsFor(palette, scheme)</InlineCode> expose the token sets.
+          </P>
+          <CodeBlock code={PALETTE} />
+          <Row stacks>
+            <Column span={6}><PalettePreview label="Blush" /></Column>
+            <Column span={6}><PalettePreview mint label="Mint" /></Column>
+          </Row>
+          <P muted>Both previews render in the light scheme, where the two palettes differ.</P>
+          <H3>Web helpers</H3>
+          <P muted>
+            The helpers persist the choice and set <InlineCode>data-palette</InlineCode> on <InlineCode>{"<html>"}</InlineCode>,
+            which the CSS handoff reads; the <InlineCode>dark</InlineCode> class still wins over it. Feed the same choice to
+            ThemeProvider so React Native components follow it.
+          </P>
+          <CodeBlock code={JS_PALETTE} />
         </Section>
 
         <Rule />
@@ -202,7 +275,7 @@ export default function ThemingScreen() {
             <Bullet>Brand and status meanings remain readable in every material. Check contrast against actual backgrounds, including scrolling content; a tint token or a decorative rim alone does not establish it</Bullet>
             <Bullet>Solid surfaces retain their full opaque treatment without glass capture. Reduce Transparency and Increase Contrast require readable opaque treatment; Reduce Motion removes nonessential movement without requiring opacity by itself</Bullet>
             <Bullet>Android blur needs a safe live backdrop target. The optional @ionizeio/canvas-blur integration on Android 12+ with Expo SDK 57 enables capture only while glass needs it. OverlayProvider supplies safe overlay targets. Missing or unsafe material uses the complete solid skin</Bullet>
-            <Bullet>The CSS handoff uses data-surface to apply a decorative page backdrop on the web; it supplies no native material by itself</Bullet>
+            <Bullet>The CSS handoff always carries the web material&apos;s tints, blur and hairline; data-surface marks glass mode and gates the accessibility and print fallbacks that turn the material opaque. It paints no page backdrop of its own and supplies no native material</Bullet>
           </Column>
           <H3>Web helpers</H3>
           <P muted>The helpers persist the choice and update the CSS handoff attributes. Feed the same choice to ThemeProvider so React Native components follow it.</P>
@@ -232,9 +305,10 @@ export default function ThemingScreen() {
 
         <Section title="Combining Axes">
           <P>
-            All three axes are independent and composable. Scheme and surface are <InlineCode>ThemeProvider</InlineCode> props on
-            every platform; density is per component. The web helpers persist all three choices and update the CSS handoff through
-            the <InlineCode>dark</InlineCode> class, <InlineCode>data-surface</InlineCode>, and <InlineCode>data-density</InlineCode>.
+            All four axes are independent and composable. Scheme, palette and surface are <InlineCode>ThemeProvider</InlineCode>{" "}
+            props on every platform; density is per component. The web helpers persist all four choices and update the CSS handoff
+            through the <InlineCode>dark</InlineCode> class, <InlineCode>data-palette</InlineCode>,{" "}
+            <InlineCode>data-surface</InlineCode>, and <InlineCode>data-density</InlineCode>.
             Keep provider state and component booleans in sync with those choices.
           </P>
           <CodeBlock code={COMBINING} />

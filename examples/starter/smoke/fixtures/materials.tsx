@@ -27,6 +27,8 @@ function LiveEditor({ onFocus }: { onFocus: () => void }) {
 export function MaterialsBody() {
   const [glass, setGlass] = useState(false);
   const [dark, setDark] = useState(false);
+  // The palette driver: Dark Factory's mint against its blush, for the frost's mint row.
+  const [mint, setMint] = useState(false);
   const [nested, setNested] = useState(false);
   const [message, setMessage] = useState("Ready");
   const [scheduledFrom, setScheduledFrom] = useState<string | null>(null);
@@ -54,13 +56,15 @@ export function MaterialsBody() {
     }, 3000);
   };
   const inspect = () => setStats(capture?.getCaptureStats?.() ?? null);
-  return <ThemeProvider glass={glass} solid={!glass} dark={dark} light={!dark}>
+  return <ThemeProvider glass={glass} solid={!glass} dark={dark} light={!dark} mint={mint}>
     <Column relaxed>
       <Typography h3>Material lifecycle</Typography>
       <Typography testID="material-mode">Mode: {glass ? "glass" : "solid"}; scheme: {dark ? "dark" : "light"}</Typography>
+      <Typography testID="material-palette">Palette: {mint ? "mint" : "blush"}</Typography>
       <Row snug wrap>
         <Button onPress={() => setGlass((value) => !value)} testID="material-toggle">Switch material</Button>
         <Button onPress={() => setDark((value) => !value)}>Switch scheme</Button>
+        <Button onPress={() => setMint((value) => !value)} testID="material-palette-toggle">Switch palette</Button>
         <Button onPress={schedule} testID="material-schedule">Switch after focusing editor</Button>
         <Button onPress={inspect} testID="material-inspect">Inspect capture</Button>
       </Row>

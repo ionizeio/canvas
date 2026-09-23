@@ -5,7 +5,7 @@
 
 import { type ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import { useColorScheme } from "react-native";
-import { colorsByScheme, type BreakpointKey, type ColorScheme, type ColorTokens, type GlassTokens } from "./tokens.js";
+import { colorsFor, type BreakpointKey, type ColorScheme, type ColorTokens, type GlassTokens, type Palette } from "./tokens.js";
 import { type ThemeFonts } from "./fonts.js";
 import { actionOverride } from "./action.js";
 import { glassTintsFor } from "./glass-surface/glass-tints.js";
@@ -55,6 +55,12 @@ function overridesFor(tokens: ThemeTokenOverrides | undefined, scheme: ColorSche
 
 export interface ThemeValue {
   scheme: ColorScheme;
+  /**
+   * The light-scheme palette in force: `"blush"` (the default) or `"mint"`. It names
+   * the palette the provider was asked for; in the dark scheme the tokens are the one dark
+   * palette whichever it is.
+   */
+  palette: Palette;
   surface: Surface;
   tokens: ColorTokens;
   /**
@@ -82,9 +88,10 @@ export interface ThemeValue {
 const NO_FONTS: ThemeFonts = {};
 const FALLBACK: ThemeValue = {
   scheme: "light",
+  palette: "blush",
   surface: "solid",
-  tokens: colorsByScheme.light,
-  glass: glassTintsFor("light"),
+  tokens: colorsFor("blush", "light"),
+  glass: glassTintsFor("light", "blush"),
   fonts: NO_FONTS,
   dark: false,
   reducedTransparency: false,
@@ -121,6 +128,19 @@ export interface ThemeProviderProps {
    * next-themes `defaultTheme`). Omit in client-only apps and on native.
    */
   ssrScheme?: ColorScheme;
+  // Palette axis (omit for the default, blush). Dark Factory's light palettes, spelled
+  // like every other axis: the prop name is the value. The dark scheme has one palette,
+  // so `dark` wins over `mint`: `<ThemeProvider dark mint>` paints the dark palette.
+  /** Paint the light scheme in Dark Factory's mint palette instead of blush. */
+  mint?: boolean;
+  /**
+   * The palette the SERVER rendered, for SSR/SSG apps whose client palette can differ
+   * from it (a stored preference: `getPalette()` reads one on the web). The `ssrScheme`
+   * contract applied to the palette axis: the server render and the hydration render
+   * paint this palette, matching the server HTML exactly, and the requested one (`mint`)
+   * applies right after mount. Omit in client-only apps and on native.
+   */
+  ssrPalette?: Palette;
   /**
    * The breakpoint bucket the SERVER should assume, for SSR/SSG apps (the
    * `ssrScheme` contract applied to the viewport axis). The server cannot
@@ -148,7 +168,7 @@ export interface ThemeProviderProps {
    */
   surface?: Surface;
   /**
-   * Brand token overrides, merged over the active scheme's base tokens so a
+   * Brand token overrides, merged over the active palette's base tokens so a
    * consumer can rebrand the kit (e.g. `tokens={{ primary: "#7c3aed" }}`)
    * without forking the token files. Pass a flat `Partial<ColorTokens>` to
    * apply the same overrides to both schemes, or `{ light, dark }` to override
@@ -179,7 +199,7 @@ function defaultSurface(): Surface {
   return liquidGlassAvailable() ? "glass" : "solid";
 }
 
-export function ThemeProvider({ dark, light, scheme, ssrScheme, ssrBreakpoint, glass, solid, surface, tokens, fonts, children }: ThemeProviderProps) {
+export function ThemeProvider({ dark, light, scheme, ssrScheme, mint, ssrPalette, ssrBreakpoint, glass, solid, surface, tokens, fonts, children }: ThemeProviderProps) {
   const system = useColorScheme();
   // Reading the accessibility preferences here (not deep in a leaf) is what makes
   // glass REACTIVE: when the user toggles Reduce Transparency / Increase Contrast,
@@ -188,24 +208,28 @@ export function ThemeProvider({ dark, light, scheme, ssrScheme, ssrBreakpoint, g
   // accessibility ladder against the fresh flags.
   const reducedTransparency = useReducedTransparency();
   const increasedContrast = useIncreasedContrast();
-  // Until the post-mount effect runs, honor `ssrScheme` so the server output is
-  // deterministic and the hydration render reproduces it exactly (see the prop
-  // doc). When the prop is absent this stays on the single-pass path: no state
+  // Until the post-mount effect runs, honor `ssrScheme` and `ssrPalette` so the server
+  // output is deterministic and the hydration render reproduces it exactly (see the
+  // prop docs). When both props are absent this stays on the single-pass path: no state
   // flip, no extra render.
-  const [hydrated, setHydrated] = useState(ssrScheme == null);
+  const [hydrated, setHydrated] = useState(ssrScheme == null && ssrPalette == null);
   useEffect(() => {
     if (!hydrated) setHydrated(true);
   }, [hydrated]);
   // Axis first-match (dark over light), then the legacy value form, then the OS
   // appearance. Mirrors the surface axis below: the prop name is the value.
-  const active: ColorScheme = hydrated
-    ? (dark ? "dark" : light ? "light" : (scheme ?? (system === "dark" ? "dark" : "light")))
-    : (ssrScheme as ColorScheme);
+  const requested: ColorScheme = dark ? "dark" : light ? "light" : (scheme ?? (system === "dark" ? "dark" : "light"));
+  const active: ColorScheme = hydrated ? requested : (ssrScheme ?? requested);
+  // The palette axis: `mint` or the default blush, with the server's palette held
+  // through hydration like the scheme.
+  const requestedPalette: Palette = mint ? "mint" : "blush";
+  const palette: Palette = hydrated ? requestedPalette : (ssrPalette ?? requestedPalette);
   // Axis first-match (glass over solid), then the legacy value form, then the
   // platform default. Mirrors every component axis: the prop name is the value.
   const resolved: Surface = glass ? "glass" : solid ? "solid" : (surface ?? defaultSurface());
   const value = useMemo<ThemeValue>(() => {
-    // Merge order: scheme base, then brand overrides. That is the WHOLE token merge:
+    // Merge order: the palette's base for the scheme (blush or mint in light, the one
+    // dark palette in dark), then brand overrides. That is the WHOLE token merge:
     // the surface mode does not touch the semantic set at all. Glass used to swap
     // `popover` translucent here, which made every popover-filled surface see-through
     // the moment the theme went to glass (menus and select lists included), and the
@@ -213,34 +237,37 @@ export function ThemeProvider({ dark, light, scheme, ssrScheme, ssrBreakpoint, g
     // own fill (glassByScheme), so `popover` and `card` stay opaque in every mode and
     // only what renders through GlassSurface reads as glass.
     const brand = overridesFor(tokens, active);
+    const paletteBase = colorsFor(palette, active);
     const base = brand ? {
-      ...colorsByScheme[active],
+      ...paletteBase,
       ...brand,
       // A primary-only or destructive-only rebrand keeps its existing text color.
       // Explicit text roles can improve readability without changing those fills.
       // Undefined is omission, so it cannot erase the scheme's authored role.
-      "primary-text": brand["primary-text"] ?? brand.primary ?? colorsByScheme[active]["primary-text"],
-      "destructive-text": brand["destructive-text"] ?? brand.destructive ?? colorsByScheme[active]["destructive-text"],
+      "primary-text": brand["primary-text"] ?? brand.primary ?? paletteBase["primary-text"],
+      "destructive-text": brand["destructive-text"] ?? brand.destructive ?? paletteBase["destructive-text"],
       // A primary-only rebrand repaints the call-to-action too, fill and ink together;
       // an explicit `action` wins (see actionOverride).
-      ...actionOverride(colorsByScheme[active], brand),
-    } : colorsByScheme[active];
+      ...actionOverride(paletteBase, brand),
+    } : paletteBase;
     return {
       scheme: active,
+      palette,
       surface: resolved,
       tokens: base,
-      // The material's tokens for this scheme. The provider resolves WHICH mode is
-      // active (`surface`, above) and publishes the accessibility flags; GlassSurface
-      // applies the ladder (solid / Reduce Transparency / Increase Contrast render an
-      // opaque surface, and the skin's own fill is already opaque now that glass never
-      // rewrites it), so no token has to lie about its value to carry that decision.
-      glass: glassTintsFor(active),
+      // The material's tokens for this scheme and palette. The provider resolves WHICH
+      // mode is active (`surface`, above) and publishes the accessibility flags;
+      // GlassSurface applies the ladder (solid / Reduce Transparency / Increase Contrast
+      // render an opaque surface, and the skin's own fill is already opaque now that
+      // glass never rewrites it), so no token has to lie about its value to carry that
+      // decision.
+      glass: glassTintsFor(active, palette),
       fonts: fonts ?? NO_FONTS,
       dark: active === "dark",
       reducedTransparency,
       increasedContrast,
     };
-  }, [active, resolved, tokens, fonts, reducedTransparency, increasedContrast]);
+  }, [active, palette, resolved, tokens, fonts, reducedTransparency, increasedContrast]);
   const themed = <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
   // The viewport axis' server assumption rides the theme provider (the only
   // provider Canvas apps already mount); useBreakpoint reads it as its server

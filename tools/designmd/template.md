@@ -65,24 +65,29 @@ appears.
 
 ## Colors
 
-Semantic tokens, one set per scheme, derived from Dark Factory's palettes (blush for
-light, its single dark palette for dark; the source is vendored at
-`tools/darkfactory/theme.json`). Every role is a Dark Factory value or a recorded rule over
-Dark Factory values in `tools/darkfactory/derive-tokens.ts`, which solves a role to the
-kit's contrast floors where the raw value falls short; `bun run check-df` holds the shipped
-values to that derivation. Components read them through `useTheme()`; the scheme follows
-the OS unless `<ThemeProvider dark>` or `<ThemeProvider light>` forces one. On the web the
-same values ship as custom properties in `styles/canvas.css`, where dark keys off a `.dark`
-class on the root rather than `prefers-color-scheme`.
+Semantic tokens, one set per palette, derived from Dark Factory's palettes: blush (the
+light default), mint (the light alternative) and its single dark palette (the source is
+vendored at `tools/darkfactory/theme.json`). Every role is a Dark Factory value or a
+recorded rule over Dark Factory values in `tools/darkfactory/derive-tokens.ts`, which
+solves a role to the kit's contrast floors where the raw value falls short; `bun run
+check-df` holds the shipped values to that derivation. Components read them through
+`useTheme()`; the scheme follows the OS unless `<ThemeProvider dark>` or `<ThemeProvider
+light>` forces one, and `<ThemeProvider mint>` paints the light scheme in mint. The dark
+scheme has one palette, so `dark` wins over `mint`. On the web the same values ship as
+custom properties in `styles/canvas.css`, where dark keys off a `.dark` class on the root
+rather than `prefers-color-scheme` and mint off `data-palette="mint"` (`setPalette`), with
+`.dark` winning when both are set.
 
 Two roles carry the brand, and they differ on purpose. `primary` is the selection color:
 checked, selected and current states, links and the focus ring. `action` is the
 call-to-action fill: primary buttons, meters, count badges. A theme that overrides
 `primary` alone repaints both, since `action` follows an overriding `primary` unless the
-theme sets it too. `scrim` dims the page behind every modal. The `-soft` washes, `shade`
-(the shadow tint), `inverse` and `inverse-foreground` (the surface of a tooltip or a
-snackbar) and `field-fill` are optional roles the skins adopt as they take the Dark
-Factory look; a theme that omits them keeps the older fallbacks.
+theme sets it too. `scrim` dims the page behind every modal. `inverse`,
+`inverse-foreground` and `inverse-primary` are the toast pill, its ink and the action on
+it (the Android snackbar paints them; `inverse-primary` is the palette's own brand hue
+lightened to read on the pill). The `-soft` washes, `shade` (the shadow tint) and
+`field-fill` are optional roles the skins adopt as they take the Dark Factory look; a
+theme that omits any of these keeps the older fallbacks.
 
 <!-- @generated:colors -->
 <!-- @/generated -->

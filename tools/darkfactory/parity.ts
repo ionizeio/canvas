@@ -3,16 +3,20 @@
 // derive-tokens.ts). It replaces the Riskora Figma parity: the design source is DF now,
 // and every token is a DF value or a recorded rule over DF values, never a hand edit.
 //
-// Checked both ways for the light (blush) and dark palettes, on both sides of the
-// hand-off: every role in the table is present in styles/tokens/colors.css and in
+// Checked both ways for the blush (light), mint (light) and dark palettes, on both sides
+// of the hand-off: every role in the table is present in styles/tokens/colors.css and in
 // src/style/tokens.ts with the table's value, and neither file carries a semantic role
-// the table does not know. scripts/check-df-parity.ts runs it in CI and
-// test/df-parity.test.ts runs it in the pre-push suite.
+// the table does not know. The mint block is read over :root, as the cascade applies it,
+// and only under its anchored selector, which never matches in a dark context, so the
+// one dark palette wins over mint on the web exactly as it does on the ThemeProvider
+// (a bare `[data-palette="mint"]` block reads as missing here).
+// scripts/check-df-parity.ts runs it in CI and test/df-parity.test.ts runs it in the
+// pre-push suite.
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { cssColorToHex, cssRgbaToCanonical, declarationsIn } from "../tokens/css-tokens.ts";
-import { darkColors, lightColors, type ColorTokens } from "../../src/style/tokens.ts";
+import { MINT_SELECTOR, cssColorToHex, cssRgbaToCanonical, declarationsIn } from "../tokens/css-tokens.ts";
+import { darkColors, lightColors, mintColors, type ColorTokens } from "../../src/style/tokens.ts";
 
 interface Table {
   source: { commit: string };
@@ -21,6 +25,7 @@ interface Table {
 }
 
 const ROOT = join(import.meta.dir, "..", "..");
+export { MINT_SELECTOR };
 
 export function readTable(): Table {
   return JSON.parse(readFileSync(join(ROOT, "tools", "darkfactory", "tokens.json"), "utf8"));
@@ -30,7 +35,10 @@ export function readTable(): Table {
 export function checkParity(table: Table = readTable(), css = readFileSync(join(ROOT, "styles", "tokens", "colors.css"), "utf8")): string[] {
   const failures: string[] = [];
   const cssLight = declarationsIn(css, ":root");
+  const mintBlock = declarationsIn(css, MINT_SELECTOR);
+  const cssMint = { ...cssLight, ...mintBlock };
   const cssDark = { ...cssLight, ...declarationsIn(css, ".dark") };
+  if (!Object.keys(mintBlock).length) failures.push(`styles/tokens/colors.css has no ${MINT_SELECTOR} block`);
   const same = (a: string, b: string) => {
     if (a.startsWith("rgba") || b.startsWith("rgba")) return cssRgbaToCanonical(a) !== null && cssRgbaToCanonical(a) === cssRgbaToCanonical(b);
     return a.toLowerCase() === b.toLowerCase();
@@ -41,6 +49,7 @@ export function checkParity(table: Table = readTable(), css = readFileSync(join(
   };
   for (const [scheme, palette, css, js] of [
     ["light", "blush", cssLight, lightColors],
+    ["mint", "mint", cssMint, mintColors],
     ["dark", "dark", cssDark, darkColors],
   ] as const) {
     const roles = table.palettes[palette];

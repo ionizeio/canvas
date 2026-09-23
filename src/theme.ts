@@ -1,15 +1,18 @@
 
+import type { Palette } from "./style/tokens.js";
+
 export type Theme = "light" | "dark";
 export type Surface = "solid" | "glass";
 export type Density = "compact" | "regular" | "comfy";
 
 const STORAGE_KEY_THEME = "canvas-theme";
+const STORAGE_KEY_PALETTE = "canvas-palette";
 const STORAGE_KEY_SURFACE = "canvas-surface";
 const STORAGE_KEY_DENSITY = "canvas-density";
 
-// The theme / surface / density switches live on the web document's root element.
-// Guarded so calling any of these helpers never touches DOM globals on native or
-// during SSR: off the web the getters return the default and the setters no-op.
+// The theme / palette / surface / density switches live on the web document's root
+// element. Guarded so calling any of these helpers never touches DOM globals on native
+// or during SSR: off the web the getters return the default and the setters no-op.
 function hasDocument(): boolean {
   return typeof document !== "undefined";
 }
@@ -38,6 +41,27 @@ export function toggleTheme(): Theme {
   const next = getTheme() === "dark" ? "light" : "dark";
   setTheme(next);
   return next;
+}
+
+// The palette axis: `data-palette="mint"` on the root selects the mint block of
+// styles/tokens/colors.css, and blush (the default) is the attribute's absence. `.dark`
+// still wins in the stylesheet, as `dark` wins over `mint` on the ThemeProvider.
+export function getPalette(): Palette {
+  const saved = load(STORAGE_KEY_PALETTE);
+  if (saved === "blush" || saved === "mint") return saved;
+  if (!hasDocument()) return "blush";
+  return document.documentElement.dataset.palette === "mint" ? "mint" : "blush";
+}
+
+export function setPalette(palette: Palette): void {
+  if (hasDocument()) {
+    if (palette === "blush") {
+      delete document.documentElement.dataset.palette;
+    } else {
+      document.documentElement.dataset.palette = palette;
+    }
+  }
+  store(STORAGE_KEY_PALETTE, palette);
 }
 
 export function getSurface(): Surface {

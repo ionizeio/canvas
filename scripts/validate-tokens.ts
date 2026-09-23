@@ -1,11 +1,11 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { brandColors, darkColors, glassByScheme, lightColors, palette } from "../src/style/tokens.ts";
+import { brandColors, darkColors, glassByScheme, lightColors, mintColors, palette } from "../src/style/tokens.ts";
 import { WEB_TINTS } from "../src/style/glass-surface/web-frost.ts";
 // The oklch conversion and the block parser moved to tools/tokens so the design-rule
 // tests and the DESIGN.md generator can read the hand-off with the same parser this
 // script trusts. Nothing can import from HERE: the checks below run at import time.
-import { cssColorToHex, cssRgbaToCanonical, declarationsIn } from "../tools/tokens/css-tokens.ts";
+import { MINT_SELECTOR, cssColorToHex, cssRgbaToCanonical, declarationsIn } from "../tools/tokens/css-tokens.ts";
 
 const STYLES_DIR = join(import.meta.dir, "..", "styles");
 
@@ -112,11 +112,14 @@ if (glassMissingInCss.length) {
 const colorsCss = await readFile(join(STYLES_DIR, "tokens", "colors.css"), "utf-8");
 const paletteCss = await readFile(join(STYLES_DIR, "tokens", "palette.css"), "utf-8");
 const cssLight = declarationsIn(colorsCss, ":root");
+// The mint palette's block applies over :root, as the cascade resolves data-palette="mint".
+const cssMint = { ...cssLight, ...declarationsIn(colorsCss, MINT_SELECTOR) };
 const cssDark = { ...cssLight, ...declarationsIn(colorsCss, ".dark") };
 
 const drifted: string[] = [];
 for (const [scheme, js, css] of [
   ["light", lightColors, cssLight],
+  ["mint", mintColors, cssMint],
   ["dark", darkColors, cssDark],
 ] as const) {
   for (const [name, jsValue] of Object.entries(js)) {
@@ -164,6 +167,7 @@ for (const m of paletteCss.matchAll(/--([\w-]+)\s*:\s*([^;]+);/g)) {
 // can parse as rgba is itself the drift.
 for (const [scheme, css] of [
   ["light", cssLight],
+  ["mint", cssMint],
   ["dark", cssDark],
 ] as const) {
   for (const key of glassKeys) {
@@ -189,7 +193,7 @@ if (drifted.length) {
 
 console.log(
   `\nTokens: ${defined.size} defined, ${referenced.size} referenced; ${Object.keys(lightColors).length} JS color tokens + ` +
-    `${Object.keys(brandColors).length} JS brand tokens + ${glassKeys.length * 2} JS glass values (both schemes) cross-checked`,
+    `${Object.keys(brandColors).length} JS brand tokens + ${glassKeys.length * 3} JS glass values (blush, mint, dark) cross-checked`,
 );
 if (!failed) console.log("Token validation passed.");
 else process.exit(1);

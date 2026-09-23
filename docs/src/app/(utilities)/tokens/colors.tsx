@@ -4,6 +4,7 @@ import {
   alpha,
   useTheme,
   colorsByScheme,
+  mintColors,
   palette,
   statusHues,
   Swatch,
@@ -26,7 +27,7 @@ import { colorFormats } from "../../../ui/color";
 import { TokenH1, TokenLede, TokenSection, Callout, GradientFill } from "../../../ui/tokens-kit";
 
 // Every value on this page is read from the kit at render time (useTheme,
-// colorsByScheme, palette, the active glass tints). Nothing is restated here:
+// colorsByScheme, mintColors, palette, the active glass tints). Nothing is restated here:
 // a hard-coded table is how this page used to end up publishing a five-color chart
 // palette the kit stopped shipping.
 
@@ -65,9 +66,9 @@ const SEMANTIC_KEYS: { key: keyof ColorTokens; name: string }[] = [
   { key: "accent", name: "accent" },
 ];
 
-// The translucent roles: washes, the field fill, the modal scrim, the shadow tint and
-// the inverse surface. Optional in a custom token map, so a sample only renders when
-// the active map carries the role.
+// The translucent roles (washes, the field fill, the modal scrim, the shadow tint) and the
+// inverse surface with its ink and its action. Optional in a custom token map, so a
+// sample only renders when the active map carries the role.
 const OVERLAY_KEYS: (keyof ColorTokens)[] = [
   "primary-soft",
   "success-soft",
@@ -78,6 +79,7 @@ const OVERLAY_KEYS: (keyof ColorTokens)[] = [
   "shade",
   "inverse",
   "inverse-foreground",
+  "inverse-primary",
 ];
 
 const CHART_KEYS: (keyof ColorTokens)[] = [
@@ -110,6 +112,13 @@ export const lightColors = {
   background: "${colorsByScheme.light.background}",
   // …
 };
+export const mintColors = {
+  primary: "${mintColors.primary}",
+  "primary-text": "${mintColors["primary-text"]}",
+  "destructive-text": "${mintColors["destructive-text"]}",
+  background: "${mintColors.background}",
+  // …
+};
 export const darkColors = {
   primary: "${colorsByScheme.dark.primary}",
   "primary-text": "${colorsByScheme.dark["primary-text"]}",
@@ -122,7 +131,7 @@ const THEME_RUNTIME = `// ThemeProvider supplies the active scheme;
 // components read it through useTheme().
 const { tokens } = useTheme();
 
-tokens.primary; // Selection: "${colorsByScheme.light.primary}" light, "${colorsByScheme.dark.primary}" dark
+tokens.primary; // Selection: "${colorsByScheme.light.primary}" blush, "${mintColors.primary}" mint, "${colorsByScheme.dark.primary}" dark
 tokens.action ?? tokens.primary; // Call to action, including legacy token maps
 tokens["primary-text"] ?? tokens.primary; // Brand text, including legacy token maps
 tokens["destructive-text"] ?? tokens.destructive; // Error text, including legacy token maps`;
@@ -133,6 +142,7 @@ const DYNAMIC = `<Button primary>Save</Button>
 // builds { backgroundColor: tokens.action }, so one prop
 // resolves live per theme:
 //   light       → ${colorsByScheme.light.action}
+//   light mint  → ${mintColors.action}
 //   dark        → ${colorsByScheme.dark.action}
 //   teal accent → #0d9488 (a primary-only override
 //                 repaints action too)`;

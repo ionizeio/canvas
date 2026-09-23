@@ -16,4 +16,4 @@ if (failures.length) {
   process.exit(1);
 }
 const roles = Object.keys(table.palettes.blush ?? {}).length;
-console.log(`Dark Factory parity: ${roles} roles in each of the light and dark palettes and ${table.chart.length} chart series match the table derived from Dark Factory ${table.source.commit}.`);
+console.log(`Dark Factory parity: ${roles} roles in each of the blush, mint and dark palettes and ${table.chart.length} chart series match the table derived from Dark Factory ${table.source.commit}.`);

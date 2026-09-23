@@ -16,8 +16,8 @@ until the phase that changes it rewrites them. These decisions bind all new work
    Riskora palette, Urbanist and the Riskora Figma parity go. `primary` is DF's violet
    (selection, checked, current, links, focus); a new optional `action` role carries
    DF's green (call-to-action buttons, meters, count badges) and derives from an
-   overriding `primary`. Palettes: blush (the light default), mint (a `ThemeProvider
-   mint` palette), and DF's one dark palette (`dark` wins over `mint`).
+   overriding `primary`. Palettes: blush (the light default), mint (`<ThemeProvider
+   mint>`, `mintColors`), and DF's one dark palette (`dark` wins over `mint`).
 2. **Web.** Every component takes DF's full look on the web.
 3. **iOS and Android.** A component keeps its iOS 27 or Material 3 shape only on a
    platform that ships a real control for its job (the rows of
@@ -287,7 +287,11 @@ supported for config-driven code holding a `Surface` value, and on the web the D
 helper is `setSurface("glass")` / `setSurface("solid")`. The scheme axis speaks the
 same grammar: `<ThemeProvider dark>` / `<ThemeProvider light>` force a scheme
 (`dark` wins if both are passed), omitting both follows the OS appearance, and the
-legacy `scheme` value prop is likewise supported. The platform default is computed from
+legacy `scheme` value prop is likewise supported. The palette axis too: `<ThemeProvider
+mint>` paints the light scheme in DF's mint palette and omitting it gives blush; DF has
+one dark palette, so `dark` wins over `mint` (`.dark` wins over `data-palette="mint"`
+in the CSS hand-off). `ssrPalette` mirrors `ssrScheme`, and the web DOM helpers are
+`setPalette("mint")` / `getPalette()`. The platform default is computed from
 `liquidGlassAvailable()` (exported from the kit).
 
 Under glass EVERY surface renders through the material, layered. The model has four
@@ -317,8 +321,9 @@ layers, each with its own under-fill token (`glass-tint*` in `src/style/tokens.t
   acts on, the option lists (Dropdown, Select, Autocomplete, RowMenu, the SplitButton
   overflow, the PhoneInput country list, AvatarMenu), AlertDialog, Toast, Tooltip, the
   chart value flag. AnchoredOverlay selects it with `dense`. The two INVERSE surfaces
-  (the Tooltip bubble, the M3 snackbar) take `inverseDenseTint`, the ink at the dense
-  alpha, so their inverse text keeps its contrast.
+  take `inverseDenseTint`, their own fill at the dense alpha (the Tooltip bubble the
+  ink, the M3 snackbar DF's `inverse` toast pill), so their inverse text keeps its
+  contrast.
 
 Those surfaces render through the shared `GlassSurface` primitive
 (`src/style/glass-surface`), which paints the active material per platform: Apple's

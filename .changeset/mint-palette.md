@@ -1,0 +1,7 @@
+---
+"@ionizeio/canvas": minor
+---
+
+Adds Dark Factory's mint palette as a theming option. `<ThemeProvider mint>` paints the light scheme in mint (blush stays the default, and `dark` still wins, since Dark Factory has one dark palette); `ssrPalette` holds a server-rendered palette through hydration the way `ssrScheme` holds the scheme; `useTheme()` reports `palette`; `mintColors` and `colorsFor(palette, scheme)` expose the token sets; and on the web `setPalette("mint")` / `getPalette()` switch `data-palette="mint"`, whose block in the CSS hand-off (`styles/tokens/colors.css`, included by `styles/canvas.css`) carries the mint tokens and mint's frost tints; the block never matches in a dark context, on the root or on any wrapper, and the accessibility fallbacks now also reach palette and scheme wrappers inside a glass root. Minor: new public API (a ThemeProvider option, a server-rendering prop, two web helpers, a token set and its resolver).
+
+A new optional color role, `inverse-primary`, is the brand on the inverse surface. The Android snackbar now paints Dark Factory's toast pill (`inverse`, with `inverse-foreground` text) in both schemes, and its action takes `inverse-primary`, the active palette's own brand hue lightened to 4.5:1 on the pill, solid and under glass, instead of the other scheme's brand text. An app that recoloured the snackbar through `foreground` and `background` overrides now sets the three inverse roles instead; token maps without them keep the old inverted bar.

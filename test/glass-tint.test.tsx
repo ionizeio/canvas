@@ -7,6 +7,7 @@ import { BRAND_TINT_ALPHA, clearSurfaceTint, surfaceUnderFill, surfaceIntensity,
 import { glassTintsFor } from "../src/style/glass-surface/glass-tints.ts";
 import { WEB_FROST, WEB_TINTS } from "../src/style/glass-surface/web-frost.ts";
 import { glassByScheme, lightColors, darkColors, brandColors } from "../src/style/tokens.ts";
+import { LOOKS } from "./fixtures/looks.ts";
 
 // The glass material's UNDER-FILL: the layer painted beneath the frost or Liquid Glass
 // so a near-clear material still has a body.
@@ -148,6 +149,21 @@ describe("GlassSurface under-fill", () => {
     expect(DARK_TINT).not.toBe(darkColors.popover);
   });
 
+  // Mint frosts over its own shell (Dark Factory's mint shell, white 0.58), and the one
+  // dark palette keeps the dark frost whichever light palette was asked for.
+  it("paints the mint palette's own shell tint, and the dark frost under dark mint", async () => {
+    expect(glassTintsFor("light", "mint")).toBe(WEB_TINTS.mint);
+    expect(glassTintsFor("dark", "mint")).toBe(WEB_TINTS.dark);
+    render(
+      <>
+        <ThemeProvider mint glass><Panel testID="mint-gs" /></ThemeProvider>
+        <ThemeProvider dark mint glass><Panel testID="dark-mint-gs" /></ThemeProvider>
+      </>,
+    );
+    expect((await underFillOf("mint-gs"))!.getAttribute("style") ?? "").toContain(`background-color: ${printed(WEB_TINTS.mint["glass-tint"])}`);
+    expect((await underFillOf("dark-mint-gs"))!.getAttribute("style") ?? "").toContain(`background-color: ${printed(DARK_TINT)}`);
+  });
+
   it("still lets an explicit tint win (the Slider's bright Liquid Glass knob)", async () => {
     render(
       <ThemeProvider dark glass>
@@ -278,41 +294,41 @@ describe("GlassSurface layers", () => {
 
   it("orders the tints by density: functional < content < dense, and the control puck is the light one in dark", () => {
     const a = (v: string) => rgbaOf(v)[3];
-    for (const [platform, tints] of TINT_SETS) {
-      for (const scheme of ["light", "dark"] as const) {
-        const g = tints[scheme];
-        expect(a(g["glass-tint"]), `${platform} ${scheme}`).toBeLessThan(a(g["glass-tint-content"]));
-        expect(a(g["glass-tint-content"]), `${platform} ${scheme}`).toBeLessThan(a(g["glass-tint-dense"]));
+    for (const look of LOOKS) {
+      for (const [platform, g] of [["web", look.webGlass], ["native", look.nativeGlass]] as const) {
+        expect(a(g["glass-tint"]), `${platform} ${look.name}`).toBeLessThan(a(g["glass-tint-content"]));
+        expect(a(g["glass-tint-content"]), `${platform} ${look.name}`).toBeLessThan(a(g["glass-tint-dense"]));
       }
+    }
+    for (const [platform, tints] of TINT_SETS) {
       expect(rgbaOf(tints.dark["glass-tint-control"]).slice(0, 3), platform).toEqual([255, 255, 255]);
     }
   });
 
   it("keeps foreground text at 4.5:1 on a content pane and a dense pane over the page AND over the brand aurora", () => {
     const aurora = [brandColors["orb-indigo"], brandColors["orb-violet"], brandColors["orb-cyan"]];
-    for (const [platform, tints] of TINT_SETS) {
-      for (const scheme of ["light", "dark"] as const) {
-        const g = tints[scheme];
-        const t = scheme === "light" ? lightColors : darkColors;
+    for (const look of LOOKS) {
+      const t = look.tokens;
+      for (const [platform, g] of [["web", look.webGlass], ["native", look.nativeGlass]] as const) {
         for (const base of [t.background, ...aurora]) {
           for (const tint of [g["glass-tint-content"], g["glass-tint-dense"]]) {
-            expect(contrast(over(tint, base), rgb(t.foreground)), `${platform} ${scheme} foreground on ${tint} over ${base}`).toBeGreaterThanOrEqual(4.5);
+            expect(contrast(over(tint, base), rgb(t.foreground)), `${platform} ${look.name} foreground on ${tint} over ${base}`).toBeGreaterThanOrEqual(4.5);
           }
         }
         // The muted label role keeps the large-text floor on a content pane over the page.
-        expect(contrast(over(g["glass-tint-content"], t.background), rgb(t["muted-foreground"])), `${platform} ${scheme} muted`).toBeGreaterThanOrEqual(3);
+        expect(contrast(over(g["glass-tint-content"], t.background), rgb(t["muted-foreground"])), `${platform} ${look.name} muted`).toBeGreaterThanOrEqual(3);
       }
     }
   });
 
-  it("a brand puck carries the primary-foreground ink at 4.5:1 over the page in both schemes", () => {
-    for (const scheme of ["light", "dark"] as const) {
-      const t = scheme === "light" ? lightColors : darkColors;
+  it("a brand puck carries the primary-foreground ink at 4.5:1 over the page in every palette", () => {
+    for (const look of LOOKS) {
+      const t = look.tokens;
       // Without tokens the resolver can only return the sheer floor; with them it solves the
       // tint for the ink the skin paints (the primary pair).
-      expect(surfaceUnderFill(glassByScheme[scheme], "control", t.primary)).toContain(`${BRAND_TINT_ALPHA}`);
-      const fill = surfaceUnderFill(glassByScheme[scheme], "control", t.primary, undefined, t);
-      expect(contrast(over(fill, t.background), rgb(t["primary-foreground"]))).toBeGreaterThanOrEqual(4.5);
+      expect(surfaceUnderFill(look.nativeGlass, "control", t.primary)).toContain(`${BRAND_TINT_ALPHA}`);
+      const fill = surfaceUnderFill(look.nativeGlass, "control", t.primary, undefined, t);
+      expect(contrast(over(fill, t.background), rgb(t["primary-foreground"])), look.name).toBeGreaterThanOrEqual(4.5);
     }
   });
 

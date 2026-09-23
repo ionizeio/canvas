@@ -1,7 +1,7 @@
 import { describe, it, expect } from "bun:test";
-import { getTheme, setTheme, toggleTheme, getSurface, setSurface, getDensity, setDensity } from "../src/theme.ts";
+import { getTheme, setTheme, toggleTheme, getPalette, setPalette, getSurface, setSurface, getDensity, setDensity } from "../src/theme.ts";
 
-// The theme / surface / density helpers are re-exported to every platform from the
+// The theme / palette / surface / density helpers are re-exported to every platform from the
 // package barrel, so a native consumer or a web-SSR pass can call them with no DOM
 // present. They must return the platform defaults and never touch document globals.
 
@@ -10,6 +10,7 @@ import { getTheme, setTheme, toggleTheme, getSurface, setSurface, getDensity, se
 function clearThemeStorage(): void {
   try {
     globalThis.localStorage?.removeItem("canvas-theme");
+    globalThis.localStorage?.removeItem("canvas-palette");
     globalThis.localStorage?.removeItem("canvas-surface");
     globalThis.localStorage?.removeItem("canvas-density");
   } catch {}
@@ -33,6 +34,7 @@ describe("theme helpers without a document (native / SSR)", () => {
     withoutDocument(() => {
       clearThemeStorage();
       expect(getTheme()).toBe("light");
+      expect(getPalette()).toBe("blush");
       expect(getSurface()).toBe("solid");
       expect(getDensity()).toBe("regular");
     });
@@ -42,6 +44,7 @@ describe("theme helpers without a document (native / SSR)", () => {
     withoutDocument(() => {
       clearThemeStorage();
       expect(() => setTheme("dark")).not.toThrow();
+      expect(() => setPalette("mint")).not.toThrow();
       expect(() => setSurface("glass")).not.toThrow();
       expect(() => setDensity("compact")).not.toThrow();
       clearThemeStorage();

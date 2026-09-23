@@ -32,13 +32,23 @@ export const WEB_FROST = {
  * and white 0.045 in dark), DF's input fill for the control puck (0.70, and 0.06 in dark),
  * and denser content and dense panes, seeded between DF's shell and its opaque card so
  * text keeps its contrast (test/glass-tint.test.tsx holds the ordering and the floors).
+ * `light` is the blush palette; `mint` is the mint palette's light scheme, DF's mint shell
+ * (0.58) and input fill (0.75), with its content and dense panes at blush's place between
+ * the shell and the opaque card (5/12 and 10/12 of the way: 0.76 and 0.93). The dark
+ * scheme has one palette.
  */
-export const WEB_TINTS: Record<ColorScheme, GlassTokens> = {
+export const WEB_TINTS: Record<ColorScheme | "mint", GlassTokens> = {
   light: {
     "glass-tint": "rgba(255, 255, 255, 0.52)",
     "glass-tint-content": "rgba(255, 255, 255, 0.72)",
     "glass-tint-control": "rgba(255, 255, 255, 0.70)",
     "glass-tint-dense": "rgba(255, 255, 255, 0.92)",
+  },
+  mint: {
+    "glass-tint": "rgba(255, 255, 255, 0.58)",
+    "glass-tint-content": "rgba(255, 255, 255, 0.76)",
+    "glass-tint-control": "rgba(255, 255, 255, 0.75)",
+    "glass-tint-dense": "rgba(255, 255, 255, 0.93)",
   },
   dark: {
     "glass-tint": "rgba(255, 255, 255, 0.045)",

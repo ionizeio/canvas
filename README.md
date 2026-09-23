@@ -147,8 +147,9 @@ this check on the exact sealed tarball before it can be published.
 `ThemeProvider` reads the OS color scheme by default and exposes the resolved tokens to every Canvas component through the `useTheme` hook. Optional props control it:
 
 - `dark` / `light` (booleans): the scheme axis, spelled like every other Canvas axis (`dark` wins if both are passed). Omit both to follow the OS appearance. The legacy `scheme` value prop (`"light" | "dark"`) stays supported for code that already holds a scheme value.
+- `mint` (boolean): the palette axis. Omit it for Dark Factory's blush palette, the light default; pass it for Dark Factory's mint. Dark Factory has one dark palette, so `dark` wins over `mint`. `ssrPalette` holds a server-rendered palette through hydration the way `ssrScheme` holds the scheme, and on the web `setPalette("mint")` / `getPalette()` switch the CSS hand-off through `data-palette="mint"` (`.dark` still wins).
 - `glass` / `solid` (booleans): the surface axis, spelled like every other Canvas axis. Omit both for the platform default (glass on supported iOS 26+, solid elsewhere); `glass` requests the material treatment, and `solid` requests complete opaque surfaces. Accessibility preferences and runtime capability determine the rendered material. `glass` wins if both are passed. The legacy `surface` value prop (`"solid" | "glass"`) stays supported for config-driven code holding a `Surface` value.
-- `tokens`: brand token overrides merged over the active scheme, so you can rebrand without forking the token files. Pass a flat `Partial<ColorTokens>` to apply to both schemes, or `{ light, dark }` to override each separately. Use a stable reference (a module constant or memoized object).
+- `tokens`: brand token overrides merged over the active palette, so you can rebrand without forking the token files. Pass a flat `Partial<ColorTokens>` to apply to both schemes, or `{ light, dark }` to override each separately. Use a stable reference (a module constant or memoized object).
 
 ```jsx
 const brand = { primary: "#7c3aed" };

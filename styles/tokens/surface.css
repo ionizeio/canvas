@@ -48,13 +48,15 @@
    counterpart of the accessibility rungs GlassSurface applies natively
    (src/style/glass-surface). While glass swapped `--popover` translucent, this
    line resolved to that translucent value and the "reduce transparency" panel
-   stayed see-through. */
+   stayed see-through. A scheme or palette wrapper inside the glass root (`.dark`,
+   `data-palette`) declares its own tints, which would otherwise win over the
+   fallback inherited from the root, so each rule names those wrappers too. */
 @media (prefers-reduced-transparency:reduce){
-  [data-surface="glass"]{--glass-tint:var(--popover);--glass-tint-content:var(--card);--glass-tint-control:var(--card);--glass-tint-dense:var(--popover);--glass-frost:none /* @kind other */;--glass-lens:none /* @kind other */;--glass-illumination:none /* @kind other */;--glass-edge:var(--border);--glass-specular:var(--shadow-lg) /* @kind shadow */}
+  [data-surface="glass"],[data-surface="glass"] :is(.dark,[data-palette]){--glass-tint:var(--popover);--glass-tint-content:var(--card);--glass-tint-control:var(--card);--glass-tint-dense:var(--popover);--glass-frost:none /* @kind other */;--glass-lens:none /* @kind other */;--glass-illumination:none /* @kind other */;--glass-edge:var(--border);--glass-specular:var(--shadow-lg) /* @kind shadow */}
 }
 @media (prefers-contrast:more){
-  [data-surface="glass"]{--glass-tint:var(--popover);--glass-tint-content:var(--card);--glass-tint-control:var(--card);--glass-tint-dense:var(--popover);--glass-frost:none /* @kind other */;--glass-lens:none /* @kind other */;--glass-illumination:none /* @kind other */;--glass-edge:var(--input);--glass-specular:var(--shadow-lg) /* @kind shadow */}
+  [data-surface="glass"],[data-surface="glass"] :is(.dark,[data-palette]){--glass-tint:var(--popover);--glass-tint-content:var(--card);--glass-tint-control:var(--card);--glass-tint-dense:var(--popover);--glass-frost:none /* @kind other */;--glass-lens:none /* @kind other */;--glass-illumination:none /* @kind other */;--glass-edge:var(--input);--glass-specular:var(--shadow-lg) /* @kind shadow */}
 }
 @media print{
-  [data-surface="glass"]{--glass-tint:var(--popover);--glass-tint-content:var(--card);--glass-tint-control:var(--card);--glass-tint-dense:var(--popover);--glass-frost:none /* @kind other */;--glass-lens:none /* @kind other */;--glass-illumination:none /* @kind other */;--glass-edge:var(--border);--glass-specular:none /* @kind shadow */;--surface-backdrop:none /* @kind other */}
+  [data-surface="glass"],[data-surface="glass"] :is(.dark,[data-palette]){--glass-tint:var(--popover);--glass-tint-content:var(--card);--glass-tint-control:var(--card);--glass-tint-dense:var(--popover);--glass-frost:none /* @kind other */;--glass-lens:none /* @kind other */;--glass-illumination:none /* @kind other */;--glass-edge:var(--border);--glass-specular:none /* @kind shadow */;--surface-backdrop:none /* @kind other */}
 }

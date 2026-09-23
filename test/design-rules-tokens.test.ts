@@ -11,6 +11,7 @@ import {
 } from "../src/style/tokens.ts";
 import { customShadow, shadow, type ShadowLevel } from "../src/style/shadow.ts";
 import { isRing, renderedContrast, shadeLayers, SHADE_LIMIT } from "../tools/tokens/shade.ts";
+import { LOOKS } from "./fixtures/looks.ts";
 
 // Design rules, JS side: the token values and the elevation ladder.
 //
@@ -34,10 +35,8 @@ const SURFACE_TOKENS: (keyof ColorTokens)[] = [
   "accent",
 ];
 
-const SCHEMES: [string, ColorTokens][] = [
-  ["light", lightColors],
-  ["dark", darkColors],
-];
+// Every look the kit ships: blush, mint and the one dark palette.
+const SCHEMES: [string, ColorTokens][] = LOOKS.map((look) => [look.name, look.tokens]);
 
 const LEVELS: ShadowLevel[] = ["none", "sm", "DEFAULT", "md", "lg", "xl"];
 
@@ -106,7 +105,7 @@ describe("elevation", () => {
   // (a dialog's shade over a scrim or arbitrary content), held only to the direction rule.
   const boxShadowOf = (level: ShadowLevel, tokens?: ColorTokens) => (shadow(level, tokens) as { boxShadow?: string }).boxShadow ?? "";
 
-  for (const [scheme, tokens] of [["light", lightColors], ["dark", darkColors]] as const) {
+  for (const [scheme, tokens] of SCHEMES) {
     for (const level of LEVELS.filter((l) => l !== "none" && l !== "xl")) {
       it(`${scheme} ${level} renders a diffuse shade, not a hard drop`, () => {
         const layers = shadeLayers(boxShadowOf(level, tokens)).filter((layer) => !layer.inset && !isRing(layer));
@@ -122,8 +121,7 @@ describe("elevation", () => {
   }
 
   it("tints the ladder by the palette's shade, and keeps the top layer black", () => {
-    expect(boxShadowOf("DEFAULT", lightColors)).toContain(lightColors.shade as string);
-    expect(boxShadowOf("DEFAULT", darkColors)).toContain(darkColors.shade as string);
+    for (const { tokens } of LOOKS) expect(boxShadowOf("DEFAULT", tokens)).toContain(tokens.shade as string);
     expect(boxShadowOf("xl", lightColors)).toBe(boxShadowOf("xl", darkColors));
   });
 

@@ -12,6 +12,8 @@ export {
   getTheme,
   setTheme,
   toggleTheme,
+  getPalette,
+  setPalette,
   getSurface,
   setSurface,
   getDensity,

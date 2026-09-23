@@ -71,9 +71,24 @@ export interface ColorTokens {
   scrim?: string;
   /** The elevation tint (DF's palette-tinted shadow color). Translucent. Omit to shade with the ink. */
   shade?: string;
-  /** The inverse surface (DF's dark toast pill) and the ink on it. Omit to invert `foreground`. */
+  /**
+   * The inverse surface (DF's dark toast pill, which the Android snackbar paints in both
+   * schemes) and the ink on it. Omit both in legacy maps to invert the scheme: `foreground`
+   * as the pill and `background` as its ink. Override the three inverse roles together:
+   * the palette's ink and action were solved for DF's pill, so an `inverse` alone keeps
+   * them.
+   */
   inverse?: string;
   "inverse-foreground"?: string;
+  /**
+   * The brand on the inverse surface (Material 3's inverse-primary): the action a
+   * snackbar carries on the `inverse` pill, the palette's own brand hue lightened until
+   * it reads at 4.5:1 on the pill, solid and under glass. Omit in legacy maps to use the
+   * brand text of the palette whose surfaces match the pill's lightness (the dark
+   * palette's on a dark pill, the light palette's on a light one). A `tokens` override
+   * that rebrands `primary` leaves it alone: name it too.
+   */
+  "inverse-primary"?: string;
   // Categorical data-viz series colors, assigned to series in fixed order
   // (series 1 is always chart-1, never re-ranked when a series is filtered
   // out). One validated palette serves both schemes: every value passes the
@@ -99,9 +114,10 @@ export interface ColorTokens {
 // hand-off first, never only here.
 //
 // The values are Dark Factory's (CLAUDE.md, "Design language: Dark Factory"): its blush
-// palette for the light scheme and its dark palette for the dark scheme, each role a DF
-// value, a formula over DF values, or a DF color whose lightness was moved the least that
-// clears a kit legibility floor. tools/darkfactory/derive-tokens.ts derives them from
+// palette for the light scheme (and its mint, `mintColors` below, when a ThemeProvider
+// passes `mint`) and its dark palette for the dark scheme, each role a DF value, a
+// formula over DF values, or a DF color whose lightness was moved the least that clears a
+// kit legibility floor. tools/darkfactory/derive-tokens.ts derives them from
 // the vendored DF theme and tools/darkfactory/tokens.json records each role's source;
 // scripts/check-df-parity.ts keeps the hand-off and this file equal to that table.
 export const lightColors: ColorTokens = {
@@ -142,6 +158,7 @@ export const lightColors: ColorTokens = {
   shade: "rgba(121, 100, 214, 0.22)",
   inverse: "#26264a",
   "inverse-foreground": "#ffffff",
+  "inverse-primary": "#cecfff",
   "chart-1": "#7b6cf0",
   "chart-2": "#03919d",
   "chart-3": "#d36225",
@@ -190,6 +207,7 @@ export const darkColors: ColorTokens = {
   shade: "rgba(0, 0, 0, 0.5)",
   inverse: "#26264a",
   "inverse-foreground": "#ffffff",
+  "inverse-primary": "#b1a7ff",
   "chart-1": "#7b6cf0",
   "chart-2": "#03919d",
   "chart-3": "#d36225",
@@ -204,6 +222,78 @@ export const colorsByScheme: Record<ColorScheme, ColorTokens> = {
   light: lightColors,
   dark: darkColors,
 };
+
+/**
+ * The light-scheme palettes the kit ships: Dark Factory's blush (the default,
+ * `lightColors`) and its mint (`mintColors`, `<ThemeProvider mint>`). The dark scheme has
+ * one palette, Dark Factory's single dark, whichever light palette is chosen.
+ */
+export type Palette = "blush" | "mint";
+
+/**
+ * Dark Factory's mint palette for the light scheme: blue selection and focus, a
+ * blue-grey ink on a cool pastel page, the same green call to action. Derived by the same
+ * rules as the blush set (tools/darkfactory/derive-tokens.ts) and mirrored by the
+ * `[data-palette="mint"]` block of styles/tokens/colors.css.
+ */
+export const mintColors: ColorTokens = {
+  background: "#f0f7fd",
+  foreground: "#2e3d4f",
+  card: "#ffffff",
+  "card-foreground": "#2e3d4f",
+  popover: "#ffffff",
+  "popover-foreground": "#2e3d4f",
+  primary: "#3474d4",
+  "primary-text": "#1a5bb9",
+  "primary-foreground": "#ffffff",
+  "primary-soft": "rgba(63, 127, 224, 0.14)",
+  action: "#1f8049",
+  "action-foreground": "#ffffff",
+  secondary: "#f1f6fb",
+  "secondary-foreground": "#2e3d4f",
+  muted: "#f1f6fb",
+  "muted-foreground": "#5f7083",
+  accent: "#f0f5fd",
+  "accent-foreground": "#2e3d4f",
+  destructive: "#b53a44",
+  "destructive-text": "#9a1f2f",
+  "destructive-foreground": "#ffffff",
+  "destructive-soft": "rgba(181, 58, 68, 0.12)",
+  success: "#0b753f",
+  "success-foreground": "#ffffff",
+  "success-soft": "rgba(31, 128, 73, 0.12)",
+  warning: "#8a5200",
+  "warning-foreground": "#ffffff",
+  "warning-soft": "rgba(240, 160, 40, 0.18)",
+  border: "#e4eaf1",
+  input: "#858e9a",
+  "field-border": "#ccd6e5",
+  "field-fill": "rgba(255, 255, 255, 0.75)",
+  ring: "#3f7fe0",
+  scrim: "rgba(20, 50, 90, 0.28)",
+  shade: "rgba(60, 110, 190, 0.2)",
+  inverse: "#26264a",
+  "inverse-foreground": "#ffffff",
+  "inverse-primary": "#b9d4ff",
+  "chart-1": "#7b6cf0",
+  "chart-2": "#03919d",
+  "chart-3": "#d36225",
+  "chart-4": "#d25798",
+  "chart-5": "#4382e3",
+  "chart-6": "#009574",
+  "chart-7": "#b560cf",
+  "chart-8": "#a37e05",
+};
+
+/**
+ * The color tokens a palette paints in a scheme. The dark scheme is Dark Factory's one
+ * dark palette for every light palette, so `dark` wins over `mint` exactly as the
+ * ThemeProvider resolves `<ThemeProvider dark mint>`.
+ */
+export function colorsFor(palette: Palette, scheme: ColorScheme): ColorTokens {
+  if (scheme === "dark") return darkColors;
+  return palette === "mint" ? mintColors : lightColors;
+}
 
 /**
  * The glass material's own tokens, per scheme, one tint per density layer.

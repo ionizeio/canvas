@@ -40,6 +40,7 @@ import {
   widths,
   fontWeight,
   lightColors,
+  mintColors,
   radius,
   spacing,
   type ColorTokens,
@@ -181,9 +182,10 @@ function platformOverrides(platform: Exclude<PlatformKey, "web">): Record<string
 
 function colorTable(): string {
   const light = semantic(lightColors);
+  const mint = semantic(mintColors);
   const dark = semantic(darkColors);
-  const rows = Object.keys(light).map((name) => `| \`${name}\` | \`${light[name]}\` | \`${dark[name]}\` |`);
-  return ["| Token | Light | Dark |", "| --- | --- | --- |", ...rows].join("\n");
+  const rows = Object.keys(light).map((name) => `| \`${name}\` | \`${light[name]}\` | \`${mint[name]}\` | \`${dark[name]}\` |`);
+  return ["| Token | Blush (light) | Mint (light) | Dark |", "| --- | --- | --- | --- |", ...rows].join("\n");
 }
 
 function typeTable(): string {
@@ -234,6 +236,8 @@ const frontmatter = [
   "  visual variation is a semantic boolean prop; there is no style escape hatch.",
   "colors:",
   yamlMap(semantic(lightColors), "  "),
+  "colorsMint:",
+  yamlMap(semantic(mintColors), "  "),
   "colorsDark:",
   yamlMap(semantic(darkColors), "  "),
   "chart:",

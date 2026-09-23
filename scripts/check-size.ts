@@ -35,9 +35,12 @@ const CORE_FILE_GZIP_OVERRIDES: Record<string, number> = {
   // colors.css carries the glass MATERIAL family, and the layered glass model (every
   // surface renders through the material, one tint per layer: functional, content,
   // control, dense) adds three rgba tints per scheme to it. Measured at 2,086B gzip
-  // after the addition against the 2,048B rule; 2,304B (2.25KB) leaves room for the
-  // same again while still tripping before the file could double.
-  "styles/tokens/colors.css": 2_304,
+  // after the addition against the 2,048B rule, so the budget went to 2,304B. Dark
+  // Factory's mint palette then added a third complete palette block (every semantic
+  // role plus its frost tints, beside blush and the one dark palette), measured at
+  // 2,403B gzip; 2,688B (2.625KB) leaves about the same headroom again while still
+  // tripping well before the file could double.
+  "styles/tokens/colors.css": 2_688,
 };
 
 // The shipped JavaScript budget: the whole kit, bundled with react / react-native /

@@ -1,7 +1,8 @@
-/* Semantic color tokens: Dark Factory's blush palette (:root) and its dark palette
-   (.dark on <html>), derived by tools/darkfactory/derive-tokens.ts; each role's DF
-   source and the floor it was solved to are in tools/darkfactory/tokens.json. The
-   rgba roles are translucent by contract. src/style/tokens.ts mirrors the values. */
+/* Semantic color tokens: Dark Factory's blush palette (:root), its mint palette
+   ([data-palette="mint"]) and its dark palette (.dark on <html>), derived by
+   tools/darkfactory/derive-tokens.ts; each role's DF source and the floor it was solved
+   to are in tools/darkfactory/tokens.json. The rgba roles are translucent by contract.
+   src/style/tokens.ts mirrors the values. */
 :root{
   --background:oklch(0.967 0.016 297.5);
   --foreground:oklch(0.37 0.055 282);
@@ -40,6 +41,7 @@
   --shade:rgba(121,100,214,0.22);
   --inverse:oklch(0.288 0.065 281.6);
   --inverse-foreground:oklch(1 0 0);
+  --inverse-primary:oklch(0.869 0.066 284.4);
 
   /* Data-viz series, anchored on DF hues, in the dataviz validator's colorblind-safe order
      (tools/darkfactory/derive-tokens.ts). Fixed assignment order; same in both schemes. */
@@ -80,6 +82,57 @@
      which is what keeps the bar's labels legible over moving content. */
   --glass-scroll-edge:76px /* @kind shadow */;
 }
+/* Dark Factory's mint palette (`data-palette="mint"`, set on <html> by setPalette, or on
+   any wrapper; the JS twin is mintColors). Dark Factory has one dark palette, so the
+   block never matches in a dark context, on the element itself or under a `.dark`
+   ancestor, the precedence the ThemeProvider gives `<ThemeProvider dark mint>`. The
+   exclusion sits inside :where() so the block keeps the specificity of one attribute:
+   the accessibility fallbacks in surface.css still win over its frost tints. Those
+   tints keep blush's place between the palette's shell and its opaque card
+   (web-frost.ts). */
+[data-palette="mint"]:not(:where(.dark, .dark *)){
+  --background:oklch(0.973 0.011 243.7);
+  --foreground:oklch(0.355 0.037 253.3);
+  --card:oklch(1 0 0);
+  --card-foreground:oklch(0.355 0.037 253.3);
+  --popover:oklch(1 0 0);
+  --popover-foreground:oklch(0.355 0.037 253.3);
+  --primary:oklch(0.569 0.162 258.6);
+  --primary-text:oklch(0.488 0.162 258.6);
+  --primary-foreground:oklch(1 0 0);
+  --primary-soft:rgba(63,127,224,0.14);
+  --action:oklch(0.531 0.123 153.3);
+  --action-foreground:oklch(1 0 0);
+  --secondary:oklch(0.971 0.009 247.9);
+  --secondary-foreground:oklch(0.355 0.037 253.3);
+  --muted:oklch(0.971 0.009 247.9);
+  --muted-foreground:oklch(0.539 0.036 249.9);
+  --accent:oklch(0.969 0.012 259.8);
+  --accent-foreground:oklch(0.355 0.037 253.3);
+  --destructive:oklch(0.53 0.158 19.9);
+  --destructive-text:oklch(0.452 0.158 19.9);
+  --destructive-foreground:oklch(1 0 0);
+  --destructive-soft:rgba(181,58,68,0.12);
+  --success:oklch(0.496 0.123 153.4);
+  --success-foreground:oklch(1 0 0);
+  --success-soft:rgba(31,128,73,0.12);
+  --warning:oklch(0.492 0.11 66);
+  --warning-foreground:oklch(1 0 0);
+  --warning-soft:rgba(240,160,40,0.18);
+  --border:oklch(0.935 0.011 252.1);
+  --input:oklch(0.643 0.021 255.6);
+  --field-border:oklch(0.873 0.023 258.4);
+  --field-fill:rgba(255,255,255,0.75);
+  --ring:oklch(0.604 0.162 258.6);
+  --scrim:rgba(20,50,90,0.28);
+  --shade:rgba(60,110,190,0.2);
+  --inverse:oklch(0.288 0.065 281.6);
+  --inverse-foreground:oklch(1 0 0);
+  --inverse-primary:oklch(0.865 0.066 258.6);
+  /* Mint frost: Dark Factory's mint shell (white 0.58) and input fill (0.75). */
+  --glass-tint:rgba(255,255,255,0.58);
+  --glass-tint-content:rgba(255,255,255,0.76);--glass-tint-control:rgba(255,255,255,0.75);--glass-tint-dense:rgba(255,255,255,0.93);
+}
 .dark{
   --background:oklch(0.283 0.056 285.2);
   --foreground:oklch(0.944 0.016 286.1);
@@ -118,6 +171,7 @@
   --shade:rgba(0,0,0,0.5);
   --inverse:oklch(0.288 0.065 281.6);
   --inverse-foreground:oklch(1 0 0);
+  --inverse-primary:oklch(0.77 0.124 288.2);
   --p-menu-destructive:#fca5a5;
   --panel-danger:#ff8b93;
   --delta-up:#5fd18a;

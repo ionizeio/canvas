@@ -25,6 +25,7 @@ import {
   type TextStyle,
 } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
+import { inverseFill } from "../../style/inverse.js";
 
 // Shared Toast shell. Two layers live here once and a platform file supplies only
 // its skin (capsule shape, type, action/dismiss feedback) and calls createToastSystem:
@@ -36,9 +37,9 @@ import { Icon } from "../../atoms/icon/icon.js";
 //      status message that lands over whatever the user was reading, and under the
 //      functional layer's sheer tint that page read straight through its own text;
 //      the dense tint keeps the text legible while the capsule still takes the
-//      material. The Android M3 snackbar paints the INVERSE surface (the scheme's
-//      ink as its fill, the page colour as its text), so its dense tint is the ink
-//      at the dense alpha (`inverseDenseTint`) and the bar keeps its inverse read.
+//      material. The Android M3 snackbar paints the INVERSE surface (the toast pill,
+//      `inverse`, with its own ink), so its dense tint is that fill at the dense alpha
+//      (`inverseDenseTint`) and the bar keeps its inverse read.
 //      In solid mode GlassSurface is the plain box wearing the skin's own fill (the
 //      web hand-off's `--p-toast-fill`).
 //
@@ -125,8 +126,8 @@ export interface ToastSkin {
   /** The dismiss glyph size, in px. */
   dismissIconSize: number;
   /** The dismiss glyph color; null keeps the default muted glyph. The Android skin
-   *  paints the inverse on-surface tone (`background`) so the x reads on the
-   *  inverted bar. */
+   *  paints the inverse surface's ink (`inverse-foreground`) so the x reads on the
+   *  inverse bar. */
   dismissColor: ((t: ColorTokens) => string) | null;
   /** Extra touch area (px, all edges) around the dismiss control (same platform
    *  minimums as `actionHitSlop`); null on web. */
@@ -134,7 +135,7 @@ export interface ToastSkin {
   /** iOS/web dim the action/dismiss on press; Android uses a ripple instead (null). */
   pressedOpacity: number | null;
   /** Android action/dismiss ripple; null on iOS/web. On the inverse Android bar the
-   *  ink is background-family (a foreground-ink ripple would paint bar-on-bar). */
+   *  ink is the bar's own ink (a foreground-ink ripple would paint bar-on-bar). */
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
 }
 
@@ -280,11 +281,13 @@ export function createToastSystem(skin: ToastSkin) {
     );
 
     // The dense layer under glass, the plain box wearing the skin's own fill in solid
-    // mode (see the header note above). A skin whose fill is the scheme's ink (the M3
-    // inverse snackbar) takes the inverse dense tint so its inverse text stays legible.
-    const inverse = (StyleSheet.flatten(containerStyle) as ViewStyle).backgroundColor === tokens.foreground;
+    // mode (see the header note above). A skin whose fill is the inverse surface (the M3
+    // snackbar on the toast pill) takes the inverse dense tint of that fill so its
+    // inverse text stays legible.
+    const fill = inverseFill(tokens);
+    const inverse = (StyleSheet.flatten(containerStyle) as ViewStyle).backgroundColor === fill;
     return (
-      <GlassSurface layer="dense" tint={inverse ? inverseDenseTint(theme) : undefined} style={containerStyle}>
+      <GlassSurface layer="dense" tint={inverse ? inverseDenseTint(theme, fill) : undefined} style={containerStyle}>
         {content}
       </GlassSurface>
     );
