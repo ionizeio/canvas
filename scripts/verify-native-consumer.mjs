@@ -69,7 +69,7 @@ try {
       `atoms/listbox/listbox.${platform}.js`,
       `organisms/drawer/drawer.${platform}.js`,
       platform === "ios" ? "style/glass-surface/liquid-glass.ios.js" : "style/glass-surface/glass-blur-target.android.js",
-      platform === "ios" ? "style/glass-surface/glass-surface.ios.js" : "style/glass-surface/glass-surface.js",
+      platform === "ios" ? "style/glass-surface/glass-surface.ios.js" : "style/glass-surface/glass-surface.android.js",
     ];
     for (const fork of forks) if (!contains(fork)) throw new Error(`${platform}: bundle did not select ${fork}`);
     if (sources.some((source) => /\/@ionizeio\/canvas\/dist\/(?!native\/)/.test(source))) throw new Error(`${platform}: bundle leaked into the web distribution`);

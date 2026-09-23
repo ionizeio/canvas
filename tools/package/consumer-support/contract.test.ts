@@ -48,7 +48,7 @@ describe("isolated support matrix", () => {
     const files = [
       `atoms/button/button.${platform}.js`, `atoms/listbox/listbox.${platform}.js`, `organisms/drawer/drawer.${platform}.js`,
       platform === "ios" ? "style/glass-surface/liquid-glass.ios.js" : "style/glass-surface/glass-blur-target.android.js",
-      platform === "ios" ? "style/glass-surface/glass-surface.ios.js" : "style/glass-surface/glass-surface.js",
+      platform === "ios" ? "style/glass-surface/glass-surface.ios.js" : "style/glass-surface/glass-surface.android.js",
     ].map((name) => prefix + name);
     expect(() => assertNativeGraph(files, platform)).not.toThrow();
     for (const removed of files) expect(() => assertNativeGraph(files.filter((name) => name !== removed), platform)).toThrow("did not select");

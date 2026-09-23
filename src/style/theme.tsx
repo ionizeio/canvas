@@ -5,9 +5,10 @@
 
 import { type ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import { useColorScheme } from "react-native";
-import { colorsByScheme, glassByScheme, type BreakpointKey, type ColorScheme, type ColorTokens, type GlassTokens } from "./tokens.js";
+import { colorsByScheme, type BreakpointKey, type ColorScheme, type ColorTokens, type GlassTokens } from "./tokens.js";
 import { type ThemeFonts } from "./fonts.js";
 import { actionOverride } from "./action.js";
+import { glassTintsFor } from "./glass-surface/glass-tints.js";
 import { SsrBreakpointContext } from "./responsive.js";
 import { liquidGlassAvailable } from "./glass-surface/liquid-glass.js";
 import { useReducedTransparency, useIncreasedContrast } from "./a11y-preferences.js";
@@ -83,7 +84,7 @@ const FALLBACK: ThemeValue = {
   scheme: "light",
   surface: "solid",
   tokens: colorsByScheme.light,
-  glass: glassByScheme.light,
+  glass: glassTintsFor("light"),
   fonts: NO_FONTS,
   dark: false,
   reducedTransparency: false,
@@ -233,7 +234,7 @@ export function ThemeProvider({ dark, light, scheme, ssrScheme, ssrBreakpoint, g
       // applies the ladder (solid / Reduce Transparency / Increase Contrast render an
       // opaque surface, and the skin's own fill is already opaque now that glass never
       // rewrites it), so no token has to lie about its value to carry that decision.
-      glass: glassByScheme[active],
+      glass: glassTintsFor(active),
       fonts: fonts ?? NO_FONTS,
       dark: active === "dark",
       reducedTransparency,
