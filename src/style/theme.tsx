@@ -7,6 +7,7 @@ import { type ReactNode, useContext, useEffect, useMemo, useState } from "react"
 import { useColorScheme } from "react-native";
 import { colorsByScheme, glassByScheme, type BreakpointKey, type ColorScheme, type ColorTokens, type GlassTokens } from "./tokens.js";
 import { type ThemeFonts } from "./fonts.js";
+import { actionOverride } from "./action.js";
 import { SsrBreakpointContext } from "./responsive.js";
 import { liquidGlassAvailable } from "./glass-surface/liquid-glass.js";
 import { useReducedTransparency, useIncreasedContrast } from "./a11y-preferences.js";
@@ -219,6 +220,9 @@ export function ThemeProvider({ dark, light, scheme, ssrScheme, ssrBreakpoint, g
       // Undefined is omission, so it cannot erase the scheme's authored role.
       "primary-text": brand["primary-text"] ?? brand.primary ?? colorsByScheme[active]["primary-text"],
       "destructive-text": brand["destructive-text"] ?? brand.destructive ?? colorsByScheme[active]["destructive-text"],
+      // A primary-only rebrand repaints the call-to-action too, fill and ink together;
+      // an explicit `action` wins (see actionOverride).
+      ...actionOverride(colorsByScheme[active], brand),
     } : colorsByScheme[active];
     return {
       scheme: active,

@@ -17,6 +17,16 @@ export interface ColorTokens {
   /** Brand text on neutral/tinted surfaces. Omit in legacy maps to use primary. */
   "primary-text"?: string;
   "primary-foreground": string;
+  /**
+   * The CALL-TO-ACTION fill: the primary Button and the split button's action. Kept
+   * apart from `primary`, which paints what is selected, checked, current, linked or
+   * focused (the Dark Factory design language draws actions green and selection
+   * violet). Omit in legacy maps to paint actions with `primary`; a `tokens` override
+   * that sets only `primary` repaints the actions too.
+   */
+  action?: string;
+  /** The label and icon ink on an `action` fill. Omit to use `primary-foreground`. */
+  "action-foreground"?: string;
   secondary: string;
   "secondary-foreground": string;
   muted: string;

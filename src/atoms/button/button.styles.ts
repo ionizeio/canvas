@@ -1,4 +1,5 @@
 import { primaryText } from "../../style/primary-text.js";
+import { actionFill, actionInk } from "../../style/action.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { shape, type ColorTokens } from "../../style/index.js";
 
@@ -43,22 +44,24 @@ export interface ButtonSkin {
 
 // --- shared brand mapping (identical across platforms) ----------------------
 
-/** Foreground token per intent: the label color and the loading-spinner color. */
-export const FG_TOKEN: Record<Intent, keyof ColorTokens> = {
-  primary: "primary-foreground",
-  secondary: "secondary-foreground",
-  destructive: "destructive-foreground",
-  outline: "foreground",
-  ghost: "foreground",
-  link: "primary-text",
-};
+/** The foreground per intent: the label color and the loading-spinner color. */
+export function foregroundOf(t: ColorTokens, intent: Intent): string {
+  switch (intent) {
+    case "primary": return actionInk(t);
+    case "secondary": return t["secondary-foreground"];
+    case "destructive": return t["destructive-foreground"];
+    case "outline": return t.foreground;
+    case "ghost": return t.foreground;
+    case "link": return primaryText(t);
+  }
+}
 
 const DARK_FILL = new Set<Intent>(["primary", "destructive"]);
 
 // Container fill/border per intent (brand colors, shared by all platforms).
 function fill(t: ColorTokens, intent: Intent): ViewStyle {
   switch (intent) {
-    case "primary": return { backgroundColor: t.primary };
+    case "primary": return { backgroundColor: actionFill(t) };
     case "secondary": return { backgroundColor: t.secondary };
     case "destructive": return { backgroundColor: t.destructive };
     case "outline": return { backgroundColor: "transparent", borderWidth: 1, borderColor: t.input };
@@ -72,7 +75,7 @@ function fill(t: ColorTokens, intent: Intent): ViewStyle {
 // underline lives in webSkin.label, not here.
 function labelColor(t: ColorTokens, intent: Intent): TextStyle {
   switch (intent) {
-    case "primary": return { color: t["primary-foreground"] };
+    case "primary": return { color: actionInk(t) };
     case "secondary": return { color: t["secondary-foreground"] };
     case "destructive": return { color: t["destructive-foreground"] };
     case "outline": return { color: t.foreground };

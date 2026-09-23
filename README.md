@@ -159,6 +159,11 @@ const brand = { primary: "#7c3aed" };
 ```
 
 `primary` colors filled controls, and `primary-foreground` colors their labels.
+The optional `action` and `action-foreground` roles color the call-to-action (the
+primary Button and the split button's action) apart from `primary`, which keeps
+what is selected, checked, current, linked or focused. Omitted, actions paint with
+`primary`; a `tokens={{ primary: ... }}` rebrand repaints actions with its primary
+pair unless you pass `action` too.
 The optional `primary-text` token colors brand text on neutral surfaces, including
 links, text actions, and focused Android field labels. The default palette gives
 that text its own contrast-safe shade in each scheme. Existing `tokens={{ primary: ... }}` overrides keep their

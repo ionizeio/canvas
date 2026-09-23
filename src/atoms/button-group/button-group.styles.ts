@@ -1,4 +1,5 @@
 import { primaryText } from "../../style/primary-text.js";
+import { actionFill, actionInk } from "../../style/action.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, alpha, shadow, customShadow, shape } from "../../style/index.js";
 import { type ButtonGroupSkin, type Size } from "./button-group.shared.js";
@@ -190,14 +191,14 @@ export const webSkin: ButtonGroupSkin = {
       justifyContent: "center",
       borderTopStartRadius: WEB_R,
       borderBottomStartRadius: WEB_R,
-      backgroundColor: t.primary,
+      backgroundColor: actionFill(t),
     };
   },
   splitPrimaryLabel(t) {
-    return { fontWeight: "500", color: t["primary-foreground"] };
+    return { fontWeight: "500", color: actionInk(t) };
   },
   splitDivider(t, height) {
-    return { width: 1, height, backgroundColor: alpha(t["primary-foreground"], 0.2) };
+    return { width: 1, height, backgroundColor: alpha(actionInk(t), 0.2) };
   },
   splitTrigger(t, height) {
     return {
@@ -206,12 +207,11 @@ export const webSkin: ButtonGroupSkin = {
       justifyContent: "center",
       borderTopEndRadius: WEB_R,
       borderBottomEndRadius: WEB_R,
-      backgroundColor: t.primary,
+      backgroundColor: actionFill(t),
       paddingHorizontal: 10,
       height,
     };
   },
-  splitChevronColor: "primaryForeground",
   splitMenu(t) {
     return {
       position: "absolute",
@@ -321,14 +321,14 @@ export const iosSkin: ButtonGroupSkin = {
       justifyContent: "center",
       borderTopStartRadius: 9999,
       borderBottomStartRadius: 9999,
-      backgroundColor: t.primary,
+      backgroundColor: actionFill(t),
     };
   },
   splitPrimaryLabel(t) {
-    return { fontWeight: "600", color: t["primary-foreground"] };
+    return { fontWeight: "600", color: actionInk(t) };
   },
   splitDivider(t, height) {
-    return { width: 1, height, backgroundColor: alpha(t["primary-foreground"], 0.2) };
+    return { width: 1, height, backgroundColor: alpha(actionInk(t), 0.2) };
   },
   splitTrigger(t, height) {
     return {
@@ -337,12 +337,11 @@ export const iosSkin: ButtonGroupSkin = {
       justifyContent: "center",
       borderTopEndRadius: 9999,
       borderBottomEndRadius: 9999,
-      backgroundColor: t.primary,
+      backgroundColor: actionFill(t),
       paddingHorizontal: 10,
       height,
     };
   },
-  splitChevronColor: "primaryForeground",
   splitMenu(t) {
     return {
       position: "absolute",
@@ -445,16 +444,16 @@ export const androidSkin: ButtonGroupSkin = {
       justifyContent: "center",
       borderTopStartRadius: 9999,
       borderBottomStartRadius: 9999,
-      backgroundColor: t.primary,
+      backgroundColor: actionFill(t),
       // clip the Material ripple to the rounded outline
       overflow: "hidden",
     };
   },
   splitPrimaryLabel(t) {
-    return { fontWeight: "500", color: t["primary-foreground"] };
+    return { fontWeight: "500", color: actionInk(t) };
   },
   splitDivider(t, height) {
-    return { width: 1, height, backgroundColor: alpha(t["primary-foreground"], 0.24) };
+    return { width: 1, height, backgroundColor: alpha(actionInk(t), 0.24) };
   },
   splitTrigger(t, height) {
     return {
@@ -463,14 +462,13 @@ export const androidSkin: ButtonGroupSkin = {
       justifyContent: "center",
       borderTopEndRadius: 9999,
       borderBottomEndRadius: 9999,
-      backgroundColor: t.primary,
+      backgroundColor: actionFill(t),
       paddingHorizontal: 10,
       height,
       // clip the Material ripple to the rounded outline
       overflow: "hidden",
     };
   },
-  splitChevronColor: "primaryForeground",
   splitMenu(t) {
     return {
       position: "absolute",

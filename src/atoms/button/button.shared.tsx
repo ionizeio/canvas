@@ -8,9 +8,9 @@ import {
   type TargetedEvent,
 } from "react-native";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
-import { primaryText } from "../../style/primary-text.js";
+import { actionFill } from "../../style/action.js";
 import { View, Pressable, RippleClip, Text, useMinTargetSlop, useSizing, type LayoutStyle, type MeasureProps, GlassPane, paneStyle, isGlass } from "../../style/index.js";
-import { type ButtonSkin, type Intent, type Size, FG_TOKEN } from "./button.styles.js";
+import { type ButtonSkin, type Intent, type Size, foregroundOf } from "./button.styles.js";
 
 // Shared Button shell. The structure (Pressable + optional loading spinner +
 // leading icon + label + trailing icon), the accessibility, and the intent/size
@@ -141,7 +141,7 @@ export function createButton(skin: ButtonSkin) {
     // material, the intent's foreground on top); `secondary` and `outline` take the
     // plain control material; `ghost` and `link` have no surface and stay bare.
     const puck = isGlass(theme) && intent !== "ghost" && intent !== "link";
-    const brand = intent === "primary" ? tokens.primary : intent === "destructive" ? tokens.destructive : undefined;
+    const brand = intent === "primary" ? actionFill(tokens) : intent === "destructive" ? tokens.destructive : undefined;
     const ripple = skin.ripple ? skin.ripple(tokens, intent) : undefined;
     // The rounded shape the ripple is clipped to (Android only; undefined on iOS/web). A bounded
     // android_ripple bleeds past rounded corners unless a rounded overflow:"hidden" PARENT clips
@@ -204,7 +204,7 @@ export function createButton(skin: ButtonSkin) {
               // Keep this row in every mode to retain foreground child state.
               puck ? { opacity: pressed && skin.pressedOpacity != null ? skin.pressedOpacity : container.opacity ?? 1 } : null,
             ]}>
-              {loading ? <ActivityIndicator size="small" color={intent === "link" ? primaryText(tokens) : tokens[FG_TOKEN[intent]]} /> : null}
+              {loading ? <ActivityIndicator size="small" color={foregroundOf(tokens, intent)} /> : null}
               {!loading && iconLeft != null ? iconLeft : null}
               {children != null ? <Text style={skin.label(tokens, intent, size)}>{children}</Text> : null}
               {!loading && iconRight != null ? iconRight : null}

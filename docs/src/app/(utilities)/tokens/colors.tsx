@@ -175,6 +175,8 @@ function colorValue(tokens: ColorTokens, key: keyof ColorTokens): string {
   if (key === "primary-text") return tokens[key] ?? tokens.primary;
   if (key === "destructive-text") return tokens[key] ?? tokens.destructive;
   if (key === "field-border") return tokens[key] ?? tokens.input;
+  if (key === "action") return tokens[key] ?? tokens.primary;
+  if (key === "action-foreground") return tokens[key] ?? tokens["primary-foreground"];
   return tokens[key];
 }
 

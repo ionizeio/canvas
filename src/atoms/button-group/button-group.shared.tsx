@@ -5,6 +5,7 @@ import { type GestureResponderEvent, type LayoutChangeEvent, type LayoutRectangl
 import { View, Pressable, Text, RippleClip, cornerRadii, useHugStyle, useSizing, useControllableState, AnchoredOverlay, useOverlayHost, useMeasuredWidth, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, type MeasureProps, stepOf } from "../../style/index.js";
 import { Icon, type IconName } from "../icon/icon.js";
 import { primaryText } from "../../style/primary-text.js";
+import { actionInk } from "../../style/action.js";
 import * as s from "./button-group.styles.js";
 import { GroupGlass, GlassSelection } from "./button-group-glass.js";
 import { paneStyle } from "../../style/glass-surface/glass-pane.js";
@@ -96,7 +97,6 @@ export interface ButtonGroupSkin {
   splitPrimaryLabel: (t: ColorTokens) => TextStyle;
   splitDivider: (t: ColorTokens, height: number) => ViewStyle;
   splitTrigger: (t: ColorTokens, height: number) => ViewStyle;
-  splitChevronColor: IconColor;
   splitMenu: (t: ColorTokens) => ViewStyle;
   splitMenuItemPressed: (t: ColorTokens) => ViewStyle;
   splitMenuText: (t: ColorTokens) => TextStyle;
@@ -378,7 +378,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
             accessibilityLabel="More actions"
           >
             <View style={{ transform: [{ rotate: open ? "180deg" : "0deg" }] }}>
-              <Icon chevronDown size={s.chevronSize[size]} {...(glass ? { color: primaryText(tokens) } : iconColorProps(skin.splitChevronColor))} />
+              <Icon chevronDown size={s.chevronSize[size]} color={glass ? primaryText(tokens) : actionInk(tokens)} />
             </View>
           </Pressable>
         </RippleClip>
