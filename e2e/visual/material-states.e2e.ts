@@ -15,8 +15,9 @@ for (const scheme of ["light", "dark"] as const) {
         await setDocsSurface(page, surface);
         await expect(input).toHaveValue("Material changes preserve this draft");
         expect(await originalInput!.evaluate((node) => node.isConnected), "changing material must not remount the input").toBe(true);
+        // Under glass the field is Dark Factory's clear well: a material of its own with no blur.
         if (surface === "solid") await expectNoMaterialEffects(row);
-        else await expect.poll(async () => (await readMaterialEffects(row)).activeBackdropEffects).toBeGreaterThan(0);
+        else await expect.poll(async () => (await readMaterialEffects(row)).clearMaterials).toBeGreaterThan(0);
       }
       await originalInput!.dispose();
     });

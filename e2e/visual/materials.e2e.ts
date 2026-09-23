@@ -19,6 +19,10 @@ const VIEWPORTS = {
 // rest or delegate their surface to a child; their captures record the effect
 // count without pretending every declared material is visible in every variant.
 const SURFACED_DEFAULTS = new Set(["button", "button-group", "card", "input", "checkbox", "switch", "badge", "data-table"]);
+// A text field under glass is Dark Factory's clear well: its own tint and hairline over
+// an unblurred backdrop (web-frost.ts `clearBlur`), so it owns a clear material rather
+// than a frosted one.
+const CLEAR_DEFAULTS = new Set(["input"]);
 
 for (const scheme of ["dark", "light"] as const) {
   for (const [formFactor, viewport] of Object.entries(VIEWPORTS)) {
@@ -30,7 +34,11 @@ for (const scheme of ["dark", "light"] as const) {
         const row = platformRow(page, "web").first();
         await expect(row).toBeVisible();
         if (SURFACED_DEFAULTS.has(route.slug)) {
-          await expect.poll(async () => (await readMaterialEffects(row)).activeBackdropEffects, {
+          const clear = CLEAR_DEFAULTS.has(route.slug);
+          await expect.poll(async () => {
+            const effects = await readMaterialEffects(row);
+            return clear ? effects.clearMaterials : effects.activeBackdropEffects;
+          }, {
             message: `${route.slug} must paint its own material, not only the surrounding docs card`,
           }).toBeGreaterThan(0);
         }
