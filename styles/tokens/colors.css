@@ -36,6 +36,7 @@
   --input:oklch(0.642 0.031 281.2);
   --field-border:oklch(0.875 0.027 292.7);
   --field-fill:rgba(255,255,255,0.7);
+  --hover:rgba(123,108,240,0.08);
   --ring:oklch(0.613 0.191 284.4);
   --scrim:rgba(40,30,90,0.28);
   --shade:rgba(121,100,214,0.22);
@@ -123,6 +124,7 @@
   --input:oklch(0.643 0.021 255.6);
   --field-border:oklch(0.873 0.023 258.4);
   --field-fill:rgba(255,255,255,0.75);
+  --hover:rgba(63,127,224,0.08);
   --ring:oklch(0.604 0.162 258.6);
   --scrim:rgba(20,50,90,0.28);
   --shade:rgba(60,110,190,0.2);
@@ -166,6 +168,7 @@
   --input:oklch(0.599 0.032 281.1);
   --field-border:oklch(0.399 0.039 282.6);
   --field-fill:rgba(255,255,255,0.06);
+  --hover:rgba(164,150,255,0.1);
   --ring:oklch(0.729 0.15 288.2);
   --scrim:rgba(5,5,20,0.55);
   --shade:rgba(0,0,0,0.5);

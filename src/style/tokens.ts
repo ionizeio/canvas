@@ -67,6 +67,12 @@ export interface ColorTokens {
   "destructive-soft"?: string;
   /** A text field's own fill (DF's translucent white well). Translucent. Omit to fill with `card`. */
   "field-fill"?: string;
+  /**
+   * The hover wash (Dark Factory's `hover`): the brand violet at a low alpha beneath a
+   * hovered row or quiet control. Translucent, so it reads on any surface and over glass;
+   * `accent` is this wash composited on `card`. Omit to wash with `accent`.
+   */
+  hover?: string;
   /** The modal backdrop (DF's tinted dim). Translucent. Omit to dim with black. */
   scrim?: string;
   /** The elevation tint (DF's palette-tinted shadow color). Translucent. Omit to shade with the ink. */
@@ -153,6 +159,7 @@ export const lightColors: ColorTokens = {
   input: "#898ba0",
   "field-border": "#d6d3e7",
   "field-fill": "rgba(255, 255, 255, 0.7)",
+  hover: "rgba(123, 108, 240, 0.08)",
   ring: "#7b6cf0",
   scrim: "rgba(40, 30, 90, 0.28)",
   shade: "rgba(121, 100, 214, 0.22)",
@@ -202,6 +209,7 @@ export const darkColors: ColorTokens = {
   input: "#7c7e93",
   "field-border": "#44455c",
   "field-fill": "rgba(255, 255, 255, 0.06)",
+  hover: "rgba(164, 150, 255, 0.1)",
   ring: "#a496ff",
   scrim: "rgba(5, 5, 20, 0.55)",
   shade: "rgba(0, 0, 0, 0.5)",
@@ -269,6 +277,7 @@ export const mintColors: ColorTokens = {
   input: "#858e9a",
   "field-border": "#ccd6e5",
   "field-fill": "rgba(255, 255, 255, 0.75)",
+  hover: "rgba(63, 127, 224, 0.08)",
   ring: "#3f7fe0",
   scrim: "rgba(20, 50, 90, 0.28)",
   shade: "rgba(60, 110, 190, 0.2)",

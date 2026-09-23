@@ -66,7 +66,7 @@ const SEMANTIC_KEYS: { key: keyof ColorTokens; name: string }[] = [
   { key: "accent", name: "accent" },
 ];
 
-// The translucent roles (washes, the field fill, the modal scrim, the shadow tint) and the
+// The translucent roles (washes, the field fill, the hover wash, the modal scrim, the shadow tint) and the
 // inverse surface with its ink and its action. Optional in a custom token map, so a
 // sample only renders when the active map carries the role.
 const OVERLAY_KEYS: (keyof ColorTokens)[] = [
@@ -75,6 +75,7 @@ const OVERLAY_KEYS: (keyof ColorTokens)[] = [
   "warning-soft",
   "destructive-soft",
   "field-fill",
+  "hover",
   "scrim",
   "shade",
   "inverse",

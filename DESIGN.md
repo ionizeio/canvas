@@ -38,6 +38,7 @@ colors:
   input: "#898ba0"
   field-border: "#d6d3e7"
   field-fill: "rgba(255, 255, 255, 0.7)"
+  hover: "rgba(123, 108, 240, 0.08)"
   ring: "#7b6cf0"
   scrim: "rgba(40, 30, 90, 0.28)"
   shade: "rgba(121, 100, 214, 0.22)"
@@ -77,6 +78,7 @@ colorsMint:
   input: "#858e9a"
   field-border: "#ccd6e5"
   field-fill: "rgba(255, 255, 255, 0.75)"
+  hover: "rgba(63, 127, 224, 0.08)"
   ring: "#3f7fe0"
   scrim: "rgba(20, 50, 90, 0.28)"
   shade: "rgba(60, 110, 190, 0.2)"
@@ -116,6 +118,7 @@ colorsDark:
   input: "#7c7e93"
   field-border: "#44455c"
   field-fill: "rgba(255, 255, 255, 0.06)"
+  hover: "rgba(164, 150, 255, 0.1)"
   ring: "#a496ff"
   scrim: "rgba(5, 5, 20, 0.55)"
   shade: "rgba(0, 0, 0, 0.5)"
@@ -789,6 +792,7 @@ theme that omits any of these keeps the older fallbacks.
 | `input` | `#898ba0` | `#858e9a` | `#7c7e93` |
 | `field-border` | `#d6d3e7` | `#ccd6e5` | `#44455c` |
 | `field-fill` | `rgba(255, 255, 255, 0.7)` | `rgba(255, 255, 255, 0.75)` | `rgba(255, 255, 255, 0.06)` |
+| `hover` | `rgba(123, 108, 240, 0.08)` | `rgba(63, 127, 224, 0.08)` | `rgba(164, 150, 255, 0.1)` |
 | `ring` | `#7b6cf0` | `#3f7fe0` | `#a496ff` |
 | `scrim` | `rgba(40, 30, 90, 0.28)` | `rgba(20, 50, 90, 0.28)` | `rgba(5, 5, 20, 0.55)` |
 | `shade` | `rgba(121, 100, 214, 0.22)` | `rgba(60, 110, 190, 0.2)` | `rgba(0, 0, 0, 0.5)` |

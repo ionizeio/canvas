@@ -230,6 +230,9 @@ export function derivePalette(name: PaletteName): DerivedPalette {
   from("muted", "card2");
   put("background", over(p.shell!, p.bg2!), "derive", "DF shell composited on bg2 (the frosted panel the content sits on)");
   put("accent", over(p.hover!, p.card!), "derive", "DF hover composited on card (the hover and pressed wash)");
+  // The hover wash itself, translucent, for a hover over any surface (a nav row over the
+  // rail, a wash over glass), where the opaque composite on card would not read.
+  from("hover", "hover");
   put("border", over(p.line!, p.card!), "derive", "DF line composited on card (the hairline)");
   const surfaces = [out.background!.value, out.card!.value, out.popover!.value, out.muted!.value, out.accent!.value, out.secondary!.value];
 
