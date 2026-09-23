@@ -10,8 +10,8 @@ const PATTERNS: PatternDoc[] = [
     sections: [
       {
         title: "Focus ring",
-        description: "Every interactive element gets a visible focus indicator on :focus-visible. Canvas uses a 2px ring offset with the --ring token color.",
-        anatomy: "Ring appears on keyboard focus only (not mouse click). Uses box-shadow, not outline, so it respects border-radius.",
+        description: "Every interactive element gets a visible focus indicator on keyboard focus. The kit's Pressable colours the browser's own ring with the palette's ring token, 2px off the control; a field paints its own ring-coloured border instead, and a full-bleed row draws the ring just inside itself so its container cannot clip it.",
+        anatomy: "The ring appears on keyboard focus only (the browser's :focus-visible), never on a mouse click, and follows the control's border-radius. Chromium paints it in the ring colour; Firefox and Safari keep their own ring colour unless the page loads the CSS hand-off, whose :focus-visible rule draws a solid 2px ring in --ring everywhere.",
         html: `<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">
   <button class="btn btn-primary" style="box-shadow:0 0 0 2px var(--background),0 0 0 4px var(--ring)">Focused button</button>
   <input class="input" value="Focused input" style="max-width:200px;box-shadow:0 0 0 2px var(--background),0 0 0 4px var(--ring)">

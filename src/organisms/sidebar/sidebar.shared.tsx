@@ -79,13 +79,11 @@ export interface SidebarSkin {
   /** Android ripple over a pressed row; null on iOS/web. */
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
   /**
-   * Web-only focus-outline reset for the row Pressables. iOS sets this so the
-   * react-native-web keyboard-focus blue ring (which a real iOS device never
-   * shows on a sidebar nav row) is suppressed, leaving the press dim as the only
-   * feedback. Undefined on web/Android, which keep their own focus treatment.
-   * No-op natively, where `outlineStyle`/`outlineWidth` are not real CSS.
+   * Where the keyboard focus ring sits on the row Pressables: INSET_FOCUS_RING draws it
+   * just inside the full-width row, which the column's scroll clip would otherwise cut.
+   * The ring itself is the kit Pressable's (the palette's `ring`). No-op natively.
    */
-  focusOutlineReset?: ViewStyle;
+  focusRing?: ViewStyle;
 
   /** The outer navigation column, per frame. `collapsed` swaps to the rail width;
    *  `shell` (a header/footer is present) drops the inner padding/gap onto the
@@ -473,7 +471,7 @@ export function createSidebar(skin: SidebarSkin) {
               // the row itself drops the fill it carries.
               glass && activeRow ? paneStyle(material, skin.rowFill(tokens, true)) : skin.rowFill(tokens, activeRow || (skin.pressedFill && pressed)),
               skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
-              skin.focusOutlineReset,
+              skin.focusRing,
             ]}
             onPress={(event) => select(item, index, event)}
             accessibilityRole="button"
@@ -524,7 +522,7 @@ export function createSidebar(skin: SidebarSkin) {
                   skin.row(tokens, density, true),
                   skin.rowFill(tokens, holdsActive || (skin.pressedFill && pressed)),
                   skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
-                  skin.focusOutlineReset,
+                  skin.focusRing,
                 ]}
                 onPress={() => {
                   setCollapsed(false);
@@ -558,7 +556,7 @@ export function createSidebar(skin: SidebarSkin) {
               style={({ pressed }) => [
                 skin.sectionHeaderRow(tokens),
                 skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
-                skin.focusOutlineReset,
+                skin.focusRing,
               ]}
               accessibilityRole="button"
               accessibilityLabel={section.title}

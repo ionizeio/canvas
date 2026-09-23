@@ -1,6 +1,6 @@
 import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, alpha, shadow, FOCUS_RESET, shape } from "../../style/index.js";
+import { type ColorTokens, alpha, shadow, shape } from "../../style/index.js";
 
 // Co-located Calendar skins, one per platform. The shell resolves the density
 // metrics (compact vs default cell sizing), the leading-blank padding, and the
@@ -153,10 +153,10 @@ const WEEKDAYS_ONE = ["S", "M", "T", "W", "T", "F", "S"];
 // "Su/Mo" is a web (shadcn) idiom, not the iOS date-picker reference.
 const WEEKDAYS_TWO_UPPER = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
 
-// The day cells and chevrons spread the shared FOCUS_RESET so the react-native-web
-// keyboard-focus ring (Tab onto a day cell or a chevron) is suppressed; a real iOS
-// device never shows it (native iOS feedback is the press dim only). No-op natively,
-// where `outlineStyle`/`outlineWidth` are not real CSS. Mirrors input/textarea/pagination.
+// Every Pressable here (a day cell, a chevron, an event block) keeps the kit's themed
+// keyboard focus ring: none paints a focus state of its own, and a keyboard user on
+// the web (the docs preview of the iOS skin included) must see which one holds focus.
+// Natively the ring draws nothing.
 
 // =============================================================================
 // Web: the established Canvas look (lifted verbatim from the original file).
@@ -251,7 +251,6 @@ export const webSkin: CalendarSkin = {
     paddingHorizontal: 6,
     paddingVertical: 3,
     overflow: "hidden",
-    ...FOCUS_RESET,
   },
   eventBlockSurface: (t) => ({ backgroundColor: alpha(t.primary, 0.12), borderLeftColor: t.primary }),
   eventTitle: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: primaryText(t) }),
@@ -322,8 +321,6 @@ export const iosSkin: CalendarSkin = {
     justifyContent: "center",
     borderRadius: 9999,
     backgroundColor: "transparent",
-    // Suppress the react-native-web keyboard focus ring; no-op natively.
-    ...FOCUS_RESET,
   },
   // HIG: the chevrons carry the brand indigo (system-accent style), heavier glyph.
   chevronText: (t) => ({ fontSize: 22, lineHeight: 24, fontWeight: "500", color: t.primary }),
@@ -337,8 +334,7 @@ export const iosSkin: CalendarSkin = {
   // iOS reference: uppercase two-letter weekday symbols.
   weekdays: WEEKDAYS_TWO_UPPER,
 
-  // Suppress the react-native-web keyboard focus ring on the day cell; no-op natively.
-  dayCellBase: { alignItems: "center", justifyContent: "center", borderRadius: 9999, ...FOCUS_RESET },
+  dayCellBase: { alignItems: "center", justifyContent: "center", borderRadius: 9999 },
   // Selected wins: filled `primary` circle. Today (when not selected): no fill
   // (the day label carries the brand indigo instead).
   dayCellState: (t, st) => (st.selected ? { backgroundColor: t.primary } : {}),
@@ -372,7 +368,6 @@ export const iosSkin: CalendarSkin = {
     paddingHorizontal: 6,
     paddingVertical: 3,
     overflow: "hidden",
-    ...FOCUS_RESET,
   },
   eventBlockSurface: (t) => ({ backgroundColor: alpha(t.primary, 0.12), borderLeftColor: t.primary }),
   eventTitle: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "600", color: primaryText(t) }),

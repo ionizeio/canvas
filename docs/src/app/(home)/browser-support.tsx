@@ -28,7 +28,7 @@ const NOTES = [
   {
     title: "Why these versions",
     description:
-      "The floor is set by exactly two CSS features the token layer uses: oklch() colors and color-mix(). Both have been Baseline across Chrome, Edge, Safari, and Firefox since May 2023, and the versions above are where each engine shipped them. Nothing else in canvas.css is modern: it is plain custom properties, one @media (prefers-reduced-motion) block, and a handful of rules. There is no build step, no @property, and no cascade layers, which is what used to push the Firefox floor to 128.",
+      "The floor is set by exactly two CSS features the token layer uses: oklch() colors and color-mix(). Both have been Baseline across Chrome, Edge, Safari, and Firefox since May 2023, and the versions above are where each engine shipped them. Nothing else in canvas.css is newer than that: it is plain custom properties, a few @media preference blocks (reduced motion, reduced transparency, increased contrast, print), one cascade layer for its base rules, and a handful of rules (among them the :focus-visible ring and the :where() and :is() selectors of the palette and material blocks), all shipped in every engine before the versions above. There is no build step and no @property, which is what used to push the Firefox floor to 128.",
   },
   {
     title: "Native uses no CSS",

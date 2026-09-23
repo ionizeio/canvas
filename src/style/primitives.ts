@@ -12,13 +12,15 @@
 //
 // Text and TextInput are RN's own components wrapped once, in src/style/text.tsx,
 // so the theme's registered typefaces (ThemeProvider `fonts`) reach every kit label
-// without a fontFamily at any call site. Their prop types are still RN's.
+// without a fontFamily at any call site. Pressable is wrapped the same way, in
+// src/style/pressable.tsx, so the palette's `ring` colours every keyboard focus ring.
+// Their prop types are still RN's.
 
 export { Text, TextInput } from "./text.js";
+export { Pressable } from "./pressable.js";
 
 export {
   View,
-  Pressable,
   ScrollView,
   StyleSheet,
   type ViewProps,

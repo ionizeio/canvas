@@ -1,6 +1,6 @@
 import { primaryText } from "../../style/primary-text.js";
 import { StyleSheet, type StyleProp, type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow, customShadow, alpha, FOCUS_RESET } from "../../style/index.js";
+import { type ColorTokens, shadow, customShadow, alpha } from "../../style/index.js";
 import { type TabsSkin } from "./tabs.shared.js";
 
 // Co-located Tabs skins, one per platform. The shell resolves the look axis
@@ -22,8 +22,8 @@ import { type TabsSkin } from "./tabs.shared.js";
 //   Web: the SAME capsule segmented control as iOS (the owner's call, 2026-09-18:
 //     the web tab is to look like the iOS tab, and under glass that is the
 //     capsule track with the liquid-glass puck the shared shell derives from
-//     these fills). The one departure is the keyboard focus ring, which a web
-//     page must keep. The former web look (an underline rule, the Riskora card
+//     these fills), the kit's themed keyboard focus ring included (it draws
+//     nothing natively). The former web look (an underline rule, the Riskora card
 //     of hairlined segments) is gone; do not bring it back as a mode-dependent
 //     shape, the skin owns the anatomy and the surface mode owns the material.
 
@@ -117,8 +117,8 @@ function iosSelectedThumb(tokens: ColorTokens, dark: boolean): string {
   return dark ? mix(tokens.muted, tokens.foreground, 0.28) : tokens.background;
 }
 
-// The capsule segmented control, shared by iOS and web. iOS layers the
-// keyboard-focus reset on top (below); web keeps the browser's focus ring.
+// The capsule segmented control, shared by iOS and web, the kit's themed keyboard
+// focus ring on its triggers.
 const capsuleSkin: TabsSkin = {
   pressedOpacity: 0.8, // HIG: dim on press
   ripple: null,
@@ -234,16 +234,11 @@ const capsuleSkin: TabsSkin = {
 };
 
 
-// iOS: the capsule skin with the react-native-web blue keyboard-focus ring
-// suppressed on its triggers; a real iOS segmented control never shows it.
-// `outlineStyle`/`outlineWidth` are not in RN's ViewStyle (hence the cast inside
-// FOCUS_RESET) and are ignored natively. Mirrors input/textarea/pagination's
-// outline resets.
-export const iosSkin: TabsSkin = { ...capsuleSkin, focusOutlineReset: FOCUS_RESET };
-
-// Web: the capsule skin as is. The focus ring stays: keyboard users on the web
-// need to see which segment holds focus, and the shared shell's roving tab
-// stop makes the whole strip one Tab press away.
+// iOS and web: the capsule skin as is. The kit's themed focus ring stays on the
+// triggers: keyboard users on the web (the docs preview included) need to see which
+// segment holds focus, and the shared shell's roving tab stop makes the whole strip
+// one Tab press away. Natively the ring draws nothing.
+export const iosSkin: TabsSkin = capsuleSkin;
 export const webSkin: TabsSkin = capsuleSkin;
 
 // =============================================================================

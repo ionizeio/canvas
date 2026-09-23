@@ -1,6 +1,6 @@
 import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow, alpha, FOCUS_RESET, shape } from "../../style/index.js";
+import { type ColorTokens, shadow, alpha, shape } from "../../style/index.js";
 import { type NavbarSkin } from "./navbars.shared.js";
 
 // Co-located Navbar skins, one per platform. The shell resolves the surface axis
@@ -112,14 +112,6 @@ export const webSkin: NavbarSkin = {
 export const iosSkin: NavbarSkin = {
   pressedOpacity: 0.8, // HIG: dim on press
   ripple: null,
-  // react-native-web paints the browser's blue keyboard-focus ring around a
-  // focused link Pressable; a real iOS toolbar bar-button item never shows it
-  // (native iOS feedback is the press dim only). Suppress it so Tab-focusing a
-  // nav-link chip paints no box. Web-only: `outlineStyle`/`outlineWidth` are not
-  // in RN's ViewStyle (hence the cast inside FOCUS_RESET) and are ignored
-  // natively. Mirrors pagination/input/textarea's focus reset.
-  focusOutlineReset: FOCUS_RESET,
-
   // Slim 44pt bar. iOS navigation bars are shorter than the Canvas web bar.
   bar() {
     return {

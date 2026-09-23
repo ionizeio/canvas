@@ -1,6 +1,7 @@
 import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, alpha, FOCUS_RESET, shape } from "../../style/index.js";
+import { type ColorTokens, alpha, shape } from "../../style/index.js";
+import { INSET_FOCUS_RING } from "../../style/pressable.js";
 import { type SidebarSkin } from "./sidebar.shared.js";
 
 // Co-located Sidebar skins, one per platform. The shell resolves the density,
@@ -59,6 +60,9 @@ export const webSkin: SidebarSkin = {
   pressedFill: true,
   pressedOpacity: null,
   ripple: null,
+  // Keyboard focus shows the kit's themed ring inside the full-width row, where the
+  // column's scroll clip cannot cut it. No-op natively.
+  focusRing: INSET_FOCUS_RING,
 
   column: makeColumn(shape.web.card, 64, { gap: 16, padding: 12 }),
 
@@ -174,7 +178,7 @@ export const iosSkin: SidebarSkin = {
   pressedOpacity: 0.8,
   ripple: null,
 
-  focusOutlineReset: FOCUS_RESET,
+  focusRing: INSET_FOCUS_RING,
 
   column: makeColumn(10, 56, { gap: 16, padding: 8 }),
 
@@ -286,6 +290,7 @@ export const androidSkin: SidebarSkin = {
   pressedFill: false,
   pressedOpacity: null,
   ripple: (tokens) => ({ color: alpha(tokens.primary, 0.12), borderless: false }),
+  focusRing: INSET_FOCUS_RING,
 
   column: makeColumn(16, 72, { gap: 16, paddingHorizontal: 12, paddingVertical: 8 }),
 

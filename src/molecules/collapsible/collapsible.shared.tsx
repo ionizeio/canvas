@@ -57,11 +57,14 @@ export interface CollapsibleSkin {
   /** Android header ripple; null on iOS/web. */
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
   /**
-   * Web-only focus-outline reset for the header Pressable, so the
-   * react-native-web keyboard-focus blue ring (which a real device never shows)
-   * is suppressed. No-op natively, where `outline*` are not real styles.
+   * Where the keyboard focus ring sits on the header Pressable when it sits in a surfaced,
+   * clipping container (the card variant, the iOS inset group): INSET_FOCUS_RING draws it
+   * just inside the full-bleed header, which the clip would otherwise cut. A bare header
+   * keeps the ring around itself. The ring itself is the kit Pressable's (the palette's
+   * `ring`); no skin suppresses it, since the header paints no focus state of its own.
+   * No-op natively.
    */
-  focusOutlineReset?: ViewStyle;
+  focusRing?: ViewStyle;
 
   /** Chevron glyph size, in px. The glyph paints in the `muted-foreground` token
    *  (the HIG tertiary-gray / M3 on-surface-variant disclosure tint) on every
@@ -178,22 +181,24 @@ export function createCollapsible(skin: CollapsibleSkin) {
       onOpenChange?.(next);
     }, [open, controlled, onOpenChange, reduced]);
 
+    // The container is a CONTENT-layer pane under glass when it paints a surface of its
+    // own (the card variant, the iOS inset group); a borderless list stays bare.
+    const surfaced = (StyleSheet.flatten([skin.container(tokens), card ? skin.cardContainer(tokens) : null]) as ViewStyle | undefined)?.backgroundColor != null;
+    const Root = surfaced ? GlassSurface : View;
+
     const headerStyle: StyleProp<ViewStyle> = [
       skin.header(tokens),
       // Card mode insets the header to the card's own edge inset (a per-key
       // override on top of the base header, never a sum).
       card ? skin.cardHeaderInset : null,
-      skin.focusOutlineReset,
+      // Inside a surfaced container the ring moves inside the header, which the
+      // container's clip would otherwise cut; a bare header keeps it around itself.
+      surfaced ? skin.focusRing : null,
       disabled ? { opacity: skin.disabledOpacity } : null,
     ];
 
     // A sensible accessibility label when only a custom trigger is given.
     const a11yLabel = title ?? "Toggle section";
-
-    // The container is a CONTENT-layer pane under glass when it paints a surface of its
-    // own (the card variant, the iOS inset group); a borderless list stays bare.
-    const surfaced = (StyleSheet.flatten([skin.container(tokens), card ? skin.cardContainer(tokens) : null]) as ViewStyle | undefined)?.backgroundColor != null;
-    const Root = surfaced ? GlassSurface : View;
     return (
       <Root testID={testID} style={[skin.container(tokens), card ? skin.cardContainer(tokens) : null, fill, style]} {...(surfaced ? { layer: "content" as const } : null)}>
         <Pressable

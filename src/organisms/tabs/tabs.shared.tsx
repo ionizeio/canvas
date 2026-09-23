@@ -67,13 +67,11 @@ export interface TabsSkin {
   /** Android ripple over a pressed trigger; null on iOS/web. */
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
   /**
-   * Web-only focus-outline reset for the trigger Pressables. The iOS skin sets
-   * this so the react-native-web keyboard-focus blue ring (which a real iOS
-   * device never shows) is suppressed, leaving the press dim as the only
-   * feedback. Undefined on web/Android, which keep their own focus treatment.
-   * No-op natively, where `outlineStyle`/`outlineWidth` are not real CSS.
+   * Where the keyboard focus ring sits on the trigger Pressables: INSET_FOCUS_RING draws
+   * it just inside a trigger that a clipping track or scroller would otherwise cut. The
+   * ring itself is the kit Pressable's (the palette's `ring`). No-op natively.
    */
-  focusOutlineReset?: ViewStyle;
+  focusRing?: ViewStyle;
 
   // --- underline ---
   // `dark` lets the selected-pill fill follow the scheme (iOS: a white thumb in
@@ -281,7 +279,7 @@ export function createTabs(skin: TabsSkin) {
       const container: StyleProp<ViewStyle> = [
         skin.verticalTrigger(tokens, selected),
         skin.verticalFill(tokens, selected),
-        skin.focusOutlineReset,
+        skin.focusRing,
         disabled ? s.disabledDim : null,
       ];
       return (
@@ -319,7 +317,7 @@ export function createTabs(skin: TabsSkin) {
       const container: StyleProp<ViewStyle> = [
         skin.pillsTrigger(tokens, selected),
         skin.pillsFill(tokens, selected, dark),
-        skin.focusOutlineReset,
+        skin.focusRing,
         disabled ? s.disabledDim : null,
       ];
       return (
@@ -355,7 +353,7 @@ export function createTabs(skin: TabsSkin) {
     // and the Pressable fills it via the wrapper's default stretch.
     const container: StyleProp<ViewStyle> = [
       skin.underlineTrigger(tokens, selected, dark),
-      skin.focusOutlineReset,
+      skin.focusRing,
       disabled ? s.disabledDim : null,
     ];
     const puck = puckOf(container);

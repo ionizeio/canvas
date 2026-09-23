@@ -11,7 +11,8 @@ import {
   type RefObject,
 } from "react";
 import { Animated, PanResponder, StyleSheet, AccessibilityInfo, type GestureResponderEvent } from "react-native";
-import { View, Text, useTheme, isRTL, FOCUS_RESET, type StyleProp, type ViewStyle, type ViewProps } from "../../style/index.js";
+import { View, Text, useTheme, isRTL, type StyleProp, type ViewStyle, type ViewProps } from "../../style/index.js";
+import { useFocusRingStyle } from "../../style/pressable.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { type DragDropSkin } from "./drag-drop.styles.js";
 import {
@@ -655,6 +656,7 @@ export function createDragDrop(skin: DragDropSkin) {
     const api = useContext(DragDropContext);
     const drag = useContext(DraggableContext);
     const { tokens } = useTheme();
+    const focusRing = useFocusRingStyle();
     const [pressed, setPressed] = useState(false);
     const disabled = drag?.disabled ?? !api;
 
@@ -785,7 +787,9 @@ export function createDragDrop(skin: DragDropSkin) {
         hitSlop={8}
         style={[
           skin.handle,
-          FOCUS_RESET,
+          // The grip is a focusable View, not a Pressable: it takes the kit's themed
+          // keyboard focus ring the same way (it paints no focus state until grabbed).
+          focusRing,
           grabbed ? skin.handleGrabbed(tokens) : null,
           pressed && !grabbed ? { opacity: skin.handlePressedOpacity } : null,
           disabled ? { opacity: 0.4 } : null,

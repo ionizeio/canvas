@@ -56,11 +56,14 @@ export interface AccordionSkin {
   /** Android header ripple; null on iOS/web. */
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
   /**
-   * Web-only focus-outline reset for the header Pressables, so the
-   * react-native-web keyboard-focus blue ring (which a real device never shows)
-   * is suppressed. No-op natively, where `outline*` are not real styles.
+   * Where the keyboard focus ring sits on the header Pressables when the group sits in a
+   * surfaced, clipping container (the card variant, the iOS inset group): INSET_FOCUS_RING
+   * draws it just inside the full-bleed header, which the clip would otherwise cut. A bare
+   * list keeps the ring around the header. The ring itself is the kit Pressable's (the
+   * palette's `ring`); no skin suppresses it, since the header paints no focus state of
+   * its own. No-op natively.
    */
-  focusOutlineReset?: ViewStyle;
+  focusRing?: ViewStyle;
 
   /** Chevron glyph size, in px. The glyph paints in the `muted-foreground` token
    *  (the HIG tertiary-gray / M3 on-surface-variant disclosure tint) on every
@@ -182,6 +185,7 @@ export function createAccordion(skin: AccordionSkin) {
     groupDisabled,
     last,
     card,
+    surfaced,
     onToggle,
   }: {
     item: AccordionItem;
@@ -189,6 +193,8 @@ export function createAccordion(skin: AccordionSkin) {
     groupDisabled?: boolean;
     last: boolean;
     card?: boolean;
+    /** The group sits in a surfaced, clipping container (the card, the iOS inset group). */
+    surfaced: boolean;
     onToggle: () => void;
   }) {
     const { tokens } = useTheme();
@@ -214,7 +220,9 @@ export function createAccordion(skin: AccordionSkin) {
       // Card mode insets the header to the card's own edge inset (a per-key
       // override on top of the base header, never a sum).
       card ? skin.cardHeaderInset : null,
-      skin.focusOutlineReset,
+      // Inside a surfaced container the ring moves inside the header, which the
+      // container's clip would otherwise cut; a bare list keeps it around the header.
+      surfaced ? skin.focusRing : null,
       disabled ? DISABLED_DIM : null,
     ];
 
@@ -315,6 +323,7 @@ export function createAccordion(skin: AccordionSkin) {
             groupDisabled={disabled}
             last={i === items.length - 1}
             card={card}
+            surfaced={surfaced}
             onToggle={() => toggle(item.key)}
           />
         ))}

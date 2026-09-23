@@ -60,10 +60,6 @@ export interface CarouselSkin {
   pressedOpacity: number | null;
   /** Android arrow/dot ripple; null on iOS/web. */
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
-  /**
-   * @deprecated Retained for skin compatibility. Keyboard focus stays visible.
-   */
-  focusOutlineReset?: ViewStyle;
 
   /**
    * Whether the overlaid prev/next arrows show when the `showArrows` prop is

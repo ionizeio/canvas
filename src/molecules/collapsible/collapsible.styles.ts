@@ -1,4 +1,5 @@
-import { FOCUS_RESET, surfaceRipple, shape, type ColorTokens } from "../../style/index.js";
+import { surfaceRipple, shape, type ColorTokens } from "../../style/index.js";
+import { INSET_FOCUS_RING } from "../../style/pressable.js";
 import { type ViewStyle } from "react-native";
 import { type CollapsibleSkin } from "./collapsible.shared.js";
 
@@ -42,9 +43,9 @@ export const webSkin: CollapsibleSkin = {
   // Disabled dim: shadcn `disabled:opacity-50`.
   disabledOpacity: 0.5,
   ripple: null,
-  // Suppress the react-native-web keyboard-focus blue ring on the header
-  // Pressable; the kit paints its own press feedback. No-op natively.
-  focusOutlineReset: FOCUS_RESET,
+  // Keyboard focus shows the kit's themed ring, drawn inside the full-bleed header so
+  // the card's clip cannot cut it. No-op natively.
+  focusRing: INSET_FOCUS_RING,
 
   // Chevron: a 16px muted glyph (shadcn ChevronDown, h-4 w-4, text-muted-foreground).
   chevronSize: 16,
@@ -117,7 +118,7 @@ export const iosSkin: CollapsibleSkin = {
   pressedOpacity: 0.8, // HIG: dim on press
   disabledOpacity: 0.5, // HIG dimmed disclosure
   ripple: null,
-  focusOutlineReset: FOCUS_RESET,
+  focusRing: INSET_FOCUS_RING,
 
   // SF chevron: ~15pt, tertiary-gray tint.
   chevronSize: 15,
@@ -172,6 +173,7 @@ export const androidSkin: CollapsibleSkin = {
   // M3 state-layer ripple, routed through the shared surfaceRipple helper (neutral
   // foreground ink at 10% alpha); the unrounded row needs no clip.
   ripple: (t) => surfaceRipple(t),
+  focusRing: INSET_FOCUS_RING,
 
   // M3 list trailing icon: 24px, on-surface-variant (muted).
   chevronSize: 24,

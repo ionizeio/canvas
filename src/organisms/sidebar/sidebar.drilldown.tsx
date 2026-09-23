@@ -106,7 +106,7 @@ export function createSidebarDrillDown(skin: SidebarSkin) {
               skin.row(tokens, density, false),
               skin.rowFill(tokens, active || (skin.pressedFill && pressed)),
               skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
-              skin.focusOutlineReset,
+              skin.focusRing,
             ]}
             onPress={(event) => select(item, index, event)}
             accessibilityRole="button"
@@ -139,7 +139,7 @@ export function createSidebarDrillDown(skin: SidebarSkin) {
               skin.row(tokens, density, false),
               skin.rowFill(tokens, holdsActive || (skin.pressedFill && pressed)),
               skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
-              skin.focusOutlineReset,
+              skin.focusRing,
             ]}
             onPress={() => {
               setDrilled(g.key);
@@ -167,7 +167,7 @@ export function createSidebarDrillDown(skin: SidebarSkin) {
             <>
               <Pressable
                 onPress={pop}
-                style={({ pressed }) => [skin.drillBackRow(tokens), skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null, skin.focusOutlineReset]}
+                style={({ pressed }) => [skin.drillBackRow(tokens), skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null, skin.focusRing]}
                 accessibilityRole="button"
                 accessibilityLabel={`Back to ${drilledGroup.section.title ?? ""}`}
               >

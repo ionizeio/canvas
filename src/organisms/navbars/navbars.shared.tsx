@@ -45,14 +45,12 @@ export interface NavbarSkin {
   /** Android ripple over a pressed link; null on iOS/web. */
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
   /**
-   * Web-only focus-outline reset for the link Pressable. iOS sets this so the
-   * react-native-web keyboard-focus blue ring (which a real iOS toolbar bar-button
-   * item never shows) is suppressed, leaving the press dim as the only feedback.
-   * Undefined on web/Android, which keep their own focus treatment. No-op
-   * natively, where `outlineStyle`/`outlineWidth` are not real CSS. Mirrors
-   * pagination/input/textarea's focus reset.
+   * Where the keyboard focus ring sits on the link Pressable: INSET_FOCUS_RING draws it
+   * just inside a link that a clipping bar would otherwise cut; omitted, it sits around
+   * the link. The ring itself is the kit Pressable's (the palette's `ring`). No-op
+   * natively.
    */
-  focusOutlineReset?: ViewStyle;
+  focusRing?: ViewStyle;
 
   /** The bar row: height, padding, and flex layout. */
   bar: (t: ColorTokens) => ViewStyle;
@@ -235,7 +233,7 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
                     aria-current={isActive ? "page" : undefined}
                     style={({ pressed }) => [
                       puck ? paneStyle(material, tile) : tile,
-                      skin.focusOutlineReset,
+                      skin.focusRing,
                       skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
                     ]}
                   >

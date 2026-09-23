@@ -18,6 +18,12 @@
   body{background-color:var(--background);color:var(--foreground);font-family:var(--font-sans);-webkit-font-smoothing:antialiased;margin:0}
   a{color:var(--primary-text);text-decoration:underline;text-underline-offset:2px}
   a:hover{opacity:0.9}
+  /* The keyboard focus ring (WCAG 2.4.7): a solid ring in the palette's --ring, off the
+     element, only when the browser decides focus should show. Firefox and Safari ignore an
+     author colour on their automatic ring, so the style is named too. The kit's Pressable
+     colours the same ring inline where this sheet is not loaded, and a control that paints
+     its own focus state sets outline-style none inline, which wins over any layer. */
+  :focus-visible{outline:var(--ring-width) solid var(--ring);outline-offset:var(--ring-offset)}
 }
 
 /* Keyframes the components reference (spinner ring, skeleton shimmer). Left unlayered: cascade

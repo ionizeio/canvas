@@ -1,6 +1,6 @@
 import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, alpha, FOCUS_RESET, shape } from "../../style/index.js";
+import { type ColorTokens, alpha, shape } from "../../style/index.js";
 
 // Co-located Pagination skins, one per platform. The page buttons, Prev/Next
 // controls, and the size selector are square-ish boxes whose footprint scales
@@ -42,14 +42,6 @@ export interface PaginationSkin {
   pressedOpacity: number | null;
   /** Android ripple over a pressed cell; null on iOS/web. */
   ripple?: (t: ColorTokens, selected: boolean) => { color: string; borderless: boolean };
-  /**
-   * Web-only focus-outline reset for the cell Pressables. iOS sets this so the
-   * react-native-web keyboard-focus blue ring (which a real iOS device never
-   * shows) is suppressed, leaving the press dim as the only feedback. Undefined
-   * on web/Android, which keep their own focus treatment. No-op natively, where
-   * `outlineStyle`/`outlineWidth` are not real CSS.
-   */
-  focusOutlineReset?: ViewStyle;
 }
 
 // --- shared size scales (brand type/sizing, identical across platforms) ------
@@ -202,12 +194,6 @@ export const iosSkin: PaginationSkin = {
     return { paddingHorizontal: 4, color: t["muted-foreground"] };
   },
   pressedOpacity: 0.8,
-  // react-native-web paints the browser's blue keyboard-focus ring around a
-  // focused Pressable; a real iOS device never shows it (native iOS feedback is
-  // the press dim only). Suppress it so Tab-focusing a cell or chevron paints no
-  // box. Web-only: `outlineStyle`/`outlineWidth` are not in RN's ViewStyle (hence
-  // the cast inside FOCUS_RESET) and are ignored natively. Mirrors input/textarea.
-  focusOutlineReset: FOCUS_RESET,
 };
 
 // =============================================================================

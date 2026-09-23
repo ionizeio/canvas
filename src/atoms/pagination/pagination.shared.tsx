@@ -163,7 +163,6 @@ export function createPagination(skin: PaginationSkin) {
           style={({ pressed }) => [
             surfaced(box) ? paneStyle(theme, box) : box,
             s.itemSize[size],
-            skin.focusOutlineReset,
             disabled ? { opacity: 0.5 } : null,
             skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
           ]}
@@ -284,7 +283,6 @@ export function createPagination(skin: PaginationSkin) {
                 style={({ pressed }) => [
                   surfaced(selectorBox) ? paneStyle(theme, selectorBox) : selectorBox,
                   s.itemSize[size],
-                  skin.focusOutlineReset,
                   disabled ? { opacity: 0.5 } : null,
                   skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
                 ]}
@@ -344,7 +342,6 @@ export function createPagination(skin: PaginationSkin) {
                 style={({ pressed }) => [
                   surfaced(pageBox) ? paneStyle(theme, pageBox) : pageBox,
                   s.itemSize[size],
-                  skin.focusOutlineReset,
                   disabled ? { opacity: 0.5 } : null,
                   skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
                 ]}
