@@ -939,7 +939,8 @@ judge before any completion claim.
 ### df-argus-shell
 
 - **What:** the Dark Factory (DF) page look on its shipped web app, Argus `/roster`
-  (`~/Workspaces/Dark Factory`, commit cf7c580, `bun run dev` on port 8090), the
+  (then at `~/Workspaces/Dark Factory`, since moved to `~/Workspaces/Argus`; commit cf7c580,
+  `bun run dev` on port 8090), the
   reference for the Canvas docs' page look under the owner's 2026-09-23 decision that
   Canvas takes the DF UI. Recorded 2026-09-23 with Playwright 1.60 Chromium (headless,
   DPR 2) at 1440 x 900, 768 x 1024 and 390 x 844 in the blush, mint and dark themes,

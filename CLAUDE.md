@@ -5,8 +5,8 @@ universally: native on iOS and Android, and on the web through React Native Web.
 
 ## Design language: Dark Factory
 
-On 2026-09-23 the owner decided that Canvas takes the Dark Factory (DF) UI
-(`~/Workspaces/Dark Factory`: the component library `Ui/Components`, the app
+On 2026-09-23 the owner decided that Canvas takes the Dark Factory (DF) UI (the
+repository at `~/Workspaces/Argus`: the component library `Ui/Components`, the app
 `Apps/Argus`, its `/ui` playground on http://localhost:8090 under `bun run dev`). The
 migration lands in ordered phases on main; until a phase lands, the code it covers
 still shows the Riskora look it replaces, and the sections below describe that code

@@ -9,7 +9,8 @@
 //   bun run df:vendor          rewrite the snapshot from the DF checkout
 //   bun run df:vendor:check    fail when the snapshot no longer matches the DF checkout
 //
-// The DF checkout defaults to the sibling folder `../Dark Factory`; DARK_FACTORY_DIR
+// The DF checkout defaults to the sibling folder `../Argus` (the Dark Factory repository,
+// moved there from `../Dark Factory` on 2026-09-23); DARK_FACTORY_DIR
 // points elsewhere. Only DF's pure theme modules are loaded (palettes, tokens, materials,
 // hue and color); the ones that import React Native (motion, responsive, insets) are not,
 // and DF's motion is recorded as a reference card instead (tools/native/liquid-motion.md,
@@ -70,7 +71,7 @@ function values(snapshot: { source?: unknown }) {
 }
 
 if (import.meta.main) {
-  const dfDir = resolve(process.env.DARK_FACTORY_DIR ?? join(ROOT, "..", "Dark Factory"));
+  const dfDir = resolve(process.env.DARK_FACTORY_DIR ?? join(ROOT, "..", "Argus"));
   const snapshot = await buildSnapshot(dfDir);
   const text = `${JSON.stringify(snapshot, null, 2)}\n`;
   if (process.argv.includes("--check")) {
