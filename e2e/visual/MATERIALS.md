@@ -10,8 +10,11 @@ Existing `components.e2e.ts` and `overlays.e2e.ts` retain the Linux solid PNG
 baselines. The material matrix captures light and dark glass at desktop and phone
 widths, opens the shared overlay recipes, and attaches PNG plus computed browser
 material diagnostics. Glass pixels are evidence for review, not portable GPU
-baselines. The subsequent solid pass asserts zero active backdrop effects in the
-component row and opened overlay host. A passing count does not establish
+baselines. The subsequent solid pass asserts zero active backdrop effects and zero
+clear materials in the component row and opened overlay host. A clear material is a
+glass layer that paints without a blur: Dark Factory's field well under glass (the
+layer's tint and a hairline over an unblurred backdrop), which the text-entry specs
+hold every web field to. A passing count does not establish
 composited text contrast; review the screenshots and run Lookout.
 
 Lookout keeps its fixed-viewport rest captures and adds `full-content` evidence

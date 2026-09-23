@@ -1,6 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
 import { gotoDocs, platformRow } from "../support/docs";
-import { readMaterialEffects } from "../support/material-evidence";
+import { expectNoMaterialEffects, readMaterialEffects } from "../support/material-evidence";
 import { expect, test } from "../support/fixtures";
 
 interface EntryCase {
@@ -71,7 +71,9 @@ for (const recipe of [...fields, ...additional]) for (const width of [1280, 390]
     }
     const selection = await field.evaluate(node => ({ start: (node as HTMLInputElement).selectionStart, end: (node as HTMLInputElement).selectionEnd }));
     if (!recipe.otp) expect(selection.end! - selection.start!).toBe(recipe.role === "spinbutton" || recipe.slug === "data-table" ? recipe.value.length : 2);
-    await expect.poll(async () => (await readMaterialEffects(row)).effects.some(effect => effect.filter.includes("-clear"))).toBe(true);
+    // Under glass the field is Dark Factory's clear well: its own tint and hairline over an
+    // unblurred backdrop (web-frost.ts `clearBlur`), so a material with no blur of its own.
+    await expect.poll(async () => (await readMaterialEffects(row)).clearMaterials).toBeGreaterThan(0);
     const screenshot = info.outputPath("clear-field.png");
     await row.screenshot({ path: screenshot });
     await info.attach("clear field", { path: screenshot, contentType: "image/png" });
@@ -94,7 +96,7 @@ for (const recipe of fields.filter(field => ["input", "input-otp", "phone-input"
     await field.fill(recipe.value);
     await expect(field).toHaveValue(recipe.value);
     await expect(field).toBeFocused();
-    expect((await readMaterialEffects(row)).activeBackdropEffects).toBe(0);
+    await expectNoMaterialEffects(row);
   });
 
   test(`${recipe.slug} disabled field rejects edits`, async ({ page }) => {
