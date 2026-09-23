@@ -133,8 +133,8 @@ export const webSkin: ActionSheetSkin = {
   // paddingBottom keeps the Cancel card off the viewport edge (the safe-area inset
   // is 0 on web); Android stays flush per M3, so the padding lives in these skins.
   stack: { width: "100%", maxWidth: STACK_MAX_WIDTH, alignSelf: "center", paddingHorizontal: 8, paddingVertical: 8, gap: 8 },
-  actionsCard: (t) => ({ borderRadius: WEB_RADIUS, backgroundColor: t.popover, ...shadow("lg") }),
-  cancelCard: (t) => ({ borderRadius: WEB_RADIUS, backgroundColor: t.popover, ...shadow("lg") }),
+  actionsCard: (t) => ({ borderRadius: WEB_RADIUS, backgroundColor: t.popover, ...shadow("lg", t) }),
+  cancelCard: (t) => ({ borderRadius: WEB_RADIUS, backgroundColor: t.popover, ...shadow("lg", t) }),
   handle: null,
   header: { paddingVertical: 14, paddingHorizontal: 16, alignItems: "center" },
   headerTitle: (t) => ({ fontSize: 13, lineHeight: 18, fontWeight: "600", color: t["muted-foreground"], textAlign: "center" }),
@@ -184,10 +184,10 @@ export const iosSkin: ActionSheetSkin = {
   // safe-area inset above the home indicator (the iOS 26/27 detached-sheet gap).
   stack: { width: "100%", maxWidth: STACK_MAX_WIDTH, alignSelf: "center", paddingHorizontal: 8, paddingVertical: 8, gap: 8 },
   rowsContent: { gap: 10 },
-  actionsCard: (t) => ({ borderRadius: IOS_RADIUS, borderCurve: "continuous", padding: 14, backgroundColor: t.popover, ...shadow("lg") }),
+  actionsCard: (t) => ({ borderRadius: IOS_RADIUS, borderCurve: "continuous", padding: 14, backgroundColor: t.popover, ...shadow("lg", t) }),
   // A separate standalone Cancel capsule, inset 14 so it lines up with the action
   // buttons inside the container's 14pt padding.
-  cancelCard: (t) => ({ marginHorizontal: 14, borderRadius: IOS_CAPSULE, borderCurve: "continuous", backgroundColor: t.popover, ...shadow("lg") }),
+  cancelCard: (t) => ({ marginHorizontal: 14, borderRadius: IOS_CAPSULE, borderCurve: "continuous", backgroundColor: t.popover, ...shadow("lg", t) }),
   handle: null,
   header: { paddingTop: 8, paddingHorizontal: 8, paddingBottom: 24, gap: 10, alignItems: "flex-start" },
   headerTitle: (t) => ({ fontSize: 17, lineHeight: 22, fontWeight: "600", letterSpacing: -0.43, color: t.foreground }),

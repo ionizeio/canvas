@@ -111,7 +111,7 @@ export function cornerRadii(style: StyleProp<ViewStyle>): ViewStyle {
  *  - `child`: the original shadow with `elevation` zeroed on Android (so it is not drawn twice),
  *    and returned UNCHANGED off Android (iOS keeps its shadow* verbatim).
  *
- * Usage: `const { parent, child } = splitElevation(skin.elevation(e));`
+ * Usage: `const { parent, child } = splitElevation(skin.elevation(e, tokens));`
  * then `<RippleClip shape={...} style={parent}><Pressable style={[base, child, ...]} .../>`.
  */
 export function splitElevation(shadowStyle: StyleProp<ViewStyle>): {

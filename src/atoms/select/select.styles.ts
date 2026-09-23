@@ -169,7 +169,7 @@ export const webSkin: SelectSkin = {
     borderColor: t.border,
     backgroundColor: t.popover,
     padding: 8,
-    ...shadow("lg"),
+    ...shadow("lg", t),
   }),
   optionRow: (t, selected) => ({
     flexDirection: "row",
@@ -254,7 +254,7 @@ export const iosSkin: SelectSkin = {
     borderRadius: IOS_MENU_RADIUS,
     backgroundColor: t.popover,
     paddingVertical: 4,
-    ...shadow("lg"),
+    ...shadow("lg", t),
   }),
   // No row tint at rest on iOS; the selection is shown by the leading check and
   // rows are separated by hairlines (see rowSeparator). ~42pt tall per the kit.
@@ -338,7 +338,7 @@ export const androidSkin: SelectSkin = {
     borderRadius: 4,
     backgroundColor: t.popover,
     paddingVertical: 8,
-    ...shadow("md"),
+    ...shadow("md", t),
   }),
   optionRow: (t, selected) => ({
     flexDirection: "row",

@@ -38,7 +38,7 @@ export interface CardSkin {
   /** Surface colors (fill + border color), per elevation variant. */
   surface: (tokens: ColorTokens, e: Elevation) => ViewStyle;
   /** Elevation -> shadow mapping (resting/raised/flat differ per OS). */
-  elevation: (e: Elevation) => ViewStyle;
+  elevation: (e: Elevation, t: ColorTokens) => ViewStyle;
   /** The card's own content padding + flat-child gap, per density. The `default`
    *  row is the standard padded surface every plain card takes (what the `padded`
    *  prop makes explicit), so the surface owns the rhythm between flat children;
@@ -69,7 +69,7 @@ const WEB_DENSITY: Record<Density, ViewStyle> = {
 export const webSkin: CardSkin = {
   radius: shape.web.card,
   surface: lightSurface,
-  elevation: (e) => (e === "raised" ? shadow("md") : e === "flat" ? shadow("none") : shadow("DEFAULT")),
+  elevation: (e, t) => (e === "raised" ? shadow("md", t) : e === "flat" ? shadow("none") : shadow("DEFAULT", t)),
   density: WEB_DENSITY,
   padded: { padding: 24 },
 };
@@ -86,7 +86,7 @@ export const iosSkin: CardSkin = {
   surface: lightSurface,
   // Native iOS grouped surfaces are flat: the resting card carries no shadow;
   // raised still lifts, flat stays flat.
-  elevation: (e) => (e === "raised" ? shadow("sm") : shadow("none")),
+  elevation: (e, t) => (e === "raised" ? shadow("sm", t) : shadow("none")),
   density: WEB_DENSITY,
   padded: { padding: 24 },
 };
@@ -118,12 +118,12 @@ export const androidSkin: CardSkin = {
   // (6dp: shadow("md")'s shade with the Android elevation corrected via
   // customShadow, since shadow("md") carries elevation 4, which matches no M3
   // level); flat / outlined drops elevation entirely.
-  elevation: (e) =>
+  elevation: (e, t) =>
     e === "raised"
       ? customShadow({ offsetY: 4, radius: 6, opacity: 0.1, elevation: 6 })
       : e === "flat"
         ? shadow("none")
-        : shadow("sm"),
+        : shadow("sm", t),
   density: M3_DENSITY,
   // M3 cards use 16dp content padding (gap-free; see the CardSkin.padded doc).
   padded: { padding: 16 },

@@ -283,7 +283,7 @@ export function createCard(skin: CardSkin) {
       // parent-clip WOULD cut the child's own Android elevation shadow, the Android `elevation`
       // moves onto the wrapper (whose own shadow is drawn around its outline, unclipped) while the
       // iOS `shadow*` stays on the inner node — so iOS is unchanged.
-      const { parent: elevParent, child: elevChild } = splitElevation(skin.elevation(elev));
+      const { parent: elevParent, child: elevChild } = splitElevation(skin.elevation(elev, tokens));
       return (
         <RippleClip shape={cornerRadii(shape)} style={[elevParent, outer]}>
           <Pressable
@@ -300,7 +300,7 @@ export function createCard(skin: CardSkin) {
       );
     }
     return (
-      <GlassSurface layer="content" testID={testID} tint={selected ? alpha(tokens.primary, 0.22) : undefined} style={[surface, skin.elevation(elev), outer]}>
+      <GlassSurface layer="content" testID={testID} tint={selected ? alpha(tokens.primary, 0.22) : undefined} style={[surface, skin.elevation(elev, tokens), outer]}>
         {inner}
       </GlassSurface>
     );

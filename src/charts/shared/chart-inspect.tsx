@@ -40,7 +40,7 @@ export function ChartInspectionSurface({ children, radius = 12, style }: {
   const { tokens } = theme;
   const shape: ViewStyle = { borderRadius: radius, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card };
   return (
-    <View style={[styles.passthrough, paneStyle(theme, shape), shadow("md"), style]}>
+    <View style={[styles.passthrough, paneStyle(theme, shape), shadow("md", theme.tokens), style]}>
       {isGlass(theme) ? <GlassPane layer="dense" shape={shape} /> : null}
       {children}
     </View>

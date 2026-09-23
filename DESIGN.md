@@ -188,11 +188,11 @@ rounded:
   full: "9999px"
 shadows:
   none: none
-  sm: "0px 1px 3px rgba(13,18,27,0.08)"
-  base: "0px 0px 20px rgba(13,18,27,0.06)"
-  md: "0px 0px 24px rgba(13,18,27,0.1)"
-  lg: "0px 0px 40px rgba(13,18,27,0.14)"
-  xl: "0px 0px 60px rgba(13,18,27,0.18)"
+  sm: "0px 16px 32px -22px rgba(121,100,214,0.22)"
+  base: "0px 20px 44px -24px rgba(121,100,214,0.22)"
+  md: "0px 30px 54px -24px rgba(121,100,214,0.22)"
+  lg: "0px 26px 50px -20px rgba(121,100,214,0.22)"
+  xl: "0px 50px 100px -30px rgba(0,0,0,0.45)"
 motion:
   duration-fast: "120ms"
   duration-base: "180ms"
@@ -239,7 +239,7 @@ components:
     stat-radius: "14px"
     stat-pad: "24px"
     stat-gap: "16px"
-    stat-shadow: "0px 0px 20px rgba(13,18,27,0.06)"
+    stat-shadow: "var(--shadow)"
     stat-value-lh: "44px"
     stat-value-tracking: "0px"
     stat-label-tracking: "0px"
@@ -247,8 +247,8 @@ components:
     empty-radius: "14px"
   card:
     card-radius: "14px"
-    card-shadow: "0px 0px 20px rgba(13,18,27,0.06)"
-    card-shadow-raised: "0px 0px 24px rgba(13,18,27,0.1)"
+    card-shadow: "var(--shadow)"
+    card-shadow-raised: "var(--shadow-md)"
   autocomplete:
     ac-radius: "10px"
     ac-radius-bottom: "10px"
@@ -267,6 +267,7 @@ components:
   chip:
     chip-radius: "9999px"
   dropdown:
+    menu-shadow: "var(--shadow-lg)"
     menu-radius: "12px"
     menu-row-radius: "10px"
   emblem:
@@ -279,6 +280,7 @@ components:
   pagination:
     page-radius: "8px"
   select:
+    select-panel-shadow: "var(--shadow-lg)"
     select-radius: "10px"
     select-radius-bottom: "10px"
     select-panel-radius: "12px"
@@ -296,6 +298,7 @@ components:
   alert:
     alert-radius: "8px"
   descriptionlist:
+    dl-shadow: "var(--shadow-sm)"
     dl-radius: "14px"
   feed:
     feed-radius: "14px"
@@ -303,8 +306,10 @@ components:
     grid-gallery-radius: "8px"
   mediaobject:
     media-radius: "14px"
+    media-shadow: none
     media-icon-radius: "8px"
   stackedlist:
+    list-shadow: "var(--shadow)"
     list-radius: "14px"
   actionsheet:
     sheet-card-radius-top: "18px"
@@ -319,6 +324,7 @@ components:
   carousel:
     carousel-slide-radius: "14px"
   dialog:
+    dialog-shadow: "var(--shadow-xl)"
     dialog-radius: "18px"
   drawer:
     drawer-side-radius: "22px"
@@ -339,12 +345,14 @@ components:
     otp-inner-radius: "0px"
   popover:
     popover-radius: "12px"
+    popover-shadow: "var(--shadow-lg)"
   swatch:
     swatch-radius-small: "8px"
     swatch-radius-default: "12px"
     swatch-radius-large: "16px"
   tooltip:
     tip-radius: "8px"
+    tip-shadow: "var(--shadow-md)"
   command:
     cmd-radius: "12px"
   datatable:
@@ -377,7 +385,7 @@ platformSkins:
     card:
       card-radius: "12px"
       card-shadow: none
-      card-shadow-raised: "0px 1px 3px rgba(13,18,27,0.08)"
+      card-shadow-raised: "var(--shadow-sm)"
     autocomplete:
       ac-radius: "8px"
       ac-radius-bottom: "8px"
@@ -417,6 +425,7 @@ platformSkins:
     alert:
       alert-radius: "10px"
     descriptionlist:
+      dl-shadow: none
       dl-radius: "26px"
     feed:
       feed-radius: "12px"
@@ -426,6 +435,7 @@ platformSkins:
       media-radius: "10px"
       media-icon-radius: "8px"
     stackedlist:
+      list-shadow: none
       list-radius: "26px"
     actionsheet:
       sheet-card-radius-top: "34px"
@@ -440,6 +450,7 @@ platformSkins:
     carousel:
       carousel-slide-radius: "12px"
     dialog:
+      dialog-shadow: "var(--shadow-lg)"
       dialog-radius: "28px"
     drawer:
       drawer-side-radius: "38px"
@@ -492,7 +503,7 @@ platformSkins:
       empty-radius: "12px"
     card:
       card-radius: "12px"
-      card-shadow: "0px 1px 3px rgba(13,18,27,0.08)"
+      card-shadow: "var(--shadow-sm)"
       card-shadow-raised: "0px 4px 6px rgba(0,0,0,0.1)"
     autocomplete:
       ac-radius: "4px"
@@ -512,6 +523,7 @@ platformSkins:
     chip:
       chip-radius: "8px"
     dropdown:
+      menu-shadow: "var(--shadow-md)"
       menu-radius: "4px"
       menu-row-radius: "0px"
     emblem:
@@ -524,6 +536,7 @@ platformSkins:
     pagination:
       page-radius: "8px"
     select:
+      select-panel-shadow: "var(--shadow-md)"
       select-radius: "4px"
       select-radius-bottom: "0px"
       select-panel-radius: "4px"
@@ -540,6 +553,7 @@ platformSkins:
     alert:
       alert-radius: "12px"
     descriptionlist:
+      dl-shadow: none
       dl-radius: "12px"
     feed:
       feed-radius: "12px"
@@ -547,8 +561,10 @@ platformSkins:
       grid-gallery-radius: "12px"
     mediaobject:
       media-radius: "12px"
+      media-shadow: "var(--shadow-sm)"
       media-icon-radius: "12px"
     stackedlist:
+      list-shadow: none
       list-radius: "12px"
     actionsheet:
       sheet-card-radius-top: "28px"
@@ -562,6 +578,7 @@ platformSkins:
     carousel:
       carousel-slide-radius: "28px"
     dialog:
+      dialog-shadow: "var(--shadow-lg)"
       dialog-radius: "28px"
     drawer:
       drawer-side-radius: "16px"
@@ -582,12 +599,14 @@ platformSkins:
       otp-inner-radius: "12px"
     popover:
       popover-radius: "12px"
+      popover-shadow: "var(--shadow-md)"
     swatch:
       swatch-radius-small: "8px"
       swatch-radius-default: "12px"
       swatch-radius-large: "16px"
     tooltip:
       tip-radius: "4px"
+      tip-shadow: none
     command:
       cmd-radius: "8px"
     datatable:
@@ -814,19 +833,23 @@ kit measures the rendered control and extends it with hitSlop, so nothing moves.
 
 ## Elevation and depth
 
-One ambient ladder in the ink (the Riskora 0/0/20 halo): no horizontal offset, the shade never
-rises, and the opacity never exceeds 0.2, so a shadow reads as depth rather
-than as a border.
+One ladder, Dark Factory's: each shade is cast straight down with a negative spread, so
+it pools under a surface's lower edge rather than haloing it, in the palette's own
+`shade` (a violet wash in light, black in dark). No horizontal offset, the shade never
+rises, and as rendered its darkest point beside a surface stays within 1.6:1 of that
+surface (the old 0.2 opacity cap's own limit), so a shadow reads as depth rather than as
+a border. The values below are the light palette's; `xl`, the dialog's shade, is a black
+top-layer separator on every palette.
 
 <!-- @generated:elevation -->
 | Level | Value |
 | --- | --- |
 | `none` | `none` |
-| `sm` | `0px 1px 3px rgba(13,18,27,0.08)` |
-| `base` | `0px 0px 20px rgba(13,18,27,0.06)` |
-| `md` | `0px 0px 24px rgba(13,18,27,0.1)` |
-| `lg` | `0px 0px 40px rgba(13,18,27,0.14)` |
-| `xl` | `0px 0px 60px rgba(13,18,27,0.18)` |
+| `sm` | `0px 16px 32px -22px rgba(121,100,214,0.22)` |
+| `base` | `0px 20px 44px -24px rgba(121,100,214,0.22)` |
+| `md` | `0px 30px 54px -24px rgba(121,100,214,0.22)` |
+| `lg` | `0px 26px 50px -20px rgba(121,100,214,0.22)` |
+| `xl` | `0px 50px 100px -30px rgba(0,0,0,0.45)` |
 <!-- @/generated -->
 
 Cards rest at `sm`, raised cards at `md`, overlays at `lg` and `xl`. iOS surfaces are

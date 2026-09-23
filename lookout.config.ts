@@ -194,7 +194,7 @@ const config: LookoutConfig = {
     "the small uppercase platform watermark (iOS / ANDROID / WEB) in each preview row corner: a docs harness label, not component content",
     "the iOS and Android rows on WEB captures are browser previews of the native skins: judge their metrics and anatomy, but material and feedback fidelity only from device shots",
     "Lucide-derived outline glyphs at one 1.75 stroke: the kit's icon set, drawn from a single constant",
-    "white cards on a lavender-tinted light page, soft hairline card borders and the ambient (no-offset) shadow ladder: the surfaces this kit is built on",
+    "white cards on a lavender-tinted light page, soft hairline card borders and Dark Factory's downward, palette-tinted shadow ladder: the surfaces this kit is built on",
     "the circular indicator in Spinner and in a loading Button: information-bearing motion by design; Skeleton is the shimmer",
     "pill-shaped chips and badges on the iOS and Android rows: platform shape, not a rounding accident",
     "10pt tab-bar labels on iOS rows: the HIG size for that control",

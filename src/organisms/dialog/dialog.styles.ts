@@ -176,7 +176,7 @@ export const webSkin: DialogSkin = {
     borderWidth: 1,
     borderColor: t.border,
     backgroundColor: t.popover,
-    ...shadow("xl"),
+    ...shadow("xl", t),
   }),
   title: (t) => ({ fontSize: 18, lineHeight: 28, fontWeight: "500", color: t["popover-foreground"] }),
   body: (t) => ({ fontSize: 14, lineHeight: 20, color: t["muted-foreground"], marginTop: 8 }),
@@ -210,7 +210,7 @@ export const iosSkin: DialogSkin = {
   card: (t) => ({
     borderRadius: IOS_RADIUS,
     backgroundColor: t.popover,
-    ...shadow("lg"),
+    ...shadow("lg", t),
   }),
   title: (t) => ({
     fontSize: 20,
@@ -276,7 +276,7 @@ export const androidSkin: DialogSkin = {
   card: (t) => ({
     borderRadius: ANDROID_RADIUS,
     backgroundColor: t.popover,
-    ...shadow("lg"),
+    ...shadow("lg", t),
   }),
   title: (t) => ({ fontSize: 22, lineHeight: 28, fontWeight: "500", color: t["popover-foreground"] }),
   body: (t) => ({ fontSize: 14, lineHeight: 20, color: t["muted-foreground"], marginTop: 12 }),

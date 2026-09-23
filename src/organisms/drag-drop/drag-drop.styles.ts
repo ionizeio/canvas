@@ -40,7 +40,7 @@ function indicator(t: ColorTokens): ViewStyle {
   return { backgroundColor: t.primary, borderRadius: 2 };
 }
 function ghost(t: ColorTokens): ViewStyle {
-  return { borderRadius: 12, opacity: 0.96, ...shadow("lg") };
+  return { borderRadius: 12, opacity: 0.96, ...shadow("lg", t) };
 }
 
 const CENTER: ViewStyle = { alignItems: "center", justifyContent: "center" };

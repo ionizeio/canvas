@@ -95,7 +95,7 @@ export function card(tokens: ColorTokens): ViewStyle {
     borderColor: tokens.border,
     backgroundColor: tokens.popover,
     overflow: "hidden",
-    ...shadow("xl"),
+    ...shadow("xl", tokens),
   };
 }
 

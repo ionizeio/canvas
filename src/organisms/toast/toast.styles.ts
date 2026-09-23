@@ -54,7 +54,7 @@ function capsule(t: ColorTokens, radius: number): ViewStyle {
     minHeight: 48,
     maxWidth: MAX_WIDTH,
     backgroundColor: t.popover,
-    ...shadow("lg"),
+    ...shadow("lg", t),
   };
 }
 

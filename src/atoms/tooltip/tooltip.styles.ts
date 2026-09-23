@@ -100,7 +100,7 @@ export const webSkin: TooltipSkin = {
     backgroundColor: t.foreground,
     paddingHorizontal: 10,
     paddingVertical: 6,
-    ...shadow("md"),
+    ...shadow("md", t),
   }),
   label: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: t.background }),
 };
@@ -116,7 +116,7 @@ export const iosSkin: TooltipSkin = {
     backgroundColor: t.foreground,
     paddingHorizontal: 8,
     paddingVertical: 4,
-    ...shadow("md"),
+    ...shadow("md", t),
   }),
   label: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: t.background }),
 };

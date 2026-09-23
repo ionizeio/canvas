@@ -121,7 +121,7 @@ export const webSkin: DrawerSkin = {
         borderColor: t.border,
         borderTopStartRadius: r,
         borderTopEndRadius: r,
-        ...shadow("xl"),
+        ...shadow("xl", t),
       };
     }
     if (edge === "top") {
@@ -133,7 +133,7 @@ export const webSkin: DrawerSkin = {
         borderColor: t.border,
         borderBottomStartRadius: r,
         borderBottomEndRadius: r,
-        ...shadow("xl"),
+        ...shadow("xl", t),
       };
     }
     return {
@@ -144,7 +144,7 @@ export const webSkin: DrawerSkin = {
       ...(edge === "right"
         ? { borderStartWidth: 1, borderTopStartRadius: r, borderBottomStartRadius: r }
         : { borderEndWidth: 1, borderTopEndRadius: r, borderBottomEndRadius: r }),
-      ...shadow("xl"),
+      ...shadow("xl", t),
     };
   },
 };
@@ -257,7 +257,7 @@ export const androidSkin: DrawerSkin = {
         maxHeight: "85%",
         borderTopStartRadius: ANDROID_SHEET_RADIUS,
         borderTopEndRadius: ANDROID_SHEET_RADIUS,
-        ...shadow("sm"),
+        ...shadow("sm", t),
       };
     }
     if (edge === "top") {
@@ -267,7 +267,7 @@ export const androidSkin: DrawerSkin = {
         maxHeight: "85%",
         borderBottomStartRadius: ANDROID_SHEET_RADIUS,
         borderBottomEndRadius: ANDROID_SHEET_RADIUS,
-        ...shadow("sm"),
+        ...shadow("sm", t),
       };
     }
     // The inner (content-facing) vertical edge rounds; the outer edge sits flush.
@@ -276,6 +276,6 @@ export const androidSkin: DrawerSkin = {
       edge === "right"
         ? { borderTopStartRadius: ANDROID_SIDE_RADIUS, borderBottomStartRadius: ANDROID_SIDE_RADIUS }
         : { borderTopEndRadius: ANDROID_SIDE_RADIUS, borderBottomEndRadius: ANDROID_SIDE_RADIUS };
-    return { ...base, width: Math.min(width, ANDROID_SIDE_MAX), height: "100%", ...inner, ...shadow("sm") };
+    return { ...base, width: Math.min(width, ANDROID_SIDE_MAX), height: "100%", ...inner, ...shadow("sm", t) };
   },
 };

@@ -16,12 +16,12 @@ const RADII = [
   { name: "full", px: 9999 },
 ];
 
-// The six-level shadow() preset (src/style/shadow.ts). "DEFAULT" is the unnamed
-// middle level; the idiomatic call for it is shadow() with no argument. There is
-// no "2xl".
+// The six-level shadow() preset (src/style/shadow.ts), each called with the theme's
+// tokens so the shade takes the active palette. "DEFAULT" is the unnamed middle level.
+// There is no "2xl".
 const SHADOW_LEVELS = [
-  { key: "none", label: 'shadow("none")' }, { key: "sm", label: 'shadow("sm")' }, { key: "DEFAULT", label: "shadow()" },
-  { key: "md", label: 'shadow("md")' }, { key: "lg", label: 'shadow("lg")' }, { key: "xl", label: 'shadow("xl")' },
+  { key: "none", label: 'shadow("none")' }, { key: "sm", label: 'shadow("sm", tokens)' }, { key: "DEFAULT", label: 'shadow("DEFAULT", tokens)' },
+  { key: "md", label: 'shadow("md", tokens)' }, { key: "lg", label: 'shadow("lg", tokens)' }, { key: "xl", label: 'shadow("xl", tokens)' },
 ] as const;
 
 // Spacing scale as live padding demos: the outer box is padded by the step, so the
@@ -52,15 +52,15 @@ const radiusExamples: DocExample[] = RADII.map((r) => ({
   },
 }));
 
-// Each level renders the real shadow() helper, so the iOS / Android / Web rows show
-// the actual iOS shadow vs Android elevation the preset ships.
+// Each level renders the real shadow() helper, so the Web row shows Dark Factory's
+// downward shade and the iOS / Android rows the platform geometry the preset ships.
 const shadowExamples: DocExample[] = SHADOW_LEVELS.map((s) => ({
   label: s.label,
   code: `<View style={[{ width: 96, height: 96, borderRadius: 12, backgroundColor: tokens.card, borderWidth: 1, borderColor: tokens.border }, ${s.label}]} />`,
   render: (scope) => {
     const { View, tokens, shadow } = scope;
     return (
-      <View style={[{ width: 96, height: 96, borderRadius: 12, backgroundColor: tokens.card, borderWidth: 1, borderColor: tokens.border }, shadow(s.key)]} />
+      <View style={[{ width: 96, height: 96, borderRadius: 12, backgroundColor: tokens.card, borderWidth: 1, borderColor: tokens.border }, shadow(s.key, tokens)]} />
     );
   },
 }));
@@ -210,7 +210,7 @@ export default function SpacingScreen() {
 
         <TokenSection
           title="Shadows"
-          description="A fixed elevation preset, low to high, from the shadow() helper. Each level ships matching iOS shadow values and an Android elevation, so the three platform rows show the real per-OS rendering; choose by elevation, not by style."
+          description="A fixed elevation preset, low to high, from the shadow() helper. Pass the theme's tokens and every level takes the palette's shade: on the web it is Dark Factory's shade, cast straight down and pooling under the lower edge, and on iOS and Android the same level keeps its platform shadow and elevation, retinted. xl, the dialog's shade, is black on every palette. Choose by elevation, not by style."
         >
           <Playground examples={shadowExamples} />
         </TokenSection>

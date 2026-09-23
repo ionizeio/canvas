@@ -253,7 +253,7 @@ function terminalOuter(tokens: ColorTokens): ViewStyle {
     borderRadius: 8,
     borderWidth: 1,
     borderColor: tokens.border,
-    ...shadow("sm"),
+    ...shadow("sm", tokens),
   };
 }
 
@@ -342,7 +342,7 @@ function copyButton(tokens: ColorTokens, dark: boolean, floating: boolean): View
   // the dark zinc chip vs the light background chip.
   return dark
     ? { ...base, borderColor: palette["zinc-600"], backgroundColor: palette["zinc-700"] }
-    : { ...base, borderColor: tokens.border, backgroundColor: tokens.background, ...(floating ? shadow("sm") : null) };
+    : { ...base, borderColor: tokens.border, backgroundColor: tokens.background, ...(floating ? shadow("sm", tokens) : null) };
 }
 
 // Copy label: text-xs font-medium, color per dark branch.

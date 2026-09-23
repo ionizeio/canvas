@@ -43,7 +43,7 @@ export function cardSurface(tokens: ColorTokens, skin: DescriptionListSkin): Vie
     borderWidth: 1,
     borderColor: tokens.border,
     backgroundColor: tokens.card,
-    ...skin.cardShadow,
+    ...skin.cardShadow(tokens),
   };
 }
 
@@ -187,7 +187,7 @@ export function headerSubtitle(tokens: ColorTokens): TextStyle {
 export const webSkin: DescriptionListSkin = {
   cardRadius: shape.web.card,
   cardCurve: "circular",
-  cardShadow: shadow("sm"),
+  cardShadow: (t) => shadow("sm", t),
   rowGap: 12,
   cardPadding: 24,
   rowAlign: "baseline",
@@ -207,7 +207,7 @@ export const webSkin: DescriptionListSkin = {
 export const iosSkin: DescriptionListSkin = {
   cardRadius: 26,
   cardCurve: "continuous",
-  cardShadow: shadow("none"),
+  cardShadow: () => shadow("none"),
   rowGap: 12,
   cardPadding: 16,
   rowAlign: "center",
@@ -225,7 +225,7 @@ export const iosSkin: DescriptionListSkin = {
 export const androidSkin: DescriptionListSkin = {
   cardRadius: 12,
   cardCurve: "circular",
-  cardShadow: shadow("none"),
+  cardShadow: () => shadow("none"),
   rowGap: 14,
   cardPadding: 16,
   rowAlign: "baseline",

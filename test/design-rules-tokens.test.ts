@@ -10,6 +10,7 @@ import {
   type ColorTokens,
 } from "../src/style/tokens.ts";
 import { customShadow, shadow, type ShadowLevel } from "../src/style/shadow.ts";
+import { isRing, renderedContrast, shadeLayers, SHADE_LIMIT } from "../tools/tokens/shade.ts";
 
 // Design rules, JS side: the token values and the elevation ladder.
 //
@@ -17,9 +18,9 @@ import { customShadow, shadow, type ShadowLevel } from "../src/style/shadow.ts";
 // defect list, the craft rules about elevation and radius, the mobile-aware typography
 // and touch-target floors), reduced to the ones that are OBJECTIVE and that Canvas has
 // actually decided in its favour. Taste that contradicts a declared choice is
-// deliberately absent: the indigo shadcn palette, the Geist typeface and the pure-white
-// light surfaces are design decisions this kit has made and documented (see the
-// neverFile list in lookout.config.ts), so no rule here second-guesses them.
+// deliberately absent: Dark Factory's palette, its Manrope face and its tinted light
+// surfaces are design decisions this kit has made and documented (see the neverFile list
+// in lookout.config.ts), so no rule here second-guesses them.
 //
 // The companion files check the CSS hand-off (design-rules-css), the per-OS skins
 // (design-rules-skins) and the source itself (design-rules-source).
@@ -98,21 +99,33 @@ describe("the weight ladder", () => {
 
 describe("elevation", () => {
   // The harness aliases react-native to react-native-web, so shadow() resolves its web
-  // branch here: a boxShadow string, which is also what the CSS hand-off spells.
-  const alphaOf = (level: ShadowLevel): number | null => {
-    const value = (shadow(level) as { boxShadow?: string }).boxShadow ?? "";
-    const m = /rgba\([^)]*,\s*([\d.]+)\s*\)/.exec(value);
-    return m ? Number(m[1]) : null;
-  };
+  // branch here: a boxShadow string, which is also what the CSS hand-off spells. The
+  // weight is judged as rendered (tools/tokens/shade.ts): the darkest point the shade
+  // paints beside the surface, against the page, the card and the popover of each
+  // palette, bounded by the old nominal cap's own limit. xl is the top-layer separator
+  // (a dialog's shade over a scrim or arbitrary content), held only to the direction rule.
+  const boxShadowOf = (level: ShadowLevel, tokens?: ColorTokens) => (shadow(level, tokens) as { boxShadow?: string }).boxShadow ?? "";
 
-  for (const level of LEVELS.filter((l) => l !== "none")) {
-    it(`${level} is a diffuse shade, not a hard drop`, () => {
-      const alpha = alphaOf(level);
-      expect(alpha).not.toBeNull();
-      // A shadow heavier than this reads as a border rather than depth.
-      expect(alpha as number).toBeLessThanOrEqual(0.2);
-    });
+  for (const [scheme, tokens] of [["light", lightColors], ["dark", darkColors]] as const) {
+    for (const level of LEVELS.filter((l) => l !== "none" && l !== "xl")) {
+      it(`${scheme} ${level} renders a diffuse shade, not a hard drop`, () => {
+        const layers = shadeLayers(boxShadowOf(level, tokens)).filter((layer) => !layer.inset && !isRing(layer));
+        expect(layers.length).toBeGreaterThan(0);
+        for (const layer of layers) {
+          for (const surface of [tokens.background, tokens.card, tokens.popover]) {
+            // A shadow heavier than this reads as a border rather than depth.
+            expect(renderedContrast(layer, surface), `${level} over ${surface}`).toBeLessThanOrEqual(SHADE_LIMIT);
+          }
+        }
+      });
+    }
   }
+
+  it("tints the ladder by the palette's shade, and keeps the top layer black", () => {
+    expect(boxShadowOf("DEFAULT", lightColors)).toContain(lightColors.shade as string);
+    expect(boxShadowOf("DEFAULT", darkColors)).toContain(darkColors.shade as string);
+    expect(boxShadowOf("xl", lightColors)).toBe(boxShadowOf("xl", darkColors));
+  });
 
   it("none really is none", () => {
     expect((shadow("none") as { boxShadow?: string }).boxShadow).toBe("none");
@@ -131,8 +144,7 @@ describe("elevation", () => {
 
   it("the one-off shadow helper defaults into the same band", () => {
     const value = (customShadow({}) as { boxShadow?: string }).boxShadow ?? "";
-    const m = /rgba\([^)]*,\s*([\d.]+)\s*\)/.exec(value);
-    expect(Number(m?.[1])).toBeLessThanOrEqual(0.2);
+    for (const layer of shadeLayers(value)) expect(renderedContrast(layer, "#ffffff")).toBeLessThanOrEqual(SHADE_LIMIT);
   });
 });
 

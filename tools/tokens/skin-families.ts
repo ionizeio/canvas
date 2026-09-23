@@ -82,9 +82,9 @@ function boxShadow(value: unknown): SkinValue {
   return typeof shadow === "string" ? shadow : "none";
 }
 
-/** Card's elevation is keyed by name rather than by tokens. */
-function callElevation(value: unknown, level: string): unknown {
-  return typeof value === "function" ? (value as (e: string) => unknown)(level) : null;
+/** Card's elevation is keyed by name, then tinted by the tokens. */
+function callElevation(value: unknown, level: string, tokens: Record<string, string>): unknown {
+  return typeof value === "function" ? (value as (e: string, t: Record<string, string>) => unknown)(level, tokens) : null;
 }
 
 export const SKIN_FAMILIES: SkinFamily[] = [
@@ -115,11 +115,11 @@ export const SKIN_FAMILIES: SkinFamily[] = [
       { token: "p-card-radius", read: (s) => num(at(s, "radius")) },
       {
         token: "p-card-shadow",
-        read: (s) => boxShadow(callElevation(s.elevation, "default")),
+        read: (s, t) => boxShadow(callElevation(s.elevation, "default", t)),
       },
       {
         token: "p-card-shadow-raised",
-        read: (s) => boxShadow(callElevation(s.elevation, "raised")),
+        read: (s, t) => boxShadow(callElevation(s.elevation, "raised", t)),
       },
     ],
   },
@@ -174,6 +174,7 @@ export const SKIN_FAMILIES: SkinFamily[] = [
     name: "Dropdown",
     module: "atoms/dropdown/dropdown",
     checks: [
+      { token: "p-menu-shadow", read: (s, t) => boxShadow(styleOf(s.menuCard, t)) },
       { token: "p-menu-radius", read: (s, t) => num(styleOf(s.menuCard, t)?.borderRadius) },
       { token: "p-menu-row-radius", read: (s) => num(at(s, "itemRow", "borderRadius")) ?? 0 },
     ],
@@ -206,6 +207,7 @@ export const SKIN_FAMILIES: SkinFamily[] = [
     name: "Select",
     module: "atoms/select/select",
     checks: [
+      { token: "p-select-panel-shadow", read: (s, t) => boxShadow(styleOf(s.panel, t)) },
       { token: "p-select-radius", read: (s, t) => { const f = styleOf(s.trigger, t, "default", false); return num(f?.borderTopStartRadius ?? f?.borderRadius); } },
       { token: "p-select-radius-bottom", read: (s, t) => { const f = styleOf(s.trigger, t, "default", false); return num(f?.borderBottomStartRadius ?? f?.borderRadius); } },
       { token: "p-select-panel-radius", read: (s, t) => num(styleOf(s.panel, t)?.borderRadius) },
@@ -253,6 +255,7 @@ export const SKIN_FAMILIES: SkinFamily[] = [
     name: "DescriptionList",
     module: "molecules/description-lists/description-lists",
     checks: [
+      { token: "p-dl-shadow", read: (s, t) => boxShadow(styleOf(s.cardShadow, t)) },
       { token: "p-dl-radius", read: (s) => num(at(s, "cardRadius")) },
     ],
   },
@@ -274,7 +277,8 @@ export const SKIN_FAMILIES: SkinFamily[] = [
     name: "MediaObject",
     module: "molecules/media-objects/media-objects",
     checks: [
-      { token: "p-media-radius", read: (s) => num(at(s, "borderedSurface", "borderRadius")) },
+      { token: "p-media-radius", read: (s, t) => num(styleOf(s.borderedSurface, t)?.borderRadius) },
+      { token: "p-media-shadow", read: (s, t) => boxShadow(styleOf(s.borderedSurface, t)) },
       { token: "p-media-icon-radius", read: (s) => num(at(s, "iconBox", "borderRadius")) },
     ],
   },
@@ -282,6 +286,7 @@ export const SKIN_FAMILIES: SkinFamily[] = [
     name: "StackedList",
     module: "molecules/stacked-lists/stacked-lists",
     checks: [
+      { token: "p-list-shadow", read: (s, t) => boxShadow(styleOf(s.cardSurface, t)) },
       { token: "p-list-radius", read: (s, t) => num(styleOf(s.cardSurface, t)?.borderRadius) },
     ],
   },
@@ -321,6 +326,7 @@ export const SKIN_FAMILIES: SkinFamily[] = [
     name: "Dialog",
     module: "organisms/dialog/dialog",
     checks: [
+      { token: "p-dialog-shadow", read: (s, t) => boxShadow(styleOf(s.card, t)) },
       { token: "p-dialog-radius", read: (s, t) => num(styleOf(s.card, t)?.borderRadius) },
     ],
   },
@@ -377,7 +383,10 @@ export const SKIN_FAMILIES: SkinFamily[] = [
   {
     name: "Popover",
     module: "atoms/popover/popover",
-    checks: [{ token: "p-popover-radius", read: (s, t) => num(styleOf(s.card, t)?.borderRadius) }],
+    checks: [
+      { token: "p-popover-radius", read: (s, t) => num(styleOf(s.card, t)?.borderRadius) },
+      { token: "p-popover-shadow", read: (s, t) => boxShadow(styleOf(s.card, t)) },
+    ],
   },
   {
     name: "Swatch",
@@ -391,7 +400,10 @@ export const SKIN_FAMILIES: SkinFamily[] = [
   {
     name: "Tooltip",
     module: "atoms/tooltip/tooltip",
-    checks: [{ token: "p-tip-radius", read: (s, t) => num(styleOf(s.bubble, t)?.borderRadius) }],
+    checks: [
+      { token: "p-tip-radius", read: (s, t) => num(styleOf(s.bubble, t)?.borderRadius) },
+      { token: "p-tip-shadow", read: (s, t) => boxShadow(styleOf(s.bubble, t)) },
+    ],
   },
   {
     name: "Command",
@@ -416,7 +428,7 @@ export const SKIN_FAMILIES: SkinFamily[] = [
     name: "TabBar",
     module: "organisms/tab-bar/tab-bar",
     checks: [
-      { token: "p-tabbar-radius", read: (s) => num(at(s, "bar", "borderRadius")) ?? 0 },
+      { token: "p-tabbar-radius", read: (s, t) => num(styleOf(s.bar, t)?.borderRadius) ?? 0 },
       { token: "p-tabbar-item-radius", read: (s) => num(at(s, "item", "borderRadius")) ?? 0 },
     ],
   },

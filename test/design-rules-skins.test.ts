@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { Glob } from "bun";
 import { lightColors } from "../src/style/tokens.ts";
-import { platformBlocks, platformValue, type PlatformKey } from "../tools/tokens/css-tokens.ts";
+import { declarationsIn, platformBlocks, platformValue, resolveVars, type PlatformKey } from "../tools/tokens/css-tokens.ts";
 import { SKIN_FAMILIES, normalize } from "../tools/tokens/skin-families.ts";
 
 // Design rules, skin side: the per-OS style objects components actually paint with,
@@ -17,6 +17,13 @@ import { SKIN_FAMILIES, normalize } from "../tools/tokens/skin-families.ts";
 const ROOT = join(import.meta.dir, "..");
 const PLATFORMS: PlatformKey[] = ["web", "ios", "android"];
 const blocks = platformBlocks(readFileSync(join(ROOT, "styles", "tokens", "platforms.css"), "utf8"));
+// The hand-off spells the shadows as var(--shadow-*) over the palette's --shade; the skins
+// are read with the light tokens, so the comparison resolves against the light palette.
+const lightDecls = {
+  ...declarationsIn(readFileSync(join(ROOT, "styles", "tokens", "colors.css"), "utf8"), ":root"),
+  ...declarationsIn(readFileSync(join(ROOT, "styles", "tokens", "shadows.css"), "utf8"), ":root"),
+};
+const resolved = (value: string | undefined) => (value === undefined ? undefined : resolveVars(value, lightDecls));
 
 type Skin = Record<string, unknown>;
 
@@ -77,7 +84,7 @@ describe("the web hand-off still says what the skins say", () => {
 
         for (const check of family.checks) {
           const fromSkin = normalize(check.read(skin, lightColors as unknown as Record<string, string>));
-          const fromCss = normalize(platformValue(blocks, platform, check.token));
+          const fromCss = normalize(resolved(platformValue(blocks, platform, check.token)));
           expect(fromCss, `--${check.token} is missing from the hand-off`).not.toBeNull();
           expect(fromSkin, `--${check.token} on ${platform}`).toBe(fromCss);
         }

@@ -114,7 +114,7 @@ export const webSkin: RowMenuSkin = {
     borderColor: t.border,
     backgroundColor: t.popover,
     padding: 8,
-    ...shadow("lg"),
+    ...shadow("lg", t),
   }),
   menuMinWidth: 200,
   menuLabel: (t) => ({
@@ -175,7 +175,7 @@ export const iosSkin: RowMenuSkin = {
     // the top/bottom rows clear of the rounded corners.
     paddingVertical: 6,
     overflow: "hidden",
-    ...shadow("lg"),
+    ...shadow("lg", t),
   }),
   menuMinWidth: 250,
   menuLabel: (t) => ({
@@ -236,7 +236,7 @@ export const androidSkin: RowMenuSkin = {
     borderRadius: ANDROID_RADIUS,
     backgroundColor: t.popover,
     paddingVertical: 8,
-    ...shadow("md"),
+    ...shadow("md", t),
   }),
   menuMinWidth: 200,
   menuLabel: (t) => ({

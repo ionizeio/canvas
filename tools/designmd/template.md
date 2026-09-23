@@ -151,9 +151,13 @@ kit measures the rendered control and extends it with hitSlop, so nothing moves.
 
 ## Elevation and depth
 
-One ambient ladder in the ink (the Riskora 0/0/20 halo): no horizontal offset, the shade never
-rises, and the opacity never exceeds 0.2, so a shadow reads as depth rather
-than as a border.
+One ladder, Dark Factory's: each shade is cast straight down with a negative spread, so
+it pools under a surface's lower edge rather than haloing it, in the palette's own
+`shade` (a violet wash in light, black in dark). No horizontal offset, the shade never
+rises, and as rendered its darkest point beside a surface stays within 1.6:1 of that
+surface (the old 0.2 opacity cap's own limit), so a shadow reads as depth rather than as
+a border. The values below are the light palette's; `xl`, the dialog's shade, is a black
+top-layer separator on every palette.
 
 <!-- @generated:elevation -->
 <!-- @/generated -->

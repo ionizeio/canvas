@@ -101,7 +101,7 @@ export const webSkin: StatsSkin = {
     borderColor: tokens.border,
     backgroundColor: tokens.card,
     padding: 24,
-    ...shadow("DEFAULT"),
+    ...shadow("DEFAULT", tokens),
   }),
   plainContainer: (tokens: ColorTokens): ViewStyle => ({
     borderRadius: shape.web.card,
@@ -109,7 +109,7 @@ export const webSkin: StatsSkin = {
     borderColor: tokens.border,
     backgroundColor: tokens.card,
     padding: 24,
-    ...shadow("DEFAULT"),
+    ...shadow("DEFAULT", tokens),
   }),
   // gap-4 (cards) / gap-6 (plain)
   rowGap: { card: { gap: 16 }, plain: { gap: 24 } },

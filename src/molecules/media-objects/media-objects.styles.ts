@@ -44,7 +44,7 @@ export const webSkin: MediaObjectSkin = {
   // flex-row(-reverse) + gap-3 + items-* (the flexDirection/alignItems are composed on top).
   containerBase: { gap: 12 },
   // bordered: rounded-lg border bg-card p-4.
-  borderedSurface: { borderRadius: shape.web.card, borderWidth: 1, padding: 20 },
+  borderedSurface: () => ({ borderRadius: shape.web.card, borderWidth: 1, padding: 20 }),
   // Leading icon box: shrink-0 items-center justify-center w-9 h-9 rounded-md bg-primary/15.
   iconBox: { flexShrink: 0, alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: shape.web.control },
   // Glyph: text-base font-semibold text-primary.
@@ -82,7 +82,7 @@ export const iosSkin: MediaObjectSkin = {
   // Inset-grouped corner radius (~10) with Apple's continuous (superellipse) corner
   // curve, flat (no shadow; HIG groups carry a hairline). borderCurve is an iOS-only
   // RN style prop (device-only visual; a no-op elsewhere and in the web docs preview).
-  borderedSurface: { borderRadius: 10, borderCurve: "continuous", borderWidth: 1, padding: 16 },
+  borderedSurface: () => ({ borderRadius: 10, borderCurve: "continuous", borderWidth: 1, padding: 16 }),
   iconBox: { flexShrink: 0, alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: 8, borderCurve: "continuous" },
   // SF Pro Text tracking at 16pt = -0.31 (Apple tracking table).
   iconGlyph: { fontSize: 16, lineHeight: 24, fontWeight: "600", letterSpacing: -0.31 },
@@ -116,7 +116,7 @@ export const androidSkin: MediaObjectSkin = {
   // preset = elevation 1) and NO visible outline (M3 never combines an outline with
   // nonzero elevation, mirroring the kit Card fix). The 1dp border WIDTH is kept but
   // painted transparent (see borderedBorderColor) so content metrics stay identical.
-  borderedSurface: { borderRadius: 12, borderWidth: 1, padding: 16, ...shadow("sm") },
+  borderedSurface: (t) => ({ borderRadius: 12, borderWidth: 1, padding: 16, ...shadow("sm", t) }),
   // Elevation separates the M3 elevated card, so the outline is transparent.
   borderedBorderColor: () => "transparent",
   // M3 medium container radius on the leading icon box.

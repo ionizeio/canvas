@@ -55,6 +55,8 @@ const platforms = platformBlocks(styles("platforms"));
 const typeDecls = declarationsIn(styles("typography"), ":root");
 const motionDecls = declarationsIn(styles("motion"), ":root");
 const shadowDecls = declarationsIn(styles("shadows"), ":root");
+// The ladder spells var(--shade); the frontmatter states the light palette's values.
+const lightColorDecls = declarationsIn(styles("colors"), ":root");
 const spacingDecls = declarationsIn(styles("spacing"), ":root");
 
 // ---------------------------------------------------------------------------
@@ -129,7 +131,7 @@ const elevation = () =>
   Object.fromEntries(
     Object.entries(shadowDecls)
       .filter(([name]) => name.startsWith("shadow"))
-      .map(([name, value]) => [name === "shadow" ? "base" : name.replace("shadow-", ""), value.trim()]),
+      .map(([name, value]) => [name === "shadow" ? "base" : name.replace("shadow-", ""), resolveVars(value, lightColorDecls).trim()]),
   ) as Record<string, string>;
 
 const motion = () =>

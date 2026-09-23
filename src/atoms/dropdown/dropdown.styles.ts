@@ -109,7 +109,7 @@ export const webSkin: DropdownSkin = {
     borderColor: t.border,
     backgroundColor: t.popover,
     padding: 8,
-    ...shadow("lg"),
+    ...shadow("lg", t),
   }),
   menuLabel: (t) => ({
     paddingHorizontal: 12,
@@ -173,7 +173,7 @@ export const iosSkin: DropdownSkin = {
     // rounded panel so they don't poke past the ~26pt corners. iOS still draws
     // the soft shadow outside these bounds.
     overflow: "hidden",
-    ...shadow("lg"),
+    ...shadow("lg", t),
   }),
   menuLabel: (t) => ({
     paddingHorizontal: 16,
@@ -233,7 +233,7 @@ export const androidSkin: DropdownSkin = {
     borderRadius: ANDROID_RADIUS,
     backgroundColor: t.popover,
     paddingVertical: 8,
-    ...shadow("md"),
+    ...shadow("md", t),
   }),
   menuLabel: (t) => ({
     paddingHorizontal: 16,

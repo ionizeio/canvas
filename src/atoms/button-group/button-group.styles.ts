@@ -225,7 +225,7 @@ export const webSkin: ButtonGroupSkin = {
       borderColor: t.border,
       backgroundColor: t.popover,
       padding: 8,
-      ...shadow("lg"),
+      ...shadow("lg", t),
     };
   },
   splitMenuItemPressed(t) {
@@ -355,7 +355,7 @@ export const iosSkin: ButtonGroupSkin = {
       borderColor: t.border,
       backgroundColor: t.popover,
       padding: 6,
-      ...shadow("lg"),
+      ...shadow("lg", t),
     };
   },
   splitMenuItemPressed(t) {
@@ -482,7 +482,7 @@ export const androidSkin: ButtonGroupSkin = {
       borderColor: t.border,
       backgroundColor: t.popover,
       paddingVertical: 8,
-      ...shadow("lg"),
+      ...shadow("lg", t),
     };
   },
   splitMenuItemPressed(t) {

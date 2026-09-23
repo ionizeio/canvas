@@ -1,15 +1,18 @@
 /* Elevation. One preset ladder, expressed on the web as boxShadow (the same
-   conversion react-native-web performs from the native shadow props). The Riskora
-   ladder is AMBIENT: no offset, a soft halo in the ink (the source's shadow effect is
-   a 0/0/20 drop at 10%); only `sm` keeps a 1px fall. Cards rest at sm; raised cards
-   go md; overlays sit at lg/xl. */
+   conversion react-native-web performs from the native shadow props). The ladder is
+   Dark Factory's: a shade cast straight down with a negative spread, so it pools under
+   the surface's lower edge instead of haloing it, in the palette's own shade (--shade in
+   colors.css: a violet wash in light, black in dark). sm is DF's tile, the default its
+   card, md its hovered card, lg its popover, and xl its dialog, the one top-layer shade,
+   black on every palette. Cards rest at the default; raised cards go md; overlays sit at
+   lg and xl. src/style/shadow.ts spells the same ladder. */
 :root{
   --shadow-none:none;
-  --shadow-sm:0px 1px 3px rgba(13,18,27,0.08);
-  --shadow:0px 0px 20px rgba(13,18,27,0.06);
-  --shadow-md:0px 0px 24px rgba(13,18,27,0.1);
-  --shadow-lg:0px 0px 40px rgba(13,18,27,0.14);
-  --shadow-xl:0px 0px 60px rgba(13,18,27,0.18);
+  --shadow-sm:0px 16px 32px -22px var(--shade);
+  --shadow:0px 20px 44px -24px var(--shade);
+  --shadow-md:0px 30px 54px -24px var(--shade);
+  --shadow-lg:0px 26px 50px -20px var(--shade);
+  --shadow-xl:0px 50px 100px -30px rgba(0,0,0,0.45);
   /* Focus: a 2px ring in the brand ring token, offset from the control. */
   --ring-width:2px;
   --ring-offset:2px;

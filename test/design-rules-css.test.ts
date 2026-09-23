@@ -13,7 +13,8 @@ import {
   shadowLayers,
   type PlatformKey,
 } from "../tools/tokens/css-tokens.ts";
-import { breakpoints, radius, shape, spacing, widths } from "../src/style/tokens.ts";
+import { breakpoints, darkColors, lightColors, radius, shape, spacing, widths } from "../src/style/tokens.ts";
+import { isRing, renderedContrast, shadeLayers, SHADE_LIMIT } from "../tools/tokens/shade.ts";
 
 // Design rules, CSS side: the web hand-off under styles/tokens.
 //
@@ -84,6 +85,16 @@ describe("nested corners", () => {
 describe("elevation in the hand-off", () => {
   const shadowsCss = read("shadows");
   const rootShadows = declarationsIn(shadowsCss, ":root");
+  // The shadows spell var(--shadow-*) over the palette's --shade, so each one is judged
+  // resolved against each palette, on that palette's page, card and popover.
+  const colorsCss = read("colors");
+  const palettes = [
+    { name: "light", decls: { ...declarationsIn(colorsCss, ":root"), ...rootShadows }, tokens: lightColors },
+    { name: "dark", decls: { ...declarationsIn(colorsCss, ":root"), ...declarationsIn(colorsCss, ".dark"), ...rootShadows }, tokens: darkColors },
+  ] as const;
+  // The top layer: the dialog's shade, a separator over a scrim or arbitrary content
+  // rather than depth on the page (like the scrims below, held to the direction rule only).
+  const isTopLayer = (name: string, raw: string) => name === "shadow-xl" || raw.includes("var(--shadow-xl)");
 
   // Every shadow the hand-off ships, from the ladder and from the per-OS skins.
   // Scrims are excluded by name: a scrim is a deliberate blackout behind a modal,
@@ -104,17 +115,21 @@ describe("elevation in the hand-off", () => {
 
   for (const [name, value] of everyShadow()) {
     it(`${name} is a diffuse shade cast from above`, () => {
-      for (const alpha of rgbaAlphas(value)) {
-        // Heavier than this and the shadow reads as a border, which is the "harsh
-        // dark drop shadow" defect rather than depth.
-        expect(alpha, `${name} alpha`).toBeLessThanOrEqual(0.2);
-      }
-      for (const layer of shadowLayers(value)) {
-        if (layer.inset) continue;
-        // One light source across the whole system: no horizontal offset, and the
-        // shade always falls downward.
-        expect(layer.x, `${name} x offset`).toBe(0);
-        expect(layer.y, `${name} y offset`).toBeGreaterThanOrEqual(0);
+      for (const palette of palettes) {
+        const layers = shadeLayers(resolveVars(value, palette.decls));
+        for (const layer of layers) {
+          if (layer.inset) continue;
+          // One light source across the whole system: no horizontal offset, and the
+          // shade always falls downward.
+          expect(layer.x, `${name} x offset`).toBe(0);
+          expect(layer.y, `${name} y offset`).toBeGreaterThanOrEqual(0);
+          // Heavier than this, as rendered, and the shadow reads as a border, which is the
+          // "harsh dark drop shadow" defect rather than depth.
+          if (isRing(layer) || isTopLayer(name, value)) continue;
+          for (const surface of [palette.tokens.background, palette.tokens.card, palette.tokens.popover]) {
+            expect(renderedContrast(layer, surface), `${name} on the ${palette.name} ${surface}`).toBeLessThanOrEqual(SHADE_LIMIT);
+          }
+        }
       }
     });
   }
@@ -130,9 +145,11 @@ describe("elevation in the hand-off", () => {
       ["shadow-xl", "xl"],
     ];
     const flat = (v: string) => v.replace(/\s+/g, "");
-    for (const [token, level] of pairs) {
-      const js = (shadow(level as never) as { boxShadow?: string }).boxShadow ?? "";
-      expect(flat(rootShadows[token] ?? ""), `--${token}`).toBe(flat(js));
+    for (const palette of palettes) {
+      for (const [token, level] of pairs) {
+        const js = (shadow(level as never, palette.tokens) as { boxShadow?: string }).boxShadow ?? "";
+        expect(flat(resolveVars(rootShadows[token] ?? "", palette.decls)), `${palette.name} --${token}`).toBe(flat(js));
+      }
     }
   });
 });

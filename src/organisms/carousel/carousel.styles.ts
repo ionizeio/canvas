@@ -61,7 +61,7 @@ export const webSkin: CarouselSkin = {
       backgroundColor: tokens.card,
       borderWidth: 1,
       borderColor: tokens.border,
-      ...shadow("sm"),
+      ...shadow("sm", tokens),
     };
   },
   arrowIconSize: 18,

@@ -33,7 +33,9 @@ function mix(a: string, b: string, t: number): string {
 // and the thumb becomes the measured liquid puck that travels between destinations
 // (real Liquid Glass on iOS 26, the lens on Chromium). Icons 22pt over ~10pt SF labels;
 // press = dim.
-const FLOATING_BAR: ViewStyle = { borderWidth: StyleSheet.hairlineWidth, borderRadius: 9999, paddingTop: 4, paddingHorizontal: 4, minHeight: 58, ...shadow("md") };
+function floatingBar(t: ColorTokens): ViewStyle {
+  return { borderWidth: StyleSheet.hairlineWidth, borderRadius: 9999, paddingTop: 4, paddingHorizontal: 4, minHeight: 58, ...shadow("md", t) };
+}
 const FLOATING: NonNullable<TabBarSkin["floating"]> = { horizontal: 16, bottom: 8, clearance: 12 };
 const CELL_SHADOW: ViewStyle = customShadow({ offsetY: 1, radius: 2, opacity: 0.18, elevation: 2 });
 
@@ -46,7 +48,7 @@ function cellThumb(t: ColorTokens, dark: boolean): ViewStyle {
 }
 
 export const iosSkin: TabBarSkin = {
-  bar: FLOATING_BAR,
+  bar: floatingBar,
   fill: floatingFill,
   floating: FLOATING,
   item: { flex: 1, alignItems: "center", justifyContent: "center", gap: 3, paddingVertical: 6, borderRadius: 9999 },
@@ -71,7 +73,7 @@ export const webSkin: TabBarSkin = {
 // Material 3 navigation bar: docked and full-bleed, taller, M3 label type with positive
 // tracking, brand ripple, no top hairline (M3 elevates the bar instead).
 export const androidSkin: TabBarSkin = {
-  bar: { borderTopWidth: 0, paddingTop: 8, minHeight: 64 },
+  bar: () => ({ borderTopWidth: 0, paddingTop: 8, minHeight: 64 }),
   item: { flex: 1, alignItems: "center", justifyContent: "center", gap: 4, paddingVertical: 10 },
   label: (active) => ({ fontSize: 12, lineHeight: 16, fontWeight: active ? "600" : "500", letterSpacing: 0.5 }),
   ripple: (t: ColorTokens) => ({ color: alpha(t.primary, 0.12), borderless: true, radius: 36 }),

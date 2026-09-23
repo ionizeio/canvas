@@ -125,7 +125,7 @@ export const webSkin: StackedListSkin = {
     borderColor: t.border,
     backgroundColor: t.card,
     overflow: "hidden",
-    ...shadow("DEFAULT"),
+    ...shadow("DEFAULT", t),
   }),
   rowBase: { ...ROW, gap: 12, paddingHorizontal: 20, paddingVertical: 12 },
   rowDivider: (t) => ({ position: "absolute", left: 0, right: 0, bottom: 0, height: 1, backgroundColor: t.border }),

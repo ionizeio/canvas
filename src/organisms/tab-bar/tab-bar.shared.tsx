@@ -55,7 +55,7 @@ export interface TabBarProps {
 
 export interface TabBarSkin {
   /** Bar shape: hairline, radius, min height and padding (the fill/border colors come from `fill`). */
-  bar: ViewStyle;
+  bar: (tokens: ColorTokens) => ViewStyle;
   /**
    * Bar fill and border colors from the active tokens. Solid mode paints them; under
    * glass the material replaces the fill and the border is the rim. Defaults to the
@@ -116,10 +116,11 @@ export function createTabBar(skin: TabBarSkin) {
     // the bottom and adds the safe-area inset there, so the item row stays vertically centered
     // (top margin == bottom margin) while the bar still extends down to cover the home
     // indicator. A floating capsule keeps its symmetric padding and puts the inset UNDER it.
-    const basePad = typeof skin.bar.paddingTop === "number" ? skin.bar.paddingTop : 0;
+    const barBase = skin.bar(tokens);
+    const basePad = typeof barBase.paddingTop === "number" ? barBase.paddingTop : 0;
     const floating = skin.floating;
     const barStyle: StyleProp<ViewStyle> = [
-      skin.bar,
+      barBase,
       { borderColor: fill.borderColor ?? tokens.border, backgroundColor: fill.backgroundColor },
       floating ? { paddingBottom: basePad } : { alignSelf: "stretch", width: "100%", paddingBottom: basePad + bottomInset },
     ];

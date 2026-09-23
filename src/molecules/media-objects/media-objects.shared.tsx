@@ -64,7 +64,7 @@ export interface MediaObjectSkin {
   containerBase: ViewStyle;
   /** Bordered card shape, padding, and elevation. Shared rendering supplies static
    *  content frost in glass mode and the opaque token fill for solid fallback. */
-  borderedSurface: ViewStyle;
+  borderedSurface: (tokens: ColorTokens) => ViewStyle;
   /** bordered-card border-color resolver. web/iOS paint the hairline tokens.border; on
    *  Android the M3 ELEVATED card separates by elevation, not an outline, so it returns
    *  "transparent" while keeping the border WIDTH so content metrics stay identical
@@ -197,11 +197,12 @@ export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent
 
     // The row's visual box WITHOUT outer layout. On a bordered row the rounded surface
     // (and its elevation) live in `skin.borderedSurface`.
+    const bordered = props.bordered ? skin.borderedSurface(tokens) : null;
     const surface: StyleProp<ViewStyle> = [
       skin.containerBase,
       density?.containerBase,
       { flexDirection: DIRECTION_ROW[direction], alignItems: ALIGN_ITEMS[align] },
-      props.bordered ? [skin.borderedSurface, borderedColors(tokens, skin)] : null,
+      bordered ? [bordered, borderedColors(tokens, skin)] : null,
     ];
 
     // Leading media: photo > initials avatar > icon box. Only one renders. A photo
@@ -262,12 +263,10 @@ export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent
       // (Android only; a same-node overflow:"hidden" cannot clip it — see src/style/ripple-clip).
       // That parent-clip would cut the child's own Android elevation shadow, so the bordered
       // surface's `elevation` moves to the wrapper while the inner keeps the iOS `shadow*`.
-      const borderedElevation = props.bordered
-        ? { elevation: (StyleSheet.flatten(skin.borderedSurface) as ViewStyle).elevation }
-        : null;
+      const borderedElevation = bordered ? { elevation: bordered.elevation } : null;
       const { parent: elevParent, child: elevZero } = splitElevation(borderedElevation);
       return (
-        <RippleClip shape={props.bordered ? cornerRadii(skin.borderedSurface) : undefined} style={[elevParent, fill, style]}>
+        <RippleClip shape={bordered ? cornerRadii(bordered) : undefined} style={[elevParent, fill, style]}>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={a11yLabel}

@@ -24,7 +24,7 @@ export function surface(tokens: ColorTokens, radius: number): ViewStyle {
     borderWidth: 1,
     borderColor: tokens.border,
     backgroundColor: tokens.card,
-    ...shadow("sm"),
+    ...shadow("sm", tokens),
   };
 }
 

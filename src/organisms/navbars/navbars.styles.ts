@@ -58,7 +58,7 @@ export const webSkin: NavbarSkin = {
       case "bordered":
         return { borderRadius: shape.web.card, borderWidth: 1, borderColor: tokens.border };
       case "floating":
-        return { borderRadius: shape.web.card, borderWidth: 1, borderColor: tokens.border, ...shadow("md") };
+        return { borderRadius: shape.web.card, borderWidth: 1, borderColor: tokens.border, ...shadow("md", tokens) };
     }
   },
 
@@ -142,7 +142,7 @@ export const iosSkin: NavbarSkin = {
       case "bordered":
         return { borderRadius: 10, borderWidth: 1, borderColor: tokens.border };
       case "floating":
-        return { borderRadius: 10, borderWidth: 1, borderColor: tokens.border, ...shadow("sm") };
+        return { borderRadius: 10, borderWidth: 1, borderColor: tokens.border, ...shadow("sm", tokens) };
     }
   },
 
@@ -224,7 +224,7 @@ export const androidSkin: NavbarSkin = {
       case "bordered":
         return { borderRadius: 12, borderWidth: 1, borderColor: tokens.border };
       case "floating":
-        return { borderRadius: 12, ...shadow("md") };
+        return { borderRadius: 12, ...shadow("md", tokens) };
     }
   },
 

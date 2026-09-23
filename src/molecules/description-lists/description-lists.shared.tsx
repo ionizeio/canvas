@@ -139,7 +139,7 @@ export interface DescriptionListSkin {
   /** Card corner curve: iOS continuous (superellipse); circular elsewhere (no-op off iOS). */
   cardCurve: "circular" | "continuous";
   /** Card surface elevation: a soft shadow on web, flat on the iOS grouped list + Material 3. */
-  cardShadow: ViewStyle;
+  cardShadow: (tokens: ColorTokens) => ViewStyle;
   /** Vertical gap between rows (and the rows-under-header group). */
   rowGap: number;
   /** Card inner padding: all sides for a header-less card, horizontal inset for the header band + rows. */
