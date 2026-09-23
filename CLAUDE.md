@@ -3,6 +3,59 @@
 Canvas is a React Native UI kit, published as `@ionizeio/canvas`. It runs
 universally: native on iOS and Android, and on the web through React Native Web.
 
+## Design language: Dark Factory
+
+On 2026-09-23 the owner decided that Canvas takes the Dark Factory (DF) UI
+(`~/Workspaces/Dark Factory`: the component library `Ui/Components`, the app
+`Apps/Argus`, its `/ui` playground on http://localhost:8090 under `bun run dev`). The
+migration lands in ordered phases on main; until a phase lands, the code it covers
+still shows the Riskora look it replaces, and the sections below describe that code
+until the phase that changes it rewrites them. These decisions bind all new work now:
+
+1. **Tokens.** DF's tokens replace Canvas's own brand on web, iOS and Android: the
+   Riskora palette, Urbanist and the Riskora Figma parity go. `primary` is DF's violet
+   (selection, checked, current, links, focus); a new optional `action` role carries
+   DF's green (call-to-action buttons, meters, count badges) and derives from an
+   overriding `primary`. Palettes: blush (the light default), mint (a `ThemeProvider
+   mint` palette), and DF's one dark palette (`dark` wins over `mint`).
+2. **Web.** Every component takes DF's full look on the web.
+3. **iOS and Android.** A component keeps its iOS 27 or Material 3 shape only on a
+   platform that ships a real control for its job (the rows of
+   `PLATFORM-REFERENCES.md`), redrawn in DF's colors and Manrope; everywhere else its
+   native skin is the DF look, aliasing the web skin. Every Canvas native skin is
+   hand-drawn, so a look-alike of a control the platform lacks has no claim to a
+   native shape.
+4. **Type.** Manrope everywhere, at DF's dense sizes (body 12.5, labels 11 to 12). The
+   reading floors are the platforms' smallest reading styles (body and lead 12, small
+   11, tiny and caption 10) by the owner's decision; the 10 px source floor stays, so
+   DF's 9.5 px eyebrows render at 10.
+5. **One job, different control.** Where the idiomatic control for a job differs by
+   platform or form factor, the component renders that control: a standalone Checkbox
+   renders the platform switch on iOS and Android, option lists use trailing
+   checkmarks on iOS and Material 3 checkboxes on Android, Radio is a checkmark list
+   on iOS, overlays become sheets on phones. Substitution lives in the platform entry
+   files (`createX(skin, parts)` parts injection), never in a `Platform.OS` branch in
+   a shared shell, so the docs' three-up shows each platform truthfully.
+6. **Glass.** The web's glass is DF's plain frost (white over a 24 px blur, a 1 px
+   inset hairline); the Chromium lens goes. iOS Liquid Glass and the Android blur keep
+   their own material and tints.
+7. **Page look.** DF's page (the pastel gradient, the blurred orbs, the frosted shell)
+   is docs-only scaffolding and static; no page, shell or backdrop component enters
+   the kit.
+8. **Examples.** A docs example is shown only when an existing kit component fits it;
+   never create a kit component to satisfy an example (see "Dogfood the kit").
+9. **Hover.** DF's hover lifts are ported (a card rises 2 px over 180 ms with its
+   shadow in step, a primary button 1 px over 150 ms, a nav row's wash fades in over
+   150 ms) as compositor-only transitions tuned against the `df-hover-lift` card; the
+   rest of the motion section stands.
+
+The reference cards for everything judged by eye (`df-argus-shell`, `df-frost`,
+`df-hover-lift`, `df-avatar`) are in `tools/native/liquid-motion.md` under
+`## References`, their strips under `tools/native/reference/df-*`. Deprecated public
+names (JS exports and `styles/*` custom properties) keep working as aliases until the
+owner authorizes a major. Why: the owner prefers DF's components, and a native shape
+is only worth keeping where the platform itself defines one.
+
 ## React-Native-everywhere principle
 
 Everything here is built in React Native, so one codebase renders on iOS, Android,
@@ -41,6 +94,12 @@ principle above: one component API and one codebase, with each platform's own ma
 underneath. Why: an emulated iOS or Android surface is a look-alike, and the kit's
 whole claim is that it is the real thing on each OS.
 
+Which components keep an iOS or Material 3 shape follows the design language above:
+the HIG and Material 3 metrics apply on a platform that ships the real control for the
+job, and the native skin is the DF look everywhere else. The native machinery (Liquid
+Glass, the frosted blur, hardware back, scroll physics, the ripple) stays on every
+component, whichever look its skin draws.
+
 ## Dogfood the kit: every UI element is a Canvas component
 
 A claude prime global directive. Every UI element used anywhere in this repo, the
@@ -66,6 +125,14 @@ only bespoke UI allowed is genuinely docs-only infrastructure with no kit equiva
 authorized platform escape hatches. Why: the docs are the kit's own showcase and proof
 of the API; a duplicated control both misrepresents how to build with Canvas and hides
 a missing kit feature.
+
+Examples are the one narrowing (the owner's 2026-09-23 decision): a docs example, a
+pattern section or a catalog tile is shown only when an existing kit component fits
+it. Never create a kit component just to satisfy an example; when nothing fits, the
+example is not shown. The docs' page frame (the DF page look: backdrop, frosted
+shell, the frame around the examples) is docs-only scaffolding under the same rule:
+use a kit component wherever one fits, and never add one to the kit for the frame.
+A real functional gap (a date field, a selection mode) is still built in the kit.
 
 ## Highly responsive
 
@@ -210,17 +277,18 @@ applied together.
 
 Glass is NOT a per-component axis: it is a theming-level surface mode, like the
 light/dark scheme, and the `ThemeProvider` spells it in the same boolean grammar as
-every component axis: `<ThemeProvider glass>` forces it on (the lens or frost
-material on non-iOS-26 platforms), `<ThemeProvider solid>` forces the flat look, and passing neither
+every component axis: `<ThemeProvider glass>` requests the role-appropriate material
+where supported, `<ThemeProvider solid>` requests the complete opaque appearance, and passing neither
 resolves to the PLATFORM DEFAULT: **glass on iOS 26+** (Apple makes Liquid Glass the
-system material there, so a Canvas app matches the OS), and **solid everywhere else**
-(web, Android, iOS < 26, Reduce Transparency). `glass` wins if both are passed. The
-legacy `surface="solid" | "glass"` value prop remains supported for config-driven code
-holding a `Surface` value, and on the web the DOM helper is `setSurface("glass")` /
-`setSurface("solid")`. The scheme axis speaks the same grammar: `<ThemeProvider dark>` /
-`<ThemeProvider light>` force a scheme (`dark` wins if both are passed), omitting both
-follows the OS appearance, and the legacy `scheme` value prop is likewise supported.
-The platform default is computed from `liquidGlassAvailable()` (exported from the kit).
+system material for the functional layer there, so a Canvas app matches the OS), and
+**solid everywhere else** (web, Android, iOS < 26, Reduce Transparency). `glass`
+wins if both are passed. The legacy `surface="solid" | "glass"` value prop remains
+supported for config-driven code holding a `Surface` value, and on the web the DOM
+helper is `setSurface("glass")` / `setSurface("solid")`. The scheme axis speaks the
+same grammar: `<ThemeProvider dark>` / `<ThemeProvider light>` force a scheme
+(`dark` wins if both are passed), omitting both follows the OS appearance, and the
+legacy `scheme` value prop is likewise supported. The platform default is computed from
+`liquidGlassAvailable()` (exported from the kit).
 
 Under glass EVERY surface renders through the material, layered. The model has four
 layers, each with its own under-fill token (`glass-tint*` in `src/style/tokens.ts`,
@@ -276,6 +344,36 @@ fills return the skin's own style, so the solid tree is byte-identical to the
 pre-glass one. Under Reduce Transparency or Increase Contrast every layer degrades to
 its opaque token (`styles/tokens/surface.css` and the accessibility ladder in
 `glass-surface.shared.tsx`).
+
+The material contract is role-based, not component-name-based. In glass mode,
+intentional content panels and text-entry wells use stable static glass; functional
+controls, navigation and overlays may use Liquid Glass. Persistent content, text,
+icons, images and chart marks never acquire liquid deformation. Layout wrappers and
+deliberately unfilled variants inherit their surroundings without another pane.
+The semantic `card` and `popover` tokens stay opaque in every mode; shared material
+rendering owns glass fills instead of rewriting those tokens.
+
+Keep role, density, renderer capability and motion separate. Use supported native
+Liquid Glass through `expo-glass-effect` on iOS where appropriate, supported native
+frost through `expo-blur`, the optional `@ionizeio/canvas-blur` capture integration on
+Android 12+ (Expo SDK 57), and the shared web material paths. Android blur requires
+safe live backdrop ownership; no material may sample itself. A browser skin preview is
+not native evidence, and tint without blur is not proof of a native material.
+
+Solid is a complete primary appearance and fallback: opaque fill, matching
+foreground/state colors, boundaries and elevation. A resolved solid surface mounts
+no glass capture, refraction, specular layer or droplet animation. Missing or unsafe
+material capability must restore that complete treatment, preserving layout, refs,
+focus, input values, open state and scroll position in both mode directions.
+Reduce Transparency and Increase Contrast require readable opaque treatment;
+Reduce Motion removes nonessential fluid motion without requiring opacity by itself.
+
+Prefer native feedback. Native Liquid Glass may remain still; custom press swelling
+or connected splitting/merging is not implied by a click handler, and solid mode keeps
+its native feedback. `tools/materials/manifest.ts` records the intended role and
+verification obligation of every public renderable. `bun run check:materials`
+reconciles it with exports and docs routes; inventory coverage is not an
+implementation or runtime-verification pass.
 
 Do not add a per-component `glass` prop and do NOT hand-paint glass (backdrop-filter,
 specular edges, a translucent fill of your own) onto individual components: route a
@@ -410,6 +508,15 @@ is one React commit per frame at default priority and React never expires a retr
 lane, so a spring running beside a Suspense boundary held the whole body back (the
 sidebar pill cost every component page 1.3 s per click); the owner judged the
 animations not worth that and had them deleted rather than re-engineered.
+
+On 2026-09-23 the owner added one new decision on top of that: Dark Factory's hover
+lifts are ported (the design language's item 9). They are hover feedback, not the
+removed liquid motion, and they run the way the loop primitive does: a transform and
+shadow transition the compositor animates on the web (the style switches on hover and
+the browser interpolates, so nothing commits through React per frame) and the native
+driver for pointer hover on iPad, with their values in `src/style/motion.ts` and every
+change judged against the `df-hover-lift` card. The DF page look in the docs is static
+scaffolding (item 7); it never animates.
 
 Effects that remain judged by eye (the glass material and its lens, a gradient, a
 new functional transition) still go through the global `tuning-harness` skill:

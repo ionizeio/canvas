@@ -3,6 +3,59 @@
 Canvas is a React Native UI kit, published as `@ionizeio/canvas`. It runs
 universally: native on iOS and Android, and on the web through React Native Web.
 
+## Design language: Dark Factory
+
+On 2026-09-23 the owner decided that Canvas takes the Dark Factory (DF) UI
+(`~/Workspaces/Dark Factory`: the component library `Ui/Components`, the app
+`Apps/Argus`, its `/ui` playground on http://localhost:8090 under `bun run dev`). The
+migration lands in ordered phases on main; until a phase lands, the code it covers
+still shows the Riskora look it replaces, and the sections below describe that code
+until the phase that changes it rewrites them. These decisions bind all new work now:
+
+1. **Tokens.** DF's tokens replace Canvas's own brand on web, iOS and Android: the
+   Riskora palette, Urbanist and the Riskora Figma parity go. `primary` is DF's violet
+   (selection, checked, current, links, focus); a new optional `action` role carries
+   DF's green (call-to-action buttons, meters, count badges) and derives from an
+   overriding `primary`. Palettes: blush (the light default), mint (a `ThemeProvider
+   mint` palette), and DF's one dark palette (`dark` wins over `mint`).
+2. **Web.** Every component takes DF's full look on the web.
+3. **iOS and Android.** A component keeps its iOS 27 or Material 3 shape only on a
+   platform that ships a real control for its job (the rows of
+   `PLATFORM-REFERENCES.md`), redrawn in DF's colors and Manrope; everywhere else its
+   native skin is the DF look, aliasing the web skin. Every Canvas native skin is
+   hand-drawn, so a look-alike of a control the platform lacks has no claim to a
+   native shape.
+4. **Type.** Manrope everywhere, at DF's dense sizes (body 12.5, labels 11 to 12). The
+   reading floors are the platforms' smallest reading styles (body and lead 12, small
+   11, tiny and caption 10) by the owner's decision; the 10 px source floor stays, so
+   DF's 9.5 px eyebrows render at 10.
+5. **One job, different control.** Where the idiomatic control for a job differs by
+   platform or form factor, the component renders that control: a standalone Checkbox
+   renders the platform switch on iOS and Android, option lists use trailing
+   checkmarks on iOS and Material 3 checkboxes on Android, Radio is a checkmark list
+   on iOS, overlays become sheets on phones. Substitution lives in the platform entry
+   files (`createX(skin, parts)` parts injection), never in a `Platform.OS` branch in
+   a shared shell, so the docs' three-up shows each platform truthfully.
+6. **Glass.** The web's glass is DF's plain frost (white over a 24 px blur, a 1 px
+   inset hairline); the Chromium lens goes. iOS Liquid Glass and the Android blur keep
+   their own material and tints.
+7. **Page look.** DF's page (the pastel gradient, the blurred orbs, the frosted shell)
+   is docs-only scaffolding and static; no page, shell or backdrop component enters
+   the kit.
+8. **Examples.** A docs example is shown only when an existing kit component fits it;
+   never create a kit component to satisfy an example (see "Dogfood the kit").
+9. **Hover.** DF's hover lifts are ported (a card rises 2 px over 180 ms with its
+   shadow in step, a primary button 1 px over 150 ms, a nav row's wash fades in over
+   150 ms) as compositor-only transitions tuned against the `df-hover-lift` card; the
+   rest of the motion section stands.
+
+The reference cards for everything judged by eye (`df-argus-shell`, `df-frost`,
+`df-hover-lift`, `df-avatar`) are in `tools/native/liquid-motion.md` under
+`## References`, their strips under `tools/native/reference/df-*`. Deprecated public
+names (JS exports and `styles/*` custom properties) keep working as aliases until the
+owner authorizes a major. Why: the owner prefers DF's components, and a native shape
+is only worth keeping where the platform itself defines one.
+
 ## React-Native-everywhere principle
 
 Everything here is built in React Native, so one codebase renders on iOS, Android,
@@ -41,9 +94,15 @@ principle above: one component API and one codebase, with each platform's own ma
 underneath. Why: an emulated iOS or Android surface is a look-alike, and the kit's
 whole claim is that it is the real thing on each OS.
 
+Which components keep an iOS or Material 3 shape follows the design language above:
+the HIG and Material 3 metrics apply on a platform that ships the real control for the
+job, and the native skin is the DF look everywhere else. The native machinery (Liquid
+Glass, the frosted blur, hardware back, scroll physics, the ripple) stays on every
+component, whichever look its skin draws.
+
 ## Dogfood the kit: every UI element is a Canvas component
 
-A Codex prime global directive. Every UI element used anywhere in this repo, the
+A claude prime global directive. Every UI element used anywhere in this repo, the
 docs app included, must be a Canvas component (or one of the kit's primitives:
 `View`, `Text`, `Pressable`, `TextInput`, `ScrollView`), never a hand-rolled
 look-alike. (`Image` graduated from a primitive to a Canvas atom that wraps RN's
@@ -67,6 +126,14 @@ authorized platform escape hatches. Why: the docs are the kit's own showcase and
 of the API; a duplicated control both misrepresents how to build with Canvas and hides
 a missing kit feature.
 
+Examples are the one narrowing (the owner's 2026-09-23 decision): a docs example, a
+pattern section or a catalog tile is shown only when an existing kit component fits
+it. Never create a kit component just to satisfy an example; when nothing fits, the
+example is not shown. The docs' page frame (the DF page look: backdrop, frosted
+shell, the frame around the examples) is docs-only scaffolding under the same rule:
+use a kit component wherever one fits, and never add one to the kit for the frame.
+A real functional gap (a date field, a selection mode) is still built in the kit.
+
 ## Highly responsive
 
 Canvas is highly responsive by default. Every component must adapt cleanly across
@@ -76,6 +143,93 @@ Responsiveness is a core requirement of every component, not an optional add-on.
 Author desktop-first: lay out and size each component for the desktop case first,
 then add the responsive variants that scale it down to tablet and phone. This is
 the inverse of mobile-first.
+
+### Sizing: the parent provides the bounds
+
+A component never dictates its own width. Every component root declares a sizing
+nature from `src/style/sizing.ts`, and the nearest layout container provides the
+bounds, which is Bootstrap's contract (`.container` > `.row` > `.col-*` size the
+box, `.form-control` is `width: 100%`):
+
+- **FILL** (`useFillStyle` / `FILL`: `width:"100%"`, `flexShrink:1`, `minWidth:0`):
+  fills a Column, shares a Row with hugging siblings (a field beside a button takes
+  the remainder), splits a Row equally with other fill siblings, takes its own line
+  in a wrap Row. Fields, cards, alerts, lists, tables, charts, feeds, forms, the
+  calendar.
+- **HUG** (`useHugStyle` / `useSizing({ block })`): the content's own width. Button,
+  Badge, Chip, Kbd, ButtonGroup, Dropdown, Tooltip, QRCode, Stepper, InputOTP, the
+  Typography code role; `block` turns the hug components that offer it into FILL.
+  HUG resolves against the layout-axis context the kit containers publish:
+  `alignSelf:"flex-start"` inside a stretching Column and nothing anywhere else,
+  because Yoga ignores `width:"fit-content"` against a stretching parent and a bare
+  `alignSelf` pins a Row child to the top of a centered Row (both verified on iOS).
+  Never write a static `alignSelf:"flex-start"` on a component root.
+
+Only the **layout containers** carry widths, from the one width scale (`widths` in
+`src/style/tokens.ts`: Tailwind's `max-w` values copied by hand, `xxxs` 192 through
+`page` 1280): `Container` (full width by default; a step caps and centers it, `start`
+pins it), Row
+children's `span={1..12}` (container-measured px cells with the gaps in the math,
+`stacks` ignores spans once stacked), `Grid` tiles, and the shells and floating
+overlays (Sidebar, FilterPanel, Dialog, AlertDialog, Popover, Command) that are
+bounds providers for their own content. Non-layout components take `LayoutStyle`
+for `style` (ViewStyle without width, min/max width, flex, and alignSelf), so a
+width shim at a call site is a type error; the docs generator rejects the same keys
+in a fence on any non-layout tag; and `test/design-rules-source.test.ts` keeps the
+render-at-a-width pair (`{ width: N, maxWidth: "100%" }`) and off-scale caps out of
+the kit. The one parent that still collapses `width:"100%"` is a content-sized cell
+(a bare Column or Row inside a Row); `useFillStyle` warns there in development, and
+a Select opts out because hugging its value is the toolbar cell (`.col-auto`).
+
+The **measure axis** (`MeasureProps` in `src/style/sizing.ts`) is the one way a
+component names a width of its own, and it is Container's cap moved onto the
+component, not a width: the same step booleans (`xxxs` .. `page`) and `start`, on
+Input, Textarea, Select, Autocomplete, Listbox, Slider, Progress, Field, Form,
+Button, and ButtonGroup. `<Input sm start>` is FILL capped at 384 (`maxWidth`),
+fluid below it, exactly what `<Container sm start>` around it gives; without a step
+nothing changes. The precedence is Container's (narrowest wins, `stepOf` reads the
+scale's own order), a step centers and `start` pins, and two rules follow from the
+component not being a layout container: inside a Row only the cap applies
+(`alignSelf` is the cross axis there), and on the hug components a step wins over
+`block`. A new adopter extends `MeasureProps` and passes its props to
+`useFillStyle` / `useSizing`; do not add a second width vocabulary (`narrow`,
+`wide` as a field width, a pixel prop) beside it.
+
+### The responsiveness system (three mechanisms, in order of preference)
+
+1. **Intrinsic sizing** (default, zero JS): FILL or HUG on the component, bounds
+   from the parent (a Container step, a Row span, a Grid cell), `minWidth` floors
+   plus `flexWrap` (Stats). Zero re-renders, correct in any DEFINITE container,
+   correct on frame one and on the server. Never give a component root a fixed
+   width, and never make a parent content-sized where a fill child must resolve
+   (the old `field-width.ts` post-mortem: a text field in such a parent re-sized on
+   every keystroke; the docs stage is definite for exactly that reason).
+2. **Container measurement** (components that switch layout): measure the
+   component's OWN width via `useContainerBreakpoint` / `useMeasuredWidth` /
+   `useContainerWidth` (`src/style/container.ts`), never the window; a component
+   cannot know whether it is on a phone or in a 320px desktop panel. Render the
+   `base` (desktop) variant on the unmeasured frame; gate on `measured` only
+   where the base variant is unrenderable (chart geometry).
+3. **Viewport breakpoints** (window-level chrome only): `useBreakpoint`,
+   `useFormFactor` (phone <= sm 640 / tablet <= lg 1024 / desktop above; macOS
+   and desktop web ARE the desktop form factor), `useResponsive`
+   (`src/style/responsive.tsx`, one shared subscription, bucket-granular
+   re-renders; width <= 0 resolves to `base`; SSR apps pass ThemeProvider's
+   `ssrBreakpoint`). Only the Sidebar/FilterPanel drawer modes and app shells
+   qualify. Pointer capability comes from `usePointerCoarse` /
+   `useHoverCapable` (`src/style/pointer.ts`).
+
+Layout at call sites: a measure is a `Container` step (never a `maxWidth` on a
+component or a raw `View`); a two-up split is a Row of `span` children; equal-width
+tiles that renumber columns are `Grid` (`minTileWidth` floor + `columns` cap,
+container-measured); content-sized rows that stack at narrow widths are `Row stacks`
+(+ `stackBreakpoint`); a hugging toolbar cell is a bare `Column` inside a Row.
+Responsive props follow the boolean grammar (`stacks`, `responsive`) with
+`BreakpointKey`-valued config props (`stackBreakpoint`, `drawerBreakpoint`);
+`Responsive<T>`-valued component props are rejected (compose the public hooks
+in app code instead), and so are per-breakpoint spans (a stacked Row is the
+`col-12 col-md-6` idiom; finer reflow is Grid's). Rule of thumb: viewport for the
+shell, container for the components, intrinsic wherever possible.
 
 ## Semantic prop styling
 
@@ -136,6 +290,61 @@ same grammar: `<ThemeProvider dark>` / `<ThemeProvider light>` force a scheme
 legacy `scheme` value prop is likewise supported. The platform default is computed from
 `liquidGlassAvailable()` (exported from the kit).
 
+Under glass EVERY surface renders through the material, layered. The model has four
+layers, each with its own under-fill token (`glass-tint*` in `src/style/tokens.ts`,
+`--glass-tint*` in `styles/tokens/colors.css`), from sheer to dense:
+
+- **Functional** (`glass-tint`, the sheer tint): the floating shells and overlays,
+  Navbar, TabBar, Sidebar, Dialog, ActionSheet, Drawer, Popover, Command, the
+  calendar peek, and a Tabs track. They float above everything else.
+- **Content** (`glass-tint-content`, denser, "legible first"): the panes, Card,
+  DataTable, the lists, feeds, stats, description lists, grid-list tiles, board
+  columns, calendars, code blocks, carousels, alerts, empty states, the charts, the
+  bordered FilterPanel, and the docs stage. A tinted pane (a selected Card, a toned
+  Alert) passes a `tint`.
+- **Control** (`glass-tint-control`, the bright "puck"): every control that paints a
+  surface of its own, the field boxes (Input, Textarea, Select, Autocomplete,
+  PhoneInput, Stepper, InputOTP), Button, ButtonGroup, Tabs pills, Pagination cells,
+  Chip, Badge, Kbd, Switch tracks, Checkbox boxes, Radio rings, Progress rails, Steps
+  circles, the Slider knob, the Avatar. A BRAND fill (a primary or destructive Button,
+  a checked Switch or Checkbox, a selected tab, page, day or step) is brand-tinted
+  glass: `brand={tokens.primary}`, whose under-fill `brandTint` keeps as sheer as its
+  ink's WCAG 4.5:1 allows (on iOS 26 it is the GlassView's own `tintColor`). A HUE
+  wash (a status Badge, a coloured Chip) is the hue's 500 step at `HUE_WASH` with the
+  label one step deeper than the solid recipe. A control with no surface of its own
+  (a ghost or link Button, the iOS pagination chevrons) stays bare.
+- **Dense** (`glass-tint-dense`, the densest tint): the surfaces a user reads and
+  acts on, the option lists (Dropdown, Select, Autocomplete, RowMenu, the SplitButton
+  overflow, the PhoneInput country list, AvatarMenu), AlertDialog, Toast, Tooltip, the
+  chart value flag. AnchoredOverlay selects it with `dense`. The two INVERSE surfaces
+  (the Tooltip bubble, the M3 snackbar) take `inverseDenseTint`, the ink at the dense
+  alpha, so their inverse text keeps its contrast.
+
+Those surfaces render through the shared `GlassSurface` primitive
+(`src/style/glass-surface`), which paints the active material per platform: Apple's
+real native Liquid Glass via `expo-glass-effect` on iOS 26+, a real LENS on Chromium
+web (an SVG displacement filter applied as the material's backdrop-filter, refraction
+concentrated at the rim; `glass-lens.ts`, no module needed), a genuine frosted blur
+via `expo-blur` on non-Chromium web, Android, and iOS < 26, and the layer's tint fill
+as a fallback when no material is available. Pass it the skin's shape style (it
+strips the fill and border and supplies the material) and its `layer`. Where the node
+that paints the surface also owns something else (a Pressable's tap, ripple and dim,
+a live region, a native TextInput), keep that node and render a `GlassPane` (the same
+material as a sibling BEHIND its content, `layer` + `shape` + optional `tint` /
+`brand`) as its first child, with `paneStyle` dropping the node's own fill and border
+under glass; a TextInput beside a pane takes `PANE_SIBLING_INPUT`. Fills INSIDE a
+glass surface (a hovered or selected row, a header band, a stripe, a code pill, a
+placeholder) go through `innerFill` / `withInnerFill`, which turn the opaque `muted` /
+`secondary` / `accent` roles into ink tints under glass so they never sit as opaque
+patches on the material. A state border (a focus ring, an error edge, an open
+trigger, the current step) stays over the pane; a resting hairline drops, the
+material's rim is the edge. In solid mode every one of these renders nothing extra:
+`GlassSurface` is the plain box, `GlassPane` renders null, `paneStyle` and the inner
+fills return the skin's own style, so the solid tree is byte-identical to the
+pre-glass one. Under Reduce Transparency or Increase Contrast every layer degrades to
+its opaque token (`styles/tokens/surface.css` and the accessibility ladder in
+`glass-surface.shared.tsx`).
+
 The material contract is role-based, not component-name-based. In glass mode,
 intentional content panels and text-entry wells use stable static glass; functional
 controls, navigation and overlays may use Liquid Glass. Persistent content, text,
@@ -144,14 +353,12 @@ deliberately unfilled variants inherit their surroundings without another pane.
 The semantic `card` and `popover` tokens stay opaque in every mode; shared material
 rendering owns glass fills instead of rewriting those tokens.
 
-Route owned surfaces through `GlassSurface`, or `GlassPane` behind a semantic host
-that must retain its input, focus or live-region behavior. Keep role, density,
-renderer capability and motion separate. Use supported native Liquid Glass through
-`expo-glass-effect` on iOS where appropriate, supported native frost through
-`expo-blur`, the optional `@ionizeio/canvas-blur` capture integration on Android 12+
-(Expo SDK 57), and the shared web material paths. Android blur requires safe live
-backdrop ownership; no material may sample itself. A browser skin preview is not
-native evidence, and tint without blur is not proof of a native material.
+Keep role, density, renderer capability and motion separate. Use supported native
+Liquid Glass through `expo-glass-effect` on iOS where appropriate, supported native
+frost through `expo-blur`, the optional `@ionizeio/canvas-blur` capture integration on
+Android 12+ (Expo SDK 57), and the shared web material paths. Android blur requires
+safe live backdrop ownership; no material may sample itself. A browser skin preview is
+not native evidence, and tint without blur is not proof of a native material.
 
 Solid is a complete primary appearance and fallback: opaque fill, matching
 foreground/state colors, boundaries and elevation. A resolved solid surface mounts
@@ -162,12 +369,18 @@ Reduce Transparency and Increase Contrast require readable opaque treatment;
 Reduce Motion removes nonessential fluid motion without requiring opacity by itself.
 
 Prefer native feedback. Native Liquid Glass may remain still; custom press swelling
-or connected splitting/merging is not implied by a click handler. Keep selected
-motion profiles scoped and preserve solid-mode native feedback. Do not add a
-per-component `glass` prop or hand-paint blur and specular edges in a component.
-`tools/materials/manifest.ts` records the intended role and verification obligation
-of every public renderable. `bun run check:materials` reconciles it with exports and
-docs routes; inventory coverage is not an implementation or runtime-verification pass.
+or connected splitting/merging is not implied by a click handler, and solid mode keeps
+its native feedback. `tools/materials/manifest.ts` records the intended role and
+verification obligation of every public renderable. `bun run check:materials`
+reconciles it with exports and docs routes; inventory coverage is not an
+implementation or runtime-verification pass.
+
+Do not add a per-component `glass` prop and do NOT hand-paint glass (backdrop-filter,
+specular edges, a translucent fill of your own) onto individual components: route a
+new surface through `GlassSurface` or `GlassPane` with the layer it belongs to, and
+its inner fills through `innerFill`. `test/glass-tint.test.tsx`,
+`test/glass-controls.test.tsx` and `test/dense-overlays.test.tsx` pin the layers, the
+legibility floors and the solid-mode byte identity.
 
 ### Conflicts
 
@@ -272,6 +485,62 @@ component per "Dogfood the kit" (backward-compatibly, following the
 styling escape hatches":
 those ban rebuilding a component's look; this bans rebuilding a component's
 anatomy around it.
+
+## Motion: what stays, what is gone, and the tuning harness
+
+On 2026-09-21 the owner removed the liquid glass motion outright: the moving
+selections (the pill that travelled between tabs, rows, pages, days and dots), the
+liquid popup presentation (the droplet, the button-to-menu and field hand-offs, the
+cover and the spring-back), the Entrance spring, the Backdrop organism with its Skia
+and WebGL paths, and the docs' decorative scenes. Do not bring any of it back, in any
+form, without a new decision from the owner: a selected state paints where it is
+(a static control-layer pane under glass, the skin's own fill in solid mode), an
+anchored card appears in place once its placement is measured, and no decorative
+loop runs behind a page. The motion that stays is functional: the Spinner, the
+Skeleton shimmer, the indeterminate Progress sweep and the InputOTP caret (all on the
+loop primitive, `src/style/loop.tsx`, the native driver natively and a compositor CSS
+animation on the web, so nothing commits through React per frame), the floating
+labels, the Accordion, Collapsible and Reveal transitions, the Drawer and ActionSheet
+slides, the Sidebar drill-down, the native ripple and the router's own transitions.
+`test/design-rules-source.test.ts` keeps `Animated.loop(` inside `loop-native.ts` and
+every transition between 100 and 700 ms. Why: react-native-web's Animated JS driver
+is one React commit per frame at default priority and React never expires a retry
+lane, so a spring running beside a Suspense boundary held the whole body back (the
+sidebar pill cost every component page 1.3 s per click); the owner judged the
+animations not worth that and had them deleted rather than re-engineered.
+
+On 2026-09-23 the owner added one new decision on top of that: Dark Factory's hover
+lifts are ported (the design language's item 9). They are hover feedback, not the
+removed liquid motion, and they run the way the loop primitive does: a transform and
+shadow transition the compositor animates on the web (the style switches on hover and
+the browser interpolates, so nothing commits through React per frame) and the native
+driver for pointer hover on iPad, with their values in `src/style/motion.ts` and every
+change judged against the `df-hover-lift` card. The DF page look in the docs is static
+scaffolding (item 7); it never animates.
+
+Effects that remain judged by eye (the glass material and its lens, a gradient, a
+new functional transition) still go through the global `tuning-harness` skill:
+record the reference first and write its card, harness for the inner loop, land the
+effect on the shipped surface (the docs page or app screen the user opens, in the
+mode they will see) and compare against the card, blind, until nothing differs; log
+every run, docs screenshot last. In this repo the harness is the hidden `/testing/*`
+routes under `docs/src/app/(home)/testing/`, rendering the fixture bodies in
+`examples/starter/smoke/fixtures/` (shared with the sealed smoke app); the material
+one is `/testing/materials`. The tunables live in one table per effect, never in a
+public value prop. The evidence log is `tools/native/liquid-motion.md`: its sections
+up to the removal are HISTORY of deleted code, its `## References` section keeps the
+`ios-native-menu` card (strips under `tools/native/reference/`) as the record of what
+that work was judged against, and every row under a version 2 table names its
+`Surface` and its `Versus reference` verdict. `.tuning-harness.json` at the repo root
+(version 2) tells the global push gate which files are tunables (`src/style/motion.ts`
+and `src/style/glass-surface/glass-lens.ts`): a push whose newest tunable change has
+no evidence row in or after it is refused, and so is a row with an empty `Surface` or
+`Versus reference` cell or a `matches` written on a harness route. A pure refactor of
+those files with no visual change carries the commit trailer `Tuning-evidence:
+unchanged`. A report may claim an effect is done or matches only from a
+shipped-surface row with no open difference; open differences lead the report, and a
+card item that cannot be matched goes to the user as a decision, never into the log
+as "by design".
 
 ## Preview links on every completed piece of work
 
