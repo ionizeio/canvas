@@ -110,7 +110,7 @@ export function DocsThemeProvider({ children }: { children: ReactNode }) {
       {/* The toggle state is a Surface value, so the axis booleans take
           expressions: both are explicit because the docs never want the
           platform default (the Glass/Solid toggle owns the choice). */}
-      {/* `fonts` hands the kit the Urbanist faces the docs registered (docs/src/ui/fonts.ts). */}
+      {/* `fonts` hands the kit the Manrope faces the docs registered (docs/src/ui/fonts.ts). */}
       <ThemeProvider dark={scheme === "dark"} light={scheme === "light"} glass={surface === "glass"} solid={surface === "solid"} fonts={CANVAS_FONTS}>
         {/* Expo config uses app-wide status-bar ownership on iOS. Its StatusBar
             wraps the RN managed stack on native and is a no-op on web. */}

@@ -11,7 +11,7 @@ afterEach(cleanup);
 
 // The faces an app registers per weight (the expo-google-fonts shape), plus a mono set.
 const FACES: ThemeFonts = {
-  sans: { "400": "Urbanist_400Regular", "500": "Urbanist_500Medium", "700": "Urbanist_700Bold" },
+  sans: { "400": "Manrope_400Regular", "500": "Manrope_500Medium", "700": "Manrope_700Bold" },
   mono: { "400": "GeistMono_400Regular" },
 };
 
@@ -33,20 +33,20 @@ describe("resolveFontFace", () => {
   });
 
   it("returns one family verbatim and keeps the weight on the style", () => {
-    expect(resolveFontFace("Urbanist", "700")).toEqual({ fontFamily: "Urbanist", dropWeight: false });
+    expect(resolveFontFace("Manrope", "700")).toEqual({ fontFamily: "Manrope", dropWeight: false });
   });
 
   it("picks the registered face for the weight and drops the weight", () => {
-    expect(resolveFontFace(FACES.sans, "500")).toEqual({ fontFamily: "Urbanist_500Medium", dropWeight: true });
+    expect(resolveFontFace(FACES.sans, "500")).toEqual({ fontFamily: "Manrope_500Medium", dropWeight: true });
   });
 
   it("falls to the nearest registered weight, heavier on a tie", () => {
     // 600 sits between 500 and 700: the heavier face reads as emphasis.
-    expect(resolveFontFace(FACES.sans, "600")?.fontFamily).toBe("Urbanist_700Bold");
+    expect(resolveFontFace(FACES.sans, "600")?.fontFamily).toBe("Manrope_700Bold");
     // 300 has only heavier neighbours.
-    expect(resolveFontFace(FACES.sans, "300")?.fontFamily).toBe("Urbanist_400Regular");
+    expect(resolveFontFace(FACES.sans, "300")?.fontFamily).toBe("Manrope_400Regular");
     // 900 has only lighter neighbours.
-    expect(resolveFontFace(FACES.sans, "900")?.fontFamily).toBe("Urbanist_700Bold");
+    expect(resolveFontFace(FACES.sans, "900")?.fontFamily).toBe("Manrope_700Bold");
   });
 });
 
@@ -57,11 +57,11 @@ describe("fontStyle", () => {
   });
 
   it("applies the sans face for the style's weight and removes the weight", () => {
-    expect(fontStyle([{ fontSize: 14 }, { fontWeight: "500" }], FACES)).toEqual({ fontSize: 14, fontFamily: "Urbanist_500Medium" });
+    expect(fontStyle([{ fontSize: 14 }, { fontWeight: "500" }], FACES)).toEqual({ fontSize: 14, fontFamily: "Manrope_500Medium" });
   });
 
   it("keeps the weight when one family carries every weight", () => {
-    expect(fontStyle({ fontWeight: "700" }, { sans: "Urbanist" })).toEqual([{ fontWeight: "700" }, { fontFamily: "Urbanist" }]);
+    expect(fontStyle({ fontWeight: "700" }, { sans: "Manrope" })).toEqual([{ fontWeight: "700" }, { fontFamily: "Manrope" }]);
   });
 
   it("substitutes the mono face where the kit asked for MONO_FONT, and only there", () => {
@@ -69,7 +69,7 @@ describe("fontStyle", () => {
     // A caller's own explicit family is theirs.
     expect(fontStyle({ fontFamily: "Comic Sans" }, FACES)).toEqual({ fontFamily: "Comic Sans" });
     // No mono registered: the kit's alias stands.
-    expect(fontStyle({ fontFamily: MONO_FONT }, { sans: "Urbanist" })).toEqual({ fontFamily: MONO_FONT });
+    expect(fontStyle({ fontFamily: MONO_FONT }, { sans: "Manrope" })).toEqual({ fontFamily: MONO_FONT });
   });
 });
 
@@ -84,23 +84,23 @@ describe("the themed primitives", () => {
         <TextInput value="typed" onChangeText={() => {}} style={{ fontSize: 16 }} />
       </ThemeProvider>,
     );
-    expect(getComputedStyle(screen.getByText("Plain")).fontFamily).toBe("Urbanist_700Bold");
+    expect(getComputedStyle(screen.getByText("Plain")).fontFamily).toBe("Manrope_700Bold");
     expect(getComputedStyle(screen.getByText("Plain")).fontWeight).not.toBe("700");
     // Button labels are medium; the web skin's fontWeight resolves to the 500 face.
-    expect(getComputedStyle(screen.getByText("Save")).fontFamily).toBe("Urbanist_500Medium");
+    expect(getComputedStyle(screen.getByText("Save")).fontFamily).toBe("Manrope_500Medium");
     // Typography titles are regular in the Riskora ladder.
-    expect(getComputedStyle(screen.getByText("Title")).fontFamily).toBe("Urbanist_400Regular");
+    expect(getComputedStyle(screen.getByText("Title")).fontFamily).toBe("Manrope_400Regular");
     // The code role asks for MONO_FONT and gets the registered mono face.
     expect(getComputedStyle(screen.getByText("--primary")).fontFamily).toBe("GeistMono_400Regular");
-    expect(getComputedStyle(screen.getByDisplayValue("typed")).fontFamily).toBe("Urbanist_400Regular");
+    expect(getComputedStyle(screen.getByDisplayValue("typed")).fontFamily).toBe("Manrope_400Regular");
   });
 
   it("render in the system face when no fonts are passed, as before", () => {
     render(<ThemeProvider><Text>Plain</Text></ThemeProvider>);
-    expect(getComputedStyle(screen.getByText("Plain")).fontFamily).not.toContain("Urbanist");
+    expect(getComputedStyle(screen.getByText("Plain")).fontFamily).not.toContain("Manrope");
   });
 
   it("name the brand faces the app is expected to register", () => {
-    expect(typeface).toEqual({ sans: "Urbanist", mono: "Geist Mono" });
+    expect(typeface).toEqual({ sans: "Manrope", mono: "Geist Mono" });
   });
 });

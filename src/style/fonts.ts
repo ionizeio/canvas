@@ -2,7 +2,7 @@
 //
 // React Native has no font loading of its own: an app registers faces (expo-font,
 // a native asset, an @font-face rule on the web) and refers to them by the family
-// name it registered. So the kit cannot bundle Urbanist; it names the brand faces
+// name it registered. So the kit cannot bundle Manrope; it names the brand faces
 // (`typeface`) and lets the app hand the registered families to the ThemeProvider
 // (`fonts`), from which the themed Text/TextInput primitives (src/style/text.tsx)
 // paint every kit label. With no `fonts` the kit renders in the platform's system
@@ -13,7 +13,7 @@
 //   platform resolves by weight (a web @font-face with a `font-weight` range, a
 //   font installed on the OS). `fontWeight` stays on the style.
 // - A MAP from weight to the face registered for it (expo-google-fonts ships one
-//   module per weight: Urbanist_400Regular, Urbanist_500Medium, ...). The face
+//   module per weight: Manrope_400Regular, Manrope_500Medium, ...). The face
 //   already encodes the weight, so the resolver picks the nearest registered face
 //   and DROPS `fontWeight`: on iOS a weight on a single-weight family falls back
 //   to the system face, and on the web the browser would synthesize a fake bold.
@@ -34,11 +34,13 @@ export interface ThemeFonts {
 
 /**
  * The brand faces by name: what the design specifies and what an app is expected
- * to register. Urbanist is the Riskora kit's face (every text style in the source
- * is Urbanist 400 or 500); Geist Mono stays the kit's code face.
+ * to register. Manrope is Dark Factory's face, registered there as static faces from
+ * 400 to 800 (`@expo-google-fonts/manrope`); Geist Mono stays the kit's code face,
+ * since Dark Factory has none and its x-height sits within a hundredth of an em of
+ * Manrope's.
  */
 export const typeface = {
-  sans: "Urbanist",
+  sans: "Manrope",
   mono: "Geist Mono",
 } as const;
 

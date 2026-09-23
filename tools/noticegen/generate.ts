@@ -343,7 +343,7 @@ export const THIRD_PARTY_CANVAS =
   ${q(`Canvas itself is published to npm as @ionizeio/canvas under the MIT License. This app is its reference documentation.`)};
 
 export const THIRD_PARTY_FONTS =
-  ${q(`The Geist and Geist Mono typefaces are licensed under the SIL Open Font License 1.1, and the Material Symbols typeface under the Apache License 2.0. Both licences require their text to travel with the bundled font, and both are reproduced in full below.`)};
+  ${q(`The Manrope and Geist Mono typefaces are licensed under the SIL Open Font License 1.1, and the Material Symbols typeface under the Apache License 2.0. Both licences require their text to travel with the bundled font, and both are reproduced in full below.`)};
 
 /** Package count by declared licence, most common first. */
 export const THIRD_PARTY_BREAKDOWN: { license: string; count: number }[] = ${JSON.stringify(breakdown.map(([license, count]) => ({ license, count })), null, 2)};

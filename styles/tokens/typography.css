@@ -1,11 +1,11 @@
 /* Type. Two faces, one scale (px values, matching src/style/tokens.ts fontSize:
-   size / line-height pairs). The faces and the scale are the Riskora kit's: Urbanist
-   for every text style, titles at the regular weight (400) and labels at medium (500),
-   so hierarchy comes from size, not from bold. Custom fonts don't auto-map weight in
+   size / line-height pairs). The sans face is Dark Factory's Manrope and the code face
+   Geist Mono; the scale is still the Riskora kit's, titles at the regular weight (400)
+   and labels at medium (500), so hierarchy comes from size, not from bold. Custom fonts don't auto-map weight in
    React Native, so the kit selects a face per weight (ThemeProvider `fonts`); on the
    web the weight axis is enough when the family is registered with a weight range. */
 :root{
-  --font-sans:"Urbanist",ui-sans-serif,system-ui,-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+  --font-sans:"Manrope",ui-sans-serif,system-ui,-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;
   --font-mono:"Geist Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
 
   --text-xs:12px;   --leading-xs:16px;

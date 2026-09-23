@@ -4,8 +4,8 @@ import { PageNav } from "../../../ui/page-nav";
 import { sans, geistMono } from "../../../ui/fonts";
 import { TokenH1, TokenLede, TokenSection, Surface, Grid } from "../../../ui/tokens-kit";
 
-// The Canvas type scale is the Typography component's roles: the Riskora ladder in
-// Urbanist, titles at the regular weight so hierarchy comes from size alone. The
+// The Canvas type scale is the Typography component's roles: the Riskora ladder, now
+// set in Manrope, titles at the regular weight so hierarchy comes from size alone. The
 // specimen rows render the real <Typography> role (src/atoms/typography), so the
 // preview reflects the package values rather than a copy; the `spec` column is the
 // human-readable summary of roleType.
@@ -50,7 +50,7 @@ function Eyebrow({ children }: { children: string }) {
   );
 }
 
-function FontCard({ varName, sample, sampleFamily, sampleTracking, caption, specimen, specimenMono }: {
+function FontCard({ varName, sample, sampleFamily, sampleTracking, caption, specimen, specimenMono, axis }: {
   varName: string;
   sample: string;
   sampleFamily: string;
@@ -58,6 +58,8 @@ function FontCard({ varName, sample, sampleFamily, sampleTracking, caption, spec
   caption: string;
   specimen: string;
   specimenMono?: boolean;
+  /** The weights the family ships, as the range its font package covers. */
+  axis: string;
 }) {
   const { tokens } = useTheme();
   return (
@@ -73,7 +75,7 @@ function FontCard({ varName, sample, sampleFamily, sampleTracking, caption, spec
         {specimen}
       </Text>
       <Text style={{ marginTop: 12, fontSize: 12, lineHeight: 16.8, fontFamily: sans("400"), color: tokens["muted-foreground"] }}>
-        Self-hosted by the consumer · weight axis 100-900.
+        Self-hosted by the consumer · weights {axis}.
       </Text>
     </Surface>
   );
@@ -158,7 +160,7 @@ export default function TypographyScreen() {
         <Column cozy>
           <TokenH1>Typography</TokenH1>
           <TokenLede>
-            Two families do all the work. Urbanist for every label, title and paragraph; Geist Mono for
+            Two families do all the work. Manrope for every label, title and paragraph; Geist Mono for
             code, IDs, timestamps, and any value the user might copy. The scale runs display down to tiny as
             boolean roles on the{" "}
             <Text style={{ fontFamily: geistMono("400") }}>Typography</Text> component; helper
@@ -168,23 +170,25 @@ export default function TypographyScreen() {
 
         <TokenSection
           title="Font families"
-          description="Two families, registered by the consumer: the package ships no font files. Hand the registered faces to <ThemeProvider fonts> (one family that carries every weight, or a face per weight) and every kit label renders in them; omit it and the system face stands in. On the web the --font-sans / --font-mono stacks fall back to system faces until Urbanist loads."
+          description="Two families, registered by the consumer: the package ships no font files. Hand the registered faces to <ThemeProvider fonts> (one family that carries every weight, or a face per weight) and every kit label renders in them; omit it and the system face stands in. On the web the --font-sans / --font-mono stacks fall back to system faces until Manrope loads."
         >
           <Grid cols={c2}>
             {[
               <FontCard
                 key="sans"
                 varName="--font-sans"
-                sample="Urbanist"
+                sample="Manrope"
+                axis="200-800"
                 sampleFamily={sans("500")}
                 sampleTracking={0}
-                caption={'"Urbanist", ui-sans-serif, system-ui, ...'}
+                caption={'"Manrope", ui-sans-serif, system-ui, ...'}
                 specimen="The quick brown fox jumps over the lazy dog 0123456789"
               />,
               <FontCard
                 key="mono"
                 varName="--font-mono"
                 sample="Geist Mono"
+                axis="100-900"
                 sampleFamily={geistMono("600")}
                 sampleTracking={-0.4}
                 caption={'"Geist Mono", ui-monospace, "SF Mono", ...'}
@@ -222,7 +226,7 @@ export default function TypographyScreen() {
           </Surface>
         </TokenSection>
 
-        <TokenSection title="Weights" description="Urbanist's weight axis spans 100-900, but the kit standardizes on four; each weight is registered as its own face and ThemeProvider fonts maps a style's fontWeight onto it, since RN does not auto-map fontWeight for custom fonts.">
+        <TokenSection title="Weights" description="Manrope runs from 200 to 800, and the kit's roles use the four below; the docs register 400 to 800, each as its own face, and ThemeProvider fonts maps a style's fontWeight onto the nearest registered one, since RN does not auto-map fontWeight for custom fonts.">
           <Surface padding={0} style={{ overflow: "hidden" }}>
             {WEIGHTS.map((row, i) => <WeightRow key={row.w} row={row} i={i} />)}
           </Surface>

@@ -20,7 +20,7 @@ cannot be WebFetched; read them in a browser session, and verify URLs against
 https://m3.material.io/sitemap.xml.
 
 Canvas is **platform-forward**: the brand survives (Dark Factory's palette, with its violet
-`primary` and green `action`, and the Urbanist type stay the same on every platform); only the
+`primary` and green `action`, and the Manrope type stay the same on every platform); only the
 native shape, sizing, structure, and interaction feedback change per OS. React Native does not provide these looks for free (its primitives are unstyled and its
 core `<Button>` is unusable), so each control's per-OS appearance is hand-written, EXCEPT the few
 real native widgets RN ships (`Switch`, `ActivityIndicator`), which can be used natively and

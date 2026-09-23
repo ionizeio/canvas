@@ -7,13 +7,15 @@ import type { ThemeFonts } from "@ionizeio/canvas";
 // dependencies now, the subsetter's input). Every face is on the first paint's
 // critical path, since each pre-rendered page preloads them all, and the full files
 // held Greek, Cyrillic and Vietnamese the docs never render: the subsets are about
-// 140 KB over the wire for all seven against 245 KB.
-const Urbanist_400Regular = require("../../assets/fonts/Urbanist_400Regular.ttf");
-const Urbanist_500Medium = require("../../assets/fonts/Urbanist_500Medium.ttf");
-const Urbanist_600SemiBold = require("../../assets/fonts/Urbanist_600SemiBold.ttf");
-const Urbanist_700Bold = require("../../assets/fonts/Urbanist_700Bold.ttf");
+// 166 KB over the wire for all seven against 305 KB. Manrope's outlines are about twice
+// as detailed as Urbanist's were, so its five faces cost 117 KB where Urbanist's four
+// cost 66 KB; Geist Mono stops at 400 and 600 to hold the count at seven.
+const Manrope_400Regular = require("../../assets/fonts/Manrope_400Regular.ttf");
+const Manrope_500Medium = require("../../assets/fonts/Manrope_500Medium.ttf");
+const Manrope_600SemiBold = require("../../assets/fonts/Manrope_600SemiBold.ttf");
+const Manrope_700Bold = require("../../assets/fonts/Manrope_700Bold.ttf");
+const Manrope_800ExtraBold = require("../../assets/fonts/Manrope_800ExtraBold.ttf");
 const GeistMono_400Regular = require("../../assets/fonts/GeistMono_400Regular.ttf");
-const GeistMono_500Medium = require("../../assets/fonts/GeistMono_500Medium.ttf");
 const GeistMono_600SemiBold = require("../../assets/fonts/GeistMono_600SemiBold.ttf");
 
 // Every face is loaded as a FontResource rather than a bare module id so it can carry
@@ -27,7 +29,7 @@ const GeistMono_600SemiBold = require("../../assets/fonts/GeistMono_600SemiBold.
 // is inert there.
 const swap = (uri: number) => ({ uri, display: FontDisplay.SWAP });
 
-// Load the two faces the docs use, cross-platform (iOS / Android / web): Urbanist is the
+// Load the two faces the docs use, cross-platform (iOS / Android / web): Manrope is the
 // kit's brand face (`typeface.sans`), handed to the kit through the ThemeProvider `fonts`
 // prop below and worn by the docs' own chrome too; Geist Mono sets the code. Custom fonts
 // in RN don't auto-map fontWeight, so each weight is its own family and is selected
@@ -51,29 +53,29 @@ const swap = (uri: number) => ({ uri, display: FontDisplay.SWAP });
 // from the bundle, and the tree waits for them.
 export function useDocsFonts(): [boolean, Error | null] {
   const [loaded, error] = useFonts({
-    Urbanist_400Regular: swap(Urbanist_400Regular),
-    Urbanist_500Medium: swap(Urbanist_500Medium),
-    Urbanist_600SemiBold: swap(Urbanist_600SemiBold),
-    Urbanist_700Bold: swap(Urbanist_700Bold),
+    Manrope_400Regular: swap(Manrope_400Regular),
+    Manrope_500Medium: swap(Manrope_500Medium),
+    Manrope_600SemiBold: swap(Manrope_600SemiBold),
+    Manrope_700Bold: swap(Manrope_700Bold),
+    Manrope_800ExtraBold: swap(Manrope_800ExtraBold),
     GeistMono_400Regular: swap(GeistMono_400Regular),
-    GeistMono_500Medium: swap(GeistMono_500Medium),
     GeistMono_600SemiBold: swap(GeistMono_600SemiBold),
   });
   return [Platform.OS === "web" || loaded, error];
 }
 
-export type SansWeight = "400" | "500" | "600" | "700";
-export type MonoWeight = "400" | "500" | "600";
+export type SansWeight = "400" | "500" | "600" | "700" | "800";
+export type MonoWeight = "400" | "600";
 
 const SANS: Record<SansWeight, string> = {
-  "400": "Urbanist_400Regular",
-  "500": "Urbanist_500Medium",
-  "600": "Urbanist_600SemiBold",
-  "700": "Urbanist_700Bold",
+  "400": "Manrope_400Regular",
+  "500": "Manrope_500Medium",
+  "600": "Manrope_600SemiBold",
+  "700": "Manrope_700Bold",
+  "800": "Manrope_800ExtraBold",
 };
 const MONO: Record<MonoWeight, string> = {
   "400": "GeistMono_400Regular",
-  "500": "GeistMono_500Medium",
   "600": "GeistMono_600SemiBold",
 };
 

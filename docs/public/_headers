@@ -21,7 +21,7 @@
   # Trusted Types note below).
   #
   # `style-src` DOES need 'unsafe-inline'. React Native Web writes dynamic styles as
-  # inline style attributes (a heading arrives as style="font-family: Geist_600SemiBold;
+  # inline style attributes (a heading arrives as style="font-family: Manrope_600SemiBold;
   # font-size: 54px"), so removing it would strip the site's typography and colour. This
   # is the accepted trade: CSP's XSS protection lives in script-src, which stays strict.
   #
@@ -100,7 +100,7 @@
 # Every file under these two prefixes carries a 32-character content hash in its name
 # (verified: 405 of 405), so its URL changes whenever its bytes do and it can never go
 # stale. Cloudflare's default of `max-age=0, must-revalidate` was making every repeat
-# visitor pay a revalidation round-trip for the 736 KiB bundle and all eight font files
+# visitor pay a revalidation round-trip for the 736 KiB bundle and all seven font files
 # even when nothing had changed. `immutable` also stops a reload from revalidating them.
 /_expo/*
   Cache-Control: public, max-age=31536000, immutable

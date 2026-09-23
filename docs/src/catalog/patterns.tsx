@@ -24,7 +24,7 @@ function MiniKbd({ children }: { children: string }) {
         backgroundColor: tokens.muted,
       }}
     >
-      <Text style={{ fontFamily: geistMono("500"), fontSize: 11, color: tokens.foreground }}>{children}</Text>
+      <Text style={{ fontFamily: geistMono("600"), fontSize: 11, color: tokens.foreground }}>{children}</Text>
     </Column>
   );
 }

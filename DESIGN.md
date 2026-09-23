@@ -92,57 +92,57 @@ chart:
   chart-8: "#a37e05"
 typography:
   display:
-    fontFamily: "\"Urbanist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
     fontSize: "64px"
     fontWeight: 400
     lineHeight: "70px"
   h1:
-    fontFamily: "\"Urbanist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
     fontSize: "55px"
     fontWeight: 400
     lineHeight: "64px"
   h2:
-    fontFamily: "\"Urbanist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
     fontSize: "40px"
     fontWeight: 400
     lineHeight: "48px"
   h3:
-    fontFamily: "\"Urbanist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
     fontSize: "36px"
     fontWeight: 400
     lineHeight: "44px"
   h4:
-    fontFamily: "\"Urbanist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
     fontSize: "28px"
     fontWeight: 400
     lineHeight: "36px"
   h5:
-    fontFamily: "\"Urbanist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
     fontSize: "20px"
     fontWeight: 400
     lineHeight: "30px"
   lead:
-    fontFamily: "\"Urbanist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
     fontSize: "20px"
     fontWeight: 400
     lineHeight: "30px"
   body:
-    fontFamily: "\"Urbanist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
     fontSize: "16px"
     fontWeight: 400
     lineHeight: "24px"
   small:
-    fontFamily: "\"Urbanist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
     fontSize: "14px"
     fontWeight: 400
     lineHeight: "20px"
   tiny:
-    fontFamily: "\"Urbanist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
     fontSize: "12px"
     fontWeight: 400
     lineHeight: "16px"
   caption:
-    fontFamily: "\"Urbanist\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
     fontSize: "12px"
     fontWeight: 500
     lineHeight: "16px"
@@ -427,7 +427,7 @@ a supported way to get one.
 
 ## Typography
 
-Two faces, Urbanist and Geist Mono, and one scale (the Riskora ladder, titles at the regular
+Two faces, Manrope and Geist Mono, and one scale (the Riskora ladder, titles at the regular
 weight so hierarchy comes from size). The semantic roles below are what the
 Typography component renders. Headings lead tighter than body copy; every body role
 sits at 14px or above, and the one role below it, `tiny`, is for captions and metadata

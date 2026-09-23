@@ -21,12 +21,13 @@ import {
 // actually ships (see tools/noticegen), so this screen only arranges it.
 //
 // This page is not decorative. MIT requires its copyright and permission notice to travel
-// with the software, and OFL-1.1 requires the same for the Geist typefaces bundled as
-// .ttf files in the binary. Reproducing the notices somewhere the user can reach them is
+// with the software, and OFL-1.1 requires the same for the Manrope and Geist Mono
+// typefaces bundled as .ttf files in the binary. Reproducing the notices somewhere the user can reach them is
 // how those conditions are met, which is why each licence panel below lists the copyright
 // lines of every package sharing that text before the text itself.
 
-const FONTS_URL = "https://github.com/vercel/geist-font";
+const MANROPE_URL = "https://github.com/sharanda/manrope";
+const GEIST_URL = "https://github.com/vercel/geist-font";
 const SYMBOLS_URL = "https://github.com/google/material-design-icons";
 
 /** A licence body arrives as one string; blank lines are its paragraph breaks. */
@@ -113,9 +114,17 @@ export default function LicensesScreen() {
               outline
               small
               iconRight={<Icon arrowRight size={14} />}
-              onPress={() => Linking.openURL(FONTS_URL)}
+              onPress={() => Linking.openURL(MANROPE_URL)}
             >
-              Geist on GitHub
+              Manrope on GitHub
+            </Button>
+            <Button
+              outline
+              small
+              iconRight={<Icon arrowRight size={14} />}
+              onPress={() => Linking.openURL(GEIST_URL)}
+            >
+              Geist Mono on GitHub
             </Button>
             <Button
               outline

@@ -187,7 +187,7 @@ const config: LookoutConfig = {
   neverFile: [
     "the Dark Factory palette (a violet selection color, a green call to action) instead of Material dynamic color: the kit's palette is Dark Factory's by design",
     "no tonal container / surface-tint palette on Android: by-design token approximation",
-    "the brand type family (Urbanist) everywhere, with titles at the regular weight: only size, weight, and line-height must map to platform roles",
+    "the brand type family (Manrope) everywhere, with titles at the regular weight: only size, weight, and line-height must map to platform roles",
     "glass mode stripping hairline borders: intended material behavior",
     "Android press ripple absent in WEB-ROW previews: ripple is device-only; never judge it from web shots in either direction",
     "the react-native-web blue focus outline box on web: a known RNW artifact, not a skin bug",

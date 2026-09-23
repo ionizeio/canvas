@@ -29,7 +29,7 @@
   },
   "devDependencies": {
     "@expo-google-fonts/geist-mono": "^0.4.2",
-    "@expo-google-fonts/urbanist": "^0.4.2",
+    "@expo-google-fonts/manrope": "^0.4.2",
     "@types/node": "^25.9.3",
     "@types/react": "~19.2.2",
     "lighthouse": "^13.5.0",

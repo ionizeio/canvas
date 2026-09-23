@@ -197,7 +197,7 @@ describe("createDevDocumentMiddleware", () => {
   });
 
   it("gzips and caches a font from Metro's asset route", async () => {
-    const font = "/assets/?unstable_path=.%2Fassets%2Ffonts/Urbanist_600SemiBold.ttf";
+    const font = "/assets/?unstable_path=.%2Fassets%2Ffonts/Manrope_600SemiBold.ttf";
     expect(isFontRequest({ method: "GET", url: font, headers: {} } as IncomingMessage)).toBe(true);
     expect(isFontRequest({ method: "GET", url: "/assets/?unstable_path=.%2Fassets%2Fimages%2Flooks/a.webp", headers: {} } as IncomingMessage)).toBe(false);
     const watcher = new EventEmitter();

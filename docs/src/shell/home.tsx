@@ -216,7 +216,7 @@ export function Home() {
                   <View style={{ position: "absolute", width: 13, height: 13, borderRadius: 9999, backgroundColor: alpha(tokens.primary, 0.22) }} />
                   <View style={{ width: 7, height: 7, borderRadius: 9999, backgroundColor: tokens.primary }} />
                 </Column>
-                <Text style={{ fontFamily: geistMono("500"), fontSize: 12, color: tokens["muted-foreground"] }}>
+                <Text style={{ fontFamily: geistMono("600"), fontSize: 12, color: tokens["muted-foreground"] }}>
                   {version} ·{" "}
                   <Text
                     accessibilityRole="link"

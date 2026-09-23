@@ -108,7 +108,7 @@ a supported way to get one.
 
 ## Typography
 
-Two faces, Urbanist and Geist Mono, and one scale (the Riskora ladder, titles at the regular
+Two faces, Manrope and Geist Mono, and one scale (the Riskora ladder, titles at the regular
 weight so hierarchy comes from size). The semantic roles below are what the
 Typography component renders. Headings lead tighter than body copy; every body role
 sits at 14px or above, and the one role below it, `tiny`, is for captions and metadata

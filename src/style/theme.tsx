@@ -160,11 +160,11 @@ export interface ThemeProviderProps {
   tokens?: ThemeTokenOverrides;
   /**
    * The typefaces the app registered, so the kit can paint its labels in the brand
-   * face (`typeface.sans` is Urbanist, `typeface.mono` Geist Mono). Each entry is
+   * face (`typeface.sans` is Manrope, `typeface.mono` Geist Mono). Each entry is
    * either one family name that carries every weight (a variable font, an
    * OS-installed family) or a map from weight to the face registered for that
-   * weight (expo-google-fonts style: `{ "400": "Urbanist_400Regular", "500":
-   * "Urbanist_500Medium" }`). Omit it and the kit renders in the platform's system
+   * weight (expo-google-fonts style: `{ "400": "Manrope_400Regular", "500":
+   * "Manrope_500Medium" }`). Omit it and the kit renders in the platform's system
    * face, as it always has. Pass a stable reference (a module constant); an inline
    * literal re-creates the theme value on every render.
    */

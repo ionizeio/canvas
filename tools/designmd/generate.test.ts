@@ -53,7 +53,7 @@ describe("the frontmatter", () => {
     const body = (data.typography as Record<string, Record<string, unknown>>).body;
     expect(body.fontSize).toBe("16px");
     expect(body.fontWeight).toBe(400);
-    expect(String(body.fontFamily)).toContain("Urbanist");
+    expect(String(body.fontFamily)).toContain("Manrope");
     expect(String(body.lineHeight)).toMatch(/^\d+px$/);
   });
 

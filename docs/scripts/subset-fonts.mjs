@@ -26,12 +26,12 @@ const OUT = path.join(DOCS, "assets", "fonts");
 
 // The faces docs/src/ui/fonts.ts registers, and the package file each comes from.
 const FACES = [
-  ["Urbanist_400Regular", "@expo-google-fonts/urbanist/400Regular/Urbanist_400Regular.ttf"],
-  ["Urbanist_500Medium", "@expo-google-fonts/urbanist/500Medium/Urbanist_500Medium.ttf"],
-  ["Urbanist_600SemiBold", "@expo-google-fonts/urbanist/600SemiBold/Urbanist_600SemiBold.ttf"],
-  ["Urbanist_700Bold", "@expo-google-fonts/urbanist/700Bold/Urbanist_700Bold.ttf"],
+  ["Manrope_400Regular", "@expo-google-fonts/manrope/400Regular/Manrope_400Regular.ttf"],
+  ["Manrope_500Medium", "@expo-google-fonts/manrope/500Medium/Manrope_500Medium.ttf"],
+  ["Manrope_600SemiBold", "@expo-google-fonts/manrope/600SemiBold/Manrope_600SemiBold.ttf"],
+  ["Manrope_700Bold", "@expo-google-fonts/manrope/700Bold/Manrope_700Bold.ttf"],
+  ["Manrope_800ExtraBold", "@expo-google-fonts/manrope/800ExtraBold/Manrope_800ExtraBold.ttf"],
   ["GeistMono_400Regular", "@expo-google-fonts/geist-mono/400Regular/GeistMono_400Regular.ttf"],
-  ["GeistMono_500Medium", "@expo-google-fonts/geist-mono/500Medium/GeistMono_500Medium.ttf"],
   ["GeistMono_600SemiBold", "@expo-google-fonts/geist-mono/600SemiBold/GeistMono_600SemiBold.ttf"],
 ];
 

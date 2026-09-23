@@ -15,7 +15,7 @@
    prefers-color-scheme, so an app can pin a scheme independently of the OS.
    Platform skins key off `data-platform="ios" | "android"`, defaulting to web.
 
-   Geist and Geist Mono are the Canvas faces; --font-sans / --font-mono name
+   Manrope and Geist Mono are the Canvas faces; --font-sans / --font-mono name
    them with a system fallback stack. Consumers self-host the faces (the kit
    ships no font files and makes no third-party request).
    ───────────────────────────────────────────────────────────────────────── */

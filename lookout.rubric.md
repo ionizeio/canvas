@@ -149,7 +149,7 @@ a missing state from an example that is not about one.
 ## Do not file (extends the touch-target rule above)
 
 - The design language itself: the violet primary and the green action colour, the
-  chart series hues, colour saturation, the Urbanist typeface, the tinted light page and white
+  chart series hues, colour saturation, the Manrope typeface, the tinted light page and white
   cards, soft hairline card borders, the corner-radius scale, information density.
   Those are decisions, and the config's `neverFile` list records the ones that
   keep being re-litigated.

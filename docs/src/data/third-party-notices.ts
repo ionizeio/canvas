@@ -40,13 +40,13 @@ export const THIRD_PARTY_CANVAS =
   "Canvas itself is published to npm as @ionizeio/canvas under the MIT License. This app is its reference documentation.";
 
 export const THIRD_PARTY_FONTS =
-  "The Geist and Geist Mono typefaces are licensed under the SIL Open Font License 1.1, and the Material Symbols typeface under the Apache License 2.0. Both licences require their text to travel with the bundled font, and both are reproduced in full below.";
+  "The Manrope and Geist Mono typefaces are licensed under the SIL Open Font License 1.1, and the Material Symbols typeface under the Apache License 2.0. Both licences require their text to travel with the bundled font, and both are reproduced in full below.";
 
 /** Package count by declared licence, most common first. */
 export const THIRD_PARTY_BREAKDOWN: { license: string; count: number }[] = [
   {
     "license": "MIT",
-    "count": 105
+    "count": 106
   },
   {
     "license": "BSD-2-Clause",
@@ -70,7 +70,7 @@ export const THIRD_PARTY_BREAKDOWN: { license: string; count: number }[] = [
   }
 ];
 
-export const THIRD_PARTY_PACKAGE_COUNT = 118;
+export const THIRD_PARTY_PACKAGE_COUNT = 119;
 
 export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   {
@@ -96,6 +96,18 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
     ]
   },
   {
+    "name": "@expo-google-fonts/manrope",
+    "version": "0.4.2",
+    "licenses": [
+      "MIT",
+      "OFL-1.1"
+    ],
+    "textIds": [
+      2,
+      1
+    ]
+  },
+  {
     "name": "@expo-google-fonts/material-symbols",
     "version": "0.4.38",
     "licenses": [
@@ -105,18 +117,6 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
     "textIds": [
       2,
       8
-    ]
-  },
-  {
-    "name": "@expo-google-fonts/urbanist",
-    "version": "0.4.2",
-    "licenses": [
-      "MIT",
-      "OFL-1.1"
-    ],
-    "textIds": [
-      2,
-      1
     ]
   },
   {
@@ -166,6 +166,16 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
       "MIT"
     ],
     "textIds": []
+  },
+  {
+    "name": "@ionizeio/canvas-blur",
+    "version": "0.1.0",
+    "licenses": [
+      "MIT"
+    ],
+    "textIds": [
+      15
+    ]
   },
   {
     "name": "@radix-ui/primitive",
@@ -386,7 +396,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
       "MIT"
     ],
     "textIds": [
-      15
+      16
     ]
   },
   {
@@ -424,7 +434,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
       "MIT"
     ],
     "textIds": [
-      16
+      17
     ]
   },
   {
@@ -484,7 +494,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
       "MIT"
     ],
     "textIds": [
-      17
+      18
     ]
   },
   {
@@ -504,7 +514,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
       "MIT"
     ],
     "textIds": [
-      18
+      19
     ]
   },
   {
@@ -554,7 +564,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
       "MIT"
     ],
     "textIds": [
-      19
+      20
     ]
   },
   {
@@ -564,7 +574,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
       "MIT"
     ],
     "textIds": [
-      20
+      21
     ]
   },
   {
@@ -808,7 +818,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
       "MIT"
     ],
     "textIds": [
-      21
+      22
     ]
   },
   {
@@ -818,7 +828,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
       "MIT"
     ],
     "textIds": [
-      22
+      23
     ]
   },
   {
@@ -848,7 +858,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
       "MIT"
     ],
     "textIds": [
-      23
+      24
     ]
   },
   {
@@ -868,7 +878,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
       "MIT"
     ],
     "textIds": [
-      24
+      25
     ]
   },
   {
@@ -906,7 +916,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
       "MIT"
     ],
     "textIds": [
-      25
+      26
     ]
   },
   {
@@ -926,7 +936,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
       "MIT"
     ],
     "textIds": [
-      26
+      27
     ]
   },
   {
@@ -936,7 +946,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
       "MIT"
     ],
     "textIds": [
-      27
+      28
     ]
   },
   {
@@ -956,7 +966,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
       "MIT"
     ],
     "textIds": [
-      28
+      29
     ]
   },
   {
@@ -966,7 +976,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
       "MIT"
     ],
     "textIds": [
-      29
+      30
     ]
   },
   {
@@ -1006,7 +1016,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
       "MIT"
     ],
     "textIds": [
-      30
+      31
     ]
   },
   {
@@ -1046,7 +1056,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
       "MIT"
     ],
     "textIds": [
-      31
+      32
     ]
   },
   {
@@ -1076,7 +1086,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
       "MIT"
     ],
     "textIds": [
-      32
+      33
     ]
   },
   {
@@ -1086,7 +1096,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
       "MIT"
     ],
     "textIds": [
-      33
+      34
     ]
   },
   {
@@ -1096,7 +1106,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
       "MIT"
     ],
     "textIds": [
-      34
+      35
     ]
   },
   {
@@ -1146,7 +1156,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
       "MIT"
     ],
     "textIds": [
-      35
+      36
     ]
   },
   {
@@ -1166,7 +1176,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
       "MIT"
     ],
     "textIds": [
-      36
+      37
     ]
   },
   {
@@ -1194,7 +1204,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
       "MIT"
     ],
     "textIds": [
-      37
+      38
     ]
   },
   {
@@ -1204,7 +1214,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
       "MIT"
     ],
     "textIds": [
-      38
+      39
     ]
   },
   {
@@ -1234,7 +1244,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
       "MIT"
     ],
     "textIds": [
-      39
+      40
     ]
   }
 ];
@@ -1257,10 +1267,10 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = [
     "title": "SIL Open Font License 1.1",
     "body": "This Font Software is licensed under the SIL Open Font License, Version 1.1.\nThis license is copied below, and is also available with a FAQ at:\nhttp://scripts.sil.org/OFL\n\n-----------------------------------------------------------\nSIL OPEN FONT LICENSE Version 1.1 - 26 February 2007\n-----------------------------------------------------------\n\nPREAMBLE\nThe goals of the Open Font License (OFL) are to stimulate worldwide\ndevelopment of collaborative font projects, to support the font creation\nefforts of academic and linguistic communities, and to provide a free and\nopen framework in which fonts may be shared and improved in partnership\nwith others.\n\nThe OFL allows the licensed fonts to be used, studied, modified and\nredistributed freely as long as they are not sold by themselves. The\nfonts, including any derivative works, can be bundled, embedded, \nredistributed and/or sold with any software provided that any reserved\nnames are not used by derivative works. The fonts and derivatives,\nhowever, cannot be released under any other type of license. The\nrequirement for fonts to remain under this license does not apply\nto any document created using the fonts or their derivatives.\n\nDEFINITIONS\n\"Font Software\" refers to the set of files released by the Copyright\nHolder(s) under this license and clearly marked as such. This may\ninclude source files, build scripts and documentation.\n\n\"Reserved Font Name\" refers to any names specified as such after the\ncopyright statement(s).\n\n\"Original Version\" refers to the collection of Font Software components as\ndistributed by the Copyright Holder(s).\n\n\"Modified Version\" refers to any derivative made by adding to, deleting,\nor substituting -- in part or in whole -- any of the components of the\nOriginal Version, by changing formats or by porting the Font Software to a\nnew environment.\n\n\"Author\" refers to any designer, engineer, programmer, technical\nwriter or other person who contributed to the Font Software.\n\nPERMISSION & CONDITIONS\nPermission is hereby granted, free of charge, to any person obtaining\na copy of the Font Software, to use, study, copy, merge, embed, modify,\nredistribute, and sell modified and unmodified copies of the Font\nSoftware, subject to the following conditions:\n\n1) Neither the Font Software nor any of its individual components,\nin Original or Modified Versions, may be sold by itself.\n\n2) Original or Modified Versions of the Font Software may be bundled,\nredistributed and/or sold with any software, provided that each copy\ncontains the above copyright notice and this license. These can be\nincluded either as stand-alone text files, human-readable headers or\nin the appropriate machine-readable metadata fields within text or\nbinary files as long as those fields can be easily viewed by the user.\n\n3) No Modified Version of the Font Software may use the Reserved Font\nName(s) unless explicit written permission is granted by the corresponding\nCopyright Holder. This restriction only applies to the primary font name as\npresented to the users.\n\n4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font\nSoftware shall not be used to promote, endorse or advertise any\nModified Version, except to acknowledge the contribution(s) of the\nCopyright Holder(s) and the Author(s) or with their explicit written\npermission.\n\n5) The Font Software, modified or unmodified, in part or in whole,\nmust be distributed entirely under this license, and must not be\ndistributed under any other license. The requirement for fonts to\nremain under this license does not apply to any document created\nusing the Font Software.\n\nTERMINATION\nThis license becomes null and void if any of the above conditions are\nnot met.\n\nDISCLAIMER\nTHE FONT SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND,\nEXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF\nMERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT\nOF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE\nCOPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,\nINCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL\nDAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING\nFROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM\nOTHER DEALINGS IN THE FONT SOFTWARE.",
     "notices": [
-      "Copyright 2021 The Urbanist Project Authors (https://github.com/coreyhu/Urbanist)"
+      "Copyright 2018 The Manrope Project Authors (https://github.com/sharanda/manrope)"
     ],
     "packages": [
-      "@expo-google-fonts/urbanist"
+      "@expo-google-fonts/manrope"
     ],
     "count": 1
   },
@@ -1289,8 +1299,8 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = [
     "packages": [
       "@babel/runtime",
       "@expo-google-fonts/geist-mono",
+      "@expo-google-fonts/manrope",
       "@expo-google-fonts/material-symbols",
-      "@expo-google-fonts/urbanist",
       "@radix-ui/primitive",
       "@radix-ui/react-collection",
       "@radix-ui/react-compose-refs",
@@ -1503,6 +1513,18 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = [
   {
     "id": 15,
     "title": "MIT License",
+    "body": "MIT License\n\nThis license applies to the files distributed in the package published to\nnpm as @ionizeio/canvas-blur. The project's source repository is not covered by it and\nremains all rights reserved.\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.",
+    "notices": [
+      "Copyright (c) 2026 Robert Nannier"
+    ],
+    "packages": [
+      "@ionizeio/canvas-blur"
+    ],
+    "count": 1
+  },
+  {
+    "id": 16,
+    "title": "MIT License",
     "body": "The MIT License (MIT)\n\nCopyright (c) 2014 Jameson Little\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.",
     "notices": [],
     "packages": [
@@ -1511,7 +1533,7 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = [
     "count": 1
   },
   {
-    "id": 16,
+    "id": 17,
     "title": "MIT License",
     "body": "The MIT License (MIT)\nCopyright (c) 2015 Dmitry Ivanov\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.",
     "notices": [],
@@ -1521,7 +1543,7 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = [
     "count": 1
   },
   {
-    "id": 17,
+    "id": 18,
     "title": "MIT License",
     "body": "The MIT License (MIT)\n\nCopyright (c) 2017, Sam Verschueren <sam.verschueren@gmail.com> (github.com/SamVerschueren)\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.",
     "notices": [],
@@ -1531,7 +1553,7 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = [
     "count": 1
   },
   {
-    "id": 18,
+    "id": 19,
     "title": "MIT License",
     "body": "License\n\n(The MIT License)\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the 'Software'), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.",
     "notices": [
@@ -1543,7 +1565,7 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = [
     "count": 1
   },
   {
-    "id": 19,
+    "id": 20,
     "title": "MIT License",
     "body": "MIT License\n\nCopyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.",
     "notices": [],
@@ -1553,7 +1575,7 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = [
     "count": 1
   },
   {
-    "id": 20,
+    "id": 21,
     "title": "MIT License",
     "body": "The MIT License (MIT)\n\nCopyright (c) 2015 Toru Nagashima\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.",
     "notices": [],
@@ -1563,7 +1585,7 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = [
     "count": 1
   },
   {
-    "id": 21,
+    "id": 22,
     "title": "MIT License",
     "body": "The MIT License (MIT)\n\nCopyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.",
     "notices": [],
@@ -1573,7 +1595,7 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = [
     "count": 1
   },
   {
-    "id": 22,
+    "id": 23,
     "title": "MIT License",
     "body": "MIT License\n\nCopyright (c) Facebook, Inc. and its affiliates.\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.",
     "notices": [],
@@ -1583,7 +1605,7 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = [
     "count": 1
   },
   {
-    "id": 23,
+    "id": 24,
     "title": "MIT License",
     "body": "The MIT License (MIT)\n\nCopyright (c) 2015 Robin Frischmann\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.",
     "notices": [],
@@ -1593,7 +1615,7 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = [
     "count": 1
   },
   {
-    "id": 24,
+    "id": 25,
     "title": "MIT License",
     "body": "The MIT License (MIT)\n\nCopyright (c) 2015 JD Ballard\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.",
     "notices": [],
@@ -1603,7 +1625,7 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = [
     "count": 1
   },
   {
-    "id": 25,
+    "id": 26,
     "title": "MIT License",
     "body": "The MIT License (MIT)\n\nCopyright 2017 Andrey Sitnik <andrey@sitnik.ru>\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\nthe Software, and to permit persons to whom the Software is furnished to do so,\nsubject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\nFOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR\nCOPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER\nIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\nCONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.",
     "notices": [],
@@ -1613,7 +1635,7 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = [
     "count": 1
   },
   {
-    "id": 26,
+    "id": 27,
     "title": "MIT License",
     "body": "The MIT License (MIT)\nCopyright (c) 2016 Andres Suarez\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.",
     "notices": [],
@@ -1623,7 +1645,7 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = [
     "count": 1
   },
   {
-    "id": 27,
+    "id": 28,
     "title": "MIT License",
     "body": "Copyright (c) Bogdan Chadkin <trysound@yandex.ru>\n\nPermission is hereby granted, free of charge, to any person\nobtaining a copy of this software and associated documentation\nfiles (the \"Software\"), to deal in the Software without\nrestriction, including without limitation the rights to use,\ncopy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the\nSoftware is furnished to do so, subject to the following\nconditions:\n\nThe above copyright notice and this permission notice shall be\nincluded in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND,\nEXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES\nOF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND\nNONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT\nHOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,\nWHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING\nFROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR\nOTHER DEALINGS IN THE SOFTWARE.",
     "notices": [],
@@ -1633,7 +1655,7 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = [
     "count": 1
   },
   {
-    "id": 28,
+    "id": 29,
     "title": "MIT License",
     "body": "The MIT License (MIT)\n\nCopyright (c) 2012 Ryan Day\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.",
     "notices": [],
@@ -1643,7 +1665,7 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = [
     "count": 1
   },
   {
-    "id": 29,
+    "id": 30,
     "title": "MIT License",
     "body": "MIT License\n\nCopyright (c) Sindre Sorhus <sindresorhus@gmail.com> (http://sindresorhus.com)\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.",
     "notices": [],
@@ -1653,7 +1675,7 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = [
     "count": 1
   },
   {
-    "id": 30,
+    "id": 31,
     "title": "MIT License",
     "body": "The MIT License (MIT)\n\nCopyright (c) 2021 Software Mansion\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.",
     "notices": [],
@@ -1663,7 +1685,7 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = [
     "count": 1
   },
   {
-    "id": 31,
+    "id": 32,
     "title": "MIT License",
     "body": "The MIT License (MIT)\n\nCopyright (c) 2016 JerryShen\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.",
     "notices": [],
@@ -1673,7 +1695,7 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = [
     "count": 1
   },
   {
-    "id": 32,
+    "id": 33,
     "title": "MIT License",
     "body": "The MIT License (MIT)\n\nCopyright (c) 2018 Software Mansion <swmansion.com>\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.",
     "notices": [],
@@ -1683,7 +1705,7 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = [
     "count": 1
   },
   {
-    "id": 33,
+    "id": 34,
     "title": "MIT License",
     "body": "The MIT License (MIT)\n\nCopyright (c) [2015-2016] [Horcrux]\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.",
     "notices": [],
@@ -1693,7 +1715,7 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = [
     "count": 1
   },
   {
-    "id": 34,
+    "id": 35,
     "title": "MIT License",
     "body": "MIT License\n\nCopyright (c) Nicolas Gallagher.\nCopyright (c) Meta Platforms, Inc. and affiliates.\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.",
     "notices": [],
@@ -1703,7 +1725,7 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = [
     "count": 1
   },
   {
-    "id": 35,
+    "id": 36,
     "title": "MIT License",
     "body": "The MIT License (MIT)\n\nCopyright (c) 2015 Josh Junon\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.",
     "notices": [],
@@ -1713,7 +1735,7 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = [
     "count": 1
   },
   {
-    "id": 36,
+    "id": 37,
     "title": "MIT License",
     "body": "MIT License\n\nCopyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.",
     "notices": [],
@@ -1723,7 +1745,7 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = [
     "count": 1
   },
   {
-    "id": 37,
+    "id": 38,
     "title": "MIT License",
     "body": "The MIT License (MIT)\n\nCopyright (c) Kevin Martensson <kevinmartensson@gmail.com> (github.com/kevva)\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.",
     "notices": [],
@@ -1733,7 +1755,7 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = [
     "count": 1
   },
   {
-    "id": 38,
+    "id": 39,
     "title": "MIT License",
     "body": "MIT License\n\nCopyright (c) Nicolas Gallagher\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.",
     "notices": [],
@@ -1743,7 +1765,7 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = [
     "count": 1
   },
   {
-    "id": 39,
+    "id": 40,
     "title": "MIT License",
     "body": "MIT License\n\nCopyright (c) Phil Pluckthun,\nCopyright (c) 650 Industries, Inc. (aka Expo),\nCopyright (c) Sebastian Mayr\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.",
     "notices": [],
