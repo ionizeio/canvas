@@ -1,0 +1,16 @@
+[
+ {
+  "w": 1340,
+  "h": 2580,
+  "backdropFilter": "blur(24px)",
+  "backgroundColor": "rgba(255, 255, 255, 0.52)",
+  "boxShadow": "rgba(121, 100, 214, 0.22) 0px 60px 100px -40px, rgba(255, 255, 255, 0.75) 0px 0px 0px 1px inset"
+ },
+ {
+  "w": 1440,
+  "h": 900,
+  "backdropFilter": "blur(2px)",
+  "backgroundColor": "rgba(40, 30, 90, 0.28)",
+  "boxShadow": "none"
+ }
+]

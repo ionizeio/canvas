@@ -1,0 +1,617 @@
+{
+ "blush-1440": {
+  "gradient": "linear-gradient(165deg, rgb(253, 227, 238), rgb(235, 227, 252) 50%, rgb(217, 214, 252) 100%)",
+  "shell": {
+   "rect": {
+    "x": 50,
+    "y": 56,
+    "w": 1340,
+    "h": 2580
+   },
+   "backdropFilter": "blur(24px)",
+   "backgroundColor": "rgba(255, 255, 255, 0.52)",
+   "borderRadius": "22px",
+   "boxShadow": "rgba(121, 100, 214, 0.22) 0px 60px 100px -40px, rgba(255, 255, 255, 0.75) 0px 0px 0px 1px inset"
+  },
+  "card": {
+   "rect": {
+    "x": 291,
+    "y": 379,
+    "w": 748,
+    "h": 181
+   },
+   "backgroundColor": "rgb(255, 255, 255)",
+   "borderRadius": "14px",
+   "boxShadow": "rgba(121, 100, 214, 0.22) 0px 20px 44px -24px",
+   "borderWidth": "0px"
+  },
+  "orbBlurs": [
+   {
+    "std": "90"
+   },
+   {
+    "std": "100"
+   }
+  ],
+  "inks": {
+   "Roster": {
+    "color": "rgb(59, 60, 92)",
+    "fontFamily": "Manrope_700Bold",
+    "fontSize": "12.5px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "16.25px"
+   },
+   "Scout": {
+    "color": "rgb(59, 60, 92)",
+    "fontFamily": "Manrope_700Bold",
+    "fontSize": "13.5px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "17.55px"
+   },
+   "Board": {
+    "color": "rgb(110, 112, 146)",
+    "fontFamily": "Manrope_600SemiBold",
+    "fontSize": "12.5px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "16.25px"
+   },
+   "Fleet": {
+    "color": "rgb(59, 60, 92)",
+    "fontFamily": "Manrope_700Bold",
+    "fontSize": "14px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "18.2px"
+   },
+   "eyebrow": {
+    "color": "rgb(110, 112, 146)",
+    "fontSize": "10px",
+    "fontWeight": "400",
+    "letterSpacing": "1.8px",
+    "textTransform": "uppercase"
+   }
+  }
+ },
+ "mint-1440": {
+  "gradient": "linear-gradient(165deg, rgb(222, 244, 236), rgb(220, 235, 251) 50%, rgb(207, 223, 251) 100%)",
+  "shell": {
+   "rect": {
+    "x": 50,
+    "y": 56,
+    "w": 1340,
+    "h": 2580
+   },
+   "backdropFilter": "blur(24px)",
+   "backgroundColor": "rgba(255, 255, 255, 0.58)",
+   "borderRadius": "22px",
+   "boxShadow": "rgba(60, 110, 190, 0.2) 0px 60px 100px -40px, rgba(255, 255, 255, 0.75) 0px 0px 0px 1px inset"
+  },
+  "card": {
+   "rect": {
+    "x": 291,
+    "y": 379,
+    "w": 748,
+    "h": 181
+   },
+   "backgroundColor": "rgb(255, 255, 255)",
+   "borderRadius": "14px",
+   "boxShadow": "rgba(60, 110, 190, 0.2) 0px 20px 44px -24px",
+   "borderWidth": "0px"
+  },
+  "orbBlurs": [
+   {
+    "std": "90"
+   },
+   {
+    "std": "100"
+   }
+  ],
+  "inks": {
+   "Roster": {
+    "color": "rgb(46, 61, 79)",
+    "fontFamily": "Manrope_700Bold",
+    "fontSize": "12.5px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "16.25px"
+   },
+   "Scout": {
+    "color": "rgb(46, 61, 79)",
+    "fontFamily": "Manrope_700Bold",
+    "fontSize": "13.5px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "17.55px"
+   },
+   "Board": {
+    "color": "rgb(102, 120, 139)",
+    "fontFamily": "Manrope_600SemiBold",
+    "fontSize": "12.5px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "16.25px"
+   },
+   "Fleet": {
+    "color": "rgb(46, 61, 79)",
+    "fontFamily": "Manrope_700Bold",
+    "fontSize": "14px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "18.2px"
+   },
+   "eyebrow": {
+    "color": "rgb(102, 120, 139)",
+    "fontSize": "10px",
+    "fontWeight": "400",
+    "letterSpacing": "1.8px",
+    "textTransform": "uppercase"
+   }
+  }
+ },
+ "dark-1440": {
+  "gradient": "linear-gradient(165deg, rgb(23, 26, 47), rgb(29, 27, 59) 50%, rgb(35, 29, 70) 100%)",
+  "shell": {
+   "rect": {
+    "x": 50,
+    "y": 56,
+    "w": 1340,
+    "h": 2580
+   },
+   "backdropFilter": "blur(24px)",
+   "backgroundColor": "rgba(255, 255, 255, 0.04)",
+   "borderRadius": "22px",
+   "boxShadow": "rgba(0, 0, 0, 0.5) 0px 60px 100px -40px, rgba(255, 255, 255, 0.08) 0px 0px 0px 1px inset"
+  },
+  "card": {
+   "rect": {
+    "x": 291,
+    "y": 379,
+    "w": 748,
+    "h": 181
+   },
+   "backgroundColor": "rgb(37, 39, 65)",
+   "borderRadius": "14px",
+   "boxShadow": "rgba(0, 0, 0, 0.5) 0px 20px 44px -24px",
+   "borderWidth": "0px"
+  },
+  "orbBlurs": [
+   {
+    "std": "90"
+   },
+   {
+    "std": "100"
+   }
+  ],
+  "inks": {
+   "Roster": {
+    "color": "rgb(236, 235, 247)",
+    "fontFamily": "Manrope_700Bold",
+    "fontSize": "12.5px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "16.25px"
+   },
+   "Scout": {
+    "color": "rgb(236, 235, 247)",
+    "fontFamily": "Manrope_700Bold",
+    "fontSize": "13.5px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "17.55px"
+   },
+   "Board": {
+    "color": "rgb(163, 165, 198)",
+    "fontFamily": "Manrope_600SemiBold",
+    "fontSize": "12.5px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "16.25px"
+   },
+   "Fleet": {
+    "color": "rgb(236, 235, 247)",
+    "fontFamily": "Manrope_700Bold",
+    "fontSize": "14px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "18.2px"
+   },
+   "eyebrow": {
+    "color": "rgb(163, 165, 198)",
+    "fontSize": "10px",
+    "fontWeight": "400",
+    "letterSpacing": "1.8px",
+    "textTransform": "uppercase"
+   }
+  }
+ },
+ "blush-768": {
+  "gradient": "linear-gradient(165deg, rgb(253, 227, 238), rgb(235, 227, 252) 50%, rgb(217, 214, 252) 100%)",
+  "shell": {
+   "rect": {
+    "x": 20,
+    "y": 28,
+    "w": 728,
+    "h": 3823
+   },
+   "backdropFilter": "blur(24px)",
+   "backgroundColor": "rgba(255, 255, 255, 0.52)",
+   "borderRadius": "22px",
+   "boxShadow": "rgba(121, 100, 214, 0.22) 0px 60px 100px -40px, rgba(255, 255, 255, 0.75) 0px 0px 0px 1px inset"
+  },
+  "card": {
+   "rect": {
+    "x": 261,
+    "y": 507,
+    "w": 462,
+    "h": 201
+   },
+   "backgroundColor": "rgb(255, 255, 255)",
+   "borderRadius": "14px",
+   "boxShadow": "rgba(121, 100, 214, 0.22) 0px 20px 44px -24px",
+   "borderWidth": "0px"
+  },
+  "orbBlurs": [
+   {
+    "std": "90"
+   },
+   {
+    "std": "100"
+   }
+  ],
+  "inks": {
+   "Roster": {
+    "color": "rgb(59, 60, 92)",
+    "fontFamily": "Manrope_700Bold",
+    "fontSize": "12.5px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "16.25px"
+   },
+   "Scout": {
+    "color": "rgb(59, 60, 92)",
+    "fontFamily": "Manrope_700Bold",
+    "fontSize": "13.5px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "17.55px"
+   },
+   "Board": {
+    "color": "rgb(110, 112, 146)",
+    "fontFamily": "Manrope_600SemiBold",
+    "fontSize": "12.5px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "16.25px"
+   },
+   "Fleet": {
+    "color": "rgb(59, 60, 92)",
+    "fontFamily": "Manrope_700Bold",
+    "fontSize": "14px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "18.2px"
+   },
+   "eyebrow": {
+    "color": "rgb(110, 112, 146)",
+    "fontSize": "10px",
+    "fontWeight": "400",
+    "letterSpacing": "1.8px",
+    "textTransform": "uppercase"
+   }
+  }
+ },
+ "mint-768": {
+  "gradient": "linear-gradient(165deg, rgb(222, 244, 236), rgb(220, 235, 251) 50%, rgb(207, 223, 251) 100%)",
+  "shell": {
+   "rect": {
+    "x": 20,
+    "y": 28,
+    "w": 728,
+    "h": 3823
+   },
+   "backdropFilter": "blur(24px)",
+   "backgroundColor": "rgba(255, 255, 255, 0.58)",
+   "borderRadius": "22px",
+   "boxShadow": "rgba(60, 110, 190, 0.2) 0px 60px 100px -40px, rgba(255, 255, 255, 0.75) 0px 0px 0px 1px inset"
+  },
+  "card": {
+   "rect": {
+    "x": 261,
+    "y": 507,
+    "w": 462,
+    "h": 201
+   },
+   "backgroundColor": "rgb(255, 255, 255)",
+   "borderRadius": "14px",
+   "boxShadow": "rgba(60, 110, 190, 0.2) 0px 20px 44px -24px",
+   "borderWidth": "0px"
+  },
+  "orbBlurs": [
+   {
+    "std": "90"
+   },
+   {
+    "std": "100"
+   }
+  ],
+  "inks": {
+   "Roster": {
+    "color": "rgb(46, 61, 79)",
+    "fontFamily": "Manrope_700Bold",
+    "fontSize": "12.5px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "16.25px"
+   },
+   "Scout": {
+    "color": "rgb(46, 61, 79)",
+    "fontFamily": "Manrope_700Bold",
+    "fontSize": "13.5px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "17.55px"
+   },
+   "Board": {
+    "color": "rgb(102, 120, 139)",
+    "fontFamily": "Manrope_600SemiBold",
+    "fontSize": "12.5px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "16.25px"
+   },
+   "Fleet": {
+    "color": "rgb(46, 61, 79)",
+    "fontFamily": "Manrope_700Bold",
+    "fontSize": "14px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "18.2px"
+   },
+   "eyebrow": {
+    "color": "rgb(102, 120, 139)",
+    "fontSize": "10px",
+    "fontWeight": "400",
+    "letterSpacing": "1.8px",
+    "textTransform": "uppercase"
+   }
+  }
+ },
+ "dark-768": {
+  "gradient": "linear-gradient(165deg, rgb(23, 26, 47), rgb(29, 27, 59) 50%, rgb(35, 29, 70) 100%)",
+  "shell": {
+   "rect": {
+    "x": 20,
+    "y": 28,
+    "w": 728,
+    "h": 3823
+   },
+   "backdropFilter": "blur(24px)",
+   "backgroundColor": "rgba(255, 255, 255, 0.04)",
+   "borderRadius": "22px",
+   "boxShadow": "rgba(0, 0, 0, 0.5) 0px 60px 100px -40px, rgba(255, 255, 255, 0.08) 0px 0px 0px 1px inset"
+  },
+  "card": {
+   "rect": {
+    "x": 261,
+    "y": 507,
+    "w": 462,
+    "h": 201
+   },
+   "backgroundColor": "rgb(37, 39, 65)",
+   "borderRadius": "14px",
+   "boxShadow": "rgba(0, 0, 0, 0.5) 0px 20px 44px -24px",
+   "borderWidth": "0px"
+  },
+  "orbBlurs": [
+   {
+    "std": "90"
+   },
+   {
+    "std": "100"
+   }
+  ],
+  "inks": {
+   "Roster": {
+    "color": "rgb(236, 235, 247)",
+    "fontFamily": "Manrope_700Bold",
+    "fontSize": "12.5px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "16.25px"
+   },
+   "Scout": {
+    "color": "rgb(236, 235, 247)",
+    "fontFamily": "Manrope_700Bold",
+    "fontSize": "13.5px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "17.55px"
+   },
+   "Board": {
+    "color": "rgb(163, 165, 198)",
+    "fontFamily": "Manrope_600SemiBold",
+    "fontSize": "12.5px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "16.25px"
+   },
+   "Fleet": {
+    "color": "rgb(236, 235, 247)",
+    "fontFamily": "Manrope_700Bold",
+    "fontSize": "14px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "18.2px"
+   },
+   "eyebrow": {
+    "color": "rgb(163, 165, 198)",
+    "fontSize": "10px",
+    "fontWeight": "400",
+    "letterSpacing": "1.8px",
+    "textTransform": "uppercase"
+   }
+  }
+ },
+ "blush-390": {
+  "gradient": "linear-gradient(165deg, rgb(253, 227, 238), rgb(235, 227, 252) 50%, rgb(217, 214, 252) 100%)",
+  "shell": {
+   "rect": {
+    "x": 12,
+    "y": 16,
+    "w": 366,
+    "h": 4713
+   },
+   "backdropFilter": "blur(24px)",
+   "backgroundColor": "rgba(255, 255, 255, 0.52)",
+   "borderRadius": "22px",
+   "boxShadow": "rgba(121, 100, 214, 0.22) 0px 60px 100px -40px, rgba(255, 255, 255, 0.75) 0px 0px 0px 1px inset"
+  },
+  "card": {
+   "rect": {
+    "x": 30,
+    "y": 542,
+    "w": 329,
+    "h": 257
+   },
+   "backgroundColor": "rgb(255, 255, 255)",
+   "borderRadius": "14px",
+   "boxShadow": "rgba(121, 100, 214, 0.22) 0px 20px 44px -24px",
+   "borderWidth": "0px"
+  },
+  "orbBlurs": [
+   {
+    "std": "90"
+   },
+   {
+    "std": "100"
+   }
+  ],
+  "inks": {
+   "Scout": {
+    "color": "rgb(59, 60, 92)",
+    "fontFamily": "Manrope_700Bold",
+    "fontSize": "13.5px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "17.55px"
+   },
+   "Fleet": {
+    "color": "rgb(59, 60, 92)",
+    "fontFamily": "Manrope_700Bold",
+    "fontSize": "14px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "18.2px"
+   }
+  }
+ },
+ "mint-390": {
+  "gradient": "linear-gradient(165deg, rgb(222, 244, 236), rgb(220, 235, 251) 50%, rgb(207, 223, 251) 100%)",
+  "shell": {
+   "rect": {
+    "x": 12,
+    "y": 16,
+    "w": 366,
+    "h": 4713
+   },
+   "backdropFilter": "blur(24px)",
+   "backgroundColor": "rgba(255, 255, 255, 0.58)",
+   "borderRadius": "22px",
+   "boxShadow": "rgba(60, 110, 190, 0.2) 0px 60px 100px -40px, rgba(255, 255, 255, 0.75) 0px 0px 0px 1px inset"
+  },
+  "card": {
+   "rect": {
+    "x": 30,
+    "y": 542,
+    "w": 329,
+    "h": 257
+   },
+   "backgroundColor": "rgb(255, 255, 255)",
+   "borderRadius": "14px",
+   "boxShadow": "rgba(60, 110, 190, 0.2) 0px 20px 44px -24px",
+   "borderWidth": "0px"
+  },
+  "orbBlurs": [
+   {
+    "std": "90"
+   },
+   {
+    "std": "100"
+   }
+  ],
+  "inks": {
+   "Scout": {
+    "color": "rgb(46, 61, 79)",
+    "fontFamily": "Manrope_700Bold",
+    "fontSize": "13.5px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "17.55px"
+   },
+   "Fleet": {
+    "color": "rgb(46, 61, 79)",
+    "fontFamily": "Manrope_700Bold",
+    "fontSize": "14px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "18.2px"
+   }
+  }
+ },
+ "dark-390": {
+  "gradient": "linear-gradient(165deg, rgb(23, 26, 47), rgb(29, 27, 59) 50%, rgb(35, 29, 70) 100%)",
+  "shell": {
+   "rect": {
+    "x": 12,
+    "y": 16,
+    "w": 366,
+    "h": 4713
+   },
+   "backdropFilter": "blur(24px)",
+   "backgroundColor": "rgba(255, 255, 255, 0.04)",
+   "borderRadius": "22px",
+   "boxShadow": "rgba(0, 0, 0, 0.5) 0px 60px 100px -40px, rgba(255, 255, 255, 0.08) 0px 0px 0px 1px inset"
+  },
+  "card": {
+   "rect": {
+    "x": 30,
+    "y": 542,
+    "w": 329,
+    "h": 257
+   },
+   "backgroundColor": "rgb(37, 39, 65)",
+   "borderRadius": "14px",
+   "boxShadow": "rgba(0, 0, 0, 0.5) 0px 20px 44px -24px",
+   "borderWidth": "0px"
+  },
+  "orbBlurs": [
+   {
+    "std": "90"
+   },
+   {
+    "std": "100"
+   }
+  ],
+  "inks": {
+   "Scout": {
+    "color": "rgb(236, 235, 247)",
+    "fontFamily": "Manrope_700Bold",
+    "fontSize": "13.5px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "17.55px"
+   },
+   "Fleet": {
+    "color": "rgb(236, 235, 247)",
+    "fontFamily": "Manrope_700Bold",
+    "fontSize": "14px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "18.2px"
+   }
+  }
+ }
+}

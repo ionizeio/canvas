@@ -936,6 +936,102 @@ judge before any completion claim.
   +198 and 164 at +231 (past the rest 186, the overshoot on the along axis)
   before settling to 186 by +429.
 
+### df-argus-shell
+
+- **What:** the Dark Factory (DF) page look on its shipped web app, Argus `/roster`
+  (`~/Workspaces/Dark Factory`, commit cf7c580, `bun run dev` on port 8090), the
+  reference for the Canvas docs' page look under the owner's 2026-09-23 decision that
+  Canvas takes the DF UI. Recorded 2026-09-23 with Playwright 1.60 Chromium (headless,
+  DPR 2) at 1440 x 900, 768 x 1024 and 390 x 844 in the blush, mint and dark themes,
+  the theme picked through the sidebar swatches and every scroller reset to the top.
+  DF itself judged its blush desktop frame a match to its design prototype (its log's
+  `argus-prototype` card); mint, dark and the narrow frames are DF's implementation and
+  are the reference on that footing.
+- **Strips and measurements:** `tools/native/reference/df-argus-shell/rest-{blush,mint,
+  dark}-1440.png`, `rest-blush-768.png`, `rest-blush-390.png`, `rest-dark-390.png`
+  (halved and palette-quantized), and `probe-rest.json` (computed styles per theme and
+  width).
+- **Page:** `linear-gradient(165deg, bg1 0%, bg2 50%, bg3 100%)` over the whole
+  viewport: blush #fde3ee / #ebe3fc / #d9d6fc, mint #def4ec / #dcebfb / #cfdffb, dark
+  #171a2f / #1d1b3b / #231d46. Two orbs behind the shell, solid ellipses under
+  `feGaussianBlur` stdDeviation 90 and 100 (orb1 48% x 60% at left -8% / top -10%,
+  opacity 0.35; orb2 46% x 70% at right -10% / bottom -20%, opacity 0.40; the page
+  clips them).
+- **Shell:** one frosted panel, radius 22, `backdrop-filter: blur(24px)`, fill white
+  at 0.52 (blush), 0.58 (mint), 0.045 (dark; the computed style reads 0.04), shadow
+  `0 60px 100px -40px <palette shadow>` plus a 1 px inset hairline in white 0.75 (light
+  themes) or 0.08 (dark). Placement by width tier: 1440 wide, x 50 / y 56, width 1340;
+  768 wide, x 20 / y 28, width 728; 390 wide, x 12 / y 16, width 366. The shell runs
+  the page's full height and scrolls with it (2580, 3823, 4713 px tall on the roster).
+  The sidebar (about 205 px) paints the shell fill again with a 1 px right hairline in
+  the line color; fourteen static gradient wedges tint the shell's corners (geometry in
+  DF's `tuning/reference/materials.json`).
+- **Content:** cards white (dark #252741), radius 14, no border, shadow
+  `0 20px 44px -24px` in the palette shadow (blush rgba(121,100,214,0.22), mint
+  rgba(60,110,190,0.2), dark rgba(0,0,0,0.5)). Text in Manrope per-weight faces: text
+  ink blush #3b3c5c, mint #2e3d4f, dark #ecebf7; muted blush #6e7092, mint #66788b, dark
+  #a3a5c6; section heading 14/700, card name 13.5/700, nav rows 12.5/600 (700 active),
+  eyebrows 10px uppercase tracked.
+- **Qualities that are not numbers:** the orbs read as soft color pools with no edge;
+  the shell reads frosted, the gradient and orbs showing through blurred and the
+  hairline catching its top edge; the wedges are faint tints that vanish into the
+  shell; everything is static.
+
+### df-frost
+
+- **What:** DF's glass material, the one Canvas's web glass takes under decision 5b:
+  the shell above, and the overlay scrim, recorded on the same app and date with the
+  agent drawer open (a click on the Scout card at 1440 x 900, blush).
+- **Strips and measurements:** `tools/native/reference/df-frost/drawer-scrim-blush-
+  1440.png`, `probe-scrim.json`.
+- **Shell material:** fill white 0.52 / 0.58 / 0.045 (blush, mint, dark),
+  `blur(24px)` with no saturation shift, 1 px inset hairline white 0.75 / 0.08, no
+  refraction and no specular highlight.
+- **Scrim:** a full-viewport layer `rgba(40, 30, 90, 0.28)` (blush) with
+  `backdrop-filter: blur(2px)`; mint rgba(20,50,90,0.28), dark rgba(5,5,20,0.55) per
+  DF's palettes. The drawer beside it is 440 px wide, the card color, shadow
+  `-30px 0 80px -30px rgba(0,0,0,0.4)`; scrim and drawer appear at once, with no
+  entrance motion.
+
+### df-hover-lift
+
+- **What:** DF's hover motion on Argus `/roster` at 1440 x 900, blush, recorded
+  2026-09-23 with `record-motion.mjs --platform web` (screencast at 20 fps, 50 ms
+  tiles) and DF's own action modules (`tuning/actions/hover-card.mjs`,
+  `hover-target.mjs`), each writing a per-frame trace. This is the reference for the
+  hover lifts the owner chose to port (decision 11).
+- **Strips and traces:** `tools/native/reference/df-hover-lift/card-in-057-064.png`,
+  `card-out-101-108.png`, `primary-in-053-060.png`, `nav-in-053-060.png`, and
+  `{card,primary,nav}-trace.json` (the marks are the pointer's arrival and departure).
+- **Card (the Scout roster card):** the card rises 2 px and its shadow grows from
+  `0 20px 44px -24px` to `0 30px 54px -24px` in step, same color, on the CSS `ease`
+  curve over about 180 ms (the trace, from the first movement: 0.05 px, then 0.72 px at
+  +17 ms, 1.26 at +47, 1.70 at +75, 1.94 at +117, 2.0 at +158); no overshoot; the leave
+  runs the same curve back over about 180 ms. Text and corners stay crisp.
+- **Primary button (Mint agent):** rises 1 px over about 150 ms on `ease` (0.22 px,
+  0.58 at +27, 0.85 at +54, 0.98 at +96, 1.0 at +124 from the first movement), no shadow
+  change on the button element; the leave is symmetric.
+- **Nav row (Board):** the background fades from transparent to the palette's hover
+  wash, rgba(123,108,240,0.08) in blush, over about 150 ms on `ease` (0.004, 0.02 at
+  +12, 0.047 at +39, 0.063 at +64, 0.075 at +90, 0.08 at +116); back the same way.
+- **Everything else** DF hovers (menu rows, chips, icon buttons, outline buttons,
+  links) switches instantly, per DF's own card.
+- **Tolerance:** one tile (50 ms) or ten percent of the phase, whichever is larger.
+
+### df-avatar
+
+- **What:** DF's avatar on its `/ui` playground (1440 wide, blush), recorded
+  2026-09-23; strip `tools/native/reference/df-avatar/avatars-ui.png`.
+- **Anatomy:** a disc filled with a 135 deg gradient from oklch(0.8 0.1 h) to
+  oklch(0.6 0.17 h+35) for the entity's hue h (stage hues 20, 45, 335, 285, 255, 225,
+  195, 155, 115, 70); white initials at weight 800, about a third of the disc's size;
+  with `ring`, a card-colored gap then a conic sheen ring in the same hue; with `glow`,
+  a 2 px card-colored gap and a 3.5 px accent2 ring.
+- **Known conflict:** white initials on DF's ramp measure about 1.8 to 2.5:1, below
+  the kit's 4.5:1 text floor (WCAG 1.4.3). The plan keeps DF's shape and solves the
+  lightness for 4.5:1; that difference goes to the owner at the avatar phase unless
+  accepted before.
+
 ## Runs under the version 2 contract, from 2026-09-20
 
 Every row from here on names its Surface (a harness route, or the shipped route
@@ -1007,3 +1103,20 @@ state at rest, and nothing commits through React per frame at idle.
 | 2026-09-22 | REMOVAL 2 of 4: the liquid popups and the Entrance spring. `popup-motion.tsx`, `popup-handoff.tsx`, `liquid-anchored-overlay.tsx`, `portal-activation.ts` and `autocomplete-echo.tsx` deleted; AnchoredOverlay renders its card through Entrance, now a readiness hold with no motion; GlassBox is the pre-motion host plus clip box again; the 13 popup consumers open a plain dense or functional card under a trigger that stays where it is | Chromium (Playwright 1.60 headed, 1440x1000, dark) on the docs dev server; the iPhone 17 Pro simulator (iOS 26, native Liquid Glass) running the docs dev app against the same Metro | the phase 2 tree (this commit) | `/components/dropdown`, `select`, `autocomplete`, `popover`, `dialog`, `avatar/accountmenu`, web, Glass; `components/dropdown` and `components/select` on iOS | none: the effect is removed | 7 to 12 React commits in the 1.5 s after each click (the open itself), none per frame | every popup opens as a card beside its trigger with the trigger still painted; the Dropdown menu and the Select list on iOS render through the native GlassView under the unchanged trigger | no reference: the effect is removed by the owner's decision; the check is that the card appears in place and nothing commits per frame | session scratchpad `popups/*.png` and the two simulator screenshots (not kept in the repo) |
 | 2026-09-22 | REMOVAL 3 of 4: the Backdrop organism (its clock, layers, SVG renderer, the `@shopify/react-native-skia` GPU probe and the WebGL context pooling of its host) is deleted from the kit with its docs page and fixtures, and the docs' decorative scenes (the Lattice, the spectral currents, the hero orbit, the catalog pulse, the three-looks auto-advance and fade) with their harness routes and tunables; the docs canvases paint the theme background in both surface modes | Chromium (Playwright 1.60 headed, 1440x1000 and 390x844, dark) on the docs dev server; the iPhone 17 Pro simulator (iOS 26) running the docs dev app against the same Metro | the phase 3 tree (this commit) | `/` (home, Glass and `?surface=solid`, desktop and phone width), `/components`, `/components/dropdown`, web; `components/tabs` on iOS | none: the scenes are removed | idle 0 React commits and 0 inline style writes per second on the component pages (unchanged since phase 1) | the home hero is copy and CTAs on the theme background, the three-looks strip steps on its chevrons only, every page paints `tokens.background` under its glass surfaces (the first pass left the canvases transparent and the dark scheme's text sat on a white document: fixed before this row), no console errors on the five pages | no reference: the scenes are removed by the owner's decision | session scratchpad `pages2/*.png` and the simulator screenshot (not kept in the repo) |
 | 2026-09-22 | REMOVAL 4 of 4, housekeeping: CLAUDE.md's motion section rewritten for the kit without the liquid motion, this log's introduction turned into the history note, `.tuning-harness.json` down to `motion.ts` and `glass-lens.ts` with `/testing/materials` as the one harness route, the size ceilings lowered to the measured figures (whole kit 216 KB, Button 9,472 B, DataTable 49,664 B, StackedList 55,808 B), the Backdrop visual baselines deleted, the patch changeset written | the kit's size fixtures under esbuild (`bun run check-size`); the docs web export (`bun run build:web`, 657 pages) | the phase 4 tree (this commit) | none: no shipped surface changes in this commit (tooling, docs text and budgets only) | none | none | whole kit 204,074 / 204,399 / 206,693 B gzip (web / iOS / Android) against 212,411 / 212,852 / 214,493 B with the motion; Button 8,710 / 6,733 / 8,652 B against 10,308 / 8,327 / 10,247 B; the export builds and every page paints first | no reference: a bookkeeping commit | none |
+
+## The Dark Factory direction, from 2026-09-23
+
+Decision of the owner on 2026-09-23: Canvas drops its Riskora brand and takes the Dark
+Factory (DF) UI. DF's tokens replace Canvas's on every platform; the web takes DF's
+full look, including DF's plain frost in place of the Chromium lens (decision 5b) and
+DF's hover lifts (decision 11); the docs paint DF's page look as docs-only
+scaffolding. The effects this section tracks are judged against the four DF cards in
+`## References` (`df-argus-shell`, `df-frost`, `df-hover-lift`, `df-avatar`). The
+plan and the decision list live in the owner's plan file and the memory note
+`dark-factory-direction`; this log keeps the evidence.
+
+| Date | Effect and profile | Runtime and device | Revision (dirty?) | Surface | Values tried | rAF p50 / p95 / max (ms) | What the comparison showed | Versus reference | Artifacts |
+|---|---|---|---|---|---|---|---|---|---|
+| 2026-09-23 | REFERENCE: DF page look and material at rest (page gradient, orbs, frosted shell, sidebar, cards, inks, scrim) | Playwright 1.60 Chromium headless, DPR 2, macOS host; 1440 x 900, 768 x 1024, 390 x 844 | DF cf7c580 (clean); Canvas e4d8ce28 (clean) | reference page: DF Argus `http://localhost:8090/roster`, web, blush / mint / dark, and the agent drawer open for the scrim | none (recording the reference) | n/a (static) | Computed styles per theme and width: gradient stops, orb blurs 90 and 100, shell blur 24 with fills 0.52 / 0.58 / 0.045, radius 22, shell insets 50/56, 20/28, 12/16 and widths 1340, 728, 366; cards radius 14 with the palette shadow; scrim rgba(40,30,90,0.28) with a 2 px blur. Written into the `df-argus-shell` and `df-frost` cards. | no reference (this is the reference) | `tools/native/reference/df-argus-shell/`, `tools/native/reference/df-frost/` |
+| 2026-09-23 | REFERENCE: DF hover motion (card lift with shadow, primary button lift, nav wash) | Playwright 1.60 Chromium headless, 1440 x 900, screencast 20 fps plus a per-frame DOM trace (DF's action modules) | DF cf7c580 (clean); Canvas e4d8ce28 (clean) | reference page: DF Argus `http://localhost:8090/roster`, web, blush | none (recording the reference) | card 8 / 14 / 31; primary 13 / 27 / 42; nav 13 / 27 / 28 | Card: 2 px lift with the shadow growing 20/44 to 30/54 in step over about 180 ms on `ease`, symmetric leave. Primary: 1 px over about 150 ms. Nav: wash 0 to 0.08 over about 150 ms. Agrees with DF's own prototype card. Written into `df-hover-lift`. | no reference (this is the reference) | `tools/native/reference/df-hover-lift/` |
+| 2026-09-23 | REFERENCE: DF avatar anatomy (hue gradient disc, white 800 initials, conic ring, glow) | Playwright 1.60 Chromium headless, DPR 2, 1440 wide | DF cf7c580 (clean); Canvas e4d8ce28 (clean) | reference page: DF `http://localhost:8090/ui` (Avatars section), web, blush | none (recording the reference) | n/a (static) | Ten stage hues on the 135 deg ramp; white initials measure about 1.8 to 2.5:1 on it, below the kit's 4.5:1 floor, recorded on the card as a known conflict. | no reference (this is the reference) | `tools/native/reference/df-avatar/` |

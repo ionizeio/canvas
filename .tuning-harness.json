@@ -15,6 +15,50 @@
         "tools/native/reference/ios-native-menu/dismiss-165-182.png"
       ],
       "card": "tools/native/liquid-motion.md#references"
+    },
+    {
+      "name": "df-argus-shell",
+      "what": "Dark Factory's page look on its shipped web app (Argus /roster, http://localhost:8090, DF commit cf7c580) at rest: the 165 deg page gradient, two blurred orbs, the frosted 22 px shell with its hairline and shadow, the sidebar, cards and inks, in blush, mint and dark at 1440, 768 and 390 wide",
+      "run": "recorded 2026-09-23 with Playwright from the Canvas repo root (DPR 2); re-record against a running DF dev server when the folder's PNGs no longer match DF",
+      "strips": [
+        "tools/native/reference/df-argus-shell/rest-blush-1440.png",
+        "tools/native/reference/df-argus-shell/rest-mint-1440.png",
+        "tools/native/reference/df-argus-shell/rest-dark-1440.png",
+        "tools/native/reference/df-argus-shell/rest-blush-768.png",
+        "tools/native/reference/df-argus-shell/rest-blush-390.png",
+        "tools/native/reference/df-argus-shell/rest-dark-390.png"
+      ],
+      "card": "tools/native/liquid-motion.md#df-argus-shell"
+    },
+    {
+      "name": "df-frost",
+      "what": "Dark Factory's glass material, the web glass Canvas takes under the owner's decision 5b: white 0.52 / 0.58 / 0.045 over a 24 px blur with a 1 px inset hairline, and the overlay scrim rgba(40,30,90,0.28) over a 2 px blur",
+      "run": "recorded 2026-09-23 on DF Argus /roster with the agent drawer open (1440 x 900, blush)",
+      "strips": [
+        "tools/native/reference/df-frost/drawer-scrim-blush-1440.png"
+      ],
+      "card": "tools/native/liquid-motion.md#df-frost"
+    },
+    {
+      "name": "df-hover-lift",
+      "what": "Dark Factory's hover motion on Argus /roster: the card's 2 px lift with its shadow growing in step over 180 ms, the primary button's 1 px lift over 150 ms, the nav row's 0.08 wash over 150 ms, all on CSS ease and symmetric on leave",
+      "run": "recorded 2026-09-23 with record-motion.mjs --platform web (20 fps) and DF's tuning/actions modules; per-frame traces kept beside the strips",
+      "strips": [
+        "tools/native/reference/df-hover-lift/card-in-057-064.png",
+        "tools/native/reference/df-hover-lift/card-out-101-108.png",
+        "tools/native/reference/df-hover-lift/primary-in-053-060.png",
+        "tools/native/reference/df-hover-lift/nav-in-053-060.png"
+      ],
+      "card": "tools/native/liquid-motion.md#df-hover-lift"
+    },
+    {
+      "name": "df-avatar",
+      "what": "Dark Factory's avatar: a 135 deg OKLCH hue gradient disc with white 800-weight initials, the conic sheen ring and the glow ring, on DF's /ui playground",
+      "run": "recorded 2026-09-23 on DF http://localhost:8090/ui (1440 wide, blush)",
+      "strips": [
+        "tools/native/reference/df-avatar/avatars-ui.png"
+      ],
+      "card": "tools/native/liquid-motion.md#df-avatar"
     }
   ],
   "harness": {
