@@ -48,8 +48,11 @@ const KNOWN_OVERFLOW: Record<string, { past: number; why: string }> = {
   // 99 when recorded; re-measured at 106 on the Linux runner across four consecutive
   // main runs (e243db55 through 97b7c182) with no change to the page, and a macOS A/B
   // of the two commits around the shift measured 108 on both, so the extra 7px is the
-  // runner's glyph metrics (the link labels set a touch wider), not the page.
-  "/components/navbars": { past: 106, why: "the topbar link row does not collapse, so the links run past the card (99 once the card spans the full page column instead of a 384 Container, 106 as the Linux runner measures it)" },
+  // runner's glyph metrics (the link labels set a touch wider), not the page. 124 since
+  // the kit took Manrope (0eeb352d, run 35878462617): the same five links, set in a face
+  // that runs wider than Urbanist. The fix is the link row collapsing into a menu when it
+  // does not fit, which deletes this entry.
+  "/components/navbars": { past: 124, why: "the topbar link row does not collapse, so the links run past the card (124 on the Linux runner since the Manrope face)" },
 };
 
 test.describe("tablet width", () => {
