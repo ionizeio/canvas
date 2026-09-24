@@ -136,6 +136,12 @@ span (a field, a card) fill the cell.
 
 `stacks` and spans compose: below the breakpoint the Row becomes a Column and
 every child is full width, the `col-12 col-md-6` idiom without a second prop.
+Crossing the breakpoint changes the layout only: every child stays mounted, so
+a field keeps its text and focus when a window is resized across it or a phone
+switches from the server's desktop layout after hydration. This is why a
+two-pane screen is a `Row stacks` of spans rather than a Row on one side of a
+`useFormFactor()` branch and a Column on the other, which remounts everything
+inside.
 
 ```tsx
 <Row stacks>

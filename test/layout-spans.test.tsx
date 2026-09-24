@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { describe, it, expect, afterEach, beforeEach } from "bun:test";
 import { render, cleanup, renderHook } from "@testing-library/react";
 import { Dimensions } from "react-native";
@@ -83,7 +84,7 @@ describe("Row spans", () => {
     expect(at("plain").style.flexWrap).not.toBe("wrap");
   });
 
-  it("stacks ignores spans once stacked: every child is a full-width column child", () => {
+  it("stacks ignores spans once stacked: every cell drops its width and the Row is a column", () => {
     resizeViewport(375);
     ui(
       <Row snug stacks testID="r">
@@ -96,8 +97,50 @@ describe("Row spans", () => {
       </Row>,
     );
     expect(at("r").style.flexDirection).toBe("column");
-    expect(at("l").parentElement).toBe(at("r"));
-    expect(at("rr").parentElement).toBe(at("r"));
+    expect(at("r").style.flexWrap).not.toBe("wrap");
+    for (const id of ["l", "rr"]) {
+      const cell = at(id).parentElement as HTMLElement;
+      expect(cell.parentElement).toBe(at("r"));
+      expect(cell.style.width).toBe("");
+    }
+  });
+
+  it("keeps every child mounted when a spanning Row stacks and unstacks", () => {
+    // The breakpoint changes the layout, never the element tree: a child that
+    // remounted here would lose a field's text and focus on every resize.
+    let mounts = 0;
+    const Counted = ({ testID }: { testID: string }) => {
+      useEffect(() => {
+        mounts += 1;
+      }, []);
+      return <Badge testID={testID}>field</Badge>;
+    };
+    resizeViewport(1280);
+    ui(
+      <Row snug stacks testID="r">
+        <Column span={6}>
+          <Counted testID="a" />
+        </Column>
+        <Column span={6}>
+          <Counted testID="b" />
+        </Column>
+        <Counted testID="bare" />
+      </Row>,
+    );
+    const nodes = ["a", "b", "bare"].map(at);
+    expect(mounts).toBe(3);
+    expect(at("r").style.flexDirection).toBe("row");
+    expect((at("a").parentElement?.parentElement as HTMLElement).style.width).not.toBe("");
+
+    resizeViewport(375);
+    expect(at("r").style.flexDirection).toBe("column");
+    expect((at("a").parentElement?.parentElement as HTMLElement).style.width).toBe("");
+    resizeViewport(1280);
+    expect(at("r").style.flexDirection).toBe("row");
+
+    expect(mounts).toBe(3);
+    expect(["a", "b", "bare"].map(at)).toEqual(nodes);
+    expect(nodes.every((node) => node.isConnected)).toBe(true);
   });
 
   it("warns for a span outside a Row and for a span that is not a whole column count", () => {

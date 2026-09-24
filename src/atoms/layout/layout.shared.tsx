@@ -217,12 +217,16 @@ function hasSpans(children: ReactNode): boolean {
 }
 
 /** Wrap each spanning child in a px-wide cell; other children pass through. A cell
- *  stacks above its neighbours while a card in it is lifted (src/style/hover.tsx). */
-function spanCells(children: ReactNode, width: number, gap: number): ReactNode {
+ *  stacks above its neighbours while a card in it is lifted (src/style/hover.tsx).
+ *  A stacked Row keeps the cells and drops only their width (the Grid precedent):
+ *  adding or removing a wrapper would change the element at every child position,
+ *  and React would remount each child, dropping a field's text and focus whenever
+ *  the Row crosses its breakpoint. */
+function spanCells(children: ReactNode, width: number, gap: number, stacked: boolean): ReactNode {
   return Children.toArray(children).map((child, i) => {
     const span = isValidElement(child) ? (child.props as FlexProps).span : undefined;
     if (span == null) return child;
-    const cell = width > 0 ? { width: spanWidth(width, clampSpan(span), gap) } : null;
+    const cell = !stacked && width > 0 ? { width: spanWidth(width, clampSpan(span), gap) } : null;
     return (
       <RaiseCell key={i} style={cell}>
         {child}
@@ -280,7 +284,7 @@ export function createFlex(skin: FlexSkin, direction: Direction) {
     return (
       <View onLayout={onLayout} style={[layout, style]} testID={testID}>
         <LayoutAxisProvider value={axisOf(props, dir, parent)}>
-          {spanning && !stacked ? spanCells(children, width, gap) : children}
+          {spanning ? spanCells(children, width, gap, stacked) : children}
         </LayoutAxisProvider>
       </View>
     );
