@@ -322,7 +322,7 @@ components:
     field-radius: "10px"
     field-radius-bottom: "10px"
   pagination:
-    page-radius: "8px"
+    page-radius: "9999px"
   select:
     select-panel-shadow: "var(--shadow-lg)"
     select-radius: "10px"
@@ -449,8 +449,6 @@ platformSkins:
     input:
       field-radius: "8px"
       field-radius-bottom: "8px"
-    pagination:
-      page-radius: "8px"
     select:
       select-radius: "8px"
       select-radius-bottom: "8px"
@@ -565,8 +563,6 @@ platformSkins:
     input:
       field-radius: "4px"
       field-radius-bottom: "0px"
-    pagination:
-      page-radius: "8px"
     select:
       select-panel-shadow: "var(--shadow-md)"
       select-radius: "4px"

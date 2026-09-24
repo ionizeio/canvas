@@ -1,28 +1,22 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { View, Pressable, Text, RippleClip, cornerRadii, useControllableState, type StyleProp, type ViewStyle, type ColorTokens, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import { useHover } from "../../style/hover.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, isRTL, pressDim, useControllableState, useMinTargetSlop, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import { Icon } from "../icon/icon.js";
 import * as s from "./pagination.styles.js";
 import { type Size, type PaginationSkin } from "./pagination.styles.js";
 
 // Shared Pagination shell. The structure (numbered / compact / with-size
 // variants, the windowing math, the clamp + go handler, the size-selector
 // cycling), the accessibility, and the variant/size precedence live here once; a
-// platform file supplies only its skin (the cell shape, the active-page fill,
-// the label color, and the press feedback) and calls createPagination.
+// platform file supplies only its skin (the cells, the current page's fill, the
+// inks, the hover and press feedback, the touch target) and calls createPagination.
+// No platform has a pagination control, so all three pass the same skin today.
 //
 // Pagination is page-of-N navigation for tables and lists: a horizontal row of
-// page-number buttons flanked by Prev/Next controls, with the current page
+// page-number buttons flanked by Previous/Next arrows, with the current page
 // highlighted. When there are too many pages to show at once, the middle is
-// truncated with an ellipsis glyph, keeping the first page, the last page, and a
-// small window around the current page.
-//
-// The brand survives on every platform (the indigo `primary` token fills the
-// active page); only the native SHAPE (cell radius) and press feedback change:
-//   - iOS (HIG page controls): pill-rounded cells (radius ~8), the active page
-//     filled `primary`; press = opacity dim 0.8.
-//   - Android (M3): flat cells (radius ~8), active page a tonal alpha(primary)
-//     fill with a brand label; press = android_ripple.
-//   - Web: the established Canvas look (bordered boxes, radius 6, solid primary
-//     fill on the active page), lifted verbatim.
+// truncated with an ellipsis, keeping the first page, the last page, and a small
+// window around the current page.
 //
 // Boolean-prop API across two axes (mirrors Button's intentOf precedence; first
 // match wins within an axis, axes are orthogonal):
@@ -33,10 +27,9 @@ import { type Size, type PaginationSkin } from "./pagination.styles.js";
 //     compact, then the numbered default.
 //   - Size: `small`, `large` (omit for the default, medium size).
 //
-// There is no icon utility at this layer, so Prev/Next use reading-direction
-// single guillemet glyphs ("‹" / "›") rendered as Text rather than SVG chevrons,
-// the size selector uses a "▾" caret glyph, and the truncation gap is an ellipsis
-// glyph ("…").
+// The arrows, the selector's caret and the truncation gap are kit Icons (chevrons
+// and an ellipsis). The arrows point along the reading direction, so under a
+// right-to-left layout Previous points right.
 
 export interface PaginationProps {
   /** Current page, 1-based (CONTROLLED). Clamped into the 1..total range before rendering. Omit for uncontrolled use. */
@@ -124,73 +117,166 @@ function pageWindow(current: number, total: number): number[] {
   return list;
 }
 
-// Under glass a cell that paints a surface of its own (the web's bordered tile, the
-// iOS/M3 selector pill, every skin's selected page) is a CONTROL-layer puck: a
-// GlassPane paints the material behind its label (the Pressable keeps its tap,
-// ripple and dim) and the cell drops its fill and hairline (the pane's material and
-// rim carry them). The selected page is BRAND-tinted glass with its label in
-// `primary-foreground`; a hollow cell (the iOS/M3 chevrons and resting pages) stays
-// bare, as it is in solid mode.
-function surfaced(box: ViewStyle): boolean {
+// Under glass a cell that paints a fill of its own (the current page) is a CONTROL-layer
+// puck: a GlassPane paints the brand-tinted material behind its number (the Pressable
+// keeps its tap, ripple and dim) and the cell drops its fill and edge (the pane carries
+// them), with the number in `primary-foreground`. A cell with no fill (a resting page, the
+// hairline arrows and selector, which are Dark Factory's transparent outline pills like
+// the web's outline Button) stays bare, its hairline kept, as it is in solid mode.
+function filled(box: ViewStyle): boolean {
   const bg = box.backgroundColor;
-  return (bg != null && bg !== "transparent") || (box.borderWidth ?? 0) > 0;
+  return bg != null && bg !== "transparent";
+}
+
+// Where the cells sit 4px apart (the pages, and the arrows beside them or each other) the
+// touch area grows vertically only: growing sideways would overlap the neighbour's. The
+// compact arrows sit beside text and grow both ways.
+const ABUTTING = { axis: "vertical" } as const;
+
+/** The chevron an arrow draws: it points along the reading direction, so Previous points right under right-to-left. */
+export function arrowIcon(direction: "previous" | "next", rtl: boolean): "chevronLeft" | "chevronRight" {
+  return (direction === "previous") !== rtl ? "chevronLeft" : "chevronRight";
 }
 
 /** Build a Pagination component from a platform skin. */
 export function createPagination(skin: PaginationSkin) {
-  const ripple = skin.ripple;
+  const hoverLook = skin.hover;
 
-  interface ControlProps {
-    glyph: string;
+  interface ArrowProps {
+    direction: "previous" | "next";
     size: Size;
-    tokens: ColorTokens;
     disabled: boolean;
-    accessibilityLabel: string;
+    /** Another cell sits 4px away, so the touch area grows vertically only. */
+    abutting: boolean;
     onPress: () => void;
   }
 
-  // A Prev/Next chevron control. Reads as a square page button without a number.
-  function Control({ glyph, size, tokens, disabled, accessibilityLabel, onPress }: ControlProps) {
-    const box = skin.controlBox(tokens);
+  // A Previous/Next arrow: a chevron in a circle, no number.
+  function Arrow({ direction, size, disabled, abutting, onPress }: ArrowProps) {
     const theme = useMaterialTheme({ static: true, layer: "control" });
-    const puck = isGlass(theme) && surfaced(box);
+    const { tokens } = theme;
+    const box = skin.controlBox(tokens);
+    const target = useMinTargetSlop(skin.minTarget, abutting ? ABUTTING : undefined);
+    const { hovered, target: hoverTarget } = useHover(hoverLook != null);
+    const ink = skin.controlLabel(tokens, disabled).color as string;
     return (
       // The rounded cell's bounded Android ripple is clipped to its corners by this RippleClip
-      // parent (no-op on iOS/web). A same-node overflow:"hidden" cannot clip a node's own
-      // ripple. See src/style/ripple-clip.
-      <RippleClip shape={cornerRadii(box)}>
+      // parent (no-op on iOS/web), which is also the hover target: it never moves. A same-node
+      // overflow:"hidden" cannot clip a node's own ripple. See src/style/ripple-clip.
+      <RippleClip shape={cornerRadii(box)} {...hoverTarget}>
         <Pressable
           style={({ pressed }) => [
-            surfaced(box) ? paneStyle(theme, box) : box,
-            s.itemSize[size],
-            disabled ? { opacity: 0.5 } : null,
-            skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+            box,
+            s.arrowSize[size],
+            hovered && !disabled && hoverLook ? hoverLook(tokens) : null,
+            pressDim(pressed, skin.pressedOpacity),
           ]}
           onPress={onPress}
           disabled={disabled}
-          hitSlop={8}
-          android_ripple={ripple ? ripple(tokens, false) : undefined}
+          {...target}
+          android_ripple={skin.ripple ? skin.ripple(tokens, false) : undefined}
           accessibilityRole="button"
-          accessibilityLabel={accessibilityLabel}
+          accessibilityLabel={direction === "previous" ? "Previous page" : "Next page"}
           accessibilityState={{ disabled }}
           aria-disabled={disabled}
         >
-          {puck ? <GlassPane static layer="control" shape={box} /> : null}
-          <Text style={[skin.controlLabel(tokens), s.labelSize[size]]}>{glyph}</Text>
+          <Icon {...{ [arrowIcon(direction, isRTL())]: true }} decorative size={s.iconSize[size]} color={ink} />
+        </Pressable>
+      </RippleClip>
+    );
+  }
+
+  interface PageProps {
+    page: number;
+    selected: boolean;
+    size: Size;
+    disabled: boolean;
+    onPress: () => void;
+  }
+
+  // A numbered page. The current page is the brand pill (a brand puck under glass); a
+  // resting page is bare and takes the hover wash.
+  function Page({ page, selected, size, disabled, onPress }: PageProps) {
+    const theme = useMaterialTheme({ static: true, layer: "control" });
+    const { tokens } = theme;
+    const box = skin.pageBox(tokens, selected, disabled);
+    const puck = isGlass(theme) && filled(box);
+    const target = useMinTargetSlop(skin.minTarget, ABUTTING);
+    const { hovered, target: hoverTarget } = useHover(hoverLook != null && !selected);
+    return (
+      <RippleClip shape={cornerRadii(box)} {...hoverTarget}>
+        <Pressable
+          style={({ pressed }) => [
+            filled(box) ? paneStyle(theme, box) : box,
+            s.itemSize[size],
+            hovered && !disabled && hoverLook ? hoverLook(tokens) : null,
+            pressDim(pressed, skin.pressedOpacity),
+          ]}
+          onPress={onPress}
+          disabled={disabled}
+          {...target}
+          android_ripple={skin.ripple ? skin.ripple(tokens, selected) : undefined}
+          accessibilityRole="button"
+          accessibilityLabel={`Page ${page}`}
+          accessibilityState={{ selected, disabled }}
+          aria-current={selected ? "page" : undefined}
+          aria-disabled={disabled}
+        >
+          {puck ? <GlassPane static layer="control" shape={box} brand={tokens.primary} /> : null}
+          <Text style={[skin.pageLabel(tokens, selected, disabled), s.labelSize[size], puck ? { color: tokens["primary-foreground"] } : null]}>{page}</Text>
+        </Pressable>
+      </RippleClip>
+    );
+  }
+
+  interface SelectorProps {
+    value: number;
+    size: Size;
+    disabled: boolean;
+    onPress: () => void;
+  }
+
+  // The rows-per-page trigger: the value and a chevron in a hairline pill. There is no
+  // menu: it advances through `pageSizes` on press.
+  function Selector({ value, size, disabled, onPress }: SelectorProps) {
+    const theme = useMaterialTheme({ static: true, layer: "control" });
+    const { tokens } = theme;
+    const box = skin.selectorBox(tokens);
+    const target = useMinTargetSlop(skin.minTarget);
+    const { hovered, target: hoverTarget } = useHover(hoverLook != null);
+    return (
+      <RippleClip shape={cornerRadii(box)} {...hoverTarget}>
+        <Pressable
+          style={({ pressed }) => [
+            box,
+            s.selectorSize[size],
+            hovered && !disabled && hoverLook ? hoverLook(tokens) : null,
+            pressDim(pressed, skin.pressedOpacity),
+          ]}
+          onPress={onPress}
+          disabled={disabled}
+          {...target}
+          android_ripple={skin.ripple ? skin.ripple(tokens, false) : undefined}
+          accessibilityRole="button"
+          accessibilityLabel="Rows per page"
+          accessibilityState={{ disabled }}
+          aria-disabled={disabled}
+        >
+          <Text style={[skin.controlLabel(tokens, disabled), s.labelSize[size]]}>{value}</Text>
+          <Icon chevronDown decorative size={s.iconSize[size]} color={skin.mutedLabel(tokens).color as string} />
         </Pressable>
       </RippleClip>
     );
   }
 
   return function Pagination(props: PaginationProps) {
-    const { onChange, disabled, testID, style } = props;
+    const { onChange, testID, style } = props;
+    const disabled = !!props.disabled;
     const size = sizeOf(props);
     const variant = variantOf(props);
     const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens } = theme;
-    const glass = isGlass(theme);
-    const selectorBox = skin.selectorBox(tokens);
-    const selectorPuck = glass && surfaced(selectorBox);
+    const muted = [skin.mutedLabel(tokens), s.labelSize[size]];
 
     // Clamp inputs so the control never renders an out-of-range current page.
     const total = Math.max(1, Math.floor(props.total ?? 1));
@@ -222,43 +308,24 @@ export function createPagination(skin: PaginationSkin) {
       }
     };
 
-    const prev = (
-      <Control
-        glyph="‹"
-        size={size}
-        tokens={tokens}
-        disabled={disabled || atStart}
-        accessibilityLabel="Previous page"
-        onPress={() => go(current - 1)}
-      />
-    );
-    const next = (
-      <Control
-        glyph="›"
-        size={size}
-        tokens={tokens}
-        disabled={disabled || atEnd}
-        accessibilityLabel="Next page"
-        onPress={() => go(current + 1)}
-      />
-    );
+    const abutting = variant !== "compact";
+    const prev = <Arrow direction="previous" size={size} disabled={disabled || atStart} abutting={abutting} onPress={() => go(current - 1)} />;
+    const next = <Arrow direction="next" size={size} disabled={disabled || atEnd} abutting={abutting} onPress={() => go(current + 1)} />;
 
     // Compact: Prev/Next bracketing a "Page X of N" indicator, no number buttons.
     if (variant === "compact") {
       return (
         <View testID={testID} style={[s.compactRow, style]}>
           {prev}
-          <Text style={[skin.mutedLabel(tokens), s.labelSize[size]]}>
-            {indicatorLabel}
-          </Text>
+          <Text style={muted}>{indicatorLabel}</Text>
           {next}
         </View>
       );
     }
 
     // With-size: a "Rows per page" selector ahead of the compact indicator and the
-    // Prev/Next controls. There is no native select, so the selector is a closed
-    // trigger (value + caret) that advances through `pageSizes` on press.
+    // Prev/Next controls. The selector is a closed trigger (value + caret) that
+    // advances through `pageSizes` on press.
     if (variant === "withSize") {
       const cycleSize = () => {
         if (disabled) return;
@@ -275,35 +342,10 @@ export function createPagination(skin: PaginationSkin) {
       return (
         <View testID={testID} style={[s.withSizeRow, style]}>
           <View style={s.selectorCluster}>
-            <Text style={[skin.mutedLabel(tokens), s.labelSize[size]]}>Rows per page</Text>
-            {/* The selector cell's bounded Android ripple is clipped to its corners by this
-                RippleClip parent (no-op on iOS/web). See src/style/ripple-clip. */}
-            <RippleClip shape={cornerRadii(selectorBox)}>
-              <Pressable
-                style={({ pressed }) => [
-                  surfaced(selectorBox) ? paneStyle(theme, selectorBox) : selectorBox,
-                  s.itemSize[size],
-                  disabled ? { opacity: 0.5 } : null,
-                  skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
-                ]}
-                onPress={cycleSize}
-                disabled={disabled}
-                hitSlop={8}
-                android_ripple={ripple ? ripple(tokens, false) : undefined}
-                accessibilityRole="button"
-                accessibilityLabel="Rows per page"
-                accessibilityState={{ disabled: !!disabled }}
-                aria-disabled={!!disabled}
-              >
-                {selectorPuck ? <GlassPane static layer="control" shape={selectorBox} /> : null}
-                <Text style={[skin.controlLabel(tokens), s.labelSize[size]]}>{pageSize}</Text>
-                <Text style={[skin.mutedLabel(tokens), s.labelSize[size]]}>▾</Text>
-              </Pressable>
-            </RippleClip>
+            <Text style={muted}>Rows per page</Text>
+            <Selector value={pageSize} size={size} disabled={disabled} onPress={cycleSize} />
           </View>
-          <Text style={[skin.mutedLabel(tokens), s.labelSize[size]]}>
-            {`Page ${current} of ${total}`}
-          </Text>
+          <Text style={muted}>{indicatorLabel}</Text>
           <View style={s.controlPair}>
             {prev}
             {next}
@@ -318,49 +360,15 @@ export function createPagination(skin: PaginationSkin) {
     return (
       <View testID={testID} style={[s.numberedRow, style]}>
         {prev}
-        {window.map((p, i) => {
-          if (p === GAP) {
-            return (
-              <Text
-                key={`gap-${i}`}
-                style={[skin.gapLabel(tokens), s.labelSize[size]]}
-                accessibilityElementsHidden
-              >
-                …
-              </Text>
-            );
-          }
-          const selected = p === current;
-          const pageBox = skin.pageBox(tokens, selected);
-          const pagePuck = glass && surfaced(pageBox);
-          return (
-            // The page cell's bounded Android ripple is clipped to its corners by this
-            // RippleClip parent (no-op on iOS/web). The list `key` rides the outer node.
-            // See src/style/ripple-clip.
-            <RippleClip key={`page-${p}`} shape={cornerRadii(pageBox)}>
-              <Pressable
-                style={({ pressed }) => [
-                  surfaced(pageBox) ? paneStyle(theme, pageBox) : pageBox,
-                  s.itemSize[size],
-                  disabled ? { opacity: 0.5 } : null,
-                  skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
-                ]}
-                onPress={() => go(p)}
-                disabled={disabled}
-                hitSlop={4}
-                android_ripple={ripple ? ripple(tokens, selected) : undefined}
-                accessibilityRole="button"
-                accessibilityLabel={`Page ${p}`}
-                accessibilityState={{ selected, disabled: !!disabled }}
-                aria-current={selected ? "page" : undefined}
-                aria-disabled={!!disabled}
-              >
-                {pagePuck ? <GlassPane static layer="control" shape={pageBox} brand={selected ? tokens.primary : undefined} /> : null}
-                <Text style={[skin.pageLabel(tokens, selected), s.labelSize[size], pagePuck && selected ? { color: tokens["primary-foreground"] } : null]}>{p}</Text>
-              </Pressable>
-            </RippleClip>
-          );
-        })}
+        {window.map((p, i) =>
+          p === GAP ? (
+            <View key={`gap-${i}`} style={s.gapBox}>
+              <Icon moreHorizontal decorative size={s.iconSize[size]} color={skin.mutedLabel(tokens).color as string} />
+            </View>
+          ) : (
+            <Page key={`page-${p}`} page={p} selected={p === current} size={size} disabled={disabled} onPress={() => go(p)} />
+          ),
+        )}
         {next}
       </View>
     );

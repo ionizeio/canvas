@@ -262,13 +262,16 @@
   /* Steps (steps.styles.ts webSkin; the progress layout's 6px muted track and 500-weight caption) */
   --p-steps-current-fill:transparent;--p-steps-connector-radius:0px;--p-steps-desc:12px;--p-steps-desc-lh:16px;
   --p-steps-track-h:6px;--p-steps-caption-weight:500;
-  /* Pagination (pagination.styles.ts webSkin) */
-  --p-page-h-small:36px;--p-page-h-default:40px;--p-page-h-large:44px;
-  --p-page-pad-small:10px;--p-page-pad-default:12px;--p-page-pad-large:14px;
-  --p-page-font-small:12px;--p-page-font-default:14px;--p-page-font-large:14px;
-  --p-page-lh-small:16px;--p-page-lh-default:20px;--p-page-lh-large:20px;
-  --p-page-radius:8px;--p-page-border:1px;--p-page-weight:500;--p-page-rest-fill:var(--card);
+  /* Pagination (pagination.styles.ts webSkin, every platform: Dark Factory's pager, bare page
+     pills at the Button's heights, the current page a violet pill, hairline arrow circles,
+     700 labels, the instant hover wash on a resting cell) */
+  --p-page-h-small:29px;--p-page-h-default:36px;--p-page-h-large:40px;
+  --p-page-pad-small:8px;--p-page-pad-default:10px;--p-page-pad-large:12px;
+  --p-page-font-small:11.5px;--p-page-font-default:12px;--p-page-font-large:13px;
+  --p-page-lh-small:15px;--p-page-lh-default:16px;--p-page-lh-large:18px;
+  --p-page-radius:9999px;--p-page-border:1px;--p-page-weight:700;--p-page-rest-fill:transparent;
   --p-page-selected-fill:var(--primary);--p-page-selected-border:var(--primary);--p-page-selected-label:var(--primary-foreground);
+  --p-page-arrow-border:var(--border);--p-page-hover-fill:var(--hover);
   /* Slider (slider.styles.ts webSkin — shadcn-matched) */
   --p-slider-track-h-small:6px;--p-slider-track-h-base:8px;--p-slider-track-h-large:10px;
   --p-slider-track-radius:999px;--p-slider-inner-radius:999px;--p-slider-gap:0px;--p-slider-row-min-h:16px;
@@ -472,8 +475,6 @@
   --p-acc-content:15px;--p-acc-content-lh:21px;--p-acc-content-tracking:-0.24px;--p-acc-content-pad-top:2px;--p-acc-content-pad-bottom:14px;
   /* Steps — iOS: rounded connector caps, larger progress caption */
   --p-steps-connector-radius:9999px;--p-steps-desc:13px;--p-steps-desc-lh:18px;--p-steps-caption-weight:600;
-  /* Pagination — HIG page controls: 8pt pills, hollow rest, filled current */
-  --p-page-radius:8px;--p-page-border:0px;--p-page-weight:600;--p-page-rest-fill:transparent;
   /* ActionSheet — iOS 27: one 34pt continuous container of detached capsules */
   --p-sheet-card-radius:34px;--p-sheet-card-pad:14px;
   --p-sheet-cancel-inset:14px;--p-sheet-cancel-radius:9999px;--p-sheet-cancel-min-h:56px;--p-sheet-cancel-label:var(--foreground);
@@ -708,9 +709,6 @@
   --p-acc-content:14px;--p-acc-content-lh:20px;--p-acc-content-tracking:0.25px;--p-acc-content-pad-bottom:16px;
   /* Steps — M3: flat connector caps, a 12% tonal backing on the current step */
   --p-steps-current-fill:color-mix(in oklab, var(--primary) 12%, transparent);--p-steps-connector-radius:0px;--p-steps-track-h:4px;
-  /* Pagination — M3: flat cells, a 12% tonal active fill with a brand label */
-  --p-page-radius:8px;--p-page-border:0px;--p-page-rest-fill:transparent;
-  --p-page-selected-fill:color-mix(in oklab, var(--primary) 12%, transparent);--p-page-selected-label:var(--primary-text);
   /* ActionSheet — M3 modal bottom sheet: one 28dp sheet, drag handle, Cancel as the last row */
   --p-sheet-scrim:rgba(0,0,0,0.32);--p-sheet-stack-pad:0px;--p-sheet-stack-gap:0px;
   --p-sheet-card-radius:0px;--p-sheet-card-radius-top:28px;--p-sheet-card-pad:0px 0px 8px;--p-sheet-shadow:none;

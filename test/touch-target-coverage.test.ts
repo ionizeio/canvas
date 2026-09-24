@@ -30,7 +30,6 @@ const COVERED_ANOTHER_WAY: Record<string, string> = {
   "atoms/chip": "hitSlop on the remove glyph, the only sub-minimum part",
   "atoms/checkbox": "hitSlop around the box when there is no label to press",
   "atoms/input": "a field is 44/56 tall by skin, above both minimums",
-  "atoms/pagination": "hitSlop on the page numbers and the arrows",
   "atoms/radio": "hitSlop around the ring when there is no label to press",
   "atoms/select": "the trigger is a field; its rows are 44/48 by skin",
   "molecules/phone-input": "the country segment stretches to the 44/56 field box; its rows are Select's 44/48 by skin",

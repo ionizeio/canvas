@@ -3,22 +3,22 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Pressable } = scope;
+  const { tokens, View, Text, Pressable, Icon } = scope;
   return (
 <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
   <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Rows per page</Text>
-    <Pressable style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 4, height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background }} accessibilityRole="button" accessibilityLabel="Rows per page">
-      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>10</Text>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>▾</Text>
+    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens["muted-foreground"] }}>Rows per page</Text>
+    <Pressable style={{ flexDirection: "row", alignItems: "center", gap: 4, height: 36, paddingHorizontal: 12, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border }} accessibilityRole="button" accessibilityLabel="Rows per page">
+      <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "700", color: tokens.foreground }}>10</Text>
+      <Icon chevronDown muted size={16} />
     </Pressable>
   </View>
   <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-    <Pressable style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, opacity: 0.5 }} accessibilityRole="button" accessibilityLabel="Previous page">
-      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>‹</Text>
+    <Pressable style={{ alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border }} accessibilityRole="button" accessibilityLabel="Previous page">
+      <Icon chevronLeft muted size={16} />
     </Pressable>
-    <Pressable style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background }} accessibilityRole="button" accessibilityLabel="Next page">
-      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>›</Text>
+    <Pressable style={{ alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border }} accessibilityRole="button" accessibilityLabel="Next page">
+      <Icon chevronRight size={16} />
     </Pressable>
   </View>
 </View>

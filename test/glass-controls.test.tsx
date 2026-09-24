@@ -160,13 +160,18 @@ describe("brand-tinted glass pucks", () => {
     expect(rgbaOf(label.style.color)).toEqual(rgbaOf(alpha(lightColors.foreground, 1)));
   });
 
-  it("the current page of a Pagination is a brand puck; the rest of the web tiles are plain control pucks", async () => {
+  it("the current page of a Pagination is a brand puck; its bare pages and hairline arrows take no material", async () => {
     const { container } = await renderGlass(<Pagination total={3} defaultPage={2} testID="pages" />);
     const pages = container.querySelector('[data-testid="pages"]') as HTMLElement;
     const current = pages.querySelector('[aria-current="page"]') as HTMLElement;
     expect(rgbaOf(underFillOf(current))).toEqual(rgbaOf(brandTint(lightColors.primary, lightColors.background)));
-    const other = Array.from(pages.querySelectorAll('[role="button"]')).find((n) => n.getAttribute("aria-current") == null && n.textContent === "1") as HTMLElement;
-    expect(rgbaOf(underFillOf(other))).toEqual(rgbaOf(LIGHT["glass-tint-control"]));
+    // Dark Factory's pager paints no surface but the current page: the other pages are bare
+    // numbers and the arrows transparent outline circles, like the web's outline Button.
+    expect(materialLayers(pages)).toBe(1);
+    const previous = pages.querySelector('[aria-label="Previous page"]') as HTMLElement;
+    expect(materialLayers(previous)).toBe(0);
+    expect(previous.style.borderTopWidth).toBe("1px");
+    expect(rgbaOf(previous.style.borderTopColor)).toEqual(rgbaOf(alpha(lightColors.border, 1)));
   });
 
   it("paints a brand fill OVER the material and a layer tint beneath it", async () => {

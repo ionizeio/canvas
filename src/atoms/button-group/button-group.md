@@ -142,19 +142,19 @@ form-factor switcher.
 <View style={{ flexDirection: "row", alignItems: "center", alignSelf: "flex-start" }}>
   <Pressable
     style={({ pressed }) => [
-      { flexDirection: "row", alignItems: "center", justifyContent: "center", height: 36, paddingHorizontal: 16, borderTopLeftRadius: 6, borderBottomLeftRadius: 6, borderTopRightRadius: 0, borderBottomRightRadius: 0, backgroundColor: tokens.primary },
+      { flexDirection: "row", alignItems: "center", justifyContent: "center", height: 36, paddingHorizontal: 18, borderTopLeftRadius: 9999, borderBottomLeftRadius: 9999, borderTopRightRadius: 0, borderBottomRightRadius: 0, backgroundColor: tokens.action },
       pressed ? { opacity: 0.9 } : null
     ]}
   >
-    <Text style={{ fontWeight: "500", fontSize: 14, lineHeight: 20, color: tokens["primary-foreground"] }}>Save</Text>
+    <Text style={{ fontWeight: "800", fontSize: 12, lineHeight: 16, letterSpacing: 0.12, color: tokens["action-foreground"] }}>Save</Text>
   </Pressable>
   <Pressable
     style={({ pressed }) => [
-      { flexDirection: "row", alignItems: "center", justifyContent: "center", height: 36, paddingHorizontal: 8, borderTopRightRadius: 6, borderBottomRightRadius: 6, borderTopLeftRadius: 0, borderBottomLeftRadius: 0, backgroundColor: tokens.primary },
+      { flexDirection: "row", alignItems: "center", justifyContent: "center", height: 36, paddingLeft: 8, paddingRight: 12, borderTopRightRadius: 9999, borderBottomRightRadius: 9999, borderTopLeftRadius: 0, borderBottomLeftRadius: 0, backgroundColor: tokens.action },
       pressed ? { opacity: 0.9 } : null
     ]}
   >
-    <Icon chevronDown primaryForeground size={16} />
+    <Icon chevronDown color={tokens["action-foreground"]} size={16} />
   </Pressable>
 </View>
 ```

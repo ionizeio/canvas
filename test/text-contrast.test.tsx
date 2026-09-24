@@ -129,6 +129,24 @@ describe("normal text contrast (WCAG 1.4.3)", () => {
         }
       });
     }
+
+    // One Pagination skin serves every platform (no platform has a pager). The current
+    // page is read against its own fill; a bare page, the arrows' chevrons, the selector's
+    // value and the muted counts against the page and a card. Disabled is Dark Factory's
+    // look (muted inks, no dim), so it is read too.
+    it(`keeps every ${scheme} Pagination label readable`, () => {
+      const skin = paginationSkins.webSkin;
+      for (const selected of [false, true]) for (const disabled of [false, true]) {
+        const fill = skin.pageBox(tokens, selected, disabled).backgroundColor as string;
+        const label = skin.pageLabel(tokens, selected, disabled).color as string;
+        const beds = fill === "transparent" ? [tokens.background, tokens.card] : [fill];
+        for (const bed of beds) expect(contrast(bed, label), `page selected=${selected} disabled=${disabled}`).toBeGreaterThanOrEqual(4.5);
+      }
+      for (const bed of [tokens.background, tokens.card]) {
+        for (const disabled of [false, true]) expect(contrast(bed, skin.controlLabel(tokens, disabled).color as string), `control disabled=${disabled}`).toBeGreaterThanOrEqual(4.5);
+        expect(contrast(bed, skin.mutedLabel(tokens).color as string), "counts").toBeGreaterThanOrEqual(4.5);
+      }
+    });
   }
 });
 
@@ -208,7 +226,7 @@ describe("primary text on authored surfaces", () => {
     const ios = blockDeclarations(platformCss, '[data-platform="ios"]').decls;
     const web = blockDeclarations(platformCss, ':root,[data-platform="web"]').decls;
     for (const key of ["p-tab-label-selected", "p-tab-v-selected-label", "p-side-active-label", "p-nav-link-active-label",
-      "p-seg-selected-label", "p-page-selected-label", "p-alert-cancel-label", "p-alert-confirm-label", "p-ad-cancel-label", "p-ad-confirm-label"]) {
+      "p-seg-selected-label", "p-alert-cancel-label", "p-alert-confirm-label", "p-ad-cancel-label", "p-ad-confirm-label"]) {
       expect(android[key], key).toBe("var(--primary-text)");
     }
     expect(ios["p-nav-link-label"]).toBe("var(--primary-text)");
@@ -272,7 +290,6 @@ describe("primary text on authored surfaces", () => {
         ["Android pill Tab", tabsSkins.androidSkin.pillsLabel(tokens, true)],
         ["Android vertical Tab", tabsSkins.androidSkin.verticalLabel(tokens, true)],
         ["Android ButtonGroup segment", buttonGroupSkins.androidSkin.segmentLabel(tokens, true)],
-        ["Android Pagination selected page", paginationSkins.androidSkin.pageLabel(tokens, true)],
         ["Android Sidebar active label", sidebarSkins.androidSkin.label(tokens, true, "compact")],
         ["iOS Navbar inactive label", navbarSkins.iosSkin.linkLabel(tokens, false)],
         ["Android Navbar active label", navbarSkins.androidSkin.linkLabel(tokens, true)],

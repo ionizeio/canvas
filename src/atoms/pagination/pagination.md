@@ -2,11 +2,18 @@
 
 Page-of-N navigation for tables and lists.
 
-In glass mode the numbered variant's selected page is a brand-tinted
-control-layer puck behind its number and the other page cells are plain control
-pucks; beyond seven pages a page change also shifts the window (an ellipsis
-moves, a number appears or drops out). The compact and with-size variants keep
-their anatomy. Solid mode keeps the skin's own selected cell.
+Neither iOS nor Android has a numbered pagination control, and Dark Factory has no
+pager, so every platform shows one look built from Dark Factory's parts: the page
+numbers are bare pills, the current page is the violet pill, Previous and Next are
+hairline circles around chevrons, and the rows-per-page trigger is a hairline pill. A
+resting page or arrow takes the hover wash at once; a disabled pager keeps its outlines
+and mutes its numbers rather than fading. The cells are the Button's heights, so a pager
+lines up with a Button beside it.
+
+In glass mode the current page is a brand-tinted control-layer puck behind its number;
+the other pages and the hairline arrows paint no surface, so they stay bare. Beyond
+seven pages a page change also shifts the window (an ellipsis moves, a number appears or
+drops out). Solid mode keeps the violet pill.
 
 ## Usage
 
@@ -61,11 +68,11 @@ their anatomy. Solid mode keeps the skin's own selected cell.
 
 ```tsx
 <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: 4 }}>
-  <Pressable style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background }} accessibilityRole="button" accessibilityLabel="Previous page">
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>‹</Text>
+  <Pressable style={{ alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border }} accessibilityRole="button" accessibilityLabel="Previous page">
+    <Icon chevronLeft size={16} />
   </Pressable>
-  <Pressable style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background }} accessibilityRole="button" accessibilityLabel="Next page">
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>›</Text>
+  <Pressable style={{ alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border }} accessibilityRole="button" accessibilityLabel="Next page">
+    <Icon chevronRight size={16} />
   </Pressable>
 </View>
 ```
@@ -82,47 +89,47 @@ their anatomy. Solid mode keeps the skin's own selected cell.
 
 ```tsx
 <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-  <Pressable style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, opacity: 0.5 }} accessibilityRole="button" accessibilityLabel="Previous page">
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>‹</Text>
+  <Pressable style={{ alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border }} accessibilityRole="button" accessibilityLabel="Previous page">
+    <Icon chevronLeft muted size={16} />
   </Pressable>
-  <Pressable style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: tokens.primary, backgroundColor: tokens.primary }} accessibilityRole="button" accessibilityLabel="Page 1">
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens["primary-foreground"] }}>1</Text>
+  <Pressable style={{ alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 9999, backgroundColor: tokens.primary }} accessibilityRole="button" accessibilityLabel="Page 1">
+    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "700", color: tokens["primary-foreground"] }}>1</Text>
   </Pressable>
-  <Pressable style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background }} accessibilityRole="button" accessibilityLabel="Page 2">
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>2</Text>
+  <Pressable style={{ alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 9999 }} accessibilityRole="button" accessibilityLabel="Page 2">
+    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "700", color: tokens.foreground }}>2</Text>
   </Pressable>
-  <Pressable style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background }} accessibilityRole="button" accessibilityLabel="Page 3">
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>3</Text>
+  <Pressable style={{ alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 9999 }} accessibilityRole="button" accessibilityLabel="Page 3">
+    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "700", color: tokens.foreground }}>3</Text>
   </Pressable>
-  <Pressable style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background }} accessibilityRole="button" accessibilityLabel="Page 4">
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>4</Text>
+  <Pressable style={{ alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 9999 }} accessibilityRole="button" accessibilityLabel="Page 4">
+    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "700", color: tokens.foreground }}>4</Text>
   </Pressable>
-  <Pressable style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background }} accessibilityRole="button" accessibilityLabel="Page 5">
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>5</Text>
+  <Pressable style={{ alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 9999 }} accessibilityRole="button" accessibilityLabel="Page 5">
+    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "700", color: tokens.foreground }}>5</Text>
   </Pressable>
-  <Pressable style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background }} accessibilityRole="button" accessibilityLabel="Page 6">
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>6</Text>
+  <Pressable style={{ alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 9999 }} accessibilityRole="button" accessibilityLabel="Page 6">
+    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "700", color: tokens.foreground }}>6</Text>
   </Pressable>
-  <Pressable style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background }} accessibilityRole="button" accessibilityLabel="Page 7">
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>7</Text>
+  <Pressable style={{ alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 9999 }} accessibilityRole="button" accessibilityLabel="Page 7">
+    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "700", color: tokens.foreground }}>7</Text>
   </Pressable>
-  <Pressable style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background }} accessibilityRole="button" accessibilityLabel="Page 8">
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>8</Text>
+  <Pressable style={{ alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 9999 }} accessibilityRole="button" accessibilityLabel="Page 8">
+    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "700", color: tokens.foreground }}>8</Text>
   </Pressable>
-  <Pressable style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background }} accessibilityRole="button" accessibilityLabel="Page 9">
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>9</Text>
+  <Pressable style={{ alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 9999 }} accessibilityRole="button" accessibilityLabel="Page 9">
+    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "700", color: tokens.foreground }}>9</Text>
   </Pressable>
-  <Pressable style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background }} accessibilityRole="button" accessibilityLabel="Page 10">
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>10</Text>
+  <Pressable style={{ alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 9999 }} accessibilityRole="button" accessibilityLabel="Page 10">
+    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "700", color: tokens.foreground }}>10</Text>
   </Pressable>
-  <Pressable style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background }} accessibilityRole="button" accessibilityLabel="Page 11">
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>11</Text>
+  <Pressable style={{ alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 9999 }} accessibilityRole="button" accessibilityLabel="Page 11">
+    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "700", color: tokens.foreground }}>11</Text>
   </Pressable>
-  <Pressable style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background }} accessibilityRole="button" accessibilityLabel="Page 12">
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>12</Text>
+  <Pressable style={{ alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 9999 }} accessibilityRole="button" accessibilityLabel="Page 12">
+    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "700", color: tokens.foreground }}>12</Text>
   </Pressable>
-  <Pressable style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background }} accessibilityRole="button" accessibilityLabel="Next page">
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>›</Text>
+  <Pressable style={{ alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border }} accessibilityRole="button" accessibilityLabel="Next page">
+    <Icon chevronRight size={16} />
   </Pressable>
 </View>
 ```
@@ -140,18 +147,18 @@ their anatomy. Solid mode keeps the skin's own selected cell.
 ```tsx
 <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
   <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Rows per page</Text>
-    <Pressable style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 4, height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background }} accessibilityRole="button" accessibilityLabel="Rows per page">
-      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>10</Text>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>▾</Text>
+    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens["muted-foreground"] }}>Rows per page</Text>
+    <Pressable style={{ flexDirection: "row", alignItems: "center", gap: 4, height: 36, paddingHorizontal: 12, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border }} accessibilityRole="button" accessibilityLabel="Rows per page">
+      <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "700", color: tokens.foreground }}>10</Text>
+      <Icon chevronDown muted size={16} />
     </Pressable>
   </View>
   <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-    <Pressable style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, opacity: 0.5 }} accessibilityRole="button" accessibilityLabel="Previous page">
-      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>‹</Text>
+    <Pressable style={{ alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border }} accessibilityRole="button" accessibilityLabel="Previous page">
+      <Icon chevronLeft muted size={16} />
     </Pressable>
-    <Pressable style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background }} accessibilityRole="button" accessibilityLabel="Next page">
-      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>›</Text>
+    <Pressable style={{ alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border }} accessibilityRole="button" accessibilityLabel="Next page">
+      <Icon chevronRight size={16} />
     </Pressable>
   </View>
 </View>

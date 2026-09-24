@@ -43,8 +43,6 @@ import { TabBar as TabBarIOS } from "../../../src/organisms/tab-bar/tab-bar.ios.
 import { TabBar as TabBarAndroid } from "../../../src/organisms/tab-bar/tab-bar.android.js";
 import { Tabs as TabsIOS } from "../../../src/organisms/tabs/tabs.ios.js";
 import { Tabs as TabsAndroid } from "../../../src/organisms/tabs/tabs.android.js";
-import { Pagination as PaginationIOS } from "../../../src/atoms/pagination/pagination.ios.js";
-import { Pagination as PaginationAndroid } from "../../../src/atoms/pagination/pagination.android.js";
 import { Steps as StepsIOS } from "../../../src/organisms/steps/steps.ios.js";
 import { Steps as StepsAndroid } from "../../../src/organisms/steps/steps.android.js";
 import { Navbar as NavbarIOS } from "../../../src/organisms/navbars/navbars.ios.js";
@@ -125,7 +123,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Input: InputIOS, Textarea: TextareaIOS, ButtonGroup: ButtonGroupIOS, Select: SelectIOS,
     Autocomplete: AutocompleteIOS, Dropdown: DropdownIOS, Popover: PopoverIOS, Tooltip: TooltipIOS,
     RowMenu: RowMenuIOS, Dialog: DialogIOS, AlertDialog: AlertDialogIOS,
-    Spinner: SpinnerIOS, TabBar: TabBarIOS, Tabs: TabsIOS, Pagination: PaginationIOS, Steps: StepsIOS,
+    Spinner: SpinnerIOS, TabBar: TabBarIOS, Tabs: TabsIOS, Steps: StepsIOS,
     Navbar: NavbarIOS, Sidebar: SidebarIOS, Calendar: CalendarIOS,
     Avatar: AvatarIOS, AvatarGroup: AvatarGroupIOS, AvatarMenu: AvatarMenuIOS,
     Breadcrumb: BreadcrumbIOS, Slider: SliderIOS, Progress: ProgressIOS,
@@ -145,7 +143,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Input: InputAndroid, Textarea: TextareaAndroid, ButtonGroup: ButtonGroupAndroid, Select: SelectAndroid,
     Autocomplete: AutocompleteAndroid, Dropdown: DropdownAndroid, Popover: PopoverAndroid, Tooltip: TooltipAndroid,
     RowMenu: RowMenuAndroid, Dialog: DialogAndroid, AlertDialog: AlertDialogAndroid,
-    Spinner: SpinnerAndroid, TabBar: TabBarAndroid, Tabs: TabsAndroid, Pagination: PaginationAndroid, Steps: StepsAndroid,
+    Spinner: SpinnerAndroid, TabBar: TabBarAndroid, Tabs: TabsAndroid, Steps: StepsAndroid,
     Navbar: NavbarAndroid, Sidebar: SidebarAndroid, Calendar: CalendarAndroid,
     Avatar: AvatarAndroid, AvatarGroup: AvatarGroupAndroid, AvatarMenu: AvatarMenuAndroid,
     Breadcrumb: BreadcrumbAndroid, Slider: SliderAndroid, Progress: ProgressAndroid,

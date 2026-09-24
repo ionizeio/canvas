@@ -313,10 +313,10 @@ layers, each with its own under-fill token (`glass-tint*` in `src/style/tokens.t
   Alert) passes a `tint`.
 - **Control** (`glass-tint-control`, the bright "puck"): every control that paints a
   surface of its own, the field boxes (Input, Textarea, Select, Autocomplete,
-  PhoneInput, Stepper, InputOTP), Button, ButtonGroup, Tabs pills, Pagination cells,
-  Chip, Badge, Kbd, Switch tracks, Checkbox boxes, Radio rings, Progress rails, Steps
-  circles, the Slider knob, the neutral Avatar tile (an initials disc paints its identity
-  gradient, like a photo). A BRAND fill (a primary or destructive Button,
+  PhoneInput, Stepper, InputOTP), Button, ButtonGroup, Tabs pills, Chip, Badge, Kbd,
+  Switch tracks, Checkbox boxes, Radio rings, Progress rails, Steps circles, the Slider
+  knob, the neutral Avatar tile (an initials disc paints its identity gradient, like a
+  photo). A BRAND fill (a primary or destructive Button,
   a checked Switch or Checkbox, a selected tab, page, day or step) is brand-tinted
   glass: `brand={tokens.primary}`, whose under-fill `brandTint` keeps as sheer as its
   ink's WCAG 4.5:1 allows (on iOS 26 it is the GlassView's own `tintColor`). A toned
@@ -324,9 +324,9 @@ layers, each with its own under-fill token (`glass-tint*` in `src/style/tokens.t
   `tint` in place of the layer's, under the same ink as in solid mode: `statusColors`
   for the status tones, and a free Chip hue's 500 step at Dark Factory's soft alpha
   under its deep 800/300 label (`HUE_WASH` is deprecated and unused). A control with no
-  surface of its own (a ghost or link Button, the web's outline and secondary Buttons,
-  which are Dark Factory's transparent outline pills, the iOS pagination chevrons) stays
-  bare.
+  surface of its own stays bare: a ghost or link Button, the web's outline and secondary
+  Buttons (Dark Factory's transparent outline pills), and on every platform Pagination's
+  resting pages, arrows and rows-per-page trigger.
 - **Dense** (`glass-tint-dense`, the densest tint): the surfaces a user reads and
   acts on, the option lists (Dropdown, Select, Autocomplete, RowMenu, the SplitButton
   overflow, the PhoneInput country list, AvatarMenu), AlertDialog, Toast, Tooltip, the
@@ -534,7 +534,8 @@ moves, so a lifted surface cannot slide out from under a resting pointer; touch 
 hovers; a lifted card stacks at the raised layer, and lifts its Grid or Row span cell,
 while it lifts and settles, because react-native-web paints siblings in document order),
 the values are the `HOVER` table in `src/style/motion.ts`, and the skins own the
-feedback (the web Card, Button and Sidebar skins declare it). Every change is judged
+feedback (the web Card, Button and Sidebar skins declare it, and a skin shared by every
+platform, Pagination's, declares its wash through `webHover`). Every change is judged
 against the `df-hover-lift` card. The decision also named the native driver for pointer
 hover on iPad, but React Native 0.86 delivers no pointer hover on iOS or Android unless
 the host app opts into W3C pointer events natively (`RCTSetDispatchW3CPointerEvents` and

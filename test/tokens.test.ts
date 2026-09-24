@@ -251,7 +251,8 @@ describe("CSS material handoff fallbacks", () => {
  * identify user interface components" to 3:1 against adjacent colour. In this
  * token set that clause lands squarely on `input`: it is the boundary the
  * unfilled controls draw themselves with (the iOS and Android outline Button, the
- * text fields, checkbox, radio, the switch track, select, autocomplete, pagination),
+ * text fields, checkbox, radio, the switch track, select, autocomplete, a disabled pager's
+ * current page),
  * and for several of them it is the ONLY thing separating the control from the page.
  * (The web's outline Button is Dark Factory's hairline pill in `border`: its label
  * identifies it, so its boundary is not the visual information 1.4.11 protects.)

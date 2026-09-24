@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import type { PointerEvent, StyleProp, ViewStyle } from "react-native";
+import { Platform, type PointerEvent, type StyleProp, type ViewStyle } from "react-native";
 import { HOVER_EASING } from "./motion.js";
 import { View } from "./primitives.js";
 
@@ -20,8 +20,9 @@ import { View } from "./primitives.js";
 // How it moves. The style switches when the hover does and, on the web, a CSS transition
 // runs the change, so nothing commits through React per frame (the loop primitive's rule,
 // src/style/loop.tsx). React Native has no transition style attributes, so a native host
-// drops the transition keys and would switch instantly; only the web skins declare hover
-// feedback (Card, Button, Sidebar).
+// drops the transition keys and would switch instantly. Only the web declares hover
+// feedback: the web Card, Button and Sidebar skins, and a skin shared by every platform
+// (Pagination) through `webHover`, since native pointer hover waits on the owner.
 //
 // What it stacks above. A lifted card's deeper shade must fall over its neighbours, as
 // the reference's does (Dark Factory raises the lifting card's list tile). A plain web
@@ -45,6 +46,17 @@ export interface HoverMotion {
 }
 
 const NO_TARGET: HoverTarget = {};
+
+/**
+ * A skin's hover look, declared on the web only. A skin that one component shares across
+ * every platform (its native skins alias the web one) declares its hover feedback through
+ * this, so native builds carry none until the owner decides native pointer hover, as the
+ * separate iOS and Android skins already do. Platform-parameterized for tests, like
+ * `rippleClipWrapperStyle`.
+ */
+export function webHover<T>(look: T, os: string = Platform.OS): T | null {
+  return os === "web" ? look : null;
+}
 
 /**
  * Whether a mouse, trackpad or pen hovers the node `target` is spread on, while
