@@ -234,9 +234,9 @@ export function createDescriptionList(
     if (item.status) return <Badge status success>{value}</Badge>;
     if (item.badge) return <Badge secondary>{value}</Badge>;
     if (item.mono) {
-      return <Text style={[valueStyle, s.valueMono]}>{value}</Text>;
+      return <Text style={[valueStyle, s.valueMono, s.valueWrap]}>{value}</Text>;
     }
-    return <Text style={[valueStyle, align ? s.valueAlignRight : null]}>{value}</Text>;
+    return <Text style={[valueStyle, align ? s.valueAlignRight : null, s.valueWrap]}>{value}</Text>;
   }
 
   return function DescriptionList(props: DescriptionListProps) {

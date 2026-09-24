@@ -355,3 +355,35 @@ describe("the measure axis", () => {
     expectMeasured(at(container, "b").parentElement as HTMLElement, "lg", "");
   });
 });
+
+// A RadioGroup is a form list, so every build is FILL on its outermost node: the web and
+// Android stack, their wrapping `row` (which has nothing to wrap against without bounds:
+// content-sized, it grew to the sum of its card options and scrolled the Radio page
+// sideways at phone width), the labeled wrapper, and the iOS list section and card row.
+import { Radio as WebRadio, RadioGroup as WebRadioGroup } from "../src/atoms/radio/radio.tsx";
+import { Radio as IosRadio, RadioGroup as IosRadioGroup } from "../src/atoms/radio/radio.ios.tsx";
+import { Radio as AndroidRadio, RadioGroup as AndroidRadioGroup } from "../src/atoms/radio/radio.android.tsx";
+
+describe("RadioGroup is FILL on every platform", () => {
+  const builds = [
+    { name: "web", Group: WebRadioGroup, Option: WebRadio },
+    { name: "ios", Group: IosRadioGroup, Option: IosRadio },
+    { name: "android", Group: AndroidRadioGroup, Option: AndroidRadio },
+  ] as const;
+  for (const { name, Group, Option } of builds) {
+    it(`${name}: the stack, the wrapping row, the card row and the labeled group`, () => {
+      const layouts = [{}, { row: true }, { row: true, cards: true }, { label: "Plan" }] as const;
+      for (const layout of layouts) {
+        const cards = "cards" in layout;
+        const { container } = ui(
+          <Group testID="group" defaultValue="pro" row={"row" in layout} label={"label" in layout ? layout.label : undefined}>
+            <Option value="hobby" card={cards} description={cards ? "For personal projects." : undefined}>Hobby</Option>
+            <Option value="pro" card={cards} description={cards ? "For growing teams." : undefined}>Pro</Option>
+          </Group>,
+        );
+        expectFill(at(container, "group"));
+        cleanup();
+      }
+    });
+  }
+});

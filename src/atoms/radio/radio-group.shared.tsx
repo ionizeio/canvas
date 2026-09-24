@@ -16,6 +16,11 @@ import type { RadioSkin } from "./radio.shared.js";
 // plain options form one inset-grouped list section (the skin's `list`) whose rows are
 // the options, with a trailing check on the chosen one. The platform entries build
 // both Radio and RadioGroup from the same skin, so the two always agree.
+//
+// Every build is FILL (src/style/sizing.ts): a group of options is a form list, the
+// parent provides its bounds, and a `row` group needs them to wrap at all. A content-sized
+// wrapping row never wraps: in a Row it grows to the sum of its options and runs past its
+// parent (the Radio page's card example scrolled the page sideways at phone width).
 
 // RN's Role union omits "radiogroup" (it is a valid ARIA role), so cast it once.
 const RADIOGROUP = "radiogroup" as Role;
@@ -75,19 +80,8 @@ export interface RadioGroupProps {
 
 type OptionProps = { value?: string | number; card?: boolean };
 
-// A list section is a FILL component (it takes its parent's bounds, the way the kit's
-// lists do); the stack of controls on the web and Android keeps its own sizing. The hook
-// is chosen once per build, so every render of a build calls the same one.
-function useListFill(): ViewStyle {
-  return useFillStyle("RadioGroup");
-}
-function useNoFill(): null {
-  return null;
-}
-
 /** Build a RadioGroup from the platform's Radio skin (its `list` decides whether the options form a list section). */
 export function createRadioGroup(skin: RadioSkin) {
-  const useSectionFill = skin.list ? useListFill : useNoFill;
   /**
    * A group of Radio options with single-select state. Wrap `<Radio value="…">`
    * children in it; the group tracks which value is chosen and moves the selection
@@ -97,7 +91,7 @@ export function createRadioGroup(skin: RadioSkin) {
   function RadioGroup(props: RadioGroupProps) {
     const { disabled, label, description } = props;
     const { tokens } = useTheme();
-    const sectionFill = useSectionFill();
+    const fill = useFillStyle("RadioGroup");
     const [value, setValue] = useControllableState<string | number | undefined>(
       props.value,
       props.defaultValue,
@@ -168,7 +162,7 @@ export function createRadioGroup(skin: RadioSkin) {
       <GlassSurface
         layer="content"
         testID={hasHeader ? undefined : props.testID}
-        style={hasHeader ? list.section(tokens) : [list.section(tokens), sectionFill, props.style]}
+        style={hasHeader ? list.section(tokens) : [list.section(tokens), fill, props.style]}
       >
         <View role={RADIOGROUP} {...nameProps}>
           {options.map((child, i) => (
@@ -184,7 +178,7 @@ export function createRadioGroup(skin: RadioSkin) {
         testID={hasHeader ? undefined : props.testID}
         role={RADIOGROUP}
         {...nameProps}
-        style={hasHeader ? (props.row ? ROW : COLUMN) : [props.row ? ROW : COLUMN, props.style]}
+        style={hasHeader ? (props.row ? ROW : COLUMN) : [props.row ? ROW : COLUMN, fill, props.style]}
       >
         {props.children}
       </View>
@@ -193,7 +187,7 @@ export function createRadioGroup(skin: RadioSkin) {
     return (
       <RadioGroupContext.Provider value={ctx}>
         {hasHeader ? (
-          <View testID={props.testID} style={[HEADED, list ? sectionFill : null, props.style]}>
+          <View testID={props.testID} style={[HEADED, fill, props.style]}>
             <View style={HEADER}>
               {label != null ? <Text style={labelType(tokens)}>{label}</Text> : null}
               {description != null ? <Text style={descriptionType(tokens)}>{description}</Text> : null}

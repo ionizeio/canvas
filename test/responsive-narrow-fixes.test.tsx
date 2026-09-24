@@ -69,6 +69,28 @@ describe("DescriptionList twoColumn term narrowing", () => {
     layoutElement(probe, { width: 900, height: 0 });
     expect((screen.getByText("Full name") as HTMLElement).style.width).toBe("160px");
   });
+
+  // A value shares its cell with a trailing Update link, so it must yield and wrap: a
+  // Text row item otherwise keeps its longest unbreakable run as its minimum width (the
+  // web) or does not shrink at all (native), and a long id or email ran past a phone.
+  it("lets a long value shrink and wrap beside the Update link, mono or plain", () => {
+    render(
+      <ThemeProvider>
+        <DescriptionList
+          twoColumn
+          items={[
+            { term: "Client identifier", value: "clnt_01H2X8K9P3Q7VN4W6R5T0JYMZF", mono: true },
+            { term: "Email", value: "rachel.chen@example.com", update: true },
+          ]}
+        />
+      </ThemeProvider>,
+    );
+    for (const value of ["clnt_01H2X8K9P3Q7VN4W6R5T0JYMZF", "rachel.chen@example.com"]) {
+      const text = screen.getByText(value) as HTMLElement;
+      expect(text.style.flexShrink).toBe("1");
+      expect(text.style.minWidth).toBe("0px");
+    }
+  });
 });
 
 describe("Form twoColumn container stacking", () => {

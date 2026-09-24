@@ -62,7 +62,19 @@ export function DoDontCard(props: DoDontCardProps) {
           // Same preview-scrollbar suppression as the Playground stage (see web-scrollbar.tsx):
           // hide the browser scrollbar a scrollable demo would draw here. Web-only; no-op native.
           {...(Platform.OS === "web" ? ({ dataSet: { previewStage: "" } } as object) : null)}
-          style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, alignItems: "center" }}
+          // A DEFINITE-width column, the layout the kit's sizing natures are built for (the
+          // Playground's FitStage explains it): a FILL example fills the card, a HUG one keeps
+          // its own size at the leading edge, and a paragraph or a wrapping row is bounded by
+          // the card, so it wraps instead of running past it. It used to be a wrapping row,
+          // whose children are content-sized: a paragraph never wrapped and a wrapping group
+          // grew to the sum of its items, scrolling a phone-width page sideways.
+          //
+          // A Don't may demonstrate exactly that (every page number, hard-width cards, a
+          // crowded segmented control, a fixed-width mock), so its frame clips what runs
+          // past it and the page itself never scrolls sideways. A Do frame never clips: a
+          // Do that does not fit a phone is a defect, and the phone-width pass of
+          // e2e/responsive/component-widths.e2e.ts fails on it.
+          style={[{ width: "100%", alignItems: "flex-start" }, isDont ? { overflow: "hidden" } : null]}
         >
           <ExampleErrorBoundary>{children}</ExampleErrorBoundary>
         </View>

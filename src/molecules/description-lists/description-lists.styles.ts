@@ -87,6 +87,12 @@ export const valueMono: TextStyle = { fontFamily: MONO_FONT };
 export const copyRow: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 8, flexShrink: 1 };
 export const copyValueText: TextStyle = { flexShrink: 1 };
 
+// A plain value beside a trailing affordance (the two-column cell's Update link) must
+// yield the same way, and wrap rather than overflow: a Text row item keeps its longest
+// unbreakable run as its minimum width on the web (an id, an email) and does not shrink at
+// all on native, so a long value pushed the cell past the card at phone widths.
+export const valueWrap: TextStyle = { flexShrink: 1, minWidth: 0 };
+
 // --- rows -------------------------------------------------------------------
 
 // Row layout per axis. The horizontal rows (inline / two-column) take the skin's

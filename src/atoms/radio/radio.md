@@ -22,6 +22,8 @@ On the web, Space activates the focused control on key release, and Enter also a
 
 ### Inline
 
+`row` lays the options out in a wrapping row. The group fills its parent's width (the parent provides the bounds, as for any list or field), so the row wraps onto another line when the options run out of room instead of running past its container.
+
 ```tsx
 <RadioGroup row defaultValue="hobby">
   <Radio value="hobby">Hobby</Radio>
