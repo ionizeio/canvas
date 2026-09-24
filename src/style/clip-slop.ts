@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { type Insets, type LayoutChangeEvent, type LayoutRectangle } from "react-native";
+import { slopSides, type Slop } from "./touch-seam.js";
 
 // The touch slop a clipping node carries so the pressables inside it keep theirs.
 //
@@ -13,14 +14,6 @@ import { type Insets, type LayoutChangeEvent, type LayoutRectangle } from "react
 // takes both boxes: this measures them.
 //
 // A kit mechanism, not public API: src/style/index.ts does not re-export this file.
-
-type Slop = Insets | number | null | undefined;
-
-/** A slop as its four sides, a bare number applying to each. */
-export function slopSides(slop: Slop): Required<Pick<Insets, "top" | "bottom" | "left" | "right">> {
-  if (typeof slop === "number") return { top: slop, bottom: slop, left: slop, right: slop };
-  return { top: slop?.top ?? 0, bottom: slop?.bottom ?? 0, left: slop?.left ?? 0, right: slop?.right ?? 0 };
-}
 
 /**
  * The slop a clipping node of `size` must carry so each child keeps its own: per side, the

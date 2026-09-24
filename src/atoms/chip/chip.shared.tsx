@@ -1,6 +1,7 @@
 import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
 import { View, Text, Pressable, RippleClip, StyleSheet, cornerRadii, useHugStyle, useControllableState, surfaceRipple, pressDim, palette, statusColors, type StatusColorTone, type Hue, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, alpha } from "../../style/index.js";
 import { useClipSlop } from "../../style/clip-slop.js";
+import { inlineSide, rowSeam } from "../../style/touch-seam.js";
 import { primaryText } from "../../style/primary-text.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { Icon } from "../icon/icon.js";
@@ -53,7 +54,8 @@ export interface ChipSkin {
   /** Remove "×" glyph size. */
   removeSize: number;
   /** Remove-button hitSlop, sized so glyph + slop reaches the platform's minimum
-   *  touch target (44pt iOS / 48dp Android), biased away from the label (left). */
+   *  touch target (44pt iOS / 48dp Android), biased away from the label: `left` is the
+   *  side toward the label (the start; the shell mirrors it in a right-to-left layout). */
   removeHitSlop: { top: number; bottom: number; left: number; right: number };
   /** Per-side horizontal insets, for a platform that pads an icon-bearing side
    *  tighter than a text side (M3: 16dp beside text, 8dp beside an icon). The
@@ -333,6 +335,19 @@ export function createChip(skin: ChipSkin) {
       </>
     );
 
+    // The remove glyph's slop, biased away from the label on the start side (mirrored in a
+    // right-to-left layout, where the label sits to its right).
+    const removeBias = inlineSide("start") === "left"
+      ? skin.removeHitSlop
+      : { ...skin.removeHitSlop, left: skin.removeHitSlop.right, right: skin.removeHitSlop.left };
+    // A pressable body and the remove glyph sit the pill's gap apart, and React Native gives
+    // a point both slops admit to the later sibling, the glyph: the seam between them is
+    // split (src/style/touch-seam.ts), so a tap on the label never removes the chip.
+    const pillGap = (StyleSheet.flatten(skin.base) as ViewStyle).gap;
+    const [bodySlop, removeSlop] = (onPress || selectable) && onRemove
+      ? rowSeam(BODY_HIT_SLOP, removeBias, typeof pillGap === "number" ? pillGap : 0)
+      : [BODY_HIT_SLOP, removeBias];
+
     // The trailing "×" remove control, a button in its own right.
     const removeButton = onRemove ? (
       <Pressable
@@ -344,8 +359,8 @@ export function createChip(skin: ChipSkin) {
         accessibilityLabel={typeof children === "string" ? `Remove ${children}` : "Remove"}
         // Grow the glyph to the platform minimum target (44pt iOS, 48dp
         // Android per the M3 input-chip close target); per-skin values,
-        // biased away from the label (left).
-        hitSlop={skin.removeHitSlop}
+        // biased away from the label, and split with a pressable body beside it.
+        hitSlop={removeSlop}
         {...pillClip.measure("remove")}
       >
         {/* The "×" rides the chip's label color so it matches every hue. */}
@@ -362,7 +377,7 @@ export function createChip(skin: ChipSkin) {
     if ((onPress || selectable) && onRemove) {
       const bodyGap = (skin.base as { gap?: number }).gap;
       return (
-        <View style={container} testID={testID} hitSlop={pillClip.slop({ body: BODY_HIT_SLOP, remove: skin.removeHitSlop })} {...pillClip.measure()}>
+        <View style={container} testID={testID} hitSlop={pillClip.slop({ body: bodySlop, remove: removeSlop })} {...pillClip.measure()}>
           {pane}
           <Pressable
             {...pillClip.measure("body")}
@@ -372,7 +387,7 @@ export function createChip(skin: ChipSkin) {
             accessibilityLabel={accessibilityLabel}
             accessibilityState={{ selected: isSelected, disabled: !!disabled }}
             aria-pressed={isSelected}
-            hitSlop={BODY_HIT_SLOP}
+            hitSlop={bodySlop}
             android_ripple={surfaceRipple(tokens)}
             style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", gap: bodyGap }, liquid && disabled ? { opacity: 0.5 } : null, pressDim(pressed, 0.85)]}
           >
@@ -427,7 +442,7 @@ export function createChip(skin: ChipSkin) {
     // Static chip (not tappable): a View; a remove "×" here is a lone button in a
     // non-interactive container, so there is no nesting to resolve.
     return (
-      <View style={container} testID={testID} accessibilityLabel={accessibilityLabel} hitSlop={pillClip.slop({ remove: skin.removeHitSlop })} {...pillClip.measure()}>
+      <View style={container} testID={testID} accessibilityLabel={accessibilityLabel} hitSlop={pillClip.slop({ remove: removeSlop })} {...pillClip.measure()}>
         {pane}
         {bodyContent}
         {removeButton}

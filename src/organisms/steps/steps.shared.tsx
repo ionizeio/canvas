@@ -1,8 +1,9 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { type ReactNode } from "react";
-import { type DimensionValue } from "react-native";
+import { type DimensionValue, type Insets } from "react-native";
 import { View, Pressable, Text, RippleClip, cornerRadii, useControllableState, useContainerBreakpoint, containerProbe, type BreakpointKey, type Responsive, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
-import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
+import { leastLine, useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
+import { inlineSide, slopSides, splitSeam } from "../../style/touch-seam.js";
 import * as s from "./steps.styles.js";
 import { type State, type StepsSkin } from "./steps.styles.js";
 
@@ -72,16 +73,58 @@ function stateOf(index: number, current: number): State {
   return "upcoming";
 }
 
+// The seams between the circles (src/style/touch-seam.ts). React Native gives a point two
+// touch areas admit to the later sibling, so each circle's slop stops at its share of the gap
+// to the next circle, measured from the Steps' own geometry: across a horizontal connector,
+// at least its two margins (the connector can shrink to nothing, and a label only widens a
+// column); down a vertical rail, a row's least height less the circle (the rail's circle and
+// connector margins, or the label line, an optional description line and the spacing under
+// them, whichever is taller). Both circles of a seam carry the same slop, so each keeps at
+// most half the gap.
+const CIRCLE = s.circleBase.height as number;
+const ACROSS = 2 * (s.horizontalConnector.marginHorizontal as number);
+const RAIL = CIRCLE + 2 * (s.verticalConnector.marginVertical as number);
+
+/** A circle's gap to the neighboring circle on each side it has one, in logical sides. */
+interface CircleSeams {
+  start?: number;
+  end?: number;
+  top?: number;
+  bottom?: number;
+}
+
+/** A circle's slop with each side that faces another circle held to its share of the gap. */
+function seamed(slop: Insets | undefined, seams: CircleSeams): Insets | undefined {
+  if (slop == null) return undefined;
+  const sides = slopSides(slop);
+  const share = (side: number, gap: number | undefined) => (gap == null ? side : splitSeam(side, side, gap)[0]);
+  const start = inlineSide("start");
+  const end = inlineSide("end");
+  return {
+    ...sides,
+    top: share(sides.top, seams.top),
+    bottom: share(sides.bottom, seams.bottom),
+    [start]: share(sides[start], seams.start),
+    [end]: share(sides[end], seams.end),
+  };
+}
+
+// A connector draws the line between two circles and takes no touches: it is a later
+// sibling of the circle above or before it, and would otherwise take a tap in that circle's
+// slop where it runs.
+const PASS_THROUGH: ViewStyle = { pointerEvents: "none" };
+
 /** Build a Steps component from a platform skin. */
 export function createSteps(skin: StepsSkin) {
   // The numbered/check disc. Pressable (and so opacity-dim / ripple) only when an
   // onStepPress handler is supplied; otherwise a plain View.
-  function Circle({ index, state, onPress }: { index: number; state: State; onPress?: () => void }) {
+  function Circle({ index, state, onPress, seams }: { index: number; state: State; onPress?: () => void; seams: CircleSeams }) {
     // A step circle is 32pt of visible dot on every platform, which is right for the
     // rail's rhythm and short of both platforms' minimum, so the touch area grows
     // around it rather than the dot growing. The slop is seeded from that fixed size, so it
     // is in place before the first layout (src/style/touch-target-seed.ts).
     const target = useSeededMinTargetSlop(skin.minTarget, styleBox(s.circleBase));
+    const hitSlop = seamed(target.hitSlop, seams);
     const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens } = theme;
     // Completed and upcoming discs use stable frost. An intentionally unfilled
@@ -102,9 +145,10 @@ export function createSteps(skin: StepsSkin) {
       // The bounded ripple is clipped to the round circle by this RippleClip parent
       // (a node can never clip its own ripple on Android); no outer layout to move.
       return (
-        <RippleClip shape={cornerRadii(s.circleBase)} hitSlop={target.hitSlop}>
+        <RippleClip shape={cornerRadii(s.circleBase)} hitSlop={hitSlop}>
           <Pressable
-            {...target}
+            onLayout={target.onLayout}
+            hitSlop={hitSlop}
             style={({ pressed }) => [
               circleStyle,
               skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
@@ -185,6 +229,15 @@ export function createSteps(skin: StepsSkin) {
       );
     }
 
+    // The least gap under a vertical step's circle (every step but the last): its row's least
+    // height less the circle (see CircleSeams above).
+    const railGap = (step: Step) => {
+      const note = step.description != null ? leastLine((skin.verticalDescription(tokens).lineHeight as number | undefined) ?? 0) : 0;
+      const label = step.label !== "" ? leastLine((s.labelBase.lineHeight as number | undefined) ?? 0) : 0;
+      const content = label + note + ((s.verticalContentSpacing.paddingBottom as number | undefined) ?? 0);
+      return Math.max(RAIL, content) - CIRCLE;
+    };
+
     if (layout === "vertical") {
       return withStacksProbe(
         <View testID={testID} style={[s.fullWidth, style]}>
@@ -194,9 +247,14 @@ export function createSteps(skin: StepsSkin) {
             return (
               <View key={i} style={s.verticalRow}>
                 <View style={s.verticalRail}>
-                  <Circle index={i} state={state} onPress={pressStep ? () => pressStep(i) : undefined} />
+                  <Circle
+                    index={i}
+                    state={state}
+                    onPress={pressStep ? () => pressStep(i) : undefined}
+                    seams={{ top: i > 0 ? railGap(steps[i - 1]!) : undefined, bottom: !isLast ? railGap(step) : undefined }}
+                  />
                   {!isLast ? (
-                    <View style={[s.verticalConnector, skin.connector(tokens, state === "completed")]} />
+                    <View style={[s.verticalConnector, skin.connector(tokens, state === "completed"), PASS_THROUGH]} />
                   ) : null}
                 </View>
                 <View style={[s.flex1, !isLast ? s.verticalContentSpacing : null]}>
@@ -221,13 +279,18 @@ export function createSteps(skin: StepsSkin) {
           return (
             <View key={i} style={[s.horizontalRow, !isLast ? s.flex1 : null]}>
               <View style={s.horizontalColumn}>
-                <Circle index={i} state={state} onPress={onStepPress ? () => onStepPress(i) : undefined} />
+                <Circle
+                  index={i}
+                  state={state}
+                  onPress={onStepPress ? () => onStepPress(i) : undefined}
+                  seams={{ start: i > 0 ? ACROSS : undefined, end: !isLast ? ACROSS : undefined }}
+                />
                 <Text style={[s.labelBaseXs, skin.labelState(tokens, state)]}>{step.label}</Text>
               </View>
               {!isLast ? (
                 // The connector after a step is "filled" once that step is
                 // completed (i.e. the next step has been reached).
-                <View style={[s.horizontalConnector, skin.connector(tokens, i < current)]} />
+                <View style={[s.horizontalConnector, skin.connector(tokens, i < current), PASS_THROUGH]} />
               ) : null}
             </View>
           );

@@ -2,6 +2,7 @@ import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { useInputEscapeBridge } from "../../style/escape-layer.js";
 import { forwardRef, useId, useRef, useState } from "react";
 import {
+  StyleSheet,
   type GestureResponderEvent,
   type Insets,
   type TextInput as RNTextInput,
@@ -9,6 +10,7 @@ import {
 } from "react-native";
 import { View, Pressable, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, FOCUS_RESET, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, isGlass, withInnerFill, alpha, PANE_SIBLING_INPUT } from "../../style/index.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
+import { rowSeam } from "../../style/touch-seam.js";
 import { Icon, type IconName } from "../icon/icon.js";
 import { type InputSkin, type Size } from "./input.styles.js";
 
@@ -30,7 +32,30 @@ import { type InputSkin, type Size } from "./input.styles.js";
 // reference's xmark.circle.fill). Hit slop widens each glyph to a 44pt target.
 const ACTION_HIT_SLOP = 12;
 // The gap between two trailing glyphs when both the clear button and the eye show.
-const ACTION_GAP = 8;
+export const ACTION_GAP = 8;
+
+/**
+ * The touch slop of each pressable trailing glyph, in order (the clear glyph, then the eye).
+ * Each reaches the minimum (ACTION_HIT_SLOP a side) except where it faces a neighbor: the
+ * first faces the value the user is editing across `textGap`, and two glyphs face each other
+ * across ACTION_GAP. There the gap is split (src/style/touch-seam.ts): React Native gives a
+ * point two touch areas admit to the later sibling, so the eye's whole slop took taps on the
+ * clear glyph (and revealed the password), and the clear glyph's took taps on the end of the
+ * text. The value asks for no slop, so the first glyph may take that whole gap and no more.
+ */
+export function actionSlops(count: number, textGap: number): Array<Insets | undefined> {
+  const slops: Array<Insets | undefined> = [];
+  for (let i = 0; i < count; i += 1) {
+    if (i === 0) {
+      slops.push(rowSeam(undefined, ACTION_HIT_SLOP, textGap)[1]);
+    } else {
+      const [before, own] = rowSeam(slops[i - 1], ACTION_HIT_SLOP, ACTION_GAP);
+      slops[i - 1] = before;
+      slops.push(own);
+    }
+  }
+  return slops;
+}
 
 /**
  * The touch slop the grouped box carries for its trailing actions. The box clips (it
@@ -438,6 +463,14 @@ export function createInput(skin: InputSkin) {
     const height = skin.groupedHeight(size);
     // How many glyphs share the trailing gutter (clear, eye, a passive trailing icon).
     const trailingGlyphs = (hasClear ? 1 : 0) + (hasEye ? 1 : 0) + (trailingIcon && iconName != null ? 1 : 0);
+    // The pressable glyphs' slops (the clear glyph first, then the eye). The one-glyph gutter
+    // holds the glyph row's end inset, the glyph and the gap to the value, so that gap is what
+    // is left of it; each further glyph widens the gutter by a glyph and ACTION_GAP.
+    const gutter = asNum(skin.groupField(tokens, { leadingIcon: false, trailingIcon: true, hasPrefix: false, hasSuffix: false }).paddingEnd, 0);
+    const endInset = asNum((StyleSheet.flatten(skin.iconOverlay("right")) as ViewStyle).paddingEnd, 0);
+    const [firstSlop, secondSlop] = actionSlops((hasClear ? 1 : 0) + (hasEye ? 1 : 0), Math.max(0, gutter - endInset - skin.iconSize));
+    const clearSlop = hasClear ? firstSlop : undefined;
+    const eyeSlop = hasEye ? (hasClear ? secondSlop : firstSlop) : undefined;
     // Clear: empty the native field (the uncontrolled case keeps its own text), then
     // report the empty value so a controlled parent and the populated flag follow.
     const clearField = () => {
@@ -492,7 +525,7 @@ export function createInput(skin: InputSkin) {
               {hasClear ? (
                 <Pressable
                   onPress={clearField}
-                  hitSlop={ACTION_HIT_SLOP}
+                  hitSlop={clearSlop}
                   accessibilityRole="button"
                   accessibilityLabel="Clear text"
                   android_ripple={skin.ripple ? { ...skin.ripple(tokens), borderless: true } : undefined}
@@ -504,7 +537,7 @@ export function createInput(skin: InputSkin) {
               {hasEye ? (
                 <Pressable
                   onPress={() => setRevealed((r) => !r)}
-                  hitSlop={ACTION_HIT_SLOP}
+                  hitSlop={eyeSlop}
                   accessibilityRole="button"
                   accessibilityLabel={revealed ? "Hide password" : "Show password"}
                   accessibilityState={{ selected: revealed }}

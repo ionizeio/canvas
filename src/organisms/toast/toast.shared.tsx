@@ -26,6 +26,7 @@ import {
 } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { inverseFill } from "../../style/inverse.js";
+import { rowSeam } from "../../style/touch-seam.js";
 
 // Shared Toast shell. Two layers live here once and a platform file supplies only
 // its skin (capsule shape, type, action/dismiss feedback) and calls createToastSystem:
@@ -235,6 +236,14 @@ export function createToastSystem(skin: ToastSkin) {
     const hasTrailing = action != null || onDismiss != null;
     const hasDescription = description != null && description !== "";
     const containerStyle = skin.container(tokens, hasTrailing, hasDescription);
+    // The action and the dismiss reach the platform minimum through the skin's slop, and sit
+    // the capsule's gap apart. React Native gives a point both slops admit to the later
+    // sibling, the dismiss, so the seam between them is split (src/style/touch-seam.ts): a
+    // tap inside the action never dismisses the toast.
+    const gap = (StyleSheet.flatten(containerStyle) as ViewStyle).gap;
+    const [actionSlop, dismissSlop] = action != null && onDismiss != null
+      ? rowSeam(skin.actionHitSlop, skin.dismissHitSlop, typeof gap === "number" ? gap : 0)
+      : [skin.actionHitSlop ?? undefined, skin.dismissHitSlop ?? undefined];
 
     const content = (
       <>
@@ -252,13 +261,13 @@ export function createToastSystem(skin: ToastSkin) {
         {action ? (
           // The bounded ripple is clipped to the button's corners by this RippleClip
           // parent (a node can never clip its own ripple on Android); nothing to move.
-          <RippleClip shape={cornerRadii(skin.actionButton(tokens))} hitSlop={skin.actionHitSlop ?? undefined}>
+          <RippleClip shape={cornerRadii(skin.actionButton(tokens))} hitSlop={actionSlop}>
             <Pressable
               onPress={action.onPress}
               accessibilityRole="button"
               accessibilityLabel={action.label}
               android_ripple={ripple}
-              hitSlop={skin.actionHitSlop ?? undefined}
+              hitSlop={actionSlop}
               style={({ pressed }) => [skin.actionButton(tokens), pressFeedback(pressed)]}
             >
               <Text style={skin.actionLabel(tokens)}>{action.label}</Text>
@@ -266,13 +275,13 @@ export function createToastSystem(skin: ToastSkin) {
           </RippleClip>
         ) : null}
         {onDismiss ? (
-          <RippleClip shape={cornerRadii(skin.dismissButton(tokens))} hitSlop={skin.dismissHitSlop ?? undefined}>
+          <RippleClip shape={cornerRadii(skin.dismissButton(tokens))} hitSlop={dismissSlop}>
             <Pressable
               onPress={onDismiss}
               accessibilityRole="button"
               accessibilityLabel="Dismiss"
               android_ripple={ripple}
-              hitSlop={skin.dismissHitSlop ?? undefined}
+              hitSlop={dismissSlop}
               style={({ pressed }) => [skin.dismissButton(tokens), pressFeedback(pressed)]}
             >
               <Icon

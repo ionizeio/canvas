@@ -180,11 +180,19 @@ export interface JavaScriptBudget {
 // 44,522 / 46,347B, StackedList 52,075 / 50,386 / 52,159B. The ceilings moved to
 // 9,472 / 39,936 / 49,664 / 55,808B: ~7% headroom over the measured figures for
 // Button, DataTable and StackedList (Input keeps the ceiling it never grew into).
+// Button was 9,011 / 8,654 / 8,888B before the kit's controls seeded their touch slop
+// from the box their skin gives (src/style/touch-target-seed.ts: styleBox, seedSlop and
+// the measurement keyed by that box, so a native view hugging a control records the slop
+// at its first layout); measured after at 9,481 / 9,113 / 9,336B, ~460B gzip on every
+// platform, the web included, where the skins declare no minimum and the hook returns
+// nothing but still ships. The seeds left 4B of the web ceiling and the line helper the
+// Steps seams share with them took it. The Button ceiling moved from 9,472 to 10,240B
+// (8% headroom over the web figure).
 // Fixed ceilings leave room for deliberate growth while catching a heavy import.
 // These are independent budgets, not a combined total: shared modules legitimately
 // occur in more than one consumer. Changes require a fresh measurement and rationale.
 export const NAMED_IMPORT_BUDGETS: readonly JavaScriptBudget[] = [
-  { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 9_472, requiredExports: ["Button", "ThemeProvider"] },
+  { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 10_240, requiredExports: ["Button", "ThemeProvider"] },
   { label: "Input + ThemeProvider", entry: "scripts/size-fixtures/input.ts", maxGzip: 39_936, requiredExports: ["Input", "ThemeProvider"] },
   { label: "DataTable + ThemeProvider", entry: "scripts/size-fixtures/data-table.ts", maxGzip: 49_664, requiredExports: ["DataTable", "ThemeProvider"] },
   { label: "StackedList + ThemeProvider", entry: "scripts/size-fixtures/stacked-list.ts", maxGzip: 55_808, requiredExports: ["StackedList", "ThemeProvider"] },

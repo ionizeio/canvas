@@ -4,7 +4,8 @@ import { type ComponentType } from "react";
 import { StyleSheet, type Insets } from "react-native";
 import { iosSkin as inputIos, androidSkin as inputAndroid, webSkin as inputWeb, type Size as InputSize } from "../src/atoms/input/input.styles.ts";
 import { actionOverhang } from "../src/atoms/input/input.shared.tsx";
-import { clipSlop, slopSides } from "../src/style/clip-slop.ts";
+import { clipSlop } from "../src/style/clip-slop.ts";
+import { slopSides } from "../src/style/touch-seam.ts";
 import { androidSkin as chipAndroid } from "../src/atoms/chip/chip.styles.ts";
 import { installTouchStubs, isSlop, records, renderAndLayout, restoreTouchStubs } from "./fixtures/touch-records.tsx";
 

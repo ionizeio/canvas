@@ -59,6 +59,14 @@ export function seedSlop(minTarget: number, box: TargetBox, options: MinTargetOp
 
 const num = (value: unknown): number | undefined => (typeof value === "number" ? value : undefined);
 
+/**
+ * The least height a line of text of `lineHeight` renders at: the line itself, or less under
+ * a system font scale below 1 (React Native scales the line height with the font).
+ */
+export function leastLine(lineHeight: number): number {
+  return lineHeight * Math.min(1, PixelRatio.getFontScale());
+}
+
 type Edge = "top" | "bottom" | "start" | "end";
 const LOGICAL: Record<Edge, { name: string; physical: string; axis: "Vertical" | "Horizontal" }> = {
   top: { name: "Top", physical: "Top", axis: "Vertical" },
@@ -85,7 +93,7 @@ function inset(style: Record<string, unknown>, edge: Edge): number {
  */
 export function styleBox(style: ViewStyle, lineHeight?: number): TargetBox {
   const s = style as Record<string, unknown>;
-  const line = lineHeight == null ? 0 : lineHeight * Math.min(1, PixelRatio.getFontScale());
+  const line = lineHeight == null ? 0 : leastLine(lineHeight);
   const floor = (fixed: unknown, least: unknown, sum: number) => num(fixed) ?? Math.max(num(least) ?? 0, sum);
   return {
     width: floor(s.width, s.minWidth, inset(s, "start") + inset(s, "end")),

@@ -3,6 +3,7 @@ import {
   StyleSheet,
   TextInput,
   type AccessibilityActionEvent,
+  type Insets,
   type NativeSyntheticEvent,
   type TextInputEndEditingEventData,
   type TextInputKeyPressEvent,
@@ -33,6 +34,7 @@ import { useFocusRingStyle } from "../../style/pressable.js";
 import { clamp } from "../../style/math.js";
 import { Icon } from "../icon/icon.js";
 import { addDecimal } from "./stepper.math.js";
+import { rowSeam } from "../../style/touch-seam.js";
 import { stepperAccessibility } from "./stepper.accessibility.js";
 
 // Shared Stepper shell. A numeric value with a − button, an editable numeric
@@ -323,14 +325,35 @@ export function createStepper(skin: StepperSkin) {
 
     const glyph = skin.glyph(tokens, size, !!disabled);
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
+    // Each ± button reaches the platform minimum through the skin's slop. Where a button
+    // faces the value field or the other button, the gap between them is split (rowSeam,
+    // src/style/touch-seam.ts): React Native gives a point two touch areas admit to the later
+    // sibling, so an unsplit + took taps inside the value field it sits after. The field asks
+    // for no slop, so a button facing it may take that whole gap and no more.
     const hitSlop = skin.hitSlop ? skin.hitSlop(size) : undefined;
+    const slotGap = (StyleSheet.flatten(groupShape) as ViewStyle).gap;
+    const dividerWidth = skin.divider ? (StyleSheet.flatten(skin.divider(tokens, !!disabled)) as ViewStyle).width : 0;
+    const gapPx = typeof slotGap === "number" ? slotGap : 0;
+    // Adjacent slots sit one gap apart, or a gap either side of a divider.
+    const seam = skin.divider ? 2 * gapPx + (typeof dividerWidth === "number" ? dividerWidth : 0) : gapPx;
+    // [ value ][ − | + ]: the buttons face each other, and the − sits flush after the value.
+    // [ − | value | + ]: each button faces the value.
+    let minusSlop: Insets | undefined;
+    let plusSlop: Insets | undefined;
+    if (skin.fieldOnLeft) {
+      [minusSlop, plusSlop] = rowSeam(hitSlop, hitSlop, seam);
+      minusSlop = rowSeam(undefined, minusSlop, 0)[1];
+    } else {
+      minusSlop = rowSeam(hitSlop, undefined, seam)[0];
+      plusSlop = rowSeam(undefined, hitSlop, seam)[1];
+    }
 
     // Each ± button is its own rounded surface (a circle on Android), so its bounded
     // android_ripple is clipped to those corners by a RippleClip parent (a transparent
     // passthrough on iOS/web; the corner radii are constant across pressed/disabled). See
     // src/style/ripple-clip.
     const MinusButton = (
-      <RippleClip shape={cornerRadii(skin.button(tokens, size, "left", atMin, false))} hitSlop={hitSlop}>
+      <RippleClip shape={cornerRadii(skin.button(tokens, size, "left", atMin, false))} hitSlop={minusSlop}>
         <Pressable
           onPress={decrement}
           disabled={atMin}
@@ -339,7 +362,7 @@ export function createStepper(skin: StepperSkin) {
           accessibilityState={{ disabled: atMin }}
           aria-disabled={atMin}
           android_ripple={ripple}
-          hitSlop={hitSlop}
+          hitSlop={minusSlop}
           style={({ pressed }) => [
             groupSurfaced ? skin.button(tokens, size, "left", atMin, pressed) : paneStyle(actionTheme, skin.button(tokens, size, "left", atMin, pressed)),
             !liquidActions && skin.pressedOpacity != null && pressed && !atMin ? { opacity: skin.pressedOpacity } : null,
@@ -356,7 +379,7 @@ export function createStepper(skin: StepperSkin) {
     );
 
     const PlusButton = (
-      <RippleClip shape={cornerRadii(skin.button(tokens, size, "right", atMax, false))} hitSlop={hitSlop}>
+      <RippleClip shape={cornerRadii(skin.button(tokens, size, "right", atMax, false))} hitSlop={plusSlop}>
         <Pressable
           onPress={increment}
           disabled={atMax}
@@ -365,7 +388,7 @@ export function createStepper(skin: StepperSkin) {
           accessibilityState={{ disabled: atMax }}
           aria-disabled={atMax}
           android_ripple={ripple}
-          hitSlop={hitSlop}
+          hitSlop={plusSlop}
           style={({ pressed }) => [
             groupSurfaced ? skin.button(tokens, size, "right", atMax, pressed) : paneStyle(actionTheme, skin.button(tokens, size, "right", atMax, pressed)),
             !liquidActions && skin.pressedOpacity != null && pressed && !atMax ? { opacity: skin.pressedOpacity } : null,
