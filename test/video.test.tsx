@@ -83,6 +83,12 @@ describe("Video inline", () => {
     expect(fits).toEqual(["contain", "cover", "fill", "contain"]);
   });
 
+  it("sizes the video surface to the picture instead of pinning its edges", () => {
+    render(<ThemeProvider><Video source={clip} /></ThemeProvider>);
+    // On the web the surface is a <video>: pinned edges alone leave it at the clip's own size.
+    expect(current().viewProps.style).toMatchObject({ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" });
+  });
+
   it("shows the poster until the first frame is on screen", () => {
     render(<ThemeProvider><Video source={clip} poster={still} testID="clip" /></ThemeProvider>);
     const posterCount = () => screen.getByTestId("clip").querySelectorAll("img").length;

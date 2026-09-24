@@ -28,8 +28,11 @@ export interface VideoSkin {
   minTarget: number | null;
 }
 
-// Covers the whole picture.
-const fillPicture: ImageStyle = { position: "absolute", top: 0, right: 0, bottom: 0, left: 0 };
+// Covers the whole picture. Sized by width and height rather than by pinning all four
+// edges: on the web the video surface is a `<video>`, a replaced element, which keeps
+// the clip's own pixel size when only its edges are pinned and would show a cropped
+// corner of the clip.
+const fillPicture: ImageStyle = { position: "absolute", top: 0, left: 0, width: "100%", height: "100%" };
 
 const frame: ViewStyle = { overflow: "hidden" };
 
