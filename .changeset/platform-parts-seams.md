@@ -1,5 +1,0 @@
----
-"@ionizeio/canvas": patch
----
-
-Every shell now takes the components it draws with that look different per platform as parts from its platform entry files, instead of importing their web builds: Dialog (Button, Input), AlertDialog (Button, Input, which Android now passes too), ActionSheet, Dropdown, Popover, Tooltip and GeoMap (Button), Navbar (Button and Avatar beside its Dropdown), Calendar (ButtonGroup), FilterPanel (its checkbox, Badge, Button and the narrow window's Drawer), Sidebar (Drawer and the row Badge) and MetricBreakdown (Chip). A device already resolved them by platform, so nothing changes there; the docs' iOS and Android previews now show those pieces in their own look. DescriptionList narrows its two-column term label when the list itself is phone-narrow, measured, instead of when the window is, so it narrows in a narrow panel on a desktop and not in a wide container on a phone. A new test holds the seams, and the docs' platform registry check shares its definition of a component that looks different per platform.
