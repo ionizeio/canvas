@@ -3,9 +3,9 @@
 // React Native has no font loading of its own: an app registers faces (expo-font,
 // a native asset, an @font-face rule on the web) and refers to them by the family
 // name it registered. So the kit cannot bundle Manrope; it names the brand faces
-// (`typeface`) and lets the app hand the registered families to the ThemeProvider
-// (`fonts`), from which the themed Text/TextInput primitives (src/style/text.tsx)
-// paint every kit label. With no `fonts` the kit renders in the platform's system
+// (`typeface`) and lets the app hand the registered families to its root
+// ThemeProvider (`fonts`; nested providers inherit them), from which the themed
+// Text/TextInput primitives (src/style/text.tsx) paint every kit label. With no `fonts` the kit renders in the platform's system
 // face, exactly as before the brand faces existed, so no consumer breaks.
 //
 // Two shapes are accepted, because registrations come in two shapes:

@@ -1,19 +1,37 @@
 import { describe, it, expect, afterEach } from "bun:test";
 import { render, cleanup, screen } from "@testing-library/react";
-import { ThemeProvider } from "../src/style/theme.tsx";
+import { renderToString } from "react-dom/server";
+import { ThemeProvider, useTheme, type ThemeValue } from "../src/style/theme.tsx";
 import { Text, TextInput, fontStyle } from "../src/style/text.tsx";
 import { resolveFontFace, weightKey, typeface, type ThemeFonts } from "../src/style/fonts.ts";
 import { MONO_FONT } from "../src/style/mono.ts";
+import { colorsFor } from "../src/style/tokens.ts";
 import { Button } from "../src/atoms/button/button.tsx";
 import { Typography } from "../src/atoms/typography/typography.tsx";
 
 afterEach(cleanup);
 
 // The faces an app registers per weight (the expo-google-fonts shape), plus a mono set.
+// Family names carry no spaces: a computed style quotes a name that has one.
 const FACES: ThemeFonts = {
   sans: { "400": "Manrope_400Regular", "500": "Manrope_500Medium", "700": "Manrope_700Bold", "800": "Manrope_800ExtraBold" },
   mono: { "400": "GeistMono_400Regular" },
 };
+// Module constants, the way the docs tell apps to pass `fonts` (a stable reference).
+const BRAND_SANS: ThemeFonts = { sans: "BrandSans" };
+const OTHER_SANS: ThemeFonts = { sans: "OtherSans" };
+const MONO_ONLY: ThemeFonts = { mono: "BrandMono" };
+const SYSTEM_FACE: ThemeFonts = {};
+const BRAND_TOKENS = { primary: "#123456" };
+
+const family = (text: string) => getComputedStyle(screen.getByText(text)).fontFamily;
+
+// Records the theme a subtree resolved, keyed by name.
+const seen: Record<string, ThemeValue> = {};
+function Probe({ name }: { name: string }) {
+  seen[name] = useTheme();
+  return null;
+}
 
 describe("weightKey", () => {
   it("normalizes every RN weight spelling onto the hundreds", () => {
@@ -102,5 +120,163 @@ describe("the themed primitives", () => {
 
   it("name the brand faces the app is expected to register", () => {
     expect(typeface).toEqual({ sans: "Manrope", mono: "Geist Mono" });
+  });
+});
+
+// The faces are an app-level registration, so a nested provider that omits `fonts`
+// keeps the nearest parent's; everything else (tokens, scheme, palette, surface)
+// stays per provider, as before.
+describe("nested providers", () => {
+  it("keep the parent's faces when they omit fonts, whatever their own axes", () => {
+    render(
+      <ThemeProvider fonts={FACES}>
+        <ThemeProvider dark mint glass>
+          <Probe name="inner" />
+          <Text style={{ fontWeight: "700" }}>Inner</Text>
+          <Button primary>Save</Button>
+          <Typography code>--inner</Typography>
+        </ThemeProvider>
+      </ThemeProvider>,
+    );
+    expect(family("Inner")).toBe("Manrope_700Bold");
+    expect(family("Save")).toBe("Manrope_800ExtraBold");
+    // The whole map inherits, the mono role included.
+    expect(family("--inner")).toBe("GeistMono_400Regular");
+    expect(seen.inner?.fonts).toBe(FACES);
+    expect(seen.inner?.scheme).toBe("dark");
+  });
+
+  it("inherit through several levels from the nearest provider that passed fonts", () => {
+    render(
+      <ThemeProvider fonts={FACES}>
+        <ThemeProvider light>
+          <ThemeProvider glass>
+            <Text>Deep</Text>
+          </ThemeProvider>
+        </ThemeProvider>
+        <ThemeProvider fonts={BRAND_SANS}>
+          <ThemeProvider dark>
+            <Text>Nearest</Text>
+          </ThemeProvider>
+        </ThemeProvider>
+      </ThemeProvider>,
+    );
+    expect(family("Deep")).toBe("Manrope_400Regular");
+    expect(family("Nearest")).toBe("BrandSans");
+  });
+
+  it("let an explicit fonts win, and an empty map return the subtree to the system face", () => {
+    render(
+      <ThemeProvider fonts={FACES}>
+        <ThemeProvider fonts={BRAND_SANS}>
+          <Text>Explicit</Text>
+        </ThemeProvider>
+        <ThemeProvider fonts={SYSTEM_FACE}>
+          <Probe name="optOut" />
+          <Text>System</Text>
+        </ThemeProvider>
+      </ThemeProvider>,
+    );
+    expect(family("Explicit")).toBe("BrandSans");
+    expect(family("System")).not.toContain("Manrope");
+    expect(seen.optOut?.fonts).toBe(SYSTEM_FACE);
+  });
+
+  it("replace the inherited map wholesale with a partial one, never merging the roles", () => {
+    render(
+      <ThemeProvider fonts={FACES}>
+        <ThemeProvider fonts={MONO_ONLY}>
+          <Text>Plain</Text>
+          <Typography code>--mono</Typography>
+        </ThemeProvider>
+      </ThemeProvider>,
+    );
+    // The nested map names no sans, so plain text is back in the system face.
+    expect(family("Plain")).not.toContain("Manrope");
+    expect(family("--mono")).toBe("BrandMono");
+  });
+
+  it("give the root without a parent an empty map", () => {
+    render(
+      <ThemeProvider dark>
+        <Probe name="root" />
+        <Text>Root</Text>
+      </ThemeProvider>,
+    );
+    expect(seen.root?.fonts).toEqual({});
+    expect(family("Root")).not.toContain("Manrope");
+  });
+
+  it("follow the parent's fonts when they change, and keep their value when only the parent's axes change", () => {
+    const tree = (fonts: ThemeFonts, dark: boolean) => (
+      <ThemeProvider fonts={fonts} dark={dark} light={!dark}>
+        <ThemeProvider solid light>
+          <Probe name="live" />
+          <Text>Live</Text>
+        </ThemeProvider>
+      </ThemeProvider>
+    );
+    const { rerender } = render(tree(FACES, false));
+    const first = seen.live;
+    expect(family("Live")).toBe("Manrope_400Regular");
+    // A parent scheme flip re-creates no nested value: the memo keys on the resolved faces.
+    rerender(tree(FACES, true));
+    expect(seen.live).toBe(first!);
+    rerender(tree(OTHER_SANS, true));
+    expect(family("Live")).toBe("OtherSans");
+    expect(seen.live?.fonts).toBe(OTHER_SANS);
+  });
+
+  it("follow their own fonts as they toggle between set and unset", () => {
+    const tree = (fonts?: ThemeFonts) => (
+      <ThemeProvider fonts={FACES}>
+        <ThemeProvider dark fonts={fonts}>
+          <Probe name="toggled" />
+          <Text>Toggled</Text>
+        </ThemeProvider>
+      </ThemeProvider>
+    );
+    const { rerender } = render(tree(BRAND_SANS));
+    expect(family("Toggled")).toBe("BrandSans");
+    rerender(tree(undefined));
+    expect(family("Toggled")).toBe("Manrope_400Regular");
+    expect(seen.toggled?.fonts).toBe(FACES);
+    rerender(tree(BRAND_SANS));
+    expect(family("Toggled")).toBe("BrandSans");
+    rerender(tree(SYSTEM_FACE));
+    expect(family("Toggled")).not.toContain("Manrope");
+    rerender(tree(undefined));
+    expect(family("Toggled")).toBe("Manrope_400Regular");
+  });
+
+  it("do not inherit the parent's tokens", () => {
+    render(
+      <ThemeProvider fonts={FACES} light tokens={BRAND_TOKENS}>
+        <Probe name="outer" />
+        <ThemeProvider light>
+          <Probe name="nested" />
+        </ThemeProvider>
+      </ThemeProvider>,
+    );
+    expect(seen.outer?.tokens.primary).toBe(BRAND_TOKENS.primary);
+    expect(seen.nested?.fonts).toBe(FACES);
+    expect(seen.nested?.tokens.primary).toBe(colorsFor("blush", "light").primary);
+  });
+
+  it("server-render the inherited faces", () => {
+    function Faces() {
+      return <Text>{`faces:${JSON.stringify(useTheme().fonts)}`}</Text>;
+    }
+    const html = renderToString(
+      <ThemeProvider fonts={FACES}>
+        <ThemeProvider dark ssrScheme="light">
+          <Faces />
+          <Text>Server</Text>
+        </ThemeProvider>
+      </ThemeProvider>,
+    );
+    // Fonts do not depend on the hydration state: the server pass already has them.
+    expect(html).toContain("Manrope_400Regular");
+    expect(html).toContain("GeistMono_400Regular");
   });
 });

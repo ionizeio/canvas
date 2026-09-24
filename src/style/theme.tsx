@@ -74,9 +74,9 @@ export interface ThemeValue {
    */
   glass: GlassTokens;
   /**
-   * The typefaces the app registered (the ThemeProvider `fonts` prop, or `{}` when
-   * it passed none). The themed Text/TextInput primitives read this to put the
-   * brand face on every kit label; nothing else needs to.
+   * The typefaces the app registered: this provider's `fonts` prop, else the nearest
+   * parent ThemeProvider's, else `{}`. The themed Text/TextInput primitives read this
+   * to put the brand face on every kit label; nothing else needs to.
    */
   fonts: ThemeFonts;
   dark: boolean;
@@ -177,6 +177,11 @@ export interface ThemeProviderProps {
    * carries its own fill (`glassByScheme`) and is never rewritten by a rebrand, so
    * the two are independent. Pass a stable reference (a module constant or a memoized
    * object); an inline literal re-creates the theme value on every render.
+   *
+   * Unlike `fonts`, a nested ThemeProvider does not inherit a parent's `tokens`: a
+   * nested provider is how a subtree shows its own palette or brand, so it paints its
+   * palette unbranded unless it is given overrides of its own. Pass the same constant
+   * again to carry a rebrand into a nested provider.
    */
   tokens?: ThemeTokenOverrides;
   /**
@@ -185,9 +190,15 @@ export interface ThemeProviderProps {
    * either one family name that carries every weight (a variable font, an
    * OS-installed family) or a map from weight to the face registered for that
    * weight (expo-google-fonts style: `{ "400": "Manrope_400Regular", "500":
-   * "Manrope_500Medium" }`). Omit it and the kit renders in the platform's system
-   * face, as it always has. Pass a stable reference (a module constant); an inline
-   * literal re-creates the theme value on every render.
+   * "Manrope_500Medium" }`).
+   *
+   * Pass it once, on the app's root provider: the faces are what the app loaded, not
+   * a per-subtree choice, so a nested ThemeProvider that omits `fonts` keeps the
+   * nearest parent provider's, and one that passes it uses its own map in place of
+   * the parent's (the roles are not merged; a stable empty map, `{}`, returns that
+   * subtree to the system face). Omit it on the root and the kit renders in the
+   * platform's system face, as it always has. Pass a stable reference (a module
+   * constant); an inline literal re-creates the theme value on every render.
    */
   fonts?: ThemeFonts;
   children: ReactNode;
@@ -209,6 +220,15 @@ export function ThemeProvider({ dark, light, scheme, ssrScheme, mint, ssrPalette
   // accessibility ladder against the fresh flags.
   const reducedTransparency = useReducedTransparency();
   const increasedContrast = useIncreasedContrast();
+  // The registered faces are an app-level fact (what the app loaded), not a
+  // per-subtree theme choice, so a provider that omits `fonts` keeps the nearest
+  // parent provider's (or the value a Portal re-provides in its outlet). Only the
+  // faces inherit: tokens, scheme, palette and surface resolve from this provider's
+  // own props (see the `tokens` prop). The memo below keys on the resolved map, not
+  // on the parent's whole value, so a parent scheme or surface change does not
+  // re-create this provider's value.
+  const inheritedFonts = useContext(ThemeContext)?.fonts;
+  const resolvedFonts = fonts ?? inheritedFonts ?? NO_FONTS;
   // Until the post-mount effect runs, honor `ssrScheme` and `ssrPalette` so the server
   // output is deterministic and the hydration render reproduces it exactly (see the
   // prop docs). When both props are absent this stays on the single-pass path: no state
@@ -266,12 +286,12 @@ export function ThemeProvider({ dark, light, scheme, ssrScheme, mint, ssrPalette
       // glass never rewrites it), so no token has to lie about its value to carry that
       // decision.
       glass: glassTintsFor(active, palette),
-      fonts: fonts ?? NO_FONTS,
+      fonts: resolvedFonts,
       dark: active === "dark",
       reducedTransparency,
       increasedContrast,
     };
-  }, [active, palette, resolved, tokens, fonts, reducedTransparency, increasedContrast]);
+  }, [active, palette, resolved, tokens, resolvedFonts, reducedTransparency, increasedContrast]);
   const themed = <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
   // The viewport axis' server assumption rides the theme provider (the only
   // provider Canvas apps already mount); useBreakpoint reads it as its server

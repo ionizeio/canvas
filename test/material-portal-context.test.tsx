@@ -8,8 +8,13 @@ import { GlassBlurTargetContext } from "../src/style/glass-surface/glass-surface
 import { OverlayProvider, Portal } from "../src/style/portal.tsx";
 import { ThemeProvider, useTheme, type ThemeValue } from "../src/style/theme.tsx";
 import { ResolvedThemeProvider } from "../src/style/theme-context.tsx";
+import { Text } from "../src/style/text.tsx";
+import type { ThemeFonts } from "../src/style/fonts.ts";
 
 afterEach(cleanup);
+
+// The app's registered faces, on the root provider only (a module constant, as the docs ask).
+const FACES: ThemeFonts = { sans: { "400": "Manrope_400Regular", "700": "Manrope_700Bold" }, mono: "GeistMono" };
 
 describe("portal material context", () => {
   for (const nestedSurface of ["glass", "solid"] as const) {
@@ -44,6 +49,49 @@ describe("portal material context", () => {
       expect(outlet?.fonts).toBe(fonts);
     });
   }
+
+  it("carries faces a nested provider inherited into the outlet", () => {
+    let outlet: ThemeValue | undefined;
+    function Probe() {
+      outlet = useTheme();
+      return null;
+    }
+    const { getByText } = render(
+      <ThemeProvider fonts={FACES}>
+        <OverlayProvider>
+          <ThemeProvider dark>
+            <Portal><Probe /><Text>Portaled</Text></Portal>
+          </ThemeProvider>
+        </OverlayProvider>
+      </ThemeProvider>,
+    );
+    expect(outlet?.fonts).toBe(FACES);
+    expect(outlet?.scheme).toBe("dark");
+    expect(getComputedStyle(getByText("Portaled")).fontFamily).toBe("Manrope_400Regular");
+  });
+
+  it("gives a provider nested inside portaled content the faces the outlet re-provides", () => {
+    let nested: ThemeValue | undefined;
+    function Probe() {
+      nested = useTheme();
+      return null;
+    }
+    const { getByText } = render(
+      <ThemeProvider fonts={FACES}>
+        <OverlayProvider>
+          <Portal>
+            <ThemeProvider dark>
+              <Probe />
+              <Text>Inside the outlet</Text>
+            </ThemeProvider>
+          </Portal>
+        </OverlayProvider>
+      </ThemeProvider>,
+    );
+    expect(nested?.fonts).toBe(FACES);
+    expect(nested?.scheme).toBe("dark");
+    expect(getComputedStyle(getByText("Inside the outlet")).fontFamily).toBe("Manrope_400Regular");
+  });
 
   it("updates material and accessibility demand without replacing the focused foreground or its safe target", () => {
     const safe = createCaptureTarget();
