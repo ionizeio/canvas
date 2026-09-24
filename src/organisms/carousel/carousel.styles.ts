@@ -4,8 +4,9 @@ import { type CarouselSkin } from "./carousel.shared.js";
 // Co-located Carousel skins, one per platform. The shell resolves the paging,
 // the controlled/uncontrolled current index, the viewport measurement, and the
 // accessibility; the skin supplies only the native SHAPE: the slide corner
-// radius, the arrow button shape/feedback, and the dot indicator look (size,
-// shape, the active-dot widening + brand tint). The BRAND survives on every
+// radius, hairline and text inset, the arrow button shape/feedback and its
+// gutters beside the slides, and the dot indicator look (size, shape, the
+// active-dot widening + brand tint). The BRAND survives on every
 // platform (the indigo `primary` token, never a platform default), so each
 // follows light/dark.
 //
@@ -14,18 +15,24 @@ import { type CarouselSkin } from "./carousel.shared.js";
 //     inactive ones are `muted-foreground` at low alpha. Slide radius 12 with
 //     Apple's continuous (superellipse) corners. Arrows default OFF (App Store
 //     cards swipe with page-control dots, no overlay chrome); the `showArrows`
-//     prop opts them in as a subtle translucent circular chip, press = dim ~0.8.
+//     prop opts them in as a subtle translucent circular chip beside the slides,
+//     press = dim ~0.8.
 //   Android M3: the M3 carousel feel. Rounded slide corners (28dp, extra-large on
 //     every M3 layout) with snap-scroll navigation. The M3 carousel anatomy is
-//     container + items ONLY, so there are NO overlay arrows and NO position/dot
+//     container + items ONLY, so there are NO arrows and NO position/dot
 //     indicator: both default OFF here, and `showArrows`/`showDots` opt them back
 //     in for a common Android pager. When shown, an arrow is a flat `card` chip
 //     with a hairline border and a `controlRipple` press (no shadow), and the
 //     active dot widens to a brand `primary` pill while inactive dots stay small.
-//   Web (Embla/shadcn): visible circular OUTLINE arrow buttons (32px, radius
-//     9999, `card` fill + 1px `border`) overlaid on the left/right edges, with a
-//     small drop shadow; the dot strip sits below (active = wider `primary`
-//     pill, inactive = `muted-foreground` alpha). Press = opacity dim.
+//   Web (Embla/shadcn): visible circular OUTLINE arrow buttons (40px, radius
+//     9999, `card` fill + 1px `border`) beside the slides' left/right edges, as
+//     shadcn hangs them outside the track, with a small drop shadow; the dot strip
+//     sits below (active = wider `primary` pill, inactive = `muted-foreground`
+//     alpha). Press = opacity dim.
+//
+// Every skin keeps its arrows off the slides: `arrowInset` holds the arrow's touch
+// slop inside the carousel, `arrowGap` holds it off the slides (both at least the
+// horizontal hitSlop), and a plain-string slide is inset by `slidePadding`.
 
 // =============================================================================
 // Web (Embla / shadcn): outline circular arrow buttons + dot strip below.
@@ -41,16 +48,26 @@ export const webSkin: CarouselSkin = {
   defaultShowDots: true,
   dotTarget: { minWidth: 24, height: 24, alignItems: "center", justifyContent: "center" },
 
+  // The slide is the card: the Card's radius, fill and resting hairline (under glass
+  // the material's rim replaces the hairline). No shadow: the viewport clips it.
   slide(tokens) {
     return {
       borderRadius: shape.web.card,
       overflow: "hidden",
       backgroundColor: tokens.card,
+      borderWidth: 1,
+      borderColor: tokens.border,
     };
   },
+  // The Card header's inset, so a string slide reads like a titled card.
+  slidePadding: 20,
 
-  // shadcn CarouselPrevious/Next: variant="outline" size="icon" -> size-8
-  // (32px), rounded-full, a 1px border over the `card` fill, with a small lift.
+  // shadcn CarouselPrevious/Next: variant="outline" size="icon", rounded-full, a
+  // 1px border over the `card` fill, with a small lift; 40px since the Riskora
+  // restyle. shadcn hangs them outside the track; here they sit in the carousel's
+  // own gutters. A pointer has no slop to keep inside, but the focus ring draws
+  // outside the arrow (the browser's ring at FOCUS_RING_OFFSET 2), so the 4px inset
+  // keeps it inside the carousel where a clipping parent sits flush with it.
   arrow(tokens) {
     return {
       width: 40,
@@ -65,7 +82,8 @@ export const webSkin: CarouselSkin = {
     };
   },
   arrowIconSize: 18,
-  arrowInset: 8,
+  arrowInset: 4,
+  arrowGap: 12,
 
   dotsRow() {
     return {
@@ -103,7 +121,7 @@ export const iosSkin: CarouselSkin = {
   pressedOpacity: 0.8, // HIG: dim on press
   ripple: null,
 
-  // App Store paged cards: swipe + UIPageControl dots, no overlay arrows by
+  // App Store paged cards: swipe + UIPageControl dots, no arrows by
   // default (the `showArrows` prop opts them back in for pointer/iPad).
   defaultShowArrows: false,
   defaultShowDots: true,
@@ -117,11 +135,16 @@ export const iosSkin: CarouselSkin = {
       borderCurve: "continuous", // Apple superellipse corners on the rounded slide
       overflow: "hidden",
       backgroundColor: tokens.card,
+      // The iOS Card's hairline, so a slide reads on a surface of its own colour.
+      borderWidth: 1,
+      borderColor: tokens.border,
     };
   },
+  // The HIG's standard content margin.
+  slidePadding: 16,
 
   // Subtle translucent chip (no border, no shadow), so the arrows read as a
-  // light affordance over the card rather than a prominent button.
+  // light affordance beside the card rather than a prominent button.
   arrow(tokens) {
     return {
       width: 30,
@@ -133,7 +156,9 @@ export const iosSkin: CarouselSkin = {
     };
   },
   arrowIconSize: 18,
-  arrowInset: 8,
+  // The 7pt slop (30 + 2 * 7 = 44) stays inside the carousel and off the slides.
+  arrowInset: 7,
+  arrowGap: 12,
 
   dotsRow() {
     return {
@@ -174,7 +199,7 @@ export const androidSkin: CarouselSkin = {
   pressedOpacity: null, // Android uses a ripple instead
   ripple: (tokens) => controlRipple(tokens), // borderless 12%-alpha foreground ripple
 
-  // M3 carousel anatomy = container + items ONLY: no overlay arrows and no
+  // M3 carousel anatomy = container + items ONLY: no arrows and no
   // position/dot indicator. Both default OFF; `showArrows`/`showDots` opt them
   // back in for a common Android pager.
   defaultShowArrows: false,
@@ -188,8 +213,16 @@ export const androidSkin: CarouselSkin = {
       borderRadius: 28, // M3 carousel item corner radius (extra-large, all layouts)
       overflow: "hidden",
       backgroundColor: tokens.card,
+      // M3's outlined-card edge: the viewport clips an elevation shadow, and a slide on
+      // a surface of its own colour needs a boundary.
+      borderWidth: 1,
+      borderColor: tokens.border,
     };
   },
+  // M3's 16dp content inset. The item masks its content to the 28dp shape, so a
+  // framed child (a Card, 12dp) would lose its edge near the corners: the slide is
+  // the card, and a string slide is inset inside it.
+  slidePadding: 16,
 
   // Flat M3 chip: `card` fill, hairline border, NO shadow (the ripple carries
   // the press feedback).
@@ -207,7 +240,9 @@ export const androidSkin: CarouselSkin = {
     };
   },
   arrowIconSize: 20,
+  // The 8dp slop (32 + 2 * 8 = 48) stays inside the carousel and off the slides.
   arrowInset: 8,
+  arrowGap: 12,
 
   dotsRow() {
     return {

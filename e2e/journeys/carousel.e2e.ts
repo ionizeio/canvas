@@ -10,11 +10,13 @@ async function expectPage(viewport: Locator, index: number) {
 
 async function expectPaintedSlide(viewport: Locator, slide: Locator) {
   // DOM visibility includes virtualized overscan cells outside the scrollport.
-  // The intended page must occupy the actual viewport on both axes.
+  // The intended page must occupy the actual viewport on both axes: each of its edges
+  // within a pixel of the scrollport's (the slide's 1px hairline insets its content
+  // by that pixel on every side).
   await expect.poll(async () => {
     const [visible, content] = await Promise.all([viewport.boundingBox(), slide.boundingBox()]);
     if (!visible || !content) return Infinity;
-    return Math.max(Math.abs(content.x - visible.x), Math.abs(content.width - visible.width),
+    return Math.max(Math.abs(content.x - visible.x), Math.abs(content.x + content.width - (visible.x + visible.width)),
       Math.abs(content.y - visible.y), Math.max(0, content.height - visible.height));
   }).toBeLessThanOrEqual(1);
 }
@@ -73,6 +75,52 @@ for (const width of [1280, 390]) {
       expect(await scanStructure(page, '[data-testid="carousel-uncontrolled"]', ["scrollable-region-focusable"])).toEqual([]);
     });
   }
+}
+
+// Every carousel on the page, measured: each arrow sits beside its slides' scrollport and
+// never over the text of the slide on show. The arrows used to be overlaid 8px inside the
+// slides, where they covered the first letters of the loop example's titles ("Start"
+// read "art") in every preview row at both widths.
+function arrowOverlaps(): string[] {
+  const problems: string[] = [];
+  const prevs = [...document.querySelectorAll('[aria-label="Previous slide"]')];
+  if (prevs.length < 3) problems.push(`expected the three preview rows, found ${prevs.length} carousels with arrows`);
+  prevs.forEach((prev, index) => {
+    let root = prev.parentElement;
+    while (root && !root.querySelector('[aria-label="Next slide"]')) root = root.parentElement;
+    const next = root?.querySelector('[aria-label="Next slide"]');
+    const port = root?.querySelector('div[tabindex="0"]');
+    if (!next || !port) { problems.push(`carousel ${index}: no measured scrollport yet`); return; }
+    const p = prev.getBoundingClientRect(), n = next.getBoundingClientRect(), s = port.getBoundingClientRect();
+    const r = root!.getBoundingClientRect();
+    if (p.right > s.left + 0.5) problems.push(`carousel ${index}: prev arrow ends at ${p.right}, slides start at ${s.left}`);
+    if (n.left < s.right - 0.5) problems.push(`carousel ${index}: next arrow starts at ${n.left}, slides end at ${s.right}`);
+    // Inside the carousel's own bounds, never hanging past them into the parent.
+    if (p.left < r.left - 0.5 || n.right > r.right + 0.5) problems.push(`carousel ${index}: arrows ${p.left}..${n.right} overflow the carousel ${r.left}..${r.right}`);
+    const walker = document.createTreeWalker(port, NodeFilter.SHOW_TEXT);
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+      if (!node.textContent?.trim()) continue;
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      for (const t of range.getClientRects()) {
+        // Only the slide on show: the others sit beyond the scrollport's clip.
+        if (t.right <= s.left || t.left >= s.right) continue;
+        if (t.left < s.left - 0.5 || t.right > s.right + 0.5) problems.push(`carousel ${index}: "${node.textContent}" runs past the slide`);
+        for (const [name, a] of [["prev", p], ["next", n]] as const) {
+          if (t.left < a.right && t.right > a.left && t.top < a.bottom && t.bottom > a.top) problems.push(`carousel ${index}: the ${name} arrow covers "${node.textContent}"`);
+        }
+      }
+    }
+  });
+  return problems;
+}
+
+for (const width of [1440, 390]) {
+  test(`Carousel arrows sit beside the slides, clear of their text (${width})`, async ({ page }) => {
+    await gotoDocs(page, "/components/carousel/loop", { viewport: { width, height: 900 } });
+    await expect.poll(() => page.evaluate(arrowOverlaps)).toEqual([]);
+  });
 }
 
 test("consecutive keys and picker jumps emit once while replacement removes the scroll stop", async ({ page }) => {

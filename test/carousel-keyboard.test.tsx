@@ -22,8 +22,12 @@ function layout(node: HTMLElement, width: number, height = 100) {
 function mount() {
   const changes: number[] = [];
   const view = render(<ThemeProvider><Carousel testID="carousel" items={items} onIndexChange={(i) => changes.push(i)} /></ThemeProvider>);
-  layout(screen.getByTestId("carousel").firstElementChild as HTMLElement, 300);
-  const viewport = screen.getByTestId("carousel").firstElementChild?.firstElementChild as HTMLElement | null;
+  // The track row holds [prev arrow][measured viewport][next arrow]; the viewport is
+  // the cell that measures itself.
+  const track = screen.getByTestId("carousel").firstElementChild as HTMLElement;
+  const measured = [...track.children].find((node) => (node as LayoutHost).__reactLayoutHandler) as HTMLElement;
+  layout(measured, 300);
+  const viewport = measured.firstElementChild as HTMLElement | null;
   if (!viewport) throw new Error("Expected the actual FlatList scrollport after measurement");
   layout(viewport, 300);
   layout(viewport.firstElementChild as HTMLElement, 900);

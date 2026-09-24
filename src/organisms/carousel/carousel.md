@@ -6,7 +6,22 @@ the current slide drives the dots, and the arrows step the index (clamped, or
 wrapped when `loop`). Slides hold any content; pass an `items` array of
 `{ key, content }`.
 
-On web, Tab reaches an overflowing slide viewport. Left and Right move between
+Each slide is itself the card: it paints the surface, rounds the corners and
+clips its content to them. So pass the slide's content, not a Card. A plain
+string renders in the slide's own type, inset from its edge; any other node
+fills the slide inside its 1px edge, so a picture is masked to the slide's
+shape. A
+Card nested inside frames the slide twice, and on Android the Material 3
+item's 28dp corners cut the Card's own 12dp edge.
+
+The prev and next arrows sit beside the slides, never over them, so nothing
+near a slide's edge is hidden behind an arrow; the slides narrow by the two
+arrow gutters instead.
+
+On web, Tab visits the carousel in the order it reads: the previous arrow, the
+slide viewport, the next arrow, then the slide picker (an arrow disabled at the
+end of a non-looping carousel is skipped). Tab reaches the viewport while its
+slides overflow it. Left and Right move between
 slides, while Home and End reach the first and last. Controls inside a slide
 keep their own keyboard behavior. The named slide-picker buttons report the
 current slide and its position in the set; activating the current slide does
@@ -23,9 +38,9 @@ Android.
 ```tsx
 <Carousel
   items={[
-    { key: "one", content: <Card title="Slide 1" /> },
-    { key: "two", content: <Card title="Slide 2" /> },
-    { key: "three", content: <Card title="Slide 3" /> }
+    { key: "one", content: "Slide 1" },
+    { key: "two", content: "Slide 2" },
+    { key: "three", content: "Slide 3" }
   ]}
 />
 ```
@@ -41,8 +56,8 @@ page the carousel, the iOS page-control idiom.
 <Carousel
   showArrows={false}
   items={[
-    { key: "a", content: <Card title="Featured" /> },
-    { key: "b", content: <Card title="Popular" /> }
+    { key: "a", content: "Featured" },
+    { key: "b", content: "Popular" }
   ]}
 />
 ```
@@ -55,9 +70,9 @@ Start on a later slide with `defaultIndex`; the matching dot reads selected.
 <Carousel
   defaultIndex={1}
   items={[
-    { key: "x", content: <Card title="First" /> },
-    { key: "y", content: <Card title="Second" /> },
-    { key: "z", content: <Card title="Third" /> }
+    { key: "x", content: "First" },
+    { key: "y", content: "Second" },
+    { key: "z", content: "Third" }
   ]}
 />
 ```
@@ -73,9 +88,9 @@ arrows-plus-dots anatomy on every platform.
   showArrows
   showDots
   items={[
-    { key: "p", content: <Card title="Photos" /> },
-    { key: "q", content: <Card title="Albums" /> },
-    { key: "r", content: <Card title="Shared" /> }
+    { key: "p", content: "Photos" },
+    { key: "q", content: "Albums" },
+    { key: "r", content: "Shared" }
   ]}
 />
 ```
@@ -90,9 +105,9 @@ last slide returns to the first.
   loop
   showArrows
   items={[
-    { key: "first", content: <Card title="Start" /> },
-    { key: "mid", content: <Card title="Middle" /> },
-    { key: "last", content: <Card title="End" /> }
+    { key: "first", content: "Start" },
+    { key: "mid", content: "Middle" },
+    { key: "last", content: "End" }
   ]}
 />
 ```

@@ -3,15 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Carousel, Card } = scope;
+  const { Carousel } = scope;
   return (
 <Carousel
   showArrows
   showDots
   items={[
-    { key: "p", content: <Card title="Photos" /> },
-    { key: "q", content: <Card title="Albums" /> },
-    { key: "r", content: <Card title="Shared" /> }
+    { key: "p", content: "Photos" },
+    { key: "q", content: "Albums" },
+    { key: "r", content: "Shared" }
   ]}
 />
   );

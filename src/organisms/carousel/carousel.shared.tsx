@@ -13,7 +13,6 @@ import {
   View,
   Text,
   Pressable,
-  StyleSheet,
   useReducedMotion,
   type ColorTokens,
   type StyleProp,
@@ -28,7 +27,7 @@ import { Icon } from "../../atoms/icon/icon.js";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 
 // Shared Carousel shell. The structure (a horizontally paged FlatList of slides
-// with snap paging, optional overlaid prev/next arrows, and a dot indicator
+// with snap paging, optional prev/next arrows beside the slides, and a dot indicator
 // strip), the controlled-or-uncontrolled current-index state, the viewport
 // measurement, the paging/scroll math, the loop/clamp navigation, and the
 // accessibility live here once; a platform file supplies only its skin (the
@@ -37,6 +36,16 @@ import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 //
 // Slides use stable frosted content material. Arrow actions resolve their own
 // liquid control material, while pictures and slide content stay sharp.
+//
+// Each slide is itself the card surface (the skin's fill, hairline, corner radius and
+// clip), so its content fills it inside that 1px edge: a picture is masked to the
+// slide's shape, and a plain-string slide is inset by the skin's `slidePadding`. The arrows sit BESIDE the
+// slides, never over them: the shadcn/Embla anatomy the web skin ports hangs them
+// outside the track, and an arrow laid over a slide covers whatever the slide holds
+// near its edge (a title, a picture's subject). The track is a row of [prev arrow]
+// [slides][next arrow] inside the carousel's own bounds, so the slides narrow by the
+// two arrow gutters rather than the arrows overflowing a parent. The DOM, and so the
+// Tab and screen-reader order, follows what is on screen: prev, slides, next, dots.
 //
 // Current index is controlled OR uncontrolled:
 //   - Uncontrolled: omit `index`; the component tracks the current slide in
@@ -62,7 +71,7 @@ export interface CarouselSkin {
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
 
   /**
-   * Whether the overlaid prev/next arrows show when the `showArrows` prop is
+   * Whether the prev/next arrows show when the `showArrows` prop is
    * unset. Platform-adaptive: on for web (Embla), OFF for iOS (App Store cards
    * swipe with page-control dots, no overlay chrome) and Android (M3 carousel
    * anatomy is container + items only, snap-scroll navigation, no arrows). The
@@ -88,13 +97,25 @@ export interface CarouselSkin {
 
   /** The slide wrapper shape (corner radius; the content clips to it). */
   slide: (t: ColorTokens) => ViewStyle;
+  /** The inset around a plain-string slide's text, in px. A ReactNode slide fills the
+   *  slide inside its edge (a picture is masked to its shape), so it brings its own. */
+  slidePadding: number;
 
   /** The circular arrow button shape (size, radius, fill, border, shadow). */
   arrow: (t: ColorTokens) => ViewStyle;
   /** The chevron glyph size inside an arrow button, in px. */
   arrowIconSize: number;
-  /** Extra inset of each arrow from the carousel edge, in px (left/right). */
+  /**
+   * Space between the carousel's outer edge and each arrow, in px. At least the
+   * arrow's horizontal hitSlop, so the touch area stays inside the carousel's own
+   * bounds: a clipping ancestor it fills (a full-width ScrollView) would cut it.
+   */
   arrowInset: number;
+  /**
+   * Space between each arrow and the slides, in px. At least the arrow's horizontal
+   * hitSlop, so the arrow's touch area never reaches over a slide.
+   */
+  arrowGap: number;
 
   /** The dot strip layout (the centered Row below the slides). */
   dotsRow: (t: ColorTokens) => ViewStyle;
@@ -126,7 +147,7 @@ export interface CarouselProps {
   onIndexChange?: (index: number) => void;
   /** Wrap from the last slide to the first (and first to last) on arrow nav. */
   loop?: boolean;
-  /** Show the overlaid prev/next chevron buttons. Default is platform-adaptive:
+  /** Show the prev/next chevron buttons beside the slides. Default is platform-adaptive:
    *  on for web, off for iOS + Android (swipe idioms); pass `true` to opt in. */
   showArrows?: boolean;
   /** Show the centered dot indicators below the slides. Default is
@@ -153,7 +174,12 @@ function nextIndex(i: number, count: number, loop: boolean): number {
 
 /** Build a Carousel component from a platform skin. */
 export function createCarousel(skin: CarouselSkin) {
-  // One overlaid edge arrow (prev or next), vertically centered over the slides.
+  // The skin's arrow gutters: the outer inset, then the arrow, then the gap to the slides.
+  const trackWithArrows: ViewStyle = { ...TRACK, paddingHorizontal: skin.arrowInset, gap: skin.arrowGap };
+  const slideTextInset: TextStyle = { padding: skin.slidePadding };
+
+  // One edge arrow (prev or next) in its own cell of the track row, vertically
+  // centered on the slides beside it.
   function Arrow({
     side,
     disabled,
@@ -166,9 +192,8 @@ export function createCarousel(skin: CarouselSkin) {
     const theme = useMaterialTheme({ layer: "control" });
     const { tokens } = theme;
     const liquid = theme.surface === "glass";
-    const edge = side === "prev" ? { start: skin.arrowInset } : { end: skin.arrowInset };
     return (
-      <View style={[arrowLayerStyles.layer, edge]}>
+      <View style={ARROW_CELL}>
         <Pressable
           onPress={disabled ? undefined : onPress}
           disabled={disabled}
@@ -324,59 +349,59 @@ export function createCarousel(skin: CarouselSkin) {
     const prevDisabled = !loop && atStart;
     const nextDisabled = !loop && atEnd;
 
-    // One slide's body (a string renders in the skin type; a ReactNode renders as-is).
+    // One slide's body (a string renders in the skin type, inset from the slide's
+    // edge; a ReactNode renders as-is).
     const slideBody = (item: CarouselItem) =>
       typeof item.content === "string" ? (
-        <Text style={skin.slideText(tokens)}>{item.content}</Text>
+        <Text style={[skin.slideText(tokens), slideTextInset]}>{item.content}</Text>
       ) : (
         item.content
       );
 
+    const arrowsShown = arrowsVisible && count > 1;
+
     return (
       <View testID={testID} style={[ROOT, style]}>
-        <View style={VIEWPORT} onLayout={onLayout}>
-          {width > 0 ? (
-            <FlatList
-              {...scrollFocus}
-              {...keyboardProps}
-              onContentSizeChange={onContentSizeChange}
-              ref={listRef}
-              data={items}
-              // Pin the scroll container to the measured viewport width. Without a
-              // DEFINITE width the horizontal list reports its intrinsic size (the
-              // sum of the slides, each itself sized to the measured width) up to the
-              // viewport, so in a shrink-to-content parent the viewport width feeds
-              // back into the slide width and diverges (the browser clamps the runaway
-              // at its ~2^24 layout cap, pushing every slide off-screen). A definite
-              // width caps that contribution and keeps slide N at N * width.
-              style={{ width }}
-              keyExtractor={(item) => item.key}
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              getItemLayout={(_, i) => ({ length: width, offset: width * i, index: i })}
-              initialScrollIndex={current}
-              onMomentumScrollEnd={onMomentumScrollEnd}
-              renderItem={({ item }) => (
-                <GlassSurface layer="content" style={[{ width }, skin.slide(tokens)]}>{slideBody(item)}</GlassSurface>
-              )}
-            />
-          ) : items[current] ? (
-            // Pre-measurement fallback: the current slide, full-bleed, so the carousel
-            // is NEVER blank even if onLayout is delayed or does not fire (some web
-            // layout contexts). The paged, swipeable FlatList replaces this the moment
-            // a positive width lands; the arrows/dots already page by swapping `current`.
-            // Guarded on a present item so an empty `items=[]` renders an empty
-            // viewport instead of dereferencing `undefined.content`.
-            <GlassSurface layer="content" style={skin.slide(tokens)}>{slideBody(items[current])}</GlassSurface>
-          ) : null}
-
-          {arrowsVisible && count > 1 ? (
-            <>
-              <Arrow side="prev" disabled={prevDisabled} onPress={() => goTo(currentRef.current - 1)} />
-              <Arrow side="next" disabled={nextDisabled} onPress={() => goTo(currentRef.current + 1)} />
-            </>
-          ) : null}
+        <View style={arrowsShown ? trackWithArrows : TRACK}>
+          {arrowsShown ? <Arrow side="prev" disabled={prevDisabled} onPress={() => goTo(currentRef.current - 1)} /> : null}
+          <View style={VIEWPORT} onLayout={onLayout}>
+            {width > 0 ? (
+              <FlatList
+                {...scrollFocus}
+                {...keyboardProps}
+                onContentSizeChange={onContentSizeChange}
+                ref={listRef}
+                data={items}
+                // Pin the scroll container to the measured viewport width. Without a
+                // DEFINITE width the horizontal list reports its intrinsic size (the
+                // sum of the slides, each itself sized to the measured width) up to the
+                // viewport, so in a shrink-to-content parent the viewport width feeds
+                // back into the slide width and diverges (the browser clamps the runaway
+                // at its ~2^24 layout cap, pushing every slide off-screen). A definite
+                // width caps that contribution and keeps slide N at N * width.
+                style={{ width }}
+                keyExtractor={(item) => item.key}
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                getItemLayout={(_, i) => ({ length: width, offset: width * i, index: i })}
+                initialScrollIndex={current}
+                onMomentumScrollEnd={onMomentumScrollEnd}
+                renderItem={({ item }) => (
+                  <GlassSurface layer="content" style={[{ width }, skin.slide(tokens)]}>{slideBody(item)}</GlassSurface>
+                )}
+              />
+            ) : items[current] ? (
+              // Pre-measurement fallback: the current slide, full-bleed, so the carousel
+              // is NEVER blank even if onLayout is delayed or does not fire (some web
+              // layout contexts). The paged, swipeable FlatList replaces this the moment
+              // a positive width lands; the arrows/dots already page by swapping `current`.
+              // Guarded on a present item so an empty `items=[]` renders an empty
+              // viewport instead of dereferencing `undefined.content`.
+              <GlassSurface layer="content" style={skin.slide(tokens)}>{slideBody(items[current])}</GlassSurface>
+            ) : null}
+          </View>
+          {arrowsShown ? <Arrow side="next" disabled={nextDisabled} onPress={() => goTo(currentRef.current + 1)} /> : null}
         </View>
 
         {dotsVisible && count > 1 ? (
@@ -405,30 +430,27 @@ export function createCarousel(skin: CarouselSkin) {
   };
 }
 
-// w-full container; the slides sit over the viewport, the dots below. alignSelf
+// w-full container; the track (the slides between their arrows) above the dots. alignSelf
 // stretch makes it fill a flex-column parent; minWidth keeps the carousel usable
 // when it lands in a shrink-to-content parent (where `width:100%` would otherwise
 // collapse it to the slide's min-content width). It still fills any wider parent.
 const ROOT: ViewStyle = { width: "100%", alignSelf: "stretch", minWidth: 240 };
 
-// The paged viewport; overflow is hidden so a half-snapped slide never leaks.
-const VIEWPORT: ViewStyle = { width: "100%", alignSelf: "stretch", overflow: "hidden", position: "relative" };
+// The track: [prev arrow][viewport][next arrow] in one row, each arrow cell as tall
+// as the slides. Without arrows the viewport is the whole row. Layout only (no paint,
+// no handlers), so native flattens it away and it never stops an arrow's touch slop.
+const TRACK: ViewStyle = { flexDirection: "row", alignItems: "stretch" };
 
-// The absolute layer an arrow centers within (full height, pinned to one edge).
-// box-none via StyleSheet.create (not an inline `{ pointerEvents }` object) so
-// react-native-web compiles its pointer-events polyfill: the full-height edge
-// column is transparent to taps, only the arrow Pressable inside it captures. An
-// inline literal is dropped by RNW, leaving the edge column swallowing clicks over
-// the slides. Native honors box-none either way.
-const arrowLayerStyles = StyleSheet.create({
-  layer: {
-    position: "absolute",
-    top: 0,
-    bottom: 0,
-    justifyContent: "center",
-    pointerEvents: "box-none",
-  },
-});
+// The paged viewport takes the row's remainder; overflow is hidden so a half-snapped
+// slide never leaks. minWidth 0 lets it shrink below the slides' intrinsic width. The
+// basis is AUTO, not 0: Yoga has no min-content floor, so a basis-0 viewport would
+// contribute nothing to a content-sized parent and collapse the carousel to its
+// minWidth on native (the same trap splitSurfaceStyle's clip box documents), while
+// the list pinned to the measured width keeps an auto basis from feeding back.
+const VIEWPORT: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "auto", minWidth: 0, overflow: "hidden" };
+
+// An arrow's cell: hugs the arrow and centers it on the slides beside it.
+const ARROW_CELL: ViewStyle = { justifyContent: "center" };
 
 // opacity-40: the dimmed disabled look applied per end arrow.
 const DISABLED_DIM: ViewStyle = { opacity: 0.4 };
