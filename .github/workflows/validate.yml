@@ -138,6 +138,12 @@ jobs:
       # bun skips a patch without a word once a version bump leaves its key behind. This
       # fails instead, checks every patch is applied, and hydrates a useId probe under the
       # patched Expo dev wrapper with the docs' own React. MUST run after the docs install.
+      # It also needs the ROOT install above: the probe's @happy-dom/global-registrator is
+      # declared only by the root package.json and resolves by walking up from docs/. The
+      # docs package must not declare it: under docs/metro.config.js's
+      # disableHierarchicalLookup a docs dependency's transitive packages can replace what
+      # the shipped bundles resolve, as happy-dom's entities@7 once replaced
+      # dom-serializer's entities@4.
       - name: Check the docs' dependency patches are in force
         working-directory: docs
         run: bun run check:patches

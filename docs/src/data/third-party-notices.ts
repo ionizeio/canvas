@@ -543,7 +543,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "entities",
-    "version": "7.0.1",
+    "version": "4.5.0",
     "licenses": [
       "BSD-2-Clause"
     ],

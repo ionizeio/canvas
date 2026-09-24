@@ -16,12 +16,13 @@
  * whose whole job is to be accurate.
  *
  * WHY LOCATIONS, NOT JUST NAMES. One install can hold several copies of a package, and a
- * name alone does not say which one ships. When docs/package.json gained
+ * name alone does not say which one ships. When docs/package.json briefly declared
  * @happy-dom/global-registrator, bun hoisted its entities@7 to docs/node_modules/entities
  * and moved dom-serializer's entities@4 under docs/node_modules/dom-serializer/
  * node_modules. A later by-name lookup cannot tell which copy the bundler took (here the
  * docs' Metro config resolves every bare import from docs/node_modules alone, so it took
- * the hoisted 7.0.1; with hierarchical lookup it would have taken the nested 4.5.0). So
+ * the hoisted 7.0.1; with hierarchical lookup it would have taken the nested 4.5.0; the
+ * dependency was removed again for that reason, see docs/scripts/check-patches.ts). So
  * every signal below records the repo-relative package directory its own tool reports,
  * and the generator reads version and licence from exactly there. A package that ships
  * from two directories is recorded with both.

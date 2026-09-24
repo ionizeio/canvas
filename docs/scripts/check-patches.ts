@@ -22,6 +22,16 @@
 //
 // The root unit suite cannot do either: it runs before the docs install, on a different
 // React, and bun there has no web platform resolution.
+//
+// PREREQUISITE: the workspace ROOT install, as well as the docs install. The probe's DOM
+// comes from @happy-dom/global-registrator, which only the root package.json declares; bun
+// finds it by walking up from docs/ into the root node_modules. CI's validate job runs the
+// root `bun install` first, so it is always there. The docs package deliberately does not
+// declare it: docs/metro.config.js sets disableHierarchicalLookup and resolves every bare
+// import from docs/node_modules alone, so any package a docs dependency hoists there can
+// replace what the shipped bundles resolve. Declaring happy-dom here did exactly that: its
+// entities@7 took docs/node_modules/entities, and the native bundles' dom-serializer (which
+// declares entities ^4.2.0) picked it up in place of entities@4.
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
