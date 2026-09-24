@@ -46,7 +46,7 @@ export const THIRD_PARTY_FONTS =
 export const THIRD_PARTY_BREAKDOWN: { license: string; count: number }[] = [
   {
     "license": "MIT",
-    "count": 105
+    "count": 106
   },
   {
     "license": "BSD-2-Clause",
@@ -70,7 +70,7 @@ export const THIRD_PARTY_BREAKDOWN: { license: string; count: number }[] = [
   }
 ];
 
-export const THIRD_PARTY_PACKAGE_COUNT = 118;
+export const THIRD_PARTY_PACKAGE_COUNT = 119;
 
 export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   {
@@ -782,6 +782,16 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
     ]
   },
   {
+    "name": "expo-video",
+    "version": "57.0.4",
+    "licenses": [
+      "MIT"
+    ],
+    "textIds": [
+      3
+    ]
+  },
+  {
     "name": "fast-deep-equal",
     "version": "3.1.3",
     "licenses": [
@@ -1351,9 +1361,10 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = [
       "expo-status-bar",
       "expo-symbols",
       "expo-system-ui",
-      "expo-updates-interface"
+      "expo-updates-interface",
+      "expo-video"
     ],
-    "count": 23
+    "count": 24
   },
   {
     "id": 4,
