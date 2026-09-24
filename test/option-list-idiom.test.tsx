@@ -2,6 +2,8 @@ import { afterEach, describe, expect, it } from "bun:test";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { ElementType } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
+import { lightColors } from "../src/style/tokens.ts";
+import { primaryText } from "../src/style/primary-text.ts";
 
 // One job, different control (the design language's item 5): an iOS list marks each
 // chosen row with a trailing check, in single and multi select alike, and never fills
@@ -62,8 +64,11 @@ describe("the web and Android Listbox", () => {
       expect(rows[1].firstElementChild?.textContent).toBe("✓");
       // Dark Factory's menu row: the chosen label reads in the selection violet, with no fill.
       expect(rows[1].style.backgroundColor).toBe("");
-      const label = (row: HTMLElement) => [...row.querySelectorAll("div")].find((node) => node.textContent === "Frontend" || node.textContent === "Backend") as HTMLElement;
-      expect(label(rows[1]).style.color).not.toBe(label(rows[0]).style.color);
+      // The innermost node carrying the label's text (its wrapper has the same text and no ink).
+      const label = (row: HTMLElement) => [...row.querySelectorAll("div")].reverse().find((node) => node.textContent === "Frontend" || node.textContent === "Backend") as HTMLElement;
+      const rgb = (hex: string) => `rgba(${[1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(", ")}, 1.00)`;
+      expect(label(rows[1]).style.color).toBe(rgb(primaryText(lightColors)));
+      expect(label(rows[0]).style.color).toBe(rgb(lightColors.foreground));
     });
   }
 });

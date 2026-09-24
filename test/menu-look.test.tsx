@@ -7,7 +7,8 @@ import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
 import { RowMenu } from "../src/organisms/row-menu/row-menu.tsx";
 import * as dropdownSkins from "../src/atoms/dropdown/dropdown.styles.ts";
 import * as rowMenuSkins from "../src/organisms/row-menu/row-menu.styles.ts";
-import { menuPanel, menuRow, menuRowLabel, menuSection, menuSeparator, MENU_OFFSET, MENU_ROW_GAP } from "../src/style/menu-look.ts";
+import { menuPanel, menuRow, menuRowHover, menuRowLabel, menuSection, menuSeparator, MENU_OFFSET, MENU_ROW_GAP } from "../src/style/menu-look.ts";
+import { View } from "react-native";
 
 // The web Dropdown and RowMenu are Dark Factory's menu (SKN-5a): its Popover panel of
 // MenuItems, read from one recipe (src/style/menu-look.ts) so the two cannot drift. iOS
@@ -82,6 +83,14 @@ describe("Dark Factory's menu on the web", () => {
   });
 });
 
+describe("the hover fallback", () => {
+  it("washes a row in `accent` for a token map without the optional `hover` role", () => {
+    const { hover: _omit, ...legacy } = t;
+    expect(menuRowHover(legacy as typeof t)).toEqual({ backgroundColor: t.accent });
+    expect(menuRowHover(t)).toEqual({ backgroundColor: t.hover });
+  });
+});
+
 describe("the platform menus", () => {
   it("keep their own look on iOS and Android: no hover wash, the platform's dim on a disabled row", () => {
     for (const skins of [dropdownSkins, rowMenuSkins]) {
@@ -97,7 +106,19 @@ describe("the platform menus", () => {
     expect(rowMenuSkins.iosSkin.menuCard(t).borderRadius).toBe(dropdownSkins.iosSkin.menuCard(t).borderRadius);
   });
 
-  it("sizes the RowMenu root as a hugging control, with no static alignSelf in any skin", () => {
-    for (const skin of [rowMenuSkins.webSkin, rowMenuSkins.iosSkin, rowMenuSkins.androidSkin]) expect(skin.anchor).toEqual({ position: "relative" });
+  it("keeps the RowMenu trigger its own size in any parent, with no static alignSelf in any skin", () => {
+    for (const skin of [rowMenuSkins.webSkin, rowMenuSkins.iosSkin, rowMenuSkins.androidSkin]) {
+      expect(skin.anchor).toEqual({ position: "relative", alignItems: "flex-start" });
+    }
+    // Inside a plain View (a stretching parent that is not a kit layout container, like a
+    // table cell) the anchor may stretch, but it starts the trigger, so the trigger and
+    // its hover target keep the 28px box.
+    render(<ThemeProvider light solid><View style={{ width: 300 }}><RowMenu items={ITEMS} testID="menu" /></View></ThemeProvider>);
+    const root = screen.getByTestId("menu");
+    expect(root.style.alignItems).toBe("flex-start");
+    expect(root.style.alignSelf).toBe("");
+    const trigger = screen.getByRole("button", { name: "More options" });
+    expect(trigger.style.width).toBe("28px");
+    expect(trigger.parentElement).not.toBe(root.parentElement);
   });
 });

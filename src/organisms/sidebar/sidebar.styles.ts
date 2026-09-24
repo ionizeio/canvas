@@ -1,3 +1,4 @@
+import { hoverFill } from "../../style/hover.js";
 import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, alpha, shape } from "../../style/index.js";
@@ -66,7 +67,7 @@ export const webSkin: SidebarSkin = {
   focusRing: INSET_FOCUS_RING,
   // Dark Factory's nav wash: the translucent `hover` fades in beneath a hovered row over
   // 150 ms and back out on leave (`accent`, its composite on card, where a palette omits it).
-  wash: { motion: HOVER.wash, color: (t) => t.hover ?? t.accent },
+  wash: { motion: HOVER.wash, color: hoverFill },
 
   column: makeColumn(shape.web.card, 64, { gap: 16, padding: 12 }),
 

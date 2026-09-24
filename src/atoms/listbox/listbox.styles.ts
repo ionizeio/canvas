@@ -1,6 +1,6 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { surfaceRipple, shape, type ColorTokens } from "../../style/index.js";
-import { webHover } from "../../style/hover.js";
+import { hoverFill, webHover } from "../../style/hover.js";
 import { primaryText } from "../../style/primary-text.js";
 import { typeScale } from "../../style/type-scale.js";
 import { type ListboxSkin, type Size } from "./listbox.shared.js";
@@ -58,7 +58,7 @@ function rowPressed(tokens: ColorTokens): ViewStyle {
 }
 
 // A resting row under the pointer: Dark Factory's wash, on the web only.
-const rowHover = webHover((tokens: ColorTokens): ViewStyle => ({ backgroundColor: tokens.hover }));
+const rowHover = webHover((tokens: ColorTokens): ViewStyle => ({ backgroundColor: hoverFill(tokens) }));
 
 // Label type per size: Dark Factory's strong body at its menu row's 1.3 line height,
 // a step down and up for small and large.

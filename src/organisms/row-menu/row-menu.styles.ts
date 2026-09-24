@@ -45,7 +45,9 @@ export interface RowMenuItem {
 // state; the skin maps tokens and the active row state to RN style objects, and
 // declares its press-feedback mode (iOS/web dim or tint inline, Android ripples).
 export interface RowMenuSkin extends TouchTargetSkin {
-  /** The relative anchor that positions the card (the shell adds the hug sizing). */
+  /** The relative anchor that positions the card (the shell adds the hug sizing). It
+   *  starts its children, so the trigger keeps its own size even where a parent that is
+   *  not a kit layout container stretches the anchor (a table cell, a plain View). */
   anchor: ViewStyle;
   /** The ⋯ icon-button surface (square, centered, platform radius). */
   trigger: ViewStyle;
@@ -102,7 +104,7 @@ export const anchorLifted: ViewStyle = { zIndex: 50 };
 // ---------- Web: Dark Factory's menu (src/style/menu-look.ts) ----------
 export const webSkin: RowMenuSkin = {
   minTarget: null,
-  anchor: { position: "relative" },
+  anchor: { position: "relative", alignItems: "flex-start" },
   // Dark Factory's plain icon button: a 28px square at the control corner, the glyph
   // in the muted ink, the hover wash.
   trigger: {
@@ -148,7 +150,7 @@ export const webSkin: RowMenuSkin = {
 const IOS_RADIUS = shape.ios.menu;
 export const iosSkin: RowMenuSkin = {
   minTarget: TOUCH_TARGET.ios,
-  anchor: { position: "relative" },
+  anchor: { position: "relative", alignItems: "flex-start" },
   trigger: {
     width: 32,
     height: 32,
@@ -215,7 +217,7 @@ export const iosSkin: RowMenuSkin = {
 const ANDROID_RADIUS = 4;
 export const androidSkin: RowMenuSkin = {
   minTarget: TOUCH_TARGET.android,
-  anchor: { position: "relative" },
+  anchor: { position: "relative", alignItems: "flex-start" },
   trigger: {
     width: 40,
     height: 40,

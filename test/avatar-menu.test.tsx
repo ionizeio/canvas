@@ -428,10 +428,14 @@ describe("AvatarMenu: Dark Factory's identity pill on every platform", () => {
     expect(webMenuSkin.menuChevronSize).toBe(14);
   });
 
-  it("rings the viewer's disc in the violet glow, over a ring of the card", () => {
-    const glow = webMenuSkin.menuDiscGlow(lightColors).boxShadow as string;
+  it("rings the viewer's disc in the violet glow, over a ring of the card (and without it under glass)", () => {
+    const glow = webMenuSkin.menuDiscGlow(lightColors, false).boxShadow as string;
     expect(glow).toContain(`2px ${lightColors.card}`);
     expect(glow).toContain(`3.5px ${lightColors.primary}`);
+    // Under glass no solid surface exists to draw the gap in, so the violet ring hugs the disc.
+    expect(webMenuSkin.menuDiscGlow(lightColors, true).boxShadow).toBe(`0px 0px 0px 1.5px ${lightColors.primary}`);
+    // The pill's hover is the web's: native pointer hover waits on the owner.
+    expect(webMenuSkin.menuHover).toBe(true);
     const { container } = ui(<AvatarMenu name={NAME} email={EMAIL} items={ITEMS} />);
     const ring = pill(container).firstElementChild as HTMLElement;
     expect(ring.style.boxShadow).toContain("3.5px");

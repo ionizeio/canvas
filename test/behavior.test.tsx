@@ -240,24 +240,28 @@ describe("Calendar", () => {
     expect(placeOverlay(trigger, { alignEnd: true, gap, outletWidth: null })).toEqual({ left: 600, top });
   });
 
-  it("placeOverlay keeps a card of no fixed width inside the outlet by the width it rendered at", async () => {
+  it("placeOverlay pins a card of no fixed width by its far edge when it renders too wide for the room", async () => {
     const { placeOverlay } = await import("../src/style/anchored-overlay.tsx");
     const gap = 8;
     const top = 40 + 32 + gap;
-    // A trigger near the end of a 400px outlet, a 250px card: anchored at the
-    // trigger's left it would cross the right edge, so it shifts back to the 8px inset.
+    // A trigger near the end of a 400px outlet, a 250px card: anchored at the trigger's
+    // left it would cross the right edge, so it is pinned 8px inside that edge instead.
+    // Pinned, not shifted by its width: a content-sized card shifted over would gain room,
+    // grow and shift again, a frame at a time.
     const trigger = { x: 200, y: 40, width: 28, height: 32 };
-    expect(placeOverlay(trigger, { gap, outletWidth: 400, measuredWidth: 250 })).toEqual({ left: 400 - 250 - 8, top });
+    expect(placeOverlay(trigger, { gap, outletWidth: 400, measuredWidth: 250 })).toEqual({ right: 8, top });
+    // Once pinned it stays pinned as it grows into the room it gained.
+    expect(placeOverlay(trigger, { gap, outletWidth: 400, measuredWidth: 380 })).toEqual({ right: 8, top });
     // One that fits stays exactly where it was anchored.
     expect(placeOverlay(trigger, { gap, outletWidth: 800, measuredWidth: 250 })).toEqual({ left: 200, top });
     // Before its width is known it is placed as anchored (the overlay holds it hidden).
     expect(placeOverlay(trigger, { gap, outletWidth: 400, measuredWidth: null })).toEqual({ left: 200, top });
-    // A card wider than the outlet pins at the edge rather than going negative.
-    expect(placeOverlay(trigger, { gap, outletWidth: 240, measuredWidth: 300 })).toEqual({ left: 0, top });
-    // Pinned by its trailing edge, it shifts away from the leading edge the same way.
+    // Pinned by its trailing edge, it pins by the leading edge when it would cross it.
     const early = { x: 20, y: 40, width: 28, height: 32 };
-    expect(placeOverlay(early, { alignEnd: true, gap, outletWidth: 400, measuredWidth: 250 })).toEqual({ right: 400 - 250 - 8, top });
+    expect(placeOverlay(early, { alignEnd: true, gap, outletWidth: 400, measuredWidth: 250 })).toEqual({ left: 8, top });
     expect(placeOverlay(early, { alignEnd: true, gap, outletWidth: 400, measuredWidth: 40 })).toEqual({ right: 400 - 48, top });
+    // Leading alignment under RTL pins the right edge, and the left edge when it would cross it.
+    expect(placeOverlay(early, { rtl: true, gap, outletWidth: 400, measuredWidth: 250 })).toEqual({ left: 8, top });
   });
 
   it("day timeline spans the full day, 12-hour labels by default, and the toggle flips to 24-hour", () => {

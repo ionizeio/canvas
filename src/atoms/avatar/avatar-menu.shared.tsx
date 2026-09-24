@@ -37,8 +37,12 @@ export interface AvatarMenuSkin extends AvatarSkin {
   menuPill: ViewStyle;
   /** Capsule fill, at rest and while hovered or open, from the theme tokens. */
   menuPillFill: (t: ColorTokens, active: boolean) => ViewStyle;
-  /** The viewer's glow ring around the disc (a wrapper's shadow). */
-  menuDiscGlow: (t: ColorTokens) => ViewStyle;
+  /** The viewer's glow ring around the disc (a wrapper's shadow). Under glass there is no
+   *  solid surface to draw its inner gap in, so the ring sits on the disc alone. */
+  menuDiscGlow: (t: ColorTokens, glass: boolean) => ViewStyle;
+  /** Whether the pill takes its fill under a hovering pointer: the web's, since native
+   *  pointer hover waits on the owner (declared through webHover). */
+  menuHover: boolean;
   /** The name line's type (size / line-height / weight / tracking). */
   menuPillName: TextStyle;
   /** The secondary (email) line's type. */
@@ -110,8 +114,8 @@ function accountLabel(name?: string, email?: string): string {
 /** Build an AvatarMenu from the same platform skin family as Avatar and AvatarGroup. */
 export function createAvatarMenu(skin: AvatarMenuSkin, Dropdown: (props: DropdownProps) => ReactElement) {
   // The pill's avatar comes from the same skin, built once per platform module. It
-  // is never pressable (Dropdown's trigger owns the press). Its identity stays
-  // static while the outer account capsule owns the liquid material.
+  // is never pressable (Dropdown's trigger owns the press), and like the pill it
+  // paints no material: its identity stays static content.
   const Avatar = createAvatar(skin);
 
   return function AvatarMenu(props: AvatarMenuProps) {
@@ -131,7 +135,7 @@ export function createAvatarMenu(skin: AvatarMenuSkin, Dropdown: (props: Dropdow
     const menuAlignEnd = alignEnd || !alignStart;
     // The pill fills under the pointer and while its menu is open; under glass the fill
     // is an ink tint over whatever the pill sits on, never an opaque patch.
-    const { hovered, target } = useHover(!disabled);
+    const { hovered, target } = useHover(skin.menuHover && !disabled);
     const active = expanded || (hovered && !disabled);
     const pillFill = active ? withInnerFill(theme, skin.menuPillFill(tokens, true), "firm") : skin.menuPillFill(tokens, false);
     const disabledInk = theme.surface === "glass" && disabled ? { opacity: skin.menuDisabledOpacity } : null;
@@ -173,7 +177,7 @@ export function createAvatarMenu(skin: AvatarMenuSkin, Dropdown: (props: Dropdow
         <View style={[skin.menuPill, { borderRadius: PILL_RADIUS }, pillFill]} {...target}>
           {/* The viewer's disc in its glow ring: the `small` (28px) step, 2px inside the
               32px pill. */}
-          <View style={skin.menuDiscGlow(tokens)}>
+          <View style={skin.menuDiscGlow(tokens, theme.surface === "glass")}>
             <Avatar small src={src} name={name} initials={initials} />
           </View>
           {compact ? null : (

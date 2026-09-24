@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Platform, type PointerEvent, type StyleProp, type ViewStyle } from "react-native";
 import { HOVER_EASING } from "./motion.js";
+import type { ColorTokens } from "./tokens.js";
 import { View } from "./primitives.js";
 
 // Hover feedback, the timed kind the design language keeps (its item 9): a surface that
@@ -46,6 +47,15 @@ export interface HoverMotion {
 }
 
 const NO_TARGET: HoverTarget = {};
+
+/**
+ * The fill a resting control takes under the pointer: the theme's translucent `hover`
+ * wash, or `accent` for a token map that omits the optional role (tokens.ts documents the
+ * fallback; the Sidebar's wash reads it the same way).
+ */
+export function hoverFill(tokens: Pick<ColorTokens, "hover" | "accent">): string {
+  return tokens.hover ?? tokens.accent;
+}
 
 /**
  * A skin's hover look, declared on the web only. A skin that one component shares across

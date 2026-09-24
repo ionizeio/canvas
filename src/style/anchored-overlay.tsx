@@ -84,7 +84,9 @@ export interface AnchoredOverlayProps {
    * The card's known width, when the caller fixes it. Enables horizontal
    * placement logic: the card is clamped inside the outlet's bounds (8px
    * inset), so a card anchored to a trigger near the outlet's right edge slides
-   * left instead of overflowing. Omit for the legacy left-edge anchoring.
+   * left instead of overflowing. Omit it to anchor the card by its leading edge;
+   * a card that then renders too wide for the room is pinned by its far edge, 8px
+   * inside the outlet, instead (see placeOverlay).
    */
   cardWidth?: number;
   /** With `cardWidth`: center the card on the trigger (tooltip-style) instead
@@ -93,14 +95,14 @@ export interface AnchoredOverlayProps {
   /**
    * Align the card's TRAILING edge with the trigger's trailing edge instead of
    * its leading edge (the default). Needs no `cardWidth`: the card is pinned by
-   * an inset from the outlet's own edge, so there is no measure-then-shift pass.
+   * an inset from the outlet's own edge. A card that renders too wide to fit that
+   * way is pinned by its other edge, 8px inside the outlet, instead.
    */
   alignEnd?: boolean;
   /**
    * The active layout direction, for callers that want logical (leading/trailing)
    * horizontal alignment. Leading is physical-left in a left-to-right locale and
-   * physical-right in a right-to-left one. Omit to keep the legacy physical-left
-   * anchoring untouched.
+   * physical-right in a right-to-left one. Omit to anchor by the physical left.
    */
   rtl?: boolean;
   /**
@@ -307,9 +309,14 @@ const CLAMP_INSET = 8;
  *
  * A card without a caller-fixed width is kept inside the outlet by the width it
  * rendered at (`measuredWidth`, which the hosted overlay reads from the card's own
- * layout before it reveals it): it shifts back from an edge it would cross, keeping
- * the 8px inset, and stays exactly where it was anchored whenever it fits. Without a
- * measurement yet, it is placed as anchored.
+ * layout before it reveals it). When anchoring it by the trigger would cross the far
+ * edge, it is pinned by that far edge instead, 8px inside the outlet, and stays
+ * exactly where it was anchored whenever it fits. It is PINNED, not shifted by its
+ * width: a content-sized card is as wide as the room its anchor leaves, so moving it
+ * over by its measured width would give it more room, let it grow and move it again,
+ * a frame at a time. Pinned by the far edge, it takes the width it wants in one layout,
+ * and a wider card only confirms the pin. Without a measurement yet, it is placed as
+ * anchored.
  */
 export function placeOverlay(
   rect: Rect,
@@ -317,27 +324,29 @@ export function placeOverlay(
 ): { left?: number; right?: number; top: number } {
   const { cardWidth, measuredWidth, centered, preferSide, alignEnd, rtl = false, gap, outletWidth } = opts;
   const below = { left: rect.x, top: rect.y + rect.height + gap };
-  // The furthest a measured card may sit from the outlet edge it is pinned to before
-  // its other edge crosses the far inset; a card as wide as the outlet pins at 0.
-  const reach = measuredWidth != null && measuredWidth > 0 && outletWidth != null && outletWidth > 0
-    ? Math.max(0, outletWidth - measuredWidth - CLAMP_INSET)
-    : null;
-  const inside = (offset: number) => (reach == null ? offset : Math.min(offset, reach));
+  // Whether a measured card, placed `offset` in from one outlet edge, would cross the
+  // other edge's 8px inset.
+  const crosses = (offset: number) =>
+    measuredWidth != null && measuredWidth > 0 && outletWidth != null && outletWidth > 0 && offset + measuredWidth + CLAMP_INSET > outletWidth;
 
   if (alignEnd || rtl) {
     // XOR: the trailing edge is on the right in a left-to-right locale and on
     // the left in a right-to-left one, so leading alignment under RTL pins the
     // right edge for exactly the same reason `alignEnd` does under LTR.
     const pinRight = !!alignEnd !== rtl;
-    if (!pinRight) return { left: inside(Math.max(0, rect.x)), top: below.top };
+    if (!pinRight) {
+      const left = Math.max(0, rect.x);
+      return crosses(left) ? { right: CLAMP_INSET, top: below.top } : { left, top: below.top };
+    }
     if (outletWidth != null && outletWidth > 0) {
-      return { right: inside(Math.max(0, outletWidth - (rect.x + rect.width))), top: below.top };
+      const right = Math.max(0, outletWidth - (rect.x + rect.width));
+      return crosses(right) ? { left: CLAMP_INSET, top: below.top } : { right, top: below.top };
     }
     // Outlet width not measured yet: fall through to the leading-edge anchor
     // rather than guess an inset the card would then jump out of.
   }
 
-  if (cardWidth == null) return { left: inside(below.left), top: below.top };
+  if (cardWidth == null) return crosses(below.left) ? { right: CLAMP_INSET, top: below.top } : below;
 
   if (preferSide && outletWidth != null && outletWidth > 0) {
     const right = rect.x + rect.width + gap;
@@ -493,7 +502,9 @@ function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, t
   const skinMaxHeight = typeof flatCardStyle?.maxHeight === "number" ? flatCardStyle.maxHeight : Infinity;
   const desiredHeight = reported ? Math.min(sizes.content! + chrome!, skinMaxHeight) : null;
   // A card with no caller-fixed width is kept inside the outlet by the width it
-  // rendered at, so it waits for that width before it is revealed (below).
+  // rendered at. The reveal below already waits for the card's own layout, which
+  // reports that width together with its height, so the card is never shown at a
+  // placement it is about to leave.
   const measuredWidth = fittedCardWidth == null ? sizes.width : null;
   const horizontal = rect ? placeOverlay(rect, { cardWidth: fittedCardWidth, measuredWidth, centered, preferSide, alignEnd, rtl, gap, outletWidth }) : null;
   const renderedCardWidth = sizes.width ?? fittedCardWidth;
@@ -520,8 +531,7 @@ function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, t
   const willShrink = cap !== null && sizes.card !== null && sizes.card > cap + 0.5;
   const willGrow = cappedBefore && cap !== null && cap > sizes.cap! + 0.5 && desiredHeight !== null && desiredHeight > sizes.cap! + 0.5;
   const settled = sizes.cap === cap || !(willShrink || willGrow);
-  const widthKnown = fittedCardWidth != null || sizes.width !== null;
-  const measured = reported && widthKnown && (revealed.current || settled);
+  const measured = reported && (revealed.current || settled);
   useIsomorphicLayoutEffect(() => {
     appliedCap.current = cap;
     if (open && measured) revealed.current = true;

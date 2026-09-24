@@ -126,10 +126,10 @@ export function createRowMenu(skin: RowMenuSkin) {
     // Escape dismisses the open menu via browser Escape or native accessibility escape.
     const escapeScope = useEscapeLayer(open, () => setOpen(false));
 
-    // The wrapper tightly wraps the ⋯ trigger (the menu portals out when hosted),
-    // so measuring it gives the trigger's box for anchoring the floating card. The
-    // measured width is a floor for the menu; a wide trigger never yields a
-    // narrower menu than the skin's own minimum.
+    // The anchor places the floating card at the trigger (it starts its children, so the
+    // trigger sits at its leading edge even when a non-kit parent stretches it). The menu's
+    // width floor is the TRIGGER's own measured width, not the anchor's, so a RowMenu in a
+    // stretched table cell still opens at the skin's minimum rather than the cell's width.
     const triggerRef = useRef<View>(null);
     const host = useOverlayHost();
     const { width: triggerWidth, onLayout: onTriggerLayout } = useMeasuredWidth();
@@ -137,17 +137,16 @@ export function createRowMenu(skin: RowMenuSkin) {
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
 
     return (
-      // self-start keeps the trigger from stretching; relative anchors the inline
-      // fallback menu.
+      // Hugs its trigger inside a kit container; relative anchors the inline fallback menu.
       <View
         ref={triggerRef}
         testID={testID}
         style={[skin.anchor, hug, open && !host ? anchorLifted : null, style]}
-        onLayout={onTriggerLayout}
       >
         {/* RippleClip clips the Android bounded ripple to the ⋯ trigger's rounded
-            outline (a no-op on iOS/web). */}
-        <RippleClip shape={cornerRadii(skin.trigger)} {...triggerHoverTarget}>
+            outline (a no-op on iOS/web). It is the trigger's own box, so it is what is
+            measured for the menu's width floor and what the pointer hovers. */}
+        <RippleClip shape={cornerRadii(skin.trigger)} onLayout={onTriggerLayout} {...triggerHoverTarget}>
         <Pressable
           {...target}
           style={({ pressed }) => [

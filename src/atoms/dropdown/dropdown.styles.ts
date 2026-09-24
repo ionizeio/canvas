@@ -65,9 +65,9 @@ export interface DropdownSkin {
   /** Trailing keyboard shortcut, right-aligned and muted. */
   shortcut: (t: ColorTokens) => TextStyle;
   /** Standoff between the trigger and the menu card, in px. Skin-owned rather than
-   *  caller-owned: a menu built for a taller trigger stands off further (the
-   *  hand-off's account pill uses 6 where a plain dropdown uses 4), and a spacing
-   *  prop on a public component would be the re-spacing escape hatch. */
+   *  caller-owned: it is a platform number (Dark Factory's 8 on the web, 4 on the native
+   *  menus, which the account pill's menu raises to 6 for its taller trigger), and a
+   *  spacing prop on a public component would be the re-spacing escape hatch. */
   menuGap: number;
   /** The dim on a disabled custom trigger (the caller's own node, so a dim is all the shell can do). */
   disabledOpacity: number;

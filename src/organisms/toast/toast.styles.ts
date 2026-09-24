@@ -9,8 +9,8 @@ import { type ToastSkin } from "./toast.shared.js";
 // of them now) takes the inverse dense tint, so its light ink keeps its contrast.
 //
 //   Web and iOS: Dark Factory's toast pill. The same deep `inverse` fill in every palette
-//     and scheme, a pill while it holds one line and the sheet corner once a
-//     description wraps under the message, 11 x 18 padding, Dark Factory's toast
+//     and scheme, a pill while it carries no description (a long message wraps inside
+//     the capsule) and the sheet corner once a description sits under the message, 11 x 18 padding, Dark Factory's toast
 //     shadow, the message in its strong body (12.5 / 700) in `inverse-foreground`. Dark
 //     Factory's toast carries nothing else, so the kit's extra parts take the inks the
 //     Material 3 snackbar already solved for the pill: the description in the pill's

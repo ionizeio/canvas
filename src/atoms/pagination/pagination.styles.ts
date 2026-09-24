@@ -1,6 +1,6 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, type TouchTargetSkin, alpha, platformMinTarget } from "../../style/index.js";
-import { webHover } from "../../style/hover.js";
+import { hoverFill, webHover } from "../../style/hover.js";
 
 // The Pagination skin. Neither iOS nor Material 3 ships a numbered pagination (PLATFORM-
 // REFERENCES.md), and Dark Factory has no pager either, so every platform takes one look
@@ -141,7 +141,7 @@ export const webSkin: PaginationSkin = {
     color: disabled ? t["muted-foreground"] : selected ? t["primary-foreground"] : t.foreground,
   }),
   mutedLabel: (t) => ({ fontWeight: "500", color: t["muted-foreground"] }),
-  hover: webHover((t: ColorTokens): ViewStyle => ({ backgroundColor: t.hover })),
+  hover: webHover((t: ColorTokens): ViewStyle => ({ backgroundColor: hoverFill(t) })),
   pressedOpacity: 0.9,
   // The state layer in the cell's own ink, as Material's is.
   ripple: (t, selected) => ({ color: alpha(selected ? t["primary-foreground"] : t.foreground, 0.1), borderless: false }),

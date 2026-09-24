@@ -124,9 +124,9 @@ type FocusableRow = { focus?: (options?: { preventScroll?: boolean }) => void } 
 // shrink-wraps the trigger, so pinning the card's start edge lines it up with the
 // trigger's leading edge and pinning its end edge lines up the trailing edges,
 // mirrored automatically in a right-to-left locale.
-// The inline anchors take their standoff from the skin, so a menu built for a
-// taller trigger (the account pill, which its design spec stands off by 6) can differ
-// without any caller-facing spacing prop. start/end stay logical for RTL.
+// The inline anchors take their standoff from the skin (Dark Factory's 8 on the web,
+// the native menus' 4, the native account pill's 6), with no caller-facing spacing
+// prop. start/end stay logical for RTL.
 const menuAnchor = (gap: number): ViewStyle => ({ position: "absolute", top: "100%", start: 0, zIndex: 50, marginTop: gap });
 const menuAnchorEnd = (gap: number): ViewStyle => ({ position: "absolute", top: "100%", end: 0, zIndex: 50, marginTop: gap });
 

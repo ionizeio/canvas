@@ -3,7 +3,7 @@ import { actionFill, actionInk } from "../../style/action.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { shape, type ColorTokens } from "../../style/index.js";
 import { HOVER } from "../../style/motion.js";
-import { type HoverMotion } from "../../style/hover.js";
+import { hoverFill, type HoverMotion } from "../../style/hover.js";
 
 // Co-located Button skins, one per platform.
 //   Web: Dark Factory's pill buttons (its outline, ghost and link looks, a hairline on
@@ -210,7 +210,7 @@ export const webSkin: ButtonSkin = {
   // transparent, and a disabled button is transparent too.
   surface: (intent, o) => WEB_CTA.has(intent) && !o.disabled,
   hover: (t, intent) =>
-    intent === "secondary" || intent === "outline" || intent === "ghost" ? { backgroundColor: t.hover }
+    intent === "secondary" || intent === "outline" || intent === "ghost" ? { backgroundColor: hoverFill(t) }
     : intent === "link" ? { opacity: 0.85 }
     : null,
   raised: raisedGlow,

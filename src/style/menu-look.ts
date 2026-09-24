@@ -1,4 +1,5 @@
 import type { TextStyle, ViewStyle } from "react-native";
+import { hoverFill } from "./hover.js";
 import { shadow } from "./shadow.js";
 import { shape, type ColorTokens } from "./tokens.js";
 import { typeScale } from "./type-scale.js";
@@ -66,7 +67,7 @@ export function menuSeparator(t: ColorTokens): ViewStyle {
 
 /** A resting row under the pointer. */
 export function menuRowHover(t: ColorTokens): ViewStyle {
-  return { backgroundColor: t.hover };
+  return { backgroundColor: hoverFill(t) };
 }
 
 /** A row while pressed. */

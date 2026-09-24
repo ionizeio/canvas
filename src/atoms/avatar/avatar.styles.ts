@@ -2,6 +2,7 @@ import { type TextStyle, type ViewStyle } from "react-native";
 import { controlRipple, platformDisabledDim, platformMinTarget, shape, type ColorTokens } from "../../style/index.js";
 import { type AvatarSkin, type Size } from "./avatar.shared.js";
 import { type AvatarMenuSkin } from "./avatar-menu.shared.js";
+import { webHover } from "../../style/hover.js";
 
 // The Avatar skin. No platform ships an avatar control, so every platform takes Dark
 // Factory's identity disc (the gradient and the initials' ink live in avatar.shared.tsx and
@@ -53,8 +54,14 @@ export const webMenuSkin: AvatarMenuSkin = {
   // A 28px disc with a 2px inset: 32 tall, and a little more room before the chevron.
   menuPill: { flexDirection: "row", alignItems: "center", gap: 10, height: 32, paddingStart: 2, paddingEnd: 8 },
   menuPillFill: (t, active) => ({ backgroundColor: active ? t.accent : "transparent" }),
-  // The viewer's glow: a ring of the card around the disc, then 1.5px of the violet.
-  menuDiscGlow: (t) => ({ borderRadius: 9999, boxShadow: `0px 0px 0px 2px ${t.card}, 0px 0px 0px 3.5px ${t.primary}` }),
+  // The viewer's glow: a ring of the card around the disc, then 1.5px of the violet. Under
+  // glass the card ring would sit as a solid band on the material, so the violet ring
+  // hugs the disc on its own.
+  menuDiscGlow: (t, glass) => ({
+    borderRadius: 9999,
+    boxShadow: glass ? `0px 0px 0px 1.5px ${t.primary}` : `0px 0px 0px 2px ${t.card}, 0px 0px 0px 3.5px ${t.primary}`,
+  }),
+  menuHover: webHover(true) === true,
   menuPillName: { fontSize: 12, lineHeight: 14, fontWeight: "700" },
   menuPillSecondary: { fontSize: 10.5, lineHeight: 13, fontWeight: "600" },
   menuChevronSize: 14,
