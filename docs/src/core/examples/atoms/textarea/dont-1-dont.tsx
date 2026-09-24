@@ -6,10 +6,10 @@ export default function Example(scope: ExampleScope) {
   const { tokens, View, Text, Textarea } = scope;
   return (
 <View style={{ maxWidth: 400, flexDirection: "column", gap: 6 }}>
-  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Bio</Text>
+  <Text style={{ fontSize: 10, lineHeight: 13, fontWeight: "700", letterSpacing: 1.6, textTransform: "uppercase", color: tokens["muted-foreground"] }}>Bio</Text>
   <Textarea rows={3} value="I have been building things on the web for fifteen years and counting, across teams large and small, shipping product end to end." />
   <View style={{ marginTop: 4, flexDirection: "row", justifyContent: "flex-end" }}>
-    <Text style={{ fontSize: 11, color: tokens["muted-foreground"] }}>over limit</Text>
+    <Text style={{ fontSize: 11.5, lineHeight: 17, fontWeight: "600", color: tokens["muted-foreground"] }}>over limit</Text>
   </View>
 </View>
   );

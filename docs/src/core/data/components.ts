@@ -178,7 +178,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "input",
     name: "Input",
-    description: "The Input component is a React Native text field with semantic boolean props (<code>error</code>, <code>small</code>, <code>large</code>, <code>disabled</code>), plus prefix/suffix addons, overlaid icons (any Canvas glyph as <code>icon</code>), a <code>passwordToggle</code> eye for a masked value, and a <code>clearable</code> clear button. Input is single-line; for multi-line entry use the dedicated Textarea. A field fills the parent it is given; a step of its own (<code>xs</code>, <code>lg</code>, …, <code>start</code> to pin it) or a Container step sets its measure. Select and the search field share its look, and Form stitches labeled inputs into a full form. On iOS the field is drawn to the iOS input-field reference.",
+    description: "The Input component is a React Native text field with semantic boolean props (<code>error</code>, <code>small</code>, <code>large</code>, <code>disabled</code>), plus prefix/suffix addons, overlaid icons (any Canvas glyph as <code>icon</code>), a <code>passwordToggle</code> eye for a masked value, and a <code>clearable</code> clear button. Input is single-line; for multi-line entry use the dedicated Textarea. A field fills the parent it is given; a step of its own (<code>xs</code>, <code>lg</code>, …, <code>start</code> to pin it) or a Container step sets its measure. On the web it is Dark Factory's field: a translucent well whose hairline turns violet on focus, a 13px semibold value and an uppercase eyebrow label. iOS draws it to the iOS input-field reference and Android keeps the Material 3 filled field. Form stitches labeled inputs into a full form.",
     category: "Atoms",
     // A field fills its parent either way; the stretched stage makes the parent the
     // stage itself, so the "Measure" Column of stepped fields and Container steps
@@ -235,7 +235,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "textarea",
     name: "Textarea",
-    description: "Multi-line input, with character count, with toolbar.",
+    description: "Multi-line input, with character count, with toolbar. On the web it is Dark Factory's field, the Input's.",
     category: "Atoms",
     // A field fills its parent either way; the stretched stage makes the parent the
     // stage itself, so the "Measure" Column of stepped fields and Container steps
@@ -313,7 +313,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "field",
     name: "Field",
-    description: "A form row: a label, the control, and one message line under it. Field owns the helper and error text no control renders on its own, and hands its label down to a wrapped field-family control so each platform still places it its own way \u2014 a static title above on web and iOS, the floating in-container label on Android.",
+    description: "A form row: a label, the control, and one message line under it. Field owns the helper and error text no control renders on its own, and hands its label down to a wrapped field-family control so each platform still places it its own way: Dark Factory's uppercase eyebrow above on the web, a static title above on iOS, the floating in-container label on Android.",
     category: "Molecules",
     stageAlign: "start",
   },

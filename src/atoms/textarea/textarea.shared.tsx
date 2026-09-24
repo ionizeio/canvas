@@ -93,10 +93,10 @@ export interface TextareaProps extends TextEntryProps, MeasureProps {
   /** Error/validation state: a destructive cue. `invalid` is an alias. */
   error?: boolean;
   invalid?: boolean;
-  // Size (pick one; default is the base text-sm field).
+  // Size (pick one; default is the base field).
   small?: boolean;
   large?: boolean;
-  /** Blocks editing and focus, and dims the field. */
+  /** Blocks editing and shows the field disabled: dimmed on iOS and Android, Dark Factory's disabled look (a hairline frame with no fill and a muted value) on the web. */
   disabled?: boolean;
   /**
    * Borderless: drop the field's own border and radius so it sits flush inside a
@@ -228,23 +228,29 @@ export function createTextarea(skin: TextareaSkin) {
     // The base field surface, shared by every path (width/style/disabled dim move
     // to the wrapper in the labeled paths so the label dims with the field). Typed
     // as an array (not StyleProp) so the floating path can spread it with the reserve.
+    // A disabled field either dims (iOS, Android) or, on a skin that draws one, takes its
+    // disabled look instead (the web's Dark Factory look): the field on the look's frame,
+    // the value in its ink, and no material.
+    const disabledLook = disabled && skin.disabledLook ? skin.disabledLook(tokens, focused) : null;
     const fieldShape = {
       ...skin.field(tokens, { error: isError, focused }),
+      ...(disabledLook ? disabledLook.frame : null),
       // Flush material shares the editor's square, borderless shape.
       ...(flush ? FLUSH_SHAPE : null),
     };
-    const fieldPane = <GlassPane {...entryMaterial.paneProps} shape={fieldShape} tint={isError ? alpha(tokens.destructive, 0.18) : undefined} />;
+    const fieldPane = disabledLook ? null : <GlassPane {...entryMaterial.paneProps} shape={fieldShape} tint={isError ? alpha(tokens.destructive, 0.18) : undefined} />;
     const fieldStyle: StyleProp<TextStyle>[] = [
-      paneStyle(theme, fieldShape, focused || isError),
-      glass ? { ...PANE_SIBLING_INPUT, backgroundColor: "transparent", borderColor: focused || isError ? (fieldShape.borderColor as string) : "transparent" } : null,
+      disabledLook ? fieldShape : paneStyle(theme, fieldShape, focused || isError),
+      glass && !disabledLook ? { ...PANE_SIBLING_INPUT, backgroundColor: "transparent", borderColor: focused || isError ? (fieldShape.borderColor as string) : "transparent" } : null,
       skin.text ? skin.text(size) : sizeText(size),
+      disabledLook ? { color: disabledLook.ink } : null,
       minHeight(rows),
       // A framed field paints its own focus state (its border turns `ring`), so the
       // browser ring is suppressed; a flush field has no frame to paint, so it keeps the
       // kit's themed ring, drawn inside it where the toolbar card's clip cannot cut it.
       flush ? [focusRing, INSET_FOCUS_RING] : FOCUS_RESET,
     ];
-    const disabledDim = disabled ? { opacity: 0.5 } : null;
+    const disabledDim = disabled && !disabledLook ? { opacity: 0.5 } : null;
 
     // The live count line, owned by the component. End-aligned, muted, turning
     // destructive once the count passes the soft cap; "N / max" when a maxLength

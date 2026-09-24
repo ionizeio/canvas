@@ -325,7 +325,9 @@ describe("solid mode", () => {
     );
     expect(materialLayers(container)).toBe(0);
     expect(rgbaOf((container.querySelector('[data-testid="save"]') as HTMLElement).style.backgroundColor)).toEqual(rgbaOf(alpha(actionFill(lightColors), 1)));
-    expect(rgbaOf((container.querySelector('[data-testid="name"]') as HTMLElement).style.backgroundColor)).toEqual(rgbaOf(alpha(lightColors.card, 1)));
+    // The web field paints Dark Factory's own well in solid mode, the `field-fill` role (SKN-6):
+    // translucent white over the surface it sits on, never a material.
+    expect(rgbaOf((container.querySelector('[data-testid="name"]') as HTMLElement).style.backgroundColor)).toEqual(rgbaOf(lightColors["field-fill"]!));
   });
 
   it("the aurora is not a base the pucks are tuned against, but the brand ink still clears 4.5:1 over it", () => {

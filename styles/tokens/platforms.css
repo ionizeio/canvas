@@ -24,16 +24,26 @@
   --p-card-radius:14px;--p-card-shadow:var(--shadow);--p-card-shadow-raised:var(--shadow-md);
   --p-card-pad:24px;--p-card-gap:16px;--p-card-pad-compact:16px;--p-card-gap-compact:12px;
   --p-card-pad-comfortable:32px;--p-card-gap-comfortable:24px;--p-card-border:var(--border) /* @kind other */;
-  /* Field — the Riskora box: 12px corner, full 1px border, 48px tall, card fill */
-  --p-field-radius:10px;--p-field-height:48px;--p-field-height-sm:40px;--p-field-height-lg:56px;
-  --p-field-fill:var(--card);--p-field-pad-x:16px;--p-field-font:14px;--p-field-lh:20px;
+  /* Field: Dark Factory's field (field-look.ts): a 10px corner, a full 1px border, the translucent
+     field-fill well, 40px tall at base (34 small, 46 large), a 12px inset, a 13 / 600 value */
+  --p-field-radius:10px;--p-field-height:40px;--p-field-height-sm:34px;--p-field-height-lg:46px;
+  --p-field-fill:var(--field-fill);--p-field-pad-x:12px;--p-field-font:13px;--p-field-lh:18px;--p-field-weight:600;
   --p-field-border-width:1px;--p-field-underline:0px;--p-field-radius-bottom:10px;
   /* The resting border: the field hairline on web and iOS (below the 3:1 `input` boundary on purpose;
      why in src/style/field-colors.ts); Android draws its M3 underline instead. */
-  --p-field-border:var(--field-border);--p-label-color:var(--foreground);--p-field-icon:16px;
+  --p-field-border:var(--field-border);--p-label-color:var(--muted-foreground);--p-field-icon:15px;
   /* Only M3 draws a darker active indicator; web/iOS keep the bottom edge the same hairline. */
   --p-field-underline-color:var(--input);
-  --p-label-weight:500;--p-label-tracking:0px;
+  /* The label above the box: Dark Factory's eyebrow (10 / 13 / 700, 1.6px tracking, uppercase) 6px
+     above it at every size; a Field row stacks its label, control and message 6px apart */
+  --p-label-font:10px;--p-label-lh:13px;--p-label-weight:700;--p-label-tracking:1.6px;
+  --p-label-transform:uppercase /* @kind other */;--p-label-gap:6px;--p-field-row-gap:6px;
+  /* Addons: a muted box with a field-line divider on the field side */
+  --p-field-addon-fill:var(--muted);--p-field-addon-divider:var(--field-border);
+  /* Disabled: Dark Factory's look in place of a dim (the frame on the border hairline, no fill,
+     a muted value) */
+  --p-field-disabled-border:var(--border);--p-field-disabled-fill:transparent;
+  --p-field-disabled-ink:var(--muted-foreground);--p-field-disabled-opacity:1 /* @kind other */;
   /* Floating label (style/floating-label.tsx, shared by Input/Autocomplete/Select/Textarea):
      the label-above vs in-container-float switch. Web and iOS render the static label ABOVE
      the field, so the float layer is display:none and no top padding is reserved. The floated
@@ -169,8 +179,10 @@
   /* Radio (radio.styles.ts webSkin) */
   --p-radio-ring-small:16px;--p-radio-ring-default:20px;--p-radio-ring-large:24px;
   --p-radio-dot-small:6px;--p-radio-dot-default:8px;--p-radio-dot-large:10px;--p-radio-border:2px;--p-radio-rest-border:var(--input);
-  /* Textarea + field captions (textarea.styles.ts webSkin) */
-  --p-textarea-fill:var(--background);--p-textarea-underline-rest:var(--input);--p-field-caption-tracking:0px;
+  /* Textarea + field captions (textarea.styles.ts webSkin, field.styles.ts webSkin): the field well
+     with a 13 / 20 value; the count and the Field message in Dark Factory's `small` (11.5 / 17 / 600) */
+  --p-textarea-fill:var(--field-fill);--p-textarea-underline-rest:var(--input);--p-textarea-lh:20px;
+  --p-field-caption-font:11.5px;--p-field-caption-lh:17px;--p-field-caption-weight:600;--p-field-caption-tracking:0px;
   /* Form (form.styles.ts webSkin) */
   --p-form-stack:16px;--p-form-section-stack:12px;--p-form-actions-gap:8px;
   --p-form-title:14px;--p-form-title-lh:20px;--p-form-title-weight:600;--p-form-title-tracking:0px;
@@ -373,8 +385,12 @@
      regular muted title above. */
   --p-field-radius:8px;--p-field-height:44px;--p-field-height-sm:36px;--p-field-height-lg:50px;
   --p-field-fill:var(--card);--p-field-radius-bottom:8px;--p-field-pad-x:12px;--p-field-font:16px;--p-field-lh:24px;
-  --p-field-border:var(--field-border);--p-label-color:var(--muted-foreground);--p-field-icon:20px;
-  --p-label-weight:400;--p-label-tracking:-0.15px;
+  --p-field-border:var(--field-border);--p-label-color:var(--muted-foreground);--p-field-icon:20px;--p-field-weight:400;
+  --p-label-font:14px;--p-label-lh:20px;--p-label-weight:400;--p-label-tracking:-0.15px;
+  --p-label-transform:none /* @kind other */;--p-label-gap:8px;--p-field-row-gap:8px;
+  /* Disabled: the field dims to 0.5 */
+  --p-field-disabled-border:var(--field-border);--p-field-disabled-fill:var(--card);
+  --p-field-disabled-ink:var(--foreground);--p-field-disabled-opacity:0.5 /* @kind other */;
   --p-check-size:22px;--p-check-radius:11px;--p-check-border:1.5px;
   --p-switch-w:46px;--p-switch-h:28px;--p-switch-thumb-w:28px;--p-switch-thumb-h:24px;--p-switch-thumb-fill:#ffffff;
   /* Switch (switch.styles.ts IOS_OFF_TRACK): systemGray3 off track, never the washed-out input token; the white capsule knob keeps its soft shadow in both states */
@@ -546,8 +562,9 @@
   --p-radio-ring-small:0px;--p-radio-ring-default:0px;--p-radio-ring-large:0px;
   --p-radio-dot-small:0px;--p-radio-dot-default:0px;--p-radio-dot-large:0px;--p-radio-border:0px;
   --p-radio-row-min-h:44px;--p-radio-row-pad-x:16px;--p-radio-row-pad-y:11px;--p-radio-section-radius:26px;
-  /* Textarea — iOS: the same white reference box as the Input */
-  --p-textarea-fill:var(--card);--p-field-caption-tracking:-0.08px;
+  /* Textarea, iOS: the same white reference box as the Input; captions are SF footnote-sized */
+  --p-textarea-fill:var(--card);--p-textarea-lh:24px;
+  --p-field-caption-font:12px;--p-field-caption-lh:16px;--p-field-caption-weight:400;--p-field-caption-tracking:-0.08px;
   /* Form — SwiftUI Form / HIG "Entering data": footnote-emphasized headings, roomier stack */
   --p-form-stack:20px;--p-form-actions-gap:12px;
   --p-form-title:13px;--p-form-title-lh:18px;--p-form-title-tracking:-0.08px;
@@ -600,7 +617,14 @@
   --p-field-radius:4px;--p-field-radius-bottom:0px;--p-field-height:56px;--p-field-height-sm:48px;--p-field-height-lg:60px;
   --p-field-fill:var(--muted);--p-field-pad-x:16px;--p-field-font:16px;--p-field-lh:24px;
   --p-field-border-width:0px;--p-field-underline:1px;--p-field-underline-color:var(--muted-foreground);
-  --p-label-weight:500;--p-label-tracking:0.25px;
+  --p-field-weight:400;--p-field-icon:16px;--p-label-color:var(--foreground);
+  --p-label-font:16px;--p-label-lh:24px;--p-label-weight:500;--p-label-tracking:0.25px;
+  --p-label-transform:none /* @kind other */;--p-label-gap:6px;--p-field-row-gap:4px;
+  /* Addons are M3 inline affix text: no box, no divider */
+  --p-field-addon-fill:transparent;--p-field-addon-divider:transparent;
+  /* Disabled: the field dims to 0.38 (M3) */
+  --p-field-disabled-border:var(--muted-foreground);--p-field-disabled-fill:var(--muted);
+  --p-field-disabled-ink:var(--foreground);--p-field-disabled-opacity:0.38 /* @kind other */;
   /* Floating label (input/select/autocomplete/textarea androidSkin: floatingLabel true,
      labelReserve paddingTop 24): Android floats the M3 in-container label. It rests inside
      the filled box where the placeholder sits (the native placeholder yields, opacity 0)
@@ -775,9 +799,10 @@
   --p-radio-ring-small:18px;--p-radio-ring-default:20px;--p-radio-ring-large:22px;
   --p-radio-dot-small:10px;--p-radio-dot-default:10px;--p-radio-dot-large:12px;
   --p-radio-rest-border:var(--muted-foreground);
-  /* Textarea: M3 opaque muted filled surface with a visible resting indicator */
-  --p-textarea-fill:var(--muted);
-  --p-textarea-underline-rest:var(--muted-foreground);--p-field-caption-tracking:0.4px;
+  /* Textarea: M3 opaque muted filled surface with a visible resting indicator; body-small captions */
+  --p-textarea-fill:var(--muted);--p-textarea-lh:24px;
+  --p-textarea-underline-rest:var(--muted-foreground);
+  --p-field-caption-font:12px;--p-field-caption-lh:16px;--p-field-caption-weight:400;--p-field-caption-tracking:0.4px;
   /* Form — M3: prominent 700 title weight, body-small description */
   --p-form-title-weight:700;--p-form-desc-tracking:0.4px;
   /* Breadcrumb — M3 body/label tracking */

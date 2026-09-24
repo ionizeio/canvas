@@ -1,4 +1,5 @@
 import { destructiveText } from "../../style/destructive-text.js";
+import { FIELD_LABEL_GAP, fieldLabel, fieldNote } from "../../style/field-look.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens } from "../../style/index.js";
 
@@ -10,9 +11,10 @@ import { type ColorTokens } from "../../style/index.js";
 // Field paints no surface and owns no pressable of its own: the control it wraps brings its own
 // per-OS press feedback from its own skin, so nothing here declares ripple or opacity.
 //
-//   Web: the Riskora form row — a 14/20 medium label, an 8px stack gap, and a 12/16
-//     message line. Matches what Input already renders above itself, so a wrapped and an unwrapped
-//     field line up in one column.
+//   Web: Dark Factory's field row (src/style/field-look.ts): its eyebrow label 6 above the
+//     control and the message 6 below it in Dark Factory's `small` type. The label is the one
+//     Input and Textarea render above themselves, so a row that hands its label down and a row
+//     around a Switch read alike.
 //   iOS: the "iOS Mobile Input Fields" reference (Figma N8TScrzAPwpmwxFS1032my): a 14pt
 //     REGULAR secondary title (its Text/Label, `muted-foreground`) 8 above the box, and the
 //     12pt message 8 below it, red only when it is the error. SF Pro Text tracking on the
@@ -31,13 +33,9 @@ export interface FieldSkin {
 }
 
 export const webSkin: FieldSkin = {
-  stack: { flexDirection: "column", gap: 8 },
-  label: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t.foreground }),
-  message: (t, error) => ({
-    fontSize: 12,
-    lineHeight: 16,
-    color: error ? destructiveText(t) : t["muted-foreground"],
-  }),
+  stack: { flexDirection: "column", gap: FIELD_LABEL_GAP },
+  label: fieldLabel,
+  message: fieldNote,
 };
 
 export const iosSkin: FieldSkin = {

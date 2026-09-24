@@ -3,10 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Text, Input, Column } = scope;
+  const { tokens, Text, Input, Column } = scope;
   return (
 <Column tight>
-  <Text style={{ fontSize: 14, fontWeight: "500" }}>Email</Text>
+  <Text style={{ fontSize: 10, lineHeight: 13, fontWeight: "700", letterSpacing: 1.6, textTransform: "uppercase", color: tokens["muted-foreground"] }}>Email</Text>
   <Input placeholder="you@example.com" />
 </Column>
   );

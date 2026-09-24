@@ -1,0 +1,5 @@
+---
+"@ionizeio/canvas": patch
+---
+
+On the web, Input, Textarea and Field take Dark Factory's field. The box is a translucent well (the `field-fill` role, which lifts the field off a dark card) with a 10px corner and a hairline that turns violet on focus and red on an error. The value is 13px semibold with a 12px inset, and the base field is 40px tall (34 small, 46 large). The label is Dark Factory's uppercase eyebrow in the muted ink, 6px above the box at every size, and a Field row around a control that keeps its own label, such as a Switch, carries the same eyebrow. Helper, error and character-count lines use Dark Factory's small type. Addons sit in a muted box with a field-line divider, glyphs are 15px, and the action suffix label is bold. A disabled web field no longer fades: it keeps a hairline frame with no fill and a muted value, and paints no glass. PhoneInput's box follows its Input. On Android the Textarea's focus indicator now uses `ring`, like every other Material 3 field. iOS and Android otherwise keep their platform fields.

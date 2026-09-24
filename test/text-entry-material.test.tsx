@@ -16,6 +16,7 @@ import { PhoneInput as PhoneInputIOS } from "../src/molecules/phone-input/phone-
 import { clearSurfaceTint } from "../src/style/glass-surface/glass-surface.shared.tsx";
 import { WEB_FROST } from "../src/style/glass-surface/web-frost.ts";
 import { lightColors } from "../src/style/tokens.ts";
+import { alpha } from "../src/style/color.ts";
 
 const restores: Array<() => void> = [];
 let available = true;
@@ -163,20 +164,30 @@ describe("clear web text-entry material", () => {
     });
   }
 
-  it("retains clear material when disabled or read-only while preserving editor semantics", () => {
+  it("retains clear material when read-only, drops it for Dark Factory's disabled look, and preserves editor semantics", () => {
     render(mode(<>
       <Input disabled defaultValue="Disabled name" testID="disabled" />
       <Input readOnly defaultValue="Read-only name" testID="readonly" />
       <PhoneInput readOnly defaultValue="5551234567" testID="phone" />
+      <PhoneInput disabled defaultValue="5551234567" testID="phone-disabled" />
     </>));
-    for (const id of ["disabled", "readonly", "phone"]) {
+    for (const id of ["disabled", "readonly", "phone", "phone-disabled"]) {
       const input = screen.getByTestId(id) as HTMLInputElement;
       expect(input.readOnly).toBe(true);
-      const owner = id === "phone" ? input.parentElement!.parentElement! : input.parentElement!;
-      expect(materials(owner)).toHaveLength(1);
+      const owner = id.startsWith("phone") ? input.parentElement!.parentElement! : input.parentElement!;
+      // A disabled web field paints no surface (SKN-6: the frame on the `border` hairline,
+      // no fill, the value muted), the way a disabled web Button paints none.
+      const disabled = id === "disabled" || id === "phone-disabled";
+      expect(materials(owner)).toHaveLength(disabled ? 0 : 1);
+      if (disabled) {
+        const box = id === "disabled" ? input : owner;
+        expect(rgbaOf(box.style.borderColor)).toEqual(rgbaOf(alpha(lightColors.border, 1)));
+        expect(rgbaOf(input.style.color)).toEqual(rgbaOf(alpha(lightColors["muted-foreground"], 1)));
+        expect(box.style.opacity).toBe("");
+      }
     }
     expect((screen.getByTestId("readonly") as HTMLInputElement).value).toBe("Read-only name");
-    expect(screen.getByRole("button", { name: /^Country,/ }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getByTestId("phone-country").hasAttribute("disabled")).toBe(true);
   });
 
   it("keeps the grouped editor identity, focus, selection and draft through material fallback", () => {

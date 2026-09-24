@@ -4,9 +4,12 @@ A form row: a label, the control, and one message line under it. Field exists fo
 control owns on its own. Every field family already owns its label, but nothing else in the kit
 renders helper or error text, so that message is what Field adds. When the row wraps a single
 field-family control that has no label of its own, Field hands the label down to it rather than
-drawing one alongside, so each platform still places it its own way: a static title above on web
-and iOS, the floating in-container label on Android. Set `error` and it replaces `helper` in the
-same slot, so the row never changes height and nothing below it jumps.
+drawing one alongside, so each platform still places it its own way: Dark Factory's uppercase
+eyebrow above on the web, a static title above on iOS, the floating in-container label on Android.
+Set `error` and it replaces `helper` in the same slot, so the row never changes height and nothing
+below it jumps. On the web the label and the message sit 6px from the control, the message in Dark
+Factory's small type, muted or in the error text, and a row around a control that keeps its own
+label (a Switch) carries the same eyebrow.
 
 ## Usage
 
@@ -167,7 +170,7 @@ tap target no longer includes it.
 
 ```tsx
 <Column tight>
-  <Text style={{ fontSize: 14, fontWeight: "500" }}>Email</Text>
+  <Text style={{ fontSize: 10, lineHeight: 13, fontWeight: "700", letterSpacing: 1.6, textTransform: "uppercase", color: tokens["muted-foreground"] }}>Email</Text>
   <Input placeholder="you@example.com" />
 </Column>
 ```

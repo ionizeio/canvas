@@ -110,9 +110,9 @@ describe("the iOS glyph follows the field state", () => {
     expect(iosSkin.iconColor(t, { focused: false, error: true, action: true })).toBe(t.destructive);
     expect(iosSkin.iconColor(t, { focused: true, error: true, action: false })).toBe(t.destructive);
   });
-  it("is a 20px glyph on iOS and 16px on web and Android", () => {
+  it("is a 20px glyph on iOS, Dark Factory's 15px on the web and 16px on Android", () => {
     expect(iosSkin.iconSize).toBe(20);
-    expect(webSkin.iconSize).toBe(16);
+    expect(webSkin.iconSize).toBe(15);
     expect(androidSkin.iconSize).toBe(16);
   });
   it("keeps the web and Android glyphs muted in every state", () => {

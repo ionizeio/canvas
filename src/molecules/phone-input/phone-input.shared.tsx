@@ -195,18 +195,22 @@ export function createPhoneInput(skin: PhoneInputSkin) {
     const ripple = field.ripple ? field.ripple(tokens) : undefined;
 
     const boxShape = field.groupContainer(tokens, borderColor, active, isError);
-    const glassBox: ViewStyle | null = glass ? { backgroundColor: "transparent", borderColor: (active || isError) && !entryMaterial.foregroundStateBorder ? tokens[borderColor] : "transparent" } : null;
+    // A disabled box takes its Input skin's disabled look where the skin draws one (the web's
+    // Dark Factory look: the box and the country segment on its frame, the number in its ink,
+    // no material); otherwise the whole field dims (below).
+    const disabledLook = disabled && field.disabledLook ? field.disabledLook(tokens, active) : null;
+    const glassBox: ViewStyle | null = glass && !disabledLook ? { backgroundColor: "transparent", borderColor: (active || isError) && !entryMaterial.foregroundStateBorder ? tokens[borderColor] : "transparent" } : null;
     const box = (
       <View
         ref={boxRef}
         onLayout={onBoxLayout}
-        style={[paneStyle(theme, boxShape, active || isError), { minHeight: field.groupedHeight(size) }, glassBox]}
+        style={[disabledLook ? [boxShape, disabledLook.frame] : paneStyle(theme, boxShape, active || isError), { minHeight: field.groupedHeight(size) }, glassBox]}
       >
-        <GlassPane {...entryMaterial.paneProps} shape={boxShape} tint={isError ? alpha(tokens.destructive, 0.18) : undefined} />
+        {disabledLook ? null : <GlassPane {...entryMaterial.paneProps} shape={boxShape} tint={isError ? alpha(tokens.destructive, 0.18) : undefined} />}
         <Pressable
           onPress={() => setOpen(!open)}
           disabled={!editable}
-          style={({ pressed }) => [withInnerFill(theme, skin.country(tokens, state), "soft"), field.pressedOpacity != null && pressed ? { opacity: field.pressedOpacity } : null]}
+          style={({ pressed }) => [disabledLook ? { ...skin.country(tokens, state), ...disabledLook.frame } : withInnerFill(theme, skin.country(tokens, state), "soft"), field.pressedOpacity != null && pressed ? { opacity: field.pressedOpacity } : null]}
           android_ripple={ripple}
           accessibilityRole="button"
           accessibilityLabel={segmentName}
@@ -233,6 +237,7 @@ export function createPhoneInput(skin: PhoneInputSkin) {
               field.groupField(tokens, { leadingIcon: false, trailingIcon: false, hasPrefix: false, hasSuffix: false }),
               { paddingStart: skin.numberGap },
               text,
+              disabledLook ? { color: disabledLook.ink } : null,
               FOCUS_RESET,
             ]}
             textAlignVertical="center"
@@ -268,7 +273,7 @@ export function createPhoneInput(skin: PhoneInputSkin) {
             aria-describedby={props["aria-describedby"]}
           />
         </View>
-        {entryMaterial.stateBorder(boxShape, active || isError)}
+        {disabledLook ? null : entryMaterial.stateBorder(boxShape, active || isError)}
       </View>
     );
 
@@ -326,7 +331,7 @@ export function createPhoneInput(skin: PhoneInputSkin) {
       </AnchoredOverlay>
     );
 
-    const dim = disabled ? { opacity: field.disabledOpacity } : null;
+    const dim = disabled && !disabledLook ? { opacity: field.disabledOpacity } : null;
     return (
       <View style={[root, open ? rootLifted : null, label != null ? { gap: field.labelGap } : null, dim, widthCap, style]}>
         {label != null ? (

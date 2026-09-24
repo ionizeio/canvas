@@ -1,5 +1,18 @@
 import { primaryText } from "../../style/primary-text.js";
 import { fieldBorder, fieldErrorFill } from "../../style/field-colors.js";
+import {
+  FIELD_HEIGHT,
+  FIELD_ICON,
+  FIELD_ICON_GUTTER,
+  FIELD_INSET,
+  FIELD_LABEL_GAP,
+  fieldAddon,
+  fieldDisabled,
+  fieldFrame,
+  fieldLabel,
+  fieldValue,
+  type FieldDisabledLook,
+} from "../../style/field-look.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, FOCUS_RESET, activeIndicator, shape, type FloatingLabelStyles } from "../../style/index.js";
 
@@ -18,10 +31,12 @@ import { type ColorTokens, FOCUS_RESET, activeIndicator, shape, type FloatingLab
 //     and a flat bottom, a bottom active-indicator underline (1dp `border` at
 //     rest -> 2dp `ring` on focus, `destructive` on error), ~56dp tall; the
 //     action suffix uses android_ripple; disabled opacity 0.38.
-//   Web: the Riskora dashboard field — a white (`card`) box with the field
-//     corner and a full 1px border (error > focus > the resting `field-border`
-//     hairline, see src/style/field-colors.ts), 48 tall at the base size (40 small,
-//     56 large), 16px inset, opacity 0.5 disabled, action press opacity 0.9.
+//   Web: Dark Factory's field (src/style/field-look.ts): the `field-fill` well at the
+//     field corner with a full 1px border (error > focus > the resting `field-border`
+//     line), 40 tall at the base size (34 small, 46 large), a 12px inset and a 13 / 600
+//     value, the eyebrow label above, 15px glyphs, and Dark Factory's disabled look (the
+//     frame on the `border` hairline, no fill, the value muted) in place of a dim;
+//     action press opacity 0.9.
 
 export type Size = "small" | "base" | "large";
 
@@ -75,8 +90,15 @@ export interface InputSkin extends FloatingLabelStyles<Size> {
    *  container's border/padding band on focus, and an overlay spanning that band
    *  would re-center and visibly shift its icon by half the change. */
   iconOverlay: (side: "left" | "right") => ViewStyle;
-  /** Opacity applied to the field when disabled. */
+  /** Opacity applied to the field when disabled (1 on a skin that draws `disabledLook` instead). */
   disabledOpacity: number;
+  /**
+   * A disabled look drawn in place of the dim (the web skin: Dark Factory's). The box and
+   * every addon box take `frame`, the value and an action label take `ink`, and the field
+   * paints no material. `focused` keeps the keyboard's focus visible. The iOS and Android
+   * skins omit it and dim.
+   */
+  disabledLook?: (t: ColorTokens, focused: boolean) => FieldDisabledLook;
   /** iOS/web dim the action suffix on press; Android uses a ripple instead (null). */
   pressedOpacity: number | null;
   /** Android ripple over the action suffix; null on iOS/web. */
@@ -89,45 +111,27 @@ export interface InputSkin extends FloatingLabelStyles<Size> {
   // four filled-field controls float their label identically.
 }
 
-// --- shared type scale (identical across platforms; brand type, not a face) --
-function webText(_t: ColorTokens, size: Size): TextStyle {
-  if (size === "large") return { fontSize: 16, lineHeight: 24 };
-  if (size === "small") return { fontSize: 12, lineHeight: 16 };
-  return { fontSize: 14, lineHeight: 20 };
-}
-
-// ---------- Web: the Riskora dashboard field ----------
-// The border by state, shared by the web and iOS boxes: the shell resolves the token
-// KEY (error > focus > input); at rest the box reads the `field-border` hairline
-// instead of the 3:1 `input` boundary (the disclosed trade-off in field-colors.ts).
-function fieldEdge(t: ColorTokens, borderColor: keyof ColorTokens): string {
-  return borderColor === "input" ? fieldBorder(t) : (t[borderColor] ?? t.input);
-}
-
+// ---------- Web: Dark Factory's field ----------
+// Every value is the field-look recipe's; the border follows its error > focus > rest
+// precedence from the state the shell passes.
 export const webSkin: InputSkin = {
   liquid: true,
-  text: webText,
-  bareBox: (size) => ({ height: size === "large" ? 56 : size === "small" ? 40 : 48 }),
-  groupedHeight: (size) => (size === "large" ? 56 : size === "small" ? 40 : 48),
-  bareField: (t, borderColor) => ({
+  text: (_t, size) => fieldValue(size),
+  bareBox: (size) => ({ height: FIELD_HEIGHT[size] }),
+  groupedHeight: (size) => FIELD_HEIGHT[size],
+  bareField: (t, _borderColor, focused, error) => ({
     width: "100%",
-    borderRadius: shape.web.field,
-    borderWidth: 1,
-    borderColor: fieldEdge(t, borderColor),
-    backgroundColor: t.card,
-    paddingHorizontal: 16,
+    ...fieldFrame(t, { focused, error }),
+    paddingHorizontal: FIELD_INSET,
     paddingVertical: 0,
     color: t.foreground,
   }),
-  groupContainer: (t, borderColor) => ({
+  groupContainer: (t, _borderColor, focused, error) => ({
     flexDirection: "row",
     alignItems: "stretch",
     width: "100%",
-    borderWidth: 1,
-    borderColor: fieldEdge(t, borderColor),
-    borderRadius: shape.web.field,
+    ...fieldFrame(t, { focused, error }),
     overflow: "hidden",
-    backgroundColor: t.card,
   }),
   // No vertical padding: the container's minHeight (groupedHeight) owns the row
   // height, the stretched input fills it, and a single line self-centers. Any
@@ -136,43 +140,34 @@ export const webSkin: InputSkin = {
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: "0%",
-    paddingHorizontal: 16,
+    paddingHorizontal: FIELD_INSET,
     color: t.foreground,
-    ...(leadingIcon ? { paddingStart: 44 } : null),
-    ...(trailingIcon ? { paddingEnd: 44 } : null),
+    ...(leadingIcon ? { paddingStart: FIELD_ICON_GUTTER } : null),
+    ...(trailingIcon ? { paddingEnd: FIELD_ICON_GUTTER } : null),
   }),
-  addonBox: (t, side) => ({
-    justifyContent: "center",
-    backgroundColor: t.muted,
-    paddingHorizontal: 16,
-    borderColor: t.border,
-    ...(side === "left" ? { borderEndWidth: 1 } : { borderStartWidth: 1 }),
-  }),
+  addonBox: (t, side) => fieldAddon(t, side),
   addonText: (t) => ({ color: t["muted-foreground"] }),
-  actionText: (t) => ({ fontWeight: "500", color: t.foreground }),
+  // The action reads as a text button: Dark Factory's 700 button label.
+  actionText: (t) => ({ fontWeight: "700", color: t.foreground }),
   iconOverlay: (side) => ({
     position: "absolute",
     top: 0,
     bottom: 0,
     zIndex: 10,
     justifyContent: "center",
-    ...(side === "left" ? { start: 0, paddingStart: 16 } : { end: 0, paddingEnd: 16 }),
+    ...(side === "left" ? { start: 0, paddingStart: FIELD_INSET } : { end: 0, paddingEnd: FIELD_INSET }),
   }),
-  iconSize: 16,
+  iconSize: FIELD_ICON,
   iconColor: (t) => t["muted-foreground"],
-  labelGap: 6,
-  disabledOpacity: 0.5,
+  labelGap: FIELD_LABEL_GAP,
+  disabledOpacity: 1,
+  disabledLook: fieldDisabled,
   pressedOpacity: 0.9,
   ripple: null,
-  // The label sits ABOVE the field (Riskora's form rows: a 14/20 medium title over
-  // the box), which is the visual the Field/Form composers render.
+  // The label sits ABOVE the field: Dark Factory's eyebrow, the visual the Field/Form
+  // composers render.
   floatingLabel: false,
-  labelAbove: (t, size) => ({
-    fontSize: size === "large" ? 16 : size === "small" ? 12 : 14,
-    lineHeight: size === "large" ? 24 : size === "small" ? 16 : 20,
-    fontWeight: "500",
-    color: t.foreground,
-  }),
+  labelAbove: (t) => fieldLabel(t),
 };
 
 // ---------- iOS: the iOS input-field reference ----------
@@ -198,6 +193,13 @@ function iosWebFieldReset(t: ColorTokens): TextStyle {
     caretColor: t.primary, // brand caret (RN Web), matching selectionColor
     cursorColor: t.primary, // brand caret (RN Android prop, harmless on iOS)
   } as unknown as TextStyle;
+}
+
+// The border by state: the shell resolves the token KEY (error > focus > input); at rest
+// the box reads the `field-border` hairline instead of the 3:1 `input` boundary (the
+// disclosed trade-off in field-colors.ts).
+function fieldEdge(t: ColorTokens, borderColor: keyof ColorTokens): string {
+  return borderColor === "input" ? fieldBorder(t) : (t[borderColor] ?? t.input);
 }
 
 // The reference's type: SF Pro 16 regular in the box (the 44pt box holds a 24pt line

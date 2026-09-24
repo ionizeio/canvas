@@ -30,7 +30,8 @@ async function labelColor(label: string, expected: string) {
 describe("floating labels use text roles without recoloring control indicators", () => {
   for (const scheme of ["light", "dark"] as const) {
     const t = colorsByScheme[scheme];
-    for (const [name, Component, indicator] of [["Input", Input, t.ring], ["Textarea", Textarea, t.primary]] as const) {
+    // Every M3 field's active indicator is `ring`; the Textarea's moved from `primary` in SKN-6.
+    for (const [name, Component, indicator] of [["Input", Input, t.ring], ["Textarea", Textarea, t.ring]] as const) {
       it(`${scheme} ${name} preserves rest, focus, populated, error and recovery transitions`, async () => {
         const ui = (error = false) => <ThemeProvider scheme={scheme}><Component label="Project name" required error={error} placeholder="Enter a name" /></ThemeProvider>;
         const { rerender } = render(ui());
@@ -103,12 +104,13 @@ describe("floating labels use text roles without recoloring control indicators",
       expect(rgb(field.style.borderBottomColor)).toBe(rgb(t.ring));
     });
 
-    // The static above-field label never recolours on focus. Web and the Android
-    // grouped fallback title it in `foreground`; the iOS skins title it in the iOS
-    // input-field reference's secondary gray (`muted-foreground`, its Text/Label).
+    // The static above-field label never recolours on focus. The web titles it in Dark
+    // Factory's muted eyebrow (SKN-6), the iOS skins in the iOS input-field reference's
+    // secondary gray (`muted-foreground`, its Text/Label), and the Android grouped fallback
+    // in `foreground`.
     for (const [name, Component, props, role] of [
-      ["Web Input", WebInput, {}, "foreground"], ["iOS Input", IOSInput, {}, "muted-foreground"],
-      ["Web Textarea", WebTextarea, {}, "foreground"], ["iOS Textarea", IOSTextarea, {}, "muted-foreground"],
+      ["Web Input", WebInput, {}, "muted-foreground"], ["iOS Input", IOSInput, {}, "muted-foreground"],
+      ["Web Textarea", WebTextarea, {}, "muted-foreground"], ["iOS Textarea", IOSTextarea, {}, "muted-foreground"],
       ["Android grouped Input", Input, { prefix: "$" }, "foreground"],
       ["Android flush Textarea", Textarea, { flush: true }, "foreground"],
     ] as const) {

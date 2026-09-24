@@ -6,8 +6,8 @@ export default function Example(scope: ExampleScope) {
   const { tokens, View, Text, TextInput } = scope;
   return (
 <View style={{ maxWidth: 400, flexDirection: "column", gap: 6 }}>
-  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Description</Text>
-  <TextInput multiline editable textAlignVertical="top" value="Read-only content the user must not change." style={{ minHeight: 80, width: "100%", borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12, paddingVertical: 8, fontSize: 14, lineHeight: 20, color: tokens.foreground, opacity: 0.5 }} />
+  <Text style={{ fontSize: 10, lineHeight: 13, fontWeight: "700", letterSpacing: 1.6, textTransform: "uppercase", color: tokens["muted-foreground"] }}>Description</Text>
+  <TextInput multiline editable textAlignVertical="top" value="Read-only content the user must not change." style={{ minHeight: 82, width: "100%", borderRadius: 10, borderWidth: 1, borderColor: tokens.border, backgroundColor: "transparent", paddingHorizontal: 12, paddingVertical: 10, fontSize: 13, lineHeight: 20, fontWeight: "600", color: tokens["muted-foreground"] }} />
 </View>
   );
 }

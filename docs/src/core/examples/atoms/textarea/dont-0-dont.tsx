@@ -6,8 +6,8 @@ export default function Example(scope: ExampleScope) {
   const { tokens, View, Text, TextInput } = scope;
   return (
 <View style={{ maxWidth: 400, flexDirection: "column", gap: 6 }}>
-  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Description</Text>
-  <TextInput numberOfLines={1} value="This is a longer description that runs past one line and gets clipped." style={{ height: 32, width: "100%", borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12, paddingVertical: 4, fontSize: 14, lineHeight: 20, color: tokens.foreground }} />
+  <Text style={{ fontSize: 10, lineHeight: 13, fontWeight: "700", letterSpacing: 1.6, textTransform: "uppercase", color: tokens["muted-foreground"] }}>Description</Text>
+  <TextInput numberOfLines={1} value="This is a longer description that runs past one line and gets clipped." style={{ height: 40, width: "100%", borderRadius: 10, borderWidth: 1, borderColor: tokens["field-border"], backgroundColor: tokens["field-fill"], paddingHorizontal: 12, paddingVertical: 0, fontSize: 13, lineHeight: 18, fontWeight: "600", color: tokens.foreground }} />
 </View>
   );
 }

@@ -1,13 +1,14 @@
 import { destructiveText } from "../../style/destructive-text.js";
 import { fieldBorder, fieldErrorFill } from "../../style/field-colors.js";
+import { FIELD_INSET, FIELD_INSET_Y, fieldDisabled, fieldFrame, fieldLabel, fieldMultilineValue, fieldNote, type FieldDisabledLook } from "../../style/field-look.js";
 import { type TextStyle } from "react-native";
 import { type ColorTokens, shape, type FloatingLabelStyles } from "../../style/index.js";
 
 // Co-located Textarea skins, one per platform. The field is a multiline
 // TextInput, so every fragment is a TextStyle. The BRAND survives on every
-// platform (the focus/active cue is always the indigo `ring`/`primary` token,
-// the error cue the `destructive` token, never a platform default); only the
-// native SHAPE, fill, border/underline, and focus feedback change per OS:
+// platform (the focus/active cue is always the `ring` token, the error cue the
+// `destructive` token, never a platform default); only the native SHAPE, fill,
+// border/underline, and focus feedback change per OS:
 //   iOS: the "iOS Mobile Input Fields" reference (see input.styles.ts): the same
 //     white `card` box as the single-line Input, an 8pt corner, the 1pt gray-300
 //     resting hairline (`field-border`), `ring` on focus, `destructive` plus the
@@ -15,10 +16,13 @@ import { type ColorTokens, shape, type FloatingLabelStyles } from "../../style/i
 //     (set on the shell, never a system blue).
 //   Android (Material 3 filled): a subtle fill with a flat bottom active
 //     indicator (underline). Top corners ~4, square bottom. The indicator is a
-//     1px resting line that thickens to 2px indigo on focus (destructive on
-//     error).
-//   Web: the Riskora dashboard field — full-width, the 12px field corner,
-//     1px border, on the card fill; border is error > focus(ring) > input.
+//     1px resting line that thickens to 2px `ring` on focus (destructive on
+//     error), like every other M3 field.
+//   Web: Dark Factory's multiline field (src/style/field-look.ts): the `field-fill`
+//     well at the field corner with a full 1px border (error > focus > the resting
+//     `field-border` line), a 10 x 12 inset, a 13 / 600 value at Dark Factory's 1.5
+//     line height, the eyebrow label above, the count in Dark Factory's `small` type,
+//     and its disabled look in place of a dim.
 
 export type Size = "small" | "base" | "large";
 
@@ -51,6 +55,12 @@ export interface TextareaSkin extends FloatingLabelStyles<Size> {
    * Android) change per OS.
    */
   count: (tokens: ColorTokens, over: boolean) => TextStyle;
+  /**
+   * A disabled look drawn in place of the dim (the web skin: Dark Factory's): the field
+   * takes `frame` and its value `ink`, and it paints no material. The iOS and Android
+   * skins omit it and dim.
+   */
+  disabledLook?: (tokens: ColorTokens, focused: boolean) => FieldDisabledLook;
 }
 
 // --- shared label type scale (mirrors the M3 Input, keyed to Textarea sizes) ---
@@ -70,12 +80,12 @@ function aboveLabelType(size: Size): TextStyle {
 
 // --- shared, platform-neutral fragments -------------------------------------
 
-// Text scale per size; mirrors the height the larger control reads as. Default
-// is the base text-sm field (no size prop). Shared across platforms.
+// The value's type per size for a skin that omits `text` (the Android skin); the
+// base size is the default (no size prop).
 export function sizeText(size: Size): TextStyle {
-  if (size === "large") return { fontSize: 16, lineHeight: 24 }; // text-base
-  if (size === "small") return { fontSize: 12, lineHeight: 16 }; // text-xs
-  return { fontSize: 14, lineHeight: 20 }; // text-sm
+  if (size === "large") return { fontSize: 16, lineHeight: 24 };
+  if (size === "small") return { fontSize: 12, lineHeight: 16 };
+  return { fontSize: 14, lineHeight: 20 };
 }
 
 // Derived min height from the row count: each row ~22px plus the vertical
@@ -88,29 +98,24 @@ export function minHeight(rows?: number): TextStyle {
   return { minHeight: r == null ? 80 : r * 22 + 16 };
 }
 
-// ---------- Web: the Riskora dashboard field ----------
-// Full width, a white (`card`) box with the 12px field corner and a full 1px
-// border, 16px inset, with the foreground text color. Border resolves error >
-// focus(ring) > the resting `field-border` hairline (see src/style/field-colors.ts).
+// ---------- Web: Dark Factory's multiline field ----------
 export const webSkin: TextareaSkin = {
   liquid: true,
   field: (t, st) => ({
     width: "100%",
-    borderRadius: shape.web.field,
-    borderWidth: 1,
-    borderColor: st.error ? t.destructive : st.focused ? t.ring : fieldBorder(t),
-    backgroundColor: t.card,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    ...fieldFrame(t, st),
+    paddingHorizontal: FIELD_INSET,
+    paddingVertical: FIELD_INSET_Y,
     color: t.foreground,
   }),
-  // The label sits ABOVE the field (14/20 medium weight per size, matching the
-  // Field/Form composers and the Input).
+  text: fieldMultilineValue,
+  // The label sits ABOVE the field: Dark Factory's eyebrow, as on the Input.
   floatingLabel: false,
-  labelAbove: (t, size) => ({ ...aboveLabelType(size), fontWeight: "500", color: t.foreground }),
-  // The count line: the established Canvas caption (12/16), muted, turning
-  // destructive once the count passes the soft cap.
-  count: (t, over) => ({ fontSize: 12, lineHeight: 16, color: over ? destructiveText(t) : t["muted-foreground"] }),
+  labelAbove: (t) => fieldLabel(t),
+  // The count line: Dark Factory's `small`, muted, turning to the error text once the
+  // count passes the soft cap.
+  count: fieldNote,
+  disabledLook: fieldDisabled,
 };
 
 // ---------- iOS: the iOS input-field reference, multiline ----------
@@ -147,8 +152,8 @@ export const iosSkin: TextareaSkin = {
 // ---------- Android (Material 3 filled): subtle fill + active indicator ------
 // An opaque muted fill, shared with the other M3 filled fields, with rounded
 // top corners (~4) and a square bottom, carrying a bottom active indicator
-// (underline). The indicator is a 1px resting line (the input token) that
-// thickens to 2px indigo `primary` on focus, or destructive on error.
+// (underline). The indicator is a 1px resting line (`muted-foreground`) that
+// thickens to 2px `ring` on focus, or destructive on error, like the Input's.
 export const androidSkin: TextareaSkin = {
   field: (t, st) => ({
     width: "100%",
@@ -161,7 +166,7 @@ export const androidSkin: TextareaSkin = {
     borderBottomWidth: st.focused || st.error ? 2 : 1,
     // Rest baseline must read clearly (on-surface-variant ~ muted-foreground) so the
     // M3 filled field is distinct from the iOS lineless capsule.
-    borderBottomColor: st.error ? t.destructive : st.focused ? t.primary : t["muted-foreground"],
+    borderBottomColor: st.error ? t.destructive : st.focused ? t.ring : t["muted-foreground"],
     paddingHorizontal: 12,
     paddingTop: 10,
     paddingBottom: 8,

@@ -305,10 +305,23 @@ export function createInput(skin: InputSkin) {
     const hasClear = !!clearable && populated && !disabled && !readOnly;
     const hasAddons = prefix != null || suffix != null || !!leadingIcon || !!trailingIcon || !!action || hasEye || !!clearable;
     const labelGap: ViewStyle = { gap: skin.labelGap };
+    // A disabled field either dims (iOS, Android) or, on a skin that draws one, takes its
+    // disabled look instead (the web's Dark Factory look): the box and its addon boxes on
+    // the look's frame, the value and an action label in its ink, and no material, the way
+    // a disabled web Button paints no surface.
+    const disabledLook = disabled && skin.disabledLook ? skin.disabledLook(tokens, focused) : null;
+    const disabledDim = disabled && !disabledLook ? { opacity: skin.disabledOpacity } : null;
+    const inkStyle: TextStyle | null = disabledLook ? { color: disabledLook.ink } : null;
     // Under glass the box drops its fill and its resting hairline (the pane's material
     // and rim carry them) and keeps the focus ring / error border as its state.
     const glassBox: ViewStyle = { ...PANE_SIBLING_INPUT, backgroundColor: "transparent", borderColor: focused || isError ? (tokens[borderColor] ?? tokens.input) : "transparent" };
     const paneTint = isError ? alpha(tokens.destructive, 0.18) : undefined;
+    // The box's style over its shape: the disabled look, or the material's treatment.
+    const surfaceStyle = (shape: ViewStyle | TextStyle): StyleProp<ViewStyle> =>
+      disabledLook ? [shape, disabledLook.frame] : [paneStyle(theme, shape, focused || isError), glass ? glassBox : null];
+    // An addon box: the disabled look's frame, or the box with its inner fill under glass.
+    const addonStyle = (side: "left" | "right"): ViewStyle =>
+      disabledLook ? { ...skin.addonBox(tokens, side, state), ...disabledLook.frame } : withInnerFill(theme, skin.addonBox(tokens, side, state), "soft");
 
     const common = {
       value,
@@ -389,10 +402,9 @@ export function createInput(skin: InputSkin) {
       // top of the indicator. No-op on native; matches the grouped path and the
       // Autocomplete/Textarea/Stepper shells.
       const bareShape = skin.bareField(tokens, borderColor, focused, isError);
-      const bareStyle = [paneStyle(theme, bareShape, focused || isError), skin.bareBox(size), text, FOCUS_RESET, glass ? glassBox : null];
-      const disabledDim = disabled ? { opacity: skin.disabledOpacity } : null;
-      // The puck behind a bare field (nothing in solid mode).
-      const barePane = <GlassPane {...paneProps} shape={bareShape} tint={paneTint} />;
+      const bareStyle = [surfaceStyle(bareShape), skin.bareBox(size), text, inkStyle, FOCUS_RESET];
+      // The puck behind a bare field (nothing in solid mode, nor under a disabled look).
+      const barePane = disabledLook ? null : <GlassPane {...paneProps} shape={bareShape} tint={paneTint} />;
 
       // Android M3 floating label: the field reserves top space for the floated
       // label, the animated label overlays it, and the placeholder is gated to the
@@ -483,19 +495,18 @@ export function createInput(skin: InputSkin) {
       <View
         hitSlop={hasClear || hasEye ? actionOverhang(skin.iconSize, height) : undefined}
         style={[
-          paneStyle(theme, groupShape, focused || isError),
+          surfaceStyle(groupShape),
           { minHeight: height },
-          glass ? glassBox : null,
-          foregroundStateBorder ? { borderColor: "transparent" } : null,
-          above ? null : disabled ? { opacity: skin.disabledOpacity } : null,
+          foregroundStateBorder && !disabledLook ? { borderColor: "transparent" } : null,
+          above ? null : disabledDim,
           above ? null : widthCap,
           above ? null : style,
         ]}
       >
-        <GlassPane {...paneProps} shape={groupShape} tint={paneTint} />
+        {disabledLook ? null : <GlassPane {...paneProps} shape={groupShape} tint={paneTint} />}
         {prefix != null ? (
-          <View style={withInnerFill(theme, skin.addonBox(tokens, "left", state), "soft")}>
-            <Text style={[skin.addonText(tokens), text]}>{prefix}</Text>
+          <View style={addonStyle("left")}>
+            <Text style={[text, skin.addonText(tokens)]}>{prefix}</Text>
           </View>
         ) : null}
 
@@ -513,8 +524,9 @@ export function createInput(skin: InputSkin) {
               // A second (or third) trailing glyph widens the trailing gutter by a glyph + gap each.
               trailingGlyphs > 1 ? { paddingEnd: asNum(skin.groupField(tokens, { leadingIcon: false, trailingIcon: true, hasPrefix: false, hasSuffix: false }).paddingEnd, 0) + (trailingGlyphs - 1) * (skin.iconSize + ACTION_GAP) } : null,
               text,
+              inkStyle,
               FOCUS_RESET,
-              glass ? PANE_SIBLING_INPUT : null,
+              glass && !disabledLook ? PANE_SIBLING_INPUT : null,
             ]}
             textAlignVertical="center"
             {...common}
@@ -561,7 +573,7 @@ export function createInput(skin: InputSkin) {
           action ? (
             <Pressable
               style={({ pressed }) => [
-                withInnerFill(theme, skin.addonBox(tokens, "right", state), "soft"),
+                addonStyle("right"),
                 skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
               ]}
               onPress={onActionPress}
@@ -569,15 +581,15 @@ export function createInput(skin: InputSkin) {
               android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
               accessibilityRole="button"
             >
-              <Text style={[skin.actionText(tokens), text]}>{suffix}</Text>
+              <Text style={[text, skin.actionText(tokens), inkStyle]}>{suffix}</Text>
             </Pressable>
           ) : (
-            <View style={withInnerFill(theme, skin.addonBox(tokens, "right", state), "soft")}>
-              <Text style={[skin.addonText(tokens), text]}>{suffix}</Text>
+            <View style={addonStyle("right")}>
+              <Text style={[text, skin.addonText(tokens)]}>{suffix}</Text>
             </View>
           )
         ) : null}
-        {stateBorder(groupShape, focused || isError)}
+        {disabledLook ? null : stateBorder(groupShape, focused || isError)}
       </View>
     );
 
@@ -585,7 +597,7 @@ export function createInput(skin: InputSkin) {
     // fallback). The wrapper carries width/style/dim; the group drops them above.
     if (above) {
       return (
-        <View style={[labelGap, disabled ? { opacity: skin.disabledOpacity } : null, widthCap, style]}>
+        <View style={[labelGap, disabledDim, widthCap, style]}>
           {aboveLabel}
           {groupedField}
         </View>
