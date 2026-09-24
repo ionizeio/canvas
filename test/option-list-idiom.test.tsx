@@ -6,7 +6,7 @@ import { ThemeProvider } from "../src/style/theme.tsx";
 // One job, different control (the design language's item 5): an iOS list marks each
 // chosen row with a trailing check, in single and multi select alike, and never fills
 // a row for being chosen; the web and Android lead the row with the mark (a ✓ gutter
-// and a filled row, or the selection Checkbox). iOS menus (Select's pop-up menu) keep
+// with the chosen label in the selection violet, or the selection Checkbox). iOS menus (Select's pop-up menu) keep
 // UIMenu's leading check, so they are not covered here.
 
 afterEach(cleanup);
@@ -56,11 +56,14 @@ describe("the web and Android Listbox", () => {
   for (const platform of ["web", "android"] as const) {
     it(`leads the chosen row with its mark on ${platform}`, async () => {
       const Listbox = await listbox(platform);
-      render(<ThemeProvider><Listbox accessibilityLabel="Team" items={ITEMS} defaultSelected={1} /></ThemeProvider>);
+      render(<ThemeProvider light solid><Listbox accessibilityLabel="Team" items={ITEMS} defaultSelected={1} /></ThemeProvider>);
       const rows = screen.getAllByRole("option");
       for (const row of rows) expect(trailingCheck(row)).toBeNull();
       expect(rows[1].firstElementChild?.textContent).toBe("✓");
-      expect(rows[1].style.backgroundColor).not.toBe("");
+      // Dark Factory's menu row: the chosen label reads in the selection violet, with no fill.
+      expect(rows[1].style.backgroundColor).toBe("");
+      const label = (row: HTMLElement) => [...row.querySelectorAll("div")].find((node) => node.textContent === "Frontend" || node.textContent === "Backend") as HTMLElement;
+      expect(label(rows[1]).style.color).not.toBe(label(rows[0]).style.color);
     });
   }
 });

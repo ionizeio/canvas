@@ -69,7 +69,7 @@ const COVERED_ANOTHER_WAY: Record<string, string> = {
 const KNOWN_GAP: Record<string, string> = {
   "atoms/button-group": "segments render 47x32; they abut, so the fix is vertical slop",
   "atoms/dropdown": "the trigger renders 69x30",
-  "atoms/listbox": "rows render 310x36, and one shared skin serves all three platforms",
+  "atoms/listbox": "rows render 33 tall (Dark Factory's menu row) and declare no minimum on any platform",
   "molecules/card": "a pressable card is sized by its content, which can be anything",
   "molecules/grid-lists": "tile actions render 63x36",
   "molecules/stats": "a pressable stat tile is sized by its content",

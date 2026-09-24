@@ -1,4 +1,5 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
+import { useHover } from "../../style/hover.js";
 import { useState, type ComponentType } from "react";
 import { CheckboxIndicator as WebCheckboxIndicator } from "../checkbox/indicator/index.js";
 import { type Role } from "react-native";
@@ -13,9 +14,9 @@ import { View, Pressable, Text, useControllableState, useFillStyle, useRovingFoc
 //    may be selected at once.
 //
 // How a row marks its selection is the skin's `mark`. On the web and Android the
-// row leads with it: single-select fills the chosen row with the accent and shows a
-// leading checkmark ("✓"), multi-select shows the platform's selection Checkbox
-// (the Material 3 box on Android). iOS marks a choice in a list the way its own
+// row leads with it: single-select shows a leading checkmark ("✓") and sets the chosen
+// row's label in the selection violet, multi-select shows the platform's selection
+// Checkbox (the Material 3 box on Android). iOS marks a choice in a list the way its own
 // lists do (the design language's "one job, different control"): a trailing check
 // on every chosen row, in both modes, with no leading column and no row fill.
 //
@@ -85,7 +86,7 @@ export interface ListboxProps extends MeasureProps {
   style?: LayoutStyle;
 }
 
-/** A leading mark: single-select fills the chosen row and shows a ✓ in a gutter; multi-select shows the selection Checkbox. */
+/** A leading mark: single-select shows a ✓ in a gutter; multi-select shows the selection Checkbox. */
 export interface GutterMark {
   kind: "gutter";
   /** Single-select checkmark column: a fixed-width gutter reserved on every row. */
@@ -111,10 +112,16 @@ export interface ListboxSkin {
   containerBordered: (tokens: ColorTokens) => ViewStyle;
   /** Each row: a horizontal flex shell with the mark + label stack. */
   rowBase: ViewStyle;
-  /** Per-row vertical padding by size. */
+  /** Per-row padding by size. */
   rowSize: Record<Size, ViewStyle>;
-  /** The accent fill used for a selected single-select row (gutter mark) and the press state. */
-  rowSelected: (tokens: ColorTokens) => ViewStyle;
+  /** The space between rows. */
+  rowGap: number;
+  /** The fill of a pressed row. */
+  rowPressed: (tokens: ColorTokens) => ViewStyle;
+  /** The instant look of a resting row under the pointer; null where there is none. */
+  rowHover: ((tokens: ColorTokens) => ViewStyle) | null;
+  /** The label of the chosen single-select row, over its plain label; null leaves it plain. */
+  chosenLabel: ((tokens: ColorTokens) => TextStyle) | null;
   /** How a row marks its selection. */
   mark: GutterMark | TrailingMark;
   /** Label/detail stack: grows to fill the remaining row width. */
@@ -156,6 +163,111 @@ const CHECK_HIDDEN: TextStyle = { opacity: 0 };
 export function createListbox(skin: ListboxSkin, parts: ListboxParts = {}) {
   const CheckboxIndicator = parts.CheckboxIndicator ?? WebCheckboxIndicator;
   const { mark } = skin;
+
+  interface ListRowProps {
+    item: ListboxItem;
+    selected: boolean;
+    mode: Mode;
+    size: Size;
+    disabled: boolean;
+    roving: ReturnType<ReturnType<typeof useRovingFocus>["getItemProps"]> | undefined;
+    onPress: () => void;
+  }
+
+  // One row, its own component so the web's hover wash has a hook per row.
+  function ListRow({ item, selected, mode, size, disabled, roving, onPress }: ListRowProps) {
+    const theme = useMaterialTheme({ layer: "content" });
+    const { tokens } = theme;
+    const { hovered, target } = useHover(skin.rowHover != null && !disabled);
+    // Name the row from its data so the title and detail stay separated,
+    // and a selected option's decorative checkmark is not announced.
+    const rowName = [item.label, item.detail].filter(Boolean).join(", ");
+    const chosen = mode === "single" && selected && skin.chosenLabel ? skin.chosenLabel(tokens) : null;
+
+    // Pressable owns Enter activation on keyup. Handling it here as well
+    // toggles a multi row twice. Its checkbox/option roles need an explicit
+    // Space handler; arrows still use the shared roving-focus behavior.
+    const onRowKeyDown = roving
+      ? (e: { key: string; repeat?: boolean; preventDefault: () => void }) => {
+          if (e.key === " " || e.key === "Spacebar") {
+            e.preventDefault();
+            if (!e.repeat) onPress();
+            return;
+          }
+          roving.onKeyDown(e);
+        }
+      : undefined;
+    const rovingProps = roving
+      ? { focusable: roving.focusable, tabIndex: roving.tabIndex, onKeyDown: onRowKeyDown }
+      : {};
+
+    return (
+      // Keep option/checkbox rows directly inside their listbox/group. The row clips its
+      // own corners (overflow in the skin), so a rectangular ripple needs no clip parent.
+      // See src/style/ripple-clip.
+      <Pressable
+        ref={roving?.ref}
+        {...(rovingProps as object)}
+        {...target}
+        // Android shows the Material ripple (a no-op off Android). The press fill is
+        // the skin's, applied only when enabled; a skin may also add an opacity dim via
+        // pressedOpacity.
+        android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
+        style={({ pressed }) => [
+          skin.rowBase,
+          skin.rowSize[size],
+          hovered && skin.rowHover ? skin.rowHover(tokens) : null,
+          !disabled && pressed ? withInnerFill(theme, skin.rowPressed(tokens), "firm") : null,
+          skin.pressedOpacity != null && !disabled && pressed ? { opacity: skin.pressedOpacity } : null,
+        ]}
+        onPress={disabled ? undefined : onPress}
+        disabled={disabled}
+        aria-disabled={!!disabled}
+        // A multi-select row IS the checkbox (the indicator has no interactive
+        // host), so its state is `checked`; a single-select
+        // row is an `option`, whose state is `selected`. RNW forwards neither
+        // accessibilityState key to the DOM, so each carries its aria alias.
+        role={mode === "multi" ? "checkbox" : "option"}
+        accessibilityLabel={rowName}
+        aria-label={rowName}
+        accessibilityState={
+          mode === "multi"
+            ? { checked: selected, disabled: !!disabled }
+            : { selected, disabled: !!disabled }
+        }
+        {...(mode === "multi" ? { "aria-checked": selected } : { "aria-selected": selected })}
+      >
+        {mark.kind === "gutter" ? (
+          mode === "multi" ? (
+            // The row owns every action. This private indicator reuses the
+            // Checkbox skin but contains only Views/Text, so hiding it cannot
+            // leave a nested Pressable in the keyboard tab order.
+            <View
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+              aria-hidden
+              style={{ pointerEvents: "none" }}
+            >
+              <CheckboxIndicator checked={selected} disabled={disabled} />
+            </View>
+          ) : (
+            // Reserve the checkmark column on every row so labels stay aligned
+            // whether or not the row is selected.
+            <Text style={mark.checkmark(tokens)}>{selected ? "✓" : ""}</Text>
+          )
+        ) : null}
+        <View style={skin.textStack}>
+          <Text style={[skin.label(tokens, size), chosen]}>{item.label}</Text>
+          {item.detail != null ? <Text style={skin.detail(tokens)}>{item.detail}</Text> : null}
+        </View>
+        {mark.kind === "trailing" ? (
+          // Decorative: the row's own state names the choice.
+          <Text aria-hidden style={[mark.check(tokens, size), selected ? null : CHECK_HIDDEN]}>✓</Text>
+        ) : null}
+      </Pressable>
+    );
+  }
+
   return function Listbox(props: ListboxProps) {
     const { items, bordered, disabled, onSelect, style } = props;
     const mode = modeOf(props);
@@ -212,7 +324,7 @@ export function createListbox(skin: ListboxSkin, parts: ListboxParts = {}) {
       // Base: fill the parent's width (explicit, so the list fills even a centered
       // parent rather than collapsing to content the way a width-less View would);
       // FILL below adds the row-sharing pair.
-      { width: "100%" },
+      { width: "100%", gap: skin.rowGap },
       bordered ? paneStyle(theme, skin.containerBordered(tokens)) : null,
       disabled ? { opacity: 0.5 } : null,
       widthCap,
@@ -227,102 +339,18 @@ export function createListbox(skin: ListboxSkin, parts: ListboxParts = {}) {
         accessibilityLabel={accessibleName} aria-label={accessibleName}>
         {/* A bordered list is a CONTENT-layer pane under glass (nothing in solid mode). */}
         {bordered ? <GlassPane layer="content" shape={skin.containerBordered(tokens)} /> : null}
-        {items.map((item, index) => {
-          const selected = selectedArr.includes(index);
-          // Name the row from its data so the title and detail stay separated,
-          // and a selected option's decorative checkmark is not announced.
-          const rowName = [item.label, item.detail].filter(Boolean).join(", ");
-          // A gutter-marked single-select fills the chosen row; multi-select, and every
-          // trailing-marked row, leaves the row plain and shows the state in its mark.
-          const rowBase: StyleProp<ViewStyle> = [
-            skin.rowBase,
-            skin.rowSize[size],
-            mark.kind === "gutter" && mode === "single" && selected ? withInnerFill(theme, skin.rowSelected(tokens), "firm") : null,
-          ];
-
-          // Pressable owns Enter activation on keyup. Handling it here as well
-          // toggles a multi row twice. Its checkbox/option roles need an explicit
-          // Space handler; arrows still use the shared roving-focus behavior.
-          const roving = disabled ? undefined : getItemProps(index);
-          const onRowKeyDown = roving
-            ? (e: { key: string; repeat?: boolean; preventDefault: () => void }) => {
-                if (e.key === " " || e.key === "Spacebar") {
-                  e.preventDefault();
-                  if (!e.repeat) press(index);
-                  return;
-                }
-                roving.onKeyDown(e);
-              }
-            : undefined;
-          const rovingProps = roving
-            ? { focusable: roving.focusable, tabIndex: roving.tabIndex, onKeyDown: onRowKeyDown }
-            : {};
-
-          return (
-            // Keep option/checkbox rows directly inside their listbox/group.
-            // The row's own radius is only 2px, so a rectangular ripple bleed at those corners
-            // is imperceptible and needs no clip. See src/style/ripple-clip.
-            <Pressable
-              key={index}
-              ref={roving?.ref}
-              {...(rovingProps as object)}
-              // Android shows the Material ripple (a no-op off Android). The
-              // selected-style press fill (the old `active:bg-accent`) is the
-              // accent, applied only when enabled; a skin may also add an opacity
-              // dim via pressedOpacity.
-              android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
-              style={({ pressed }) => [
-                rowBase,
-                !disabled && pressed ? withInnerFill(theme, skin.rowSelected(tokens), "firm") : null,
-                skin.pressedOpacity != null && !disabled && pressed ? { opacity: skin.pressedOpacity } : null,
-              ]}
-              onPress={disabled ? undefined : () => press(index)}
-              disabled={disabled}
-              aria-disabled={!!disabled}
-              // A multi-select row IS the checkbox (the indicator has no interactive
-              // host), so its state is `checked`; a single-select
-              // row is an `option`, whose state is `selected`. RNW forwards neither
-              // accessibilityState key to the DOM, so each carries its aria alias.
-              role={mode === "multi" ? "checkbox" : "option"}
-              accessibilityLabel={rowName}
-              aria-label={rowName}
-              accessibilityState={
-                mode === "multi"
-                  ? { checked: selected, disabled: !!disabled }
-                  : { selected, disabled: !!disabled }
-              }
-              {...(mode === "multi" ? { "aria-checked": selected } : { "aria-selected": selected })}
-            >
-              {mark.kind === "gutter" ? (
-                mode === "multi" ? (
-                  // The row owns every action. This private indicator reuses the
-                  // Checkbox skin but contains only Views/Text, so hiding it cannot
-                  // leave a nested Pressable in the keyboard tab order.
-                  <View
-                    accessibilityElementsHidden
-                    importantForAccessibility="no-hide-descendants"
-                    aria-hidden
-                    style={{ pointerEvents: "none" }}
-                  >
-                    <CheckboxIndicator checked={selected} disabled={disabled} />
-                  </View>
-                ) : (
-                  // Reserve the checkmark column on every row so labels stay aligned
-                  // whether or not the row is selected.
-                  <Text style={mark.checkmark(tokens)}>{selected ? "✓" : ""}</Text>
-                )
-              ) : null}
-              <View style={skin.textStack}>
-                <Text style={skin.label(tokens, size)}>{item.label}</Text>
-                {item.detail != null ? <Text style={skin.detail(tokens)}>{item.detail}</Text> : null}
-              </View>
-              {mark.kind === "trailing" ? (
-                // Decorative: the row's own state names the choice.
-                <Text aria-hidden style={[mark.check(tokens, size), selected ? null : CHECK_HIDDEN]}>✓</Text>
-              ) : null}
-            </Pressable>
-          );
-        })}
+        {items.map((item, index) => (
+          <ListRow
+            key={index}
+            item={item}
+            selected={selectedArr.includes(index)}
+            mode={mode}
+            size={size}
+            disabled={!!disabled}
+            roving={disabled ? undefined : getItemProps(index)}
+            onPress={() => press(index)}
+          />
+        ))}
       </View>
     );
   };
