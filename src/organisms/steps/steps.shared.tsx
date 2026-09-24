@@ -1,7 +1,8 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { type ReactNode } from "react";
 import { type DimensionValue } from "react-native";
-import { View, Pressable, Text, RippleClip, cornerRadii, useControllableState, useContainerBreakpoint, containerProbe, useMinTargetSlop, type BreakpointKey, type Responsive, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useControllableState, useContainerBreakpoint, containerProbe, type BreakpointKey, type Responsive, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
 import * as s from "./steps.styles.js";
 import { type State, type StepsSkin } from "./steps.styles.js";
 
@@ -78,8 +79,9 @@ export function createSteps(skin: StepsSkin) {
   function Circle({ index, state, onPress }: { index: number; state: State; onPress?: () => void }) {
     // A step circle is 32pt of visible dot on every platform, which is right for the
     // rail's rhythm and short of both platforms' minimum, so the touch area grows
-    // around it rather than the dot growing.
-    const target = useMinTargetSlop(skin.minTarget);
+    // around it rather than the dot growing. The slop is seeded from that fixed size, so it
+    // is in place before the first layout (src/style/touch-target-seed.ts).
+    const target = useSeededMinTargetSlop(skin.minTarget, styleBox(s.circleBase));
     const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens } = theme;
     // Completed and upcoming discs use stable frost. An intentionally unfilled

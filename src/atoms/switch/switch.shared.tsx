@@ -3,7 +3,8 @@ import { forwardRef, type ReactNode } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { type GestureResponderEvent } from "react-native";
-import { Pressable, View, Text, useControllableState, useMinTargetSlop, type ColorTokens, type StyleProp, type ViewStyle, type TouchTargetSkin, type LayoutStyle, GlassPane, GlassSurface, paneStyle } from "../../style/index.js";
+import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
+import { Pressable, View, Text, useControllableState, type ColorTokens, type StyleProp, type ViewStyle, type TouchTargetSkin, type LayoutStyle, GlassPane, GlassSurface, paneStyle } from "../../style/index.js";
 
 // Shared Switch shell. Uses React Native's primitives DIRECTLY (no engine className
 // layer) and reads the active brand tokens via so colors follow light/dark.
@@ -101,8 +102,10 @@ export function createSwitch(skin: SwitchSkin) {
 
     // The whole row is the control, and a base iOS track is 28pt tall, so the row is
     // short of the platform minimum even though it is wide. The touch area grows to
-    // meet it; nothing moves (see src/style/touch-target.ts).
-    const target = useMinTargetSlop(skin.minTarget);
+    // meet it; nothing moves (see src/style/touch-target.ts). The slop is seeded from the
+    // track, the least the row renders at, so it is in place before the first layout
+    // (src/style/touch-target-seed.ts).
+    const target = useSeededMinTargetSlop(skin.minTarget, styleBox(trackShape));
 
     return (
       <Pressable

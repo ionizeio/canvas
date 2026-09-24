@@ -2,8 +2,9 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { useEffect, useMemo, useRef, useState } from "react";
 import { type GestureResponderEvent, StyleSheet } from "react-native";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
-import { View, Pressable, Text, ScrollView, useTheme, useControllableState, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, devWarn, useMinTargetSlop, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type TouchTargetSkin, type LayoutStyle, GlassSurface, isGlass, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, ScrollView, useTheme, useControllableState, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type TouchTargetSkin, type LayoutStyle, GlassSurface, isGlass, withInnerFill } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
+import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
 import { MONO, type Variant } from "./code-block.styles.js";
 import { tokenize, syntaxColor, type CodeToken } from "./tokenize.js";
 
@@ -394,8 +395,11 @@ export function createCodeBlock(skin: CodeBlockSkin) {
     ) as ViewStyle & { elevation?: number };
     const { parent: elevParent } = splitElevation({ elevation });
     // The copy chip is a 26pt pill of label plus glyph: deliberately quiet chrome on
-    // a code surface, and under both native minimums.
-    const target = useMinTargetSlop(skin.minTarget);
+    // a code surface, and under both native minimums. The slop is seeded from the chip's
+    // padding and border around its one line of label, so it is in place before the first
+    // layout: the floating chip's wrapper (absolute, with a zIndex) is a native view that
+    // hugs it (src/style/touch-target-seed.ts).
+    const target = useSeededMinTargetSlop(skin.minTarget, styleBox(box, skin.copyText(tokens, dark).lineHeight));
     return (
       <RippleClip shape={cornerRadii(box)} hitSlop={target.hitSlop} style={elevParent}>
         <Pressable

@@ -241,12 +241,15 @@ function hasAttribute(opening: ts.JsxOpeningLikeElement, name: string): boolean 
   return opening.attributes.properties.some((p) => ts.isJsxAttribute(p) && p.name.getText() === name);
 }
 
-/** The names bound to a useMinTargetSlop(...) result in a file (`const target = useMinTargetSlop(...)`). */
+/**
+ * The names bound to a touch-target measurement in a file (`const target =
+ * useMinTargetSlop(...)`, or the kit's seeded useSeededMinTargetSlop).
+ */
 function slopResults(file: ts.SourceFile): Set<string> {
   const names = new Set<string>();
   const visit = (node: ts.Node) => {
     if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer && ts.isCallExpression(node.initializer)
-      && node.initializer.expression.getText() === "useMinTargetSlop") names.add(node.name.text);
+      && ["useMinTargetSlop", "useSeededMinTargetSlop"].includes(node.initializer.expression.getText())) names.add(node.name.text);
     ts.forEachChild(node, visit);
   };
   visit(file);

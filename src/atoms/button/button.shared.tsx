@@ -9,7 +9,8 @@ import {
 } from "react-native";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { actionFill } from "../../style/action.js";
-import { View, Pressable, RippleClip, Text, useMinTargetSlop, useReducedMotion, useSizing, type LayoutStyle, type MeasureProps, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
+import { View, Pressable, RippleClip, Text, useReducedMotion, useSizing, type LayoutStyle, type MeasureProps, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import { liftStyle, useHover } from "../../style/hover.js";
 import { type ButtonSkin, type Intent, type Size } from "./button.styles.js";
 
@@ -160,8 +161,10 @@ export function createButton(skin: ButtonSkin) {
     // Native minimum touch target (skin-declared: iOS HIG 44pt, Android M3 48dp; web
     // declares none). Sub-minimum buttons (small text, icon squares) keep their visual
     // size; the rendered box is measured and hitSlop extends only the TOUCH area, so
-    // there is no layout shift on any platform.
-    const target = useMinTargetSlop(skin.minTarget);
+    // there is no layout shift on any platform. The slop is seeded from the least box the
+    // skin gives (an icon square's size, or a text button's padding and border around one
+    // label line), so it is in place before the first layout (src/style/touch-target-seed.ts).
+    const target = useSeededMinTargetSlop(skin.minTarget, styleBox(container, children != null ? skin.label(tokens, intent, size, opts).lineHeight : undefined));
 
     // The skin's hover lift for this intent, read on the <RippleClip> wrapper (which never
     // moves) and applied to the Pressable inside it. A disabled or loading button stays put.

@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, spyOn } from "bun:test";
 import { I18nManager } from "react-native";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import * as iconModule from "../src/atoms/icon/icon.tsx";
-import * as styleIndex from "../src/style/index.ts";
+import * as touchTargetSeed from "../src/style/touch-target-seed.ts";
 import { webHover } from "../src/style/hover.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { lightColors } from "../src/style/tokens.ts";
@@ -162,10 +162,10 @@ describe("hover and platforms", () => {
 
   it("grows the arrows' touch area vertically beside a page, and both ways beside the compact count", () => {
     const axes = (ui: React.ReactElement) => {
-      const spy = spyOn(styleIndex, "useMinTargetSlop");
+      const spy = spyOn(touchTargetSeed, "useSeededMinTargetSlop");
       try {
         render(ui);
-        return spy.mock.calls.map(([, options]) => options?.axis ?? "both");
+        return spy.mock.calls.map(([, , options]) => options?.axis ?? "both");
       } finally {
         spy.mockRestore();
         cleanup();

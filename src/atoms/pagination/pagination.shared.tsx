@@ -1,6 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useHover } from "../../style/hover.js";
-import { View, Pressable, Text, RippleClip, cornerRadii, isRTL, pressDim, useControllableState, useMinTargetSlop, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, isRTL, pressDim, useControllableState, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
 import * as s from "./pagination.styles.js";
 import { type Size, type PaginationSkin } from "./pagination.styles.js";
@@ -156,7 +157,9 @@ export function createPagination(skin: PaginationSkin) {
     const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens } = theme;
     const box = skin.controlBox(tokens);
-    const target = useMinTargetSlop(skin.minTarget, abutting ? ABUTTING : undefined);
+    // Seeded from the arrow's fixed size, so the slop is in place before the first layout
+    // (src/style/touch-target-seed.ts).
+    const target = useSeededMinTargetSlop(skin.minTarget, styleBox(s.arrowSize[size]), abutting ? ABUTTING : undefined);
     const { hovered, target: hoverTarget } = useHover(hoverLook != null);
     const ink = skin.controlLabel(tokens, disabled).color as string;
     return (
@@ -201,7 +204,7 @@ export function createPagination(skin: PaginationSkin) {
     const { tokens } = theme;
     const box = skin.pageBox(tokens, selected, disabled);
     const puck = isGlass(theme) && filled(box);
-    const target = useMinTargetSlop(skin.minTarget, ABUTTING);
+    const target = useSeededMinTargetSlop(skin.minTarget, styleBox(s.itemSize[size]), ABUTTING);
     const { hovered, target: hoverTarget } = useHover(hoverLook != null && !selected);
     return (
       <RippleClip shape={cornerRadii(box)} hitSlop={target.hitSlop} {...hoverTarget}>
@@ -242,7 +245,7 @@ export function createPagination(skin: PaginationSkin) {
     const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens } = theme;
     const box = skin.selectorBox(tokens);
-    const target = useMinTargetSlop(skin.minTarget);
+    const target = useSeededMinTargetSlop(skin.minTarget, styleBox(s.selectorSize[size]));
     const { hovered, target: hoverTarget } = useHover(hoverLook != null);
     return (
       <RippleClip shape={cornerRadii(box)} hitSlop={target.hitSlop} {...hoverTarget}>

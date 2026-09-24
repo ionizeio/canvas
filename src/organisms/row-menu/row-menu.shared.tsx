@@ -2,8 +2,9 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useHover } from "../../style/hover.js";
 import { useRef, useState } from "react";
-import { View, Pressable, Text, AnchoredOverlay, useOverlayHost, useMeasuredWidth, useHugStyle, RippleClip, cornerRadii, useMinTargetSlop, type ViewStyle, type LayoutStyle, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, AnchoredOverlay, useOverlayHost, useMeasuredWidth, useHugStyle, RippleClip, StyleSheet, cornerRadii, type ViewStyle, type LayoutStyle, withInnerFill } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
+import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
 import { anchorLifted, type RowMenuItem, type RowMenuSkin } from "./row-menu.styles.js";
 
 // Shared RowMenu shell. The structure (the self-start anchor, the ⋯ icon-button
@@ -103,8 +104,10 @@ export function createRowMenu(skin: RowMenuSkin) {
 
   return function RowMenu(props: RowMenuProps) {
     // The trailing menu trigger is a 32pt (iOS) or 40dp (Android) glyph square: the
-    // right visual weight beside a row of content, and under both platforms' minimum.
-    const target = useMinTargetSlop(skin.minTarget);
+    // right visual weight beside a row of content, and under both platforms' minimum. The
+    // slop is seeded from that fixed size, so it is in place before the first layout
+    // (src/style/touch-target-seed.ts).
+    const target = useSeededMinTargetSlop(skin.minTarget, styleBox(StyleSheet.flatten(skin.trigger)));
     const { items, links = false, sectionLabel, onSelect, onOpenChange, triggerLabel = "More options", testID, style } = props;
     // What the menu is called when it opens. The section label names it when there is
     // one; otherwise the trigger's own label does, which is what the user pressed.

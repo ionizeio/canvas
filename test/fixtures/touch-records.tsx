@@ -3,6 +3,7 @@ import { act, cleanup, render } from "@testing-library/react";
 import { createContext, useContext, useRef, type ReactElement, type ReactNode, type Ref } from "react";
 import { StyleSheet, View as RNView, type Insets, type ViewStyle } from "react-native";
 import * as styleIndex from "../../src/style/index.ts";
+import * as touchTargetSeed from "../../src/style/touch-target-seed.ts";
 import { ThemeProvider } from "../../src/style/theme.tsx";
 
 // Recording stand-ins for the kit's RippleClip, View and Pressable, shared by the touch-target
@@ -28,7 +29,7 @@ export interface NodeRecord {
 // The real View, held before any stand-in is installed: the style module re-exports React
 // Native's own binding, so swapping it there swaps the imported name too.
 const RealView = RNView;
-const realUseMinTargetSlop = styleIndex.useMinTargetSlop;
+const realUseSeededMinTargetSlop = touchTargetSeed.useSeededMinTargetSlop;
 
 export const records = new Map<number, NodeRecord>();
 let nextId = 0;
@@ -116,8 +117,8 @@ export function renderAndLayout(
   // its minimum from platformMinTarget() when its module loads, and the test DOM loads it
   // as the web, where there is none. Stand in the platform's own number for that case.
   if (platformMin != null) {
-    spies.push(spyOn(styleIndex, "useMinTargetSlop").mockImplementation(((min: number | null, options?: object) =>
-      realUseMinTargetSlop(min ?? platformMin, options)) as never));
+    spies.push(spyOn(touchTargetSeed, "useSeededMinTargetSlop").mockImplementation(((min: number | null, box?: object, options?: object) =>
+      realUseSeededMinTargetSlop(min ?? platformMin, box, options)) as never));
   }
   render(<ThemeProvider light solid>{ui}</ThemeProvider>);
   const measured = frame == null ? [] : [...records.values()].filter((r) => typeof r.props.onLayout === "function");
