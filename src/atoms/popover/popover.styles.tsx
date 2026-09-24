@@ -2,27 +2,23 @@ import { type ReactNode } from "react";
 import { type ViewStyle, type TextStyle } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { type ColorTokens, shadow, shape } from "../../style/index.js";
+import { typeScale } from "../../style/type-scale.js";
 
-// Co-located Popover skins, one per platform, all driven by the brand tokens
-// (passed in from useTheme so they follow light/dark and read as glass when the
-// ThemeProvider's surface is "glass", since the shell renders the card through
-// GlassSurface, which strips the skin's fill and paints the active material over
-// its own `glass-tint`; the `popover` token itself is opaque in both modes and
-// glass never rewrites it). The BRAND survives on every platform (the heading type
-// and the primary action button stay the indigo brand, never a platform default);
-// only the native SHAPE, fill, border treatment, elevation, and padding change
-// per OS:
-//   iOS 27 (iOS 26+, Liquid Glass) popover: a largely rounded card (~26 radius)
-//     over the `popover` material, NO visible border, a soft lg shadow, ~16pt
-//     padding, with a slim tapered BEAK pointing toward the anchor (up when the
-//     card is below the trigger, down when above). The selection accent / action
-//     button stay the brand indigo.
-//   Android (no native popover): a flat-cornered ELEVATED surface (~12 radius)
-//     over `popover`, M3 elevation (md shadow), NO border and NO arrow — an
-//     elevated menu/dialog-style surface, mirroring the select Android menu.
-//   Web: the established Canvas look (the current popover, lifted verbatim) — a
-//     fixed 260px card, 8 radius, a full 1px `border`, `popover` fill, 16 padding,
-//     shadow-lg; no arrow.
+// Co-located Popover skins, one per platform, all driven by the theme tokens (passed
+// in from useTheme so they follow the palette and the scheme, and read as glass when
+// the ThemeProvider's surface is "glass": the shell renders the card through
+// GlassSurface, which strips the skin's fill and paints the functional layer; the
+// `popover` token itself is opaque in both modes and glass never rewrites it). The
+// heading and supporting line are Dark Factory's type on every platform (its heading
+// over its body in the muted ink); the shape follows the design language:
+//   iOS 27 (iOS 26+, Liquid Glass) popover, the iPad control: a largely rounded card
+//     (26 radius) over the `popover` material, no visible border, a soft lg shadow,
+//     16pt padding, and a slim tapered BEAK pointing toward the anchor (up when the
+//     card is below the trigger, down when above).
+//   Web: Dark Factory's panel (its Popover): a fixed 260px card at the menu corner
+//     with the `border` hairline, the `popover` fill, 16 padding and the popover
+//     shadow; no arrow.
+//   Android: Material 3 has no popover, so the web skin.
 
 export type Placement = "top" | "bottom";
 
@@ -85,14 +81,14 @@ export const bodySlot: ViewStyle = { marginTop: 12 };
 // The action row: a right-aligned button, spaced from the body above it.
 export const actionRow: ViewStyle = { marginTop: 12, flexDirection: "row", justifyContent: "flex-end" };
 
-// The card heading + description share this brand type scale across platforms
-// (small, the brand face, not a platform-specific font).
-const TITLE_TYPE: TextStyle = { fontSize: 14, lineHeight: 20, fontWeight: "600" };
-const DESC_TYPE: TextStyle = { marginTop: 4, fontSize: 14, lineHeight: 20 };
+// The card heading and description: Dark Factory's heading over its body, on every
+// platform.
+const TITLE_TYPE: TextStyle = typeScale.heading;
+const DESC_TYPE: TextStyle = { marginTop: 4, ...typeScale.body };
 
-// ---------- Web: the established Canvas look (lifted verbatim) ----------
-// A fixed 260px card, the menu radius (8), a full 1px `border`, the `popover`
-// fill (translucent under glass), 16 padding, shadow-lg; no arrow.
+// ---------- Web: Dark Factory's panel ----------
+// A fixed 260px card at the menu corner (12), the `border` hairline, the `popover`
+// fill (translucent under glass), 16 padding, the popover shadow; no arrow.
 export const webSkin: PopoverSkin = {
   cardWidth: 260,
   card: (t) => ({
@@ -200,21 +196,5 @@ export const iosSkin: PopoverSkin = {
   },
 };
 
-// ---------- Android (no native popover): flat-cornered elevated surface ----------
-// Material 3 has no popover; the convention is an elevated menu/dialog-style
-// surface. A flat-cornered card (~12dp radius) over `popover` with M3 elevation
-// (md shadow), NO border and NO arrow — mirrors the select Android menu surface.
-export const androidSkin: PopoverSkin = {
-  cardWidth: 260,
-  card: (t) => ({
-    width: 260,
-    maxWidth: "100%",
-    borderRadius: 12,
-    backgroundColor: t.popover,
-    padding: 16,
-    ...shadow("md", t),
-  }),
-  title: (t) => ({ ...TITLE_TYPE, color: t["popover-foreground"] }),
-  description: (t) => ({ ...DESC_TYPE, color: t["muted-foreground"] }),
-  arrow: null,
-};
+// ---------- Android: Material 3 has no popover, so the web skin ----------
+export const androidSkin: PopoverSkin = webSkin;

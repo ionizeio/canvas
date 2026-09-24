@@ -60,7 +60,8 @@
   /* Banners and overlays */
   --p-alert-radius:12px;--p-alert-tracking:0px;
   --p-overlay-radius:18px;--p-sheet-radius:22px;
-  /* Popover (popover.styles.tsx webSkin: 16px card, full 1px border, lg shadow, no beak) */
+  /* Popover (popover.styles.tsx webSkin, Android too: Dark Factory's panel, a 12px card with
+     the 1px hairline and the popover shadow, Dark Factory's heading over its body, no beak) */
   --p-popover-radius:12px;--p-popover-border:1px;--p-popover-shadow:var(--shadow-lg);--p-popover-beak-display:none /* @kind other */;
   /* Spinner (spinner.styles.tsx webSkin: the ActivityIndicator arc ring; iOS swaps in the spoke ring) */
   --p-spinner-arc-display:inline-block /* @kind other */;--p-spinner-spokes-display:none /* @kind other */;
@@ -215,8 +216,8 @@
   --p-menu-row-radius:8px;--p-menu-row-pad-x:10px;--p-menu-row-pad-y:8px;--p-menu-row-gap:10px;--p-menu-row-min-h:0px;
   --p-menu-row-font:12.5px;--p-menu-row-lh:17px;--p-menu-row-weight:700;--p-menu-row-spacing:2px;--p-menu-row-hover:var(--hover);
   --p-menu-shortcut-font:11px;--p-menu-shortcut-lh:15px;--p-menu-shortcut-weight:600;--p-menu-shortcut-tracking:0px;
-  /* Tooltip (tooltip.styles.ts webSkin) */
-  --p-tip-radius:8px;--p-tip-shadow:var(--shadow-md);--p-tip-weight:500;--p-tip-min-h:0px;
+  /* Tooltip (tooltip.styles.ts webSkin, iOS too: the inverse bubble in Dark Factory's type) */
+  --p-tip-radius:8px;--p-tip-shadow:var(--shadow-md);--p-tip-weight:600;--p-tip-min-h:0px;
   /* Dialog (dialog.styles.ts webSkin) */
   --p-dialog-scrim:rgba(0,0,0,0.6);--p-dialog-radius:18px;--p-dialog-border:1px;--p-dialog-shadow:var(--shadow-xl);
   --p-dialog-title:18px;--p-dialog-title-lh:28px;--p-dialog-title-weight:500;
@@ -583,7 +584,7 @@
   --p-drag-handle-size:32px;--p-drag-handle-radius:8px;--p-drag-handle-icon:18px;
 
   /* Declared where the skin differs from the web value this block would otherwise inherit. */
-  --p-tip-radius:6px;--p-sheet-card-radius-top:34px;--p-side-toggle-radius:0px;
+  --p-sheet-card-radius-top:34px;--p-side-toggle-radius:0px;
 }
 
 /* Material 3: stadium buttons, elevated cards with no visible outline, filled
@@ -621,8 +622,6 @@
      outline (the border-color token resolves only here; web/iOS fall back to the tone border). */
   --p-chip-remove:18px;--p-chip-check-display:inline-flex /* @kind other */;--p-chip-selected-border-color:transparent;
   --p-overlay-radius:12px;--p-sheet-radius:12px;
-  /* Popover (M3, no native popover): a 12dp borderless card on md elevation, no beak */
-  --p-popover-radius:12px;--p-popover-border:0px;--p-popover-shadow:var(--shadow-md);
   --p-tab-item-pad-y:12px;--p-tab-indicator-h:3px;--p-tab-label-selected:var(--primary-text);
   /* Tabs pills + vertical (M3): capsule tonal primary-12% fills with brand labels, flat (no thumb shadow) */
   --p-tab-pill-track-radius:9999px;--p-tab-pill-radius:9999px;--p-tab-pill-pad-x:14px;--p-tab-pill-pad-y:7px;

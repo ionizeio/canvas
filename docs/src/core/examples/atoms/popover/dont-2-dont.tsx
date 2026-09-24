@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { tokens, shadow, View, ScrollView, Input } = scope;
   return (
-<View style={{ borderRadius: 6, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 16, ...shadow("md"), maxHeight: 120, minWidth: 260, overflow: "hidden" }}>
+<View style={{ borderRadius: 12, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 16, ...shadow("lg"), maxHeight: 120, minWidth: 260, overflow: "hidden" }}>
   <ScrollView style={{ maxHeight: 88 }}>
     <Input label="Street" placeholder="100 Market St" style={{ marginBottom: 8 }} />
     <Input label="City" placeholder="San Francisco" style={{ marginBottom: 8 }} />

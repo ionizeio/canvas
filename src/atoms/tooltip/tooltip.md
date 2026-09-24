@@ -2,6 +2,10 @@
 
 Small floating helper text on hover or focus.
 
+The bubble inverts against the page (dark in the light scheme, light in the dark one)
+and sets its text in Dark Factory's label type; iOS, which has no tooltip, shows the
+same bubble, and Android keeps the Material 3 plain tooltip.
+
 The trigger is a boolean axis of its own, resolved first match wins:
 
 - `children`, an element you already have (an icon `Button`, a `Chip`, any

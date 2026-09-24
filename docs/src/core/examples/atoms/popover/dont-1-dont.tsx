@@ -7,8 +7,8 @@ export default function Example(scope: ExampleScope) {
   return (
 <View style={{ alignSelf: "flex-start" }}>
   <Button outline small>Open popover</Button>
-  <View style={{ borderRadius: 6, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 16, ...shadow("md"), marginTop: 8, minWidth: 240 }}>
-    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>No anchor, no dismiss, no Close.</Text>
+  <View style={{ borderRadius: 12, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 16, ...shadow("lg"), marginTop: 8, minWidth: 240 }}>
+    <Text style={{ fontSize: 12.5, lineHeight: 19, fontWeight: "500", color: tokens["popover-foreground"] }}>No anchor, no dismiss, no Close.</Text>
   </View>
 </View>
   );

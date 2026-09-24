@@ -1,22 +1,21 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow } from "../../style/index.js";
+import { typeScale } from "../../style/type-scale.js";
 
-// Co-located Tooltip skins, one per platform, all driven by the brand tokens
-// (passed in from useTheme so they follow light/dark and the glass surface). A
-// tooltip carries no brand fill of its own; the convention on every platform is
-// an INVERSE label (a dark bubble in a light theme, painted on the `foreground`
-// token with `background` text) so the tip reads against the page. Only the
-// native SHAPE, radius, type scale, padding, and elevation change per OS:
-//   iOS (no native tooltip): a small rounded label, radius ~6, an inverse fill
-//     (`foreground` bg with `background` text), caption ~12pt, compact padding,
-//     a soft lift. There is no system tooltip, so this is the platform-
-//     appropriate label convention, not an invented control.
-//   Android (Material 3 plain tooltip): a small rounded rect (radius 4), an
-//     inverse-surface fill (dark in a light theme: `foreground` bg, `background`
-//     text), body-small ~12sp, padding 8x4, flat (no elevation per M3 plain).
-//   Web: the established Canvas look (the current tooltip, lifted verbatim) — a
-//     6-radius dark pill on `foreground`, padding 8x4, `background` text at 12/16
-//     medium, with a soft `md` shadow.
+// Co-located Tooltip skins, one per platform, all driven by the theme tokens (passed
+// in from useTheme so they follow the palette, the scheme and the glass surface). A
+// tooltip carries no brand fill of its own; the convention on every platform is an
+// INVERSE label (a dark bubble in a light theme, painted on the `foreground` token with
+// `background` text) so the tip reads against the page in either scheme. Dark Factory
+// has no tooltip; its only dark bubble, the toast pill, keeps one colour in every theme,
+// which would all but vanish on the dark page, so the bubble keeps the per-scheme inverse
+// and takes Dark Factory's type and corners:
+//   Web: an 8-radius bubble (the control corner), 6 x 10 padding, a soft `md` lift, the
+//     label in Dark Factory's 12px label weight (600) at its 1.3 line height.
+//   iOS: no system tooltip, so the web skin.
+//   Android (Material 3 plain tooltip): a small rounded rect (radius 4), the inverse
+//     fill, body-small 12sp, padding 8 x 4, flat (no elevation per M3 plain), a 24dp
+//     minimum height.
 
 export type Placement = "top" | "bottom" | "left" | "right";
 
@@ -90,10 +89,7 @@ export const textTriggerLabel = (t: ColorTokens): TextStyle => ({
   textDecorationStyle: "dotted",
 });
 
-// ---------- Web: the established Canvas look (lifted verbatim) ----------
-// A small dark pill on the `foreground` token (so it inverts against the page),
-// 6 radius, 8x4 padding, a soft `md` lift; the label is 12/16 medium painted in
-// `background` so it reads as light text on the dark bubble.
+// ---------- Web: Dark Factory's type on the inverse bubble ----------
 export const webSkin: TooltipSkin = {
   bubble: (t) => ({
     borderRadius: 8,
@@ -102,24 +98,11 @@ export const webSkin: TooltipSkin = {
     paddingVertical: 6,
     ...shadow("md", t),
   }),
-  label: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: t.background }),
+  label: (t) => ({ ...typeScale.label, lineHeight: 16, color: t.background }),
 };
 
-// ---------- iOS (no native tooltip): a small rounded inverse label ----------
-// iOS ships no tooltip, so this is the platform-appropriate label convention: a
-// small rounded rect (radius 6) over the inverse `foreground` fill with
-// `background` text, a compact caption (12/16), tight 8x4 padding, and a soft
-// `md` lift so it floats off the page.
-export const iosSkin: TooltipSkin = {
-  bubble: (t) => ({
-    borderRadius: 6,
-    backgroundColor: t.foreground,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    ...shadow("md", t),
-  }),
-  label: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: t.background }),
-};
+// ---------- iOS: no system tooltip, so the web skin ----------
+export const iosSkin: TooltipSkin = webSkin;
 
 // ---------- Android (Material 3 plain tooltip): inverse-surface rounded rect ----------
 // M3 plain tooltip: a small rounded rect with a tighter 4dp corner radius, an

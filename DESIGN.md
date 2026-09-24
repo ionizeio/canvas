@@ -507,8 +507,6 @@ platformSkins:
       otp-inner-radius: "8px"
     popover:
       popover-radius: "26px"
-    tooltip:
-      tip-radius: "6px"
     command:
       cmd-radius: "16px"
     datatable:
@@ -621,9 +619,6 @@ platformSkins:
     inputotp:
       otp-radius: "12px"
       otp-inner-radius: "12px"
-    popover:
-      popover-radius: "12px"
-      popover-shadow: "var(--shadow-md)"
     tooltip:
       tip-radius: "4px"
       tip-shadow: none
