@@ -12,7 +12,6 @@ import {
   EmptyState,
   Icon,
   useToast,
-  useFormFactor,
   type ToastHandle,
 } from "@ionizeio/canvas";
 import type { TemplateDoc } from "../types";
@@ -124,10 +123,6 @@ const BRAND_FEATURES = ["Multi-factor authentication", "OAuth2 and OIDC support"
 
 function SplitScreenLive() {
   const { toast } = useToast();
-  // Phone stacks brand over form; wider splits them into two equal fill columns
-  // (equal-width fill children, so this stays a hook-driven branch rather than
-  // a Row `stacks`, which keeps children's own sizing).
-  const stacked = useFormFactor() === "phone";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const brand = (
@@ -169,18 +164,19 @@ function SplitScreenLive() {
       </Column>
     </Card>
   );
-  if (stacked) {
-    return (
-      <Column relaxed>
+  // Two equal halves that stack, brand over form, once the section is phone
+  // width. One element tree at every width: the Row measures its own container
+  // and only its layout changes, so the form keeps its text and focus across a
+  // resize and through the switch from the server's desktop layout. `grow`
+  // lets each Card reach the taller pane's height while side by side.
+  return (
+    <Row stacks relaxed>
+      <Column span={6} grow>
         {brand}
+      </Column>
+      <Column span={6} grow>
         {form}
       </Column>
-    );
-  }
-  return (
-    <Row relaxed>
-      <Column fill>{brand}</Column>
-      <Column fill>{form}</Column>
     </Row>
   );
 }
@@ -261,7 +257,7 @@ export const SIGNIN_TEMPLATE: TemplateDoc = {
     {
       title: "Split-screen",
       anatomy:
-        "Brand panel (primary-tinted Card: headline + Icon-check feature bullets) beside the sign-in form. Side by side on desktop, stacked at the sm breakpoint and below.",
+        "Brand panel (primary-tinted Card: headline + Icon-check feature bullets) beside the sign-in form: a Row stacks of two span-6 halves, side by side on desktop and stacked once the section is sm wide or narrower. The form stays mounted across the switch, so typed text and focus survive a resize.",
       render: () => <SplitScreenLive />,
     },
     {

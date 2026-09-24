@@ -143,6 +143,55 @@ describe("Row spans", () => {
     expect(nodes.every((node) => node.isConnected)).toBe(true);
   });
 
+  for (const width of [1280, 375]) {
+    it(`keeps a span cell's child mounted when siblings come and go (${width})`, () => {
+      // A cell is keyed by its child, not by its index among the rendered children:
+      // an index shifts when a conditional sibling before it toggles or a keyed item
+      // is inserted ahead of it, and every shifted cell would remount.
+      const mounted: string[] = [];
+      const Counted = ({ id }: { id: string }) => {
+        useEffect(() => {
+          mounted.push(id);
+        }, [id]);
+        return <Badge testID={id}>{id}</Badge>;
+      };
+      resizeViewport(width);
+      const Toggled = ({ show }: { show: boolean }) => (
+        <Row snug stacks>
+          {show ? (
+            <Column span={4}>
+              <Counted id="aside" />
+            </Column>
+          ) : null}
+          <Column span={8}>
+            <Counted id="field" />
+          </Column>
+        </Row>
+      );
+      const toggled = ui(<Toggled show />);
+      const field = at("field");
+      toggled.rerender(<ThemeProvider><Toggled show={false} /></ThemeProvider>);
+      toggled.rerender(<ThemeProvider><Toggled show /></ThemeProvider>);
+      expect(mounted.filter((id) => id === "field")).toEqual(["field"]);
+      expect(at("field")).toBe(field);
+      cleanup();
+
+      mounted.length = 0;
+      const Listed = ({ ids }: { ids: string[] }) => (
+        <Row snug stacks>
+          {ids.map((id) => (
+            <Column key={id} span={6}>
+              <Counted id={id} />
+            </Column>
+          ))}
+        </Row>
+      );
+      const listed = ui(<Listed ids={["b", "c"]} />);
+      listed.rerender(<ThemeProvider><Listed ids={["a", "b", "c"]} /></ThemeProvider>);
+      expect(mounted).toEqual(["b", "c", "a"]);
+    });
+  }
+
   it("warns for a span outside a Row and for a span that is not a whole column count", () => {
     const seen: string[] = [];
     const original = console.warn;
@@ -164,6 +213,18 @@ describe("Row spans", () => {
         </Row>,
       );
       expect(seen.some((m) => m.includes("span={4.5}") && m.includes("clamped"))).toBe(true);
+      // A span in a Row that has stacked is still a Row child: no warning.
+      seen.length = 0;
+      resetDevWarnings();
+      resizeViewport(375);
+      ui(
+        <Row stacks>
+          <Column span={6}>
+            <Badge>a</Badge>
+          </Column>
+        </Row>,
+      );
+      expect(seen.filter((m) => m.includes("<Column span>"))).toEqual([]);
     } finally {
       console.warn = original;
     }
@@ -199,9 +260,11 @@ describe("the layout-axis context the containers publish", () => {
     expect(axisIn((p) => <Column><Column>{p}</Column></Column>)?.hugging).toBe(false);
   });
 
-  it("a stacked Row publishes a column axis", () => {
+  it("a stacked Row publishes a column axis that is still a Row's (stacked)", () => {
     resizeViewport(375);
-    expect(axisIn((p) => <Row stacks>{p}</Row>)?.axis).toBe("column");
+    expect(axisIn((p) => <Row stacks>{p}</Row>)).toEqual({ axis: "column", stretch: true, hugging: false, stacked: true });
+    resizeViewport(1280);
+    expect(axisIn((p) => <Row stacks>{p}</Row>)?.stacked).toBeUndefined();
   });
 
   it("Container and Grid cells are definite stretching columns; only the Grid cell is bounded", () => {

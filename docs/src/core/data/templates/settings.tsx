@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Tabs, Input, Select, Switch, Divider, useFormFactor, useToast } from "@ionizeio/canvas";
+import { Row, Column, Card, Typography, Button, Tabs, Input, Select, Switch, Divider, useToast } from "@ionizeio/canvas";
 import type { TemplateDoc } from "../types";
 
 // Workspace settings built from real Canvas components: a vertical Tabs rail
@@ -39,10 +39,6 @@ const SECTIONS = [
 
 function SettingsLive() {
   const { toast } = useToast();
-  // Phone stacks the rail over the panes AND flips the rail Tabs to `block`, so
-  // the flag stays a hook (it drives a prop, and the wide branch's fill column
-  // rules out a Row `stacks` rewrite).
-  const narrow = useFormFactor() === "phone";
   const [tab, setTab] = useState(0);
   const [saved, setSaved] = useState(INITIAL);
   const [draft, setDraft] = useState(INITIAL);
@@ -68,10 +64,12 @@ function SettingsLive() {
     });
   }
 
+  // `block` fills the rail's span beside the panes and the full width once
+  // stacked above them.
   const rail = (
     <Tabs
       vertical
-      block={narrow}
+      block
       tabs={SECTIONS.map((s) => s.label)}
       active={tab}
       onSelect={setTab}
@@ -158,18 +156,14 @@ function SettingsLive() {
     </Column>
   );
 
-  if (narrow) {
-    return (
-      <Column relaxed>
-        {rail}
-        {content}
-      </Column>
-    );
-  }
+  // The rail takes a quarter beside the panes and stacks above them once the
+  // section is phone width. One element tree at every width: the Row measures
+  // its own container and only its layout changes, so an edited field keeps its
+  // text and focus across a resize.
   return (
-    <Row relaxed alignStart>
-      {rail}
-      <Column fill>{content}</Column>
+    <Row stacks relaxed>
+      <Column span={3}>{rail}</Column>
+      <Column span={9}>{content}</Column>
     </Row>
   );
 }
@@ -183,7 +177,7 @@ export const SETTINGS_TEMPLATE: TemplateDoc = {
     {
       title: "Settings layout",
       anatomy:
-        "Vertical Tabs rail beside the form panes (stacking above them on phones). The General pane holds the workspace Inputs and timezone Select; the Notifications pane holds the Switch list. Editing anything surfaces the save bar; Discard resets to the saved baseline, Save commits it with a toast, and the bar hides again.",
+        "Vertical block Tabs rail (span 3) beside the form panes (span 9), a Row stacks that puts the rail above the panes once the section is sm wide or narrower; an edited field keeps its text and focus across the switch. The General pane holds the workspace Inputs and timezone Select; the Notifications pane holds the Switch list. Editing anything surfaces the save bar; Discard resets to the saved baseline, Save commits it with a toast, and the bar hides again.",
       render: () => <SettingsLive />,
     },
   ],

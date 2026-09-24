@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Badge, Input, Avatar, StackedList, Divider, useFormFactor, Icon, useToast } from "@ionizeio/canvas";
+import { Row, Column, Card, Typography, Button, Badge, Input, Avatar, StackedList, Divider, Icon, useToast } from "@ionizeio/canvas";
 import type { StackedListItem } from "@ionizeio/canvas";
 import type { TemplateDoc } from "../types";
 
 // Inbox built from real Canvas components: a message list beside the open
-// thread on desktop, stacking to a single column on phones via useFormFactor.
+// thread on wide screens, stacking above it in narrow ones through Row stacks.
 // Pressing a conversation opens its canned thread, and Send appends the typed
 // reply to whichever thread is open.
 
@@ -124,10 +124,6 @@ function Message({ initials, name, time, children }: { initials: string; name: s
 }
 
 function InboxLive() {
-  // Phone stacks list over thread; wider keeps the fixed 300px rail beside the
-  // fill thread pane. The stacked list must drop that fixed width, so this
-  // stays a hook-driven branch rather than a Row `stacks`.
-  const narrow = useFormFactor() === "phone";
   const { toast } = useToast();
   const [openIndex, setOpenIndex] = useState(0);
   const [threads, setThreads] = useState<InboxMessage[][]>(() => CONVERSATIONS.map((c) => c.messages));
@@ -196,18 +192,15 @@ function InboxLive() {
       </Row>
     </Column>
   );
-  if (narrow) {
-    return (
-      <Column relaxed>
-        {list}
-        {threadPane}
-      </Column>
-    );
-  }
+  // The list takes five twelfths beside the thread and stacks above it once
+  // the section is md (768) wide or narrower, where the rail could no longer
+  // show a sender's full name beside its badge. One element tree at every
+  // width: the Row measures its own container and only its layout changes, so
+  // a half-typed reply keeps its text and focus across a resize.
   return (
-    <Row relaxed alignStart>
-      <Column style={{ width: 300 }}>{list}</Column>
-      <Column fill>{threadPane}</Column>
+    <Row stacks stackBreakpoint="md" relaxed>
+      <Column span={5}>{list}</Column>
+      <Column span={7}>{threadPane}</Column>
     </Row>
   );
 }
@@ -215,11 +208,11 @@ function InboxLive() {
 export const INBOX_TEMPLATE: TemplateDoc = {
   slug: "inbox",
   name: "Inbox",
-  description: "Two-pane inbox: message list beside the open thread, stacking to one column on phones. Built from live Canvas components.",
+  description: "Two-pane inbox: message list beside the open thread, stacking to one column on narrow screens. Built from live Canvas components.",
   sections: [
     {
       title: "List and thread",
-      anatomy: "Clickable StackedList of conversations (fixed 300px rail on desktop, marked with an Open badge) beside the open thread of flat message Cards, its subject and count Badge, and the controlled reply composer; pressing a conversation opens it and Send appends the reply. The panes stack below the sm breakpoint.",
+      anatomy: "Clickable StackedList of conversations (a span-5 rail, the open one marked with an Open badge) beside the open thread of flat message Cards, its subject and count Badge, and the controlled reply composer (span 7); pressing a conversation opens it and Send appends the reply. The panes are a Row stacks that stacks once the section is md wide or narrower, and a half-typed reply keeps its text and focus across the switch.",
       render: () => <InboxLive />,
     },
   ],

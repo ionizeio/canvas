@@ -1,10 +1,11 @@
-import { Row, Column, Card, Typography, Button, Badge, Breadcrumb, DataTable, Feed, DescriptionList, Divider, Avatar, Icon, useFormFactor, useToast } from "@ionizeio/canvas";
+import { Row, Column, Card, Typography, Button, Badge, Breadcrumb, DataTable, Feed, DescriptionList, Divider, Avatar, Icon, useToast } from "@ionizeio/canvas";
 import type { TemplateDoc } from "../types";
 
 // Order detail built from real Canvas components: breadcrumb + header with the
 // fulfillment status and toast-backed actions, line items and the shipment
 // timeline in the main column, and the customer / shipping / summary sidebar
-// with copyable record IDs. 2fr/1fr on desktop, stacking below sm.
+// with copyable record IDs. Two thirds and one third side by side, stacking
+// once the section is md wide or narrower.
 
 const ITEMS = [
   { product: "Canvas Pro Plan", qty: "2", price: "$198.00" },
@@ -27,10 +28,6 @@ const SUMMARY = [
 
 function DetailSidebarLive() {
   const { toast } = useToast();
-  // Phone stacks main over sidebar; wider is a 2fr/1fr split of fill columns
-  // (equal-fill children, so this stays a hook-driven branch rather than a
-  // Row `stacks`, which keeps children's own sizing).
-  const narrow = useFormFactor() === "phone";
 
   const header = (
     <Column snug>
@@ -164,21 +161,16 @@ function DetailSidebarLive() {
     </Column>
   );
 
-  if (narrow) {
-    return (
-      <Column relaxed>
-        {header}
-        {main}
-        {side}
-      </Column>
-    );
-  }
+  // Main and sidebar split two thirds to one third and stack, main first, once
+  // the section is md (768) wide or narrower: below that a third is too narrow
+  // for the copyable ID rows. One element tree at every width: the Row measures
+  // its own container and only its layout changes.
   return (
     <Column relaxed>
       {header}
-      <Row relaxed alignStart>
-        <Column fill style={{ flexGrow: 2, minWidth: 0 }}>{main}</Column>
-        <Column fill style={{ minWidth: 240 }}>{side}</Column>
+      <Row stacks stackBreakpoint="md" relaxed>
+        <Column span={8}>{main}</Column>
+        <Column span={4}>{side}</Column>
       </Row>
     </Column>
   );
@@ -191,7 +183,7 @@ export const DETAIL_SIDEBAR_TEMPLATE: TemplateDoc = {
   sections: [
     {
       title: "Order detail",
-      anatomy: "Breadcrumb + header Row (title, status Badge, toast-backed actions) over a 2fr/1fr split: items DataTable and shipment Feed in the main Column; customer identity, copyable ID DescriptionList rows, shipping address, and totals Cards in the sidebar. Columns stack below sm.",
+      anatomy: "Breadcrumb + header Row (title, status Badge, toast-backed actions) over a two-thirds/one-third split: items DataTable and shipment Feed in the main Column; customer identity, copyable ID DescriptionList rows, shipping address, and totals Cards in the sidebar. The split is a Row stacks of span-8 and span-4 columns that stacks once the section is md wide or narrower, where a third no longer fits the ID rows.",
       render: () => <DetailSidebarLive />,
     },
   ],

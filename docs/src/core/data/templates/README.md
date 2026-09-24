@@ -65,7 +65,12 @@ A template is a working product surface, not a picture of one:
 - No `Platform.OS` branches, no web-only DOM/CSS tricks. Cross-viewport
   behavior uses `useFormFactor() === "phone"` (desktop-first: phone is the
   `sm` bucket, 640px and below), or `useResponsive({ base, sm })` when a
-  value, not a tier, varies.
+  value, not a tier, varies. A breakpoint flag may only change PROPS
+  (`compact`, `inline`, a gap), never which element renders: returning a
+  Column on phones and a Row elsewhere remounts the whole subtree whenever
+  the window crosses the cut and right after hydration on a phone (the server
+  renders the desktop variant), so every field drops its text and focus.
+  Layouts that restructure use the container-measured kit primitives below.
 - Do not edit kit source (`src/`) from a template task. If a component is
   missing a capability, note the gap in your report instead.
 - Check exact props in the component's own doc:
@@ -75,7 +80,11 @@ A template is a working product surface, not a picture of one:
 - Desktop-first and responsive: verify mentally at ~860px stage width AND
   ~300px (phone). Multi-column rows wrap (`Row relaxed wrap` + per-child
   `style={{ flexBasis: 300, minWidth: 280 }}`), content-sized rows stack via
-  `Row stacks`, and fill-column splits branch on `useFormFactor()`.
+  `Row stacks`, and pane splits are a `Row stacks` of `span` children
+  (`span={6}` twice for halves, 8 and 4 for main and sidebar). Size the
+  narrow pane for its content just above the cut (the inbox list takes 5 of
+  12 to keep a sender's name whole) and pass `stackBreakpoint="md"` when it
+  cannot fit a tablet-width section at all.
   Fixed-width boards/tables pan inside a horizontal `ScrollView`.
 
 ## Definition of done

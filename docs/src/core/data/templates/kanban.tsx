@@ -58,11 +58,12 @@ import type { TemplateDoc } from "../types";
 // One `Overlay` union drives every dialog surface, so at most one is ever open;
 // delete-from-detail swaps the overlay rather than stacking dialogs. Columns and
 // tasks carry stable IDS (names are editable), so all references are by id.
-// `useFormFactor` is used in ONE place: the filter toolbar. The board pans and
-// the dialogs cap their own width, but the bounded Select and search Input
-// don't shrink, so at phone width the toolbar stacks (chips + Reset on one row,
-// then the assignee Select and the search Input each full width) instead of
-// overflowing off-screen.
+// `useFormFactor` is used in ONE place: the filter toolbar's density. The board
+// pans and the dialogs cap their own width. The toolbar is one element tree at
+// every width (the tag chips and Reset on one row, then the assignee Select and
+// the search Input, each filling the width up to a cap), so a resize never
+// remounts the search field; phones only move the Select's label above it, give
+// the search Input its full size, and loosen the gap between the rows.
 
 const TAGS = ["security", "billing", "docs", "infra"] as const;
 type Tag = (typeof TAGS)[number];
@@ -463,10 +464,9 @@ function BoardColumnView({ column, columns, tagFilter, assigneeFilter, query, dn
 // one overlay union that guarantees at most one dialog surface is open at a time.
 function BoardLive() {
   const { toast } = useToast() as ToastHandle;
-  // Phone restructures the toolbar (Select/Input leave the chips row and go
-  // full-width `block`), not just a row-to-column flip, so this stays a
-  // hook-driven branch rather than a Row `stacks`.
-  const stackToolbar = useFormFactor() === "phone";
+  // Phones take the labeled Select and the full-size search Input (props only;
+  // see the header note).
+  const phone = useFormFactor() === "phone";
   const [columns, setColumns] = useState<BoardColumn[]>(SEED_COLUMNS);
   const [tagFilter, setTagFilter] = useState<Tag | null>(null);
   const [assigneeFilter, setAssigneeFilter] = useState<string | null>(null);
@@ -669,31 +669,18 @@ function BoardLive() {
           { label: "Done", value: `${donePct}%` },
         ]}
       />
-      {stackToolbar ? (
-        <Column relaxed>
-          <Row between wrap alignCenter>
-            <Row snug wrap alignCenter>
-              {TAGS.map((tag) => (
-                <TagChip key={tag} tag={tag} selectable selected={tagFilter === tag} onSelectedChange={(next) => setTagFilter(next ? tag : null)} />
-              ))}
-            </Row>
-            <Button ghost small iconLeft={<Icon rotateCcw size={16} />} onPress={resetBoard}>Reset board</Button>
-          </Row>
-          <Select label="Assignee" options={["Anyone", ...PEOPLE]} value={assigneeFilter ?? "Anyone"} onSelect={(o) => setAssigneeFilter(o === "Anyone" ? null : o)} />
-          <Input leadingIcon icon="search" placeholder="Search tasks…" value={query} onChangeText={setQuery} />
-        </Column>
-      ) : (
+      <Column snug={!phone} relaxed={phone}>
         <Row between wrap alignCenter>
           <Row snug wrap alignCenter>
             {TAGS.map((tag) => (
               <TagChip key={tag} tag={tag} selectable selected={tagFilter === tag} onSelectedChange={(next) => setTagFilter(next ? tag : null)} />
             ))}
-            <Select inline label="Assignee" options={["Anyone", ...PEOPLE]} value={assigneeFilter ?? "Anyone"} onSelect={(o) => setAssigneeFilter(o === "Anyone" ? null : o)} />
-            <Input small leadingIcon icon="search" placeholder="Search tasks…" value={query} onChangeText={setQuery} />
           </Row>
           <Button ghost small iconLeft={<Icon rotateCcw size={16} />} onPress={resetBoard}>Reset board</Button>
         </Row>
-      )}
+        <Select xxl start inline={!phone} label="Assignee" options={["Anyone", ...PEOPLE]} value={assigneeFilter ?? "Anyone"} onSelect={(o) => setAssigneeFilter(o === "Anyone" ? null : o)} />
+        <Input xxl start small={!phone} leadingIcon icon="search" placeholder="Search tasks…" value={query} onChangeText={setQuery} />
+      </Column>
 
       {/* The overlay slot: dialogs are contained inline backdrops, so they live
           here, outside the panning ScrollView and near the top of the section. */}

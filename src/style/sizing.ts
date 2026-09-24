@@ -64,6 +64,12 @@ export interface LayoutAxis {
    * hug component keeps its own height, the cell's slack stays below it.
    */
   bounded?: boolean;
+  /**
+   * A Row with `stacks` that is rendering as a column right now. Its children
+   * are still Row children: their `span`s apply again the moment it unstacks,
+   * so a span here is not misplaced.
+   */
+  stacked?: boolean;
 }
 
 const LayoutAxisContext = createContext<LayoutAxis | null>(null);

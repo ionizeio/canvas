@@ -3,7 +3,7 @@ import { Row, Column, Card, CardHeader, CardSeparator, CardContent, Typography, 
 import type { TemplateDoc } from "../types";
 
 // Month-view calendar built from real Canvas components: the Calendar organism
-// beside the selected day's event Card. The demo carries three months of data;
+// over the selected day's event Card. The demo carries three months of data;
 // prev/next (both the page-header Buttons and the Calendar's own chevrons)
 // really switch months, Today jumps back to May 24, and selecting a day keeps
 // the event panel in sync.
@@ -73,9 +73,10 @@ const TODAY_DAY = 24;
 
 function MonthViewLive() {
   const { toast } = useToast();
-  // Phone stacks grid over panel AND flips the Calendar to `compact`, so the
-  // flag stays a hook (it drives a prop, and the stacked/wide branches use
-  // different gap scales, which a Row `stacks` would collapse into one).
+  // Phones get the denser look: a `compact` Calendar and a tighter gap above
+  // the event panel. The flag drives props only, never which elements render,
+  // so a resize or the switch from the server's desktop layout after hydration
+  // restyles the grid and panel in place instead of remounting them.
   const narrow = useFormFactor() === "phone";
   const [monthIndex, setMonthIndex] = useState(TODAY_MONTH);
   const [selected, setSelected] = useState(TODAY_DAY);
@@ -173,22 +174,15 @@ function MonthViewLive() {
     </Card>
   );
 
-  if (narrow) {
-    return (
-      <Column relaxed>
-        {header}
-        {grid}
-        {panel}
-      </Column>
-    );
-  }
+  // The month grid fills the width at every size, so the panel always sits
+  // below it.
   return (
     <Column relaxed>
       {header}
-      <Row loose wrap alignStart>
+      <Column loose={!narrow} relaxed={narrow}>
         {grid}
-        <Column fill style={{ minWidth: 240 }}>{panel}</Column>
-      </Row>
+        {panel}
+      </Column>
     </Column>
   );
 }
@@ -200,7 +194,7 @@ export const CALENDAR_TEMPLATE: TemplateDoc = {
   sections: [
     {
       title: "Month view",
-      anatomy: "Page header (title + prev/next icon Buttons + Today) over the Calendar organism beside the selected day's event Card; selecting a day syncs the panel, and the panes stack below the sm breakpoint.",
+      anatomy: "Page header (title + prev/next icon Buttons + Today) over the Calendar organism, with the selected day's event Card below it; selecting a day syncs the panel. On phones the Calendar turns compact and the gap above the panel tightens.",
       render: () => <MonthViewLive />,
     },
   ],

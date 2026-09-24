@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Badge, Stats, Feed, Tabs, LineChart, Progress, useFormFactor, useToast, Grid } from "@ionizeio/canvas";
+import { Row, Column, Card, Typography, Button, Badge, Stats, Feed, Tabs, LineChart, Progress, useToast, Grid } from "@ionizeio/canvas";
 import type { TemplateDoc } from "../types";
 
 // Admin dashboard built from real Canvas components: a Stats hero row with
@@ -40,10 +40,6 @@ const SERVICES = [
 ];
 
 function ActivityAndChartLive() {
-  // Phone stacks the panes; wider form factors split them into two equal fill
-  // columns (equal-width fill children, so this stays a hook-driven branch
-  // rather than a Row `stacks`, which keeps children's own sizing).
-  const narrow = useFormFactor() === "phone";
   const [range, setRange] = useState(0);
   const { toast } = useToast();
   const r = SIGN_IN_RANGES[range];
@@ -89,18 +85,14 @@ function ActivityAndChartLive() {
     </Column>
   );
 
-  if (narrow) {
-    return (
-      <Column relaxed>
-        {activity}
-        {chart}
-      </Column>
-    );
-  }
+  // Two equal halves that stack once the section is phone width. One element
+  // tree at every width (the Row measures its own container and only its layout
+  // changes), so the range tabs and the chart's scrub keep their state and
+  // focus across a resize.
   return (
-    <Row relaxed alignStart>
-      <Column fill>{activity}</Column>
-      <Column fill>{chart}</Column>
+    <Row stacks relaxed>
+      <Column span={6}>{activity}</Column>
+      <Column span={6}>{chart}</Column>
     </Row>
   );
 }
@@ -199,7 +191,7 @@ export const DASHBOARD_TEMPLATE: TemplateDoc = {
     },
     {
       title: "Activity and chart",
-      anatomy: "Recent-activity Feed (connector timeline, View all toasts) beside the sign-ins LineChart with a pills-Tabs range switcher (24 h / 7 d / 30 d) that swaps the plotted data; the panes stack below the sm breakpoint.",
+      anatomy: "Recent-activity Feed (connector timeline, View all toasts) beside the sign-ins LineChart with a pills-Tabs range switcher (24 h / 7 d / 30 d) that swaps the plotted data. The panes are a Row stacks of two span-6 halves that stacks once the section is sm wide or narrower.",
       render: () => <ActivityAndChartLive />,
     },
     {

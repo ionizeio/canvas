@@ -221,14 +221,18 @@ function hasSpans(children: ReactNode): boolean {
  *  A stacked Row keeps the cells and drops only their width (the Grid precedent):
  *  adding or removing a wrapper would change the element at every child position,
  *  and React would remount each child, dropping a field's text and focus whenever
- *  the Row crosses its breakpoint. */
+ *  the Row crosses its breakpoint. For the same reason a cell takes its child's key
+ *  (Children.toArray keeps an explicit key and numbers the rest by their slot,
+ *  empty slots included), never its index in the filtered array: an index shifts
+ *  when a conditional sibling before it appears or a keyed item is inserted. */
 function spanCells(children: ReactNode, width: number, gap: number, stacked: boolean): ReactNode {
-  return Children.toArray(children).map((child, i) => {
-    const span = isValidElement(child) ? (child.props as FlexProps).span : undefined;
+  return Children.toArray(children).map((child) => {
+    if (!isValidElement(child)) return child;
+    const span = (child.props as FlexProps).span;
     if (span == null) return child;
     const cell = !stacked && width > 0 ? { width: spanWidth(width, clampSpan(span), gap) } : null;
     return (
-      <RaiseCell key={i} style={cell}>
+      <RaiseCell key={child.key} style={cell}>
         {child}
       </RaiseCell>
     );
@@ -281,9 +285,10 @@ export function createFlex(skin: FlexSkin, direction: Direction) {
     // A span row wraps like Bootstrap's `.row`: spans past twelve go to the next line.
     if (spanning && !stacked) layout.flexWrap = "wrap";
     const gap = skin.gap[gapOf(props)];
+    const axis = axisOf(props, dir, parent);
     return (
       <View onLayout={onLayout} style={[layout, style]} testID={testID}>
-        <LayoutAxisProvider value={axisOf(props, dir, parent)}>
+        <LayoutAxisProvider value={stacked ? { ...axis, stacked: true } : axis}>
           {spanning ? spanCells(children, width, gap, stacked) : children}
         </LayoutAxisProvider>
       </View>
@@ -302,7 +307,7 @@ export function createFlex(skin: FlexSkin, direction: Direction) {
       "[canvas] <Row stackBreakpoint>: `stackBreakpoint` refines `stacks` and does nothing without it.",
     );
     devWarn(
-      props.span != null && parent?.axis !== "row",
+      props.span != null && parent?.axis !== "row" && !parent?.stacked,
       `[canvas] <${direction === "row" ? "Row" : "Column"} span>: \`span\` sizes a direct child of a Row in twelfths and does nothing here. In a Column, give the box a Container step instead.`,
     );
     devWarn(
