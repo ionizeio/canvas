@@ -24,7 +24,8 @@ import { TOUCH_TARGET } from "../src/style/touch-target.ts";
 // hidden or scroll) only inside its own bounds plus its own hitSlop, so a clipping
 // ancestor cuts the slop at its edge unless it carries the same slop. The kit's own
 // clipping nodes carry the slop their descendants declare, RippleClip first (it clips
-// the ripple on Android, and swallowed every slop inside it until it carried one). The
+// the ripple on Android, and swallowed every slop inside it until it carried one), or
+// hold them far enough inside their edge, save one recorded there. The
 // last describe below holds that for RippleClip in the source, and
 // test/touch-target-clips.test.tsx holds it for every clipping node in the rendered
 // platform entries. The kit's controls also seed their slop before the first layout, so
@@ -49,7 +50,7 @@ const ROOT = join(import.meta.dir, "..");
  * above the minimum, or the shell already extends it with its own hitSlop.
  */
 const COVERED_ANOTHER_WAY: Record<string, string> = {
-  "atoms/chip": "hitSlop on the remove glyph and the body, split where they face each other; the tappable pill's RippleClip carries the body's slop, and the clipping Android pill carries what reaches past it",
+  "atoms/chip": "Android measures a tappable chip and grows its touch area to the 48dp minimum (the skin's bodyMinTarget; a body beside a remove glyph reaches the pill's whole target), iOS keeps a fixed 11pt body slop that clears 44 around the 25pt pill, and the remove glyph pads to the minimum; split where body and glyph face each other, the tappable pill's RippleClip carries the body's slop, and the clipping Android pill carries what reaches past it",
   "atoms/checkbox": "hitSlop around the box when there is no label to press",
   "atoms/input": "a field is 44/56 tall by skin, above both minimums; the clear and eye glyphs carry slop, split where they face each other or the value, and the grouped box carries the part that overhangs it",
   "atoms/radio": "hitSlop around the ring when there is no label to press",

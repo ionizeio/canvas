@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import {
-  Alert, Button, Card, Chip, CodeBlock, Column, Icon, Input, Pagination, Row, RowMenu, StackedList,
+  Alert, Board, Button, Card, Chip, CodeBlock, Column, Icon, Input, Pagination, Row, RowMenu, StackedList,
   Stepper, Steps, ThemeProvider, Toast, Typography, useTheme,
 } from "@nannier-com/canvas";
 
@@ -15,7 +15,8 @@ import {
 //     pill, the grouped Input box of the 36pt iOS small field) and the rest of the
 //     RippleClip sites (Stepper, tappable Chip, StackedList row menu).
 //   Seams: two controls of one component side by side or stacked, where the component
-//     splits the gap between their touch areas so neither takes a tap inside the other.
+//     splits the gap between their touch areas so neither takes a tap inside the other
+//     (the Board card's drag handle and menu trigger among them).
 //   Neighbors: two components the caller placed a gap apart. React Native gives a point both
 //     touch areas cover to the later sibling, and the kit does not split this seam; the card
 //     shows what happens, for the owner's decision.
@@ -42,6 +43,8 @@ function Section({ title, note, children }: { title: string; note?: string; chil
 const STEPS = [{ label: "Cart" }, { label: "Ship" }, { label: "Pay" }];
 const MENU = [{ label: "Edit" }, { label: "Delete" }];
 const PEOPLE = [{ name: "Ada Lovelace", detail: "Owner" }, { name: "Lin Hua", detail: "Viewer" }];
+const LANES = [{ id: "todo", label: "To do" }];
+const CARDS = [{ id: "brief", columnId: "todo", title: "Write the brief", menu: MENU }];
 
 export function TouchTargetBody() {
   // The page's own scheme to start with, so the headings read on it; the switch flips it.
@@ -124,11 +127,13 @@ export function TouchTargetBody() {
           <Counts ids={["alert-keep", "alert-retry", "alert-dismiss"]} counts={counts} />
           <Steps vertical steps={STEPS} current={railStep} onStepPress={(index) => { setRailStep(index); bump(`rail-${index}`); }} />
           <Counts ids={["rail-0", "rail-1", "rail-2"]} counts={counts} />
+          <Board columns={LANES} defaultItems={CARDS} onSelectItemMenu={() => bump("board-menu")} />
+          <Counts ids={["board-menu"]} counts={counts} />
         </Section>
 
         <Section
           title="Neighbors"
-          note="Controls the caller places a gap apart. Where two touch areas overlap, React Native gives the tap to the later one, so each pair's second control takes the taps in the gap, and inside the first control's edge where the gap is narrower than the two touch areas. The kit does not split this seam."
+          note="Controls the caller places a gap apart. Where two touch areas overlap, React Native gives the tap to the later one, so the second control takes the taps in the gap, and inside the first control's edge where the gap is narrower than the two touch areas: the small icon Buttons on Android, the chips on iOS (Android chips reach nothing sideways). The kit does not split this seam."
         >
           <Row snug>
             <Button small icon accessibilityLabel="Neighbor A" iconLeft={<Icon plus size={16} />} onPress={() => bump("neighbor-a")} />

@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import { View, Pressable, Text, AnchoredOverlay, useOverlayHost, useMeasuredWidth, useHugStyle, RippleClip, StyleSheet, cornerRadii, type ViewStyle, type LayoutStyle, withInnerFill } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
+import { useSeamLimit } from "../../style/touch-seam.js";
 import { anchorLifted, type RowMenuItem, type RowMenuSkin } from "./row-menu.styles.js";
 
 // Shared RowMenu shell. The structure (the self-start anchor, the ⋯ icon-button
@@ -108,6 +109,9 @@ export function createRowMenu(skin: RowMenuSkin) {
     // slop is seeded from that fixed size, so it is in place before the first layout
     // (src/style/touch-target-seed.ts).
     const target = useSeededMinTargetSlop(skin.minTarget, styleBox(StyleSheet.flatten(skin.trigger)));
+    // A kit component that sets the menu beside another of its controls (the Board's drag
+    // handle) holds the side facing it to its share of the gap (src/style/touch-seam.ts).
+    const hitSlop = useSeamLimit(target.hitSlop) ?? undefined;
     const { items, links = false, sectionLabel, onSelect, onOpenChange, triggerLabel = "More options", testID, style } = props;
     // What the menu is called when it opens. The section label names it when there is
     // one; otherwise the trigger's own label does, which is what the user pressed.
@@ -149,9 +153,10 @@ export function createRowMenu(skin: RowMenuSkin) {
         {/* RippleClip clips the Android bounded ripple to the ⋯ trigger's rounded
             outline (a no-op on iOS/web). It is the trigger's own box, so it is what is
             measured for the menu's width floor and what the pointer hovers. */}
-        <RippleClip shape={cornerRadii(skin.trigger)} hitSlop={target.hitSlop} onLayout={onTriggerLayout} {...triggerHoverTarget}>
+        <RippleClip shape={cornerRadii(skin.trigger)} hitSlop={hitSlop} onLayout={onTriggerLayout} {...triggerHoverTarget}>
         <Pressable
-          {...target}
+          onLayout={target.onLayout}
+          hitSlop={hitSlop}
           style={({ pressed }) => [
             skin.trigger,
             triggerHovered && skin.triggerHover ? skin.triggerHover(tokens) : null,

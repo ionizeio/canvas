@@ -13,6 +13,7 @@ import {
 import { Animated, PanResponder, StyleSheet, AccessibilityInfo, type GestureResponderEvent } from "react-native";
 import { View, Text, useTheme, isRTL, type StyleProp, type ViewStyle, type ViewProps } from "../../style/index.js";
 import { useFocusRingStyle } from "../../style/pressable.js";
+import { useSeamLimit } from "../../style/touch-seam.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { type DragDropSkin } from "./drag-drop.styles.js";
 import {
@@ -233,6 +234,9 @@ function measureRect(ref: RefObject<View | null>): Promise<Rect | null> {
     });
   });
 }
+
+// The grip's touch slop: 8 on every side of its 32pt/40dp square.
+const HANDLE_HIT_SLOP = 8;
 
 /** Build the DragDrop family from a platform skin. */
 export function createDragDrop(skin: DragDropSkin) {
@@ -659,6 +663,9 @@ export function createDragDrop(skin: DragDropSkin) {
     const focusRing = useFocusRingStyle();
     const [pressed, setPressed] = useState(false);
     const disabled = drag?.disabled ?? !api;
+    // The grip's touch slop, held on the side that faces a control a kit component sets
+    // beside it (the Board's row menu) to its share of the gap (src/style/touch-seam.ts).
+    const hitSlop = useSeamLimit(HANDLE_HIT_SLOP) ?? undefined;
 
     // Live refs so the once-created PanResponder always calls the freshest api/drag closures.
     const apiRef = useRef(api);
@@ -784,7 +791,7 @@ export function createDragDrop(skin: DragDropSkin) {
         aria-disabled={disabled || undefined}
         // aria-pressed reflects the keyboard "grabbed" state for web screen readers.
         aria-pressed={grabbed || undefined}
-        hitSlop={8}
+        hitSlop={hitSlop}
         style={[
           skin.handle,
           // The grip is a focusable View, not a Pressable: it takes the kit's themed

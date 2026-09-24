@@ -6,8 +6,8 @@ import * as styleIndex from "../../src/style/index.ts";
 import * as touchTargetSeed from "../../src/style/touch-target-seed.ts";
 import { ThemeProvider } from "../../src/style/theme.tsx";
 
-// Recording stand-ins for the kit's RippleClip, View and Pressable, shared by the touch-target
-// tests (test/touch-target-clips.test.tsx, test/touch-target-seams.test.tsx).
+// Recording stand-ins for the kit's RippleClip, View, Pressable and GlassSurface, shared by the
+// touch-target tests (test/touch-target-clips.test.tsx, test/touch-target-seams.test.tsx).
 //
 // The test DOM is react-native-web, which drops hitSlop and runs no native hit test, so a
 // rendered check would pass with or without a touch-target fix. Instead a component's own
@@ -64,6 +64,16 @@ function StubView({ ref, ...props }: Record<string, unknown> & { ref?: Ref<RNVie
   return <ClipContext.Provider value={clips ? id : parent}><RealView ref={ref} {...props} /></ClipContext.Provider>;
 }
 
+// A GlassSurface is one native view carrying its style (GlassBox; the material is a sibling
+// layer that clips itself), so it clips where its style does.
+function StubGlassSurface(props: { style?: unknown; children?: ReactNode; [key: string]: unknown }) {
+  const id = useRecordId();
+  const parent = useContext(ClipContext);
+  const clips = clipsStyle(props.style);
+  records.set(id, { kind: "view", props, clip: parent, clips });
+  return <ClipContext.Provider value={clips ? id : parent}><RealView testID={props.testID as string | undefined}>{props.children}</RealView></ClipContext.Provider>;
+}
+
 function StubPressable({ ref, ...props }: Record<string, unknown> & { ref?: Ref<RNView>; children?: ReactNode | ((state: object) => ReactNode) }) {
   const id = useRecordId();
   const parent = useContext(ClipContext);
@@ -84,6 +94,7 @@ export function installTouchStubs(): void {
     spyOn(styleIndex, "RippleClip").mockImplementation(StubRippleClip as never),
     spyOn(styleIndex, "View").mockImplementation(StubView as never),
     spyOn(styleIndex, "Pressable").mockImplementation(StubPressable as never),
+    spyOn(styleIndex, "GlassSurface").mockImplementation(StubGlassSurface as never),
   );
 }
 
@@ -99,19 +110,21 @@ export function isSlop(slop: unknown): slop is number | Insets {
   return Object.values(slop as Insets).some((value) => typeof value === "number" && value > 0);
 }
 
-type Frame = { width: number; height: number };
+/** A node's layout: its size, and where it sits in its parent (the parent's corner by default). */
+type Frame = { width: number; height: number; x?: number; y?: number };
 
 /**
  * Render, give every measured node a layout, and return the slop-bearing pressables with the
  * clipping node each one sits in. `frame` is one frame for every measured node (by default
  * well under both minimums, so a measured slop exists on every axis it extends), a function
  * choosing one per node (null leaves that node unmeasured), or null for the render as it
- * stands before the first layout.
+ * stands before the first layout. `material` is the theme's surface mode.
  */
 export function renderAndLayout(
   ui: ReactElement,
   platformMin: number | null = null,
   frame: Frame | ((record: NodeRecord) => Frame | null) | null = { width: 20, height: 20 },
+  material: "solid" | "glass" = "solid",
 ) {
   // A skin that one component shares across the platforms (Pagination, CodeBlock) reads
   // its minimum from platformMinTarget() when its module loads, and the test DOM loads it
@@ -120,7 +133,7 @@ export function renderAndLayout(
     spies.push(spyOn(touchTargetSeed, "useSeededMinTargetSlop").mockImplementation(((min: number | null, box?: object, options?: object) =>
       realUseSeededMinTargetSlop(min ?? platformMin, box, options)) as never));
   }
-  render(<ThemeProvider light solid>{ui}</ThemeProvider>);
+  render(<ThemeProvider light solid={material === "solid"} glass={material === "glass"}>{ui}</ThemeProvider>);
   const measured = frame == null ? [] : [...records.values()].filter((r) => typeof r.props.onLayout === "function");
   act(() => {
     for (const record of measured) {

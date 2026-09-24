@@ -4,10 +4,16 @@ import { type ComponentType } from "react";
 import { StyleSheet, type Insets } from "react-native";
 import { iosSkin as inputIos, androidSkin as inputAndroid, webSkin as inputWeb, type Size as InputSize } from "../src/atoms/input/input.styles.ts";
 import { actionOverhang } from "../src/atoms/input/input.shared.tsx";
-import { clipSlop } from "../src/style/clip-slop.ts";
+import { clipSlop, reachSlop } from "../src/style/clip-slop.ts";
 import { slopSides } from "../src/style/touch-seam.ts";
-import { androidSkin as chipAndroid } from "../src/atoms/chip/chip.styles.ts";
-import { installTouchStubs, isSlop, records, renderAndLayout, restoreTouchStubs } from "./fixtures/touch-records.tsx";
+import { androidSkin as chipAndroid, webSkin as chipWeb } from "../src/atoms/chip/chip.styles.ts";
+import { webSkin as codeBlock } from "../src/molecules/code-block/code-block.styles.ts";
+import * as rtl from "../src/style/rtl.ts";
+import { seedSlop, styleBox } from "../src/style/touch-target-seed.ts";
+import { TOUCH_TARGET } from "../src/style/touch-target.ts";
+import { lightColors as t } from "../src/style/tokens.ts";
+import { spyOn } from "bun:test";
+import { installTouchStubs, isSlop, records, renderAndLayout, restoreTouchStubs, type NodeRecord } from "./fixtures/touch-records.tsx";
 
 // A clipping kit node carries the slop its descendants declare.
 //
@@ -128,10 +134,18 @@ describe("a clip's measured slop is the part of its children's slop that reaches
   const body = { x: 17, y: 7, width: 40, height: 20 };
   const remove = { x: 73, y: 8, width: 18, height: 18 };
 
-  it("reaches past the pill by what the remove glyph's 48dp target and the body's slop overhang", () => {
-    const slop = clipSlop(pill, [{ frame: body, slop: 11 }, { frame: remove, slop: chipAndroid.removeHitSlop }]);
-    // Remove: 15 above an 8dp inset, 22 past a 9dp end inset. Body: 11 above a 7dp inset.
+  it("reaches past the pill by what the remove glyph's 48dp target and the body's reach overhang", () => {
+    // The body reaches the pill's own 48dp target: 7 above and below the 34dp pill.
+    const slop = clipSlop(pill, [{ frame: body, slop: reachSlop(pill, body, { top: 7, bottom: 7, left: 0, right: 0 }) }, { frame: remove, slop: chipAndroid.removeHitSlop }]);
+    // Remove: 15 above an 8dp inset, 22 past a 9dp end inset. Body: 14 above a 7dp inset.
     expect(slop).toEqual({ top: 7, bottom: 7, left: 0, right: 13 });
+  });
+
+  it("a child reaches its parent's target from where it sits: the inverse of the clip's slop", () => {
+    expect(reachSlop(pill, body, { top: 7, bottom: 7, left: 0, right: 0 })).toEqual({ top: 14, bottom: 14, left: 17, right: 43 });
+    expect(reachSlop(pill, body, undefined)).toEqual({ top: 7, bottom: 7, left: 17, right: 43 });
+    // A child that reaches exactly the parent's target overhangs it by the target's own slop.
+    expect(clipSlop(pill, [{ frame: body, slop: reachSlop(pill, body, 5) }])).toEqual({ top: 5, bottom: 5, left: 5, right: 5 });
   });
 
   it("carries nothing when every slop stays inside, and ignores a child not yet measured", () => {
@@ -189,5 +203,111 @@ describe("a textless Radio in an iOS list keeps no slop", () => {
     renderAndLayout(<Radio accessibilityLabel="Alone" />);
     const alone = [...records.values()].find((r) => r.kind === "pressable" && r.props.accessibilityRole === "radio");
     expect(alone?.props.hitSlop).toBe(8);
+  });
+});
+
+describe("a tappable Chip's touch area", () => {
+  const noop = () => {};
+  const chip = async (platform: "android" | "ios") => (await import(`../src/atoms/chip/chip.${platform}.tsx`)).Chip as ComponentType<Record<string, unknown>>;
+  const find = (label: string) => [...records.values()].find((r) => r.kind === "pressable" && r.props.accessibilityLabel === label);
+
+  it("on Android is the 48dp minimum, measured from the chip, and its RippleClip carries the same", async () => {
+    const Chip = await chip("android");
+    expect(chipAndroid.bodyMinTarget).toBe(TOUCH_TARGET.android);
+    // The fixture's 94.5 x 34dp chip: 7dp above and below, nothing sideways.
+    const [found] = renderAndLayout(<Chip onPress={noop} accessibilityLabel="Tappable">Tappable</Chip>, null, { width: 94.5, height: 34 });
+    expect(found!.pressable.props.hitSlop).toEqual({ top: 7, bottom: 7, left: 0, right: 0 });
+    expect(found!.clip?.props.hitSlop).toEqual(found!.pressable.props.hitSlop);
+  });
+
+  it("on iOS keeps its fixed 11pt, which clears the 44pt minimum around the 25pt pill", async () => {
+    const Chip = await chip("ios");
+    const [found] = renderAndLayout(<Chip onPress={noop} accessibilityLabel="Tappable">Tappable</Chip>, null, { width: 70, height: 25 });
+    expect(found!.pressable.props.hitSlop).toBe(chipWeb.bodyHitSlop);
+    const pill = styleBox(StyleSheet.flatten(chipWeb.base), chipWeb.labelType.lineHeight);
+    expect(pill.height).toBe(25);
+    expect(pill.height! + 2 * chipWeb.bodyHitSlop!).toBeGreaterThanOrEqual(TOUCH_TARGET.ios);
+  });
+
+  it("on Android, beside a remove glyph, reaches the pill's whole target, and the pill carries what reaches past it", async () => {
+    const Chip = await chip("android");
+    // The 100 x 34dp pill: the label body inside its 1dp border and 16dp padding, the 18dp
+    // glyph centered 9dp from its end.
+    const frames: Record<string, { x: number; y: number; width: number; height: number }> = {
+      pill: { x: 0, y: 0, width: 100, height: 34 },
+      Both: { x: 17, y: 7, width: 40, height: 20 },
+      "Remove Both": { x: 73, y: 8, width: 18, height: 18 },
+    };
+    renderAndLayout(<Chip onPress={noop} onRemove={noop} accessibilityLabel="Both">Both</Chip>, null,
+      (r: NodeRecord) => frames[r.kind === "view" ? "pill" : String(r.props.accessibilityLabel)] ?? null);
+    // 7 above and below the pill; toward the glyph, half the 8dp gap.
+    expect(find("Both")?.props.hitSlop).toEqual({ top: 14, bottom: 14, left: 17, right: 4 });
+    expect(find("Remove Both")?.props.hitSlop).toEqual({ ...chipAndroid.removeHitSlop, left: 4 });
+    const pill = [...records.values()].find((r) => r.kind === "view" && r.clips);
+    expect(pill?.props.hitSlop).toEqual({ top: 7, bottom: 7, left: 0, right: 13 });
+  });
+
+  it("on Android reaches the pill's target before the first layout too: its padding and border plus the shortfall", async () => {
+    const Chip = await chip("android");
+    renderAndLayout(<Chip onPress={noop} onRemove={noop} accessibilityLabel="Both">Both</Chip>, null, null);
+    // 7dp of padding and border above and below, 7 more to 48; 17dp at the start; the glyph's
+    // side split.
+    expect(find("Both")?.props.hitSlop).toEqual({ top: 14, bottom: 14, left: 17, right: 4 });
+  });
+
+  it("a removable Android chip's pill carries its glyph's mirrored reach right to left", async () => {
+    const spy = spyOn(rtl, "isRTL").mockReturnValue(true);
+    try {
+      const Chip = await chip("android");
+      // Right to left the glyph sits at the pill's left end, 9dp in, its long side outward.
+      renderAndLayout(<Chip onRemove={noop}>Tag</Chip>, null,
+        (r: NodeRecord) => (r.kind === "view" ? { width: 100, height: 34 } : r.props.accessibilityLabel === "Remove Tag" ? { x: 9, y: 8, width: 18, height: 18 } : null));
+      const pill = [...records.values()].find((r) => r.kind === "view" && r.clips);
+      expect(pill?.props.hitSlop).toEqual({ top: 7, bottom: 7, left: chipAndroid.removeHitSlop.right - 9, right: 0 });
+    } finally {
+      spy.mockRestore();
+    }
+  });
+});
+
+describe("the CodeBlock's copy chips sit in no clipping kit view", () => {
+  const Android = entry("../src/molecules/code-block/code-block.android.tsx", "CodeBlock");
+  // The copy chip's RippleClip, and every clipping view around it.
+  const clipsAround = () => {
+    const chip = [...records.values()].find((r) => r.kind === "pressable" && r.props.accessibilityLabel === "Copy code");
+    expect(chip, "the copy chip rendered").toBeDefined();
+    const chain: NodeRecord[] = [];
+    for (let id = chip!.clip; id != null; id = records.get(id)?.clip) chain.push(records.get(id)!);
+    return chain;
+  };
+
+  for (const material of ["solid", "glass"] as const) {
+    for (const [name, props] of [["floating", {}], ["header", { filename: "install.sh" }]] as const) {
+      it(`${name}, ${material}: only its own RippleClip clips around it`, async () => {
+        const CodeBlock = await Android();
+        renderAndLayout(<CodeBlock copy code="bun add @ionizeio/canvas" {...props} />, TOUCH_TARGET.android, undefined, material);
+        // Under glass the root takes the code surface's shape but not its clip, which would cut
+        // the chip's 11dp of slop at 9dp from the edge.
+        expect(clipsAround().map((r) => r.kind)).toEqual(["ripple-clip"]);
+      });
+    }
+  }
+
+  it("records the one window that cuts it: the terminal's, over a chrome that hosts tabs", async () => {
+    // The terminal window clips at its rounded edge (it rounds the chrome and the body), and
+    // its chrome centres the chip. Without tabs the chrome's padding holds the whole slop; with
+    // tabs the 40pt chrome centres the 26pt chip 7.5 from the window's edge, and the window cuts
+    // the part of the slop above it. Recorded for the owner, not fixed: moving the rounding off
+    // the window changes how its shadow renders on iOS.
+    const chip = styleBox(StyleSheet.flatten(codeBlock.copyButton(t, true, false)) as ViewStyle, codeBlock.copyText(t, true).lineHeight).height!;
+    const border = codeBlock.terminalOuter(t).borderWidth as number;
+    const chrome = codeBlock.terminalChrome;
+    const tab = 2 * (codeBlock.tabItem(t, true, true).paddingVertical as number) + (codeBlock.tabLabel(t, true, true).lineHeight as number) + (codeBlock.tabItem(t, true, true).borderBottomWidth as number);
+    const plain = border + (chrome.paddingVertical as number);
+    const content = Math.max((chrome.minHeight as number) - (chrome.borderBottomWidth as number), tab, chip);
+    const tabbed = border + (codeBlock.terminalChromeWithTabs.paddingVertical as number) + (content - chip) / 2;
+    const cut = (min: number) => Math.max(0, seedSlop(min, { height: chip })!.top! - tabbed);
+    expect(seedSlop(TOUCH_TARGET.android, { height: chip })!.top!).toBeLessThanOrEqual(plain);
+    expect({ tabbed, android: cut(TOUCH_TARGET.android), ios: cut(TOUCH_TARGET.ios) }).toEqual({ tabbed: 7.5, android: 3.5, ios: 1.5 });
   });
 });

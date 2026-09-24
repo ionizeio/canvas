@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { act, cleanup, render } from "@testing-library/react";
 import { type ComponentType } from "react";
-import { StyleSheet, type Insets, type LayoutChangeEvent, type ViewStyle } from "react-native";
-import { minTargetSlop, seedSlop, styleBox, useSeededMinTargetSlop, type TargetBox } from "../src/style/touch-target-seed.ts";
+import { PixelRatio, StyleSheet, type Insets, type LayoutChangeEvent, type ViewStyle } from "react-native";
+import { spyOn } from "bun:test";
+import { leastLine, minTargetSlop, seedSlop, styleBox, useSeededMinTargetSlop, type TargetBox } from "../src/style/touch-target-seed.ts";
 import { useMinTargetSlop } from "../src/style/touch-target.ts";
 import { iosSkin as buttonIos, androidSkin as buttonAndroid } from "../src/atoms/button/button.styles.ts";
 import { iosSkin as rowMenuIos, androidSkin as rowMenuAndroid } from "../src/organisms/row-menu/row-menu.styles.ts";
@@ -90,6 +91,30 @@ describe("the seed each control takes from its skin", () => {
     expect(styleBox({ width: 32, height: "100%", padding: 4 }, 16)).toEqual({ width: 32, height: 24 });
     // Only a side the skin says nothing about seeds nothing.
     expect(seedSlop(ANDROID, {})).toBeUndefined();
+  });
+
+  it("counts a label line at the system font scale when it is below 1, where the line renders shorter", () => {
+    const spy = spyOn(PixelRatio, "getFontScale").mockReturnValue(0.85);
+    try {
+      expect(leastLine(20)).toBeCloseTo(17);
+      // A small Android text Button with its label at 85%: 10dp of padding and border around
+      // a 17dp line renders 27dp tall and measures 10.5dp of slop, which the seed must reach.
+      const container = buttonAndroid.container(t, "primary", "small", opts);
+      const line = buttonAndroid.label(t, "primary", "small", opts).lineHeight!;
+      const box = styleBox(container, line);
+      const rendered = styleBox(container).height! + line * 0.85;
+      expect(box.height).toBeCloseTo(rendered);
+      expect(seedSlop(ANDROID, box)!.top!).toBeGreaterThanOrEqual(minTargetSlop(ANDROID, 60, rendered)!.top!);
+    } finally {
+      spy.mockRestore();
+    }
+    // A scale above 1 only makes the line taller, so the line counts at its own height.
+    const up = spyOn(PixelRatio, "getFontScale").mockReturnValue(1.3);
+    try {
+      expect(leastLine(20)).toBe(20);
+    } finally {
+      up.mockRestore();
+    }
   });
 
   it("is never smaller than the slop the rendered control measures, however wide or tall its content", () => {
@@ -189,6 +214,8 @@ describe("the kit's controls carry their slop before the first layout", () => {
     ["a Pagination with size", "../src/atoms/pagination/pagination.android.tsx", "Pagination", { total: 5, withSize: true }, ANDROID],
     ["a CodeBlock copy chip", "../src/molecules/code-block/code-block.android.tsx", "CodeBlock", { copy: true, code: "bun add @ionizeio/canvas" }, ANDROID],
     ["a Switch", "../src/atoms/switch/switch.ios.tsx", "Switch", { accessibilityLabel: "Wi-Fi" }, null],
+    ["a tappable Android Chip", "../src/atoms/chip/chip.android.tsx", "Chip", { onPress: noop, children: "Tag" }, null],
+    ["a tappable, removable Android Chip", "../src/atoms/chip/chip.android.tsx", "Chip", { onPress: noop, onRemove: noop, children: "Tag" }, null],
   ];
   it("a Button with no label seeds from its padding alone: a lone 16dp glyph is shorter than a label line", async () => {
     const Button = await load("../src/atoms/button/button.android.tsx", "Button");

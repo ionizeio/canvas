@@ -326,6 +326,13 @@ function parseHighlightLines(spec: ReadonlyArray<number | string> | undefined): 
 
 // relative wrapper for the absolutely-positioned copy chip.
 const RELATIVE: ViewStyle = { position: "relative" };
+// Under glass the root takes the code surface's shape (its radius and border, where the
+// material's rim sits) but not its clip. The root hosts the copy chips, whose touch area
+// reaches past its edge on Android, and React Native hit-tests a clipping view only inside
+// its own bounds plus its own slop (src/style/touch-target.ts). Nothing it holds paints into
+// its rounded corners: the rows sit inside the inner surface's padding, the header's fill
+// rounds its own corners inside the border, and the glass material clips itself.
+const GLASS_ROOT: ViewStyle = { padding: 0, overflow: "visible" };
 // Fill the remaining row width. Longhands on purpose: RNW compiles `flex: 1`
 // shorthand to a 0% basis that collapses inside some containers.
 const FLEX_FILL: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%" };
@@ -701,7 +708,7 @@ export function createCodeBlock(skin: CodeBlockSkin) {
 
     const glass = isGlass(theme);
     return (
-      <GlassSurface layer="content" testID={testID} style={[RELATIVE, glass ? skin.surface(tokens) : null, glass ? { padding: 0 } : null, style]}>
+      <GlassSurface layer="content" testID={testID} style={[RELATIVE, glass ? skin.surface(tokens) : null, glass ? GLASS_ROOT : null, style]}>
         {hasHeader ? (
           <View
             style={[

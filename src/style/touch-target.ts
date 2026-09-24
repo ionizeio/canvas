@@ -33,7 +33,9 @@ import { useSeededMinTargetSlop, type MinTargetOptions } from "./touch-target-se
  *    TouchTargetHelper never asks the children about a point outside a clipping view's
  *    bounds plus its own slop, and iOS stops at a view that clips to its bounds. Every
  *    clipping view the kit owns carries the slop of the controls inside it, RippleClip
- *    first (src/style/ripple-clip.tsx; test/touch-target-clips.test.tsx holds it).
+ *    first (src/style/ripple-clip.tsx), or holds them far enough inside its edge;
+ *    test/touch-target-clips.test.tsx holds it, and records the one view that does
+ *    neither (the terminal CodeBlock's window over a chrome that hosts tabs).
  *  - A native parent that does not clip (painted, bordered, a testID, pointer handlers)
  *    admits the slop through the overflow it recorded at its last layout, and a commit
  *    that changes only hitSlop lays nothing out. The kit's controls seed their slop from

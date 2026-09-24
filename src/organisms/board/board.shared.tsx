@@ -5,6 +5,7 @@ import {
   Text,
   Pressable,
   ScrollView,
+  StyleSheet,
   RippleClip,
   cornerRadii,
   useControllableState,
@@ -31,6 +32,7 @@ import { type RowMenuItem } from "../row-menu/row-menu.styles.js";
 import { type BoardColumn, type BoardItem, type BoardMove } from "./board.types.js";
 import { boardMoveFor, applyBoardMove } from "./board.logic.js";
 import { type BoardSkin } from "./board.styles.js";
+import { SeamLimitProvider, splitSeam, type SeamLimit } from "../../style/touch-seam.js";
 
 // Shared Board shell. A data-driven kanban board: a horizontal ScrollView of column lanes,
 // each lane a DropZone listing its cards in array order, each card a Draggable kit Card with
@@ -130,6 +132,13 @@ const BODY: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%" };
 /** Build a Board component from a platform skin and its platform-styled parts. */
 export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
   const { DragDropProvider, DropZone, Draggable, DragHandle, Card, Badge, RowMenu } = parts;
+  // The grip and the menu trigger split the cluster's gap between their facing touch areas.
+  // Both reach further than half of it on every platform (the grip 8 on each side, the trigger
+  // to the platform minimum), so each keeps half (splitSeam).
+  const clusterGap = (StyleSheet.flatten(skin.trailingCluster) as ViewStyle).gap;
+  const [handleEnd, menuStart] = splitSeam(Infinity, Infinity, typeof clusterGap === "number" ? clusterGap : 0);
+  const handleSeam: SeamLimit = { end: handleEnd };
+  const menuSeam: SeamLimit = { start: menuStart };
 
   interface LanesProps {
     columns: BoardColumn[];
@@ -194,28 +203,39 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
       );
     };
 
-    const renderCard = (item: BoardItem): ReactNode => (
-      <Draggable key={item.id} id={item.id} data={item} label={item.title}>
-        <Card compact={compact}>
-          <View style={skin.cardRow}>
-            {renderBody(item)}
-            <View style={skin.trailingColumn}>
-              <View style={skin.trailingCluster}>
-                <DragHandle label={`Move ${item.title}`} />
-                {item.menu != null && item.menu.length > 0 ? (
-                  <RowMenu
-                    items={item.menu}
-                    triggerLabel={`Actions for ${item.title}`}
-                    onSelect={(menuItem, menuIndex) => onSelectItemMenu?.(item, menuItem, menuIndex)}
-                  />
-                ) : null}
+    const renderCard = (item: BoardItem): ReactNode => {
+      const menu = item.menu != null && item.menu.length > 0 ? item.menu : null;
+      return (
+        <Draggable key={item.id} id={item.id} data={item} label={item.title}>
+          <Card compact={compact}>
+            <View style={skin.cardRow}>
+              {renderBody(item)}
+              <View style={skin.trailingColumn}>
+                <View style={skin.trailingCluster}>
+                  {/* The grip and the menu trigger sit the cluster's gap apart, and React
+                      Native gives a point both touch areas cover to the later one, the menu:
+                      each keeps its share of the gap (src/style/touch-seam.ts), so a tap on
+                      the grip's edge never opens the menu. */}
+                  <SeamLimitProvider value={menu ? handleSeam : undefined}>
+                    <DragHandle label={`Move ${item.title}`} />
+                  </SeamLimitProvider>
+                  {menu ? (
+                    <SeamLimitProvider value={menuSeam}>
+                      <RowMenu
+                        items={menu}
+                        triggerLabel={`Actions for ${item.title}`}
+                        onSelect={(menuItem, menuIndex) => onSelectItemMenu?.(item, menuItem, menuIndex)}
+                      />
+                    </SeamLimitProvider>
+                  ) : null}
+                </View>
+                {item.badge != null ? <Badge secondary>{item.badge}</Badge> : null}
               </View>
-              {item.badge != null ? <Badge secondary>{item.badge}</Badge> : null}
             </View>
-          </View>
-        </Card>
-      </Draggable>
-    );
+          </Card>
+        </Draggable>
+      );
+    };
 
     return (
       <ScrollView horizontal onLayout={onBoardLayout} scrollEnabled={!dragging} showsHorizontalScrollIndicator={false} contentContainerStyle={skin.lanes(compact)}>

@@ -11,7 +11,9 @@ import { slopSides, type Slop } from "./touch-seam.js";
 // ancestor and the pressable hug the same box (RippleClip) the ancestor simply passes the
 // pressable's own slop. Where they do not (a pill holding a body and a remove glyph), the
 // ancestor carries the part of each pressable's slop rectangle that reaches past it, which
-// takes both boxes: this measures them.
+// takes both boxes: this measures them. The same frames give the inverse, the slop a child
+// needs to reach its parent's own touch target (reachSlop): a pressable body inside a pill
+// that should answer for the whole pill.
 //
 // A kit mechanism, not public API: src/style/index.ts does not re-export this file.
 
@@ -41,18 +43,36 @@ export function clipSlop(
   return top > 0 || bottom > 0 || left > 0 || right > 0 ? { top, bottom, left, right } : undefined;
 }
 
+/**
+ * The slop a child at `frame` inside a node of `size` needs to reach `outer` past the node's
+ * edges, the inverse of clipSlop: a child that answers for its parent's whole touch target
+ * (the tappable body of a removable Chip, reaching the pill's minimum). Physical sides, with
+ * `frame` measured from the node's own corner as onLayout reports it.
+ */
+export function reachSlop(size: { width: number; height: number }, frame: LayoutRectangle, outer: Slop): Insets {
+  const o = slopSides(outer);
+  return {
+    top: frame.y + o.top,
+    left: frame.x + o.left,
+    bottom: size.height - frame.y - frame.height + o.bottom,
+    right: size.width - frame.x - frame.width + o.right,
+  };
+}
+
 const CLIP = "clip";
 
 /**
  * Measure a clipping node and the slop-bearing pressables directly inside it, and return
- * the slop the node must carry. `enabled` is whether the node clips at all (a skin that
- * leaves it unclipped cuts nothing, so nothing is measured). Spread `measure()` on the node
- * and `measure(key)` on each pressable, then pass `slop({ key: theirSlop })` as the node's
- * hitSlop.
+ * the slop the node must carry. `enabled` is whether anything is measured (a node that does
+ * not clip cuts nothing, so it needs no measurement unless a child reaches its target). Spread
+ * `measure()` on the node and `measure(key)` on each pressable, then pass
+ * `slop({ key: theirSlop })` as the node's hitSlop; `frame(key)` is a measured frame (the
+ * node's own without a key), undefined until its first layout.
  */
 export function useClipSlop(enabled: boolean): {
   measure: (key?: string) => { onLayout?: (event: LayoutChangeEvent) => void };
   slop: (children: Record<string, Slop>) => Insets | undefined;
+  frame: (key?: string) => LayoutRectangle | undefined;
 } {
   const [frames, setFrames] = useState<Record<string, LayoutRectangle>>({});
   return {
@@ -71,5 +91,6 @@ export function useClipSlop(enabled: boolean): {
     slop: (children) => enabled
       ? clipSlop(frames[CLIP], Object.entries(children).map(([key, slop]) => ({ frame: frames[key], slop })))
       : undefined,
+    frame: (key = CLIP) => (enabled ? frames[key] : undefined),
   };
 }

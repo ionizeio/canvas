@@ -1,3 +1,4 @@
+import { createContext, useContext } from "react";
 import { type Insets } from "react-native";
 import { isRTL } from "./rtl.js";
 
@@ -14,8 +15,11 @@ import { isRTL } from "./rtl.js";
 // what it asks for up to half the gap, and takes the rest when the other asks for less. The
 // two touch areas then meet without overlapping, and neither reaches into the other's
 // visible box. The geometry is the component's own (its padding, gap and fixed sizes);
-// nothing here reads a parent container. Between components a caller places, the kit does
-// not split the seam: that is the caller's layout (DESIGN.md, Shapes).
+// nothing here reads a parent container. Where the two controls are parts the component
+// renders as components of their own (the Board's drag handle and row menu), it hands each
+// its share of the seam through SeamLimit, which only those parts read. Between components
+// a caller places, the kit does not split the seam: that is the caller's layout (DESIGN.md,
+// Shapes).
 //
 // A kit mechanism, not public API: src/style/index.ts does not re-export this file.
 
@@ -72,4 +76,41 @@ export function columnSeam(upper: Slop, lower: Slop, gap: number): [Insets | und
   const b = slopSides(lower);
   const [aBottom, bTop] = splitSeam(a.bottom, b.top, gap);
   return [upper == null ? undefined : tidy({ ...a, bottom: aBottom }), lower == null ? undefined : tidy({ ...b, top: bTop })];
+}
+
+/** The most a kit control's slop may reach on each side, in logical sides; a side left out is not held. */
+export interface SeamLimit {
+  top?: number;
+  bottom?: number;
+  start?: number;
+  end?: number;
+}
+
+const SeamLimitContext = createContext<SeamLimit | undefined>(undefined);
+
+/**
+ * Hands a kit control its share of a seam: a kit component wraps each of two of its own parts
+ * that it renders as components (the Board's drag handle and row menu) in one of these, with
+ * the split of the gap between them. Only a part's own pressable reads it (useSeamLimit).
+ */
+export const SeamLimitProvider = SeamLimitContext.Provider;
+
+/**
+ * A control's slop held to the seam its kit parent handed it (SeamLimitProvider), or the slop
+ * as it is where no parent did.
+ */
+export function useSeamLimit(slop: Slop): Slop {
+  const limit = useContext(SeamLimitContext);
+  if (limit == null || slop == null) return slop;
+  const sides = slopSides(slop);
+  const hold = (side: number, most: number | undefined) => (most == null ? side : Math.min(side, Math.max(0, most)));
+  const start = inlineSide("start");
+  const end = inlineSide("end");
+  return tidy({
+    ...sides,
+    top: hold(sides.top, limit.top),
+    bottom: hold(sides.bottom, limit.bottom),
+    [start]: hold(sides[start], limit.start),
+    [end]: hold(sides[end], limit.end),
+  });
 }

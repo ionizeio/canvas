@@ -83,6 +83,12 @@ function inset(style: Record<string, unknown>, edge: Edge): number {
   return padding + border;
 }
 
+/** A resolved style's padding plus border on each edge, logical start and end included. */
+export function styleInsets(style: ViewStyle): Record<Edge, number> {
+  const s = style as Record<string, unknown>;
+  return { top: inset(s, "top"), bottom: inset(s, "bottom"), start: inset(s, "start"), end: inset(s, "end") };
+}
+
 /**
  * The least box a control's resolved style renders at: a numeric width or height as it is,
  * and otherwise its padding and border on that axis (plus one line of `lineHeight` for the

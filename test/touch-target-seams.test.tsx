@@ -13,6 +13,7 @@ import { ACTION_GAP } from "../src/atoms/input/input.shared.tsx";
 import { androidSkin as alertAndroid, iosSkin as alertIos } from "../src/molecules/alert/alert.styles.ts";
 import { androidSkin as buttonAndroid, iosSkin as buttonIos } from "../src/atoms/button/button.styles.ts";
 import * as stepsStyles from "../src/organisms/steps/steps.styles.ts";
+import { androidSkin as boardAndroid, iosSkin as boardIos } from "../src/organisms/board/board.styles.ts";
 import { installTouchStubs, records, renderAndLayout, restoreTouchStubs, type NodeRecord } from "./fixtures/touch-records.tsx";
 
 // Inside a kit component, a later control's slop never reaches into an earlier control's box.
@@ -21,9 +22,9 @@ import { installTouchStubs, records, renderAndLayout, restoreTouchStubs, type No
 // (Android's TouchTargetHelper and iOS's hit test walk the children from last to first), so a
 // slop that reaches into an earlier sibling's box takes taps the user aimed at that sibling.
 // Once RippleClip carried its pressable's slop on Android, every declared slop there went
-// live, and some reached into a neighbor: a tap inside the right edge of a Toast's Undo
-// dismissed the toast, a tap on the small Stepper's value pressed +, and (on both platforms,
-// long before) a tap on an Input's clear glyph revealed the password.
+// live, and some would have reached into a neighbor (a Toast's dismiss into its Undo, the
+// small Stepper's + into its value, a Board card's menu into its drag handle); on both
+// platforms, long before, a tap on an Input's clear glyph revealed the password.
 //
 // The rule these hold (src/style/touch-seam.ts): where a component places two of its own
 // controls side by side or stacked, it splits the gap between their facing slops, from its
@@ -225,6 +226,44 @@ describe("inside a kit component, two controls split the gap between them", () =
     const [first, second] = [...records.values()].filter((r) => r.kind === "pressable" && r.props.accessibilityRole === "button");
     expect(sides(first).bottom).toBe(8);
     expect(sides(second).top).toBe(8);
+  });
+
+  it("a Board card: the grip and the menu trigger split the cluster's gap", async () => {
+    for (const [platform, skin] of [["android", boardAndroid], ["ios", boardIos]] as const) {
+      const Board = await load(`../src/organisms/board/board.${platform}.tsx`, "Board");
+      rendered(
+        <Board
+          columns={[{ id: "todo", label: "To do" }]}
+          defaultItems={[
+            { id: "a", columnId: "todo", title: "Write", menu: [{ label: "Edit" }] },
+            { id: "b", columnId: "todo", title: "Read" },
+          ]}
+        />,
+      );
+      const node = (label: string) => [...records.values()].find((r) => r.props.accessibilityLabel === label);
+      const gap = gapOf(skin.trailingCluster);
+      // The menu is the later sibling: its trigger reaches no further than the gap toward the
+      // grip, and the two meet without overlapping.
+      expectSeam(node("Move Write"), node("Actions for Write"), gap);
+      expect(sides(node("Actions for Write")).left, `${platform}: the trigger keeps half the gap`).toBe(gap / 2);
+      // Every other side keeps its whole slop, and a grip with no menu beside it keeps all of its own.
+      expect(sides(node("Move Write"))).toEqual({ top: 8, bottom: 8, left: 8, right: gap / 2 });
+      expect(sides(node("Move Read"))).toEqual({ top: 8, bottom: 8, left: 8, right: 8 });
+    }
+  });
+
+  it("a horizontal step's label takes no touches, so its circle keeps the slop that reaches over it", async () => {
+    // The label sits the column's gap under its circle, closer than the circle's Android slop
+    // reaches: as a later sibling it would take the taps there.
+    const gap = gapOf(stepsStyles.horizontalColumn);
+    expect((48 - (stepsStyles.circleBase.height as number)) / 2).toBeGreaterThan(gap);
+    const Steps = await load("../src/organisms/steps/steps.android.tsx", "Steps");
+    rendered(<Steps steps={[{ label: "Cart" }, { label: "Ship" }, { label: "Pay" }]} onStepPress={noop} />);
+    const passThrough = [...records.values()].filter((r) => {
+      const flat = (StyleSheet.flatten(r.props.style as ViewStyle) ?? {}) as ViewStyle;
+      return r.kind === "view" && flat.pointerEvents === "none" && flat.height !== 1 && flat.width !== 1;
+    });
+    expect(passThrough.length, "a pass-through view around each label").toBe(3);
   });
 
   it("Steps connectors take no touches, so the circle before one keeps its slop over it", async () => {

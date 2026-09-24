@@ -111,7 +111,10 @@ function seamed(slop: Insets | undefined, seams: CircleSeams): Insets | undefine
 
 // A connector draws the line between two circles and takes no touches: it is a later
 // sibling of the circle above or before it, and would otherwise take a tap in that circle's
-// slop where it runs.
+// slop where it runs. A horizontal step's label is the same, a later sibling under its
+// circle, closer than the circle's slop reaches on Android (6 below a 32dp circle that
+// reaches 8): it sits in a view that takes no touches, since React Native's Android hit test
+// does not read pointerEvents on a Text.
 const PASS_THROUGH: ViewStyle = { pointerEvents: "none" };
 
 /** Build a Steps component from a platform skin. */
@@ -285,7 +288,9 @@ export function createSteps(skin: StepsSkin) {
                   onPress={onStepPress ? () => onStepPress(i) : undefined}
                   seams={{ start: i > 0 ? ACROSS : undefined, end: !isLast ? ACROSS : undefined }}
                 />
-                <Text style={[s.labelBaseXs, skin.labelState(tokens, state)]}>{step.label}</Text>
+                <View style={PASS_THROUGH}>
+                  <Text style={[s.labelBaseXs, skin.labelState(tokens, state)]}>{step.label}</Text>
+                </View>
               </View>
               {!isLast ? (
                 // The connector after a step is "filled" once that step is

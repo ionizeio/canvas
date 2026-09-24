@@ -1,5 +1,5 @@
 import { type ViewStyle } from "react-native";
-import { platformMinTarget } from "../../style/index.js";
+import { platformMinTarget, TOUCH_TARGET } from "../../style/index.js";
 import { typeScale } from "../../style/type-scale.js";
 import { type ChipSkin } from "./chip.shared.js";
 
@@ -50,11 +50,16 @@ const removeHitSlop = MIN_TARGET == null
   ? { top: 15, bottom: 15, left: 8, right: 15 }
   : { top: (MIN_TARGET - REMOVE) / 2, bottom: (MIN_TARGET - REMOVE) / 2, left: 8, right: MIN_TARGET - REMOVE - 8 };
 
+// A tappable chip's fixed body slop on the web and iOS skin: 11 on every side. iOS has always
+// carried it, and around the 25pt pill it clears the 44pt minimum (the web drops hitSlop).
+const BODY_HIT_SLOP = 11;
+
 export const webSkin: ChipSkin = {
   base: pill,
   labelType: { ...typeScale.caption, fontWeight: "700" },
   removeSize: REMOVE,
   removeHitSlop,
+  bodyHitSlop: BODY_HIT_SLOP,
 };
 
 // iOS ships no chip control: the native skin is the web skin.
@@ -82,6 +87,9 @@ export const androidSkin: ChipSkin = {
   // 18dp glyph + 15/15 vertical, 8/22 horizontal slop = the M3 48dp minimum close
   // target, biased away from the label (left).
   removeHitSlop: { top: 15, bottom: 15, left: 8, right: 22 },
+  // A tappable chip's touch area is measured and grows to the M3 48dp minimum: 7dp above and
+  // below the 34dp chip, and nothing sideways once it is 48dp wide.
+  bodyMinTarget: TOUCH_TARGET.android,
   sidePadding: { text: 16, icon: 8 }, // M3 16dp side padding, 8dp beside an icon
   selectedCheckSize: 18, // M3 selected filter chip: leading 18dp checkmark
   outlined: true, // M3 idle chips carry a 1dp outline

@@ -1,7 +1,8 @@
 import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
 import { View, Text, Pressable, RippleClip, StyleSheet, cornerRadii, useHugStyle, useControllableState, surfaceRipple, pressDim, palette, statusColors, type StatusColorTone, type Hue, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, alpha } from "../../style/index.js";
-import { useClipSlop } from "../../style/clip-slop.js";
-import { inlineSide, rowSeam } from "../../style/touch-seam.js";
+import { reachSlop, useClipSlop } from "../../style/clip-slop.js";
+import { inlineSide, rowSeam, slopSides } from "../../style/touch-seam.js";
+import { leastLine, styleBox, styleInsets, useSeededMinTargetSlop } from "../../style/touch-target-seed.js";
 import { primaryText } from "../../style/primary-text.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { Icon } from "../icon/icon.js";
@@ -34,12 +35,6 @@ import { Icon } from "../icon/icon.js";
 // this file all speak it.
 export type { Hue };
 
-// The touch slop of a pressable chip body, which is short (a ~20pt pill on web/iOS, a 32dp
-// M3 chip on Android): it grows the tap target toward the 44pt/48dp minimums. One value for
-// the body Pressable and the RippleClip around the tappable pill, which must admit the same
-// area or the Android clip cuts it (src/style/ripple-clip.tsx).
-const BODY_HIT_SLOP = 11;
-
 // Literal-hue props, scanned in this order (first match wins) after the status names.
 const HUES: Hue[] = [
   "red", "orange", "amber", "yellow", "lime", "green", "emerald", "teal", "cyan",
@@ -57,6 +52,14 @@ export interface ChipSkin {
    *  touch target (44pt iOS / 48dp Android), biased away from the label: `left` is the
    *  side toward the label (the start; the shell mirrors it in a right-to-left layout). */
   removeHitSlop: { top: number; bottom: number; left: number; right: number };
+  /** The minimum a tappable chip's touch area grows to, measured from the chip (M3's 48dp
+   *  on Android): the shortfall is made up on each side, so a chip wider than the minimum
+   *  reaches no further sideways. Wins over `bodyHitSlop`. */
+  bodyMinTarget?: number;
+  /** A tappable chip's fixed touch slop on every side, where the skin sets no
+   *  `bodyMinTarget` (web and iOS: 11, which clears 44pt around the 25pt pill; the web
+   *  drops hitSlop). */
+  bodyHitSlop?: number;
   /** Per-side horizontal insets, for a platform that pads an icon-bearing side
    *  tighter than a text side (M3: 16dp beside text, 8dp beside an icon). The
    *  shell resolves paddingStart/End from it; omit to keep `base`'s padding. */
@@ -223,12 +226,19 @@ export function createChip(skin: ChipSkin) {
     // shell keeps its tap, ripple and dim over it.
     // HUG: content width inside a stretching Column, content-sized in a Row.
     const hug = useHugStyle();
+    // A tappable chip's touch area grows to the skin's minimum where it sets one (Android):
+    // the pill's own shortfall, measured, and seeded from its padding and border around one
+    // label line so it is in place before the first layout (src/style/touch-target-seed.ts).
+    const tappable = onPress != null || selectable;
+    const bodyMin = tappable ? skin.bodyMinTarget ?? null : null;
     // The Android pill clips (its skin sets overflow hidden), and React Native hit-tests a
     // clipping view only inside its own bounds plus its own slop, so around a remove glyph
     // the pill carries the part of the glyph's slop (the 48dp close target) and the body's
     // that reaches past it, measured (src/style/clip-slop.ts). A tappable pill with no
-    // remove glyph is itself the pressable, whose own slop needs no help.
-    const pillClip = useClipSlop(onRemove != null && (StyleSheet.flatten(skin.base) as ViewStyle).overflow === "hidden");
+    // remove glyph is itself the pressable, whose own slop needs no help. The same frames
+    // place a body beside the glyph, which reaches the pill's own minimum target.
+    const pillClips = (StyleSheet.flatten(skin.base) as ViewStyle).overflow === "hidden";
+    const pillClip = useClipSlop(onRemove != null && (pillClips || bodyMin != null));
 
     // A selectable chip is a filter toggle that owns its selected state (controlled
     // via `selected`, uncontrolled via `defaultSelected`). It is "selectable" when
@@ -301,6 +311,16 @@ export function createChip(skin: ChipSkin) {
       hug,
       style,
     ];
+    // The least box the pill renders at: its padding and border around one label line, and
+    // around a remove glyph the glyph and the gap before it.
+    const pill = StyleSheet.flatten(container) as ViewStyle;
+    const pillGap = typeof pill.gap === "number" ? pill.gap : 0;
+    const frameBox = styleBox(pill);
+    const leastPill = {
+      width: (frameBox.width ?? 0) + (onRemove ? skin.removeSize + pillGap : 0),
+      height: (frameBox.height ?? 0) + Math.max(children != null ? leastLine(skin.labelType.lineHeight ?? 0) : 0, onRemove ? skin.removeSize : 0),
+    };
+    const pillTarget = useSeededMinTargetSlop(bodyMin, bodyMin == null ? undefined : leastPill);
 
     // Auto-tint a leading/trailing `<Icon />` to the chip's label color so a bare
     // `<Icon check />` matches its chip's hue without the caller threading the color.
@@ -340,13 +360,32 @@ export function createChip(skin: ChipSkin) {
     const removeBias = inlineSide("start") === "left"
       ? skin.removeHitSlop
       : { ...skin.removeHitSlop, left: skin.removeHitSlop.right, right: skin.removeHitSlop.left };
+    // The tappable body's touch area. With no remove glyph the body is the pill: the pill's
+    // measured slop, or the skin's fixed one. Beside a remove glyph the body answers for the
+    // pill: it reaches the pill's own minimum target from where it sits in it (reachSlop,
+    // src/style/clip-slop.ts), before the first layout from the pill's padding and border.
+    const bodyFrame = pillClip.frame("body");
+    const pillFrame = pillClip.frame();
+    const shortfall = slopSides(pillTarget.hitSlop);
+    const insets = styleInsets(pill);
+    const bodyReach = bodyMin == null
+      ? skin.bodyHitSlop
+      : onRemove == null
+        ? pillTarget.hitSlop
+        : bodyFrame != null && pillFrame != null
+          ? reachSlop(pillFrame, bodyFrame, pillTarget.hitSlop)
+          : {
+              top: insets.top + shortfall.top,
+              bottom: insets.bottom + shortfall.bottom,
+              [inlineSide("start")]: insets.start + shortfall[inlineSide("start")],
+              [inlineSide("end")]: insets.end + shortfall[inlineSide("end")],
+            };
     // A pressable body and the remove glyph sit the pill's gap apart, and React Native gives
     // a point both slops admit to the later sibling, the glyph: the seam between them is
     // split (src/style/touch-seam.ts), so a tap on the label never removes the chip.
-    const pillGap = (StyleSheet.flatten(skin.base) as ViewStyle).gap;
-    const [bodySlop, removeSlop] = (onPress || selectable) && onRemove
-      ? rowSeam(BODY_HIT_SLOP, removeBias, typeof pillGap === "number" ? pillGap : 0)
-      : [BODY_HIT_SLOP, removeBias];
+    const [bodySlop, removeSlop] = tappable && onRemove
+      ? rowSeam(bodyReach, removeBias, pillGap)
+      : [bodyReach, removeBias];
 
     // The trailing "×" remove control, a button in its own right.
     const removeButton = onRemove ? (
@@ -374,10 +413,19 @@ export function createChip(skin: ChipSkin) {
     // invalid on the web, and a nested remove press would bubble to the toggle).
     // The shell's own gap (from skin.base) separates them; the body reuses that gap
     // for its icon/label row. The press feedback + ripple move onto the toggle body.
-    if ((onPress || selectable) && onRemove) {
+    if (tappable && onRemove) {
       const bodyGap = (skin.base as { gap?: number }).gap;
+      const measurePill = pillClip.measure().onLayout;
       return (
-        <View style={container} testID={testID} hitSlop={pillClip.slop({ body: bodySlop, remove: removeSlop })} {...pillClip.measure()}>
+        <View
+          style={container}
+          testID={testID}
+          hitSlop={pillClips ? pillClip.slop({ body: bodySlop, remove: removeSlop }) : undefined}
+          onLayout={measurePill == null && pillTarget.onLayout == null ? undefined : (event) => {
+            measurePill?.(event);
+            pillTarget.onLayout?.(event);
+          }}
+        >
           {pane}
           <Pressable
             {...pillClip.measure("body")}
@@ -400,13 +448,14 @@ export function createChip(skin: ChipSkin) {
 
     // Tappable chip (a filter toggle) with no remove control: the whole pill is the
     // Pressable, kept even when disabled so it holds its button role + disabled state.
-    if (onPress || selectable) {
+    if (tappable) {
       return (
         // The whole-pill ripple is clipped to the rounded chip by this RippleClip parent
         // (Android only). A bounded android_ripple is the pressable's own rectangular-masked
         // background, which its own overflow:"hidden" cannot clip. See src/style/ripple-clip.
-        <RippleClip shape={cornerRadii(container)} hitSlop={BODY_HIT_SLOP} style={hug}>
+        <RippleClip shape={cornerRadii(container)} hitSlop={bodySlop} style={hug}>
           <Pressable
+            onLayout={pillTarget.onLayout}
             onPress={handlePress}
             disabled={disabled}
             testID={testID}
@@ -418,8 +467,9 @@ export function createChip(skin: ChipSkin) {
             // the Switch uses.
             accessibilityState={{ selected: isSelected, disabled: !!disabled }}
             aria-pressed={isSelected}
-            // The compact chip is short; grow the whole tap target toward the minimums.
-            hitSlop={BODY_HIT_SLOP}
+            // The compact chip is short: its touch area grows to the minimum (Android) or by
+            // the skin's fixed slop (iOS), the same area its RippleClip admits.
+            hitSlop={bodySlop}
             // Android shows a BOUNDED ripple state layer on press (the M3 chip state layer
             // fills the container), clipped to the rounded outline by the RippleClip parent;
             // iOS/web keep the opacity dim.
