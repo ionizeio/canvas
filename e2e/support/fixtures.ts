@@ -1,7 +1,7 @@
 /**
  * The `test` every spec imports.
  *
- * Two automatic fixtures wrap every test in every project:
+ * Three automatic fixtures wrap every test in every project:
  *
  *   errors    Fails the test if the page logged a console error, threw, violated the
  *             Content-Security-Policy, or failed to load a same-origin asset. This is
@@ -13,10 +13,14 @@
  *   registry  Stubs the npm registry. docs/src/ui/use-latest-version.ts re-fetches
  *             the published version EVERY time a screen gains focus, so leaving it
  *             live would make every test depend on the network and on npm's latency.
+ *   hangProbe Off unless E2E_HANG_PROBE_MS is set (the soak workflow sets it). A
+ *             Chromium test still running that long after it started gets the
+ *             renderer's state and a compositor trace attached; see hang-probe.ts.
  *
- * Both are `auto`, so a spec gets them without naming them.
+ * All are `auto`, so a spec gets them without naming them.
  */
 import { test as base, expect, type Page } from "@playwright/test";
+import { hangProbeDelay, probeHang } from "./hang-probe";
 
 export interface PageProblems {
   consoleErrors: string[];
@@ -114,7 +118,7 @@ function describe(problems: PageProblems): string[] {
   return lines;
 }
 
-export const test = base.extend<{ problems: PageProblems; registry: void }>({
+export const test = base.extend<{ problems: PageProblems; registry: void; hangProbe: void }>({
   registry: [
     async ({ page }, use) => {
       await page.route("https://registry.npmjs.org/**", (route) =>
@@ -125,6 +129,22 @@ export const test = base.extend<{ problems: PageProblems; registry: void }>({
         }),
       );
       await use();
+    },
+    { auto: true },
+  ],
+
+  hangProbe: [
+    async ({ page, browserName }, use, testInfo) => {
+      const delay = hangProbeDelay();
+      if (delay === null || browserName !== "chromium") return use();
+      let probe: Promise<void> | undefined;
+      const timer = setTimeout(() => {
+        probe = probeHang(page, testInfo, delay);
+      }, delay);
+      // `use` settles when the test does, passed, failed or timed out alike.
+      await use();
+      clearTimeout(timer);
+      await probe;
     },
     { auto: true },
   ],

@@ -1,0 +1,167 @@
+name: E2E soak (canvas)
+
+# Reproduces a rare end-to-end failure on the Linux runner, where CI meets it and a
+# laptop does not. Deliberately manual, and it changes nothing: it uploads reports.
+#
+# The suite runs with no retries (playwright.config.ts), so a test that fails one run
+# in ten is a defect to find, not to rerun. Some of those appear only on this runner,
+# in a browser that has lived through a whole shard: the glass material captures that
+# hung in Chromium's Page.captureScreenshot a few Deploy runs in thirty (2026-09)
+# passed a hundred times in a row when replayed alone. So this replays a spec in
+# order, several passes per lane (each pass is the whole selection, in the order a
+# shard runs it), on parallel lanes, against a fresh export, with the hang probe
+# armed (e2e/support/hang-probe.ts): a test still running after E2E_HANG_PROBE_MS
+# gets the renderer's state and a compositor trace attached to its report, and
+# DEBUG=pw:browser puts each browser's own log beside the test that was running.
+#
+# Every input reaches the shell through `env`, never through `${{ }}` inside a script,
+# and the spec path is checked before use.
+on:
+  workflow_dispatch:
+    inputs:
+      spec:
+        description: 'The spec to replay, an e2e/**/*.e2e.ts path'
+        default: e2e/visual/materials.e2e.ts
+        type: string
+      grep:
+        description: 'Only the tests whose title matches this regular expression (empty for all)'
+        default: ''
+        type: string
+      passes:
+        description: 'Passes over the selection per lane (Playwright --repeat-each)'
+        default: 5
+        type: number
+      project:
+        description: 'Playwright project'
+        default: visual
+        type: choice
+        options:
+          - visual
+          - smoke
+          - responsive
+          - behavior
+          - a11y
+
+concurrency:
+  group: e2e-soak
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  HUSKY: '0'
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
+      - name: Cache bun downloads
+        uses: actions/cache@v6
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock', 'docs/bun.lock') }}
+          restore-keys: |
+            bun-${{ runner.os }}-
+
+      - run: bun install --frozen-lockfile
+
+      - name: Install docs deps
+        working-directory: docs
+        run: bun install --frozen-lockfile
+
+      # The same export the e2e job tests, built the way the deploy builds it.
+      - name: Export web build
+        working-directory: docs
+        run: bun run build:web
+
+      - name: Hand the export to the lanes
+        uses: actions/upload-artifact@v7
+        with:
+          name: soak-docs-dist
+          path: docs/dist
+          retention-days: 1
+
+  soak:
+    needs: export
+    runs-on: ubuntu-latest
+    # Five passes of the material spec take about 45 minutes on a lane; each hang
+    # costs two more (the test and its teardown both run out their 60 s).
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check the spec path
+        env:
+          SPEC: ${{ inputs.spec }}
+        run: |
+          case "$SPEC" in
+            e2e/*.e2e.ts) ;;
+            *) echo "::error::spec must be an e2e/**/*.e2e.ts path, not '$SPEC'"; exit 1 ;;
+          esac
+          test -f "$SPEC" || { echo "::error::$SPEC does not exist"; exit 1; }
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
+      - name: Cache bun downloads
+        uses: actions/cache@v6
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock', 'docs/bun.lock') }}
+          restore-keys: |
+            bun-${{ runner.os }}-
+
+      - run: bun install --frozen-lockfile
+
+      - name: Cache the Playwright browsers
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+
+      - name: Install Chromium
+        run: bunx playwright install --with-deps chromium
+
+      - name: Take the export
+        uses: actions/download-artifact@v8
+        with:
+          name: soak-docs-dist
+          path: docs/dist
+
+      - name: Replay
+        env:
+          SPEC: ${{ inputs.spec }}
+          GREP: ${{ inputs.grep }}
+          PASSES: ${{ inputs.passes }}
+          PROJECT: ${{ inputs.project }}
+          # Every material test finishes in under 25 s on this runner; one still
+          # running at 40 s is stuck.
+          E2E_HANG_PROBE_MS: '40000'
+          DEBUG: pw:browser
+        run: |
+          set -- "$SPEC" --project="$PROJECT" --repeat-each="$PASSES" --reporter=list,html
+          if [ -n "$GREP" ]; then set -- "$@" --grep "$GREP"; fi
+          bunx playwright test "$@"
+
+      - name: Upload the lane's report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: soak-report-lane-${{ matrix.lane }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
