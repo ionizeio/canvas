@@ -25,6 +25,8 @@ bun run test
 bun run docs:gen:check
 bun run raster:gen:check
 bun run designmd:gen:check
+# A package.json or lockfile change can stale the third-party notices, and CI checks them.
+bun run notices:gen:check
 bunx tsc --noEmit -p docs/src/core/tsconfig.json
 # The core project above covers docs/src/core only. CI gates on the docs app's OWN
 # tsconfig, which also takes in docs/src/app and docs/src/ui, so run the same script
