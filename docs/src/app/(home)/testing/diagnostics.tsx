@@ -1,8 +1,8 @@
 import { version as reactVersion } from "react";
 import { NativeModules, Platform } from "react-native";
 import Constants from "expo-constants";
-import * as Updates from "expo-updates";
 import { Column, Typography } from "@ionizeio/canvas";
+import { readUpdateIdentity } from "../../../core/update-identity";
 import { Page, PageHeader } from "../../../ui/page";
 
 // Deliberately absent from normal navigation. These are the running bundle's
@@ -13,6 +13,7 @@ export default function DiagnosticsFixture() {
   const rn = native?.reactNativeVersion;
   const sourceCode = NativeModules.SourceCode;
   const bundleURL = sourceCode?.getConstants?.()?.scriptURL ?? sourceCode?.scriptURL;
+  const updates = readUpdateIdentity();
   const values: Record<string, unknown> = {
     "input-mode": build?.inputMode,
     "source-revision": build?.sourceRevision,
@@ -26,8 +27,8 @@ export default function DiagnosticsFixture() {
     "app-version": Constants.nativeAppVersion ?? Constants.expoConfig?.version,
     "app-build": Constants.nativeBuildVersion,
     "bundle-url": bundleURL ?? (Platform.OS === "web" ? "web export" : "unavailable"),
-    "update-id": Updates.updateId,
-    "embedded-launch": Updates.isEmbeddedLaunch,
+    "update-id": updates.updateId,
+    "embedded-launch": updates.isEmbeddedLaunch,
   };
   return (
     <Page>
