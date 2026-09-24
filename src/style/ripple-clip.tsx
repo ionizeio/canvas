@@ -23,9 +23,21 @@
 // Being the control's outermost node, the one that never moves, it is also where hover
 // is read (the pointer handlers of src/style/hover.tsx): a surface that lifts inside it
 // would otherwise slide out from under a resting pointer.
+//
+// The clip also bounds the touch area, which is why it carries the child's `hitSlop`. React
+// Native hit-tests a view that clips (overflow hidden or scroll) only inside its own bounds
+// plus its OWN hitSlop: Android's TouchTargetHelper returns nothing for a point outside
+// them and never asks the children, and iOS stops at a view that clips to its bounds. So a
+// pressable's slop that reaches past this wrapper (the touch-target minimum of
+// src/style/touch-target.ts) is swallowed on Android unless the wrapper admits the same
+// area. Pass the insets the pressable carries: the wrapper holds the pressable (usually
+// hugging it, sometimes stretched taller by a Row), so its bounds plus the same insets hold
+// every point the pressable's slop reaches. On iOS the wrapper adds no clip and no
+// handlers, so React Native flattens it away and the prop is inert until the wrapper turns
+// into a real view; the web drops hitSlop.
 
 import { type ReactNode } from "react";
-import { Platform, StyleSheet, type LayoutChangeEvent, type PointerEvent, type StyleProp, type ViewStyle } from "react-native";
+import { Platform, StyleSheet, type Insets, type LayoutChangeEvent, type PointerEvent, type StyleProp, type ViewStyle } from "react-native";
 import { View } from "./primitives.js";
 
 // The clip itself. Kept separate (not merged into `shape`) so the rounded outline comes
@@ -70,13 +82,21 @@ export interface RippleClipProps {
    */
   onPointerEnter?: (event: PointerEvent) => void;
   onPointerLeave?: (event: PointerEvent) => void;
+  /**
+   * The touch slop of the pressable inside, the same insets it carries (a
+   * `useMinTargetSlop` result's `hitSlop`, or the skin's static slop). The Android clip
+   * would otherwise cut the pressable's touch area at the wrapper's edge: a clipping view
+   * is hit-tested only inside its own bounds plus its own slop (see the file header).
+   * Omit it when the pressable has no slop.
+   */
+  hitSlop?: Insets | number;
   children: ReactNode;
 }
 
 /** Rounded clip parent for a bounded-ripple pressable. See the file header for the why. */
-export function RippleClip({ shape, style, onLayout, onPointerEnter, onPointerLeave, children }: RippleClipProps): ReactNode {
+export function RippleClip({ shape, style, onLayout, onPointerEnter, onPointerLeave, hitSlop, children }: RippleClipProps): ReactNode {
   return (
-    <View onLayout={onLayout} onPointerEnter={onPointerEnter} onPointerLeave={onPointerLeave} style={[rippleClipWrapperStyle(shape, Platform.OS === "android"), style]}>{children}</View>
+    <View hitSlop={hitSlop} onLayout={onLayout} onPointerEnter={onPointerEnter} onPointerLeave={onPointerLeave} style={[rippleClipWrapperStyle(shape, Platform.OS === "android"), style]}>{children}</View>
   );
 }
 

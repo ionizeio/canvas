@@ -10,7 +10,8 @@
     "hover",
     "listbox",
     "materials",
-    "tabs"
+    "tabs",
+    "touch-target"
   ],
   "routes": [
     "_layout",
@@ -23,6 +24,7 @@
     "hover",
     "listbox",
     "materials",
-    "tabs"
+    "tabs",
+    "touch-target"
   ]
 }

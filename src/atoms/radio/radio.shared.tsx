@@ -218,9 +218,11 @@ export function createRadio(skin: RadioSkin) {
         disabled={disabled}
         testID={props.testID}
         // Icon-only (no text): grow the small ring's tap target toward ~44pt. With a
-        // label — or a card, whose whole padded tile is the target — the row is already
-        // a generous target, so leave it.
-        hitSlop={!hasText && !card ? 8 : undefined}
+        // label, a card (whose whole padded tile is the target) or a list cell (a
+        // full-width row at the platform's row height), the control is already a generous
+        // target, so leave it. A cell's slop would also be cut by the section's clip and
+        // reach into the neighboring rows.
+        hitSlop={!hasText && !card && cell == null ? 8 : undefined}
         accessibilityRole="radio"
         accessibilityState={{ checked: isChecked, disabled: !!disabled }}
         aria-checked={isChecked}

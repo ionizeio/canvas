@@ -397,7 +397,7 @@ export function createCodeBlock(skin: CodeBlockSkin) {
     // a code surface, and under both native minimums.
     const target = useMinTargetSlop(skin.minTarget);
     return (
-      <RippleClip shape={cornerRadii(box)} style={elevParent}>
+      <RippleClip shape={cornerRadii(box)} hitSlop={target.hitSlop} style={elevParent}>
         <Pressable
           {...target}
           android_ripple={surfaceRipple(tokens)}

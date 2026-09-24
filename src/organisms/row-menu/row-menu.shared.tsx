@@ -146,7 +146,7 @@ export function createRowMenu(skin: RowMenuSkin) {
         {/* RippleClip clips the Android bounded ripple to the ⋯ trigger's rounded
             outline (a no-op on iOS/web). It is the trigger's own box, so it is what is
             measured for the menu's width floor and what the pointer hovers. */}
-        <RippleClip shape={cornerRadii(skin.trigger)} onLayout={onTriggerLayout} {...triggerHoverTarget}>
+        <RippleClip shape={cornerRadii(skin.trigger)} hitSlop={target.hitSlop} onLayout={onTriggerLayout} {...triggerHoverTarget}>
         <Pressable
           {...target}
           style={({ pressed }) => [

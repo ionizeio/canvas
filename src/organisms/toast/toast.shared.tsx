@@ -252,7 +252,7 @@ export function createToastSystem(skin: ToastSkin) {
         {action ? (
           // The bounded ripple is clipped to the button's corners by this RippleClip
           // parent (a node can never clip its own ripple on Android); nothing to move.
-          <RippleClip shape={cornerRadii(skin.actionButton(tokens))}>
+          <RippleClip shape={cornerRadii(skin.actionButton(tokens))} hitSlop={skin.actionHitSlop ?? undefined}>
             <Pressable
               onPress={action.onPress}
               accessibilityRole="button"
@@ -266,7 +266,7 @@ export function createToastSystem(skin: ToastSkin) {
           </RippleClip>
         ) : null}
         {onDismiss ? (
-          <RippleClip shape={cornerRadii(skin.dismissButton(tokens))}>
+          <RippleClip shape={cornerRadii(skin.dismissButton(tokens))} hitSlop={skin.dismissHitSlop ?? undefined}>
             <Pressable
               onPress={onDismiss}
               accessibilityRole="button"

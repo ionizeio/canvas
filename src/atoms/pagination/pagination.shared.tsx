@@ -163,7 +163,7 @@ export function createPagination(skin: PaginationSkin) {
       // The rounded cell's bounded Android ripple is clipped to its corners by this RippleClip
       // parent (no-op on iOS/web), which is also the hover target: it never moves. A same-node
       // overflow:"hidden" cannot clip a node's own ripple. See src/style/ripple-clip.
-      <RippleClip shape={cornerRadii(box)} {...hoverTarget}>
+      <RippleClip shape={cornerRadii(box)} hitSlop={target.hitSlop} {...hoverTarget}>
         <Pressable
           style={({ pressed }) => [
             box,
@@ -204,7 +204,7 @@ export function createPagination(skin: PaginationSkin) {
     const target = useMinTargetSlop(skin.minTarget, ABUTTING);
     const { hovered, target: hoverTarget } = useHover(hoverLook != null && !selected);
     return (
-      <RippleClip shape={cornerRadii(box)} {...hoverTarget}>
+      <RippleClip shape={cornerRadii(box)} hitSlop={target.hitSlop} {...hoverTarget}>
         <Pressable
           style={({ pressed }) => [
             filled(box) ? paneStyle(theme, box) : box,
@@ -245,7 +245,7 @@ export function createPagination(skin: PaginationSkin) {
     const target = useMinTargetSlop(skin.minTarget);
     const { hovered, target: hoverTarget } = useHover(hoverLook != null);
     return (
-      <RippleClip shape={cornerRadii(box)} {...hoverTarget}>
+      <RippleClip shape={cornerRadii(box)} hitSlop={target.hitSlop} {...hoverTarget}>
         <Pressable
           style={({ pressed }) => [
             box,

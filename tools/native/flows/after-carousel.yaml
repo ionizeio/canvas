@@ -581,3 +581,18 @@ name: Sealed Canvas native candidate after measured drag
     id: avatar-presses
     text: 'Presses: 2'
 - takeScreenshot: avatar-identity-discs
+
+# The touch-target harness: the controls under the platform minimum, each with a press
+# counter. The flow proves the fixture mounts and its controls press; the taps just
+# outside each control's box (the reach of its hitSlop) take device coordinates and are
+# run by hand against uiautomator and accessibility frames (see the fixture's header).
+- openLink: canvas-smoke:///testing/touch-target
+- assertVisible:
+    id: tt-mode
+    text: 'Mode: solid; scheme: (light|dark)'
+- tapOn:
+    id: tt-button-small
+- assertVisible:
+    id: tt-count-button-small
+    text: 'button-small 1, button-base 0'
+- takeScreenshot: touch-target-at-rest

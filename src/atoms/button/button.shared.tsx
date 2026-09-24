@@ -192,7 +192,7 @@ export function createButton(skin: ButtonSkin) {
     // the outermost node on every platform, so positioning is identical with or without the clip
     // and the Pressable stretches to fill a block button.
     return (
-      <RippleClip shape={clipShape} style={[sizing, style, glowOnClip ? glow : null]} {...hoverTarget}>
+      <RippleClip shape={clipShape} hitSlop={target.hitSlop} style={[sizing, style, glowOnClip ? glow : null]} {...hoverTarget}>
         <Pressable
           ref={hostRef}
           {...(anchor ?? undefined)}

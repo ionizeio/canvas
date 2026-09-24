@@ -100,7 +100,7 @@ export function createSteps(skin: StepsSkin) {
       // The bounded ripple is clipped to the round circle by this RippleClip parent
       // (a node can never clip its own ripple on Android); no outer layout to move.
       return (
-        <RippleClip shape={cornerRadii(s.circleBase)}>
+        <RippleClip shape={cornerRadii(s.circleBase)} hitSlop={target.hitSlop}>
           <Pressable
             {...target}
             style={({ pressed }) => [

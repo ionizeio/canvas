@@ -1,0 +1,7 @@
+---
+"@ionizeio/canvas": patch
+---
+
+On Android, the controls whose ripple is clipped to their rounded shape now reach the 48dp touch minimum they always declared: Button, Pagination's pages, arrows and rows-per-page trigger, the pressable Steps circles, the RowMenu trigger, the CodeBlock copy chip, the Stepper buttons, the tappable Chip, the Toast action and dismiss, and the StackedList row menu. The view that rounds the ripple (`RippleClip`) clips on Android, and React Native hit-tests a clipping view only inside its own bounds plus its own `hitSlop`, so every touch slop inside it was cut at the control's visible edge. `RippleClip` now takes a `hitSlop` prop, applied to its own view on every platform (inert on iOS, where the wrapper does not clip and is flattened away, and dropped on the web), and each of those controls passes it the slop its pressable carries. The prop is new public API on an existing export and ships as a patch because it completes this bug fix.
+
+Two more kit views cut a declared slop and now carry it: the Android Chip pill (it clips to round its surface) carries the part of its remove glyph's and a removable chip's body slop that reaches past it, and the grouped Input box carries the part of the clear and eye glyphs' slop that overhangs the 36pt iOS small field. A textless Radio in an iOS list keeps no slop, since its full-width row already meets the minimum. Nothing changes size or moves on any platform. The Dialog and AlertDialog text buttons on Android are unchanged and still short of the minimum.

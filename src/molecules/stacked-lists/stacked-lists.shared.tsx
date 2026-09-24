@@ -275,7 +275,7 @@ export function createStackedList(
       // The bounded ripple is clipped to the round menu button by this RippleClip
       // parent (a node can never clip its own ripple on Android); fixed-size icon
       // button, so no outer layout moves to the wrapper.
-      <RippleClip shape={cornerRadii(skin.menuButton)}>
+      <RippleClip shape={cornerRadii(skin.menuButton)} hitSlop={skin.menuHitSlop}>
         <Pressable
           style={({ pressed }) => [skin.menuButton, pressed ? withInnerFill(theme, skin.pressedSurface(tokens), "firm") : null, pressFeedback(pressed)]}
           hitSlop={skin.menuHitSlop}

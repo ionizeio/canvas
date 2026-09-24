@@ -1,6 +1,7 @@
 import { describe, it, expect } from "bun:test";
 import { StyleSheet } from "react-native";
-import { rippleClipWrapperStyle, cornerRadii, splitElevation } from "../src/style/ripple-clip.tsx";
+import { isValidElement, type ReactElement } from "react";
+import { RippleClip, rippleClipWrapperStyle, cornerRadii, splitElevation } from "../src/style/ripple-clip.tsx";
 import { iosSkin, androidSkin, webSkin } from "../src/atoms/button/button.styles.ts";
 import { lightColors } from "../src/style/tokens.ts";
 
@@ -28,6 +29,34 @@ describe("rippleClipWrapperStyle", () => {
 
   it("adds no clip when there is no shape, even on Android", () => {
     expect(rippleClipWrapperStyle(undefined, true)).toBeNull();
+  });
+});
+
+describe("RippleClip carries the touch slop", () => {
+  // Android hit-tests a clipping view only inside its own bounds plus its own hitSlop, so the
+  // wrapper must admit the area its pressable's slop declares. Checked on the element the
+  // component returns: the test DOM (react-native-web) drops hitSlop, so a rendered check
+  // would pass whether or not the prop is there.
+  const clip = (props: Omit<Parameters<typeof RippleClip>[0], "children">) => {
+    const element = RippleClip({ ...props, children: null });
+    if (!isValidElement(element)) throw new Error("RippleClip returned no element");
+    return element as ReactElement<{ hitSlop?: unknown; style?: unknown }>;
+  };
+  const shape = { borderRadius: 9999 };
+
+  it("puts the insets it is given on its own view", () => {
+    const insets = { top: 4, bottom: 4, left: 0, right: 0 };
+    expect(clip({ shape, hitSlop: insets }).props.hitSlop).toEqual(insets);
+    expect(clip({ shape, hitSlop: 11 }).props.hitSlop).toBe(11);
+  });
+
+  it("carries none when the pressable has none", () => {
+    expect(clip({ shape }).props.hitSlop).toBeUndefined();
+  });
+
+  it("adds no style for the slop: the touch area is not layout", () => {
+    const style = { alignSelf: "stretch" as const };
+    expect(clip({ shape, style, hitSlop: 8 }).props.style).toEqual(clip({ shape, style }).props.style);
   });
 });
 

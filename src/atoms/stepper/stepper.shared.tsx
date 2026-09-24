@@ -330,7 +330,7 @@ export function createStepper(skin: StepperSkin) {
     // passthrough on iOS/web; the corner radii are constant across pressed/disabled). See
     // src/style/ripple-clip.
     const MinusButton = (
-      <RippleClip shape={cornerRadii(skin.button(tokens, size, "left", atMin, false))}>
+      <RippleClip shape={cornerRadii(skin.button(tokens, size, "left", atMin, false))} hitSlop={hitSlop}>
         <Pressable
           onPress={decrement}
           disabled={atMin}
@@ -356,7 +356,7 @@ export function createStepper(skin: StepperSkin) {
     );
 
     const PlusButton = (
-      <RippleClip shape={cornerRadii(skin.button(tokens, size, "right", atMax, false))}>
+      <RippleClip shape={cornerRadii(skin.button(tokens, size, "right", atMax, false))} hitSlop={hitSlop}>
         <Pressable
           onPress={increment}
           disabled={atMax}

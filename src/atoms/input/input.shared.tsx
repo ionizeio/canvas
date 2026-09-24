@@ -3,6 +3,7 @@ import { useInputEscapeBridge } from "../../style/escape-layer.js";
 import { forwardRef, useId, useRef, useState } from "react";
 import {
   type GestureResponderEvent,
+  type Insets,
   type TextInput as RNTextInput,
   type TextInputProps as RNTextInputProps,
 } from "react-native";
@@ -30,6 +31,20 @@ import { type InputSkin, type Size } from "./input.styles.js";
 const ACTION_HIT_SLOP = 12;
 // The gap between two trailing glyphs when both the clear button and the eye show.
 const ACTION_GAP = 8;
+
+/**
+ * The touch slop the grouped box carries for its trailing actions. The box clips (it
+ * squares the addons into its rounded corners), and React Native hit-tests a clipping view
+ * only inside its own bounds plus its own slop, so the part of an action's slop that
+ * reaches past the box would be cut. A glyph sits centered in the box, so its slop overhangs
+ * the top and bottom where the glyph plus its slop is taller than the box: the 36pt iOS
+ * small field under a 20pt glyph. The gutter's end inset already covers the slop sideways
+ * on every skin (test/touch-target-clips.test.tsx holds that), so the overhang is vertical.
+ */
+export function actionOverhang(iconSize: number, boxHeight: number): Insets | undefined {
+  const v = Math.max(0, (iconSize + 2 * ACTION_HIT_SLOP - boxHeight) / 2);
+  return v > 0 ? { top: v, bottom: v, left: 0, right: 0 } : undefined;
+}
 
 // react-native-web paints a default focus outline on the field; in the grouped
 // (addon) layout that ring is clipped by the rounded, overflow-hidden container
@@ -433,6 +448,7 @@ export function createInput(skin: InputSkin) {
     const groupShape = skin.groupContainer(tokens, borderColor, focused, isError);
     const groupedField = (
       <View
+        hitSlop={hasClear || hasEye ? actionOverhang(skin.iconSize, height) : undefined}
         style={[
           paneStyle(theme, groupShape, focused || isError),
           { minHeight: height },

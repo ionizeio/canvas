@@ -1,5 +1,6 @@
 import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
-import { View, Text, Pressable, RippleClip, cornerRadii, useHugStyle, useControllableState, surfaceRipple, pressDim, palette, statusColors, type StatusColorTone, type Hue, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, alpha } from "../../style/index.js";
+import { View, Text, Pressable, RippleClip, StyleSheet, cornerRadii, useHugStyle, useControllableState, surfaceRipple, pressDim, palette, statusColors, type StatusColorTone, type Hue, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, alpha } from "../../style/index.js";
+import { useClipSlop } from "../../style/clip-slop.js";
 import { primaryText } from "../../style/primary-text.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { Icon } from "../icon/icon.js";
@@ -31,6 +32,12 @@ import { Icon } from "../icon/icon.js";
 // The union itself lives beside `palette` in the style layer, since Badge, Alert and
 // this file all speak it.
 export type { Hue };
+
+// The touch slop of a pressable chip body, which is short (a ~20pt pill on web/iOS, a 32dp
+// M3 chip on Android): it grows the tap target toward the 44pt/48dp minimums. One value for
+// the body Pressable and the RippleClip around the tappable pill, which must admit the same
+// area or the Android clip cuts it (src/style/ripple-clip.tsx).
+const BODY_HIT_SLOP = 11;
 
 // Literal-hue props, scanned in this order (first match wins) after the status names.
 const HUES: Hue[] = [
@@ -214,6 +221,12 @@ export function createChip(skin: ChipSkin) {
     // shell keeps its tap, ripple and dim over it.
     // HUG: content width inside a stretching Column, content-sized in a Row.
     const hug = useHugStyle();
+    // The Android pill clips (its skin sets overflow hidden), and React Native hit-tests a
+    // clipping view only inside its own bounds plus its own slop, so around a remove glyph
+    // the pill carries the part of the glyph's slop (the 48dp close target) and the body's
+    // that reaches past it, measured (src/style/clip-slop.ts). A tappable pill with no
+    // remove glyph is itself the pressable, whose own slop needs no help.
+    const pillClip = useClipSlop(onRemove != null && (StyleSheet.flatten(skin.base) as ViewStyle).overflow === "hidden");
 
     // A selectable chip is a filter toggle that owns its selected state (controlled
     // via `selected`, uncontrolled via `defaultSelected`). It is "selectable" when
@@ -333,6 +346,7 @@ export function createChip(skin: ChipSkin) {
         // Android per the M3 input-chip close target); per-skin values,
         // biased away from the label (left).
         hitSlop={skin.removeHitSlop}
+        {...pillClip.measure("remove")}
       >
         {/* The "×" rides the chip's label color so it matches every hue. */}
         <Icon x size={skin.removeSize} color={appearance.text} />
@@ -348,16 +362,17 @@ export function createChip(skin: ChipSkin) {
     if ((onPress || selectable) && onRemove) {
       const bodyGap = (skin.base as { gap?: number }).gap;
       return (
-        <View style={container} testID={testID}>
+        <View style={container} testID={testID} hitSlop={pillClip.slop({ body: BODY_HIT_SLOP, remove: skin.removeHitSlop })} {...pillClip.measure()}>
           {pane}
           <Pressable
+            {...pillClip.measure("body")}
             onPress={handlePress}
             disabled={disabled}
             accessibilityRole="button"
             accessibilityLabel={accessibilityLabel}
             accessibilityState={{ selected: isSelected, disabled: !!disabled }}
             aria-pressed={isSelected}
-            hitSlop={11}
+            hitSlop={BODY_HIT_SLOP}
             android_ripple={surfaceRipple(tokens)}
             style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", gap: bodyGap }, liquid && disabled ? { opacity: 0.5 } : null, pressDim(pressed, 0.85)]}
           >
@@ -375,7 +390,7 @@ export function createChip(skin: ChipSkin) {
         // The whole-pill ripple is clipped to the rounded chip by this RippleClip parent
         // (Android only). A bounded android_ripple is the pressable's own rectangular-masked
         // background, which its own overflow:"hidden" cannot clip. See src/style/ripple-clip.
-        <RippleClip shape={cornerRadii(container)} style={hug}>
+        <RippleClip shape={cornerRadii(container)} hitSlop={BODY_HIT_SLOP} style={hug}>
           <Pressable
             onPress={handlePress}
             disabled={disabled}
@@ -388,9 +403,8 @@ export function createChip(skin: ChipSkin) {
             // the Switch uses.
             accessibilityState={{ selected: isSelected, disabled: !!disabled }}
             aria-pressed={isSelected}
-            // The compact chip is short (a ~20px pill on web/iOS, a 32dp M3 chip on
-            // Android); grow the whole tap target toward the 44pt/48dp minimums.
-            hitSlop={11}
+            // The compact chip is short; grow the whole tap target toward the minimums.
+            hitSlop={BODY_HIT_SLOP}
             // Android shows a BOUNDED ripple state layer on press (the M3 chip state layer
             // fills the container), clipped to the rounded outline by the RippleClip parent;
             // iOS/web keep the opacity dim.
@@ -413,7 +427,7 @@ export function createChip(skin: ChipSkin) {
     // Static chip (not tappable): a View; a remove "×" here is a lone button in a
     // non-interactive container, so there is no nesting to resolve.
     return (
-      <View style={container} testID={testID} accessibilityLabel={accessibilityLabel}>
+      <View style={container} testID={testID} accessibilityLabel={accessibilityLabel} hitSlop={pillClip.slop({ remove: skin.removeHitSlop })} {...pillClip.measure()}>
         {pane}
         {bodyContent}
         {removeButton}

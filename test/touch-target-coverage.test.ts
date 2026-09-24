@@ -2,6 +2,7 @@ import { describe, it, expect } from "bun:test";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { Glob } from "bun";
+import ts from "typescript";
 import { TOUCH_TARGET } from "../src/style/touch-target.ts";
 
 // Every control a finger can hit must be at least 44pt on iOS and 48dp on Android.
@@ -17,6 +18,17 @@ import { TOUCH_TARGET } from "../src/style/touch-target.ts";
 // every pressable in each row and comparing its box to that platform's minimum.
 // hitSlop is invisible to that measurement, which is why the two lists below are
 // separate: one is "reaches it another way", the other is "does not reach it".
+//
+// A declared slop is only half of it. On iOS and Android the slop reaches only as far
+// as the native ancestors admit: React Native hit-tests a view that clips (overflow
+// hidden or scroll) only inside its own bounds plus its own hitSlop, so a clipping
+// ancestor cuts the slop at its edge unless it carries the same slop. The kit's own
+// clipping nodes carry the slop their descendants declare, RippleClip first (it clips
+// the ripple on Android, and swallowed every slop inside it until it carried one). The
+// last describe below holds that for RippleClip in the source, and
+// test/touch-target-clips.test.tsx holds it for every clipping node in the rendered
+// platform entries. What the kit cannot hold is a caller's container: a slop never
+// reaches past a native ancestor that does not contain it.
 
 const ROOT = join(import.meta.dir, "..");
 
@@ -27,13 +39,13 @@ const ROOT = join(import.meta.dir, "..");
  * above the minimum, or the shell already extends it with its own hitSlop.
  */
 const COVERED_ANOTHER_WAY: Record<string, string> = {
-  "atoms/chip": "hitSlop on the remove glyph, the only sub-minimum part",
+  "atoms/chip": "hitSlop on the remove glyph and the body; the tappable pill's RippleClip carries the body's slop, and the clipping Android pill carries what reaches past it",
   "atoms/checkbox": "hitSlop around the box when there is no label to press",
-  "atoms/input": "a field is 44/56 tall by skin, above both minimums",
+  "atoms/input": "a field is 44/56 tall by skin, above both minimums; the clear and eye glyphs carry slop, and the grouped box carries the part that overhangs it",
   "atoms/radio": "hitSlop around the ring when there is no label to press",
   "atoms/select": "the trigger is a field; its rows are 44/48 by skin",
   "molecules/phone-input": "the country segment stretches to the 44/56 field box; its rows are Select's 44/48 by skin",
-  "atoms/stepper": "hitSlop on both halves; the iOS 32pt group is UIStepper's own size",
+  "atoms/stepper": "hitSlop on both halves, which their RippleClips carry on Android; the iOS 32pt group is UIStepper's own size",
   "atoms/tooltip": "wraps the caller's node and adds hitSlop; the target is theirs",
   "molecules/alert": "hitSlop on the dismiss glyph (24 + 2 * 12 = 48 on Android)",
   "molecules/accordion": "triggers are 44/56 tall by skin",
@@ -45,7 +57,7 @@ const COVERED_ANOTHER_WAY: Record<string, string> = {
   "organisms/command": "rows are 44/48 tall by skin",
   "organisms/data-table": "rows and action buttons carry pressableMinHeight",
   "organisms/filter-panel": "option rows are 44/48 tall by skin",
-  "organisms/toast": "hitSlop on the dismiss and the action",
+  "organisms/toast": "hitSlop on the dismiss and the action, which their RippleClips carry on Android",
   "charts/shared": "a chart's hit area is the mark it belongs to, sized by the data",
   // The same answer, one directory each. A slice, a bubble, a tile, a cell: the
   // pressable IS the mark, it carries accessibilityRole=\"image\", and its size is the
@@ -196,5 +208,102 @@ describe("the lists stay honest", () => {
       return file !== null && /minTarget/.test(readFileSync(file, "utf8"));
     });
     expect(redundant, "declares a target, so delete the list entry").toEqual([]);
+  });
+});
+
+/**
+ * Every RippleClip in the kit whose pressable carries a touch slop, by file. Pinned so a
+ * miss in the scan below fails loudly instead of matching nothing.
+ */
+const SLOP_CLIPS: Record<string, number> = {
+  "src/atoms/button/button.shared.tsx": 1,
+  "src/atoms/pagination/pagination.shared.tsx": 3,
+  "src/organisms/steps/steps.shared.tsx": 1,
+  "src/organisms/row-menu/row-menu.shared.tsx": 1,
+  "src/molecules/code-block/code-block.shared.tsx": 1,
+  "src/atoms/stepper/stepper.shared.tsx": 2,
+  "src/atoms/chip/chip.shared.tsx": 1,
+  "src/organisms/toast/toast.shared.tsx": 2,
+  "src/molecules/stacked-lists/stacked-lists.shared.tsx": 1,
+};
+
+function tagName(node: ts.JsxOpeningLikeElement): string {
+  return node.tagName.getText();
+}
+
+function openingOf(node: ts.Node): ts.JsxOpeningLikeElement | null {
+  if (ts.isJsxElement(node)) return node.openingElement;
+  if (ts.isJsxSelfClosingElement(node)) return node;
+  return null;
+}
+
+function hasAttribute(opening: ts.JsxOpeningLikeElement, name: string): boolean {
+  return opening.attributes.properties.some((p) => ts.isJsxAttribute(p) && p.name.getText() === name);
+}
+
+/** The names bound to a useMinTargetSlop(...) result in a file (`const target = useMinTargetSlop(...)`). */
+function slopResults(file: ts.SourceFile): Set<string> {
+  const names = new Set<string>();
+  const visit = (node: ts.Node) => {
+    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer && ts.isCallExpression(node.initializer)
+      && node.initializer.expression.getText() === "useMinTargetSlop") names.add(node.name.text);
+    ts.forEachChild(node, visit);
+  };
+  visit(file);
+  return names;
+}
+
+/** Whether a Pressable declares a slop: a hitSlop prop, or a spread useMinTargetSlop result. */
+function declaresSlop(opening: ts.JsxOpeningLikeElement, results: Set<string>): boolean {
+  return opening.attributes.properties.some((p) =>
+    (ts.isJsxAttribute(p) && p.name.getText() === "hitSlop")
+    || (ts.isJsxSpreadAttribute(p) && ts.isIdentifier(p.expression) && results.has(p.expression.text)));
+}
+
+/** The first Pressable inside a RippleClip: the pressable whose ripple it clips. */
+function firstPressable(element: ts.JsxElement): ts.JsxOpeningLikeElement | null {
+  let found: ts.JsxOpeningLikeElement | null = null;
+  const visit = (node: ts.Node) => {
+    if (found) return;
+    const opening = openingOf(node);
+    if (opening && tagName(opening) === "Pressable") { found = opening; return; }
+    ts.forEachChild(node, visit);
+  };
+  element.children.forEach(visit);
+  return found;
+}
+
+describe("a clipping kit node carries the slop its descendants declare", () => {
+  const scanned: Record<string, { clips: number; missing: number[] }> = {};
+  for (const rel of new Glob("src/**/*.tsx").scanSync(ROOT)) {
+    if (rel.endsWith(".ios.tsx") || rel.endsWith(".android.tsx") || rel === "src/style/ripple-clip.tsx") continue;
+    const source = readFileSync(join(ROOT, rel), "utf8");
+    if (!source.includes("<RippleClip")) continue;
+    const file = ts.createSourceFile(rel, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+    const results = slopResults(file);
+    const visit = (node: ts.Node) => {
+      if (ts.isJsxElement(node) && tagName(node.openingElement) === "RippleClip") {
+        const pressable = firstPressable(node);
+        if (pressable && declaresSlop(pressable, results)) {
+          const entry = (scanned[rel] ??= { clips: 0, missing: [] });
+          entry.clips += 1;
+          if (!hasAttribute(node.openingElement, "hitSlop")) {
+            entry.missing.push(file.getLineAndCharacterOfPosition(node.getStart()).line + 1);
+          }
+        }
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(file);
+  }
+
+  it("every RippleClip around a slop-bearing pressable passes hitSlop (the Android clip cuts it otherwise)", () => {
+    const missing = Object.entries(scanned).flatMap(([rel, { missing: lines }]) => lines.map((line) => `${rel}:${line}`));
+    expect(missing, "a RippleClip whose pressable carries hitSlop must carry the same hitSlop").toEqual([]);
+  });
+
+  it("finds exactly the RippleClips that wrap a slop-bearing pressable", () => {
+    const counts = Object.fromEntries(Object.entries(scanned).map(([rel, { clips }]) => [rel, clips]));
+    expect(counts).toEqual(SLOP_CLIPS);
   });
 });
