@@ -14,6 +14,9 @@ import { androidSkin as alertAndroid, iosSkin as alertIos } from "../src/molecul
 import { androidSkin as buttonAndroid, iosSkin as buttonIos } from "../src/atoms/button/button.styles.ts";
 import * as stepsStyles from "../src/organisms/steps/steps.styles.ts";
 import { androidSkin as boardAndroid, iosSkin as boardIos } from "../src/organisms/board/board.styles.ts";
+import { iosSkin as autocompleteIos, webSkin as autocompleteWeb } from "../src/atoms/autocomplete/autocomplete.styles.ts";
+import { FIELD_HEIGHT } from "../src/style/field-look.ts";
+import { TOUCH_TARGET } from "../src/style/touch-target.ts";
 import { installTouchStubs, records, renderAndLayout, restoreTouchStubs, type NodeRecord } from "./fixtures/touch-records.tsx";
 
 // Inside a kit component, a later control's slop never reaches into an earlier control's box.
@@ -174,6 +177,29 @@ describe("inside a kit component, two controls split the gap between them", () =
     }
     // The iOS gutter leaves 8pt between the value and the glyph, under its 12pt slop.
     expect(textGap(inputIos)).toBe(8);
+  });
+
+  it("an Autocomplete's disclosure on iOS reaches 44pt, and never into the text beside it", async () => {
+    // iOS ships no autocomplete, so the iOS skin is the web's, whose 24px disclosure box sits
+    // the field's 10px gap after the text. On an iPhone the skin's platformMinTarget() is 44:
+    // the slop grows the box to it, taking the whole gap toward the text (which asks for no
+    // slop) and the rest past the box's other sides.
+    expect(autocompleteIos).toBe(autocompleteWeb);
+    const Autocomplete = await load("../src/atoms/autocomplete/autocomplete.ios.tsx", "Autocomplete");
+    for (const [size, props] of [["small", { small: true }], ["base", {}], ["large", { large: true }]] as const) {
+      const gap = gapOf(autocompleteWeb.field(t, size === "base" ? "default" : size, false));
+      // The disclosure stretches to the field's content box: its height less the 1px borders.
+      const frame = { width: 24, height: FIELD_HEIGHT[size] - 2 };
+      for (const layout of [null, frame]) {
+        rendered(<Autocomplete {...props} label="Person" options={["Ada", "Grace"]} />, TOUCH_TARGET.ios,
+          layout == null ? null : (record) => (record.props.accessibilityLabel === "Toggle options" ? layout : null));
+        const slop = sides(byLabel("Toggle options"));
+        expect(slop.left, `${size}: the disclosure's slop toward the text`).toBeLessThanOrEqual(gap + 1e-9);
+        expect(slop.left + frame.width + slop.right, `${size}: its touch width`).toBeGreaterThanOrEqual(TOUCH_TARGET.ios - 1e-9);
+        expect(slop.top + frame.height + slop.bottom, `${size}: its touch height`).toBeGreaterThanOrEqual(TOUCH_TARGET.ios - 1e-9);
+      }
+    }
+    expect(gapOf(autocompleteWeb.field(t, "default", false))).toBe(10);
   });
 
   it("the Alert: its dismiss and its actions keep out of each other's boxes by the Alert's own gaps", async () => {

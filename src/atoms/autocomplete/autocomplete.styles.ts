@@ -1,27 +1,54 @@
-import { StyleSheet, type ViewStyle, type TextStyle } from "react-native";
-import { shadow, activeIndicator, shape, type ColorTokens, type FloatingLabelStyles } from "../../style/index.js";
-import { fieldBorder } from "../../style/field-colors.js";
+import { type ViewStyle, type TextStyle } from "react-native";
+import { activeIndicator, platformMinTarget, TOUCH_TARGET, type ColorTokens, type FloatingLabelStyles, type TouchTargetSkin } from "../../style/index.js";
+import { webHover } from "../../style/hover.js";
+import {
+  FIELD_HEIGHT,
+  FIELD_ICON_GAP,
+  FIELD_INSET,
+  FIELD_LABEL_GAP,
+  fieldDisabled,
+  fieldFrame,
+  fieldLabel,
+  fieldNote,
+  fieldValue,
+  type FieldDisabledLook,
+  type FieldSize,
+} from "../../style/field-look.js";
+import {
+  MENU_OFFSET,
+  MENU_ROW_GAP,
+  menuCheck,
+  menuChosenLabel,
+  menuListPanel,
+  menuRow,
+  menuRowHover,
+  menuRowLabel,
+  menuRowPressed,
+} from "../../style/menu-look.js";
 
-// Co-located Autocomplete skins, one per platform. An Autocomplete is a searchable
-// single-select: an editable field that filters an open option list. The BRAND
-// survives on every platform (the indigo `primary`/`accent` tokens stay; the
-// focus accent is the `ring`, never a platform default) and only the native
-// SHAPE, sizing, fill, border/underline treatment, popover elevation, and press
-// feedback change per OS. The treatment mirrors Input/Select:
-//   iOS 27 (iOS 26+/Liquid Glass): a plain field, transparent, no capsule, just
-//     a bottom hairline (`border` at rest -> brand `primary` when open); the
-//     trailing chevron is `muted-foreground`; the open list is a large
-//     continuous-corner `popover` card (~27 radius) with a soft shadow and roomy
-//     rows. Press = opacity dim (~0.8).
-//   Android (Material 3 filled): a subtle `muted` fill, TOP corners ~4 radius and
-//     a flat bottom, a bottom active-indicator underline (1dp `border` at rest ->
-//     2dp `ring` brand when open); the menu surface is a flat-cornered (~4)
-//     elevated `popover` sheet (M3 elevation, no soft drop shadow), full-width
-//     rows ~48dp tall; press = android_ripple.
-//   Web: the established Canvas look (the current field, lifted verbatim) —
-//     full 1px `input` border, 6 radius, `background` fill, h-8/9/10; the popover
-//     is a 6-radius bordered `popover` card with `shadow-lg`, 4px padding, 2-radius
-//     accent rows. Press dims nothing (the active accent fill is the feedback).
+// Co-located Autocomplete skins. An Autocomplete is a searchable single-select: an
+// editable field that filters an open option list. Neither iOS nor Material 3 would
+// hand a phone this as one control, but Android ships the exposed dropdown menu for the
+// job and iOS ships nothing, so (the design language's catalog) the Android skin keeps
+// Material 3's shape in the theme's colours and the iOS skin IS the web skin, Dark
+// Factory's field and menu:
+//   Web and iOS: the field recipe (src/style/field-look.ts): the `field-fill` well at
+//     the field corner with the resting `field-border` hairline turning `ring` while the
+//     field is active (focused or open), 40 tall at base, a 12px inset and a 13 / 600
+//     value, the eyebrow label above, Dark Factory's small helper line under it, its
+//     disabled look in place of a dim, and the 14px chevron-down Icon in the muted ink at
+//     the field's inset, 10px from the text. The list is Dark Factory's menu
+//     (src/style/menu-look.ts): the panel 8 below the field, 33px rows 2px apart with the
+//     hover wash (on the web only: native pointer hover waits on the owner), the
+//     keyboard's active row on the pressed fill, and the chosen row in the selection
+//     violet (its label and a checkmark in the gutter every row keeps) with no fill.
+//     Touch: on iOS the rows grow to the 44pt minimum and the chevron's touch area
+//     reaches it through slop that stops at the text (platformMinTarget, null on the
+//     web, where the chevron's 24px box is the target).
+//   Android (Material 3 exposed dropdown): a subtle `muted` fill, TOP corners ~4 radius
+//     and a flat bottom, a bottom active-indicator underline (1dp `muted-foreground` at
+//     rest, 2dp `ring` while active); the menu is a flat-cornered (~4) elevated
+//     `popover` sheet, full-width rows ~48dp tall; press = android_ripple.
 
 export type Size = "small" | "default" | "large";
 
@@ -29,8 +56,8 @@ export type Size = "small" | "default" | "large";
 // open/selected/pressed/muted state and asks the skin to map them to RN style
 // objects. The skin owns shape, fill, border/underline, popover elevation, the
 // row layout, and the press-feedback channel (iOS/web opacity vs Android ripple).
-export interface AutocompleteSkin extends FloatingLabelStyles<Size> {
-  /** Clear Liquid Glass text entry on the web appearance. */
+export interface AutocompleteSkin extends FloatingLabelStyles<Size>, TouchTargetSkin {
+  /** The clear text-entry well under web glass. */
   liquid?: boolean;
   /** Type scale per size; the field text and the option rows share it. */
   text: (size: Size) => TextStyle;
@@ -48,7 +75,16 @@ export interface AutocompleteSkin extends FloatingLabelStyles<Size> {
   fieldText: (t: ColorTokens, size: Size, muted: boolean) => TextStyle;
   /** The trailing disclosure chevron. */
   chevron: (t: ColorTokens, size: Size) => TextStyle;
-  /** The disclosure's real layout/touch target, including the field's border band. */
+  /**
+   * The size of the kit's chevronDown Icon where the skin draws that (the web's, Dark
+   * Factory's 14px chevron) in `chevron`'s colour; null for the text ▾ at `chevron`'s type.
+   */
+  chevronIcon: number | null;
+  /**
+   * The disclosure's real layout/touch target, including the field's border band. Where it
+   * is smaller than `minTarget` the shell grows its touch area with slop, which stops at the
+   * text across the field's `gap`.
+   */
   chevronTarget: (size: Size) => ViewStyle;
   /**
    * The open option list CARD: radius, fill, border, elevation/shadow, padding,
@@ -69,24 +105,33 @@ export interface AutocompleteSkin extends FloatingLabelStyles<Size> {
    */
   rowSeparator?: (t: ColorTokens) => ViewStyle;
   /**
-   * The fill applied to the SELECTED row at rest. iOS marks selection with the
-   * leading check only (no rest fill), so it returns null; web/Android tint with
-   * the brand `accent`.
+   * The fill applied to the SELECTED row at rest: Android's `accent` state layer; null on
+   * the web, whose chosen row is marked by its label and check alone.
    */
   rowSelected: (t: ColorTokens) => ViewStyle | null;
-  /**
-   * The transient fill applied while a row is PRESSED. iOS uses the neutral list
-   * tint (`secondary`); web/Android tint with the brand `accent`.
-   */
+  /** The fill of a PRESSED row, and of the row the keyboard has made active. */
   rowPressed: (t: ColorTokens) => ViewStyle;
+  /** The instant look of a resting row under the pointer (the web's wash); null where there is none. */
+  rowHover: ((t: ColorTokens) => ViewStyle) | null;
+  /** The chosen row's label over its plain one (the web's selection violet); null leaves it plain. */
+  chosenText: ((t: ColorTokens) => TextStyle) | null;
+  /** The space between rows. */
+  rowGap: number;
+  /** The standoff between the field and the list, in px (Dark Factory's 8 on the web). */
+  menuGap: number;
   /** The leading check column. */
   check: (t: ColorTokens, size: Size) => TextStyle;
   /** The option label. */
   optionText: (t: ColorTokens, size: Size) => TextStyle;
   /** Helper line below the option list. */
   helper: (t: ColorTokens) => TextStyle;
-  /** Opacity applied to the whole control when disabled. */
+  /** Opacity applied to the whole control when disabled (1 on a skin that draws `disabledLook`). */
   disabledOpacity: number;
+  /**
+   * A disabled look drawn in place of the dim (the web's, Dark Factory's field): the field
+   * takes `frame`, its value `ink`, and it paints no material. Android omits it and dims.
+   */
+  disabledLook?: (t: ColorTokens, focused: boolean) => FieldDisabledLook;
   /** iOS/web dim the field on press; Android uses a ripple instead (null). */
   pressedOpacity: number | null;
   /** Android ripple over the pressable surfaces; null on iOS/web. */
@@ -104,184 +149,80 @@ export const wrapper: ViewStyle = { position: "relative", width: "100%" };
 // everything painted after it.
 export const wrapperLifted: ViewStyle = { zIndex: 50 };
 
-// --- shared type scale (identical across platforms; brand type, not a face) --
+// Android's type scale for the label and the rows, a notch below its field type.
 const TEXT_SIZE: Record<Size, TextStyle> = {
   small: { fontSize: 12, lineHeight: 16 },
   default: { fontSize: 14, lineHeight: 20 },
   large: { fontSize: 16, lineHeight: 24 },
 };
-function webText(size: Size): TextStyle {
-  return TEXT_SIZE[size];
-}
 
-// Field height per size; mirrors Input's footprint per platform.
-const WEB_FIELD_BOX: Record<Size, number> = { small: 40, default: 48, large: 56 };
-
-// ---------- Web: the Riskora dashboard field + menu ----------
+// ---------- Web and iOS: Dark Factory's field and menu ----------
+// The field reads the field recipe and the list the menu recipe, so the Autocomplete
+// cannot drift from the Input and the Select beside it. Its middle size is the field's base.
+const FIELD_SIZE: Record<Size, FieldSize> = { small: "small", default: "base", large: "large" };
+// The disclosure: the web's 24px target around the 14px chevron, pulled into the field's
+// end inset so the chevron itself sits at the inset, as a Select's does.
+const CHEVRON_ICON = 14;
+const CHEVRON_BOX = 24;
+const CHEVRON_PULL = (CHEVRON_BOX - CHEVRON_ICON) / 2;
+// The platform minimum on the platforms that share this skin: iOS 44, none on the web.
+const MIN_TARGET = platformMinTarget();
 export const webSkin: AutocompleteSkin = {
   liquid: true,
-  text: webText,
-  label: (t, size) => ({ marginBottom: 6, fontWeight: "500", color: t.foreground, ...TEXT_SIZE[size] }),
-  // The resting `field-border` hairline turning `ring` while the field is active (focused
-  // or open), the field's own focus indicator.
+  text: (size) => fieldValue(FIELD_SIZE[size]),
+  label: (t) => ({ ...fieldLabel(t), marginBottom: FIELD_LABEL_GAP }),
+  // Dark Factory's field frame, active while focused or open (the field's own focus
+  // indicator), and the 10px glyph gap between the text and the disclosure.
   field: (t, size, active) => ({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    borderRadius: shape.web.field,
-    borderWidth: 1,
-    borderColor: active ? t.ring : fieldBorder(t),
-    backgroundColor: t.card,
-    paddingHorizontal: 16,
-    height: WEB_FIELD_BOX[size],
+    gap: FIELD_ICON_GAP,
+    ...fieldFrame(t, { focused: active, error: false }),
+    paddingStart: FIELD_INSET,
+    paddingEnd: FIELD_INSET - CHEVRON_PULL,
+    height: FIELD_HEIGHT[FIELD_SIZE[size]],
   }),
-  fieldText: (t, size, muted) => ({ color: muted ? t["muted-foreground"] : t.foreground, ...TEXT_SIZE[size] }),
-  chevron: (t, size) => ({ color: t["muted-foreground"], ...TEXT_SIZE[size] }),
+  fieldText: (t, size, muted) => ({ ...fieldValue(FIELD_SIZE[size]), color: muted ? t["muted-foreground"] : t.foreground }),
+  chevron: (t) => ({ color: t["muted-foreground"] }),
+  chevronIcon: CHEVRON_ICON,
   chevronTarget: () => ({
     alignSelf: "stretch", alignItems: "center", justifyContent: "center", flexShrink: 0,
-    width: 24, minHeight: 24,
+    width: CHEVRON_BOX, minHeight: CHEVRON_BOX,
   }),
-  // The list is the Riskora menu: a card at the menu corner with an 8px inset and
-  // 40px rows with a 10px corner (matches Select's panel).
-  popover: (t) => ({
-    maxHeight: 280,
-    overflow: "hidden", // clip rows to the rounded card; the list scrolls inside
-    borderRadius: shape.web.menu,
-    borderWidth: 1,
-    borderColor: t.border,
-    backgroundColor: t.popover,
-    padding: 8,
-    ...shadow("lg", t),
-  }),
-  emptyRow: { paddingHorizontal: 12, paddingVertical: 10 },
-  emptyText: (t, size) => ({ color: t["muted-foreground"], ...TEXT_SIZE[size] }),
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  // Web marks both selection and press with the soft `accent` panel fill.
-  rowSelected: (t) => ({ backgroundColor: t.accent }),
-  rowPressed: (t) => ({ backgroundColor: t.accent }),
-  check: (t, size) => ({ width: 14, color: t["popover-foreground"], ...TEXT_SIZE[size] }),
-  optionText: (t, size) => ({ color: t["popover-foreground"], ...TEXT_SIZE[size] }),
-  helper: (t) => ({ marginTop: 6, fontSize: 12, lineHeight: 16, color: t["muted-foreground"] }),
-  disabledOpacity: 0.5,
-  pressedOpacity: null, // web shows press via the active accent fill, not opacity
+  popover: menuListPanel,
+  // "No results" sits where a row would, in the muted ink a disabled row takes.
+  emptyRow: { paddingHorizontal: menuRow.paddingHorizontal, paddingVertical: menuRow.paddingVertical },
+  emptyText: (t) => ({ ...menuRowLabel, color: t["muted-foreground"] }),
+  // On iOS a row grows to the 44pt minimum; the web keeps Dark Factory's 33px row.
+  row: MIN_TARGET == null ? menuRow : { ...menuRow, minHeight: MIN_TARGET },
+  // Being chosen fills nothing: the label and the checkmark carry it.
+  rowSelected: () => null,
+  rowPressed: menuRowPressed,
+  rowHover: webHover(menuRowHover),
+  chosenText: menuChosenLabel,
+  rowGap: MENU_ROW_GAP,
+  menuGap: MENU_OFFSET,
+  check: menuCheck,
+  optionText: (t) => ({ ...menuRowLabel, color: t["popover-foreground"] }),
+  helper: (t) => ({ ...fieldNote(t, false), marginTop: FIELD_LABEL_GAP }),
+  minTarget: MIN_TARGET,
+  disabledOpacity: 1,
+  disabledLook: fieldDisabled,
+  pressedOpacity: null, // the pressed and active rows' fill is the feedback
   ripple: null,
-  // The label sits ABOVE the field (Riskora's form rows).
+  // The label sits ABOVE the field: Dark Factory's eyebrow.
   floatingLabel: false,
 };
 
-// ---------- iOS (HIG): .roundedBorder field, large-radius glass menu ----------
-// The iOS combo box reads like SwiftUI's `.roundedBorder` text field: a subtly filled,
-// rounded rectangle (continuous corners) with a 1pt border that tints to the brand
-// `ring` when the list is open. A full border box, never a bottom underline, so it
-// reads as a native iOS field rather than the Material one. The field value, placeholder,
-// and label use the iOS-native scale (13/15/17pt). The open list is the iOS 26+
-// menu surface: a large continuous-corner `popover` card (26 radius, matching the
-// co-located iOS Select menu) floating on a soft shadow, with roomy ~42pt rows
-// pinned to the iOS body 17pt and hairline group separators between them. Selection
-// is the leading brand check ONLY (no rest fill); the transient press highlight is
-// the neutral iOS list tint `secondary`. Press dims the field surface (~0.8); no
-// ripple. The brand survives: the open hairline, the leading check, and the
-// trailing disclosure are all the indigo `primary`, never iOS system blue.
-const IOS_MENU_RADIUS = 26;
-// Small retains its compact typography, but its entire field must contain the
-// 44pt disclosure target: native hit testing cannot extend beyond its parent.
-const IOS_FIELD_BOX: Record<Size, number> = { small: 44, default: 44, large: 50 };
-// iOS-native field scale (matches select.styles.ts IOS_TEXT): the field value,
-// placeholder, and stacked label sit a notch larger than the brand web scale so
-// the control reads at the iOS-native footprint (13/15/17pt).
-// The reference's 16pt value (the same ladder as the Input's iOS skin).
-const IOS_TEXT: Record<Size, TextStyle> = {
-  small: { fontSize: 13, lineHeight: 16 },
-  default: { fontSize: 16, lineHeight: 24 },
-  large: { fontSize: 17, lineHeight: 26 },
-};
-// The above-field label: the reference's 14pt regular secondary title.
-const IOS_LABEL: Record<Size, TextStyle> = {
-  small: { fontSize: 12, lineHeight: 16 },
-  default: { fontSize: 14, lineHeight: 20 },
-  large: { fontSize: 16, lineHeight: 24 },
-};
-// Menu rows hold the iOS body size (17pt) regardless of the field's size axis,
-// matching the kit's fixed "Menu Item, Title" type and select.styles.ts IOS_ROW_TEXT.
-const IOS_ROW_TEXT: TextStyle = { fontSize: 17, lineHeight: 22 };
-export const iosSkin: AutocompleteSkin = {
-  text: (size) => IOS_TEXT[size],
-  label: (t, size) => ({ marginBottom: 8, fontWeight: "400", letterSpacing: -0.15, color: t["muted-foreground"], ...IOS_LABEL[size] }),
-  // The reference's field box (see input.styles.ts): `card` fill, the 8pt corner,
-  // the resting `field-border` hairline turning `ring` while the field is active.
-  field: (t, size, active) => ({
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderRadius: shape.ios.field,
-    borderCurve: "continuous",
-    borderWidth: 1,
-    borderColor: active ? t.ring : fieldBorder(t),
-    backgroundColor: t.card,
-    paddingHorizontal: 12,
-    height: IOS_FIELD_BOX[size],
-  }),
-  fieldText: (t, size, muted) => ({ color: muted ? t["muted-foreground"] : t.foreground, ...IOS_TEXT[size] }),
-  // The trailing disclosure is the reference's gray caret (its Icon/Default).
-  chevron: (t, size) => ({ color: t["muted-foreground"], ...IOS_TEXT[size] }),
-  chevronTarget: () => ({
-    alignSelf: "stretch", alignItems: "center", justifyContent: "center", flexShrink: 0,
-    width: 44, minHeight: 44,
-    // Include the 1pt field borders in the actual hit box and use the trailing
-    // gutter for the target instead of taking all 44pt from editable text.
-    marginVertical: -1, marginEnd: -12,
-  }),
-  popover: (t) => ({
-    maxHeight: 260,
-    overflow: "hidden", // clip rows to the rounded card; the list scrolls inside
-    borderRadius: IOS_MENU_RADIUS,
-    backgroundColor: t.popover,
-    paddingVertical: 6,
-    ...shadow("lg", t),
-  }),
-  emptyRow: { paddingHorizontal: 16, paddingVertical: 11 },
-  emptyText: (t, _size) => ({ color: t["muted-foreground"], ...IOS_ROW_TEXT }),
-  // iOS grouped-list rows: roomy (~42pt), no rest fill, hairline-separated. The
-  // selection is shown by the leading check, not a row tint.
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    borderRadius: 0,
-    paddingHorizontal: 16,
-    paddingVertical: 11,
-    minHeight: 42,
-  },
-  // Inset hairline group separator on every row after the first, in `border`
-  // (the iOS opaque-separator read), so the menu reads as iOS's separated groups.
-  rowSeparator: (t) => ({ borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: t.border }),
-  // Selection is the leading check ONLY, no rest fill (iOS selectable menu item).
-  rowSelected: () => null,
-  // The transient press highlight is the neutral iOS list-row tint.
-  rowPressed: (t) => ({ backgroundColor: t.secondary }),
-  check: (t, _size) => ({ width: 18, color: t.primary, ...IOS_ROW_TEXT }),
-  optionText: (t, _size) => ({ color: t["popover-foreground"], ...IOS_ROW_TEXT }),
-  helper: (t) => ({ marginTop: 6, fontSize: 12, lineHeight: 16, color: t["muted-foreground"] }),
-  // iOS disabled control alpha ~0.4 (the kit's disabled Menu Item is markedly
-  // dimmer than 50%), matching select.styles.ts and the iOS Button.
-  disabledOpacity: 0.4,
-  pressedOpacity: 0.8,
-  ripple: null,
-  // iOS (HIG): the label sits ABOVE the field, rendered from `label` above.
-  floatingLabel: false,
-};
+// iOS ships no autocomplete control, so the iOS Autocomplete is the web's (the design
+// language's item 3).
+export const iosSkin: AutocompleteSkin = webSkin;
 
 // ---------- Android (Material 3 filled): subtle fill, top radius, bottom indicator, elevated menu ----------
 // M3 exposed dropdown: the anchor is a filled field (`muted`) with the TOP
 // corners rounded ~4dp and a flat bottom, plus a bottom active-indicator
-// underline — 1dp `border` at rest, 2dp `ring` (brand) when open. The menu is a
+// underline (1dp `muted-foreground` at rest, 2dp `ring` while active). The menu is a
 // flat-cornered (~4) elevated `popover` sheet (M3 elevation via `elevation`, no
 // soft iOS drop shadow), full-width rows ~48dp tall whose active/selected state
 // is the `accent` state layer. The action feedback is android_ripple.
@@ -316,6 +257,7 @@ export const androidSkin: AutocompleteSkin = {
   }),
   fieldText: (t, size, muted) => ({ color: muted ? t["muted-foreground"] : t.foreground, ...TEXT_SIZE[size] }),
   chevron: (t, size) => ({ color: t["muted-foreground"], ...TEXT_SIZE[size] }),
+  chevronIcon: null,
   chevronTarget: () => ({
     alignSelf: "stretch", alignItems: "center", justifyContent: "center", flexShrink: 0,
     width: 48, minHeight: 48, marginEnd: -16,
@@ -351,9 +293,15 @@ export const androidSkin: AutocompleteSkin = {
   // (unchanged from the previous shared `rowAccent`).
   rowSelected: (t) => ({ backgroundColor: t.accent }),
   rowPressed: (t) => ({ backgroundColor: t.accent }),
+  rowHover: null,
+  chosenText: null,
+  rowGap: 0,
+  menuGap: 4,
   check: (t, size) => ({ width: 16, color: t.primary, ...TEXT_SIZE[size] }),
   optionText: (t, size) => ({ color: t["popover-foreground"], ...TEXT_SIZE[size] }),
   helper: (t) => ({ marginTop: 6, fontSize: 12, lineHeight: 16, color: t["muted-foreground"] }),
+  // The field and its 48dp disclosure and rows already meet Material 3's minimum.
+  minTarget: TOUCH_TARGET.android,
   disabledOpacity: 0.38, // M3 disabled opacity
   pressedOpacity: null, // Android uses a ripple instead
   ripple: (t) => ({ color: t.accent, borderless: false }),

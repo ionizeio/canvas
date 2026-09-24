@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Autocomplete } = scope;
   return (
-<Autocomplete label="Assigned to" placeholder="Search a person…" disabled options={["Ada Lovelace", "Grace Hopper", "Kira Tanaka"]} />
+<Autocomplete label="Assigned to" disabled defaultValue="Grace Hopper" options={["Ada Lovelace", "Grace Hopper", "Kira Tanaka"]} />
   );
 }

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Button, ButtonGroup, Card, Column, Dialog, Drawer, Dropdown, Input, Row, Slider, Switch, ThemeProvider, Typography } from "@nannier-com/canvas";
+import { Autocomplete, Button, ButtonGroup, Card, Column, Dialog, Drawer, Dropdown, Input, PhoneInput, Row, Select, Slider, Switch, ThemeProvider, Typography } from "@nannier-com/canvas";
 
 type Stats = { hosts: number; activeHosts: number; recordings: number; frostViews: number; frameListeners: number };
 declare const require: (name: string) => unknown;
@@ -80,6 +80,15 @@ export function MaterialsBody() {
       <ThemeProvider glass={nested} solid={!nested}>
         <Card><Typography>Nested glass remains active while its parent is solid.</Typography></Card>
       </ThemeProvider>
+      {/* The field wells: under web glass the Select trigger, the Autocomplete and PhoneInput
+          are the clear well the Input is, and their option lists the dense menu. */}
+      <Card>
+        <Column snug>
+          <Select label="Material select" options={["Keep editor", "Review settings"]} defaultValue="Keep editor" testID="material-select" />
+          <Autocomplete label="Material search" options={["Ada Lovelace", "Grace Hopper"]} defaultValue="Grace Hopper" testID="material-search" />
+          <PhoneInput label="Material phone" defaultCountry="GB" testID="material-phone" />
+        </Column>
+      </Card>
     </Column>
   </ThemeProvider>;
 }

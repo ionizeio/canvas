@@ -35,16 +35,14 @@
   /* Only M3 draws a darker active indicator; web/iOS keep the bottom edge the same hairline. */
   --p-field-underline-color:var(--input);
   /* The label above the box: Dark Factory's eyebrow (10 / 13 / 700, 1.6px tracking, uppercase, the
-     muted ink) 6px above it at every size, for the Input, Textarea, PhoneInput and Field labels; a
-     Field row stacks its label, control and message 6px apart. The web Select and Autocomplete
-     labels are not on these rows yet: they still paint 14 / 20 / 500 (the default size) in
-     `foreground`, sentence case */
+     muted ink) 6px above it at every size, for the Input, Textarea, Select, Autocomplete, PhoneInput
+     and Field labels; a Field row stacks its label, control and message 6px apart */
   --p-label-font:10px;--p-label-lh:13px;--p-label-weight:700;--p-label-tracking:1.6px;
   --p-label-transform:uppercase /* @kind other */;--p-label-gap:6px;--p-field-row-gap:6px;
   /* Addons: a muted box with a field-line divider on the field side */
   --p-field-addon-fill:var(--muted);--p-field-addon-divider:var(--field-border);
   /* Disabled: Dark Factory's look in place of a dim (the frame on the border hairline, no fill,
-     a muted value) */
+     a muted value), on every web field, the Select trigger and the Autocomplete included */
   --p-field-disabled-border:var(--border);--p-field-disabled-fill:transparent;
   --p-field-disabled-ink:var(--muted-foreground);--p-field-disabled-opacity:1 /* @kind other */;
   /* Floating label (style/floating-label.tsx, shared by Input/Autocomplete/Select/Textarea):
@@ -199,15 +197,20 @@
   --p-tabbar-pill-w:48px;--p-tabbar-pill-h:28px;--p-tabbar-pill-opacity:1 /* @kind other */;
   --p-tabbar-inset-x:0px;--p-tabbar-inset-b:0px;--p-tabbar-radius:9999px;--p-tabbar-item-radius:9999px;
   --p-tabbar-fill:var(--popover) /* @kind other */;--p-tabbar-pad-bottom:0px;
-  /* Select (select.styles.ts webSkin) */
-  --p-select-h:48px;--p-select-radius:10px;--p-select-radius-bottom:10px;--p-select-border:1px;--p-select-underline:0px;
-  --p-select-border-color:var(--input);--p-select-underline-rest:var(--input);--p-select-fill:var(--card);--p-select-pad-x:16px;
-  --p-select-font:14px;--p-select-lh:20px;--p-select-chevron:"▾" /* @kind other */;--p-select-chevron-color:var(--muted-foreground);--p-select-chevron-weight:400;
+  /* Select (select.styles.ts webSkin: Dark Factory's Select. The trigger is the field's frame and
+     value, 40px at base, with a 14px chevron-down Icon; the list is the menu recipe's, 8px below,
+     33px rows 2px apart with the hover wash, the chosen row's label in the selection violet beside
+     a checkmark, with no fill) */
+  --p-select-h:40px;--p-select-radius:10px;--p-select-radius-bottom:10px;--p-select-border:1px;--p-select-underline:0px;
+  --p-select-border-color:var(--field-border);--p-select-underline-rest:var(--input);--p-select-fill:var(--field-fill);--p-select-pad-x:12px;
+  --p-select-font:13px;--p-select-lh:18px;--p-select-weight:600;
+  --p-select-chevron:"chevron-down" /* @kind other */;--p-select-chevron-size:14px;--p-select-chevron-color:var(--muted-foreground);--p-select-chevron-weight:400;
   --p-select-panel-max:280px;--p-select-panel-radius:12px;--p-select-panel-border:1px;--p-select-panel-pad-x:8px;--p-select-panel-pad-y:8px;
-  --p-select-panel-shadow:var(--shadow-lg);
-  --p-select-row-radius:10px;--p-select-row-pad-x:12px;--p-select-row-pad-y:10px;--p-select-row-gap:10px;--p-select-row-min-h:0px;
-  --p-select-row-font:14px;--p-select-row-lh:20px;--p-select-row-selected-fill:var(--accent);
-  --p-select-check-color:var(--popover-foreground);--p-select-check-weight:400;
+  --p-select-panel-shadow:var(--shadow-lg);--p-select-panel-offset:8px;
+  --p-select-row-radius:8px;--p-select-row-pad-x:10px;--p-select-row-pad-y:8px;--p-select-row-gap:10px;--p-select-row-min-h:0px;--p-select-row-spacing:2px;
+  --p-select-row-font:12.5px;--p-select-row-lh:17px;--p-select-row-weight:700;--p-select-row-hover:var(--hover);
+  --p-select-row-selected-fill:transparent;--p-select-row-selected-label:var(--primary-text);
+  --p-select-check-color:var(--primary);--p-select-check-weight:700;
   /* AvatarMenu identity pill (avatar.styles.ts webMenuSkin, every platform: Dark Factory's
      pill, bare at rest, the accent fill under the pointer and while open, a 28px disc in
      the viewer's violet glow, 12/700 name over the 10.5/600 muted email, a static chevron) */
@@ -217,15 +220,18 @@
   --p-idpill-open-border-color:transparent;
   --p-idpill-name:12px;--p-idpill-name-lh:14px;--p-idpill-name-weight:700;--p-idpill-tracking:0px;
   --p-idpill-disc:28px;--p-idpill-glow:0px 0px 0px 2px var(--card), 0px 0px 0px 3.5px var(--primary);
-  /* Autocomplete (autocomplete.styles.ts webSkin) */
-  --p-ac-h:48px;--p-ac-radius:10px;--p-ac-radius-bottom:10px;--p-ac-border:1px;--p-ac-underline:0px;
-  --p-ac-border-color:var(--input);--p-ac-underline-rest:var(--input);--p-ac-fill:var(--card);--p-ac-pad-x:16px;
-  --p-ac-font:14px;--p-ac-lh:20px;--p-ac-chevron:var(--muted-foreground);
+  /* Autocomplete (autocomplete.styles.ts webSkin, iOS too: Dark Factory's field and menu, the
+     Select's, with the 14px chevron-down Icon at the field's inset 10px from the text) */
+  --p-ac-h:40px;--p-ac-radius:10px;--p-ac-radius-bottom:10px;--p-ac-border:1px;--p-ac-underline:0px;
+  --p-ac-border-color:var(--field-border);--p-ac-underline-rest:var(--input);--p-ac-fill:var(--field-fill);--p-ac-pad-x:12px;
+  --p-ac-font:13px;--p-ac-lh:18px;--p-ac-weight:600;
+  --p-ac-chevron:var(--muted-foreground);--p-ac-chevron-glyph:"chevron-down" /* @kind other */;--p-ac-chevron-size:14px;
   --p-ac-menu-max:280px;--p-ac-menu-radius:12px;--p-ac-menu-border:1px;--p-ac-menu-pad-x:8px;--p-ac-menu-pad-y:8px;
-  --p-ac-menu-shadow:var(--shadow-lg);
-  --p-ac-row-radius:10px;--p-ac-row-pad-x:12px;--p-ac-row-pad-y:10px;--p-ac-row-gap:10px;--p-ac-row-min-h:0px;--p-ac-row-separator:0px;
-  --p-ac-row-font:14px;--p-ac-row-lh:20px;--p-ac-row-selected:var(--accent);
-  --p-ac-check-w:14px;--p-ac-check-color:var(--popover-foreground);
+  --p-ac-menu-shadow:var(--shadow-lg);--p-ac-menu-offset:8px;
+  --p-ac-row-radius:8px;--p-ac-row-pad-x:10px;--p-ac-row-pad-y:8px;--p-ac-row-gap:10px;--p-ac-row-min-h:0px;--p-ac-row-separator:0px;--p-ac-row-spacing:2px;
+  --p-ac-row-font:12.5px;--p-ac-row-lh:17px;--p-ac-row-weight:700;--p-ac-row-hover:var(--hover);
+  --p-ac-row-selected:transparent;--p-ac-row-selected-label:var(--primary-text);
+  --p-ac-check-w:14px;--p-ac-check-color:var(--primary);
   /* Dropdown and RowMenu menus (src/style/menu-look.ts: Dark Factory's menu, 33px rows 2px
      apart at an 8px corner with 12.5/700 labels, the uppercase eyebrow section heading, the
      caption shortcut, the instant hover wash; a disabled row takes the muted ink, no dim) */
@@ -536,19 +542,18 @@
   --p-drawer-scrim:rgba(0,0,0,0.2);--p-drawer-border:0px;--p-drawer-shadow:0px 15px 50px rgba(0,0,0,0.18);
   --p-drawer-side-radius:38px;--p-drawer-sheet-radius:38px;
   --p-drawer-handle-w:60px;--p-drawer-handle-h:4px;--p-drawer-handle-top:5px;
-  /* Autocomplete — iOS 27: a filled 10pt continuous field, 26pt menu, check-only selection */
-  --p-ac-h:44px;--p-ac-radius:8px;--p-ac-radius-bottom:8px;--p-ac-fill:var(--secondary);
-  --p-ac-font:15px;--p-ac-lh:20px;--p-ac-chevron:var(--primary);
-  --p-ac-menu-max:260px;--p-ac-menu-radius:26px;--p-ac-menu-border:0px;--p-ac-menu-pad-x:0px;--p-ac-menu-pad-y:6px;
-  --p-ac-row-radius:0px;--p-ac-row-pad-x:16px;--p-ac-row-pad-y:11px;--p-ac-row-gap:10px;--p-ac-row-min-h:42px;--p-ac-row-separator:1px;
-  --p-ac-row-font:17px;--p-ac-row-lh:22px;--p-ac-row-selected:transparent;
-  --p-ac-check-w:18px;--p-ac-check-color:var(--primary);
-  /* Select — iOS 26 pop-up button + Liquid Glass menu */
-  --p-select-h:44px;--p-select-radius:8px;--p-select-radius-bottom:8px;--p-select-border-color:var(--border);--p-select-pad-x:14px;
-  --p-select-font:15px;--p-select-lh:20px;--p-select-chevron:"⇅" /* @kind other */;--p-select-chevron-color:var(--primary);--p-select-chevron-weight:600;
+  /* Select: the iOS 26 pop-up button (the Input's white reference box, a gray ▾ caret) and the
+     Liquid Glass menu with the UIMenu's leading check. (The iOS Autocomplete is the web's: no
+     block of its own.) */
+  --p-select-h:44px;--p-select-radius:8px;--p-select-radius-bottom:8px;--p-select-border-color:var(--field-border);
+  --p-select-fill:var(--card);--p-select-pad-x:12px;
+  --p-select-font:16px;--p-select-lh:24px;--p-select-weight:400;
+  --p-select-chevron:"▾" /* @kind other */;--p-select-chevron-size:16px;--p-select-chevron-color:var(--muted-foreground);--p-select-chevron-weight:400;
   --p-select-panel-max:320px;--p-select-panel-radius:26px;--p-select-panel-border:0px;--p-select-panel-pad-x:0px;--p-select-panel-pad-y:4px;
-  --p-select-row-radius:0px;--p-select-row-pad-x:16px;--p-select-row-pad-y:11px;--p-select-row-gap:10px;--p-select-row-min-h:42px;
-  --p-select-row-font:17px;--p-select-row-lh:22px;--p-select-row-selected-fill:transparent;
+  --p-select-panel-offset:4px;
+  --p-select-row-radius:0px;--p-select-row-pad-x:16px;--p-select-row-pad-y:11px;--p-select-row-gap:10px;--p-select-row-min-h:42px;--p-select-row-spacing:0px;
+  --p-select-row-font:17px;--p-select-row-lh:22px;--p-select-row-weight:400;--p-select-row-hover:transparent;
+  --p-select-row-selected-fill:transparent;--p-select-row-selected-label:var(--popover-foreground);
   --p-select-check-color:var(--primary);--p-select-check-weight:600;
   /* Dropdown — iOS 26 pull-down menu: 26pt borderless panel, 44pt rows */
   --p-menu-radius:26px;--p-menu-border:0px;--p-menu-pad-x:0px;--p-menu-pad-y:6px;
@@ -776,16 +781,20 @@
   --p-ac-fill:var(--muted);--p-ac-pad-x:16px;--p-ac-font:16px;--p-ac-lh:24px;
   --p-ac-menu-max:280px;--p-ac-menu-radius:4px;--p-ac-menu-border:0px;--p-ac-menu-pad-x:0px;--p-ac-menu-pad-y:8px;
   --p-ac-menu-shadow:var(--shadow-md);
-  --p-ac-row-radius:0px;--p-ac-row-pad-x:16px;--p-ac-row-pad-y:12px;--p-ac-row-gap:12px;--p-ac-row-min-h:48px;
+  --p-ac-weight:400;--p-ac-chevron-glyph:"▾" /* @kind other */;--p-ac-chevron-size:14px;--p-ac-menu-offset:4px;
+  --p-ac-row-radius:0px;--p-ac-row-pad-x:16px;--p-ac-row-pad-y:12px;--p-ac-row-gap:12px;--p-ac-row-min-h:48px;--p-ac-row-spacing:0px;
+  --p-ac-row-font:14px;--p-ac-row-lh:20px;--p-ac-row-weight:400;--p-ac-row-hover:transparent;
+  --p-ac-row-selected:var(--accent);--p-ac-row-selected-label:var(--popover-foreground);
   --p-ac-check-w:16px;--p-ac-check-color:var(--primary);
   /* Select — M3 exposed dropdown: filled 56dp trigger, 4dp elevated menu */
   --p-select-h:56px;--p-select-radius:4px;--p-select-radius-bottom:0px;--p-select-border:0px;--p-select-underline:1px;
   --p-select-border-color:transparent;--p-select-underline-rest:var(--muted-foreground);
-  --p-select-fill:var(--muted);--p-select-pad-x:16px;--p-select-font:16px;--p-select-lh:24px;
-  --p-select-chevron:"⌄" /* @kind other */;--p-select-panel-max:280px;--p-select-panel-radius:4px;--p-select-panel-border:0px;--p-select-panel-pad-y:8px;--p-select-panel-pad-x:0px;
-  --p-select-panel-shadow:var(--shadow-md);
-  --p-select-row-radius:0px;--p-select-row-pad-x:16px;--p-select-row-pad-y:12px;--p-select-row-gap:12px;--p-select-row-min-h:48px;
-  --p-select-row-font:14px;--p-select-row-lh:20px;
+  --p-select-fill:var(--muted);--p-select-pad-x:16px;--p-select-font:16px;--p-select-lh:24px;--p-select-weight:400;
+  --p-select-chevron:"⌄" /* @kind other */;--p-select-chevron-size:16px;--p-select-panel-max:280px;--p-select-panel-radius:4px;--p-select-panel-border:0px;--p-select-panel-pad-y:8px;--p-select-panel-pad-x:0px;
+  --p-select-panel-shadow:var(--shadow-md);--p-select-panel-offset:4px;
+  --p-select-row-radius:0px;--p-select-row-pad-x:16px;--p-select-row-pad-y:12px;--p-select-row-gap:12px;--p-select-row-min-h:48px;--p-select-row-spacing:0px;
+  --p-select-row-font:14px;--p-select-row-lh:20px;--p-select-row-weight:400;--p-select-row-hover:transparent;
+  --p-select-row-selected-label:var(--popover-foreground);
   --p-select-row-selected-fill:color-mix(in oklab, var(--primary) 12%, transparent);
   --p-select-check-color:var(--primary);--p-select-check-weight:700;
   /* Dropdown — M3 menu: 4dp elevated surface, 48dp rows, no dividers */

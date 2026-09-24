@@ -1,11 +1,20 @@
 # Select
 
-Native select restyled to match Canvas inputs. Pass `label` (and `required`) to name the field: iOS and web render the label above the trigger, while Android floats the Material 3 in-container label once the menu opens or a value is selected. The trigger fills the parent it is given; a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container step sets its measure.
+A pop-up field for picking one option from a list. Pass `label` (and `required`) to name the field: iOS and web render the label above the trigger, while Android floats the Material 3 in-container label once the menu opens or a value is selected. The trigger fills the parent it is given; a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container step sets its measure.
+
+On the web the Select is Dark Factory's: the trigger is the Input's field (a translucent
+well at a 10px corner whose hairline turns violet while the list is open, a 13px semibold
+value, the uppercase eyebrow label above) with a 14px chevron, and the list is Dark
+Factory's menu, 8px below the trigger, its 33px rows washed under the pointer. The chosen
+option is marked in the selection violet, its label and a checkmark in the gutter every row
+keeps, never by a fill. A disabled trigger keeps a hairline frame with no fill and a muted
+value rather than fading. iOS keeps its pop-up button and the menu's leading check, and
+Android the Material 3 exposed dropdown.
 
 In glass mode the option panel is a dense-layer glass card under the trigger (or
-above it when it fits there); the trigger stays in place with its value and
-chevron, and the chosen value and expanded state commit immediately. Solid mode
-paints the skin's own panel.
+above it when it fits there); on the web the trigger is the clear well every web field
+is. The trigger stays in place with its value and chevron, and the chosen value and
+expanded state commit immediately. Solid mode paints the skin's own panel.
 
 The label also names the option list. Use `accessibilityLabel` to provide an explicit purpose when the visible label or placeholder is insufficient; it overrides both accessible names. A required field announces "required" with the button name and marks the option list as required. The selected value never replaces the field's purpose.
 
@@ -147,11 +156,11 @@ Pass `ref` to access the interactive trigger, preserving overlay measurement. Us
 ```tsx
 <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 12, maxWidth: 420 }}>
   <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>
-    <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>City</Text>
+    <Text style={{ marginBottom: 6, fontSize: 10, lineHeight: 13, fontWeight: "700", letterSpacing: 1.6, textTransform: "uppercase", color: tokens["muted-foreground"] }}>City</Text>
     <Input large accessibilityLabel="City" value="Austin" />
   </View>
   <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>
-    <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>State</Text>
+    <Text style={{ marginBottom: 6, fontSize: 10, lineHeight: 13, fontWeight: "700", letterSpacing: 1.6, textTransform: "uppercase", color: tokens["muted-foreground"] }}>State</Text>
     <Select value="Texas" options={["Texas", "Oregon"]} />
   </View>
 </View>
@@ -169,10 +178,10 @@ Pass `ref` to access the interactive trigger, preserving overlay measurement. Us
 
 ```tsx
 <View>
-  <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Plan</Text>
-  <Pressable style={{ height: 40, flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12 }} accessibilityRole="button">
-    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens.foreground }}>Starter</Text>
-    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>▾</Text>
+  <Text style={{ marginBottom: 6, fontSize: 10, lineHeight: 13, fontWeight: "700", letterSpacing: 1.6, textTransform: "uppercase", color: tokens["muted-foreground"] }}>Plan</Text>
+  <Pressable style={{ height: 46, flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderRadius: 10, borderWidth: 1, borderColor: tokens["field-border"], backgroundColor: tokens["field-fill"], paddingHorizontal: 12 }} accessibilityRole="button">
+    <Text style={{ fontSize: 11, lineHeight: 15, fontWeight: "600", color: tokens.foreground }}>Starter</Text>
+    <Icon chevronDown muted size={11} decorative />
   </Pressable>
 </View>
 ```

@@ -1,6 +1,8 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens } from "../../style/index.js";
 import { fieldBorder } from "../../style/field-colors.js";
+import { FIELD_INSET, fieldAddon } from "../../style/field-look.js";
+import { menuDetail } from "../../style/menu-look.js";
 import {
   webSkin as inputWeb,
   iosSkin as inputIos,
@@ -29,8 +31,10 @@ import {
 //     divider on the field side that takes the field's state colour (rest hairline,
 //     ring on focus, destructive on error); the dial code sits inline in the
 //     placeholder gray, 12pt from the divider, 12pt before the number.
-//   Web: the Riskora addon box (a `muted` cluster with a `border` divider), the
-//     ▾ caret in `muted-foreground`, the dial code inline.
+//   Web: the Input's addon box from Dark Factory's field (src/style/field-look.ts: a
+//     `muted` cluster with a `field-border` divider), the kit's 14px chevron-down Icon
+//     in `muted-foreground`, the dial code inline at the field's 12px inset, and the
+//     list's dial column Dark Factory's muted menu detail.
 //   Android (Material 3): an inline leading cluster with no fill and no divider
 //     (M3 draws prefixes inline), a `muted-foreground` caret that turns `primary`
 //     while the list is open, the dial code inline.
@@ -48,8 +52,10 @@ export interface PhoneInputSkin {
   flag: (size: Size) => TextStyle;
   /** The caret next to the flag; `open` lets a skin tint it while the list shows. */
   caret: (t: ColorTokens, open: boolean) => TextStyle;
-  /** The caret character. */
+  /** The caret character, where the skin draws a text glyph. */
   caretGlyph: string;
+  /** The size of the kit's chevronDown Icon where the skin draws that in place of the glyph (the web's), in `caret`'s colour; null for the glyph. */
+  caretIcon: number | null;
   /** The inline dial code before the number (its inset from the segment's divider). */
   dial: (t: ColorTokens) => TextStyle;
   /** The number's inset after the dial code. */
@@ -64,25 +70,23 @@ const FLAG_SIZE: Record<Size, TextStyle> = {
   large: { fontSize: 22, lineHeight: 28 },
 };
 
-// ---------- Web: the Riskora addon cluster ----------
+// ---------- Web: the Input's addon box, Dark Factory's field ----------
 export const webSkin: PhoneInputSkin = {
   field: inputWeb,
   menu: selectWeb,
   country: (t) => ({
+    ...fieldAddon(t, "left"),
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    paddingHorizontal: 12,
-    backgroundColor: t.muted,
-    borderColor: t.border,
-    borderEndWidth: 1,
   }),
   flag: (size) => FLAG_SIZE[size],
-  caret: (t) => ({ color: t["muted-foreground"], fontSize: 12, lineHeight: 16 }),
+  caret: (t) => ({ color: t["muted-foreground"] }),
   caretGlyph: "▾",
-  dial: (t) => ({ color: t["muted-foreground"], paddingStart: 16 }),
+  caretIcon: 14,
+  dial: (t) => ({ color: t["muted-foreground"], paddingStart: FIELD_INSET }),
   numberGap: 8,
-  rowDial: (t) => ({ color: t["muted-foreground"], marginStart: "auto" }),
+  rowDial: menuDetail,
 };
 
 // ---------- iOS: the reference's phone field ----------
@@ -104,6 +108,7 @@ export const iosSkin: PhoneInputSkin = {
   // while the list is open.
   caret: (t) => ({ color: t["muted-foreground"], fontSize: 13, lineHeight: 16 }),
   caretGlyph: "▾",
+  caretIcon: null,
   // "+1" in the placeholder gray, 12pt from the divider (the reference's number box inset).
   dial: (t) => ({ color: t["muted-foreground"], paddingStart: 12 }),
   numberGap: 12,
@@ -124,6 +129,7 @@ export const androidSkin: PhoneInputSkin = {
   flag: (size) => FLAG_SIZE[size],
   caret: (t, open) => ({ color: open ? t.primary : t["muted-foreground"], fontSize: 12, lineHeight: 16 }),
   caretGlyph: "▾",
+  caretIcon: null,
   dial: (t) => ({ color: t["muted-foreground"], paddingStart: 0 }),
   numberGap: 8,
   rowDial: (t) => ({ color: t["muted-foreground"], marginStart: "auto" }),

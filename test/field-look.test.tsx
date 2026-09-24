@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from "bun:test";
 import { readFileSync } from "node:fs";
 import { blockDeclarations } from "../tools/tokens/css-tokens.ts";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { darkColors, lightColors, mintColors } from "../src/style/tokens.ts";
 import { alpha } from "../src/style/color.ts";
@@ -25,6 +25,11 @@ import {
 import * as inputSkins from "../src/atoms/input/input.styles.ts";
 import * as textareaSkins from "../src/atoms/textarea/textarea.styles.ts";
 import * as fieldSkins from "../src/molecules/field/field.styles.ts";
+import * as selectSkins from "../src/atoms/select/select.styles.ts";
+import * as autocompleteSkins from "../src/atoms/autocomplete/autocomplete.styles.ts";
+import { Select } from "../src/atoms/select/select.tsx";
+import { Autocomplete } from "../src/atoms/autocomplete/autocomplete.tsx";
+import { clearSurfaceTint } from "../src/style/glass-surface/glass-surface.shared.tsx";
 import { Input } from "../src/atoms/input/input.tsx";
 import { Textarea } from "../src/atoms/textarea/textarea.tsx";
 import { Field } from "../src/molecules/field/field.tsx";
@@ -193,6 +198,95 @@ describe("the web field families read the recipe", () => {
   });
 });
 
+// The web Select trigger and the Autocomplete field are the same field (SKN-6b): the
+// recipe's frame, value, eyebrow, helper and disabled look, a 14px chevron-down Icon, and
+// under glass the clear well every web field is (the Select trigger used to take the
+// frosted control puck).
+describe("the web Select and Autocomplete read the recipe", () => {
+  const SELECT_SIZES = [["small", "small"], ["default", "base"], ["large", "large"]] as const;
+
+  it("builds the web Select trigger and the Autocomplete field from it at every size", () => {
+    const select = selectSkins.webSkin;
+    const ac = autocompleteSkins.webSkin;
+    for (const [size, field] of SELECT_SIZES) {
+      expect(select.trigger(t, size, false)).toMatchObject({ ...fieldFrame(t, { focused: false, error: false }), paddingHorizontal: 12, height: FIELD_HEIGHT[field] });
+      expect(select.trigger(t, size, true).borderColor).toBe(t.ring);
+      expect(select.valueText(t, size, true)).toEqual({ ...fieldValue(field), color: t.foreground });
+      expect(select.valueText(t, size, false).color).toBe(t["muted-foreground"]);
+      expect(select.label(t, size)).toEqual({ ...fieldLabel(t), marginBottom: FIELD_LABEL_GAP });
+      // The chevron sits at the field's inset in both: the Autocomplete's 24px disclosure box
+      // is pulled 5px into the end padding around the 14px glyph, 10px from the text.
+      expect(ac.field(t, size, false)).toMatchObject({ ...fieldFrame(t, { focused: false, error: false }), paddingStart: 12, paddingEnd: 7, gap: 10, height: FIELD_HEIGHT[field] });
+      expect(ac.field(t, size, true).borderColor).toBe(t.ring);
+      expect(ac.fieldText(t, size, false)).toEqual({ ...fieldValue(field), color: t.foreground });
+      expect(ac.label(t, size)).toEqual(select.label(t, size));
+    }
+    expect([select.chevronIcon, ac.chevronIcon, select.iconSize]).toEqual([14, 14, FIELD_ICON]);
+    expect(ac.helper(t)).toEqual({ ...fieldNote(t, false), marginTop: FIELD_LABEL_GAP });
+    expect([select.disabledLook, ac.disabledLook]).toEqual([fieldDisabled, fieldDisabled]);
+    expect([select.disabledOpacity, ac.disabledOpacity]).toEqual([1, 1]);
+    expect([select.liquid, ac.liquid]).toEqual([true, true]);
+  });
+
+  it("paints the rendered trigger and field: the well, the eyebrow, the chevron Icon, and the disabled look with no dim", () => {
+    for (const tokens of [lightColors, mintColors, darkColors]) {
+      const scheme = tokens === darkColors ? { dark: true } : { light: true };
+      render(
+        <ThemeProvider {...scheme} mint={tokens === mintColors} solid>
+          <Select label="Region" defaultValue="Europe" options={["Americas", "Europe"]} testID="select" />
+          <Select disabled label="Locked" defaultValue="Americas" options={["Americas", "Europe"]} testID="select-off" />
+          <Autocomplete label="Person" options={["Ada", "Grace"]} testID="ac" />
+          <Autocomplete disabled label="Owner" defaultValue="Ada" options={["Ada", "Grace"]} testID="ac-off" />
+        </ThemeProvider>,
+      );
+      const trigger = screen.getByTestId("select");
+      const field = screen.getByTestId("ac").parentElement!;
+      for (const box of [trigger, field]) {
+        expect(flat(box.style.backgroundColor)).toBe(flat(tokens["field-fill"]!).replace(/0\.7\)$/, "0.70)").replace(/0\.75\)$/, "0.75)"));
+        expect(flat(box.style.height)).toBe("40px");
+        // The chevron is the kit's decorative Icon (its SVG is a hidden view in the test DOM),
+        // not the old text glyph.
+        expect(box.querySelector('[aria-hidden="true"]'), "the chevron Icon").not.toBeNull();
+        expect(box.textContent).not.toContain("▾");
+      }
+      for (const text of ["Region", "Person"]) {
+        const label = screen.getByText(text);
+        expect(label.style.textTransform).toBe("uppercase");
+        expect(flat(label.style.color)).toBe(rgbaOf(tokens["muted-foreground"]));
+      }
+      const offTrigger = screen.getByTestId("select-off");
+      const offField = screen.getByTestId("ac-off").parentElement!;
+      for (const [box, value] of [[offTrigger, screen.getByText("Americas")], [offField, screen.getByTestId("ac-off")]] as const) {
+        expect(flat(box.style.borderColor || box.style.borderTopColor)).toBe(rgbaOf(tokens.border));
+        expect(box.style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
+        expect(flat(value.style.color)).toBe(rgbaOf(tokens["muted-foreground"]));
+        for (let node: HTMLElement | null = value; node && node !== document.body; node = node.parentElement) expect(node.style.opacity, "no dim").toBe("");
+      }
+      cleanup();
+    }
+  });
+
+  it("gives the web Select trigger the clear well under glass, its open ring painted over it", () => {
+    render(<ThemeProvider light glass><Select label="Region" options={["Americas", "Europe"]} testID="select" /></ThemeProvider>);
+    const trigger = screen.getByTestId("select");
+    const painted = [...trigger.querySelectorAll<HTMLElement>('[data-testid="glass-material"]')];
+    expect(painted).toHaveLength(1);
+    expect(painted[0]!.querySelector('[style*="backdrop-filter"]'), "a clear well frosts nothing").toBeNull();
+    // The clear well's under-fill, as react-native-web prints it (the alpha to two decimals).
+    const quantized = (value: string) => {
+      const m = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/.exec(value);
+      return m ? [m[1], m[2], m[3], (Math.round(Number(m[4] ?? 1) * 255) / 255).toFixed(2)].map(Number) : value;
+    };
+    expect(quantized((painted[0]!.children[0] as HTMLElement).style.backgroundColor)).toEqual(quantized(clearSurfaceTint(lightColors, false)));
+    expect(screen.queryByTestId("text-entry-state-border")).toBeNull();
+    act(() => { fireEvent.click(trigger); });
+    const ring = screen.getByTestId("text-entry-state-border");
+    expect(ring.parentElement).toBe(trigger);
+    expect(flat(ring.style.borderColor)).toBe(rgbaOf(lightColors.ring));
+    expect(trigger.style.borderColor).toContain("0.00");
+  });
+});
+
 describe("the platform fields", () => {
   it("keep their own shapes on iOS and Android, and dim rather than take the web's disabled look", () => {
     for (const skins of [inputSkins, textareaSkins]) {
@@ -207,6 +301,18 @@ describe("the platform fields", () => {
     expect(fieldSkins.iosSkin.label(t).textTransform).toBeUndefined();
     // Every M3 field's active indicator is `ring`, the Textarea's included.
     expect(textareaSkins.androidSkin.field(t, { focused: true, error: false }).borderBottomColor).toBe(t.ring);
+  });
+
+  it("keep the iOS and Android Select triggers, and give iOS the web's Autocomplete (iOS ships none)", () => {
+    const [ios, android] = [selectSkins.iosSkin, selectSkins.androidSkin];
+    expect([ios.chevronIcon, android.chevronIcon, ios.chevronGlyph, android.chevronGlyph]).toEqual([null, null, "▾", "⌄"]);
+    expect([ios.disabledLook, android.disabledLook, ios.liquid, android.liquid]).toEqual([undefined, undefined, undefined, undefined]);
+    expect([ios.disabledOpacity, android.disabledOpacity]).toEqual([0.4, 0.38]);
+    expect(ios.trigger(t, "default", false)).toMatchObject({ height: 44, borderRadius: 8, backgroundColor: t.card });
+    expect(android.trigger(t, "default", false)).toMatchObject({ height: 56, backgroundColor: t.muted });
+    expect(autocompleteSkins.iosSkin).toBe(autocompleteSkins.webSkin);
+    const ac = autocompleteSkins.androidSkin;
+    expect([ac.chevronIcon, ac.disabledLook, ac.minTarget]).toEqual([null, undefined, 48]);
   });
 
   it("hand off each platform's Textarea line height as its skin draws it", () => {

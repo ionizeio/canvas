@@ -297,7 +297,7 @@ components:
     ac-radius: "10px"
     ac-radius-bottom: "10px"
     ac-menu-radius: "12px"
-    ac-row-radius: "10px"
+    ac-row-radius: "8px"
   avatar:
     avatar-square-radius: "8px"
   buttongroup:
@@ -328,7 +328,7 @@ components:
     select-radius: "10px"
     select-radius-bottom: "10px"
     select-panel-radius: "12px"
-    select-row-radius: "10px"
+    select-row-radius: "8px"
   stepper:
     stepper-btn-radius: "0px"
   textarea:
@@ -430,11 +430,6 @@ platformSkins:
       card-radius: "12px"
       card-shadow: none
       card-shadow-raised: "var(--shadow-sm)"
-    autocomplete:
-      ac-radius: "8px"
-      ac-radius-bottom: "8px"
-      ac-menu-radius: "26px"
-      ac-row-radius: "0px"
     buttongroup:
       seg-radius: "9999px"
       seg-track-radius: "9999px"

@@ -8,7 +8,7 @@ import { Input as InputIOS } from "../src/atoms/input/input.ios.tsx";
 import { Textarea } from "../src/atoms/textarea/textarea.tsx";
 import { Textarea as TextareaAndroid } from "../src/atoms/textarea/textarea.android.tsx";
 import { Autocomplete } from "../src/atoms/autocomplete/autocomplete.tsx";
-import { Autocomplete as AutocompleteIOS } from "../src/atoms/autocomplete/autocomplete.ios.tsx";
+import { Autocomplete as AutocompleteAndroid } from "../src/atoms/autocomplete/autocomplete.android.tsx";
 import { InputOTP } from "../src/atoms/input-otp/input-otp.tsx";
 import { Stepper } from "../src/atoms/stepper/stepper.tsx";
 import { PhoneInput } from "../src/molecules/phone-input/phone-input.tsx";
@@ -62,7 +62,8 @@ describe("clear grouped field state borders", () => {
     },
     {
       name: "Autocomplete",
-      field: (native: boolean) => native ? <AutocompleteIOS options={["Ada", "Grace"]} testID="field" /> : <Autocomplete options={["Ada", "Grace"]} testID="field" />,
+      // The iOS Autocomplete is the web's (SKN-6b), so the native field is Android's.
+      field: (native: boolean) => native ? <AutocompleteAndroid options={["Ada", "Grace"]} testID="field" /> : <Autocomplete options={["Ada", "Grace"]} testID="field" />,
       owner: (input: HTMLElement) => input.parentElement!,
     },
     {
@@ -105,8 +106,10 @@ describe("clear grouped field state borders", () => {
         const input = screen.getByTestId("field");
         act(() => input.focus());
         expect(screen.queryByTestId("text-entry-state-border")).toBeNull();
-        expect(owner(input).style.borderColor).not.toBe("");
-        expect(owner(input).style.borderColor).not.toContain("0.00");
+        // The bottom edge: a full native border's, or Material 3's active indicator (the
+        // Android Autocomplete's), whose other sides stay clear.
+        expect(owner(input).style.borderBottomColor).not.toBe("");
+        expect(owner(input).style.borderBottomColor).not.toContain("0.00");
         expect(document.activeElement).toBe(input);
       });
     }

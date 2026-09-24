@@ -25,8 +25,10 @@ afterEach(cleanup);
 
 // `buttonDisabled` is the Button's own dim: null on the web, whose disabled Button is Dark
 // Factory's look (a transparent pill, a hairline, a muted label) rather than a fade.
+// `selectDisabled` likewise: null on the web, whose disabled Select trigger is Dark
+// Factory's disabled field (SKN-6b: the frame on the hairline, no fill, a muted value).
 const platforms = [
-  { name: "web", Button, Select, Chip, AvatarMenu, disabled: 0.5, buttonDisabled: null, selectDisabled: 0.5, pressed: 0.9, selectPressed: 0.9 },
+  { name: "web", Button, Select, Chip, AvatarMenu, disabled: 0.5, buttonDisabled: null, selectDisabled: null, pressed: 0.9, selectPressed: 0.9 },
   { name: "iOS", Button: IOSButton, Select: IOSSelect, Chip: IOSChip, AvatarMenu: IOSAvatarMenu, disabled: 0.4, buttonDisabled: 0.4, selectDisabled: 0.4, pressed: 0.8, selectPressed: 0.8 },
   { name: "Android", Button: AndroidButton, Select: AndroidSelect, Chip: AndroidChip, AvatarMenu: AndroidAvatarMenu, disabled: 0.38, buttonDisabled: 0.38, selectDisabled: 0.38, pressed: null, selectPressed: null },
 ] as const;
@@ -67,7 +69,8 @@ describe("liquid control foreground feedback", () => {
       expectMaterialAncestorsOpaque(container);
       if (p.buttonDisabled == null) expectWebDisabledLook(screen.getByText("Save"));
       else expect(Number(screen.getByText("Save").parentElement!.style.opacity)).toBe(p.buttonDisabled);
-      expect(Number(screen.getByText("North").parentElement!.style.opacity)).toBe(p.selectDisabled);
+      if (p.selectDisabled == null) expectWebDisabledLook(screen.getByText("North"));
+      else expect(Number(screen.getByText("North").parentElement!.style.opacity)).toBe(p.selectDisabled);
       expect(Number(screen.getByText("Filter").parentElement!.style.opacity)).toBe(0.5);
       expect(Number(screen.getByText("Removable").parentElement!.style.opacity)).toBe(0.5);
       // The identity pill is one skin on every platform, evaluated here in the web
@@ -83,7 +86,10 @@ describe("liquid control foreground feedback", () => {
         expect(screen.getByRole("button", { name: "Save" }).style.opacity).toBe("");
         expectWebDisabledLook(screen.getByText("Save"));
       } else expect(Number(screen.getByRole("button", { name: "Save" }).style.opacity)).toBe(p.buttonDisabled);
-      expect(Number(screen.getByRole("button", { name: "Region" }).style.opacity)).toBe(p.selectDisabled);
+      if (p.selectDisabled == null) {
+        expect(screen.getByRole("button", { name: "Region" }).style.opacity).toBe("");
+        expectWebDisabledLook(screen.getByText("North"));
+      } else expect(Number(screen.getByRole("button", { name: "Region" }).style.opacity)).toBe(p.selectDisabled);
     });
 
     if (p.pressed !== null) it(`${p.name} keeps actual press feedback on the label instead of the native material`, async () => {

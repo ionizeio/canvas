@@ -1,13 +1,21 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { ThemeProvider } from "../src/style/theme.tsx";
-import { lightColors } from "../src/style/tokens.ts";
+import { darkColors, lightColors, mintColors, type ColorTokens } from "../src/style/tokens.ts";
 import { alpha } from "../src/style/color.ts";
+import { withInnerFill } from "../src/style/glass-fill.ts";
 import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
 import { RowMenu } from "../src/organisms/row-menu/row-menu.tsx";
 import * as dropdownSkins from "../src/atoms/dropdown/dropdown.styles.ts";
 import * as rowMenuSkins from "../src/organisms/row-menu/row-menu.styles.ts";
-import { menuPanel, menuRow, menuRowHover, menuRowLabel, menuSection, menuSeparator, MENU_OFFSET, MENU_ROW_GAP } from "../src/style/menu-look.ts";
+import { menuCheck, menuChosenLabel, menuDetail, menuListPanel, menuPanel, menuRow, menuRowHover, menuRowLabel, menuRowPressed, menuSection, menuSeparator, MENU_OFFSET, MENU_ROW_GAP } from "../src/style/menu-look.ts";
+import * as selectSkins from "../src/atoms/select/select.styles.ts";
+import * as autocompleteSkins from "../src/atoms/autocomplete/autocomplete.styles.ts";
+import * as phoneSkins from "../src/molecules/phone-input/phone-input.styles.ts";
+import * as listboxSkins from "../src/atoms/listbox/listbox.styles.ts";
+import { Select } from "../src/atoms/select/select.tsx";
+import { Autocomplete } from "../src/atoms/autocomplete/autocomplete.tsx";
+import { PhoneInput } from "../src/molecules/phone-input/phone-input.tsx";
 import { View } from "react-native";
 
 // The web Dropdown and RowMenu are Dark Factory's menu (SKN-5a): its Popover panel of
@@ -120,5 +128,109 @@ describe("the platform menus", () => {
     const trigger = screen.getByRole("button", { name: "More options" });
     expect(trigger.style.width).toBe("28px");
     expect(trigger.parentElement).not.toBe(root.parentElement);
+  });
+});
+
+// The web option lists are Dark Factory's menu too (SKN-6b): the Select's, the
+// Autocomplete's and PhoneInput's countries, with the chosen row the Listbox had (the
+// selection violet on the label, a checkmark in `primary` in a gutter every row keeps, no
+// fill) moved into the recipe, so a Listbox and a Select mark a choice alike.
+describe("Dark Factory's menu in the option lists", () => {
+  const PALETTES: [string, ColorTokens][] = [["blush", lightColors], ["mint", mintColors], ["dark", darkColors]];
+  const themeOf = (name: string) => (name === "dark" ? { dark: true } : { light: true, mint: name === "mint" });
+  const textOf = (row: HTMLElement, text: string) => [...row.querySelectorAll<HTMLElement>("div")].find((node) => node.textContent === text)!;
+  // react-native-web prints an alpha with two decimals.
+  const quantized = (value: string) => {
+    const m = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/.exec(value);
+    return m ? [m[1], m[2], m[3], (Math.round(Number(m[4] ?? 1) * 255) / 255).toFixed(2)].map(Number) : value;
+  };
+
+  it("is one recipe in every web option list, and the Listbox's chosen row reads it", () => {
+    const select = selectSkins.webSkin;
+    const ac = autocompleteSkins.webSkin;
+    expect(menuListPanel(t)).toEqual({ ...menuPanel(t), maxHeight: 280, overflow: "hidden" });
+    expect(select.panel(t)).toEqual(menuListPanel(t));
+    expect(ac.popover(t)).toEqual(menuListPanel(t));
+    // Being chosen fills nothing.
+    expect(select.optionRow(t, true)).toBe(menuRow);
+    expect(ac.row).toBe(menuRow);
+    expect(ac.rowSelected(t)).toBeNull();
+    expect([select.optionPressed(t), ac.rowPressed(t)]).toEqual([menuRowPressed(t), menuRowPressed(t)]);
+    expect(select.optionText(t, "default")).toEqual({ ...menuRowLabel, color: t["popover-foreground"] });
+    expect(ac.optionText(t, "large")).toEqual(select.optionText(t, "small"));
+    expect([select.indicator(t, "default"), ac.check(t, "default")]).toEqual([menuCheck(t), menuCheck(t)]);
+    expect([select.chosenText, ac.chosenText]).toEqual([menuChosenLabel, menuChosenLabel]);
+    expect([select.optionHover, ac.rowHover]).toEqual([menuRowHover, menuRowHover]);
+    expect([select.rowGap, ac.rowGap, select.menuGap, ac.menuGap]).toEqual([MENU_ROW_GAP, MENU_ROW_GAP, MENU_OFFSET, MENU_OFFSET]);
+    expect(phoneSkins.webSkin.menu).toBe(select);
+    expect(phoneSkins.webSkin.rowDial).toBe(menuDetail);
+    expect(listboxSkins.webSkin.chosenLabel).toBe(menuChosenLabel);
+    expect(listboxSkins.webSkin.mark).toEqual({ kind: "gutter", checkmark: menuCheck });
+    expect(menuCheck(t)).toEqual({ width: 14, fontSize: 12.5, lineHeight: 17, fontWeight: "700", color: t.primary });
+    expect(menuChosenLabel(t)).toEqual({ color: t["primary-text"] });
+  });
+
+  it("marks the chosen option in the selection violet beside a checkmark, with no fill, and washes a hovered row", () => {
+    for (const [name, tokens] of PALETTES) {
+      const theme = themeOf(name);
+      for (const list of ["select", "autocomplete", "phone"] as const) {
+        render(
+          <ThemeProvider {...theme} solid>
+            {list === "select" ? <Select open label="Region" defaultValue="Europe" options={["Americas", "Europe"]} />
+              : list === "autocomplete" ? <Autocomplete open label="Region" defaultValue="Europe" options={["Americas", "Europe"]} />
+              : <PhoneInput label="Phone" defaultCountry="GB" testID="phone" />}
+          </ThemeProvider>,
+        );
+        if (list === "phone") fireEvent.click(screen.getByTestId("phone-country"));
+        const rows = screen.getAllByRole("option");
+        const chosen = rows.find((row) => row.getAttribute("aria-selected") === "true")!;
+        const other = rows.find((row) => row.getAttribute("aria-selected") === "false")!;
+        const chosenLabel = list === "phone" ? "United Kingdom" : "Europe";
+        const where = `${name} ${list}`;
+        expect(flat(textOf(chosen, chosenLabel).style.color), where).toBe(rgbaOf(tokens["primary-text"]!));
+        expect(flat(textOf(chosen, "✓").style.color), where).toBe(rgbaOf(tokens.primary));
+        expect(textOf(other, "✓"), `${where}: an unchosen row shows no check`).toBeUndefined();
+        expect(chosen.style.backgroundColor, `${where}: no fill for being chosen`).toBe("");
+        // The list sits Dark Factory's 2px apart.
+        expect(chosen.parentElement!.style.gap || chosen.parentElement!.style.rowGap, where).toBe("2px");
+        fireEvent.pointerEnter(other, { pointerType: "mouse" });
+        expect(quantized(other.style.backgroundColor), `${where}: the hover wash`).toEqual(quantized(tokens.hover!));
+        fireEvent.pointerLeave(other);
+        expect(other.style.backgroundColor, where).toBe("");
+        if (list === "phone") {
+          // The dial column is Dark Factory's muted menu detail.
+          const dial = textOf(chosen, "+44");
+          expect(flat(dial.style.color)).toBe(rgbaOf(tokens["muted-foreground"]));
+          expect(dial.style.fontSize).toBe("11px");
+        }
+        cleanup();
+      }
+    }
+  });
+
+  it("gives PhoneInput's country rows inner fills under glass, never the opaque press fill", async () => {
+    render(<ThemeProvider light glass><PhoneInput label="Phone" testID="phone" /></ThemeProvider>);
+    fireEvent.click(screen.getByTestId("phone-country"));
+    const row = screen.getAllByRole("option")[0]!;
+    fireEvent.mouseDown(row, { button: 0, buttons: 1, clientX: 1, clientY: 1 });
+    // The soft ink tint: the row's muted dial code keeps 4.5:1 on it (4.61 in blush, where
+    // the firm tint would leave 4.30).
+    const expected = withInnerFill({ tokens: t, surface: "glass", dark: false }, menuRowPressed(t), "soft").backgroundColor as string;
+    expect(expected).not.toBe(t.accent);
+    await waitFor(() => expect(quantized(row.style.backgroundColor)).toEqual(quantized(expected)));
+    fireEvent.mouseUp(row, { button: 0, buttons: 0, clientX: 1, clientY: 1 });
+  });
+
+  it("keeps the platform option lists: the UIMenu's leading check on iOS, Material 3's tint on Android, no wash", () => {
+    for (const skin of [selectSkins.iosSkin, selectSkins.androidSkin]) {
+      expect(skin.selectedSide).toBe("leading");
+      expect([skin.optionHover, skin.chosenText, skin.rowGap, skin.menuGap]).toEqual([null, null, 0, 4]);
+    }
+    expect(phoneSkins.iosSkin.menu).toBe(selectSkins.iosSkin);
+    expect(selectSkins.iosSkin.optionRow(t, true).backgroundColor).toBeUndefined();
+    expect(selectSkins.androidSkin.optionRow(t, true).backgroundColor).toBe(alpha(t.primary, 0.12));
+    const android = autocompleteSkins.androidSkin;
+    expect([android.rowHover, android.chosenText, android.rowGap, android.menuGap]).toEqual([null, null, 0, 4]);
+    expect(android.rowSelected(t)).toEqual({ backgroundColor: t.accent });
   });
 });

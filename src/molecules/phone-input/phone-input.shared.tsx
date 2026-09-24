@@ -24,10 +24,13 @@ import {
   isGlass,
   withInnerFill,
   alpha,
+  type TextStyle,
 } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
-import { root, rootLifted, PANEL_ANCHOR } from "../../atoms/select/select.styles.js";
+import { root, rootLifted, panelAnchor } from "../../atoms/select/select.styles.js";
+import { OptionRow } from "../../atoms/select/select.shared.js";
+import { Icon } from "../../atoms/icon/icon.js";
 import { type TextEntryProps } from "../../atoms/input/input.shared.js";
 import { PHONE_COUNTRIES, flagOf, type PhoneCountry } from "./countries.js";
 import { type PhoneInputSkin, type Size } from "./phone-input.styles.js";
@@ -46,8 +49,9 @@ const LISTBOX = "listbox" as Role;
 //
 // The country list renders through AnchoredOverlay, like Select's option list: with
 // an OverlayProvider it portals over the page below the box; without one it falls
-// back to an inline absolute card. It asks for the OPAQUE surface, an option list
-// being a card of rows the page must not show through.
+// back to an inline absolute card. It asks for the DENSE layer, an option list being a
+// card of rows the page must not show through, and its rows are Select's own
+// (OptionRow), so their fills are inner fills on that material under glass.
 
 /** The subset of the Input's text-entry passthrough that makes sense for a phone number. */
 export type PhoneEntryProps = Pick<
@@ -223,7 +227,11 @@ export function createPhoneInput(skin: PhoneInputSkin) {
           testID={props.testID != null ? `${props.testID}-country` : undefined}
         >
           <Text style={skin.flag(size)}>{selected ? (selected.flag ?? flagOf(selected.code)) : ""}</Text>
-          <Text style={skin.caret(tokens, open)}>{skin.caretGlyph}</Text>
+          {skin.caretIcon != null ? (
+            <Icon chevronDown size={skin.caretIcon} color={(skin.caret(tokens, open) as TextStyle).color as string} decorative />
+          ) : (
+            <Text style={skin.caret(tokens, open)}>{skin.caretGlyph}</Text>
+          )}
         </Pressable>
 
         <View style={NUMBER_AREA}>
@@ -285,46 +293,30 @@ export function createPhoneInput(skin: PhoneInputSkin) {
         open={open}
         onDismiss={close}
         triggerRef={boxRef}
-        gap={4}
+        gap={skin.menu.menuGap}
         cardStyle={[skin.menu.panel(tokens), { minWidth: boxWidth }]}
-        inlineStyle={PANEL_ANCHOR}
+        inlineStyle={panelAnchor(skin.menu.menuGap)}
         // The country list is an option list: the DENSE layer under glass, like Select's.
         dense
       >
         <EscapeLayerProvider scope={escapeScope}>
           <OverlayScrollView style={optionScroll} bounces={false}>
             <RippleClip shape={cornerRadii(skin.menu.panel(tokens))}>
-              <View nativeID={listId} role={LISTBOX} accessibilityLabel="Country" aria-label="Country">
-                {countries.map((c, i) => {
-                  const isSelected = c.code === selected?.code;
-                  return (
-                    <Pressable
-                      key={c.code}
-                      style={({ pressed }) => [
-                        skin.menu.optionRow(tokens, isSelected),
-                        i > 0 && skin.menu.rowSeparator ? skin.menu.rowSeparator(tokens) : null,
-                        skin.menu.ripple == null && pressed ? skin.menu.optionPressed(tokens) : null,
-                      ]}
-                      onPress={() => pick(c)}
-                      android_ripple={skin.menu.ripple ? skin.menu.ripple(tokens) : undefined}
-                      role="option"
-                      accessibilityLabel={`${c.name} ${c.dialCode}`}
-                      aria-label={`${c.name} ${c.dialCode}`}
-                      accessibilityState={{ selected: isSelected }}
-                      aria-selected={isSelected}
-                    >
-                      {skin.menu.selectedSide === "leading" ? (
-                        <Text style={[skin.menu.indicator(tokens, menuSize), { width: 14 }]}>{isSelected ? "✓" : " "}</Text>
-                      ) : null}
-                      <Text style={skin.menu.optionText(tokens, menuSize)}>{c.flag ?? flagOf(c.code)}</Text>
-                      <Text style={[skin.menu.optionText(tokens, menuSize), { flexShrink: 1 }]}>{c.name}</Text>
-                      <Text style={[skin.menu.optionText(tokens, menuSize), skin.rowDial(tokens)]}>{c.dialCode}</Text>
-                      {skin.menu.selectedSide === "trailing" ? (
-                        <Text style={skin.menu.indicator(tokens, menuSize)}>{isSelected ? "✓" : ""}</Text>
-                      ) : null}
-                    </Pressable>
-                  );
-                })}
+              <View nativeID={listId} role={LISTBOX} accessibilityLabel="Country" aria-label="Country" style={{ gap: skin.menu.rowGap }}>
+                {countries.map((c, i) => (
+                  <OptionRow
+                    key={c.code}
+                    skin={skin.menu}
+                    size={menuSize}
+                    selected={c.code === selected?.code}
+                    separated={i > 0}
+                    onPress={() => pick(c)}
+                    accessibilityLabel={`${c.name} ${c.dialCode}`}
+                    leading={c.flag ?? flagOf(c.code)}
+                    label={c.name}
+                    trailing={{ text: c.dialCode, style: skin.rowDial(tokens) }}
+                  />
+                ))}
               </View>
             </RippleClip>
           </OverlayScrollView>

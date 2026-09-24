@@ -1,7 +1,7 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { surfaceRipple, shape, type ColorTokens } from "../../style/index.js";
 import { hoverFill, webHover } from "../../style/hover.js";
-import { primaryText } from "../../style/primary-text.js";
+import { menuCheck, menuChosenLabel } from "../../style/menu-look.js";
 import { typeScale } from "../../style/type-scale.js";
 import { type ListboxSkin, type Size } from "./listbox.shared.js";
 
@@ -68,12 +68,6 @@ const LABEL_TYPE: Record<Size, TextStyle> = {
   large: { fontSize: 13, lineHeight: 18, fontWeight: "700" },
 };
 
-// Single-select checkmark column: a fixed-width gutter reserved on every row so labels
-// stay aligned whether or not the row is chosen; the ✓ in the selection violet.
-function checkmark(tokens: ColorTokens): TextStyle {
-  return { width: 14, ...LABEL_TYPE.medium, color: tokens.primary };
-}
-
 // The label/detail stack grows to fill the remaining row width.
 const textStack: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%" };
 
@@ -87,8 +81,10 @@ function detail(tokens: ColorTokens): TextStyle {
 }
 
 // The web skin, which Android shares: a leading checkmark gutter and the chosen row's
-// label in the selection violet in single-select. Multi-select's platform-specific
-// Checkbox indicator is supplied by the entry file, outside this row skin.
+// label in the selection violet in single-select, the option lists' chosen row from the
+// menu recipe (src/style/menu-look.ts), so a Listbox and a Select mark a choice alike.
+// Multi-select's platform-specific Checkbox indicator is supplied by the entry file,
+// outside this row skin.
 export const webSkin: ListboxSkin = {
   containerBordered,
   rowBase,
@@ -96,8 +92,8 @@ export const webSkin: ListboxSkin = {
   rowGap: 2,
   rowPressed,
   rowHover,
-  chosenLabel: (tokens) => ({ color: primaryText(tokens) }),
-  mark: { kind: "gutter", checkmark },
+  chosenLabel: menuChosenLabel,
+  mark: { kind: "gutter", checkmark: menuCheck },
   textStack,
   label,
   detail,

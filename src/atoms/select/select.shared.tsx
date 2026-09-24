@@ -1,9 +1,11 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
+import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
+import { useHover } from "../../style/hover.js";
 import { forwardRef, useId, useRef } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { type Role } from "react-native";
-import { View, Pressable, Text, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, GlassPane, paneStyle, isGlass, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type TextStyle, type ViewStyle, GlassPane, paneStyle, isGlass, withInnerFill } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the option-list
@@ -11,7 +13,7 @@ import { OverlayScrollView } from "../../style/overlay-scroll.js";
 const LISTBOX = "listbox" as Role;
 
 import { Icon } from "../icon/icon.js";
-import { root, rootLifted, PANEL_ANCHOR, type SelectSkin, type Size } from "./select.styles.js";
+import { root, rootLifted, panelAnchor, type SelectSkin, type Size } from "./select.styles.js";
 
 // The option list is a SCROLLPORT inside the card's `maxHeight` cap. The cap bounds
 // the CARD, so without this the list would keep its full content height and the
@@ -104,13 +106,13 @@ export interface SelectProps extends MeasureProps {
   defaultOpen?: boolean;
   /** Fired when the open state changes (trigger press, select), in both modes. */
   onOpenChange?: (open: boolean) => void;
-  /** Dims the control and blocks interaction. */
+  /** Blocks interaction and shows the disabled look: Dark Factory's disabled field on the web (a hairline frame, no fill, a muted value), the platform's dim on iOS and Android. */
   disabled?: boolean;
   /** Called with the chosen option's value when a row is pressed (both modes). */
   onSelect?: (option: string) => void;
   /** E2E hook forwarded to the trigger pressable. */
   testID?: string;
-  // Size (pick one; default is the medium field, matching Input's h-9).
+  // Size (pick one; default is the medium field, matching Input's base field).
   small?: boolean;
   large?: boolean;
   /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
@@ -126,6 +128,78 @@ function sizeOf(p: SelectProps): Size {
 
 // Read a numeric style value (the Android trigger height), falling back when absent.
 const asNum = (v: unknown, fallback: number): number => (typeof v === "number" ? v : fallback);
+
+/**
+ * One option row of a Select-skinned list (the Select's own, and PhoneInput's countries).
+ * Internal: named off the `*Props` pattern so the docs' prop tables leave it out.
+ */
+export interface OptionRowArgs {
+  skin: SelectSkin;
+  size: Size;
+  selected: boolean;
+  /** Draws the skin's group separator above the row (every row after the first). */
+  separated: boolean;
+  /** Blocks the row; omitted on a list whose rows are never disabled. */
+  disabled?: boolean;
+  onPress: () => void;
+  /** The row's accessible name, where its text alone does not say it. */
+  accessibilityLabel?: string;
+  /** A short leading glyph before the label (a flag, a currency sign). */
+  leading?: string;
+  label: string;
+  /** A trailing detail after the label (a dial code), in its own style. */
+  trailing?: { text: string; style: TextStyle };
+}
+
+/**
+ * An option row, its own component so the web's hover wash has a hook per row. The row's
+ * fills (pressed, a platform's selected tint) go through the dense layer's inner fills, so
+ * under glass they are ink tints on the list's material, never opaque patches; the chosen
+ * row's label takes the skin's chosen text over the plain one.
+ */
+export function OptionRow({ skin, size, selected, separated, disabled, onPress, accessibilityLabel, leading, label, trailing }: OptionRowArgs) {
+  const theme = useMaterialTheme({ layer: "dense" });
+  const { tokens } = theme;
+  const { hovered, target } = useHover(skin.optionHover != null && !disabled);
+  const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
+  const text = skin.optionText(tokens, size);
+  const chosen = selected && skin.chosenText ? skin.chosenText(tokens) : null;
+  return (
+    <Pressable
+      {...target}
+      style={({ pressed }) => [
+        withInnerFill(theme, skin.optionRow(tokens, selected), "firm"),
+        // iOS draws a hairline group separator between rows (not above the first); a
+        // skin that omits rowSeparator keeps every row borderless.
+        separated && skin.rowSeparator ? skin.rowSeparator(tokens) : null,
+        hovered && skin.optionHover ? skin.optionHover(tokens) : null,
+        // Web/iOS tint the row on press here; Android uses the ripple instead. Under glass a
+        // row that carries a muted detail (PhoneInput's dial code) presses to the soft ink
+        // tint, where the detail keeps 4.5:1; the firm one drops it to about 4.3.
+        skin.ripple == null && pressed ? withInnerFill(theme, skin.optionPressed(tokens), trailing != null ? "soft" : "firm") : null,
+      ]}
+      onPress={onPress}
+      disabled={disabled}
+      android_ripple={ripple}
+      role="option"
+      accessibilityLabel={accessibilityLabel}
+      aria-label={accessibilityLabel}
+      accessibilityState={{ selected, disabled: !!disabled }}
+      aria-selected={selected}
+      aria-disabled={disabled}
+    >
+      {skin.selectedSide === "leading" ? (
+        <Text style={[skin.indicator(tokens, size), { width: 14 }]}>{selected ? "✓" : " "}</Text>
+      ) : null}
+      {leading != null ? <Text style={text}>{leading}</Text> : null}
+      <Text style={[text, chosen, { flexShrink: 1 }]}>{label}</Text>
+      {trailing != null ? <Text style={[text, trailing.style]}>{trailing.text}</Text> : null}
+      {skin.selectedSide === "trailing" ? (
+        <Text style={skin.indicator(tokens, size)}>{selected ? "✓" : ""}</Text>
+      ) : null}
+    </Pressable>
+  );
+}
 
 /** Build a Select component from a platform skin.
  * @ref Ref to the interactive trigger, preserving overlay measurement. Typed as a React Native View. On web, React Native Web exposes its DOM host; focus() and blur() move browser focus. Native host behavior depends on the platform and React Native version. Calling focus() does not activate the control or call accessibility focus APIs.
@@ -148,7 +222,12 @@ export function createSelect(skin: SelectSkin) {
     const items: SelectOption[] = options.map((o) =>
       typeof o === "string" ? { value: o, label: o } : o,
     );
-    const theme = useMaterialTheme({ layer: "control" });
+    // The web trigger is a field, so under web glass it is the clear well every web field is
+    // (the text-entry material); a native trigger keeps the control layer's material.
+    const entryMaterial = useTextEntryMaterial(!!skin.liquid);
+    const controlTheme = useMaterialTheme({ layer: "control" });
+    const clearWell = entryMaterial.paneProps.clear;
+    const theme = clearWell ? entryMaterial.theme : controlTheme;
     const { tokens } = theme;
     // A Select's content is its value, so a bare Column in a Row (the `.col-auto`
     // toolbar cell) hugs it legitimately: no hugging-cell warning.
@@ -214,13 +293,23 @@ export function createSelect(skin: SelectSkin) {
     const above = hasLabel && !inline && !floating;
     const triggerShape = skin.trigger(tokens, size, open);
     const triggerHeight = asNum((triggerShape as { height?: unknown }).height, 56);
-    // Under glass the trigger is a CONTROL-layer puck: a GlassPane paints the material
-    // behind the row (the Pressable keeps its tap, ripple and dim), the box drops its
-    // fill and resting hairline, and keeps only its OPEN border (the iOS/web `ring`)
-    // as state; the Android skin's bottom indicator is a side colour, which the
-    // shorthand reset leaves alone. Solid mode is untouched.
+    // Under glass a GlassPane paints the material behind the row (the Pressable keeps its
+    // tap, ripple and dim): the web's clear field well, or a native CONTROL-layer puck. The
+    // box drops its fill and resting hairline and keeps only its OPEN border (the iOS/web
+    // `ring`) as state; the clear web well paints that border over the material instead,
+    // as every web field does. The Android skin's open indicator is a bottom side colour,
+    // which the pane style clears by name, so the bottom side is set with the shorthand.
+    // Solid mode is untouched.
     const glass = isGlass(theme);
-    const glassTrigger: ViewStyle | null = glass ? { backgroundColor: "transparent", borderColor: open ? triggerShape.borderColor : "transparent" } : null;
+    const glassEdge = open && !entryMaterial.foregroundStateBorder ? (triggerShape.borderColor ?? triggerShape.borderBottomColor) : "transparent";
+    const glassTrigger: ViewStyle | null = glass ? { backgroundColor: "transparent", borderColor: glassEdge, borderBottomColor: glassEdge } : null;
+    // A disabled trigger either dims (iOS, Android) or, on a skin that draws one, takes its
+    // disabled look instead (the web's Dark Factory look: the frame on the hairline, no
+    // fill, the value in the muted ink, no material). The trigger's keyboard focus is the
+    // kit's ring around it, so the look's own focus edge stays off.
+    const disabledLook = disabled && skin.disabledLook ? skin.disabledLook(tokens, false) : null;
+    const dim = disabled && !disabledLook;
+    const chevronColor = (skin.chevron(tokens, size, open) as TextStyle).color as string;
     // Floating label owns the resting placeholder: show nothing until the menu opens
     // (matching the M3 Input); a selected value always shows.
     const selected = items.find((o) => o.value === value);
@@ -246,9 +335,8 @@ export function createSelect(skin: SelectSkin) {
           ref={hostRef}
           onLayout={onTriggerLayout}
           style={({ pressed }) => [
-            paneStyle(theme, triggerShape, open),
-            glassTrigger,
-            !glass && disabled ? { opacity: skin.disabledOpacity } : null,
+            disabledLook ? [triggerShape, disabledLook.frame] : [paneStyle(theme, triggerShape, open), glassTrigger],
+            !glass && dim ? { opacity: skin.disabledOpacity } : null,
             !glass && skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
           ]}
           disabled={disabled}
@@ -270,9 +358,12 @@ export function createSelect(skin: SelectSkin) {
           aria-labelledby={inline && !props.accessibilityLabel && !required ? labelId : undefined}
         >
           {({ pressed }) => {
-            const ink = glass ? { opacity: disabled ? skin.disabledOpacity : pressed && skin.pressedOpacity != null ? skin.pressedOpacity : 1 } : null;
+            const ink = glass ? { opacity: dim ? skin.disabledOpacity : pressed && skin.pressedOpacity != null ? skin.pressedOpacity : 1 } : null;
+            const valueInk = disabledLook ? { color: disabledLook.ink } : null;
             return <>
-              <GlassPane layer="control" shape={triggerShape} interactive={!disabled} />
+              {disabledLook ? null : clearWell
+                ? <GlassPane {...entryMaterial.paneProps} shape={triggerShape} />
+                : <GlassPane layer="control" shape={triggerShape} interactive={!disabled} />}
               <View
                 style={[
                   skin.triggerValue,
@@ -291,11 +382,17 @@ export function createSelect(skin: SelectSkin) {
                     <LabelContent label={label!} required={required} starColor={tokens.destructive} />
                   </Text>
                 ) : null}
-                {icon ? <Icon globe muted size={14} /> : null}
-                {selectedLeading != null ? <Text style={skin.valueText(tokens, size, true)}>{selectedLeading}</Text> : null}
-                <Text style={skin.valueText(tokens, size, hasValue)}>{displayText}</Text>
+                {icon ? <Icon globe muted size={skin.iconSize} /> : null}
+                {selectedLeading != null ? <Text style={[skin.valueText(tokens, size, true), valueInk]}>{selectedLeading}</Text> : null}
+                <Text style={[skin.valueText(tokens, size, hasValue), valueInk]}>{displayText}</Text>
               </View>
-              <Text style={[skin.chevron(tokens, size, open), ink]}>{skin.chevronGlyph}</Text>
+              {skin.chevronIcon != null ? (
+                <View style={ink}>
+                  <Icon chevronDown size={skin.chevronIcon} color={chevronColor} decorative />
+                </View>
+              ) : (
+                <Text style={[skin.chevron(tokens, size, open), ink]}>{skin.chevronGlyph}</Text>
+              )}
               {floating ? (
                 <View style={[floatingLabelLayer, ink]}>
                   <FloatingLabel
@@ -312,6 +409,7 @@ export function createSelect(skin: SelectSkin) {
                   />
                 </View>
               ) : null}
+              {disabledLook ? null : entryMaterial.stateBorder(triggerShape, open)}
             </>;
           }}
         </Pressable>
@@ -323,9 +421,9 @@ export function createSelect(skin: SelectSkin) {
           open={open}
           onDismiss={() => setOpen(false)}
           triggerRef={triggerRef}
-          gap={4}
+          gap={skin.menuGap}
           cardStyle={[skin.panel(tokens), { minWidth: triggerWidth }]}
-          inlineStyle={PANEL_ANCHOR}
+          inlineStyle={panelAnchor(skin.menuGap)}
           // An option list is a card of rows, so under glass the panel takes the
           // DENSE layer: the material under the model's densest tint, so options a
           // user reads and picks from never have the page showing through between
@@ -342,47 +440,20 @@ export function createSelect(skin: SelectSkin) {
                 reach them through the card's padding. See src/style/ripple-clip. */}
             <OverlayScrollView style={optionScroll} bounces={false}>
             <RippleClip shape={cornerRadii(skin.panel(tokens))}>
-            <View nativeID={listId} role={LISTBOX} accessibilityLabel={fieldName} aria-label={fieldName} aria-required={required || undefined}>
-            {items.map((option, i) => {
-              const selected = option.value === value;
-              return (
-                <Pressable
-                  key={option.value}
-                  style={({ pressed }) => [
-                    withInnerFill(theme, skin.optionRow(tokens, selected), "firm"),
-                    // iOS draws a hairline group separator between rows (not above the
-                    // first); a skin that omits rowSeparator keeps every row borderless.
-                    i > 0 && skin.rowSeparator ? skin.rowSeparator(tokens) : null,
-                    // Web/iOS tint the row on press here; Android uses the ripple instead.
-                    skin.ripple == null && pressed ? withInnerFill(theme, skin.optionPressed(tokens), "firm") : null,
-                  ]}
-                  onPress={() => selectOption(option.value)}
-                  disabled={disabled}
-                  android_ripple={ripple}
-                  role="option"
-                  accessibilityState={{ selected, disabled: !!disabled }}
-                  aria-selected={selected}
-                  aria-disabled={!!disabled}
-                >
-                  {skin.selectedSide === "leading" ? (
-                    <Text style={[skin.indicator(tokens, size), { width: 14 }]}>
-                      {selected ? "✓" : " "}
-                    </Text>
-                  ) : null}
-                  {option.leading != null ? (
-                    <Text style={skin.optionText(tokens, size)}>{option.leading}</Text>
-                  ) : null}
-                  <Text style={[skin.optionText(tokens, size), { flexShrink: 1 }]}>
-                    {option.label}
-                  </Text>
-                  {skin.selectedSide === "trailing" ? (
-                    <Text style={skin.indicator(tokens, size)}>
-                      {selected ? "✓" : ""}
-                    </Text>
-                  ) : null}
-                </Pressable>
-              );
-            })}
+            <View nativeID={listId} role={LISTBOX} accessibilityLabel={fieldName} aria-label={fieldName} aria-required={required || undefined} style={{ gap: skin.rowGap }}>
+            {items.map((option, i) => (
+              <OptionRow
+                key={option.value}
+                skin={skin}
+                size={size}
+                selected={option.value === value}
+                separated={i > 0}
+                disabled={!!disabled}
+                onPress={() => selectOption(option.value)}
+                leading={option.leading}
+                label={option.label}
+              />
+            ))}
             </View>
             </RippleClip>
             </OverlayScrollView>

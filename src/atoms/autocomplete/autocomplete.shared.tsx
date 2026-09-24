@@ -2,9 +2,13 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { consumeEscapeKey, EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { forwardRef, useEffect, useId, useRef, useState } from "react";
-import { Platform, type Role, type TextInput as RNTextInput } from "react-native";
+import { Platform, StyleSheet, type Role, type TextInput as RNTextInput } from "react-native";
 import { View, Pressable, Text, TextInput, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, isGlass, PANE_SIBLING_INPUT, withInnerFill } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
+import { useHover } from "../../style/hover.js";
+import { styleBox, useSeededMinTargetSlop } from "../../style/touch-target-seed.js";
+import { rowSeam } from "../../style/touch-seam.js";
+import { Icon } from "../icon/icon.js";
 import { useActiveOptionScroll } from "../../style/use-active-option-scroll.js";
 import { AccessibilityReturnBoundary, accessibilitySelectionProps, useAccessibilityReturn } from "../../style/use-accessibility-return.js";
 
@@ -35,8 +39,8 @@ import { type AutocompleteSkin, type Size } from "./autocomplete.styles.js";
 // the docs' horizontal preview scroller); with no provider it falls back to an
 // inline absolute anchor below the field. The list is closed by default in the
 // uncontrolled case; focusing or typing opens it, the chevron toggles it, and a
-// select closes it. The selected option carries a leading "✓" and an accent
-// surface; an empty filtered list shows a muted "No results" row.
+// select closes it. The selected option carries a leading "✓" (and the skin's chosen
+// label or selected fill); an empty filtered list shows a muted "No results" row.
 
 export interface AutocompleteProps extends MeasureProps {
   /**
@@ -88,13 +92,13 @@ export interface AutocompleteProps extends MeasureProps {
   required?: boolean;
   /** Optional muted helper line rendered below the option list. */
   helperText?: string;
-  /** Dims the control and blocks interaction. */
+  /** Blocks interaction and shows the disabled look: Dark Factory's disabled field on the web and iOS (a hairline frame, no fill, a muted value), Material 3's dim on Android. */
   disabled?: boolean;
   /** Called when an option is chosen by touch, pointer, or keyboard. Clearing only fires onValueChange. */
   onSelect?: (option: string) => void;
   /** E2E hook forwarded to the text field. */
   testID?: string;
-  // Size (pick one; default is the medium field, matching Input's h-9).
+  // Size (pick one; default is the medium field, matching Input's base field).
   small?: boolean;
   large?: boolean;
   /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
@@ -120,8 +124,8 @@ const asNum = (v: unknown, fallback: number): number => (typeof v === "number" ?
 // renders in place, absolutely positioned below the field (the kit's pre-portal
 // behavior). With a provider, AnchoredOverlay portals the card over the page and
 // adds the outside-tap dismiss backdrop instead. `start:0,end:0` pins it to the
-// field's width; the skin owns the card's shape/fill/shadow.
-const POPOVER_ANCHOR: ViewStyle = { position: "absolute", top: "100%", start: 0, end: 0, zIndex: 50, marginTop: 4 };
+// field's width, `gap` is the skin's standoff; the skin owns the card's shape/fill/shadow.
+const popoverAnchor = (gap: number): ViewStyle => ({ position: "absolute", top: "100%", start: 0, end: 0, zIndex: 50, marginTop: gap });
 
 // The option list is a SCROLLPORT inside the card's `maxHeight` cap. The cap bounds
 // the CARD, so without this the list would keep its full content height and the
@@ -129,6 +133,62 @@ const POPOVER_ANCHOR: ViewStyle = { position: "absolute", top: "100%", start: 0,
 // Views default to `flexShrink: 0`, so the list has to be told it may shrink to the
 // capped card; the rows past the cap then scroll into view instead of disappearing.
 const optionScroll: ViewStyle = { flexShrink: 1 };
+
+interface OptionRowArgs {
+  skin: AutocompleteSkin;
+  size: Size;
+  option: string;
+  id: string;
+  selected: boolean;
+  /** The row the keyboard has made active (aria-activedescendant). */
+  active: boolean;
+  separated: boolean;
+  rowRef: (node: View | null) => void;
+  onLayout: () => void;
+  onPress: () => void;
+  selectionProps: object;
+}
+
+// One option row, its own component so the web's hover wash has a hook per row. Its
+// fills (a platform's selected tint, the pressed and keyboard-active row) are the dense
+// layer's inner fills, never opaque patches on the list's material under glass.
+function OptionRow({ skin, size, option, id, selected, active, separated, rowRef, onLayout, onPress, selectionProps }: OptionRowArgs) {
+  const theme = useMaterialTheme({ layer: "dense" });
+  const { tokens } = theme;
+  const { hovered, target } = useHover(skin.rowHover != null);
+  const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
+  return (
+    <Pressable
+      {...target}
+      nativeID={id}
+      ref={rowRef}
+      onLayout={onLayout}
+      style={({ pressed }) => [
+        skin.row,
+        separated && skin.rowSeparator ? skin.rowSeparator(tokens) : null,
+        selected ? withInnerFill(theme, skin.rowSelected(tokens) ?? {}, "firm") : null,
+        hovered && skin.rowHover ? skin.rowHover(tokens) : null,
+        pressed || active ? withInnerFill(theme, skin.rowPressed(tokens) ?? {}, "firm") : null,
+      ]}
+      onPress={onPress}
+      {...selectionProps}
+      android_ripple={ripple}
+      role="option"
+      // Keep browser editing focus on the input. Native -1
+      // would remove Android Pressable's click/hover support.
+      tabIndex={Platform.select({ web: -1, default: undefined })}
+      accessibilityLabel={option}
+      aria-label={option}
+      // accessibilityState carries the native selected trait;
+      // aria-selected supplies RNW's corresponding DOM state.
+      accessibilityState={{ selected }}
+      aria-selected={selected}
+    >
+      <Text style={skin.check(tokens, size)}>{selected ? "✓" : " "}</Text>
+      <Text style={[skin.optionText(tokens, size), selected && skin.chosenText ? skin.chosenText(tokens) : null]}>{option}</Text>
+    </Pressable>
+  );
+}
 
 /** Build an Autocomplete component from a platform skin. */
 export function createAutocomplete(skin: AutocompleteSkin) {
@@ -149,7 +209,6 @@ export function createAutocomplete(skin: AutocompleteSkin) {
     const size = sizeOf(props);
     const entryMaterial = useTextEntryMaterial(!!skin.liquid);
     const { theme } = entryMaterial;
-    const menuTheme = useMaterialTheme({ layer: "dense" });
     const { tokens } = theme;
     const widthCap = useFillStyle("Autocomplete", props);
     // One collision-free id for the label so the floated label carries a nativeID.
@@ -255,9 +314,24 @@ export function createAutocomplete(skin: AutocompleteSkin) {
     const fieldHeight = asNum((fieldShape as { height?: unknown }).height, 56);
     // GlassPane paints behind the editor and toggle. Clear web fields paint the
     // active-state outline in the foreground, over the material. Native fields keep
-    // their original border or bottom indicator.
+    // their original border or bottom indicator (restored over the pane style, which
+    // clears every border colour, the indicator's side colour included).
     const glass = isGlass(theme);
-    const glassField: ViewStyle | null = glass ? { backgroundColor: "transparent", borderColor: active && !entryMaterial.foregroundStateBorder ? fieldShape.borderColor : "transparent" } : null;
+    // The active state's colour, a full border's or Material 3's bottom indicator's, set on
+    // the bottom side too, which the pane style clears by name.
+    const glassEdge = active && !entryMaterial.foregroundStateBorder ? (fieldShape.borderColor ?? fieldShape.borderBottomColor) : "transparent";
+    const glassField: ViewStyle | null = glass ? { backgroundColor: "transparent", borderColor: glassEdge, borderBottomColor: glassEdge } : null;
+    // A disabled field either dims (Android) or, on a skin that draws one, takes its
+    // disabled look instead (the web's Dark Factory look: the frame on the hairline, no
+    // fill, the value in the muted ink, no material); a keyboard-focused one keeps its ring.
+    const disabledLook = disabled && skin.disabledLook ? skin.disabledLook(tokens, focused) : null;
+    // The disclosure's touch area reaches the skin's minimum through slop, seeded from its
+    // box, but never into the text beside it: the text asks for none, so the chevron may take
+    // the field's whole gap between them and no more (src/style/touch-seam.ts).
+    const chevronBox = skin.chevronTarget(size);
+    const chevronTarget = useSeededMinTargetSlop(skin.minTarget, styleBox(chevronBox));
+    const fieldGap = asNum((StyleSheet.flatten(fieldShape) as ViewStyle).gap, 0);
+    const chevronSlop = rowSeam(undefined, chevronTarget.hitSlop, fieldGap)[1];
 
     return (
       <View style={[wrapper, open && !host ? wrapperLifted : null, widthCap, style]}>
@@ -270,12 +344,11 @@ export function createAutocomplete(skin: AutocompleteSkin) {
           ref={fieldRef}
           onLayout={onTriggerLayout}
           style={[
-            paneStyle(theme, fieldShape, active),
-            glassField,
-            disabled ? { opacity: skin.disabledOpacity } : null,
+            disabledLook ? [fieldShape, disabledLook.frame] : [paneStyle(theme, fieldShape, active), glassField],
+            disabled && !disabledLook ? { opacity: skin.disabledOpacity } : null,
           ]}
         >
-          <GlassPane {...entryMaterial.paneProps} shape={fieldShape} />
+          {disabledLook ? null : <GlassPane {...entryMaterial.paneProps} shape={fieldShape} />}
           <TextInput
             ref={accessibilityReturn.inputRef}
             // The field paints its own focus state (the skin's active border), so
@@ -283,6 +356,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
             textAlignVertical="center"
             style={[
               skin.fieldText(tokens, size, false),
+              disabledLook ? { color: disabledLook.ink } : null,
               fieldInput,
               glass ? PANE_SIBLING_INPUT : null,
               // Android floating label: the reserve (top padding that lets the value
@@ -389,9 +463,11 @@ export function createAutocomplete(skin: AutocompleteSkin) {
           />
           <Pressable
             style={({ pressed }) => [
-              skin.chevronTarget(size),
+              chevronBox,
               skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
             ]}
+            onLayout={chevronTarget.onLayout}
+            hitSlop={chevronSlop}
             onPress={() => {
               accessibilityReturn.cancel();
               setOpen(!open);
@@ -405,7 +481,11 @@ export function createAutocomplete(skin: AutocompleteSkin) {
             aria-expanded={open}
             aria-disabled={!!disabled}
           >
-            <Text style={skin.chevron(tokens, size)}>▾</Text>
+            {skin.chevronIcon != null ? (
+              <Icon chevronDown size={skin.chevronIcon} color={(skin.chevron(tokens, size) as TextStyle).color as string} decorative />
+            ) : (
+              <Text style={skin.chevron(tokens, size)}>▾</Text>
+            )}
           </Pressable>
           {floating ? (
             <FloatingLabel
@@ -421,7 +501,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
               height={fieldHeight}
             />
           ) : null}
-          {entryMaterial.stateBorder(fieldShape, active)}
+          {disabledLook ? null : entryMaterial.stateBorder(fieldShape, active)}
         </View>
 
         <AnchoredOverlay
@@ -433,9 +513,9 @@ export function createAutocomplete(skin: AutocompleteSkin) {
             setOpen(false);
           }}
           triggerRef={fieldRef}
-          gap={4}
+          gap={skin.menuGap}
           cardStyle={[skin.popover(tokens), { minWidth: triggerWidth }]}
-          inlineStyle={POPOVER_ANCHOR}
+          inlineStyle={popoverAnchor(skin.menuGap)}
           // The filtered option list is a card of rows, so under glass it takes
           // the DENSE layer: the material under the model's densest tint, so matches
           // a user reads and picks from never have the page showing through between
@@ -461,48 +541,31 @@ export function createAutocomplete(skin: AutocompleteSkin) {
                     rounds bounded Android ripples without rounding each row. */}
                 <RippleClip shape={cornerRadii(skin.popover(tokens))}>
                   <View ref={listContentRef} collapsable={false} nativeID={listboxId} role={LISTBOX}
-                    accessibilityLabel={hasLabel ? label : undefined} aria-label={hasLabel ? label : undefined}>
+                    accessibilityLabel={hasLabel ? label : undefined} aria-label={hasLabel ? label : undefined}
+                    style={{ gap: skin.rowGap }}>
                     {matches.length === 0 ? (
                       <View style={skin.emptyRow}>
                         <Text style={skin.emptyText(tokens, size)}>No results</Text>
                       </View>
-                    ) : matches.map(({ option, key, id }, index) => {
-                      const selected = option === value;
-                      const separator = index > 0 && skin.rowSeparator ? skin.rowSeparator(tokens) : null;
-                      return (
-                        <Pressable
-                          key={key}
-                          nativeID={id}
-                          ref={(node) => {
-                            if (node) rowRefs.current.set(id, node);
-                            else rowRefs.current.delete(id);
-                          }}
-                          onLayout={() => onRowLayout(id)}
-                          style={({ pressed }) => [
-                            skin.row,
-                            separator,
-                            selected ? withInnerFill(menuTheme, skin.rowSelected(tokens) ?? {}, "firm") : null,
-                            pressed || index === activeIndex ? withInnerFill(menuTheme, skin.rowPressed(tokens) ?? {}, "firm") : null,
-                          ]}
-                          onPress={() => selectOption(option)}
-                          {...accessibilitySelectionProps(() => accessibilityReturn.activate(() => selectOption(option, true)))}
-                          android_ripple={ripple}
-                          role="option"
-                          // Keep browser editing focus on the input. Native -1
-                          // would remove Android Pressable's click/hover support.
-                          tabIndex={Platform.select({ web: -1, default: undefined })}
-                          accessibilityLabel={option}
-                          aria-label={option}
-                          // accessibilityState carries the native selected trait;
-                          // aria-selected supplies RNW's corresponding DOM state.
-                          accessibilityState={{ selected }}
-                          aria-selected={selected}
-                        >
-                          <Text style={skin.check(tokens, size)}>{selected ? "✓" : " "}</Text>
-                          <Text style={skin.optionText(tokens, size)}>{option}</Text>
-                        </Pressable>
-                      );
-                    })}
+                    ) : matches.map(({ option, key, id }, index) => (
+                      <OptionRow
+                        key={key}
+                        skin={skin}
+                        size={size}
+                        option={option}
+                        id={id}
+                        selected={option === value}
+                        active={index === activeIndex}
+                        separated={index > 0}
+                        rowRef={(node) => {
+                          if (node) rowRefs.current.set(id, node);
+                          else rowRefs.current.delete(id);
+                        }}
+                        onLayout={() => onRowLayout(id)}
+                        onPress={() => selectOption(option)}
+                        selectionProps={accessibilitySelectionProps(() => accessibilityReturn.activate(() => selectOption(option, true)))}
+                      />
+                    ))}
                   </View>
                 </RippleClip>
               </OverlayScrollView>

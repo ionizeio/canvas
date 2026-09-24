@@ -109,11 +109,6 @@ const KNOWN_GAP: Record<string, string> = {
   // the row is a bare flex row with no minHeight, so it is as tall as one line of
   // name plus value, around 20pt.
   "charts/service-health-list": "a pressable row is content-height, around 20pt, when onPressItem is passed",
-  // The chevron that opens the list is 7pt wide on iOS and 6dp on Android. It cannot
-  // be fixed with hitSlop: the field's editable area is its immediate neighbour, and
-  // a symmetric 18pt of slop steals the end of the text the user just typed. Fixing
-  // it means widening the control, which is a layout change and its own decision.
-  "atoms/autocomplete": "the chevron renders 7pt wide, and slop would steal the field's own tap area",
 };
 
 /**
@@ -174,6 +169,17 @@ describe("a declared target is the platform's own number", () => {
     it(component, async () => {
       const mod = (await import(file)) as Record<string, { minTarget?: number | null }>;
       const shared = mod.iosSkin === mod.webSkin && mod.androidSkin === mod.webSkin;
+      if (!shared && (mod.iosSkin === mod.webSkin || mod.androidSkin === mod.webSkin)) {
+        // One native platform shares the web skin (the iOS Autocomplete, which iOS ships no
+        // control for): that platform's number comes from the platform at runtime, which the
+        // web harness cannot see, and the other native skin declares its own.
+        expect(skin).toContain("platformMinTarget");
+        if (mod.iosSkin !== mod.webSkin) expect(mod.iosSkin?.minTarget, `${component} iOS`).toBe(TOUCH_TARGET.ios);
+        if (mod.androidSkin !== mod.webSkin) expect(mod.androidSkin?.minTarget, `${component} Android`).toBe(TOUCH_TARGET.android);
+        const web = mod.webSkin?.minTarget ?? null;
+        expect(web === null || web === 0 || web >= TOUCH_TARGET.ios, `${component} web declares ${web}`).toBe(true);
+        return;
+      }
       if (shared) {
         // One skin for all three platforms, so the number comes from the platform at
         // runtime (platformMinTarget). The harness runs as web, where the skin gives the

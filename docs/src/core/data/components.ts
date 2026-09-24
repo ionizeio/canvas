@@ -99,7 +99,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "autocomplete",
     name: "Autocomplete",
-    description: "Text input + dropdown: searchable single-select.",
+    description: "Text input + dropdown: searchable single-select. On the web, and on iOS, which ships no autocomplete control, it is Dark Factory's field and menu, the Select's: a translucent well, a 13px semibold value, an uppercase eyebrow label, and suggestions with the chosen one in violet beside a checkmark. Android keeps the Material 3 exposed dropdown.",
     category: "Atoms",
     // A field fills its parent either way; the stretched stage makes the parent the
     // stage itself, so the "Measure" Column of stepped fields and Container steps
@@ -211,7 +211,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "select",
     name: "Select",
-    description: "Native select restyled to match Canvas inputs.",
+    description: "A pop-up field for picking one option from a list. On the web it is Dark Factory's Select: the Input's translucent well with a chevron and an uppercase eyebrow label, opening Dark Factory's menu with the chosen option in violet beside a checkmark. iOS keeps its pop-up button and the menu's leading check, and Android the Material 3 exposed dropdown.",
     category: "Atoms",
     // A field fills its parent either way; the stretched stage makes the parent the
     // stage itself, so the "Measure" Column of stepped fields and Container steps
@@ -595,7 +595,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "phone-input",
     name: "PhoneInput",
-    description: "A phone number field: the Input's box with a country segment at its start (the chosen country's flag and a caret that open a list of countries with their dial codes) and that country's dial code inline before the number. Controlled or uncontrolled for both the country and the number; Field delegates its label and error into it.",
+    description: "A phone number field: the Input's box with a country segment at its start (the chosen country's flag and a caret that open a list of countries with their dial codes) and that country's dial code inline before the number. Controlled or uncontrolled for both the country and the number; Field delegates its label and error into it. On the web the box is Dark Factory's field and the country list its menu.",
     category: "Molecules",
     stageAlign: "start",
   },

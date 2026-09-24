@@ -71,6 +71,8 @@ const ANDROID: Case[] = [
 const IOS: Case[] = [
   { name: "a small clearable Input", load: entry("../src/atoms/input/input.ios.tsx", "Input"), props: { small: true, clearable: true, value: "Clear me", accessibilityLabel: "Field" }, pairs: 0 },
   { name: "a base clearable Input", load: entry("../src/atoms/input/input.ios.tsx", "Input"), props: { clearable: true, value: "Clear me", accessibilityLabel: "Field" }, pairs: 0 },
+  // The disclosure's slop sits in the field box, which paints but never clips.
+  { name: "an Autocomplete's disclosure", load: entry("../src/atoms/autocomplete/autocomplete.ios.tsx", "Autocomplete"), props: { small: true, label: "Person", options: ["Ada"] }, pairs: 0 },
 ];
 
 /**
