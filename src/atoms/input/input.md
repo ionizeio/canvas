@@ -97,7 +97,7 @@ Cancelling an IME candidate keeps the overlay open.
 ### Disabled
 
 ```tsx
-<Input disabled placeholder="rachel.chen@example.com" />
+<Input disabled defaultValue="rachel.chen@example.com" />
 ```
 
 ### Read only

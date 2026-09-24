@@ -196,8 +196,9 @@ export function createPhoneInput(skin: PhoneInputSkin) {
 
     const boxShape = field.groupContainer(tokens, borderColor, active, isError);
     // A disabled box takes its Input skin's disabled look where the skin draws one (the web's
-    // Dark Factory look: the box and the country segment on its frame, the number in its ink,
-    // no material); otherwise the whole field dims (below).
+    // Dark Factory look: the box on its frame, the country segment on its addon so the focus
+    // ring stays on the frame, the number in its ink, no material); otherwise the whole field
+    // dims (below).
     const disabledLook = disabled && field.disabledLook ? field.disabledLook(tokens, active) : null;
     const glassBox: ViewStyle | null = glass && !disabledLook ? { backgroundColor: "transparent", borderColor: (active || isError) && !entryMaterial.foregroundStateBorder ? tokens[borderColor] : "transparent" } : null;
     const box = (
@@ -210,7 +211,7 @@ export function createPhoneInput(skin: PhoneInputSkin) {
         <Pressable
           onPress={() => setOpen(!open)}
           disabled={!editable}
-          style={({ pressed }) => [disabledLook ? { ...skin.country(tokens, state), ...disabledLook.frame } : withInnerFill(theme, skin.country(tokens, state), "soft"), field.pressedOpacity != null && pressed ? { opacity: field.pressedOpacity } : null]}
+          style={({ pressed }) => [disabledLook ? { ...skin.country(tokens, state), ...disabledLook.addon } : withInnerFill(theme, skin.country(tokens, state), "soft"), field.pressedOpacity != null && pressed ? { opacity: field.pressedOpacity } : null]}
           android_ripple={ripple}
           accessibilityRole="button"
           accessibilityLabel={segmentName}

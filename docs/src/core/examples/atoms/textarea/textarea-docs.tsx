@@ -28,7 +28,7 @@ export const docs: ComponentDocs = {
     { label: "Required", code: "<Textarea label=\"Bio\" required />", render: e_atoms_textarea_example_3 },
     { label: "Character counter", code: "<Textarea showCount maxLength={280} />", render: e_atoms_textarea_example_4 },
     { label: "Formatting toolbar", code: "<Card flat flush style={{ overflow: \"hidden\" }}>\n  <Row tight padTight>\n    <Button ghost small>B</Button>\n    <Button ghost small>I</Button>\n  </Row>\n  <Divider />\n  <Textarea flush placeholder=\"Leave a comment…\" />\n</Card>", render: e_atoms_textarea_example_5 },
-    { label: "Disabled", code: "<Textarea disabled placeholder=\"A few words about this project\" />", render: e_atoms_textarea_example_6 },
+    { label: "Disabled", code: "<Textarea disabled defaultValue=\"Migrating the billing service to the new ledger this quarter.\" />", render: e_atoms_textarea_example_6 },
     { label: "Measure", code: "<Column>\n  <Textarea xs start rows={2} placeholder=\"xs step, pinned to the start (320)\" />\n  <Textarea lg start rows={2} placeholder=\"lg step, pinned to the start (512)\" />\n  <Container lg start><Textarea rows={2} placeholder=\"Bare, in an lg Container: fills it (512)\" /></Container>\n</Column>", render: e_atoms_textarea_example_7 },
   ],
   donts: [

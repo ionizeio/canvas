@@ -63,7 +63,7 @@ Cancelling an IME candidate keeps the overlay open.
 ### Disabled
 
 ```tsx
-<Textarea disabled placeholder="A few words about this project" />
+<Textarea disabled defaultValue="Migrating the billing service to the new ledger this quarter." />
 ```
 
 ### Measure

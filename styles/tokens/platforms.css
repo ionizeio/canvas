@@ -34,8 +34,11 @@
   --p-field-border:var(--field-border);--p-label-color:var(--muted-foreground);--p-field-icon:15px;
   /* Only M3 draws a darker active indicator; web/iOS keep the bottom edge the same hairline. */
   --p-field-underline-color:var(--input);
-  /* The label above the box: Dark Factory's eyebrow (10 / 13 / 700, 1.6px tracking, uppercase) 6px
-     above it at every size; a Field row stacks its label, control and message 6px apart */
+  /* The label above the box: Dark Factory's eyebrow (10 / 13 / 700, 1.6px tracking, uppercase, the
+     muted ink) 6px above it at every size, for the Input, Textarea, PhoneInput and Field labels; a
+     Field row stacks its label, control and message 6px apart. The web Select and Autocomplete
+     labels are not on these rows yet: they still paint 14 / 20 / 500 (the default size) in
+     `foreground`, sentence case */
   --p-label-font:10px;--p-label-lh:13px;--p-label-weight:700;--p-label-tracking:1.6px;
   --p-label-transform:uppercase /* @kind other */;--p-label-gap:6px;--p-field-row-gap:6px;
   /* Addons: a muted box with a field-line divider on the field side */
@@ -799,8 +802,9 @@
   --p-radio-ring-small:18px;--p-radio-ring-default:20px;--p-radio-ring-large:22px;
   --p-radio-dot-small:10px;--p-radio-dot-default:10px;--p-radio-dot-large:12px;
   --p-radio-rest-border:var(--muted-foreground);
-  /* Textarea: M3 opaque muted filled surface with a visible resting indicator; body-small captions */
-  --p-textarea-fill:var(--muted);--p-textarea-lh:24px;
+  /* Textarea: M3 opaque muted filled surface with a visible resting indicator, a 14 / 20 value
+     (textarea.styles.ts sizeText); body-small captions */
+  --p-textarea-fill:var(--muted);--p-textarea-lh:20px;
   --p-textarea-underline-rest:var(--muted-foreground);
   --p-field-caption-font:12px;--p-field-caption-lh:16px;--p-field-caption-weight:400;--p-field-caption-tracking:0.4px;
   /* Form — M3: prominent 700 title weight, body-small description */

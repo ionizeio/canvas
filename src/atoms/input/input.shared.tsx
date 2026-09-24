@@ -306,9 +306,10 @@ export function createInput(skin: InputSkin) {
     const hasAddons = prefix != null || suffix != null || !!leadingIcon || !!trailingIcon || !!action || hasEye || !!clearable;
     const labelGap: ViewStyle = { gap: skin.labelGap };
     // A disabled field either dims (iOS, Android) or, on a skin that draws one, takes its
-    // disabled look instead (the web's Dark Factory look): the box and its addon boxes on
-    // the look's frame, the value and an action label in its ink, and no material, the way
-    // a disabled web Button paints no surface.
+    // disabled look instead (the web's Dark Factory look): the box on the look's frame, its
+    // addon boxes on the look's addon (the focus ring stays on the frame), the value and an
+    // action label in its ink, and no material, the way a disabled web Button paints no
+    // surface.
     const disabledLook = disabled && skin.disabledLook ? skin.disabledLook(tokens, focused) : null;
     const disabledDim = disabled && !disabledLook ? { opacity: skin.disabledOpacity } : null;
     const inkStyle: TextStyle | null = disabledLook ? { color: disabledLook.ink } : null;
@@ -319,9 +320,9 @@ export function createInput(skin: InputSkin) {
     // The box's style over its shape: the disabled look, or the material's treatment.
     const surfaceStyle = (shape: ViewStyle | TextStyle): StyleProp<ViewStyle> =>
       disabledLook ? [shape, disabledLook.frame] : [paneStyle(theme, shape, focused || isError), glass ? glassBox : null];
-    // An addon box: the disabled look's frame, or the box with its inner fill under glass.
+    // An addon box: the disabled look's addon, or the box with its inner fill under glass.
     const addonStyle = (side: "left" | "right"): ViewStyle =>
-      disabledLook ? { ...skin.addonBox(tokens, side, state), ...disabledLook.frame } : withInnerFill(theme, skin.addonBox(tokens, side, state), "soft");
+      disabledLook ? { ...skin.addonBox(tokens, side, state), ...disabledLook.addon } : withInnerFill(theme, skin.addonBox(tokens, side, state), "soft");
 
     const common = {
       value,

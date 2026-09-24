@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import { cleanup, render, screen } from "@testing-library/react";
+import { readFileSync } from "node:fs";
+import { blockDeclarations } from "../tools/tokens/css-tokens.ts";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { darkColors, lightColors, mintColors } from "../src/style/tokens.ts";
 import { alpha } from "../src/style/color.ts";
@@ -26,6 +28,7 @@ import * as fieldSkins from "../src/molecules/field/field.styles.ts";
 import { Input } from "../src/atoms/input/input.tsx";
 import { Textarea } from "../src/atoms/textarea/textarea.tsx";
 import { Field } from "../src/molecules/field/field.tsx";
+import { PhoneInput } from "../src/molecules/phone-input/phone-input.tsx";
 import { Switch } from "../src/atoms/switch/switch.tsx";
 
 // The web Input, Textarea and Field are Dark Factory's field (SKN-6a): its TextField and
@@ -71,9 +74,12 @@ describe("Dark Factory's field recipe", () => {
   });
 
   it("draws a disabled field as Dark Factory's disabled controls: a hairline, no fill, the muted ink", () => {
-    expect(fieldDisabled(t, false)).toEqual({ frame: { borderColor: t.border, backgroundColor: "transparent" }, ink: t["muted-foreground"] });
-    // The keyboard can still reach a read-only host, so focus stays visible.
+    const hairline = { borderColor: t.border, backgroundColor: "transparent" };
+    expect(fieldDisabled(t, false)).toEqual({ frame: hairline, addon: hairline, ink: t["muted-foreground"] });
+    // The keyboard can still reach a read-only host, so focus stays visible, on the frame
+    // alone: a box inside it keeps the resting hairline as its divider.
     expect(fieldDisabled(t, true).frame.borderColor).toBe(t.ring);
+    expect(fieldDisabled(t, true).addon).toEqual(hairline);
   });
 
   it("keeps the kit's addon in Dark Factory's parts and its glyphs at the SearchField's 15px", () => {
@@ -142,6 +148,36 @@ describe("the web field families read the recipe", () => {
     }
   });
 
+  it("keeps a focused disabled field's ring on its frame, never on the boxes inside it", () => {
+    const edge = (el: HTMLElement) => flat(el.style.borderColor || el.style.borderTopColor);
+    // The nearest ancestor that draws an edge: the field's frame.
+    const frameOf = (el: HTMLElement) => {
+      let node = el.parentElement;
+      while (node && !edge(node)) node = node.parentElement;
+      return node!;
+    };
+    for (const tokens of [lightColors, mintColors, darkColors]) {
+      const scheme = tokens === darkColors ? { dark: true } : { light: true };
+      render(
+        <ThemeProvider {...scheme} mint={tokens === mintColors} solid>
+          <Input disabled prefix="$" suffix="USD" defaultValue="90.00" testID="amount" />
+          <PhoneInput disabled defaultValue="5551234567" testID="phone" />
+        </ThemeProvider>,
+      );
+      const amount = screen.getByTestId("amount");
+      const phone = screen.getByTestId("phone");
+      fireEvent.focus(amount);
+      fireEvent.focus(phone);
+      for (const input of [amount, phone]) expect(edge(frameOf(input))).toBe(rgbaOf(tokens.ring));
+      const boxes = [screen.getByText("$").parentElement!, screen.getByText("USD").parentElement!, screen.getByTestId("phone-country")];
+      for (const box of boxes) {
+        expect(edge(box)).toBe(rgbaOf(tokens.border));
+        expect(box.style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
+      }
+      cleanup();
+    }
+  });
+
   it("gives a Field row around a Switch the same eyebrow a delegated Input takes", () => {
     render(
       <ThemeProvider light solid>
@@ -171,5 +207,16 @@ describe("the platform fields", () => {
     expect(fieldSkins.iosSkin.label(t).textTransform).toBeUndefined();
     // Every M3 field's active indicator is `ring`, the Textarea's included.
     expect(textareaSkins.androidSkin.field(t, { focused: true, error: false }).borderBottomColor).toBe(t.ring);
+  });
+
+  it("hand off each platform's Textarea line height as its skin draws it", () => {
+    const css = readFileSync(new URL("../styles/tokens/platforms.css", import.meta.url), "utf8");
+    const blocks = { web: ':root,[data-platform="web"]', ios: '[data-platform="ios"]', android: '[data-platform="android"]' } as const;
+    for (const [platform, selector] of Object.entries(blocks)) {
+      const skin = textareaSkins[`${platform as keyof typeof blocks}Skin`];
+      // A skin without its own value type reads the shared `sizeText` (the Android skin).
+      const value = skin.text ? skin.text("base") : textareaSkins.sizeText("base");
+      expect(blockDeclarations(css, selector).decls["p-textarea-lh"], platform).toBe(`${value.lineHeight}px`);
+    }
   });
 });

@@ -93,19 +93,27 @@ export function fieldNote(t: ColorTokens, error: boolean): TextStyle {
   return { ...typeScale.small, color: error ? destructiveText(t) : t["muted-foreground"] };
 }
 
-/** How a disabled field reads: its frame (and each addon box) and the ink of its value. */
+/** How a disabled field reads: its frame, each box inside it, and the ink of its value. */
 export interface FieldDisabledLook {
   frame: ViewStyle;
+  /** A box inside the frame (an addon, PhoneInput's country segment): no fill, the resting hairline. */
+  addon: ViewStyle;
   ink: string;
 }
 
 /**
  * The disabled field: the frame on the `border` hairline with no fill and the value in the
  * muted ink, with no dim. A disabled field the keyboard reaches keeps its `ring` so focus
- * stays visible; it shows no error edge (its message, under a Field, still does).
+ * stays visible; it shows no error edge (its message, under a Field, still does). The ring
+ * is the frame's alone: a box inside it keeps the resting hairline as its divider, as an
+ * enabled field's addon does while the field is focused.
  */
 export function fieldDisabled(t: ColorTokens, focused: boolean): FieldDisabledLook {
-  return { frame: { borderColor: focused ? t.ring : t.border, backgroundColor: "transparent" }, ink: t["muted-foreground"] };
+  return {
+    frame: { borderColor: focused ? t.ring : t.border, backgroundColor: "transparent" },
+    addon: { borderColor: t.border, backgroundColor: "transparent" },
+    ink: t["muted-foreground"],
+  };
 }
 
 /** A prefix or suffix addon box: `muted` with a `field-border` divider on the field side. */
