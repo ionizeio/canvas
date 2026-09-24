@@ -27,7 +27,8 @@ import { type Layout } from "./description-lists.styles.js";
 //
 // - Layout (pick one; precedence inline > twoColumn > stacked):
 //   `inline` lays the term on the left and the value on the right of a single
-//   row; `twoColumn` puts the term in a fixed 160px label column with the value
+//   row, and a value that does not fit beside its term wraps under it;
+//   `twoColumn` puts the term in a fixed 160px label column with the value
 //   beside it (the read-only detail look); the default `stacked` puts a small
 //   uppercase muted label above a full-weight value.
 // - Rows: `divided` draws a hairline (border-b border-border) under every row
@@ -309,7 +310,7 @@ export function createDescriptionList(
           >
             {item.term}
           </Text>
-          <View style={layout === "twoColumn" ? s.twoColumnValueCell : isEditing && layout === "inline" ? s.editCellGrow : null}>
+          <View style={layout === "twoColumn" ? s.twoColumnValueCell : layout === "inline" ? (isEditing ? s.editCellGrow : s.inlineValueCell) : null}>
             {isEditing ? (
               // The in-place editor: the draft in the row's own value type over a
               // ring-colored underline, with Save / Cancel links trailing. Enter

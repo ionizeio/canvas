@@ -33,6 +33,8 @@ Key-value pairs in stacked, two-column, or inline-edit layouts. Used for detail 
 
 ### Inline
 
+Each value sits on the right of its term. A value too wide to fit beside its term (a long id with its Copy button in a narrow sidebar) wraps onto its own line under the term, still at the trailing edge, so the list never runs past its container.
+
 ```tsx
 <DescriptionList
   inline

@@ -1,9 +1,10 @@
 // Narrow-container fixes from the responsiveness rollout: the calendar month's
 // fluid cell math (pure) and the DescriptionList twoColumn term narrowing (the list's
 // own width, seeded from the window until it measures; test/viewport.ts drives the
-// seed and test/entrance-layout.ts the measurement).
+// seed and test/entrance-layout.ts the measurement), plus the DescriptionList inline
+// row that wraps its value instead of running past a narrow card.
 import { describe, it, expect, afterEach } from "bun:test";
-import { render, cleanup, screen } from "@testing-library/react";
+import { render, cleanup, screen, fireEvent } from "@testing-library/react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { monthCellSize } from "../src/organisms/calendar/calendar.shared.tsx";
 import { DescriptionList } from "../src/molecules/description-lists/description-lists.tsx";
@@ -90,6 +91,62 @@ describe("DescriptionList twoColumn term narrowing", () => {
       expect(text.style.flexShrink).toBe("1");
       expect(text.style.minWidth).toBe("0px");
     }
+  });
+});
+
+// The inline row puts the value on the right of its term. Its value cell was a bare
+// View, which never shrinks (flexShrink 0 on react-native-web and Yoga), so in a
+// ~250px sidebar card a mono id beside its Copy button ran the button past the card
+// while only the term wrapped. happy-dom lays nothing out, so these pin the styles
+// that make the row fit: the row wraps a value that does not fit under its term,
+// and the cell yields and holds the trailing edge on either line.
+describe("DescriptionList inline rows in a narrow container", () => {
+  const cellOf = (node: HTMLElement, rowOf: (el: HTMLElement) => boolean) => {
+    let cell = node;
+    while (cell.parentElement && !rowOf(cell.parentElement)) cell = cell.parentElement;
+    return cell;
+  };
+  const isRow = (el: HTMLElement) => el.style.flexWrap === "wrap";
+
+  it("wraps a value that does not fit under its term instead of overflowing", () => {
+    render(
+      <ThemeProvider>
+        <DescriptionList
+          inline
+          items={[
+            { term: "Payment ID", value: "pay_9f3k82aq", mono: true, copyValue: "pay_9f3k82aq" },
+            { term: "Email", value: "rachel.chen@example.com" },
+          ]}
+        />
+      </ThemeProvider>,
+    );
+    for (const node of [screen.getByLabelText("Copy Payment ID"), screen.getByText("rachel.chen@example.com")] as HTMLElement[]) {
+      const cell = cellOf(node, isRow);
+      const row = cell.parentElement!;
+      expect(row.style.flexDirection).toBe("row");
+      expect(row.style.flexWrap).toBe("wrap");
+      // The term/value spacing stays 16 beside each other; a wrapped value sits the
+      // stacked layout's 4 under its term.
+      expect(row.style.columnGap).toBe("16px");
+      expect(row.style.rowGap).toBe("4px");
+      // The cell yields (its value ellipsizes or wraps inside it) and keeps the
+      // trailing edge, where the rows that fit put their values.
+      expect(cell.style.flexShrink).toBe("1");
+      expect(cell.style.minWidth).toBe("0px");
+      expect(cell.style.marginLeft).toBe("auto");
+    }
+  });
+
+  it("still grows the cell for the in-place editor", () => {
+    render(
+      <ThemeProvider>
+        <DescriptionList inline items={[{ term: "Plan", value: "Pro", update: true }]} />
+      </ThemeProvider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Update Plan" }));
+    const cell = cellOf(screen.getByLabelText("Plan value") as HTMLElement, isRow);
+    expect(cell.style.flexGrow).toBe("1");
+    expect(cell.style.marginLeft).toBe("");
   });
 });
 

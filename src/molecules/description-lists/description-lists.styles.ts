@@ -98,17 +98,41 @@ export const valueWrap: TextStyle = { flexShrink: 1, minWidth: 0 };
 // Row layout per axis. The horizontal rows (inline / two-column) take the skin's
 // cross-axis alignment (iOS centers its 52pt Lists row; web/Android sit on the
 // baseline) and an optional minimum height (the iOS list-row height).
+//
+// The inline row wraps: a value that does not fit beside its term moves onto its
+// own line under the term (the stacked layout's 4 gap), the way an iOS value cell
+// stacks its detail when the two do not fit side by side. The decision is the
+// content's own, so it is intrinsic (no measurement): a row that fits lays out
+// exactly as before, and each row decides for itself. The wrapped value keeps the
+// trailing edge (`inlineValueCell`), so a list whose short rows fit and whose long
+// rows wrap still reads as one column of values, with every Copy button in line.
+// Wrapped lines center in the iOS 52pt row; without a minimum height there is no
+// free space to distribute.
 export function rowLayout(layout: Layout, skin: DescriptionListSkin): ViewStyle {
   if (layout === "stacked") return { gap: 4 };
   const base: ViewStyle = {
     flexDirection: "row",
     alignItems: skin.rowAlign,
-    gap: 16,
     ...(skin.rowMinHeight != null ? { minHeight: skin.rowMinHeight } : null),
   };
-  if (layout === "inline") return { ...base, justifyContent: "space-between" };
-  return base; // twoColumn
+  if (layout === "inline") {
+    return { ...base, flexWrap: "wrap", alignContent: "center", justifyContent: "space-between", columnGap: 16, rowGap: 4 };
+  }
+  return { ...base, gap: 16 }; // twoColumn
 }
+
+// The inline value cell (the value and any trailing Copy button or Update link)
+// must be able to yield. A bare View never shrinks (flexShrink 0 on
+// react-native-web and Yoga alike), so the cell held its content's full width
+// and the value's own shrink (`copyValueText`, `valueWrap`) never engaged: a
+// mono id beside its Copy button ran the button past the card in a narrow
+// sidebar. Once the row has wrapped the value onto its own line, a value still
+// wider than that line shrinks to it, ellipsizing a copyable value and wrapping a
+// plain one. The auto start margin holds the cell at the trailing edge on either
+// line: beside the term it takes the free space `space-between` would, and alone
+// on a wrapped line it keeps the value where the fitting rows put theirs (a lone
+// item on a `space-between` line would sit at the start).
+export const inlineValueCell: ViewStyle = { flexShrink: 1, minWidth: 0, marginStart: "auto" };
 
 // A divided list pads each row beneath the rule so it sits clear of the text.
 // iOS lands the hairline flush at the bottom of the centered 52pt row (pad 0);
