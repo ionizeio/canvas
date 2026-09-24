@@ -851,6 +851,23 @@ than its platform's minimum touch target, the shape stays and the TOUCH area gro
 kit measures the rendered control and extends it with hitSlop, so nothing moves.
 `useMinTargetSlop` and `TOUCH_TARGET` are exported for building your own.
 
+On iOS and Android that touch area follows two of React Native's own rules, which matter
+when you lay small controls out. First, a touch area never reaches past a native ancestor
+that does not contain it. A layout-only Row, Column or View is flattened away and never
+stops it; a container that clips (overflow hidden, a scroll view's edge) stops it at its
+edge; and one that paints, carries a testID or handles pointer events admits it only as
+far as the layout it last recorded. The kit's own clipping views carry the touch area of
+the controls inside them (the ripple clip first, which clips on Android), and the kit's
+controls have their touch area from their first frame, so a view that hugs one records it.
+A control you build with `useMinTargetSlop` gets its touch area after its first layout, so
+a native view of yours that hugs it can stop that area until it lays out again. Second,
+where two touch areas overlap, the later sibling takes the tap. Inside a component the kit
+splits the gap between two of its own controls, so neither takes a tap inside the other;
+between controls you place, it does not. In your own layouts leave at least twice the
+extra touch area between two small controls (16 between two small icon Buttons on
+Android, 8 on iOS), or split the seam yourself in a control you build with
+`useMinTargetSlop`.
+
 ## Elevation and depth
 
 One ladder, Dark Factory's: each shade is cast straight down with a negative spread, so

@@ -17,6 +17,37 @@ import { useSeededMinTargetSlop, type MinTargetOptions } from "./touch-target-se
  *
  * The pattern started on Button and lives here so every pressable can use it, and so
  * the coverage test has one thing to look for rather than a family of near-copies.
+ *
+ * Where the touch area reaches on iOS and Android is React Native's own contract, and two
+ * of its rules bound it.
+ *
+ * A slop never reaches past a native ancestor that does not contain it. React Native
+ * hit-tests from the root down, and each native view on the way admits a point only
+ * inside its own bounds plus its own hitSlop, or, for a view that does not clip, the
+ * overflow Yoga recorded at its last layout (its children's frames and their hitSlop):
+ *
+ *  - A layout-only parent (a plain Row, Column or View that paints nothing and carries no
+ *    testID, handler or transform) is flattened away and never stops it.
+ *  - A native parent that clips (overflow hidden or scroll, a ScrollView's viewport) stops
+ *    it at its edge unless the parent carries the slop as its own hitSlop: Android's
+ *    TouchTargetHelper never asks the children about a point outside a clipping view's
+ *    bounds plus its own slop, and iOS stops at a view that clips to its bounds. Every
+ *    clipping view the kit owns carries the slop of the controls inside it, RippleClip
+ *    first (src/style/ripple-clip.tsx; test/touch-target-clips.test.tsx holds it).
+ *  - A native parent that does not clip (painted, bordered, a testID, pointer handlers)
+ *    admits the slop through the overflow it recorded at its last layout, and a commit
+ *    that changes only hitSlop lays nothing out. The kit's controls seed their slop from
+ *    the box their skin gives, so it is in place at the first layout
+ *    (src/style/touch-target-seed.ts). This hook has no box to seed from: a caller's
+ *    native view that hugs the control can stop the slop until it lays out again.
+ *
+ * Where two touch areas overlap, the later sibling takes the tap: Android and iOS both
+ * walk a view's children from the last to the first. Inside a component the kit splits
+ * the gap between two of its own controls, from its own geometry, so neither takes a tap
+ * inside the other (src/style/touch-seam.ts; test/touch-target-seams.test.tsx holds it).
+ * Between controls a caller places, it does not: this hook reaches the minimum whatever
+ * sits beside the control. So in a caller's layout, leave at least twice the slop between
+ * two small controls, or split the seam in a control of your own.
  */
 
 /** The platform minimums, from the two platforms' own guidance. */

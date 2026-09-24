@@ -27,8 +27,18 @@ import { TOUCH_TARGET } from "../src/style/touch-target.ts";
 // the ripple on Android, and swallowed every slop inside it until it carried one). The
 // last describe below holds that for RippleClip in the source, and
 // test/touch-target-clips.test.tsx holds it for every clipping node in the rendered
-// platform entries. What the kit cannot hold is a caller's container: a slop never
-// reaches past a native ancestor that does not contain it.
+// platform entries. The kit's controls also seed their slop before the first layout, so
+// a native ancestor that hugs one records it (test/touch-target-seed.test.tsx).
+//
+// And a slop stops short of its neighbors, or the later sibling (which React Native gives
+// every point two touch areas share) takes the earlier one's taps. Where a component
+// places two of its own controls side by side or stacked, it splits the gap between them;
+// test/touch-target-seams.test.tsx holds each of those seams.
+//
+// What the kit cannot hold is a caller's layout, and the rule for callers is React
+// Native's (DESIGN.md, Shapes): a slop never reaches past a native ancestor that does not
+// contain it, and where two touch areas overlap the later sibling takes the tap, so leave
+// at least twice the slop between small controls in your own layouts.
 
 const ROOT = join(import.meta.dir, "..");
 
@@ -39,13 +49,13 @@ const ROOT = join(import.meta.dir, "..");
  * above the minimum, or the shell already extends it with its own hitSlop.
  */
 const COVERED_ANOTHER_WAY: Record<string, string> = {
-  "atoms/chip": "hitSlop on the remove glyph and the body; the tappable pill's RippleClip carries the body's slop, and the clipping Android pill carries what reaches past it",
+  "atoms/chip": "hitSlop on the remove glyph and the body, split where they face each other; the tappable pill's RippleClip carries the body's slop, and the clipping Android pill carries what reaches past it",
   "atoms/checkbox": "hitSlop around the box when there is no label to press",
-  "atoms/input": "a field is 44/56 tall by skin, above both minimums; the clear and eye glyphs carry slop, and the grouped box carries the part that overhangs it",
+  "atoms/input": "a field is 44/56 tall by skin, above both minimums; the clear and eye glyphs carry slop, split where they face each other or the value, and the grouped box carries the part that overhangs it",
   "atoms/radio": "hitSlop around the ring when there is no label to press",
   "atoms/select": "the trigger is a field; its rows are 44/48 by skin",
   "molecules/phone-input": "the country segment stretches to the 44/56 field box; its rows are Select's 44/48 by skin",
-  "atoms/stepper": "hitSlop on both halves, which their RippleClips carry on Android; the iOS 32pt group is UIStepper's own size",
+  "atoms/stepper": "hitSlop on both halves, split where they face the value, which their RippleClips carry on Android; the iOS 32pt group is UIStepper's own size",
   "atoms/tooltip": "wraps the caller's node and adds hitSlop; the target is theirs",
   "molecules/alert": "hitSlop on the dismiss glyph (24 + 2 * 12 = 48 on Android)",
   "molecules/accordion": "triggers are 44/56 tall by skin",
@@ -57,7 +67,7 @@ const COVERED_ANOTHER_WAY: Record<string, string> = {
   "organisms/command": "rows are 44/48 tall by skin",
   "organisms/data-table": "rows and action buttons carry pressableMinHeight",
   "organisms/filter-panel": "option rows are 44/48 tall by skin",
-  "organisms/toast": "hitSlop on the dismiss and the action, which their RippleClips carry on Android",
+  "organisms/toast": "hitSlop on the dismiss and the action, split where they face each other, which their RippleClips carry on Android",
   "charts/shared": "a chart's hit area is the mark it belongs to, sized by the data",
   // The same answer, one directory each. A slice, a bubble, a tile, a cell: the
   // pressable IS the mark, it carries accessibilityRole=\"image\", and its size is the

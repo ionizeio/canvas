@@ -235,3 +235,7 @@ A button that NAVIGATES should be a real link, not a press handler that sets `lo
   </Button>
 </Row>
 ```
+
+## Touch area
+
+On iOS and Android a Button smaller than the platform's minimum touch target (44pt, 48dp) keeps its size and extends only its touch area to the minimum, from its first frame, so nothing moves. React Native bounds that area by two rules of its own. It never reaches past a native container that does not contain it: a container of yours that clips, or that paints or carries a `testID` and hugs the Button, stops it at its edge. And where two touch areas overlap, the later sibling takes the tap: on Android two small icon Buttons 8 apart in a Row both reach across the gap between them, so a tap anywhere in it presses the second. Leave at least twice the extra touch area between small Buttons you place side by side (16 between two small icon Buttons on Android, 8 on iOS).

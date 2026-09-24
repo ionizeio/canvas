@@ -118,3 +118,7 @@ primary once selected.
   <Text style={{ color: "#ffffff", fontSize: 13 }}>×</Text>
 </Pressable>
 ```
+
+## Touch area
+
+On iOS and Android a tappable Chip reaches toward the platform's minimum touch target with extra touch area around it, and the remove "×" pads out to the minimum, biased away from the label. Inside one chip the two never overlap: the chip splits the gap between its label and its "×", so a tap on the label never removes it. Between chips, React Native's own rule applies: where two touch areas overlap, the later chip takes the tap, so in a Row of tappable chips a tap on the edge of one chip can toggle the next. Leave room between chips where a mistaken toggle matters.
