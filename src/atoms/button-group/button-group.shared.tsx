@@ -5,7 +5,7 @@ import { type GestureResponderEvent, type LayoutChangeEvent, type LayoutRectangl
 import { View, Pressable, Text, RippleClip, cornerRadii, useHugStyle, useSizing, useControllableState, AnchoredOverlay, useOverlayHost, useMeasuredWidth, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, type MeasureProps, stepOf } from "../../style/index.js";
 import { Icon, type IconName } from "../icon/icon.js";
 import { primaryText } from "../../style/primary-text.js";
-import { actionInk } from "../../style/action.js";
+import { actionFill, actionInk } from "../../style/action.js";
 import * as s from "./button-group.styles.js";
 import { GroupGlass, GlassSelection } from "./button-group-glass.js";
 import { paneStyle } from "../../style/glass-surface/glass-pane.js";
@@ -108,6 +108,19 @@ export interface ButtonGroupSkin {
   stepperMiddle: (t: ColorTokens) => ViewStyle;
   stepperLabel: (t: ColorTokens) => TextStyle;
   stepperChevronColor: IconColor;
+
+  // --- per-skin metrics (each defaults to the shared scale in button-group.styles) ---
+  /** Height and padding of a segment inside the segmented row (the web's sit in a padded track). */
+  segmentSize?: Record<Size, ViewStyle>;
+  /** Label type of a segment inside the segmented row. */
+  segmentType?: Record<Size, TextStyle>;
+  /** Height and padding of the split, stepper and spaced cells (the web's match its Button). */
+  cellSize?: Record<Size, ViewStyle>;
+  /** Label type of the split, stepper and spaced cells. */
+  cellType?: Record<Size, TextStyle>;
+  /** A spaced peer's own surface and label, where the unselected segment's would vanish without a track. */
+  spacedSurface?: (t: ColorTokens) => ViewStyle;
+  spacedLabel?: (t: ColorTokens) => TextStyle;
 
   // --- feedback ---
   /** iOS/web dim the cell on press; Android uses a ripple instead (null). */
@@ -234,11 +247,16 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     const iconTint = iconColor === "primary" ? { color: primaryText(tokens) } : iconColorProps(iconColor);
     // Keep the wrapper in every mode so changing material preserves the focused
     // pressable. Outer flex, border overlap and stacking stay on that wrapper.
-    const solidSurface = skin.segmentSurface(tokens, selected);
+    // A spaced peer (standalone) is its own control, sized like the skin's other cells and,
+    // where the skin says so, drawn with its own surface; an attached segment sits in the row.
+    const solidSurface = standalone && skin.spacedSurface ? skin.spacedSurface(tokens) : skin.segmentSurface(tokens, selected);
+    const cellSize = standalone ? skin.cellSize?.[size] : skin.segmentSize?.[size];
+    const labelType = (standalone ? skin.cellType?.[size] : skin.segmentType?.[size]) ?? s.sizeLabel[size];
+    const labelLook = standalone && skin.spacedLabel ? skin.spacedLabel(tokens) : skin.segmentLabel(tokens, selected);
     const container: StyleProp<ViewStyle> = [
       s.segmentBase,
       { borderWidth: glass ? 0 : skin.segmentBorderWidth },
-      s.sizeContainer[size],
+      cellSize ?? s.sizeContainer[size],
       glass ? s.glassCorners : corners,
       !glass && leading && skin.segmentDivider ? skin.segmentDivider(tokens) : null,
       glass ? s.glassCell : solidSurface,
@@ -280,7 +298,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
           // stay silent to assistive tech.
           <Icon {...{ [icon]: true }} decorative size={s.chevronSize[size]} {...iconTint} style={showIconAlone ? undefined : { marginEnd: 6 }} />
         ) : null}
-        {showIconAlone ? null : <Text style={[s.sizeLabel[size], glass ? s.glassSegmentLabel(tokens, selected) : skin.segmentLabel(tokens, selected), disabled && glass ? s.dim : null]}>{label}</Text>}
+        {showIconAlone ? null : <Text style={[labelType, glass ? s.glassSegmentLabel(tokens, selected) : labelLook, disabled && glass ? s.dim : null]}>{label}</Text>}
       </Pressable>
     );
     // Attached solid segments retain the skin's existing group clip. The stable
@@ -330,7 +348,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
       if (disabled) setOpen(false);
     }, [disabled]);
     const escapeScope = useEscapeLayer(open, () => setOpen(false));
-    const triggerHeight = s.sizeHeight[size];
+    const triggerHeight = (skin.cellSize?.[size]?.height as number | undefined) ?? s.sizeHeight[size];
     // Measure the split control so the dropdown can match its width and never
     // render narrower than the button it drops from.
     const { width: triggerWidth, onLayout: onTriggerLayout } = useMeasuredWidth();
@@ -350,22 +368,24 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
         testID={testID}
         onLayout={onTriggerLayout}
       >
-        {glass ? <GroupGlass testID={testID ? `${testID}-glass` : undefined} /> : null}
+        {/* Under glass the split is its call to action's brand-tinted glass, as a primary
+            Button is: the action colour under the material, the action ink on top. */}
+        {glass ? <GroupGlass brand={actionFill(tokens)} testID={testID ? `${testID}-glass` : undefined} /> : null}
         {/* Each half is its own rounded surface, so its bounded Android ripple is clipped
             to those corners by a RippleClip parent (no-op on iOS/web). See src/style/ripple-clip. */}
         <RippleClip shape={glass ? s.glassStartCorners : cornerRadii(skin.splitPrimary(tokens))}>
           <Pressable
-            style={({ pressed }) => [paneStyle(theme, [skin.splitPrimary(tokens), s.sizeContainer[size], glass ? s.glassCell : null]), skin.pressedOpacity != null && pressed && !glass ? { opacity: skin.pressedOpacity } : null]}
+            style={({ pressed }) => [paneStyle(theme, [skin.splitPrimary(tokens), skin.cellSize?.[size] ?? s.sizeContainer[size], glass ? s.glassCell : null]), skin.pressedOpacity != null && pressed && !glass ? { opacity: skin.pressedOpacity } : null]}
             onPress={(e) => onSelect?.(0, primary, e)}
             disabled={disabled}
             android_ripple={ripple ? ripple(tokens) : undefined}
             accessibilityRole="button"
           >
-            <Text style={[skin.splitPrimaryLabel(tokens), s.sizeLabel[size], glass ? s.glassSegmentLabel(tokens, true) : null, disabled && glass ? s.dim : null]}>{primary}</Text>
+            <Text style={[skin.cellType?.[size] ?? s.sizeLabel[size], skin.splitPrimaryLabel(tokens), disabled && glass ? s.dim : null]}>{primary}</Text>
           </Pressable>
         </RippleClip>
         {/* Hairline divider so the chevron reads as a distinct trigger. */}
-        <View style={glass ? s.glassDivider(tokens, triggerHeight) : skin.splitDivider(tokens, triggerHeight)} />
+        <View style={skin.splitDivider(tokens, triggerHeight)} />
         <RippleClip shape={glass ? s.glassEndCorners : cornerRadii(skin.splitTrigger(tokens, triggerHeight))}>
           <Pressable
             style={({ pressed }) => [paneStyle(theme, [skin.splitTrigger(tokens, triggerHeight), glass ? s.glassCell : null]), skin.pressedOpacity != null && pressed && !glass ? { opacity: skin.pressedOpacity } : null]}
@@ -378,7 +398,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
             accessibilityLabel="More actions"
           >
             <View style={{ transform: [{ rotate: open ? "180deg" : "0deg" }] }}>
-              <Icon chevronDown size={s.chevronSize[size]} color={glass ? primaryText(tokens) : actionInk(tokens)} />
+              <Icon chevronDown size={s.chevronSize[size]} color={actionInk(tokens)} />
             </View>
           </Pressable>
         </RippleClip>
@@ -454,7 +474,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     const [index, setIndex] = useState(() => clamp(initial));
     const i = clamp(index);
     const chevron = s.chevronSize[size];
-    const height = s.sizeHeight[size];
+    const height = (skin.cellSize?.[size]?.height as number | undefined) ?? s.sizeHeight[size];
     // The right arrow's shared-border overlap (marginStart) is OUTER positioning that must
     // ride the RippleClip wrapper, not the Pressable: a negative margin inside the wrapper's
     // overflow:"hidden" would clip 1px off the arrow and lose the overlap. Split it from the
@@ -483,8 +503,8 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
             <Icon chevronLeft size={chevron} {...iconColorProps(skin.stepperChevronColor)} />
           </Pressable>
         </RippleClip>
-        <View style={paneStyle(theme, [skin.stepperMiddle(tokens), s.sizeContainer[size], glass ? s.glassCell : null])}>
-          <Text style={[skin.stepperLabel(tokens), s.sizeLabel[size], disabled && glass ? s.dim : null]}>{items[i] ?? ""}</Text>
+        <View style={paneStyle(theme, [skin.stepperMiddle(tokens), skin.cellSize?.[size] ?? s.sizeContainer[size], glass ? s.glassCell : null])}>
+          <Text style={[skin.cellType?.[size] ?? s.sizeLabel[size], skin.stepperLabel(tokens), disabled && glass ? s.dim : null]}>{items[i] ?? ""}</Text>
         </View>
         <RippleClip
           shape={glass ? s.glassEndCorners : cornerRadii([skin.stepperArrow(tokens, height), stepperArrowRightCorners])}

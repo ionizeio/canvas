@@ -2,10 +2,13 @@
 
 Segmented controls, split buttons, attached groups.
 
+On the web the segmented control is Dark Factory's: the options sit in a pill track and the selected one rides a white thumb, with the rest in the muted ink. The split button is the green call-to-action pill with its chevron half, and the stepper and the spaced peers are hairline pills the height of a Button beside them. On iOS and Android the groups keep their platform shapes (the iOS segmented control, the Material 3 segmented button) in the theme's colours.
+
 All four kinds follow the theme's surface mode. Toggle Liquid Glass in the docs,
 or use `<ThemeProvider glass>` in an app: segmented groups paint a glass
-selection pill on the selected segment, split and stepper groups share a glass
-capsule, and spaced peers get individual glass surfaces. Solid mode keeps each
+selection pill on the selected segment, a split group is its call to action's
+brand-tinted glass (the action colour under the material, as a primary Button), a
+stepper shares a glass capsule, and spaced peers get individual glass surfaces. Solid mode keeps each
 platform's existing skin. The material uses native Liquid Glass on supported iOS
 versions, the native blur or tint fallback on Android and older iOS, and
 Dark Factory's frost in the browser. Reduce Transparency and Increase Contrast use the

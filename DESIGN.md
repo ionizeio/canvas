@@ -301,9 +301,9 @@ components:
   avatar:
     avatar-square-radius: "8px"
   buttongroup:
-    seg-radius: "8px"
-    seg-track-radius: "0px"
-    seg-inner-radius: "0px"
+    seg-radius: "9999px"
+    seg-track-radius: "9999px"
+    seg-inner-radius: "9999px"
   button:
     btn-radius: "9999px"
   checkbox:

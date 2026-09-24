@@ -18,8 +18,10 @@ import { type ButtonGroupSkin, type Size } from "./button-group.shared.js";
 //     `border` outline); segments share 1dp borders (no gap); the SELECTED
 //     segment is a tonal fill (alpha(primary, .12)) with a brand-indigo label and
 //     a leading check; press = android_ripple.
-//   Web: the established Canvas look (joined buttons; selected = solid primary
-//     fill; shared 1px borders overlapped by -1px), lifted verbatim.
+//   Web: Dark Factory's segmented control (a card2 pill track with a hairline, 3px
+//     inset and a 2px gap, the selected segment a white card pill on DF's segment
+//     shadow, 700 labels in foreground or muted) with its split and stepper kinds as
+//     the web Button's pills.
 
 // --- shared size scales (brand type/sizing, identical across platforms) ------
 
@@ -151,51 +153,85 @@ export const glassDivider = (t: ColorTokens, height: number): ViewStyle => ({
 });
 
 // =============================================================================
-// Web: the Riskora control (the 12px corner on a run's outer edges, the sky fill on
-// the selected segment, the `card` fill with the 3:1 `input` boundary otherwise).
+// Web: Dark Factory's segmented control. The row sits in a pill track (`secondary`,
+// DF's card2, with the `border` hairline, a 3px inset and a 2px gap); every segment is
+// a pill, the selected one DF's white `card` thumb on its segment shadow (0 4px 12px
+// -6px in the `shade` role), the labels 700 in `foreground` when selected and
+// `muted-foreground` otherwise. DF's segments are 27 tall in a 35 track at its one
+// size; small and large step 4 either way. The split and stepper kinds and the spaced
+// peers are the web Button's pills (29 / 36 / 40): the split is the green call to
+// action with its chevron half, the stepper and the spaced peers DF's hairline pills.
 // =============================================================================
 
-const WEB_R = shape.web.control;
+const PILL = 9999;
+const WEB_SEGMENT: Record<Size, ViewStyle> = {
+  small: { height: 23, paddingHorizontal: 12 },
+  default: { height: 27, paddingHorizontal: 16 },
+  large: { height: 31, paddingHorizontal: 18 },
+};
+const WEB_SEGMENT_TYPE: Record<Size, TextStyle> = {
+  small: { fontSize: 11, lineHeight: 15 },
+  default: { fontSize: 11.5, lineHeight: 15 },
+  large: { fontSize: 12.5, lineHeight: 17 },
+};
+// The Button's pill metrics (button.styles.ts), so a split or stepper lines up with a Button beside it.
+const WEB_CELL: Record<Size, ViewStyle> = {
+  small: { height: 29, paddingHorizontal: 14 },
+  default: { height: 36, paddingHorizontal: 18 },
+  large: { height: 40, paddingHorizontal: 22 },
+};
+const WEB_CELL_TYPE: Record<Size, TextStyle> = {
+  small: { fontSize: 11.5, lineHeight: 15 },
+  default: { fontSize: 12, lineHeight: 16 },
+  large: { fontSize: 13, lineHeight: 18 },
+};
 
 export const webSkin: ButtonGroupSkin = {
-  // No wrapper around segmented (the row is bare); selected lifts above its
-  // neighbors so its primary border wins on the shared edges.
-  segmentedWrap: () => null,
-  segmentBorderWidth: 1,
-  joinCorners(index, count) {
-    if (count === 1) return { borderRadius: WEB_R };
-    if (index === 0) return { borderTopStartRadius: WEB_R, borderBottomStartRadius: WEB_R };
-    if (index === count - 1) return { borderTopEndRadius: WEB_R, borderBottomEndRadius: WEB_R };
-    return {};
-  },
-  spacedCorners: { borderRadius: WEB_R },
-  // All but the leading segment overlap the previous border by 1px (-ml-px).
-  overlap: { marginStart: -1 },
+  segmentedWrap: (t) => ({
+    ...segmentedContainer,
+    padding: 3,
+    gap: 2,
+    borderRadius: PILL,
+    borderWidth: 1,
+    borderColor: t.border,
+    backgroundColor: t.secondary,
+  }),
+  segmentBorderWidth: 0,
+  joinCorners: () => ({ borderRadius: PILL }),
+  spacedCorners: { borderRadius: PILL },
+  overlap: null,
   segmentSurface(t, selected) {
     return selected
-      ? { zIndex: 10, borderColor: t.primary, backgroundColor: t.primary }
-      : { borderColor: t.input, backgroundColor: t.card };
+      ? { backgroundColor: t.card, boxShadow: `0px 4px 12px -6px ${t.shade}` }
+      : { backgroundColor: "transparent" };
   },
   segmentLabel(t, selected) {
-    return { fontWeight: "500", color: selected ? t["primary-foreground"] : t.foreground };
+    return { fontWeight: "700", color: selected ? t.foreground : t["muted-foreground"] };
   },
-  // Glyphs track the label: on-primary over the selected fill, foreground otherwise.
-  segmentIconColor: (selected) => (selected ? "primaryForeground" : "foreground"),
+  // Glyphs track the label: foreground on the selected thumb, muted otherwise.
+  segmentIconColor: (selected) => (selected ? "foreground" : "muted"),
   showSelectedCheck: false,
+  segmentSize: WEB_SEGMENT,
+  segmentType: WEB_SEGMENT_TYPE,
+  cellSize: WEB_CELL,
+  cellType: WEB_CELL_TYPE,
+  // A spaced peer has no track behind it: it is the outline Button's hairline pill.
+  spacedSurface: (t) => ({ borderWidth: 1, borderColor: t.border, backgroundColor: "transparent" }),
+  spacedLabel: (t) => ({ fontWeight: "700", color: t.foreground }),
 
-  // --- split ---
+  // --- split: the call to action with its chevron half ---
   splitPrimary(t) {
     return {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      borderTopStartRadius: WEB_R,
-      borderBottomStartRadius: WEB_R,
+      borderTopStartRadius: PILL,
+      borderBottomStartRadius: PILL,
       backgroundColor: actionFill(t),
     };
   },
   splitPrimaryLabel(t) {
-    return { fontWeight: "500", color: actionInk(t) };
+    return { fontWeight: "800", letterSpacing: 0.12, color: actionInk(t) };
   },
   splitDivider(t, height) {
     return { width: 1, height, backgroundColor: alpha(actionInk(t), 0.2) };
@@ -205,10 +241,11 @@ export const webSkin: ButtonGroupSkin = {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      borderTopEndRadius: WEB_R,
-      borderBottomEndRadius: WEB_R,
+      borderTopEndRadius: PILL,
+      borderBottomEndRadius: PILL,
       backgroundColor: actionFill(t),
-      paddingHorizontal: 10,
+      paddingStart: 10,
+      paddingEnd: 12,
       height,
     };
   },
@@ -235,21 +272,21 @@ export const webSkin: ButtonGroupSkin = {
     return { fontSize: 14, lineHeight: 20, color: t["popover-foreground"] };
   },
 
-  // --- stepper ---
+  // --- stepper: DF's hairline pill split into a back cell, the value and a forward cell ---
   stepperArrow(t, height) {
     return {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
       borderWidth: 1,
-      borderColor: t.input,
-      backgroundColor: t.background,
-      paddingHorizontal: 8,
+      borderColor: t.border,
+      backgroundColor: "transparent",
+      paddingHorizontal: 10,
       height,
     };
   },
-  stepperArrowLeft: { borderTopStartRadius: 6, borderBottomStartRadius: 6 },
-  stepperArrowRight: { marginStart: -1, borderTopEndRadius: 6, borderBottomEndRadius: 6 },
+  stepperArrowLeft: { borderTopStartRadius: PILL, borderBottomStartRadius: PILL },
+  stepperArrowRight: { marginStart: -1, borderTopEndRadius: PILL, borderBottomEndRadius: PILL },
   stepperMiddle(t) {
     return {
       flexDirection: "row",
@@ -257,12 +294,12 @@ export const webSkin: ButtonGroupSkin = {
       justifyContent: "center",
       borderWidth: 1,
       marginStart: -1,
-      borderColor: t.input,
-      backgroundColor: t.background,
+      borderColor: t.border,
+      backgroundColor: "transparent",
     };
   },
   stepperLabel(t) {
-    return { fontWeight: "500", color: t.foreground };
+    return { fontWeight: "700", color: t.foreground };
   },
   stepperChevronColor: "muted",
 

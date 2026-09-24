@@ -2,14 +2,18 @@ import { StyleSheet, type LayoutRectangle } from "react-native";
 import { GlassSurface, View, alpha, useTheme } from "../../style/index.js";
 import * as s from "./button-group.styles.js";
 
-/** A material sibling behind the controls, so it never clips focus or intercepts taps. */
-export function GroupGlass({ selected = false, testID }: { selected?: boolean; testID?: string }) {
+/**
+ * A material sibling behind the controls, so it never clips focus or intercepts taps.
+ * `brand` makes it brand-tinted glass (the split's call to action, like a primary Button).
+ */
+export function GroupGlass({ selected = false, brand, testID }: { selected?: boolean; brand?: string; testID?: string }) {
   const { tokens, dark } = useTheme();
   return (
     <GlassSurface
       pointerEvents="none"
       testID={testID}
-      interactive={selected}
+      interactive={selected || brand != null}
+      brand={brand}
       tint={selected ? alpha(dark ? tokens.foreground : tokens.background, dark ? 0.16 : 0.64) : undefined}
       style={[
         StyleSheet.absoluteFill,
