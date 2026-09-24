@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { useContext, useState, type ReactNode, type RefObject } from "react";
 import { Text, View } from "react-native";
 import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
+import { webSkin as dropdownSkin } from "../src/atoms/dropdown/dropdown.styles.ts";
 import { Select } from "../src/atoms/select/select.tsx";
 import { Drawer } from "../src/organisms/drawer/drawer.tsx";
 import { Drawer as IOSDrawer } from "../src/organisms/drawer/drawer.ios.tsx";
@@ -101,7 +102,8 @@ describe("Drawer window overlay host", () => {
       const outlet = outletIn(modal);
       const positioned = [...outlet.children].find((child) => child.contains(row))!;
       expect(getComputedStyle(positioned).left).toBe("100px");
-      expect(getComputedStyle(positioned).top).toBe("200px");
+      // The trigger measures 36 tall at 160 in the outlet; the card stands off by the menu's gap.
+      expect(getComputedStyle(positioned).top).toBe(`${160 + 36 + dropdownSkin.menuGap}px`);
       // The outlet's ancestry never enters the panel's transform or corner clip.
       for (let node = outlet.parentElement; node && node !== modal; node = node.parentElement) {
         const style = getComputedStyle(node);

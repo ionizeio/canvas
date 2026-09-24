@@ -1,29 +1,28 @@
 import { destructiveText } from "../../style/destructive-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow, alpha, shape } from "../../style/index.js";
+import { type ColorTokens, shadow, alpha } from "../../style/index.js";
+import { MENU_ICON, MENU_OFFSET, MENU_ROW_GAP, menuDetail, menuPanel, menuRow, menuRowHover, menuRowLabel, menuRowPressed, menuSection, menuSeparator } from "../../style/menu-look.js";
+import { typeScale } from "../../style/type-scale.js";
 
-// Co-located Dropdown skins, one per platform, all driven by the brand tokens
-// (passed in from useTheme so they follow light/dark). The menu card paints the
-// `popover` fill on an OPAQUE surface in every theming mode: the shell asks
-// AnchoredOverlay for its plain surface (`opaque`), so a menu never takes the
-// glass material and its rows never have the page reading through them. The BRAND
-// survives on every platform (the indigo `primary` press tint on Android, the
-// `destructive` red for destructive rows); only the native SHAPE, sizing, fill,
-// separators, and press feedback change per OS:
-//   iOS (iOS 26 / Liquid Glass pull-down menu): a VERY rounded popover panel
-//     (~26 radius, `popover` fill, NO border, soft shadow), rows ~44pt tall with
-//     ~17pt labels, hairline `border` separators between groups, a destructive
-//     row in `destructive` red, an optional trailing SF-style icon; a pressed row
-//     tints with a subtle `secondary` highlight (no ripple) at pressedOpacity 0.8.
-//   Android (Material 3 menu): an ELEVATED surface (4 radius, `popover`, shadow
-//     md, paddingVertical 8), rows ~48dp tall with 14sp labels and a leading
-//     icon gutter, an android_ripple (alpha(primary, 0.12) state layer) on rows,
-//     and NO separators.
-//   Web: the established Canvas look (the current dropdown, lifted verbatim) — a
-//     bordered popover card (6 radius, `border`, `popover` fill, shadow-lg,
-//     padding 4), rows with rounded-sm px-2 py-1.5 layout, hairline `border`
-//     separators, an `accent` pressed/active fill, and `red-700/red-300`
-//     destructive rows.
+// Co-located Dropdown skins, one per platform, all driven by the theme tokens (passed
+// in from useTheme so they follow the palette and the scheme). Under glass the shell
+// asks AnchoredOverlay for the DENSE layer, so the menu reads as the densest material
+// and its rows stay legible; in solid mode each skin paints its own card. Menus exist
+// on both platforms, so iOS and Android keep their own shapes in the theme's colours
+// (the design language's item 3), and the web takes Dark Factory's menu:
+//   iOS (iOS 26 / Liquid Glass pull-down menu): a very rounded panel (26 radius,
+//     `popover` fill, no border, soft shadow), rows about 44pt tall with 17pt labels,
+//     hairline `border` separators between groups, destructive rows in
+//     `destructive-text`; a pressed row tints with a `secondary` highlight (no ripple)
+//     at pressedOpacity 0.8; a disabled row dims to 0.4.
+//   Android (Material 3 menu): an elevated surface (4 radius, `popover`, shadow md,
+//     paddingVertical 8), rows about 48dp tall with 14sp labels and a leading icon
+//     gutter, an android_ripple (alpha(primary, 0.12) state layer) on rows, no
+//     separators; a disabled row dims to 0.38.
+//   Web: Dark Factory's menu (src/style/menu-look.ts): the `popover` card at the menu
+//     corner with an 8px inset, its popover shadow and hairline, 33px rows 2px apart at
+//     an 8px corner with 12.5 / 700 labels, the instant `hover` wash, the eyebrow section
+//     heading, the caption shortcut, and a disabled row in the muted ink rather than a dim.
 
 // The contract a platform skin fulfills. The shell renders the wrapper, the
 // trigger, the optional backdrop, the menu card, the optional section label, the
@@ -38,9 +37,8 @@ export interface DropdownSkin {
   /** The identity header block (title over description) rendered ABOVE both the
    *  section label and the rows, when `title`/`description` are passed. Its
    *  gutter matches `menuLabel`'s, so the header, the label, and the row labels
-   *  share one start column; the type scale is deliberately the SAME on all
-   *  three platforms (the hand-off hard-codes it, there is no per-platform
-   *  header token), so only the gutter is a per-OS value. */
+   *  share one start column. iOS and Android set it at 14/20 over 12/16; the web
+   *  in Dark Factory's row label over its caption. */
   menuHeader: ViewStyle;
   /** The header's title line, in the popover foreground. */
   menuHeaderTitle: (t: ColorTokens) => TextStyle;
@@ -54,6 +52,10 @@ export interface DropdownSkin {
   /** The fill applied to a pressed row (iOS/web tint here; Android uses a
    *  ripple, so this is null). */
   itemPressed: ((t: ColorTokens) => ViewStyle) | null;
+  /** The instant look of a resting row under the pointer (the web's wash); null where there is none. */
+  itemHover: ((t: ColorTokens) => ViewStyle) | null;
+  /** The space between rows. */
+  rowGap: number;
   /** Item label type scale. */
   itemTextType: TextStyle;
   /** Leading Canvas icon size (px), sized to sit with the label per platform. */
@@ -62,13 +64,15 @@ export interface DropdownSkin {
   itemTextColor: (t: ColorTokens, dark: boolean, destructive: boolean) => TextStyle;
   /** Trailing keyboard shortcut, right-aligned and muted. */
   shortcut: (t: ColorTokens) => TextStyle;
-  /** Opacity applied to a disabled row. */
   /** Standoff between the trigger and the menu card, in px. Skin-owned rather than
    *  caller-owned: a menu built for a taller trigger stands off further (the
    *  hand-off's account pill uses 6 where a plain dropdown uses 4), and a spacing
    *  prop on a public component would be the re-spacing escape hatch. */
   menuGap: number;
+  /** The dim on a disabled custom trigger (the caller's own node, so a dim is all the shell can do). */
   disabledOpacity: number;
+  /** A disabled row: the dim it takes, and whether its label and icon go to the muted ink instead. */
+  disabledRow: { opacity: number; muted: boolean };
   /** iOS/web dim a row on press via this; Android uses a ripple instead (null). */
   pressedOpacity: number | null;
   /** Android ripple over the rows; null on iOS/web. */
@@ -93,62 +97,30 @@ export const wrapperLifted: ViewStyle = { zIndex: 50 };
 // The custom-trigger Pressable: keeps the chip from stretching.
 export const customTrigger: ViewStyle = { alignSelf: "flex-start" };
 
-// ---------- Web: the established Canvas look (lifted verbatim) ----------
-// The current dropdown: a popover card (rounded-md border bg-popover p-1
-// shadow-lg) positioned absolutely below the trigger; rows with the
-// flex-row items-center gap-2 rounded-sm px-2 py-1.5 layout, hairline
-// my-1 h-px bg-border separators, an active:bg-accent pressed fill, and
-// text-red-700 dark:text-red-300 destructive rows (red-300 holds 4.5:1 on the Dark Factory
-// dark pressed fill, where red-400 fell to 4.3:1).
-// The Riskora menu: a card at the menu corner with an 8px inset, 40px rows with a 10px
-// corner and a 12px gutter (the Workflow node menu).
+// ---------- Web: Dark Factory's menu (src/style/menu-look.ts) ----------
 export const webSkin: DropdownSkin = {
-  menuCard: (t) => ({
-    borderRadius: shape.web.menu,
-    borderWidth: 1,
-    borderColor: t.border,
-    backgroundColor: t.popover,
-    padding: 8,
-    ...shadow("lg", t),
-  }),
-  menuLabel: (t) => ({
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: "500",
-    color: t["muted-foreground"],
-  }),
-  // Header gutter = the web menu-label gutter (12 x 8), so the identity block
-  // starts on the same column as the label and the row text.
-  menuHeader: { paddingHorizontal: 12, paddingVertical: 8, gap: 2 },
-  menuHeaderTitle: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t["popover-foreground"] }),
-  menuHeaderDescription: (t) => ({ fontSize: 12, lineHeight: 16, color: t["muted-foreground"] }),
-  separator: (t) => ({ marginTop: 6, marginBottom: 6, height: 1, backgroundColor: t.border }),
-  itemRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  itemPressed: (t) => ({ backgroundColor: t.accent }),
-  itemTextType: { fontSize: 14, lineHeight: 20 },
-  iconSize: 16,
+  menuCard: menuPanel,
+  menuLabel: menuSection,
+  // The header shares the row gutter (10), so the identity block, the eyebrow and the row
+  // labels start on one column.
+  menuHeader: { paddingHorizontal: 10, paddingTop: 6, paddingBottom: 6, gap: 2 },
+  menuHeaderTitle: (t) => ({ ...menuRowLabel, color: t["popover-foreground"] }),
+  menuHeaderDescription: (t) => ({ ...typeScale.caption, color: t["muted-foreground"] }),
+  separator: menuSeparator,
+  itemRow: menuRow,
+  itemPressed: menuRowPressed,
+  itemHover: menuRowHover,
+  rowGap: MENU_ROW_GAP,
+  itemTextType: menuRowLabel,
+  iconSize: MENU_ICON,
   itemTextColor: (t, _dark, destructive) => {
     if (destructive) return { color: destructiveText(t) };
     return { color: t["popover-foreground"] };
   },
-  shortcut: (t) => ({
-    marginStart: "auto",
-    fontSize: 12,
-    lineHeight: 16,
-    letterSpacing: 1.6,
-    color: t["muted-foreground"],
-  }),
-  menuGap: 4,
+  shortcut: menuDetail,
+  menuGap: MENU_OFFSET,
   disabledOpacity: 0.5, // the hand-off's --p-disabled on web
+  disabledRow: { opacity: 1, muted: true },
   pressedOpacity: null, // web tints the row fill on press, no opacity dim
   ripple: null,
 };
@@ -217,7 +189,10 @@ export const iosSkin: DropdownSkin = {
   // The hand-off dims a disabled iOS control to 0.4 (--p-disabled under
   // [data-platform="ios"]), not the 0.5 web and the legacy UIKit convention use.
   menuGap: 4,
+  itemHover: null,
+  rowGap: 0,
   disabledOpacity: 0.4,
+  disabledRow: { opacity: 0.4, muted: false },
   pressedOpacity: 0.8,
   ripple: null,
 };
@@ -276,7 +251,10 @@ export const androidSkin: DropdownSkin = {
     color: t["muted-foreground"],
   }),
   menuGap: 4,
+  itemHover: null,
+  rowGap: 0,
   disabledOpacity: 0.38, // M3 disabled opacity, the hand-off's --p-disabled on Android
+  disabledRow: { opacity: 0.38, muted: false },
   pressedOpacity: null, // Android uses a ripple instead
   ripple: (t) => ({ color: alpha(t.primary, 0.12), borderless: false }),
 };

@@ -1,5 +1,6 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
+import { useHover } from "../../style/hover.js";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { View, Pressable, Text, useHugStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, useRovingFocus, isRTL, RippleClip, cornerRadii, type StyleProp, type ViewStyle, withInnerFill } from "../../style/index.js";
 import { Button as WebButton } from "../button/button.js";
@@ -42,7 +43,7 @@ export interface DropdownItem {
   shortcut?: string;
   /** Red-tinted row for destructive actions (e.g. Delete). */
   destructive?: boolean;
-  /** Dimmed, non-interactive row: skips onSelect and renders at reduced opacity. */
+  /** Inert row: skips onSelect and shows the platform's disabled look (the web's muted ink, a dim on iOS and Android). */
   disabled?: boolean;
   /** Draw a hairline separator above this row to start a new group. */
   separatorBefore?: boolean;
@@ -141,6 +142,59 @@ export interface DropdownParts {
 
 export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
   const Button = parts.Button ?? WebButton;
+
+  interface MenuRowProps {
+    item: DropdownItem;
+    rowRef: (node: FocusableRow) => void;
+    rovingProps: object;
+    onSelect: () => void;
+    ripple: { color: string; borderless: boolean } | undefined;
+  }
+
+  // One menu row, its own component so the web's hover wash has a hook per row. A
+  // disabled row is inert and takes the skin's disabled look: the web's muted ink, or
+  // the platform's dim.
+  function MenuRow({ item, rowRef, rovingProps, onSelect, ripple }: MenuRowProps) {
+    const theme = useMaterialTheme({ layer: "dense" });
+    const { tokens, dark } = theme;
+    const disabled = !!item.disabled;
+    const muted = disabled && skin.disabledRow.muted;
+    const { hovered, target } = useHover(skin.itemHover != null && !disabled);
+    return (
+      <Pressable
+        ref={rowRef}
+        {...rovingProps}
+        {...target}
+        style={({ pressed }) => [
+          skin.itemRow,
+          hovered && skin.itemHover ? skin.itemHover(tokens) : null,
+          // iOS/web tint the row on press here; Android uses the ripple instead.
+          skin.itemPressed != null && pressed ? withInnerFill(theme, skin.itemPressed(tokens), "firm") : null,
+          skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+          disabled && skin.disabledRow.opacity !== 1 ? { opacity: skin.disabledRow.opacity } : null,
+        ]}
+        onPress={disabled ? undefined : onSelect}
+        disabled={item.disabled}
+        android_ripple={ripple}
+        accessibilityRole="menuitem"
+        accessibilityState={{ disabled: item.disabled }}
+        aria-disabled={item.disabled}
+      >
+        {item.icon ? (
+          <Icon {...{ [item.icon]: true }} destructive={item.destructive && !muted} muted={muted} size={skin.iconSize} decorative />
+        ) : null}
+        <Text style={[skin.itemTextType, muted ? { color: tokens["muted-foreground"] } : skin.itemTextColor(tokens, dark, !!item.destructive)]}>
+          {item.label}
+        </Text>
+        {item.shortcut ? (
+          <Text style={skin.shortcut(tokens)}>
+            {item.shortcut}
+          </Text>
+        ) : null}
+      </Pressable>
+    );
+  }
+
   return function Dropdown(props: DropdownProps) {
     const { trigger, children, triggerLabel, label, title, description, items, open: openProp, onOpenChange, onSelect, alignEnd, disabled, testID, style } = props;
     const theme = useMaterialTheme({ layer: "dense" });
@@ -326,7 +380,7 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
                 WHICH menu opened. RNW forwards neither accessibilityLabel nor the
                 role's own name, so both aliases are set, per the kit's dual-a11y
                 contract. */}
-            <View accessibilityRole="menu" role="menu" accessibilityLabel={menuName} aria-label={menuName}>
+            <View accessibilityRole="menu" role="menu" accessibilityLabel={menuName} aria-label={menuName} style={skin.rowGap ? { gap: skin.rowGap } : undefined}>
             {hasHeader ? (
               <View style={skin.menuHeader} role="group" accessibilityLabel={headerName} aria-label={headerName}>
                 {title != null ? <Text style={skin.menuHeaderTitle(tokens)}>{title}</Text> : null}
@@ -368,35 +422,7 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
                 {item.separatorBefore && skin.separator ? (
                   <View style={skin.separator(tokens)} />
                 ) : null}
-                <Pressable
-                  ref={rowRef}
-                  {...(rovingProps as object)}
-                  style={({ pressed }) => [
-                    skin.itemRow,
-                    // iOS/web tint the row on press here; Android uses the ripple instead.
-                    skin.itemPressed != null && pressed ? withInnerFill(theme, skin.itemPressed(tokens), "firm") : null,
-                    skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
-                    item.disabled ? { opacity: skin.disabledOpacity } : null,
-                  ]}
-                  onPress={item.disabled ? undefined : selectItem}
-                  disabled={item.disabled}
-                  android_ripple={ripple}
-                  accessibilityRole="menuitem"
-                  accessibilityState={{ disabled: item.disabled }}
-                  aria-disabled={item.disabled}
-                >
-                  {item.icon ? (
-                    <Icon {...{ [item.icon]: true }} destructive={item.destructive} size={skin.iconSize} decorative />
-                  ) : null}
-                  <Text style={[skin.itemTextType, skin.itemTextColor(tokens, dark, !!item.destructive)]}>
-                    {item.label}
-                  </Text>
-                  {item.shortcut ? (
-                    <Text style={skin.shortcut(tokens)}>
-                      {item.shortcut}
-                    </Text>
-                  ) : null}
-                </Pressable>
+                <MenuRow item={item} rowRef={rowRef} rovingProps={rovingProps} onSelect={selectItem} ripple={ripple} />
               </View>
               );
             })}

@@ -205,13 +205,16 @@
   --p-ac-row-radius:10px;--p-ac-row-pad-x:12px;--p-ac-row-pad-y:10px;--p-ac-row-gap:10px;--p-ac-row-min-h:0px;--p-ac-row-separator:0px;
   --p-ac-row-font:14px;--p-ac-row-lh:20px;--p-ac-row-selected:var(--accent);
   --p-ac-check-w:14px;--p-ac-check-color:var(--popover-foreground);
-  /* Dropdown menu (dropdown.styles.ts webSkin) */
+  /* Dropdown and RowMenu menus (src/style/menu-look.ts: Dark Factory's menu, 33px rows 2px
+     apart at an 8px corner with 12.5/700 labels, the uppercase eyebrow section heading, the
+     caption shortcut, the instant hover wash; a disabled row takes the muted ink, no dim) */
   --p-menu-radius:12px;--p-menu-border:1px;--p-menu-pad-x:8px;--p-menu-pad-y:8px;--p-menu-shadow:var(--shadow-lg);
-  --p-menu-label-font:12px;--p-menu-label-lh:16px;--p-menu-label-weight:500;--p-menu-label-tracking:0px;--p-menu-label-pad-x:12px;--p-menu-label-pad-y:8px;
-  --p-menu-sep-h:1px;--p-menu-sep-margin:6px;
-  --p-menu-row-radius:10px;--p-menu-row-pad-x:12px;--p-menu-row-pad-y:10px;--p-menu-row-gap:10px;--p-menu-row-min-h:0px;
-  --p-menu-row-font:14px;--p-menu-row-lh:20px;
-  --p-menu-shortcut-font:12px;--p-menu-shortcut-lh:16px;--p-menu-shortcut-tracking:1.6px;
+  --p-menu-label-font:10px;--p-menu-label-lh:13px;--p-menu-label-weight:700;--p-menu-label-tracking:1.6px;--p-menu-label-pad-x:10px;--p-menu-label-pad-y:4px;
+  --p-menu-label-transform:uppercase /* @kind other */;
+  --p-menu-sep-h:1px;--p-menu-sep-margin:4px;
+  --p-menu-row-radius:8px;--p-menu-row-pad-x:10px;--p-menu-row-pad-y:8px;--p-menu-row-gap:10px;--p-menu-row-min-h:0px;
+  --p-menu-row-font:12.5px;--p-menu-row-lh:17px;--p-menu-row-weight:700;--p-menu-row-spacing:2px;--p-menu-row-hover:var(--hover);
+  --p-menu-shortcut-font:11px;--p-menu-shortcut-lh:15px;--p-menu-shortcut-weight:600;--p-menu-shortcut-tracking:0px;
   /* Tooltip (tooltip.styles.ts webSkin) */
   --p-tip-radius:8px;--p-tip-shadow:var(--shadow-md);--p-tip-weight:500;--p-tip-min-h:0px;
   /* Dialog (dialog.styles.ts webSkin) */
@@ -529,11 +532,12 @@
   --p-select-check-color:var(--primary);--p-select-check-weight:600;
   /* Dropdown — iOS 26 pull-down menu: 26pt borderless panel, 44pt rows */
   --p-menu-radius:26px;--p-menu-border:0px;--p-menu-pad-x:0px;--p-menu-pad-y:6px;
-  --p-menu-label-font:13px;--p-menu-label-lh:18px;--p-menu-label-weight:600;--p-menu-label-pad-x:16px;
+  --p-menu-label-font:13px;--p-menu-label-lh:18px;--p-menu-label-weight:600;--p-menu-label-tracking:0px;--p-menu-label-pad-x:16px;--p-menu-label-pad-y:6px;
+  --p-menu-label-transform:none /* @kind other */;
   --p-menu-sep-margin:6px;
   --p-menu-row-radius:0px;--p-menu-row-pad-x:16px;--p-menu-row-pad-y:11px;--p-menu-row-gap:12px;--p-menu-row-min-h:44px;
-  --p-menu-row-font:17px;--p-menu-row-lh:22px;--p-menu-destructive:var(--destructive-text);
-  --p-menu-shortcut-font:15px;--p-menu-shortcut-lh:20px;--p-menu-shortcut-tracking:0.5px;
+  --p-menu-row-font:17px;--p-menu-row-lh:22px;--p-menu-row-weight:400;--p-menu-row-spacing:0px;--p-menu-row-hover:transparent;--p-menu-destructive:var(--destructive-text);
+  --p-menu-shortcut-font:15px;--p-menu-shortcut-lh:20px;--p-menu-shortcut-weight:400;--p-menu-shortcut-tracking:0.5px;
   /* Radio: iOS has no radio button, so a single choice is a checkmark list and draws
      no ring or dot: the label leads, the chosen row carries a trailing primary check,
      and a group's rows are 44pt cells with 16pt insets and inset hairline separators
@@ -768,10 +772,12 @@
   --p-select-check-color:var(--primary);--p-select-check-weight:700;
   /* Dropdown — M3 menu: 4dp elevated surface, 48dp rows, no dividers */
   --p-menu-radius:4px;--p-menu-border:0px;--p-menu-pad-x:0px;--p-menu-pad-y:8px;--p-menu-shadow:var(--shadow-md);
-  --p-menu-label-tracking:0.5px;--p-menu-label-pad-x:16px;--p-menu-label-pad-y:8px;
+  --p-menu-label-font:12px;--p-menu-label-lh:16px;--p-menu-label-weight:500;--p-menu-label-tracking:0.5px;--p-menu-label-pad-x:16px;--p-menu-label-pad-y:8px;
+  --p-menu-label-transform:none /* @kind other */;
   --p-menu-sep-h:0px;--p-menu-sep-margin:0px;
   --p-menu-row-radius:0px;--p-menu-row-pad-x:16px;--p-menu-row-pad-y:0px;--p-menu-row-gap:12px;--p-menu-row-min-h:48px;
-  --p-menu-destructive:var(--destructive-text);--p-menu-shortcut-tracking:0.5px;
+  --p-menu-row-font:14px;--p-menu-row-lh:20px;--p-menu-row-weight:400;--p-menu-row-spacing:0px;--p-menu-row-hover:transparent;
+  --p-menu-destructive:var(--destructive-text);--p-menu-shortcut-font:12px;--p-menu-shortcut-lh:16px;--p-menu-shortcut-weight:400;--p-menu-shortcut-tracking:0.5px;
   /* Tooltip — M3 plain tooltip: 4dp, flat, 400 label, 24dp min height */
   --p-tip-radius:4px;--p-tip-shadow:none;--p-tip-weight:400;--p-tip-min-h:24px;
   /* Radio — M3: a 20dp ring with a 2dp muted outline and a 10dp dot */

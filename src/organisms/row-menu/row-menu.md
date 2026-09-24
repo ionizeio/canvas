@@ -2,6 +2,11 @@
 
 Vertical action menu items and navigation links.
 
+On the web the ··· trigger is Dark Factory's plain icon button, a small square with a
+muted glyph that takes the hover wash, and it opens Dark Factory's menu, the same one
+Dropdown opens. iOS and Android keep their platform context menus in the theme's
+colours.
+
 In glass mode the menu is a dense-layer glass card beside its glyph; a row's
 callback fires the moment it is pressed. Solid mode paints the skin's own menu.
 Board's card menus are RowMenus and behave the same.
@@ -101,7 +106,7 @@ does not fire `onSelect`, keeps the menu open, and is announced as disabled.
 
 ### Links
 
-**Do** — Pass `links` so rows render as real navigation links, and mark the current page with an active highlight.
+**Do** — Pass `links` so rows render as real navigation links a browser can open in a new tab or bookmark.
 
 ```tsx
 <RowMenu open links items={[

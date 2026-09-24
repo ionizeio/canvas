@@ -1,31 +1,27 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { destructiveText } from "../../style/destructive-text.js";
 import { shadow, alpha, TOUCH_TARGET, type ColorTokens, type TouchTargetSkin, shape } from "../../style/index.js";
+import { MENU_ICON, MENU_OFFSET, MENU_ROW_GAP, menuPanel, menuRow, menuRowHover, menuRowLabel, menuRowPressed, menuSection, menuSeparator } from "../../style/menu-look.js";
 import { type IconName } from "../../atoms/icon/icon.js";
 
-// Co-located RowMenu skins, one per platform, all driven by the brand tokens
-// (passed in from useTheme so they follow light/dark). The menu card paints the
-// `popover` fill on an OPAQUE surface in every theming mode: the shell asks
-// AnchoredOverlay for its plain surface (`opaque`), so the menu never takes the
-// glass material and the table row under it never reads through. The BRAND survives
-// on every platform (the destructive red is a fixed Tailwind hue, the trigger and
-// rows take the brand foreground/popover tokens, never a platform default); only
-// the native SHAPE, sizing, structure, and interaction feedback change per OS:
-//   iOS (HIG context menu): the floating card is a rounded popover (~13 radius)
-//     over `popover` with a soft shadow, NO border; rows are ~44pt tall with a
-//     LEADING icon, groups split by hairline `separator` lines; destructive rows
-//     are red; pressed = a `secondary` highlight (no ripple). The ⋯ trigger dims
-//     to ~0.8 opacity on press.
-//   Android (Material 3 menu): the card is an elevated surface (4 radius,
-//     `popover`, soft shadow), NO border; groups are not auto-divided, but an item
-//     that sets `separatorBefore` gets a 1dp M3 menu divider above it; rows are
-//     ~48dp tall with a LEADING icon; press = an android_ripple (alpha(primary,
-//     0.12) state layer). Destructive rows are red. The ⋯ trigger uses the same
-//     ripple.
-//   Web: the established Canvas look (the current row menu, lifted verbatim) — a
-//     bordered popover card (6 radius, `border`, shadow-lg, min-w 180), rounded-sm
-//     rows (px-2 py-1.5), hairline `border` separators, destructive red, and an
-//     `accent` fill on press for both the trigger and the rows.
+// Co-located RowMenu skins, one per platform, all driven by the theme tokens (passed
+// in from useTheme so they follow the palette and the scheme). Under glass the shell
+// asks AnchoredOverlay for the DENSE layer, so the menu reads as the densest material
+// over the row it acts on; in solid mode each skin paints its own card. Menus exist on
+// both platforms, so iOS and Android keep their own shapes in the theme's colours, and
+// the web takes Dark Factory's menu:
+//   iOS (HIG context menu): a deeply rounded card (the iOS menu corner, 26) over
+//     `popover` with a soft shadow and no border; rows about 44pt tall with a leading
+//     icon, groups split by hairline separators, destructive rows in
+//     `destructive-text`, a `secondary` highlight on press. The ⋯ trigger dims to 0.8
+//     on press; a disabled row dims to 0.4.
+//   Android (Material 3 menu): an elevated surface (4 radius, `popover`, soft shadow)
+//     with no border; rows about 48dp tall with a leading icon and an
+//     alpha(primary, 0.12) ripple; an item that sets `separatorBefore` gets the 1dp M3
+//     divider. The ⋯ trigger shares the ripple; a disabled row dims to 0.38.
+//   Web: Dark Factory's menu (src/style/menu-look.ts), the same one the web Dropdown
+//     takes, opened from Dark Factory's plain icon button: a 28px square at the control
+//     corner with the ⋯ glyph in the muted ink and the instant `hover` wash.
 
 export interface RowMenuItem {
   label: string;
@@ -37,9 +33,10 @@ export interface RowMenuItem {
   destructive?: boolean;
   /** Draw a hairline separator above this row to start a new group. */
   separatorBefore?: boolean;
-  /** Dim the row and make it inert: it does not fire `onSelect`, does not close the menu, and
-   *  is announced as disabled (for an action that is unavailable in the current context, e.g.
-   *  "Clear column" on an already-empty column). */
+  /** Make the row inert: it does not fire `onSelect`, does not close the menu, is announced as
+   *  disabled, and shows the platform's disabled look (the web's muted ink, a dim on iOS and
+   *  Android), for an action that is unavailable in the current context, e.g. "Clear column"
+   *  on an already-empty column. */
   disabled?: boolean;
 }
 
@@ -48,12 +45,16 @@ export interface RowMenuItem {
 // state; the skin maps tokens and the active row state to RN style objects, and
 // declares its press-feedback mode (iOS/web dim or tint inline, Android ripples).
 export interface RowMenuSkin extends TouchTargetSkin {
-  /** The relative anchor: keeps the trigger from stretching, positions the card. */
+  /** The relative anchor that positions the card (the shell adds the hug sizing). */
   anchor: ViewStyle;
   /** The ⋯ icon-button surface (square, centered, platform radius). */
   trigger: ViewStyle;
   /** The ⋯ (moreHorizontal) Canvas trigger glyph size (px), per platform. */
   triggerIconSize: number;
+  /** The ⋯ glyph's ink. */
+  triggerIconColor: (t: ColorTokens) => string;
+  /** The instant look of the trigger under the pointer (the web's wash); null where there is none. */
+  triggerHover: ((t: ColorTokens) => ViewStyle) | null;
   /** The fill applied to the trigger on press (web/iOS tint via this; Android ripples). */
   triggerPressed: (t: ColorTokens) => ViewStyle;
   /** The floating menu card surface (shape, fill, border, shadow, radius). The
@@ -61,12 +62,20 @@ export interface RowMenuSkin extends TouchTargetSkin {
   menuCard: (t: ColorTokens) => ViewStyle;
   /** The menu's min-width floor; the card never renders narrower than this. */
   menuMinWidth: number;
+  /** Standoff between the trigger and the menu card, in px. */
+  menuGap: number;
   /** The muted section heading above the rows. */
   menuLabel: (t: ColorTokens) => TextStyle;
   /** A single action/link row layout. */
   itemRow: ViewStyle;
   /** The fill applied to a row on press (web/iOS tint via this; Android ripples). */
   itemPressed: (t: ColorTokens) => ViewStyle;
+  /** The instant look of a resting row under the pointer (the web's wash); null where there is none. */
+  itemHover: ((t: ColorTokens) => ViewStyle) | null;
+  /** The space between rows. */
+  rowGap: number;
+  /** A disabled row: the dim it takes, and whether its label and icon go to the muted ink instead. */
+  disabledRow: { opacity: number; muted: boolean };
   /** The hairline separator above a row that sets `separatorBefore`. Always rendered
    *  when an item requests it, on every platform (both HIG and M3 menus use group dividers). */
   separator: (t: ColorTokens) => ViewStyle;
@@ -90,54 +99,35 @@ export interface RowMenuSkin extends TouchTargetSkin {
 // painted after it. Shared across platforms (the anchor shape is identical).
 export const anchorLifted: ViewStyle = { zIndex: 50 };
 
-// ---------- Web: the established Canvas look (lifted verbatim) ----------
-// A bordered popover card (min-w 180, 6 radius, 1px `border`, `popover` fill,
-// p-1, shadow-lg) placed inline below the trigger; rounded-sm rows (px-2 py-1.5)
-// with a 2-radius corner; hairline `border` separators split groups; destructive
-// rows are red-700/red-300; the trigger and rows tint with `accent` on press.
+// ---------- Web: Dark Factory's menu (src/style/menu-look.ts) ----------
 export const webSkin: RowMenuSkin = {
   minTarget: null,
-  anchor: { position: "relative", alignSelf: "flex-start" },
-  // The Riskora row kebab: a 36px square with the control corner; its menu is
-  // the card at the menu corner with an 8px inset and 40px rows with a 10px corner.
+  anchor: { position: "relative" },
+  // Dark Factory's plain icon button: a 28px square at the control corner, the glyph
+  // in the muted ink, the hover wash.
   trigger: {
-    width: 36,
-    height: 36,
+    width: 28,
+    height: 28,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: shape.web.control,
   },
-  triggerIconSize: 16,
-  triggerPressed: (t) => ({ backgroundColor: t.accent }),
-  menuCard: (t) => ({
-    borderRadius: shape.web.menu,
-    borderWidth: 1,
-    borderColor: t.border,
-    backgroundColor: t.popover,
-    padding: 8,
-    ...shadow("lg", t),
-  }),
+  triggerIconSize: 15,
+  triggerIconColor: (t) => t["muted-foreground"],
+  triggerHover: menuRowHover,
+  triggerPressed: menuRowPressed,
+  menuCard: menuPanel,
   menuMinWidth: 200,
-  menuLabel: (t) => ({
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: "500",
-    color: t["muted-foreground"],
-  }),
-  itemRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  itemPressed: (t) => ({ backgroundColor: t.accent }),
-  separator: (t) => ({ marginVertical: 6, height: 1, backgroundColor: t.border }),
-  rowTextSize: { fontSize: 14, lineHeight: 20 },
-  iconSize: 16,
+  menuGap: MENU_OFFSET,
+  menuLabel: menuSection,
+  itemRow: menuRow,
+  itemPressed: menuRowPressed,
+  itemHover: menuRowHover,
+  rowGap: MENU_ROW_GAP,
+  disabledRow: { opacity: 1, muted: true },
+  separator: menuSeparator,
+  rowTextSize: menuRowLabel,
+  iconSize: MENU_ICON,
   rowTextColor: (item, links, t) => {
     if (item.destructive) return { color: destructiveText(t) };
     return { color: links ? t.foreground : t["popover-foreground"] };
@@ -148,17 +138,17 @@ export const webSkin: RowMenuSkin = {
 
 // ---------- iOS 27 (Liquid Glass context menu): big-radius popover, leading icons, hairlines ----------
 // Apple's iOS 26+/iOS 27 context menu: a floating, deeply rounded card (~28pt
-// continuous corner, up from the old ~13pt) over `popover` with a soft shadow and
+// continuous corner, the kit's iOS menu corner, up from the old ~13pt) over `popover` with a soft shadow and
 // NO border; rows are ~44pt tall with comfortable horizontal padding and a LEADING
 // glyph; groups are split by full-bleed hairline separators; a destructive row is
 // red; the pressed row tints with the `secondary` system fill (not a ripple). The
 // ⋯ trigger dims to ~0.8 opacity on press. The larger radius is what reads as the
 // modern Liquid Glass menu; the rest of the structure (leading icons, hairlines,
 // destructive red, section titles) is unchanged from the HIG layout.
-const IOS_RADIUS = 28;
+const IOS_RADIUS = shape.ios.menu;
 export const iosSkin: RowMenuSkin = {
   minTarget: TOUCH_TARGET.ios,
-  anchor: { position: "relative", alignSelf: "flex-start" },
+  anchor: { position: "relative" },
   trigger: {
     width: 32,
     height: 32,
@@ -167,6 +157,8 @@ export const iosSkin: RowMenuSkin = {
     borderRadius: 8,
   },
   triggerIconSize: 17,
+  triggerIconColor: (t) => t.foreground,
+  triggerHover: null,
   // iOS dims the whole trigger on press (pressedOpacity); no fill tint.
   triggerPressed: () => ({}),
   menuCard: (t) => ({
@@ -179,6 +171,10 @@ export const iosSkin: RowMenuSkin = {
     ...shadow("lg", t),
   }),
   menuMinWidth: 250,
+  menuGap: 4,
+  itemHover: null,
+  rowGap: 0,
+  disabledRow: { opacity: 0.4, muted: false },
   menuLabel: (t) => ({
     paddingHorizontal: 16,
     paddingTop: 10,
@@ -219,7 +215,7 @@ export const iosSkin: RowMenuSkin = {
 const ANDROID_RADIUS = 4;
 export const androidSkin: RowMenuSkin = {
   minTarget: TOUCH_TARGET.android,
-  anchor: { position: "relative", alignSelf: "flex-start" },
+  anchor: { position: "relative" },
   trigger: {
     width: 40,
     height: 40,
@@ -231,6 +227,8 @@ export const androidSkin: RowMenuSkin = {
     overflow: "hidden",
   },
   triggerIconSize: 20,
+  triggerIconColor: (t) => t.foreground,
+  triggerHover: null,
   // Android tints the trigger via the ripple, not a fill.
   triggerPressed: () => ({}),
   menuCard: (t) => ({
@@ -240,6 +238,10 @@ export const androidSkin: RowMenuSkin = {
     ...shadow("md", t),
   }),
   menuMinWidth: 200,
+  menuGap: 4,
+  itemHover: null,
+  rowGap: 0,
+  disabledRow: { opacity: 0.38, muted: false },
   menuLabel: (t) => ({
     paddingHorizontal: 16,
     paddingVertical: 8,

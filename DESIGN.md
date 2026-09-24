@@ -313,7 +313,7 @@ components:
   dropdown:
     menu-shadow: "var(--shadow-lg)"
     menu-radius: "12px"
-    menu-row-radius: "10px"
+    menu-row-radius: "8px"
   emblem:
     emblem-radius-small: "10px"
     emblem-radius-default: "12px"

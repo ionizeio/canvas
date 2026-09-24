@@ -845,20 +845,22 @@ describe("Dropdown", () => {
     expect(container.querySelector('[role="menu"]')).toBeNull();
   });
 
-  it("carries the hand-off's identity-header metrics on all three skins", async () => {
+  it("carries each skin's identity-header metrics", async () => {
     const { webSkin, iosSkin, androidSkin } = await import("../src/atoms/dropdown/dropdown.styles.ts");
     // The gutter is the per-OS value: it matches each skin's own section-label
     // gutter, so the header, the label, and the row labels share one column.
-    expect(webSkin.menuHeader).toEqual({ paddingHorizontal: 12, paddingVertical: 8, gap: 2 });
+    expect(webSkin.menuHeader).toEqual({ paddingHorizontal: 10, paddingTop: 6, paddingBottom: 6, gap: 2 });
     expect(iosSkin.menuHeader).toEqual({ paddingHorizontal: 16, paddingVertical: 6, gap: 2 });
     expect(androidSkin.menuHeader).toEqual({ paddingHorizontal: 16, paddingVertical: 8, gap: 2 });
-    // The type scale is deliberately shared (the hand-off hard-codes 14/20
-    // medium over 12/16), and each line reads its semantic token.
+    // iOS and Android set the header at 14/20 medium over 12/16; the web in Dark
+    // Factory's menu row label over its caption. Each line reads its semantic token.
     const t = { "popover-foreground": "PF", "muted-foreground": "MF" } as unknown as ColorTokens;
-    for (const skin of [webSkin, iosSkin, androidSkin]) {
+    for (const skin of [iosSkin, androidSkin]) {
       expect(skin.menuHeaderTitle(t)).toEqual({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: "PF" });
       expect(skin.menuHeaderDescription(t)).toEqual({ fontSize: 12, lineHeight: 16, color: "MF" });
     }
+    expect(webSkin.menuHeaderTitle(t)).toEqual({ fontSize: 12.5, lineHeight: 17, fontWeight: "700", color: "PF" });
+    expect(webSkin.menuHeaderDescription(t)).toEqual({ fontSize: 11, lineHeight: 15, fontWeight: "600", color: "MF" });
   });
 
   it("renders the identity header on the iOS and Android builds too", async () => {

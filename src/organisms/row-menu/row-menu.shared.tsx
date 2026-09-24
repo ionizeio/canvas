@@ -1,7 +1,8 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
+import { useHover } from "../../style/hover.js";
 import { useRef, useState } from "react";
-import { View, Pressable, Text, AnchoredOverlay, useOverlayHost, useMeasuredWidth, RippleClip, cornerRadii, useMinTargetSlop, type StyleProp, type ViewStyle, type LayoutStyle, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, AnchoredOverlay, useOverlayHost, useMeasuredWidth, useHugStyle, RippleClip, cornerRadii, useMinTargetSlop, type ViewStyle, type LayoutStyle, withInnerFill } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { anchorLifted, type RowMenuItem, type RowMenuSkin } from "./row-menu.styles.js";
 
@@ -49,11 +50,57 @@ export interface RowMenuProps {
 // place, absolutely positioned below the ⋯ trigger (the kit's pre-portal
 // behavior). With a provider, AnchoredOverlay positions the card over the page and
 // adds the outside-tap dismiss backdrop instead. The skin owns the card's
-// shape/fill/shadow; this owns the inline anchoring.
-const MENU_ANCHOR: ViewStyle = { position: "absolute", top: "100%", start: 0, zIndex: 50, marginTop: 4 };
+// shape/fill/shadow and its standoff; this owns the inline anchoring.
+const menuAnchor = (gap: number): ViewStyle => ({ position: "absolute", top: "100%", start: 0, zIndex: 50, marginTop: gap });
 
 /** Build a RowMenu component from a platform skin. */
 export function createRowMenu(skin: RowMenuSkin) {
+  interface MenuRowProps {
+    item: RowMenuItem;
+    links: boolean;
+    onPress: () => void;
+    ripple: { color: string; borderless: boolean } | undefined;
+  }
+
+  // One menu row, its own component so the web's hover wash has a hook per row. A
+  // disabled row is inert and takes the skin's disabled look: the web's muted ink, or
+  // the platform's dim.
+  function MenuRow({ item, links, onPress, ripple }: MenuRowProps) {
+    const theme = useMaterialTheme({ layer: "dense" });
+    const { tokens, dark } = theme;
+    const disabled = !!item.disabled;
+    const muted = disabled && skin.disabledRow.muted;
+    const { hovered, target } = useHover(skin.itemHover != null && !disabled);
+    return (
+      <Pressable
+        {...target}
+        disabled={item.disabled}
+        style={({ pressed }) => [
+          skin.itemRow,
+          hovered && skin.itemHover ? skin.itemHover(tokens) : null,
+          // Web/iOS tint the row on press here; Android uses the ripple instead. A
+          // disabled row never enters the pressed state, so no tint applies.
+          skin.ripple == null && pressed ? withInnerFill(theme, skin.itemPressed(tokens), "firm") : null,
+          disabled && skin.disabledRow.opacity !== 1 ? { opacity: skin.disabledRow.opacity } : null,
+        ]}
+        onPress={onPress}
+        // Suppress the Android ripple on a disabled row (no press feedback for an
+        // inert control).
+        android_ripple={item.disabled ? undefined : ripple}
+        accessibilityRole={links ? "link" : "menuitem"}
+        // Announce the disabled state. RNW forwards neither `disabled` nor
+        // accessibilityState to the DOM, so pair the RN state with an aria alias.
+        accessibilityState={item.disabled ? { disabled: true } : undefined}
+        aria-disabled={item.disabled || undefined}
+      >
+        {item.icon ? (
+          <Icon {...{ [item.icon]: true }} destructive={item.destructive && !muted} muted={muted} size={skin.iconSize} decorative />
+        ) : null}
+        <Text style={[skin.rowTextSize, muted ? { color: tokens["muted-foreground"] } : skin.rowTextColor(item, links, tokens, dark)]}>{item.label}</Text>
+      </Pressable>
+    );
+  }
+
   return function RowMenu(props: RowMenuProps) {
     // The trailing menu trigger is a 32pt (iOS) or 40dp (Android) glyph square: the
     // right visual weight beside a row of content, and under both platforms' minimum.
@@ -63,7 +110,10 @@ export function createRowMenu(skin: RowMenuSkin) {
     // one; otherwise the trigger's own label does, which is what the user pressed.
     const menuName = sectionLabel ?? triggerLabel;
     const theme = useMaterialTheme({ layer: "dense" });
-    const { tokens, dark } = theme;
+    const { tokens } = theme;
+    // A trigger-sized control: the content's own width (src/style/sizing.ts).
+    const hug = useHugStyle();
+    const { hovered: triggerHovered, target: triggerHoverTarget } = useHover(skin.triggerHover != null);
     // Uncontrolled by default: the ⋯ trigger toggles the menu (closed), a select
     // closes it; a controlled `open` prop overrides this.
     const [internalOpen, setInternalOpen] = useState(false);
@@ -92,16 +142,17 @@ export function createRowMenu(skin: RowMenuSkin) {
       <View
         ref={triggerRef}
         testID={testID}
-        style={[skin.anchor, open && !host ? anchorLifted : null, style]}
+        style={[skin.anchor, hug, open && !host ? anchorLifted : null, style]}
         onLayout={onTriggerLayout}
       >
         {/* RippleClip clips the Android bounded ripple to the ⋯ trigger's rounded
             outline (a no-op on iOS/web). */}
-        <RippleClip shape={cornerRadii(skin.trigger)}>
+        <RippleClip shape={cornerRadii(skin.trigger)} {...triggerHoverTarget}>
         <Pressable
           {...target}
           style={({ pressed }) => [
             skin.trigger,
+            triggerHovered && skin.triggerHover ? skin.triggerHover(tokens) : null,
             // Android ripples; iOS dims via opacity; web tints the fill.
             skin.triggerPressedOpacity != null && pressed ? { opacity: skin.triggerPressedOpacity } : null,
             skin.ripple == null && skin.triggerPressedOpacity == null && pressed
@@ -117,7 +168,7 @@ export function createRowMenu(skin: RowMenuSkin) {
           aria-expanded={open}
           {...{ "aria-haspopup": "menu" }}
         >
-          <Icon moreHorizontal size={skin.triggerIconSize} decorative />
+          <Icon moreHorizontal size={skin.triggerIconSize} color={skin.triggerIconColor(tokens)} decorative />
         </Pressable>
         </RippleClip>
 
@@ -126,9 +177,9 @@ export function createRowMenu(skin: RowMenuSkin) {
           open={open}
           onDismiss={() => setOpen(false)}
           triggerRef={triggerRef}
-          gap={4}
+          gap={skin.menuGap}
           cardStyle={[skin.menuCard(tokens), { minWidth: Math.max(triggerWidth, skin.menuMinWidth) }]}
-          inlineStyle={MENU_ANCHOR}
+          inlineStyle={menuAnchor(skin.menuGap)}
           // A row menu is a card of action rows, so under glass it takes the DENSE
           // layer: the material under the model's densest tint. It opens over the
           // very table row it acts on, which read straight through the functional
@@ -156,39 +207,20 @@ export function createRowMenu(skin: RowMenuSkin) {
             {...(links
               ? null
               : { accessibilityRole: "menu" as const, role: "menu" as const, accessibilityLabel: menuName, "aria-label": menuName })}
+            style={skin.rowGap ? { gap: skin.rowGap } : undefined}
           >
           {items.map((item, index) => (
             <View key={`${item.label}-${index}`}>
               {item.separatorBefore ? <View style={skin.separator(tokens)} /> : null}
-              <Pressable
-                disabled={item.disabled}
-                style={({ pressed }) => [
-                  skin.itemRow,
-                  // Web/iOS tint the row on press here; Android uses the ripple instead. A
-                  // disabled row never enters the pressed state, so no tint applies.
-                  skin.ripple == null && pressed ? withInnerFill(theme, skin.itemPressed(tokens), "firm") : null,
-                  // A disabled row dims to read as unavailable (the kit's disabled-opacity
-                  // convention, matching Slider/Button); the icon and label dim with it.
-                  item.disabled ? { opacity: 0.5 } : null,
-                ]}
+              <MenuRow
+                item={item}
+                links={links}
                 onPress={() => {
                   onSelect?.(item, index);
                   setOpen(false);
                 }}
-                // Suppress the Android ripple on a disabled row (no press feedback for an
-                // inert control).
-                android_ripple={item.disabled ? undefined : ripple}
-                accessibilityRole={links ? "link" : "menuitem"}
-                // Announce the disabled state. RNW forwards neither `disabled` nor
-                // accessibilityState to the DOM, so pair the RN state with an aria alias.
-                accessibilityState={item.disabled ? { disabled: true } : undefined}
-                aria-disabled={item.disabled || undefined}
-              >
-                {item.icon ? (
-                  <Icon {...{ [item.icon]: true }} destructive={item.destructive} size={skin.iconSize} decorative />
-                ) : null}
-                <Text style={[skin.rowTextSize, skin.rowTextColor(item, links, tokens, dark)]}>{item.label}</Text>
-              </Pressable>
+                ripple={ripple}
+              />
             </View>
           ))}
           </View>

@@ -2,6 +2,11 @@
 
 Floating menus triggered by a button: actions, options, navigation.
 
+On the web the menu is Dark Factory's: a card of bold rows that take the hover wash
+at once, an uppercase eyebrow over a section, muted shortcuts in their own column, and a
+disabled row in the muted ink rather than faded. iOS and Android keep their platform
+menus (the iOS pull-down menu, the Material 3 menu) in the theme's colours.
+
 In glass mode the menu is a dense-layer glass card under its trigger (or above it
 when it fits there); the trigger keeps its place, its press and its accessible
 name and state, and a selection commits and closes the menu the moment a row is
@@ -248,15 +253,15 @@ mode paints the skin's own menu.
 **Don't** — Click Archive: it looks disabled but still fires, a greyed item that works is a trap.
 
 ```tsx
-<View style={{ alignSelf: "flex-start", borderRadius: 6, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 4, ...shadow("lg"), minWidth: 200 }}>
-  <Pressable style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }, pressed ? { backgroundColor: tokens.accent } : null]}>
-    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Edit</Text>
+<View style={{ alignSelf: "flex-start", gap: 2, borderRadius: 12, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 8, ...shadow("lg"), minWidth: 200 }}>
+  <Pressable style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8 }, pressed ? { backgroundColor: tokens.accent } : null]}>
+    <Text style={{ fontSize: 12.5, lineHeight: 17, fontWeight: "700", color: tokens["popover-foreground"] }}>Edit</Text>
   </Pressable>
-  <Pressable style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6, opacity: 0.5 }, pressed ? { backgroundColor: tokens.accent } : null]}>
-    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Archive</Text>
+  <Pressable style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8 }, pressed ? { backgroundColor: tokens.accent } : null]}>
+    <Text style={{ fontSize: 12.5, lineHeight: 17, fontWeight: "700", color: tokens["muted-foreground"] }}>Archive</Text>
   </Pressable>
-  <Pressable style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }, pressed ? { backgroundColor: tokens.accent } : null]}>
-    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Duplicate</Text>
+  <Pressable style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8 }, pressed ? { backgroundColor: tokens.accent } : null]}>
+    <Text style={{ fontSize: 12.5, lineHeight: 17, fontWeight: "700", color: tokens["popover-foreground"] }}>Duplicate</Text>
   </Pressable>
 </View>
 ```

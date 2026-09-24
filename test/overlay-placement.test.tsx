@@ -223,12 +223,18 @@ describe("a card opened above its trigger on a scrolled host", () => {
         </ThemeProvider>,
       );
       fireEvent.click(screen.getByRole("button", { name: "Fruit actions" }));
+      // The rendered menu stands off by the web skin's own gap, so its placements are
+      // the pure fit's at that gap.
+      const host = { ...SCROLLED_HOST, gap: dropdownSkin.menuGap };
+      const below = fitOverlayHeight({ ...host, desiredHeight: null });
+      const above = fitOverlayHeight({ ...host, desiredHeight: 245 });
+      expect(above.side).toBe("above");
       // The portal attaches the card concealed, placed below, until it is measured.
       const menu = await screen.findByRole("menu", { hidden: true });
       const parts = hostedEntranceParts(menu);
       const wrapperStyle = () => parts.entrance.getAttribute("style") ?? "";
-      await waitFor(() => expect(wrapperStyle()).toContain("top: 734px"));
-      // 233pt of rows in a 245pt card: taller than the 212pt below the trigger.
+      await waitFor(() => expect(wrapperStyle()).toContain(`top: ${below.top}px`));
+      // 233pt of rows in a 245pt card: taller than the band below the trigger.
       layoutHostedEntrance(menu, { width: 200, height: 245 }, { width: 200, height: 233 });
       await waitFor(() => expect(wrapperStyle()).toContain(`bottom: ${SCROLLED_HOST.outletHeight - (SCROLLED_HOST.triggerTop - dropdownSkin.menuGap)}px`));
       // Nothing but that inset may size or place the wrapper along the page: no top,
@@ -239,7 +245,7 @@ describe("a card opened above its trigger on a scrolled host", () => {
       // may only shrink to that cap, never grow to it: growth is what let Yoga
       // inflate the wrapper to the cap on iOS and Android and float the card away
       // from its trigger.
-      expect(parts.card.getAttribute("style")).toContain("max-height: 600px");
+      expect(parts.card.getAttribute("style")).toContain(`max-height: ${above.maxHeight}px`);
       const scrollport = parts.viewport.getAttribute("style") ?? "";
       expect(scrollport).toContain("flex-grow: 0");
       expect(scrollport).toContain("flex-shrink: 1");
