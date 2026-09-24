@@ -209,9 +209,11 @@ export const webSkin: ButtonSkin = {
   // Only the filled pills paint a surface: DF's outline, ghost and link buttons are
   // transparent, and a disabled button is transparent too.
   surface: (intent, o) => WEB_CTA.has(intent) && !o.disabled,
+  // A link dims under the pointer. Dark Factory dims to 0.85, which leaves the `primary-text`
+  // label at 4.33:1 on the blush page and 4.42:1 on mint; 0.9 holds 4.80 and 4.90 (WCAG 1.4.3).
   hover: (t, intent) =>
     intent === "secondary" || intent === "outline" || intent === "ghost" ? { backgroundColor: hoverFill(t) }
-    : intent === "link" ? { opacity: 0.85 }
+    : intent === "link" ? { opacity: 0.9 }
     : null,
   raised: raisedGlow,
   pressedOpacity: 0.9,

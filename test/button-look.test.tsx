@@ -96,7 +96,7 @@ describe("the web Button is Dark Factory's pill", () => {
     }
     const link = screen.getByRole("button", { name: "Learn more" });
     fireEvent.pointerEnter(link, { pointerType: "mouse" });
-    expect(link.style.opacity).toBe("0.85");
+    expect(link.style.opacity).toBe("0.9");
     const disabled = screen.getByRole("button", { name: "Pending" });
     fireEvent.pointerEnter(disabled, { pointerType: "mouse" });
     expect(disabled.style.backgroundColor).not.toMatch(hoverFill);
