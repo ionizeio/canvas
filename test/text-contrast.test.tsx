@@ -109,12 +109,22 @@ describe("normal text contrast (WCAG 1.4.3)", () => {
     }
 
     for (const [platform, skin] of Object.entries({ web: webSkin, ios: iosSkin, android: androidSkin })) {
-      it(`keeps every resting ${scheme} ${platform} filled Button label readable at every size`, () => {
+      // A filled intent is read against its own fill; a transparent one (the web's
+      // secondary and outline, Dark Factory's outline looks, and every disabled web button)
+      // against the surfaces it sits on, the page and a card.
+      it(`keeps every resting ${scheme} ${platform} Button label readable at every size`, () => {
         for (const size of ["small", "base", "large"] as const) {
-          for (const intent of ["primary", "secondary", "destructive"] as const) {
-            const fill = skin.container(tokens, intent, size, { icon: false, block: false, dim: false }).backgroundColor;
-            const foreground = skin.label(tokens, intent, size).color;
-            expect(contrast(fill as string, foreground as string)).toBeGreaterThanOrEqual(4.5);
+          for (const intent of ["primary", "secondary", "destructive", "outline", "ghost", "link"] as const) {
+            for (const disabled of [false, true]) {
+              const opts = { icon: false, block: false, dim: disabled, disabled };
+              const fill = skin.container(tokens, intent, size, opts).backgroundColor as string;
+              const foreground = skin.label(tokens, intent, size, opts).color as string;
+              // The iOS and Android skins show a disabled button by fading it (a dim WCAG
+              // exempts, 1.4.3's inactive components), so only the web's disabled look is read.
+              if (disabled && platform !== "web") continue;
+              const beds = fill === "transparent" ? [tokens.background, tokens.card] : [fill];
+              for (const bed of beds) expect(contrast(bed, foreground)).toBeGreaterThanOrEqual(4.5);
+            }
           }
         }
       });

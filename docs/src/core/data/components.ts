@@ -142,7 +142,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
   slug: "button",
   name: "Button",
-  description: "Six variants × four sizes × disabled / focus / hover states. Always semantic: variant communicates intent (default = primary action, destructive = irreversible, ghost = chrome).",
+  description: "Six intents × three sizes (plus the icon square) × disabled / focus / hover states. Always semantic: the intent communicates what the button does (default = the primary action, destructive = irreversible, ghost = chrome). On the web every intent is a pill: the green call to action, a violet outline for secondary, a hairline outline, and bare ghost and link buttons.",
   category: "Atoms",
 },
 

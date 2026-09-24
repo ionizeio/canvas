@@ -11,7 +11,7 @@ import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { actionFill } from "../../style/action.js";
 import { View, Pressable, RippleClip, Text, useMinTargetSlop, useReducedMotion, useSizing, type LayoutStyle, type MeasureProps, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import { liftStyle, useHover } from "../../style/hover.js";
-import { type ButtonSkin, type Intent, type Size, foregroundOf } from "./button.styles.js";
+import { type ButtonSkin, type Intent, type Size } from "./button.styles.js";
 
 // Shared Button shell. The structure (Pressable + optional loading spinner +
 // leading icon + label + trailing icon), the accessibility, and the intent/size
@@ -79,6 +79,12 @@ export interface ButtonProps extends MeasureProps {
   loading?: boolean;
   disabled?: boolean;
   /**
+   * Lifts a primary button off the page with a soft glow in its own colour: the page's
+   * main call to action (Dark Factory's raised button). Other intents, and a disabled
+   * button, ignore it.
+   */
+  raised?: boolean;
+  /**
    * Marks the Button as a disclosure/menu trigger and announces its open state to
    * assistive tech (aria-expanded, which react-native-web forwards and RN maps back
    * to the native expanded state). Pass the live open boolean; omit for a plain
@@ -132,16 +138,18 @@ export function createButton(skin: ButtonSkin) {
     const intent = intentOf(props);
     const size = sizeOf(props);
 
-    const opts = { icon: !!icon, block: !!block, dim: !!(disabled || loading) };
+    const opts = { icon: !!icon, block: !!block, dim: !!(disabled || loading), disabled: !!disabled };
     const sizing = useSizing(props);
     const container = skin.container(tokens, intent, size, opts);
-    // Under glass a filled button is a CONTROL-layer puck: a GlassPane paints the
-    // material behind the label (the Pressable keeps its tap and ripple), and the
-    // container drops its fill and outline (the pane's material and rim carry them).
-    // `primary` and `destructive` are BRAND-tinted glass (the intent colour under the
-    // material, the intent's foreground on top); `secondary` and `outline` take the
-    // plain control material; `ghost` and `link` have no surface and stay bare.
-    const puck = isGlass(theme) && intent !== "ghost" && intent !== "link";
+    // Under glass a button that paints a surface (the skin says which) is a CONTROL-layer
+    // puck: a GlassPane paints the material behind the label (the Pressable keeps its tap
+    // and ripple), and the container drops its fill and outline (the pane's material and
+    // rim carry them). `primary` and `destructive` are BRAND-tinted glass (the intent
+    // colour under the material, the intent's foreground on top); a surfaced `secondary`
+    // or `outline` (iOS, Android) takes the plain control material; a button with no
+    // surface (a ghost, a link, the web's outline looks) stays bare, its border kept.
+    const surfaced = skin.surface(intent, opts);
+    const puck = isGlass(theme) && surfaced;
     const brand = intent === "primary" ? actionFill(tokens) : intent === "destructive" ? tokens.destructive : undefined;
     const ripple = skin.ripple ? skin.ripple(tokens, intent) : undefined;
     // The rounded shape the ripple is clipped to (Android only; undefined on iOS/web). A bounded
@@ -157,10 +165,19 @@ export function createButton(skin: ButtonSkin) {
 
     // The skin's hover lift for this intent, read on the <RippleClip> wrapper (which never
     // moves) and applied to the Pressable inside it. A disabled or loading button stays put.
+    // Its instant hover style (a wash, a dim) switches with the pointer, never while inert.
     const lift = skin.lift?.(intent) ?? null;
-    const { hovered: pointerOver, target: hoverTarget } = useHover(lift != null);
+    const hoverLook = skin.hover?.(tokens, intent) ?? null;
+    const { hovered: pointerOver, target: hoverTarget } = useHover(lift != null || hoverLook != null);
     const reduced = useReducedMotion();
-    const lifted = lift != null && pointerOver && !(disabled || loading);
+    const live = pointerOver && !(disabled || loading);
+    const lifted = lift != null && live;
+    // A raised call to action rests on its glow (primary only, never while disabled). It sits
+    // on the Pressable, so it rides the web's hover lift, except where the skin clips its
+    // ripple (Android): that wrapper's overflow clip would cut a glow drawn outside the
+    // button, and a view's own shadow is not cut by its own clip, so there it goes on the wrapper.
+    const glow = props.raised && intent === "primary" && !disabled ? skin.raised(tokens, size) : null;
+    const glowOnClip = glow != null && clipShape != null;
 
     // A real anchor on the web: react-native-web renders a Pressable carrying
     // `href` as an `<a>` (and forwards hrefAttrs' target/rel/download), while
@@ -175,7 +192,7 @@ export function createButton(skin: ButtonSkin) {
     // the outermost node on every platform, so positioning is identical with or without the clip
     // and the Pressable stretches to fill a block button.
     return (
-      <RippleClip shape={clipShape} style={[sizing, style]} {...hoverTarget}>
+      <RippleClip shape={clipShape} style={[sizing, style, glowOnClip ? glow : null]} {...hoverTarget}>
         <Pressable
           ref={hostRef}
           {...(anchor ?? undefined)}
@@ -199,10 +216,12 @@ export function createButton(skin: ButtonSkin) {
           aria-haspopup={props.haspopup}
           android_ripple={ripple}
           style={({ pressed }) => [
-            intent !== "ghost" && intent !== "link" ? paneStyle(theme, container) : container,
+            surfaced ? paneStyle(theme, container) : container,
             puck ? { opacity: 1 } : null,
+            live ? hoverLook : null,
             !puck && skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
             lift != null ? liftStyle(lifted, lift, reduced) : null,
+            glowOnClip ? null : glow,
           ]}
         >
           {({ pressed }) => <>
@@ -213,9 +232,9 @@ export function createButton(skin: ButtonSkin) {
               // Keep this row in every mode to retain foreground child state.
               puck ? { opacity: pressed && skin.pressedOpacity != null ? skin.pressedOpacity : container.opacity ?? 1 } : null,
             ]}>
-              {loading ? <ActivityIndicator size="small" color={foregroundOf(tokens, intent)} /> : null}
+              {loading ? <ActivityIndicator size="small" color={skin.foreground(tokens, intent, opts)} /> : null}
               {!loading && iconLeft != null ? iconLeft : null}
-              {children != null ? <Text style={skin.label(tokens, intent, size)}>{children}</Text> : null}
+              {children != null ? <Text style={skin.label(tokens, intent, size, opts)}>{children}</Text> : null}
               {!loading && iconRight != null ? iconRight : null}
             </View>
           </>}

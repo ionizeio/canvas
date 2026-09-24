@@ -12,12 +12,13 @@
 
    Values are lifted verbatim from the upstream skins. */
 :root,[data-platform="web"]{
-  /* Button — the Riskora control: 12px corner, 44px tall, medium label, opacity press */
-  --p-btn-radius:8px;--p-btn-pad-x:20px;--p-btn-pad-y:12px;--p-btn-gap:8px;
-  --p-btn-font:14px;--p-btn-lh:20px;--p-btn-weight:500;--p-btn-tracking:0px;
-  --p-btn-pad-x-sm:14px;--p-btn-pad-y-sm:8px;--p-btn-font-sm:14px;--p-btn-lh-sm:20px;
-  --p-btn-pad-x-lg:24px;--p-btn-pad-y-lg:14px;--p-btn-font-lg:16px;--p-btn-lh-lg:24px;
-  --p-btn-square:44px;--p-btn-square-sm:36px;--p-btn-square-lg:52px;
+  /* Button — Dark Factory's pill: a 1px border on every intent but link, 36 tall at base
+     (29 small, 40 large), 700 labels (800 on the call to action), a 6px gap, opacity press */
+  --p-btn-radius:9999px;--p-btn-pad-x:16px;--p-btn-pad-y:9px;--p-btn-gap:6px;
+  --p-btn-font:12px;--p-btn-lh:16px;--p-btn-weight:700;--p-btn-tracking:0px;
+  --p-btn-pad-x-sm:14px;--p-btn-pad-y-sm:6px;--p-btn-font-sm:11.5px;--p-btn-lh-sm:15px;
+  --p-btn-pad-x-lg:20px;--p-btn-pad-y-lg:10px;--p-btn-font-lg:13px;--p-btn-lh-lg:18px;
+  --p-btn-square:36px;--p-btn-square-sm:29px;--p-btn-square-lg:40px;
   --p-press:0.9 /* @kind other */;--p-disabled:0.5 /* @kind other */;
   /* Card — the Riskora card: 20px corner, soft hairline, the ambient shade, 24px inset */
   --p-card-radius:14px;--p-card-shadow:var(--shadow);--p-card-shadow-raised:var(--shadow-md);

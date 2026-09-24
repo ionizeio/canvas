@@ -1,6 +1,6 @@
 # Button
 
-Six variants × four sizes × disabled / focus / hover states. Always semantic: variant communicates intent (default = primary action, destructive = irreversible, ghost = chrome). On the web a primary button rises 1 px under the pointer over 150 ms and settles back when it leaves; a disabled or loading one stays put, and Reduce Motion makes the change instant.
+Six intents × three sizes (plus the icon square) × disabled / focus / hover states. Always semantic: the intent communicates what the button does (default = the primary action, destructive = irreversible, ghost = chrome). On the web every intent is a pill: the call to action is the green `action` pill, `secondary` a violet outline, `outline` a hairline, `ghost` and `link` bare. A primary button rises 1 px under the pointer over 150 ms and settles back when it leaves, the outline looks take a hover wash at once, and a link dims; a disabled or loading button stays put, and Reduce Motion makes the lift instant. A disabled web button goes transparent with a hairline and a muted label rather than fading. On iOS and Android the buttons keep their platform shapes in the theme's colours.
 
 Pass `ref` to access the interactive Pressable, including link buttons. Use `useRef<ComponentRef<typeof Button>>(null)` from React, or `useRef<View>(null)` with React Native's `View` type. Object and callback refs are supported and detach on unmount. Calling `ref.current?.focus()` or `.blur()` delegates to the host without activating the control. Browser focus is supported; native focus depends on the platform and React Native version, and is separate from accessibility focus.
 
@@ -76,6 +76,14 @@ A disabled button ignores presses: `onPress` never runs.
 
 ```tsx
 <Button loading>Saving</Button>
+```
+
+### Raised
+
+`raised` rests the page's main call to action on a soft glow in its own colour. Only a primary button takes it, and never while disabled.
+
+```tsx
+<Button raised>Mint agent</Button>
 ```
 
 ### Block

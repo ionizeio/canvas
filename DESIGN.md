@@ -305,7 +305,7 @@ components:
     seg-track-radius: "0px"
     seg-inner-radius: "0px"
   button:
-    btn-radius: "8px"
+    btn-radius: "9999px"
   checkbox:
     check-radius: "6px"
   chip:
@@ -852,7 +852,7 @@ capsule (`shape` in `src/style/tokens.ts`).
 <!-- @generated:shapes -->
 | Platform | Button | Card | Field | Minimum touch target |
 | --- | --- | --- | --- | --- |
-| web | 8px | 14px | 10px | 0px |
+| web | 9999px | 14px | 10px | 0px |
 | ios | 9999px | 12px | 8px | 44px |
 | android | 9999px | 12px | 4px | 48px |
 <!-- @/generated -->

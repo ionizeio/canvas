@@ -18,14 +18,26 @@ import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
 import { Stepper as AndroidStepper } from "../src/atoms/stepper/stepper.android.tsx";
 import { GlassSurface } from "../src/style/glass-surface/glass-surface.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
+import { lightColors } from "../src/style/tokens.ts";
 
 afterEach(cleanup);
 
+// `buttonDisabled` is the Button's own dim: null on the web, whose disabled Button is Dark
+// Factory's look (a transparent pill, a hairline, a muted label) rather than a fade.
 const platforms = [
-  { name: "web", Button, Select, Chip, AvatarMenu, disabled: 0.5, selectDisabled: 0.5, pressed: 0.9, selectPressed: 0.9 },
-  { name: "iOS", Button: IOSButton, Select: IOSSelect, Chip: IOSChip, AvatarMenu: IOSAvatarMenu, disabled: 0.4, selectDisabled: 0.4, pressed: 0.8, selectPressed: 0.8 },
-  { name: "Android", Button: AndroidButton, Select: AndroidSelect, Chip: AndroidChip, AvatarMenu: AndroidAvatarMenu, disabled: 0.38, selectDisabled: 0.38, pressed: null, selectPressed: null },
+  { name: "web", Button, Select, Chip, AvatarMenu, disabled: 0.5, buttonDisabled: null, selectDisabled: 0.5, pressed: 0.9, selectPressed: 0.9 },
+  { name: "iOS", Button: IOSButton, Select: IOSSelect, Chip: IOSChip, AvatarMenu: IOSAvatarMenu, disabled: 0.4, buttonDisabled: 0.4, selectDisabled: 0.4, pressed: 0.8, selectPressed: 0.8 },
+  { name: "Android", Button: AndroidButton, Select: AndroidSelect, Chip: AndroidChip, AvatarMenu: AndroidAvatarMenu, disabled: 0.38, buttonDisabled: 0.38, selectDisabled: 0.38, pressed: null, selectPressed: null },
 ] as const;
+
+// The web's disabled Button: no dim anywhere above its label, the muted ink instead.
+function expectWebDisabledLook(label: HTMLElement) {
+  for (let node: HTMLElement | null = label; node && node.getAttribute("role") !== "button"; node = node.parentElement) {
+    expect(node.style.opacity === "" || Number(node.style.opacity) === 1).toBe(true);
+  }
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(lightColors["muted-foreground"].slice(i, i + 2), 16));
+  expect(label.style.color.replace(/\s/g, "")).toBe(`rgba(${r},${g},${b},1.00)`);
+}
 
 function expectMaterialAncestorsOpaque(root: HTMLElement) {
   const layers = [...root.querySelectorAll<HTMLElement>('[style*="backdrop-filter"]')];
@@ -52,7 +64,8 @@ describe("liquid control foreground feedback", () => {
         <p.AvatarMenu disabled name="Rachel Chen" email="rachel@example.com" items={[]} onOpenChange={() => calls++} />
       </ThemeProvider>);
       expectMaterialAncestorsOpaque(container);
-      expect(Number(screen.getByText("Save").parentElement!.style.opacity)).toBe(p.disabled);
+      if (p.buttonDisabled == null) expectWebDisabledLook(screen.getByText("Save"));
+      else expect(Number(screen.getByText("Save").parentElement!.style.opacity)).toBe(p.buttonDisabled);
       expect(Number(screen.getByText("North").parentElement!.style.opacity)).toBe(p.selectDisabled);
       expect(Number(screen.getByText("Filter").parentElement!.style.opacity)).toBe(0.5);
       expect(Number(screen.getByText("Removable").parentElement!.style.opacity)).toBe(0.5);
@@ -63,7 +76,10 @@ describe("liquid control foreground feedback", () => {
 
     it(`${p.name} keeps its original solid disabled surface dim`, () => {
       render(<ThemeProvider solid><p.Button disabled>Save</p.Button><p.Select disabled options={["North"]} defaultValue="North" label="Region" /></ThemeProvider>);
-      expect(Number(screen.getByRole("button", { name: "Save" }).style.opacity)).toBe(p.disabled);
+      if (p.buttonDisabled == null) {
+        expect(screen.getByRole("button", { name: "Save" }).style.opacity).toBe("");
+        expectWebDisabledLook(screen.getByText("Save"));
+      } else expect(Number(screen.getByRole("button", { name: "Save" }).style.opacity)).toBe(p.buttonDisabled);
       expect(Number(screen.getByRole("button", { name: "Region" }).style.opacity)).toBe(p.selectDisabled);
     });
 

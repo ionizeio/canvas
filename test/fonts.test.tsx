@@ -11,7 +11,7 @@ afterEach(cleanup);
 
 // The faces an app registers per weight (the expo-google-fonts shape), plus a mono set.
 const FACES: ThemeFonts = {
-  sans: { "400": "Manrope_400Regular", "500": "Manrope_500Medium", "700": "Manrope_700Bold" },
+  sans: { "400": "Manrope_400Regular", "500": "Manrope_500Medium", "700": "Manrope_700Bold", "800": "Manrope_800ExtraBold" },
   mono: { "400": "GeistMono_400Regular" },
 };
 
@@ -46,7 +46,7 @@ describe("resolveFontFace", () => {
     // 300 has only heavier neighbours.
     expect(resolveFontFace(FACES.sans, "300")?.fontFamily).toBe("Manrope_400Regular");
     // 900 has only lighter neighbours.
-    expect(resolveFontFace(FACES.sans, "900")?.fontFamily).toBe("Manrope_700Bold");
+    expect(resolveFontFace(FACES.sans, "900")?.fontFamily).toBe("Manrope_800ExtraBold");
   });
 });
 
@@ -86,8 +86,8 @@ describe("the themed primitives", () => {
     );
     expect(getComputedStyle(screen.getByText("Plain")).fontFamily).toBe("Manrope_700Bold");
     expect(getComputedStyle(screen.getByText("Plain")).fontWeight).not.toBe("700");
-    // Button labels are medium; the web skin's fontWeight resolves to the 500 face.
-    expect(getComputedStyle(screen.getByText("Save")).fontFamily).toBe("Manrope_500Medium");
+    // The call to action is Dark Factory's 800 label; the web skin's fontWeight resolves to that face.
+    expect(getComputedStyle(screen.getByText("Save")).fontFamily).toBe("Manrope_800ExtraBold");
     // Typography titles are bold in the Dark Factory scale: the h2 role asks for 700.
     expect(getComputedStyle(screen.getByText("Title")).fontFamily).toBe("Manrope_700Bold");
     // The code role asks for MONO_FONT and gets the registered mono face.

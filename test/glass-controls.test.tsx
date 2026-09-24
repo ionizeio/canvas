@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach } from "bun:test";
 import { render, cleanup, waitFor } from "@testing-library/react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Button } from "../src/atoms/button/button.tsx";
+import { Button as IosButton } from "../src/atoms/button/button.ios.tsx";
 import { Input } from "../src/atoms/input/input.tsx";
 import { Switch } from "../src/atoms/switch/switch.tsx";
 import { Checkbox } from "../src/atoms/checkbox/checkbox.tsx";
@@ -99,8 +100,26 @@ describe("brand-tinted glass pucks", () => {
     expect(materialLayers(container.querySelector('[data-testid="link"]') as HTMLElement)).toBe(0);
   });
 
-  it("an outline Button is a plain control puck with its hairline dropped (the rim is the edge)", async () => {
-    const { container } = await renderGlass(<Button outline testID="more">More</Button>);
+  it("the web's outline and secondary Buttons paint no surface, so they stay bare with their borders", async () => {
+    // Dark Factory's outline looks are transparent pills: a hairline (`outline`) or the
+    // violet ring (`secondary`) around the label, no fill for the material to replace.
+    const { container } = await renderGlass(
+      <>
+        <Button primary testID="anchor">Save</Button>
+        <Button outline testID="more">More</Button>
+        <Button secondary testID="review">Review</Button>
+      </>,
+    );
+    const more = container.querySelector('[data-testid="more"]') as HTMLElement;
+    const review = container.querySelector('[data-testid="review"]') as HTMLElement;
+    expect(materialLayers(more)).toBe(0);
+    expect(materialLayers(review)).toBe(0);
+    expect(rgbaOf(more.style.borderColor)).toEqual(rgbaOf(alpha(lightColors.border, 1)));
+    expect(rgbaOf(review.style.borderColor)).toEqual(rgbaOf(alpha(lightColors.ring, 1)));
+  });
+
+  it("a surfaced outline Button (iOS) is a plain control puck with its hairline dropped (the rim is the edge)", async () => {
+    const { container } = await renderGlass(<IosButton outline testID="more">More</IosButton>);
     const button = container.querySelector('[data-testid="more"]') as HTMLElement;
     expect(rgbaOf(underFillOf(button))).toEqual(rgbaOf(LIGHT["glass-tint-control"]));
     expect(button.style.borderColor).toBe("rgba(0, 0, 0, 0.00)");
@@ -159,7 +178,7 @@ describe("brand-tinted glass pucks", () => {
     const { container } = await renderGlass(
       <>
         <Button primary testID="brand">Save</Button>
-        <Button outline testID="plain">More</Button>
+        <IosButton outline testID="plain">More</IosButton>
       </>,
     );
     const brand = fillLayerOf(container.querySelector('[data-testid="brand"]') as HTMLElement);

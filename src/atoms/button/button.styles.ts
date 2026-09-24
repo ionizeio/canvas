@@ -5,12 +5,13 @@ import { shape, type ColorTokens } from "../../style/index.js";
 import { HOVER } from "../../style/motion.js";
 import { type HoverMotion } from "../../style/hover.js";
 
-// Co-located Button skins, one per platform. The BRAND survives on every platform
-// (fills/labels use the sky `primary` and the semantic tokens, never a platform
-// default); only the native SHAPE, sizing, label weight, and press feedback change:
+// Co-located Button skins, one per platform.
+//   Web: Dark Factory's pill buttons (its outline, ghost and link looks, a hairline on
+//   every intent but link, bold labels, an instant hover wash, its disabled look).
 //   iOS (HIG / iOS 26+ Liquid Glass): capsule (fully rounded), semibold SF-scale label, dim-on-press.
 //   Android (Material 3): fully-rounded pill, medium label, flat, ripple.
-//   Web: the Riskora dashboard control (12px corner, 44px tall, medium label, opacity press).
+// iOS and Android keep their platform buttons in the theme's (Dark Factory's) colours:
+// the intent mapping they share is `fill` / `labelColor` below; the web skin owns its own.
 
 export type Intent = "primary" | "secondary" | "destructive" | "outline" | "ghost" | "link";
 export type Size = "small" | "base" | "large";
@@ -18,13 +19,30 @@ export type Size = "small" | "base" | "large";
 export interface ButtonSkinOpts {
   icon: boolean;
   block: boolean;
-  /** disabled or loading: dim the control. */
+  /** disabled or loading: dim the control (the iOS and Android skins). */
   dim: boolean;
+  /** disabled alone: the web skin swaps to Dark Factory's disabled look, and a loading button keeps its intent's look. */
+  disabled?: boolean;
 }
 
 export interface ButtonSkin {
   container: (t: ColorTokens, intent: Intent, size: Size, opts: ButtonSkinOpts) => ViewStyle;
-  label: (t: ColorTokens, intent: Intent, size: Size) => TextStyle;
+  label: (t: ColorTokens, intent: Intent, size: Size, opts?: ButtonSkinOpts) => TextStyle;
+  /** The label's colour, which the loading spinner takes too. */
+  foreground: (t: ColorTokens, intent: Intent, opts?: ButtonSkinOpts) => string;
+  /**
+   * Whether this intent paints a surface of its own. Under glass a button that does is a
+   * CONTROL-layer puck (the material behind its label); one that does not stays bare.
+   */
+  surface: (intent: Intent, opts: ButtonSkinOpts) => boolean;
+  /**
+   * The style a hovered button of this intent switches to at once (Dark Factory's wash
+   * behind an outline, a ghost and its secondary, the link's dim), or null. Never applied
+   * while disabled or loading; omitted by the iOS and Android skins.
+   */
+  hover?: (t: ColorTokens, intent: Intent) => ViewStyle | null;
+  /** The resting glow under a `raised` primary button (Dark Factory's call to action). */
+  raised: (t: ColorTokens, size: Size) => ViewStyle;
   /** iOS/web dim the fill on press; Android uses a ripple instead (null). */
   pressedOpacity: number | null;
   ripple: ((t: ColorTokens, intent: Intent) => { color: string; borderless: boolean }) | null;
@@ -50,9 +68,9 @@ export interface ButtonSkin {
   lift?: (intent: Intent) => HoverMotion | null;
 }
 
-// --- shared brand mapping (identical across platforms) ----------------------
+// --- the iOS and Android intent mapping ---------------------------------------
 
-/** The foreground per intent: the label color and the loading-spinner color. */
+/** The iOS and Android foreground per intent: the label color and the loading-spinner color. */
 export function foregroundOf(t: ColorTokens, intent: Intent): string {
   switch (intent) {
     case "primary": return actionInk(t);
@@ -66,7 +84,7 @@ export function foregroundOf(t: ColorTokens, intent: Intent): string {
 
 const DARK_FILL = new Set<Intent>(["primary", "destructive"]);
 
-// Container fill/border per intent (brand colors, shared by all platforms).
+// Container fill/border per intent (the iOS and Android buttons).
 function fill(t: ColorTokens, intent: Intent): ViewStyle {
   switch (intent) {
     case "primary": return { backgroundColor: actionFill(t) };
@@ -78,9 +96,8 @@ function fill(t: ColorTokens, intent: Intent): ViewStyle {
   }
 }
 
-// Label color per intent (brand, shared by all platforms). The link UNDERLINE is a web
-// idiom only: iOS and Android text buttons are tint-colored with no underline, so the
-// underline lives in webSkin.label, not here.
+// Label color per intent (the iOS and Android buttons): their text buttons are
+// tint-colored with no underline.
 function labelColor(t: ColorTokens, intent: Intent): TextStyle {
   switch (intent) {
     case "primary": return { color: actionInk(t) };
@@ -100,32 +117,103 @@ function androidRipple(_t: ColorTokens, intent: Intent) {
 
 const ROW: ViewStyle = { flexDirection: "row", alignItems: "center", justifyContent: "center" };
 
-// ---------- Web: the Riskora dashboard control ----------
-// A rounded rectangle at the control corner (every rectangular control shares it), 44px
-// tall at the base size (a 14/20 medium label inside 12px of vertical padding), 36
-// small and 52 large; icon buttons are the matching squares. Fills stay the semantic
-// intents: the sky primary carries the dark ink, `secondary` is the soft panel fill
-// with no border, `outline` keeps the 3:1 `input` boundary.
+// The surfaces a button paints on iOS and Android: every intent but the bare ghost and link.
+const nativeSurface = (intent: Intent) => intent !== "ghost" && intent !== "link";
+
+// ---------- Web: Dark Factory's pill buttons ----------
+// Every intent is a pill with a 1px border (a hairline where the look has none, so every
+// intent is the same height), bold labels, and a 6px icon gap. The call to action is the
+// green `action` pill in 800 weight with DF's 0.01em tracking; `destructive` is its red
+// sibling. `secondary` is DF's outline button: a violet border (`ring`, DF's accent2) and a
+// violet label in `primary-text` (DF's accent2 reads 4.00:1 on white, under the 4.5:1 floor).
+// `outline` is DF's ghost button: the `border` hairline and a foreground label (a text
+// button's label identifies it, so WCAG 1.4.11 does not bind its boundary). `ghost` has no
+// border and `link` no border or padding. Disabled is DF's look rather than a dim: the pill
+// goes transparent with a hairline and a muted label; a loading button keeps its intent's
+// look while its spinner runs. Small and base are DF's `sm` and `md` (29 and 36 tall); DF
+// has no large, so large steps up the same way (40).
+interface WebLook { fill: string; border: string; label: string }
+
+function webLook(t: ColorTokens, intent: Intent, o?: ButtonSkinOpts): WebLook {
+  if (o?.disabled) {
+    const edged = intent !== "ghost" && intent !== "link";
+    return { fill: "transparent", border: edged ? t.border : "transparent", label: t["muted-foreground"] };
+  }
+  switch (intent) {
+    case "primary": { const action = actionFill(t); return { fill: action, border: action, label: actionInk(t) }; }
+    case "destructive": return { fill: t.destructive, border: t.destructive, label: t["destructive-foreground"] };
+    case "secondary": return { fill: "transparent", border: t.ring, label: primaryText(t) };
+    case "outline": return { fill: "transparent", border: t.border, label: t.foreground };
+    case "ghost": return { fill: "transparent", border: "transparent", label: t.foreground };
+    case "link": return { fill: "transparent", border: "transparent", label: primaryText(t) };
+  }
+}
+
+// The call to action and its red sibling carry the heaviest label and DF's tracking.
+const WEB_CTA = new Set<Intent>(["primary", "destructive"]);
+
+// Padding (vertical, horizontal) per size: the call to action is 2 wider at base, as DF's is.
+const WEB_PAD: Record<Size, { v: number; h: number; ctaH: number }> = {
+  small: { v: 6, h: 14, ctaH: 14 },
+  base: { v: 9, h: 16, ctaH: 18 },
+  large: { v: 10, h: 20, ctaH: 22 },
+};
+// Label type per size (whole-pixel line heights; DF sets 1.3).
+const WEB_TYPE: Record<Size, TextStyle> = {
+  small: FS(11.5, 15),
+  base: FS(12, 16),
+  large: FS(13, 18),
+};
+// Icon-only squares: the pill heights, drawn as circles.
+const WEB_SQUARE: Record<Size, number> = { small: 29, base: 36, large: 40 };
+// DF's raised glow under the call to action, one step per size.
+const WEB_GLOW: Record<Size, [number, number]> = { small: [10, 20], base: [12, 22], large: [14, 24] };
+
+/** Dark Factory's resting glow under a raised call to action (a spread shadow in the action colour). */
+function raisedGlow(t: ColorTokens, size: Size): ViewStyle {
+  const [y, blur] = WEB_GLOW[size];
+  return { boxShadow: `0px ${y}px ${blur}px -10px ${actionFill(t)}` };
+}
+
 export const webSkin: ButtonSkin = {
-  container: (t, intent, size, o) => ({
-    ...ROW,
-    gap: 8,
-    borderRadius: shape.web.control,
-    ...(o.icon
-      ? sq(size === "small" ? 36 : size === "large" ? 52 : 44)
-      : size === "small" ? { paddingHorizontal: 14, paddingVertical: 8 }
-      : size === "large" ? { paddingHorizontal: 24, paddingVertical: 14 }
-      : { paddingHorizontal: 20, paddingVertical: 12 }),
-    ...fill(t, intent),
-    // `block` (full width) lives on the shell's <RippleClip> wrapper, the outer node.
-    ...(o.dim ? { opacity: 0.5 } : null),
-  }),
-  label: (t, intent, size) => ({
-    fontWeight: "500",
-    ...(size === "large" ? FS(16, 24) : FS(14, 20)),
-    ...labelColor(t, intent),
-    ...(intent === "link" ? { textDecorationLine: "underline" as const } : null), // web-only link underline
-  }),
+  container: (t, intent, size, o) => {
+    const look = webLook(t, intent, o);
+    const pad = WEB_PAD[size];
+    return {
+      ...ROW,
+      gap: 6,
+      borderRadius: 9999,
+      ...(o.icon
+        ? sq(WEB_SQUARE[size])
+        : intent === "link" ? { paddingHorizontal: 0, paddingVertical: 0 }
+        : { paddingVertical: pad.v, paddingHorizontal: WEB_CTA.has(intent) ? pad.ctaH : pad.h }),
+      backgroundColor: look.fill,
+      borderWidth: intent === "link" ? 0 : 1,
+      borderColor: look.border,
+      // `block` (full width) lives on the shell's <RippleClip> wrapper, the outer node.
+    };
+  },
+  label: (t, intent, size, o) => {
+    const type = WEB_TYPE[size];
+    const cta = WEB_CTA.has(intent) && !o?.disabled;
+    // DF's outline (our secondary) is 800 from its md size up; everything else but the CTA is 700.
+    const heavy = cta || (intent === "secondary" && size !== "small" && !o?.disabled);
+    return {
+      ...type,
+      fontWeight: heavy ? "800" : "700",
+      ...(cta ? { letterSpacing: (type.fontSize as number) * 0.01 } : null),
+      color: webLook(t, intent, o).label,
+    };
+  },
+  foreground: (t, intent, o) => webLook(t, intent, o).label,
+  // Only the filled pills paint a surface: DF's outline, ghost and link buttons are
+  // transparent, and a disabled button is transparent too.
+  surface: (intent, o) => WEB_CTA.has(intent) && !o.disabled,
+  hover: (t, intent) =>
+    intent === "secondary" || intent === "outline" || intent === "ghost" ? { backgroundColor: t.hover }
+    : intent === "link" ? { opacity: 0.85 }
+    : null,
+  raised: raisedGlow,
   pressedOpacity: 0.9,
   ripple: null,
   minTarget: null, // web is pointer-first: no touch-target extension, layout untouched
@@ -156,6 +244,9 @@ export const iosSkin: ButtonSkin = {
     ...(size === "small" ? FS(15, 20) : FS(17, 22)),
     ...labelColor(t, intent),
   }),
+  foreground: (t, intent) => foregroundOf(t, intent),
+  surface: nativeSurface,
+  raised: raisedGlow,
   pressedOpacity: 0.8,
   ripple: null,
   minTarget: 44, // HIG minimum tappable area 44x44pt (small = 36pt tall, extended via hitSlop)
@@ -184,6 +275,9 @@ export const androidSkin: ButtonSkin = {
     ...(size === "small" ? FS(13, 18) : FS(14, 20)),
     ...labelColor(t, intent),
   }),
+  foreground: (t, intent) => foregroundOf(t, intent),
+  surface: nativeSurface,
+  raised: raisedGlow,
   pressedOpacity: null,
   ripple: androidRipple,
   // Clip the bounded ripple to the pill (icon = circle). Same 9999 radius as `container`, so

@@ -324,7 +324,9 @@ layers, each with its own under-fill token (`glass-tint*` in `src/style/tokens.t
   `tint` in place of the layer's, under the same ink as in solid mode: `statusColors`
   for the status tones, and a free Chip hue's 500 step at Dark Factory's soft alpha
   under its deep 800/300 label (`HUE_WASH` is deprecated and unused). A control with no
-  surface of its own (a ghost or link Button, the iOS pagination chevrons) stays bare.
+  surface of its own (a ghost or link Button, the web's outline and secondary Buttons,
+  which are Dark Factory's transparent outline pills, the iOS pagination chevrons) stays
+  bare.
 - **Dense** (`glass-tint-dense`, the densest tint): the surfaces a user reads and
   acts on, the option lists (Dropdown, Select, Autocomplete, RowMenu, the SplitButton
   overflow, the PhoneInput country list, AvatarMenu), AlertDialog, Toast, Tooltip, the
