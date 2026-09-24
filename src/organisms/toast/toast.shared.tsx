@@ -102,14 +102,19 @@ export interface ToastProps {
 export interface ToastSkin {
   /** The capsule shape + density (radius, padding, gap, minHeight, shadow, maxWidth).
    *  `hasTrailing` is true when a trailing action/dismiss control renders, so a skin
-   *  can tighten the trailing padding (M3: 8dp beside a trailing control). */
-  container: (t: ColorTokens, hasTrailing: boolean) => ViewStyle;
+   *  can tighten the trailing padding (M3: 8dp beside a trailing control);
+   *  `hasDescription` when a description line wraps under the message, so a pill can
+   *  take a corner that holds more than one line. */
+  container: (t: ColorTokens, hasTrailing: boolean, hasDescription: boolean) => ViewStyle;
   /** Render the auto intent glyph (success / error / warning / info) in the leading
    *  slot. The M3 snackbar anatomy has no leading icon, so the Android skin turns
    *  this off; an explicit `icon` prop always renders. */
   intentIcon: boolean;
   /** The intent icon glyph size, in px. */
   iconSize: number;
+  /** The intent glyph's ink, where the capsule's own fill needs one of its own (the
+   *  inverse pill); null keeps each intent's status token. */
+  intentColor: ((t: ColorTokens, intent: "success" | "error" | "warning" | "info") => string) | null;
   /** The message line type. */
   message: (t: ColorTokens) => TextStyle;
   /** The description line type. */
@@ -157,11 +162,11 @@ function intentOf(p: {
 
 // The auto intent icon: a glyph + the Icon color boolean that tints it. Neutral
 // carries no icon (the message stands alone).
-function IntentIcon({ intent, size }: { intent: Intent; size: number }): ReactNode {
-  if (intent === "success") return <Icon circleCheck success size={size} />;
-  if (intent === "error") return <Icon circleX destructive size={size} />;
-  if (intent === "warning") return <Icon alertTriangle warning size={size} />;
-  if (intent === "info") return <Icon info primary size={size} />;
+function IntentIcon({ intent, size, color }: { intent: Intent; size: number; color?: string }): ReactNode {
+  if (intent === "success") return color ? <Icon circleCheck color={color} size={size} /> : <Icon circleCheck success size={size} />;
+  if (intent === "error") return color ? <Icon circleX color={color} size={size} /> : <Icon circleX destructive size={size} />;
+  if (intent === "warning") return color ? <Icon alertTriangle color={color} size={size} /> : <Icon alertTriangle warning size={size} />;
+  if (intent === "info") return color ? <Icon info color={color} size={size} /> : <Icon info primary size={size} />;
   return null;
 }
 
@@ -224,10 +229,12 @@ export function createToastSystem(skin: ToastSkin) {
 
     // The auto intent glyph only where the skin's anatomy carries one (the M3
     // snackbar has no leading icon); an explicit `icon` prop always wins.
-    const auto = skin.intentIcon ? <IntentIcon intent={intent} size={skin.iconSize} /> : null;
+    const intentInk = skin.intentColor && intent !== "neutral" ? skin.intentColor(tokens, intent) : undefined;
+    const auto = skin.intentIcon ? <IntentIcon intent={intent} size={skin.iconSize} color={intentInk} /> : null;
     const glyph = icon !== undefined ? icon : auto;
     const hasTrailing = action != null || onDismiss != null;
-    const containerStyle = skin.container(tokens, hasTrailing);
+    const hasDescription = description != null && description !== "";
+    const containerStyle = skin.container(tokens, hasTrailing, hasDescription);
 
     const content = (
       <>
@@ -393,6 +400,7 @@ export function createToastSystem(skin: ToastSkin) {
                   description={t.description}
                   action={t.action}
                   success={t.success}
+                  destructive={t.destructive}
                   error={t.error}
                   warning={t.warning}
                   info={t.info}

@@ -94,9 +94,12 @@ describe("elevation in the hand-off", () => {
     decls: { ...declarationsIn(colorsCss, ":root"), ...declarationsIn(colorsCss, look.selector), ...rootShadows },
     tokens: look.tokens,
   }));
-  // The top layer: the dialog's shade, a separator over a scrim or arbitrary content
-  // rather than depth on the page (like the scrims below, held to the direction rule only).
-  const isTopLayer = (name: string, raw: string) => name === "shadow-xl" || raw.includes("var(--shadow-xl)");
+  // The top layer: the dialog's shade and the toast pill's (Dark Factory's deep drop
+  // under a surface that floats over everything), a separator over a scrim or arbitrary
+  // content rather than depth on the page (like the scrims below, held to the direction
+  // rule only).
+  const isTopLayer = (name: string, raw: string) =>
+    name === "shadow-xl" || raw.includes("var(--shadow-xl)") || name.endsWith(" --p-toast-shadow");
 
   // Every shadow the hand-off ships, from the ladder and from the per-OS skins.
   // Scrims are excluded by name: a scrim is a deliberate blackout behind a modal,

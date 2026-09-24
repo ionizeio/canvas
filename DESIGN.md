@@ -381,7 +381,7 @@ components:
   steps:
     steps-connector-radius: "0px"
   toast:
-    toast-radius: "18px"
+    toast-radius: "9999px"
   badge:
     badge-radius: "9999px"
   inputotp:
@@ -500,8 +500,6 @@ platformSkins:
       side-row-radius: "9999px"
     steps:
       steps-connector-radius: "9999px"
-    toast:
-      toast-radius: "16px"
     inputotp:
       otp-radius: "8px"
       otp-inner-radius: "8px"
@@ -723,8 +721,8 @@ call-to-action fill: primary buttons, meters, count badges. A theme that overrid
 `primary` alone repaints both, since `action` follows an overriding `primary` unless the
 theme sets it too. `scrim` dims the page behind every modal. `inverse`,
 `inverse-foreground` and `inverse-primary` are the toast pill, its ink and the action on
-it (the Android snackbar paints them; `inverse-primary` is the palette's own brand hue
-lightened to read on the pill). The `-soft` washes, `shade` (the shadow tint) and
+it (every toast paints them: the web and iOS pill and the Android snackbar;
+`inverse-primary` is the palette's own brand hue lightened to read on the pill). The `-soft` washes, `shade` (the shadow tint) and
 `field-fill` are optional roles the skins adopt as they take the Dark Factory look; a
 theme that omits any of these keeps the older fallbacks.
 

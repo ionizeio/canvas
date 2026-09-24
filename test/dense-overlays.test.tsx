@@ -232,16 +232,18 @@ describe("AlertDialog, Toast and Tooltip are dense glass under glass", () => {
     expect(rgbaOf(underFillOf(dialog))).toEqual(DENSE);
   });
 
-  it("Toast renders its capsule through the material under the dense tint", async () => {
+  it("Toast renders Dark Factory's pill through the material as an inverse surface", async () => {
     const { container } = render(
-      <ThemeProvider glass>
+      <ThemeProvider light glass>
         <Toast success message="Project saved" description="All changes are live." />
       </ThemeProvider>,
     );
     await waitFor(() => expect(container.querySelector('[role="status"]')).not.toBeNull());
     const region = container.querySelector('[role="status"]') as HTMLElement;
     expect(materialLayers(region)).toBe(1);
-    expect(rgbaOf(underFillOf(region))).toEqual(DENSE);
+    // The pill (`inverse`) at the dense token's own alpha, so its light ink keeps its contrast.
+    const theme = { tokens: lightColors, glass: WEB_TINTS.light };
+    expect(rgbaOf(underFillOf(region))).toEqual(rgbaOf(inverseDenseTint(theme, lightColors.inverse!)));
   });
 
   it("the M3 snackbar and the Tooltip bubble are INVERSE surfaces: their own fill at the dense alpha, so their inverse text stays legible", async () => {

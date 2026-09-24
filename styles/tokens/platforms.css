@@ -155,12 +155,14 @@
   --p-list-name:14px;--p-list-name-lh:20px;--p-list-name-weight:500;--p-list-name-tracking:0px;
   --p-list-sub:12px;--p-list-sub-lh:16px;--p-list-sub-tracking:0px;
   --p-list-header-pad-x:20px;--p-list-header-title:16px;--p-list-header-title-lh:24px;--p-list-header-title-weight:500;--p-list-header-title-tracking:0px;
-  /* Toast (toast.styles.ts webSkin: the sonner-style card) */
-  --p-toast-radius:18px;--p-toast-fill:var(--popover);--p-toast-label:var(--popover-foreground);
-  --p-toast-msg:14px;--p-toast-msg-lh:20px;--p-toast-msg-weight:500;--p-toast-msg-tracking:0px;
-  --p-toast-desc:13px;--p-toast-desc-lh:18px;--p-toast-desc-color:var(--muted-foreground);--p-toast-desc-tracking:0px;
-  --p-toast-gap:12px;--p-toast-pad-x:16px;
-  --p-toast-glyph:flex;--p-toast-glyph-size:18px;
+  /* Toast (toast.styles.ts webSkin, iOS too: Dark Factory's toast pill, `inverse` in every
+     scheme, a pill for one line and the sheet corner once a description wraps, 12.5/700
+     message, the description in the pill's ink at 0.7) */
+  --p-toast-radius:9999px;--p-toast-radius-multiline:22px;--p-toast-fill:var(--inverse);--p-toast-label:var(--inverse-foreground);
+  --p-toast-msg:12.5px;--p-toast-msg-lh:17px;--p-toast-msg-weight:700;--p-toast-msg-tracking:0px;
+  --p-toast-desc:11px;--p-toast-desc-lh:15px;--p-toast-desc-color:color-mix(in oklab, var(--inverse-foreground) 70%, transparent);--p-toast-desc-tracking:0px;
+  --p-toast-gap:10px;--p-toast-pad-x:18px;--p-toast-pad-y:11px;--p-toast-shadow:0px 20px 40px -16px rgba(0,0,0,0.55);
+  --p-toast-glyph:flex;--p-toast-glyph-size:16px;
   /* EmptyState (empty-state.styles.ts webSkin) */
   --p-empty-pad-x:24px;--p-empty-pad-y:40px;
   --p-empty-title:16px;--p-empty-title-lh:24px;--p-empty-title-weight:500;
@@ -566,9 +568,6 @@
   --p-list-name:17px;--p-list-name-lh:22px;--p-list-name-weight:400;--p-list-name-tracking:-0.43px;
   --p-list-sub:15px;--p-list-sub-lh:18px;--p-list-sub-tracking:-0.24px;
   --p-list-header-pad-x:16px;--p-list-header-title:15px;--p-list-header-title-lh:20px;--p-list-header-title-tracking:-0.24px;
-  /* Toast — HIG floating banner: 16pt continuous capsule, 15pt semibold message */
-  --p-toast-radius:16px;--p-toast-msg:15px;--p-toast-msg-lh:20px;--p-toast-msg-weight:600;--p-toast-msg-tracking:-0.24px;--p-toast-desc-tracking:-0.08px;
-  --p-toast-glyph-size:19px;
 
   /* Board (board.styles.ts iosSkin: 26pt continuous muted wells, SF type) */
   --p-board-lane-gap:16px;--p-board-lane-gap-compact:12px;
@@ -813,9 +812,10 @@
   /* Toast, the M3 snackbar: 4dp bar on the INVERSE surface (Dark Factory's toast pill, the
      same in every palette and scheme), 14sp regular body; the M3 snackbar anatomy has no
      leading icon slot, so the auto intent glyph hides */
-  --p-toast-radius:4px;--p-toast-fill:var(--inverse);--p-toast-label:var(--inverse-foreground);
+  --p-toast-radius:4px;--p-toast-radius-multiline:4px;--p-toast-fill:var(--inverse);--p-toast-label:var(--inverse-foreground);
   --p-toast-msg:14px;--p-toast-msg-lh:20px;--p-toast-msg-weight:400;--p-toast-msg-tracking:0px;
-  --p-toast-desc-color:color-mix(in oklab, var(--inverse-foreground) 70%, transparent);--p-toast-gap:8px;
+  --p-toast-desc:13px;--p-toast-desc-lh:18px;--p-toast-desc-color:color-mix(in oklab, var(--inverse-foreground) 70%, transparent);--p-toast-gap:8px;
+  --p-toast-pad-x:16px;--p-toast-pad-y:12px;--p-toast-shadow:var(--shadow-lg);
   --p-toast-glyph:none;
   /* EmptyState — M3 medium shape, title-medium */
   --p-empty-radius:12px;--p-empty-title-weight:500;--p-empty-title-tracking:0.15px;--p-empty-desc-tracking:0.25px;

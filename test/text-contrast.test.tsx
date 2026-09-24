@@ -284,8 +284,6 @@ describe("primary text on authored surfaces", () => {
         ["Android Input action", inputSkins.androidSkin.actionText(tokens)],
         ["Android AlertDialog text button", alertDialogSkins.androidSkin.textButtonLabel(tokens, false)],
         ["Android Dialog text button", dialogSkins.androidSkin.textButtonLabel(tokens, false)],
-        ["Web Toast action", toastSkins.webSkin.actionLabel(tokens)],
-        ["iOS Toast action", toastSkins.iosSkin.actionLabel(tokens)],
         ["Android underline Tab", tabsSkins.androidSkin.underlineLabel(tokens, true)],
         ["Android pill Tab", tabsSkins.androidSkin.pillsLabel(tokens, true)],
         ["Android vertical Tab", tabsSkins.androidSkin.verticalLabel(tokens, true)],
@@ -313,8 +311,35 @@ describe("primary text on authored surfaces", () => {
     // palette's violet) and reads at 4.5:1 on the pill as the shell paints it: solid, and
     // under glass at the inverse dense tint (the web frost's alpha and the native one) over
     // the page and a card, each resting and under the pressed ripple.
+    // The web and iOS toast is Dark Factory's pill on the same inverse surface: its message,
+    // description, action and dismiss take the pill's inks and its intent glyphs the dark
+    // scheme's status inks, each read on the pill solid and under glass at the inverse
+    // dense tint over the page and a card.
+    it(`keeps every ${scheme} toast pill ink readable on the pill`, () => {
+      const skin = toastSkins.webSkin;
+      expect(toastSkins.iosSkin).toBe(skin);
+      const bar = paint(skin.container(tokens, true, false), "backgroundColor");
+      expect(bar).toBe(tokens.inverse!);
+      const beds = [rgba(bar), ...[look.webGlass, look.nativeGlass].flatMap((glass) =>
+        [tokens.background, tokens.card].map((backdrop) => composite(inverseDenseTint({ tokens, glass }, bar), backdrop)))];
+      const texts: [string, string][] = [
+        ["message", paint(skin.message(tokens))],
+        ["description", paint(skin.description(tokens))],
+        ["action", paint(skin.actionLabel(tokens))],
+      ];
+      const glyphs: [string, string][] = [
+        ["dismiss", skin.dismissColor!(tokens)],
+        ...(["success", "error", "warning", "info"] as const).map((intent): [string, string] => [intent, skin.intentColor!(tokens, intent)]),
+      ];
+      for (const bed of beds) {
+        for (const [name, ink] of texts) expect(contrast(composite(ink, bed), bed), `${scheme} ${name}`).toBeGreaterThanOrEqual(4.5);
+        for (const [name, ink] of glyphs) expect(contrast(composite(ink, bed), bed), `${scheme} ${name}`).toBeGreaterThanOrEqual(3);
+      }
+      expect(paint(skin.actionLabel(tokens))).toBe(tokens["inverse-primary"]!);
+    });
+
     it(`paints the ${scheme} Android snackbar action in the palette's inverse primary on the pill`, () => {
-      const bar = paint(toastSkins.androidSkin.container(tokens, true), "backgroundColor");
+      const bar = paint(toastSkins.androidSkin.container(tokens, true, false), "backgroundColor");
       expect(bar).toBe(tokens.inverse!);
       expect(paint(toastSkins.androidSkin.message(tokens))).toBe(tokens["inverse-foreground"]!);
       const action = paint(toastSkins.androidSkin.actionLabel(tokens));

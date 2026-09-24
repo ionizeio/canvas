@@ -1,4 +1,6 @@
 import { primaryText } from "./primary-text.js";
+import { statusColors } from "./status.js";
+import type { StatusTone } from "./status-hue.js";
 import { darkColors, lightColors, type ColorTokens } from "./tokens.js";
 
 // The inverse surface: Dark Factory's toast pill, which the Material 3 snackbar paints as
@@ -17,6 +19,16 @@ export function inverseInk(tokens: ColorTokens): string {
 
 export function inversePrimary(tokens: ColorTokens): string {
   return tokens["inverse-primary"] ?? primaryText(isDarkFill(inverseFill(tokens)) ? darkColors : lightColors);
+}
+
+/**
+ * A status tone's ink on the inverse surface (an intent glyph on the toast pill). The pill
+ * is dark in every palette and scheme, so the tones read in the dark scheme's own status
+ * inks, which are solved for a dark surface (6:1 and better on the pill); a legacy map
+ * whose inverse is light takes the light scheme's.
+ */
+export function inverseStatus(tokens: ColorTokens, tone: StatusTone): string {
+  return statusColors(isDarkFill(inverseFill(tokens)) ? darkColors : lightColors, tone).ink;
 }
 
 // Coarse dark/light call on a hex fill (sRGB weights, no gamma; all the legacy

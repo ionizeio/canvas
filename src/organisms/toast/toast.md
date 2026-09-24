@@ -2,6 +2,8 @@
 
 A transient notification capsule. Render a `<Toast>` directly, or drive them imperatively: mount a `<ToastProvider>` near your app root and call `toast(...)` from the `useToast()` hook to enqueue auto-dismissing toasts that stack over the app.
 
+On the web and iOS the toast is Dark Factory's pill: the same deep fill in every palette and scheme, a bold white message, a pill while it holds one line and a rounder card once a description wraps, with the intent glyph, the action and the dismiss in inks that read on the dark fill. Android keeps the Material 3 snackbar on the same fill.
+
 ## Usage
 
 Toast is usually driven imperatively: mount a `<ToastProvider>` near your app root, then call the `toast(...)` handle from `useToast()` to enqueue an auto-dismissing capsule that floats over the app. Press the button to fire one. (`AppScreen` is just this demo's stand-in for your app root, so the toast has a screen to float over.)

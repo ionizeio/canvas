@@ -332,8 +332,7 @@ layers, each with its own under-fill token (`glass-tint*` in `src/style/tokens.t
   overflow, the PhoneInput country list, AvatarMenu), AlertDialog, Toast, Tooltip, the
   chart value flag. AnchoredOverlay selects it with `dense`. The two INVERSE surfaces
   take `inverseDenseTint`, their own fill at the dense alpha (the Tooltip bubble the
-  ink, the M3 snackbar DF's `inverse` toast pill), so their inverse text keeps its
-  contrast.
+  ink, every Toast DF's `inverse` pill), so their inverse text keeps its contrast.
 
 Those surfaces render through the shared `GlassSurface` primitive
 (`src/style/glass-surface`), which paints the active material per platform: Apple's
