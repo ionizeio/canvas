@@ -12,7 +12,10 @@ for (const width of [1280, 390]) for (const scheme of ["light", "dark"] as const
     await expect(page.getByTestId("material-mode")).toHaveText(`Mode: glass; scheme: ${scheme}`);
     const scroller = page.locator("[data-page-scroll]");
     const trigger = page.getByRole("button", { name: "Material dialog", exact: true });
-    await trigger.evaluate(element => element.scrollIntoView({ block: "end" }));
+    // Open from a scrolled page, the case this checks: scroll the page to its end (at 390
+    // the fixture is taller than the viewport), then bring the trigger into view.
+    await scroller.evaluate(element => element.scrollTo({ top: element.scrollHeight }));
+    await trigger.evaluate(element => element.scrollIntoView({ block: "nearest" }));
     if (width === 390) expect(await scroller.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
     await trigger.click();
     const dialog = page.getByRole("dialog", { name: "Live dialog", exact: true });

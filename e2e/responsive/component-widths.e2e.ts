@@ -49,14 +49,10 @@ async function overflow(page: import("@playwright/test").Page): Promise<Overflow
  * not overflow at all, and a page listed here must not get worse.
  */
 const KNOWN_OVERFLOW: KnownOverflow = {
-  // 99 when recorded; re-measured at 106 on the Linux runner across four consecutive
-  // main runs (e243db55 through 97b7c182) with no change to the page, and a macOS A/B
-  // of the two commits around the shift measured 108 on both, so the extra 7px is the
-  // runner's glyph metrics (the link labels set a touch wider), not the page. 124 since
-  // the kit took Manrope (0eeb352d, run 35878462617): the same five links, set in a face
-  // that runs wider than Urbanist. The fix is the link row collapsing into a menu when it
-  // does not fit, which deletes this entry.
-  "/components/navbars": { past: 124, why: "the topbar link row does not collapse, so the links run past the card (124 on the Linux runner since the Manrope face)" },
+  // Empty since the Dark Factory Button (0f2505e4): its smaller pills let the Navbar's
+  // topbar fit at 768 (the record was 124 on the Linux runner with Manrope), so any page
+  // that stops fitting fails outright. The link row still does not collapse into a menu
+  // when it runs out of room; ADP-6 owns that.
 };
 
 type KnownOverflow = Record<string, { past: number; why: string }>;
