@@ -20,8 +20,18 @@ import {
 const MIN_COLUMN_WIDTH = 110;
 const SELECT_COLUMN_WIDTH = 48;
 const s = StyleSheet.create({
+  // Panning: the content spans at least the scrollport and the table holds its
+  // pan minimum, so a narrow container scrolls instead of crushing the columns.
   panContent: { flexGrow: 1 },
   panInner: { flexGrow: 1 },
+  // Not panning: the content and the table are exactly the scrollport's width,
+  // so the cells share it and wrap as if there were no scroller, and nothing
+  // overflows to scroll or to take a tab stop.
+  fitContent: { width: "100%" },
+  fitInner: { width: "100%" },
+  // The rows never grow or shrink with the table's height; only a windowed body
+  // does (see `windowed`), so the scroller takes the flex of what it holds.
+  rigidScroller: { flexGrow: 0, flexShrink: 0 },
 });
 
 // Shared DataTable shell. The data table lays a grid out as flex rows of
@@ -400,7 +410,15 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     // not crush the flex-1 cells into letter-wrapped slivers: below the sm width
     // the header+body pan together inside a horizontal scroller, each column
     // keeping a readable minimum (the Material phone data-table treatment).
-    const pans = !collapsed && !skin.collapsesToPrimaryColumn && cols.length > 1 && measuredWidth > 0 && measuredWidth < breakpoints.sm;
+    // `canPan` is fixed by the skin, so such a table renders its scroller in
+    // every state and panning switches only the scroller's styles. Adding or
+    // removing the scroller would change the element above every row, and React
+    // would remount the whole table (stateful cells, an open editor's text and
+    // focus, a windowed body's scroll position) whenever the container crosses
+    // the sm width, and once on every phone mount, whose first frame is
+    // unmeasured.
+    const canPan = !skin.collapsesToPrimaryColumn;
+    const pans = canPan && cols.length > 1 && measuredWidth > 0 && measuredWidth < breakpoints.sm;
     const hasActions = !!(onRowEdit || onRowDelete);
     const panMinWidth =
       cols.reduce((w, col) => w + (col.width ?? MIN_COLUMN_WIDTH), 0) +
@@ -621,6 +639,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       !!virtualized && !bounded,
       "[canvas] <DataTable virtualized>: give the table a bounded height (e.g. style={{ maxHeight: 400 }}) so the body can window and scroll; rendering eagerly for now.",
     );
+    const windowed = !!virtualized && bounded && !loading;
 
     // The data rows: skeleton placeholders while loading; a windowed FlatList
     // when asked (and bounded); else every row of the page mounted (the
@@ -638,7 +657,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
           {skin.separator ? <View style={[skin.separator(tokens), { pointerEvents: "none" }]} /> : null}
         </View>
       ))
-    ) : virtualized && bounded ? (
+    ) : windowed ? (
       <FlatList
         data={pageIndices}
         renderItem={({ item }) => renderDataRow(rows[item]!, item)}
@@ -693,14 +712,24 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
         layer="content"
         testID={testID}
         style={wrap}
-        role={pans ? undefined : "table"}
+        role={canPan ? undefined : "table"}
         onLayout={onMeasureLayout}
       >
-        {pans ? (
-          <ScrollView {...scrollFocus} horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.panContent}>
+        {canPan ? (
+          // The scroller stays enabled while the table fits: its content is then
+          // exactly the scrollport's width, so there is nothing to scroll and no
+          // tab stop, whereas `scrollEnabled={false}` sets `touch-action: none`
+          // on the web and a finger on the table could no longer scroll the page.
+          <ScrollView
+            {...scrollFocus}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={windowed ? null : s.rigidScroller}
+            contentContainerStyle={pans ? s.panContent : s.fitContent}
+          >
             {/* A focusable scrollport surrounds the table. Putting it inside the
                 table would expose a generic interactive child where rows belong. */}
-            <View role="table" style={[s.panInner, { minWidth: panMinWidth }]}>{table}</View>
+            <View role="table" style={pans ? [s.panInner, { minWidth: panMinWidth }] : s.fitInner}>{table}</View>
           </ScrollView>
         ) : (
           table
