@@ -3,10 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Avatar, Dropdown } = scope;
+  const { Avatar, AvatarGroup } = scope;
   return (
-<Dropdown items={[{ label: "Your profile" }, { label: "Sign out" }]}>
-  <Avatar small name="MA" />
-</Dropdown>
+<AvatarGroup max={3}>
+  <Avatar name="Rachel Chen" />
+  <Avatar name="Liang Bao" />
+  <Avatar name="Marcus Allen" />
+  <Avatar name="Kira Tran" />
+</AvatarGroup>
   );
 }

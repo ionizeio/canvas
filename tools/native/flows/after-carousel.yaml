@@ -561,3 +561,23 @@ name: Sealed Canvas native candidate after measured drag
     id: hover-presses
     text: 'Presses: 2'
 - takeScreenshot: hover-at-rest
+
+# The identity discs: Dark Factory's hue gradient on every platform, drawn with
+# react-native-svg. The pressable disc and the neutral glyph-less tile still press.
+- openLink: canvas-smoke:///testing/avatar
+- assertVisible:
+    id: avatar-mode
+    text: 'Mode: solid; scheme: light; palette: blush'
+- assertVisible:
+    id: avatar-stage-20
+- tapOn:
+    id: avatar-pressable
+- assertVisible:
+    id: avatar-presses
+    text: 'Presses: 1'
+- tapOn:
+    id: avatar-neutral
+- assertVisible:
+    id: avatar-presses
+    text: 'Presses: 2'
+- takeScreenshot: avatar-identity-discs

@@ -3,7 +3,8 @@
   "evidenceLog": "tools/native/liquid-motion.md",
   "sources": [
     "src/style/motion.ts",
-    "src/style/glass-surface/web-frost.ts"
+    "src/style/glass-surface/web-frost.ts",
+    "src/style/identity-hue.ts"
   ],
   "references": [
     {
@@ -67,7 +68,8 @@
     "baseUrl": "http://localhost:8081",
     "routes": [
       "/testing/materials",
-      "/testing/hover"
+      "/testing/hover",
+      "/testing/avatar"
     ],
     "fixtures": "examples/starter/smoke/fixtures",
     "notes": "bun run dev in docs/ starts Metro on 8081 and the native opener on 8790. Web motion evidence: record the shipped page with the tuning-harness skill's record-motion.mjs (the motion Playwright project was removed with the liquid motion on 2026-09-22). Native: the installed docs dev app on a booted simulator or emulator, recorded with the same script."

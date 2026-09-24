@@ -1,6 +1,6 @@
 # Avatar
 
-A photo when the account has one, falling back to one or two initials on a colour picked deterministically from the name, so each person stays visually distinct in a stack or list. The initials take whichever of white or near-black reads better on that colour, so they hold 4.5:1 on every fill. A pressable avatar (`onPress`) keeps interactive Liquid Glass on iOS 26+ under glass surface mode. Sizes scale font proportionally (40% of diameter), down to `tiny`, the 24px disc a capsule is built around, which holds the 12px glyph rather than shrinking past legibility. `AvatarMenu` builds the signed-in account control on the same circle: one capsule trigger carrying the avatar, the name, and the email, opening the account menu under that same identity.
+A photo when the account has one, falling back to one or two initials on an identity disc: the name resolves to one of ten hues, and the disc is that hue's diagonal blend from a pale tint to a deeper, warmer neighbour, so one person keeps one colour on every platform and stays distinct in a stack or list. The initials are bold, about a third of the disc, in near-black, which holds 4.5:1 on both ends of every blend. Like a photo, the disc is identity content: it keeps its colours under glass, where only the neutral tile of an avatar with no name or initials takes the control material. `AvatarMenu` builds the signed-in account control on the same circle: one capsule trigger carrying the avatar, the name, and the email, opening the account menu under that same identity.
 
 ## Usage
 
@@ -16,9 +16,28 @@ A photo when the account has one, falling back to one or two initials on a colou
 <Avatar src="/rachel-chen.jpg" name="RC" />
 ```
 
+### Identity colours
+
+Each name resolves to one of ten hues through a stable hash, so the same person gets the same disc in every session and on every platform, and a list of people spreads across the set. The hue follows `name` when one is set, else the initials, so pass the full name: two people who share initials then usually get different discs.
+
+```tsx
+<Row snug wrap>
+  <Avatar name="Ada Ito" />
+  <Avatar name="Rachel Tanaka" />
+  <Avatar name="Liang Kim" />
+  <Avatar name="Kira Okafor" />
+  <Avatar name="Marcus Singh" />
+  <Avatar name="Noor Novak" />
+  <Avatar name="Sofia Bao" />
+  <Avatar name="Theo Lovelace" />
+  <Avatar name="Omar Moreau" />
+  <Avatar name="Priya Haddad" />
+</Row>
+```
+
 ### Sizes
 
-Four steps: `tiny` (24px), `small` (28px), the default 40px row avatar, and `large` (48px). Initials scale with the circle at about 40% of the diameter, except at `tiny`, which keeps `small`'s 12px glyph rather than shrinking to a 10px pair that stops reading. `tiny` is the disc `AvatarMenu` builds its capsule around, so a standalone tiny avatar and the one inside a pill are the same circle. Precedence when several are passed: `tiny` beats `small` beats `large`.
+Four steps: `tiny` (24px), `small` (28px), the default 40px row avatar, and `large` (48px). The initials take about a third of the disc, and a little more on the two small ones (10px on `tiny`, 11px on `small`) so a pair of letters still reads there. `tiny` is the disc `AvatarMenu` builds its capsule around, so a standalone tiny avatar and the one inside a pill are the same circle. Precedence when several are passed: `tiny` beats `small` beats `large`.
 
 ```tsx
 <Row relaxed alignCenter>
@@ -45,16 +64,16 @@ Four steps: `tiny` (24px), `small` (28px), the default 40px row avatar, and `lar
 
 ```tsx
 <AvatarGroup max={3}>
-  <Avatar name="RC" />
-  <Avatar name="LB" />
-  <Avatar name="MA" />
-  <Avatar name="KT" />
+  <Avatar name="Rachel Chen" />
+  <Avatar name="Liang Bao" />
+  <Avatar name="Marcus Allen" />
+  <Avatar name="Kira Tran" />
 </AvatarGroup>
 ```
 
 ### Topbar
 
-A lone avatar as the account trigger: on iOS the circle is interactive Liquid Glass, so it reads as a control and tapping it opens the account menu, no email or chevron needed.
+A lone avatar as the account trigger: the Dropdown makes the disc its press target, so tapping it opens the account menu, no email or chevron needed.
 
 ```tsx
 <Dropdown items={[{ label: "Your profile" }, { label: "Sign out" }]}>
@@ -156,7 +175,7 @@ The menu hangs from the pill's trailing edge by default, the edge a topbar parks
 
 ### Single
 
-**Do** — One or two initials, sized about 40% of the diameter.
+**Do** — One or two initials, about a third of the disc.
 
 ```tsx
 <Avatar name="AO" />
@@ -176,10 +195,10 @@ The menu hangs from the pill's trailing edge by default, the edge a topbar parks
 
 ```tsx
 <AvatarGroup small max={4} total={16}>
-  <Avatar name="AO" />
-  <Avatar name="RC" />
-  <Avatar name="LB" />
-  <Avatar name="KT" />
+  <Avatar name="Ada Okafor" />
+  <Avatar name="Rachel Chen" />
+  <Avatar name="Liang Bao" />
+  <Avatar name="Kira Tran" />
 </AvatarGroup>
 ```
 

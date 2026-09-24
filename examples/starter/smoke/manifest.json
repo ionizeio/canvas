@@ -1,6 +1,7 @@
 {
   "schema": 1,
   "fixtures": [
+    "avatar",
     "carousel",
     "control-refs",
     "diagnostics",
@@ -13,6 +14,7 @@
   ],
   "routes": [
     "_layout",
+    "avatar",
     "carousel",
     "control-refs",
     "diagnostics",

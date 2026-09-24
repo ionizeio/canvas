@@ -513,14 +513,14 @@ describe("Avatar tiny: the identity pill's disc", () => {
     expect(at(container, "disc").style.width).toBe(`${DISC}px`);
   });
 
-  it("keeps the 12px glyph on every platform instead of scaling proportionally to 10", () => {
+  // Dark Factory sets initials at a third of the disc, 8px on a 24px disc; the kit's 10px
+  // source floor holds the tiny disc's initials there, bold, on every platform (one skin).
+  it("holds the tiny disc's initials at the 10px floor, bold, on every platform", () => {
     for (const skin of [webSkin, iosSkin, androidSkin]) {
-      expect(skin.labelType.tiny).toMatchObject({ fontSize: 12, lineHeight: 16 });
+      expect(skin.labelType.tiny).toMatchObject({ fontSize: 10, lineHeight: 10, fontWeight: "800" });
     }
-    // Only the platform's own weight and tracking differ.
-    expect(webSkin.labelType.tiny.fontWeight).toBe("500");
-    expect(iosSkin.labelType.tiny.fontWeight).toBe("600");
-    expect(androidSkin.labelType.tiny.letterSpacing).toBe(0.1);
+    expect(iosSkin).toBe(webSkin);
+    expect(androidSkin).toBe(webSkin);
   });
 
   it("stacks at its own overlap in an AvatarGroup, so the size axis stays complete", () => {

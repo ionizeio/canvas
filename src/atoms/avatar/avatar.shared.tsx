@@ -1,8 +1,9 @@
-import { Children, cloneElement, isValidElement, useState, type ReactElement, type ReactNode } from "react";
-import { View, Pressable, Text, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type ImageStyle, type LayoutStyle } from "../../style/index.js";
+import { Children, cloneElement, isValidElement, useId, useState, type ReactElement, type ReactNode } from "react";
+import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
+import { View, Pressable, Text, pressDim, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type ImageStyle, type LayoutStyle } from "../../style/index.js";
 import { GlassPane, paneStyle } from "../../style/glass-surface/glass-pane.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { inkOn } from "../../style/color.js";
+import { identityDisc, identityHue, type IdentityDisc } from "../../style/identity-hue.js";
 import { Image } from "../image/image.js";
 
 // Shared Avatar shell. The structure (a photo when the account has one, falling
@@ -15,15 +16,13 @@ import { Image } from "../image/image.js";
 // It is a circle by default (the consistent shape across topbars, identity rows,
 // and menus), optionally a rounded square.
 //
-// Avatar is a "Light" platform treatment: one structure and one shared colour
-// model (a per-name fill from the chart palette, neutral muted for the glass
-// trigger), with per-OS touches limited to the rounded-square corner radius, the
-// initials type, and the press feedback (Android ripple vs. iOS/web opacity dim).
-// iOS and Android have no native avatar control (the iOS 27 kit and Material 3
-// both lack one; iOS composes one from an image view or the person.crop.circle SF
-// Symbol, M3 shows avatars only as content inside lists, chips, and app bars), so
-// the skins apply platform conventions to the shared composition rather than
-// matching a native widget.
+// The initials fallback is Dark Factory's identity disc: the name resolves to one of its
+// stage hues, and the disc is that hue's diagonal blend from a pale tint to a deeper,
+// warmer neighbour (src/style/identity-hue.ts), drawn with react-native-svg so every
+// platform paints the same gradient. The initials sit in bold at a third of the disc.
+// iOS and Android have no native avatar control (the iOS 27 kit and Material 3 both lack
+// one), so every platform takes this look; the press feedback stays each platform's own
+// (the Android ripple, the iOS and web dim).
 
 export type Size = "tiny" | "small" | "default" | "large";
 export type Shape = "circle" | "rounded";
@@ -42,10 +41,10 @@ export interface AvatarSkin {
   roundedRadius: number;
   /** Initials type per size (weight / size / line-height / tracking). */
   labelType: Record<Size, TextStyle>;
-  /** Android ripple config for the pressable trigger, or null on iOS/web. */
+  /** Android ripple config for the pressable trigger (null where there is no ripple). */
   ripple: ((tokens: ColorTokens) => { color: string; borderless: boolean }) | null;
-  /** iOS/web press dim opacity for the pressable trigger, or null on Android. */
-  pressedOpacity: number | null;
+  /** The press dim for the pressable trigger (the shell skips it on Android, where the ripple carries the press; see pressDim). */
+  pressedOpacity: number;
   /**
    * Minimum effective touch target for the pressable trigger (HIG 44pt on iOS,
    * Material 48dp on Android). The shell pads a smaller visual box out to this
@@ -136,22 +135,6 @@ function radiusFor(skin: AvatarSkin, shape: Shape): number {
   return shape === "rounded" ? skin.roundedRadius : CIRCLE_RADIUS;
 }
 
-// The categorical fill palette for the initials fallback: the design system's
-// chart tokens, a curated set built to keep N things distinct in both light and
-// dark. The series is tuned to 3:1 against the surfaces, which leaves white initials
-// short of 4.5:1, so the initials take `inkOn(fill)`, the better of white and
-// near-black, in both surface modes. Photos and the neutral glass trigger never use it.
-const PALETTE_KEYS = ["chart-1", "chart-2", "chart-3", "chart-4", "chart-5", "chart-6", "chart-7", "chart-8"] as const;
-
-// Map an identity string (the name, else the initials) to a palette index. A
-// stable, deterministic hash (no RNG), so one person always resolves to the same
-// colour across sessions, platforms, and re-renders.
-function paletteIndexFor(identity: string): number {
-  let h = 0;
-  for (let i = 0; i < identity.length; i++) h = (h * 31 + identity.charCodeAt(i)) | 0;
-  return Math.abs(h) % PALETTE_KEYS.length;
-}
-
 function containerStyle(tokens: ColorTokens, skin: AvatarSkin, size: Size, shape: Shape, ring: boolean, background: string): ViewStyle {
   return {
     flexShrink: 0,
@@ -178,6 +161,30 @@ function labelStyle(skin: AvatarSkin, size: Size, foreground: string): TextStyle
   return { color: foreground, ...skin.labelType[size] };
 }
 
+// The disc's gradient, filling the container (which clips it to the shape). Decorative:
+// the avatar's name is on its root, and the hiding sits on a View because react-native-web
+// drops the React Native accessibility props there, where an Svg would forward them to the
+// DOM (Icon wraps its glyph the same way). The id is per instance, so two discs on one page
+// never share (or clobber) a gradient definition on the web.
+function DiscGradient({ disc, id }: { disc: IdentityDisc; id: string }) {
+  return (
+    <View style={DISC_FILL} aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      <Svg width="100%" height="100%">
+        <Defs>
+          {/* 135 degrees: from the top-left corner to the bottom-right one. */}
+          <LinearGradient id={id} x1="0" y1="0" x2="1" y2="1">
+            <Stop offset="0" stopColor={disc.from} />
+            <Stop offset="1" stopColor={disc.to} />
+          </LinearGradient>
+        </Defs>
+        <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id})`} />
+      </Svg>
+    </View>
+  );
+}
+
+const DISC_FILL: ViewStyle = { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, pointerEvents: "none" };
+
 /** Build an Avatar component from a platform skin. */
 export function createAvatar(skin: AvatarSkin) {
   return function Avatar(props: AvatarProps) {
@@ -202,15 +209,20 @@ export function createAvatar(skin: AvatarSkin) {
     const glyph = showPhoto ? "" : initials ?? (source ? initialsFrom(source) : "");
     const identity = name ?? initials ?? (typeof children === "string" ? children : "");
 
-    // Identity stays static whether or not it is pressable. Photos keep their
-    // pixels; initials retain a deterministic colour through the frosted material.
+    // Identity stays static whether or not it is pressable. Photos keep their pixels, and
+    // the initials disc keeps its gradient in every mode: like a photo it is identity
+    // content, so it paints over the material rather than taking it. Only the neutral
+    // glyph-less trigger is a plain control puck.
     const colored = glyph !== "";
-    const background = colored ? tokens[PALETTE_KEYS[paletteIndexFor(identity)]] : tokens.muted;
-    const foreground = colored ? inkOn(background) : tokens["muted-foreground"];
+    const disc = colored ? identityDisc(identityHue(identity)) : null;
+    const gradientId = `avatar-disc-${useId().replace(/:/g, "")}`;
+    const background = disc ? disc.mid : tokens.muted;
+    const foreground = disc ? disc.ink : tokens["muted-foreground"];
     const shapeStyle = containerStyle(tokens, skin, size, shape, !!ring, background);
     const separator = ring ? { borderWidth: RING_WIDTH, borderColor: theme.increasedContrast ? tokens.foreground : tokens.background } : null;
-    const container: StyleProp<ViewStyle> = [showPhoto ? shapeStyle : paneStyle(theme, shapeStyle), separator, style];
-    const pane = showPhoto ? null : <GlassPane static layer="control" shape={shapeStyle} brand={colored ? background : undefined} />;
+    const container: StyleProp<ViewStyle> = [showPhoto || disc ? shapeStyle : paneStyle(theme, shapeStyle), separator, style];
+    const pane = showPhoto || disc ? null : <GlassPane static layer="control" shape={shapeStyle} />;
+    const fill = !showPhoto && disc ? <DiscGradient disc={disc} id={gradientId} /> : null;
 
     // Pad the visual box out to the skin's minimum touch target (44pt HIG / 48dp
     // M3) when the avatar is pressable: e.g. the 28px `small` topbar trigger gets
@@ -239,7 +251,7 @@ export function createAvatar(skin: AvatarSkin) {
       return (
         <Pressable
           android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
-          style={({ pressed }) => [container, pressed && skin.pressedOpacity != null ? { opacity: skin.pressedOpacity } : null]}
+          style={({ pressed }) => [container, pressDim(pressed, skin.pressedOpacity)]}
           onPress={onPress}
           hitSlop={hitSlop}
           testID={testID}
@@ -248,11 +260,12 @@ export function createAvatar(skin: AvatarSkin) {
           aria-label={label}
         >
           {pane}
+          {fill}
           {inner}
         </Pressable>
       );
     }
-    return <View style={container} testID={testID}>{pane}{inner}</View>;
+    return <View style={container} testID={testID}>{pane}{fill}{inner}</View>;
   };
 }
 

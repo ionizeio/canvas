@@ -62,10 +62,15 @@ describe("Feed", () => {
     const conn = ui(<Feed items={anon} />);
     expect(conn.container.querySelectorAll('[aria-hidden="true"]').length).toBe(1);
     cleanup();
-    // The avatar lead leads with the person, so an item icon changes nothing there.
-    const av = ui(<Feed avatar items={[{ actor: "Rachel Chen", action: "x", time: "y", icon: "check" as const }]} />);
+    // The avatar lead leads with the person, so an item icon changes nothing there: the
+    // row hides exactly the nodes it hides without one (the avatar's own gradient layer).
+    const person = { actor: "Rachel Chen", action: "x", time: "y" };
+    const plain = ui(<Feed avatar items={[person]} />);
+    const hiddenWithout = plain.container.querySelectorAll('[aria-hidden="true"]').length;
+    cleanup();
+    const av = ui(<Feed avatar items={[{ ...person, icon: "check" as const }]} />);
     expect(within(av.container).getByText("RC")).toBeTruthy();
-    expect(av.container.querySelectorAll('[aria-hidden="true"]').length).toBe(0);
+    expect(av.container.querySelectorAll('[aria-hidden="true"]').length).toBe(hiddenWithout);
   });
 });
 

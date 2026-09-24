@@ -1,86 +1,38 @@
 import { type TextStyle, type ViewStyle } from "react-native";
-import { alpha, controlRipple, mixOklab, shape, type ColorTokens } from "../../style/index.js";
+import { alpha, controlRipple, mixOklab, platformMinTarget, shape, type ColorTokens } from "../../style/index.js";
 import { type AvatarSkin, type Size } from "./avatar.shared.js";
 import { type AvatarMenuSkin } from "./avatar-menu.shared.js";
 
-// Per-OS Avatar skins. Avatar is a "Light" treatment: identical structure, box
-// sizes, per-name fallback colour, circle radius, and ring outline (those live in
-// avatar.shared.tsx); only the rounded-square corner radius, the initials type,
-// and the press feedback shift per OS.
-//
-// Web is the Riskora identity tile: a 12px rounded square (the control corner) and a
-// medium-weight (500) initials. iOS uses SF conventions: semibold (600) initials,
-// SF Pro Text tracking per point size, and a softer 10px continuous-feel corner;
-// press dims opacity to 0.8 (HIG). Android follows Material 3: a 12px rounded
-// square (M3 medium shape token), a medium (500) label with M3's slight positive
-// tracking, and a native ripple on press (no opacity dim). Each skin also carries
-// its platform minimum touch target (HIG 44pt / M3 48dp) so the shell can pad a
-// pressable trigger's hit area with hitSlop.
+// The Avatar skin. No platform ships an avatar control, so every platform takes Dark
+// Factory's identity disc (the gradient and the initials' ink live in avatar.shared.tsx and
+// src/style/identity-hue.ts) and the native skins are the web skin: bold (800) initials at
+// a third of the disc (about 0.4 on the two small discs), one line tall, and the 8px
+// control corner for the `rounded` square. The press feedback stays each
+// platform's own: the ripple is Android's (a no-op elsewhere), the dim the rest's (the
+// shell skips it on Android), and the touch target each platform's minimum (44pt HIG, 48dp
+// Material, a 44px floor for touch on the web).
 
-// Web initials type, ~40% of the diameter (the current Canvas look), weight 500.
-// `tiny` keeps `small`'s 12px glyph rather than scaling on to 10: that is the type
-// the hand-off sets on its own 24px avatar, and a proportional 10px pair of
-// initials stops reading at that diameter.
-const WEB_LABEL: Record<Size, TextStyle> = {
-  tiny: { fontWeight: "500", fontSize: 12, lineHeight: 16 },
-  small: { fontWeight: "500", fontSize: 12, lineHeight: 16 },
-  default: { fontWeight: "500", fontSize: 16, lineHeight: 24 },
-  large: { fontWeight: "500", fontSize: 18, lineHeight: 28 },
+// Initials per size, one line tall. Dark Factory sets them at a third of the disc and at
+// about 0.4 of its small discs (12 on its 30px avatars), so the two small sizes take that
+// ratio: 10 on the 24px disc (the kit's floor) and 11 on the 28px one.
+const LABEL: Record<Size, TextStyle> = {
+  tiny: { fontWeight: "800", fontSize: 10, lineHeight: 10 },
+  small: { fontWeight: "800", fontSize: 11, lineHeight: 11 },
+  default: { fontWeight: "800", fontSize: 13, lineHeight: 13 },
+  large: { fontWeight: "800", fontSize: 16, lineHeight: 16 },
 };
 
-// iOS SF conventions: semibold initials, tracked per the SF Pro Text table for
-// each point size (12pt = 0, 16pt = -0.31, 18pt = -0.43), so dense initials read
-// crisply without over-tightening the small size.
-const IOS_LABEL: Record<Size, TextStyle> = {
-  tiny: { fontWeight: "600", fontSize: 12, lineHeight: 16 },
-  small: { fontWeight: "600", fontSize: 12, lineHeight: 16 },
-  default: { fontWeight: "600", fontSize: 16, lineHeight: 24, letterSpacing: -0.31 },
-  large: { fontWeight: "600", fontSize: 18, lineHeight: 28, letterSpacing: -0.43 },
-};
-
-// Material 3: a medium (500) label with M3's slight positive tracking
-// (label/title styles carry +0.1 tracking), the same proportional sizes.
-const ANDROID_LABEL: Record<Size, TextStyle> = {
-  tiny: { fontWeight: "500", fontSize: 12, lineHeight: 16, letterSpacing: 0.1 },
-  small: { fontWeight: "500", fontSize: 12, lineHeight: 16, letterSpacing: 0.1 },
-  default: { fontWeight: "500", fontSize: 16, lineHeight: 24, letterSpacing: 0.1 },
-  large: { fontWeight: "500", fontSize: 18, lineHeight: 28, letterSpacing: 0.1 },
-};
-
-// Web: the Riskora look. Rounded square at the control corner; the
-// pressable trigger dims opacity on press, no ripple.
 export const webSkin: AvatarSkin = {
   roundedRadius: shape.web.control,
-  labelType: WEB_LABEL,
-  ripple: null,
-  pressedOpacity: 0.9,
-  // Inert for pointer input; keeps a touch-driven web tap area at the 44px floor.
-  minTarget: 44,
-};
-
-// iOS (HIG): composed from an image view / person.crop.circle SF Symbol. A softer
-// 10px continuous-feel rounded square, SF semibold initials, and a 0.8 opacity dim
-// on press (the iOS pressed-state convention), no ripple.
-export const iosSkin: AvatarSkin = {
-  roundedRadius: 10,
-  labelType: IOS_LABEL,
-  ripple: null,
-  pressedOpacity: 0.8,
-  // HIG minimum tappable area: 44x44pt.
-  minTarget: 44,
-};
-
-// Material 3: avatars live inside lists, chips, and app bars. A 12px rounded
-// square (M3 medium shape token), an M3 label with positive tracking, and a native
-// ripple on press (the M3 state layer carries the feedback, so no opacity dim).
-export const androidSkin: AvatarSkin = {
-  roundedRadius: 12,
-  labelType: ANDROID_LABEL,
+  labelType: LABEL,
   ripple: (tokens: ColorTokens) => controlRipple(tokens),
-  pressedOpacity: null,
-  // Material 3 accessibility minimum touch target: 48x48dp.
-  minTarget: 48,
+  pressedOpacity: 0.9,
+  minTarget: platformMinTarget() ?? 44,
 };
+
+// No platform avatar control: the native skins are the web skin.
+export const iosSkin: AvatarSkin = webSkin;
+export const androidSkin: AvatarSkin = webSkin;
 
 // ---------------------------------------------------------------------------
 // AvatarMenu: the identity-pill entries added to each Avatar skin.

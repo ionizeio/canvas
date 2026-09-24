@@ -20,6 +20,8 @@ import * as IOSIdentity from "../src/atoms/avatar/avatar.ios.tsx";
 import * as AndroidIdentity from "../src/atoms/avatar/avatar.android.tsx";
 import { Emblem } from "../src/atoms/emblem/emblem.tsx";
 import * as materialRuntime from "../src/style/glass-surface/material-runtime.ts";
+import { identityDisc, identityHue } from "../src/style/identity-hue.ts";
+import { channelsOf } from "../src/style/color.ts";
 import { WEB_FROST } from "../src/style/glass-surface/web-frost.ts";
 
 const restores: Array<() => void> = [];
@@ -167,7 +169,9 @@ describe("identity material ownership", () => {
       expect(screen.getByTestId("identity").getAttribute("role")).toBe("button");
     });
 
-    it(`${platform} paints static identity frost and leaves photo pixels untouched`, () => {
+    // The overflow counter and the Emblem are static identity frost; an initials disc paints
+    // its identity gradient over the material, like a photo keeps its pixels.
+    it(`${platform} paints static identity frost, keeps the initials disc's gradient and leaves photo pixels untouched`, () => {
       browser({ frost: true });
       render(mode(<>
         <Avatar name="Rachel Chen" testID="identity" />
@@ -175,12 +179,16 @@ describe("identity material ownership", () => {
         <Emblem primary label="RC" testID="emblem" />
         <Avatar name="Photo" src="https://example.test/avatar.png" testID="photo" />
       </>, true));
-      for (const id of ["identity", "group", "emblem"]) {
+      for (const id of ["group", "emblem"]) {
         const painted = materials(screen.getByTestId(id));
         expect(painted).toHaveLength(1);
         expect(frostOf(painted[0])?.style.backdropFilter).toBe(`blur(${WEB_FROST.blur}px)`);
       }
-      expect(materials(screen.getByTestId("photo"))).toHaveLength(0);
+      for (const id of ["identity", "photo"]) expect(materials(screen.getByTestId(id))).toHaveLength(0);
+      // The disc's solid stand-in is its gradient's midpoint (the SVG itself renders to
+      // fragments in this harness).
+      const disc = identityDisc(identityHue("Rachel Chen"));
+      expect(channelsOf(screen.getByTestId("identity").style.backgroundColor)?.slice(0, 3)).toEqual(channelsOf(disc.mid)?.slice(0, 3));
       expect(screen.getByLabelText("Photo")).toBeDefined();
     });
   }

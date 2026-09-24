@@ -10,6 +10,7 @@ import * as alertSkins from "../src/molecules/alert/alert.styles.ts";
 import { darkColors, lightColors, palette, type ColorTokens } from "../src/style/tokens.ts";
 import { inverseDenseTint } from "../src/style/glass-fill.ts";
 import { composite as compositeOver, contrastRatio } from "../src/style/color.ts";
+import { IDENTITY_HUES, identityDisc, identityHue } from "../src/style/identity-hue.ts";
 import { LOOKS, lookProps, type Look } from "./fixtures/looks.ts";
 import { oklchOf } from "../tools/darkfactory/derive-tokens.ts";
 import { androidSkin, iosSkin, webSkin } from "../src/atoms/button/button.styles.ts";
@@ -505,24 +506,35 @@ const avatarPlatforms = [
 ];
 
 describe("Avatar initials contrast", () => {
-  // Enough names to land on every one of the eight identity fills (the hash is the
-  // component's own, so the test asserts the coverage rather than assuming it).
+  // The disc is Dark Factory's gradient (src/style/identity-hue.ts), so the initials are
+  // held to 4.5:1 against BOTH of its stops, for every identity hue; the rendered initials
+  // are that disc's ink, in every look and on every platform.
+  it("holds the initials' ink at 4.5:1 against both stops of every identity disc", () => {
+    for (const hue of IDENTITY_HUES) {
+      const disc = identityDisc(hue);
+      expect(textContrast(disc.ink, rgba(disc.from)), `hue ${hue} pale stop`).toBeGreaterThanOrEqual(4.5);
+      expect(textContrast(disc.ink, rgba(disc.to)), `hue ${hue} deep stop`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+  // Enough names to land on most of the ten identity hues (the hash is the component's
+  // own, so the test asserts the coverage rather than assuming it).
   const first = ["Ada", "Grace", "Alan", "Edsger", "Barbara", "Donald", "Frances", "Ken"];
   const last = ["Byron", "Hopper", "Turing", "Dijkstra", "Liskov"];
   const names = first.flatMap((f) => last.map((l) => `${f} ${l}`));
   for (const look of LOOKS) for (const { name, Component } of avatarPlatforms) {
-    it(`keeps ${look.name} solid ${name} initials at 4.5:1 on every identity fill`, () => {
-      const fills = new Set<string>();
+    it(`paints ${look.name} ${name} initials in their disc's ink`, () => {
+      const hues = new Set<number>();
       for (const person of names) {
         render(<ThemeProvider {...lookProps(look)} solid><Component name={person} testID="identity" /></ThemeProvider>);
         const container = screen.getByTestId("identity");
-        const fill = container.style.backgroundColor;
         const initials = within(container).getByText(person.split(" ").map((part) => part[0]).join(""));
-        fills.add(fill);
-        expect(textContrast(initials.style.color, rgba(fill))).toBeGreaterThanOrEqual(4.5);
+        const hue = identityHue(person);
+        hues.add(hue);
+        expect(rgba(initials.style.color)).toEqual(rgba(identityDisc(hue).ink));
         cleanup();
       }
-      expect(fills.size).toBe(8);
+      expect(hues.size).toBeGreaterThanOrEqual(8);
     });
   }
 });
+

@@ -5,11 +5,17 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Avatar, Row } = scope;
   return (
-<Row relaxed alignCenter>
-  <Avatar tiny name="NP" />
-  <Avatar small name="AL" />
-  <Avatar name="MA" />
-  <Avatar large name="RC" />
+<Row snug wrap>
+  <Avatar name="Ada Ito" />
+  <Avatar name="Rachel Tanaka" />
+  <Avatar name="Liang Kim" />
+  <Avatar name="Kira Okafor" />
+  <Avatar name="Marcus Singh" />
+  <Avatar name="Noor Novak" />
+  <Avatar name="Sofia Bao" />
+  <Avatar name="Theo Lovelace" />
+  <Avatar name="Omar Moreau" />
+  <Avatar name="Priya Haddad" />
 </Row>
   );
 }

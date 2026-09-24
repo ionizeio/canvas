@@ -6,10 +6,10 @@ export default function Example(scope: ExampleScope) {
   const { Avatar, AvatarGroup } = scope;
   return (
 <AvatarGroup small max={4} total={16}>
-  <Avatar name="AO" />
-  <Avatar name="RC" />
-  <Avatar name="LB" />
-  <Avatar name="KT" />
+  <Avatar name="Ada Okafor" />
+  <Avatar name="Rachel Chen" />
+  <Avatar name="Liang Bao" />
+  <Avatar name="Kira Tran" />
 </AvatarGroup>
   );
 }

@@ -111,7 +111,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "avatar",
     name: "Avatar",
-    description: "A photo when the account has one, falling back to one or two initials on a colour picked deterministically from the name, so each person stays visually distinct in a stack or list. The initials take whichever of white or near-black reads better on that colour, so they hold 4.5:1 on every fill. A pressable avatar (onPress) keeps interactive Liquid Glass on iOS 26+ under glass surface mode. Sizes scale font proportionally (40% of diameter).",
+    description: "A photo when the account has one, falling back to one or two initials on an identity disc: the name resolves to one of ten hues, and the disc is that hue's diagonal blend from a pale tint to a deeper, warmer neighbour, so one person keeps one colour on every platform and stays distinct in a stack or list. The initials are bold, about a third of the disc, in near-black, which holds 4.5:1 on both ends of every blend.",
     category: "Atoms",
   },
 

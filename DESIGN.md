@@ -435,8 +435,6 @@ platformSkins:
       ac-radius-bottom: "8px"
       ac-menu-radius: "26px"
       ac-row-radius: "0px"
-    avatar:
-      avatar-square-radius: "10px"
     buttongroup:
       seg-radius: "9999px"
       seg-track-radius: "9999px"
@@ -550,8 +548,6 @@ platformSkins:
       ac-radius-bottom: "0px"
       ac-menu-radius: "4px"
       ac-row-radius: "0px"
-    avatar:
-      avatar-square-radius: "12px"
     buttongroup:
       seg-radius: "0px"
       seg-track-radius: "9999px"

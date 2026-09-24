@@ -154,9 +154,15 @@ describe("a declared target is the platform's own number", () => {
       const shared = mod.iosSkin === mod.webSkin && mod.androidSkin === mod.webSkin;
       if (shared) {
         // One skin for all three platforms, so the number comes from the platform at
-        // runtime. The harness runs as web, where a pointer target is visual-sized.
-        expect(mod.webSkin.minTarget, `${component} shared skin`).toBeNull();
+        // runtime (platformMinTarget). The harness runs as web, where the skin gives the
+        // same answers a separate web skin may (see below): no minimum, or the touch floor
+        // (Avatar keeps it, `platformMinTarget() ?? 44`).
         expect(skin).toContain("platformMinTarget");
+        const web = mod.webSkin.minTarget ?? null;
+        expect(
+          web === null || web === 0 || web >= TOUCH_TARGET.ios,
+          `${component} shared skin declares ${web} on the web, which is neither "no minimum" nor a real one`,
+        ).toBe(true);
         return;
       }
       expect(mod.iosSkin?.minTarget, `${component} iOS`).toBe(TOUCH_TARGET.ios);

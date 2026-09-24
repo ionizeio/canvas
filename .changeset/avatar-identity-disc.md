@@ -1,0 +1,5 @@
+---
+"@ionizeio/canvas": patch
+---
+
+Avatar's initials fallback is Dark Factory's identity disc on every platform: the name resolves to one of Dark Factory's ten stage hues through a stable hash, and the disc is that hue's 135 degree blend from a pale tint to a deeper, warmer neighbour (the same colours Dark Factory computes, bit for bit), drawn with react-native-svg so iOS, Android and the web paint one gradient. The initials are bold (800) at about a third of the disc (10px on `tiny`, 11px on `small`) in near-black, which holds 4.5:1 on both ends of every blend where Dark Factory's white initials measure about 1.8 to 2:1. Like a photo, the disc is identity content: it keeps its colours under glass, and only the neutral tile of an avatar with no name or initials takes the control material. The iOS and Android skins now alias the web one (no platform ships an avatar control), so the rounded square takes the 8px control corner everywhere, while the press feedback stays each platform's own (the Android ripple, the iOS and web dim). The docs gain an Identity colours example, and the stack examples pass full names so their discs differ.

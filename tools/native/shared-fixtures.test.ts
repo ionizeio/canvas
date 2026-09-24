@@ -27,7 +27,7 @@ test("docs and native routes consume one maintained public-API fixture body", ()
     const native = readFileSync(resolve(root, `examples/starter/smoke/routes/${fixture}.tsx`), "utf8");
     expect(native).toContain(`../../testing/${fixture}`);
   }
-  for (const fixture of ["form-autocomplete", "listbox", "escape-layers", "control-refs", "tabs", "materials", "hover"]) {
+  for (const fixture of ["form-autocomplete", "listbox", "escape-layers", "control-refs", "tabs", "materials", "hover", "avatar"]) {
     const docs = readFileSync(resolve(root, `docs/src/app/(home)/testing/${fixture}.tsx`), "utf8");
     expect(docs).toContain(`examples/starter/smoke/fixtures/${fixture}`);
   }

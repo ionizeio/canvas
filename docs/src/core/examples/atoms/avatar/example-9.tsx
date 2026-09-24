@@ -3,33 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Row, AvatarMenu } = scope;
+  const { AvatarMenu } = scope;
   return (
-<Row between>
-  <AvatarMenu
-    compact
-    alignStart
-    name="Liang Bao"
-    email="liang.bao@example.com"
-    src="/liang-bao.jpg"
-    items={[
-      { label: "Profile", icon: "user" },
-      { label: "Settings", icon: "settings" },
-      { label: "Sign out", icon: "logOut", destructive: true, separatorBefore: true }
-    ]}
-  />
-  <AvatarMenu
-    compact
-    alignEnd
-    name="Kira Tanaka"
-    email="kira.tanaka@example.com"
-    src="/kira-tanaka.jpg"
-    items={[
-      { label: "Profile", icon: "user" },
-      { label: "Settings", icon: "settings" },
-      { label: "Sign out", icon: "logOut", destructive: true, separatorBefore: true }
-    ]}
-  />
-</Row>
+<AvatarMenu
+  compact
+  name="Marcus Allen"
+  email="admin@example.com"
+  src="/marcus-allen.jpg"
+  items={[
+    { label: "Profile", icon: "user" },
+    { label: "Settings", icon: "settings" },
+    { label: "Sign out", icon: "logOut", destructive: true, separatorBefore: true }
+  ]}
+/>
   );
 }

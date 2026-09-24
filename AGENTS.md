@@ -315,7 +315,8 @@ layers, each with its own under-fill token (`glass-tint*` in `src/style/tokens.t
   surface of its own, the field boxes (Input, Textarea, Select, Autocomplete,
   PhoneInput, Stepper, InputOTP), Button, ButtonGroup, Tabs pills, Pagination cells,
   Chip, Badge, Kbd, Switch tracks, Checkbox boxes, Radio rings, Progress rails, Steps
-  circles, the Slider knob, the Avatar. A BRAND fill (a primary or destructive Button,
+  circles, the Slider knob, the neutral Avatar tile (an initials disc paints its identity
+  gradient, like a photo). A BRAND fill (a primary or destructive Button,
   a checked Switch or Checkbox, a selected tab, page, day or step) is brand-tinted
   glass: `brand={tokens.primary}`, whose under-fill `brandTint` keeps as sheer as its
   ink's WCAG 4.5:1 allows (on iOS 26 it is the GlassView's own `tintColor`). A toned
@@ -548,21 +549,22 @@ mode they will see) and compare against the card, blind, until nothing differs; 
 every run, docs screenshot last. In this repo the harness is the hidden `/testing/*`
 routes under `docs/src/app/(home)/testing/`, rendering the fixture bodies in
 `examples/starter/smoke/fixtures/` (shared with the sealed smoke app); the material
-one is `/testing/materials`. The tunables live in one table per effect, never in a
-public value prop. The evidence log is `tools/native/liquid-motion.md`: its sections
+one is `/testing/materials`, the hover one `/testing/hover`, the identity disc one
+`/testing/avatar`. The tunables live in one table per effect, never in a public
+value prop. The evidence log is `tools/native/liquid-motion.md`: its sections
 up to the removal are HISTORY of deleted code, its `## References` section keeps the
 `ios-native-menu` card (strips under `tools/native/reference/`) as the record of what
 that work was judged against, and every row under a version 2 table names its
 `Surface` and its `Versus reference` verdict. `.tuning-harness.json` at the repo root
-(version 2) tells the global push gate which files are tunables (`src/style/motion.ts`
-and `src/style/glass-surface/web-frost.ts`): a push whose newest tunable change has
-no evidence row in or after it is refused, and so is a row with an empty `Surface` or
-`Versus reference` cell or a `matches` written on a harness route. A pure refactor of
-those files with no visual change carries the commit trailer `Tuning-evidence:
-unchanged`. A report may claim an effect is done or matches only from a
-shipped-surface row with no open difference; open differences lead the report, and a
-card item that cannot be matched goes to the user as a decision, never into the log
-as "by design".
+(version 2) tells the global push gate which files are tunables (`src/style/motion.ts`,
+`src/style/glass-surface/web-frost.ts` and `src/style/identity-hue.ts`): a push whose
+newest tunable change has no evidence row in or after it is refused, and so is a row
+with an empty `Surface` or `Versus reference` cell or a `matches` written on a harness
+route. A pure refactor of those files with no visual change carries the commit
+trailer `Tuning-evidence: unchanged`. A report may claim an effect is done or
+matches only from a shipped-surface row with no open difference; open differences
+lead the report, and a card item that cannot be matched goes to the user as a
+decision, never into the log as "by design".
 
 ## Preview links on every completed piece of work
 

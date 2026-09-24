@@ -366,7 +366,6 @@
   /* Switch (switch.styles.ts IOS_OFF_TRACK): systemGray3 off track, never the washed-out input token; the white capsule knob keeps its soft shadow in both states */
   --p-switch-off-track:#c7c7cc;--p-switch-thumb-off-w:28px;--p-switch-thumb-off-h:24px;--p-switch-thumb-off-fill:#ffffff;
   --p-switch-thumb-shadow:0px 1px 2px rgba(0,0,0,0.2);
-  --p-avatar-square-radius:10px;
   /* Stats (stats.styles.ts iosSkin: flat 12pt inset surface, 18pt inset, SF tracking) */
   --p-stat-radius:12px;--p-stat-pad:18px;--p-stat-shadow:none;--p-stat-gap:12px;
   --p-stat-label:14px;--p-stat-label-lh:20px;--p-stat-label-tracking:-0.15px;--p-stat-value:24px;--p-stat-value-lh:30px;--p-stat-value-weight:600;--p-stat-value-tracking:-0.5px;
@@ -614,7 +613,6 @@
   /* Chip (M3): 18dp remove glyph; the selected filter chip leads with an 18dp check and drops its
      outline (the border-color token resolves only here; web/iOS fall back to the tone border). */
   --p-chip-remove:18px;--p-chip-check-display:inline-flex /* @kind other */;--p-chip-selected-border-color:transparent;
-  --p-avatar-square-radius:12px;
   --p-overlay-radius:12px;--p-sheet-radius:12px;
   /* Popover (M3, no native popover): a 12dp borderless card on md elevation, no beak */
   --p-popover-radius:12px;--p-popover-border:0px;--p-popover-shadow:var(--shadow-md);
