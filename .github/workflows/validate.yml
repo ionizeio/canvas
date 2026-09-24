@@ -148,10 +148,10 @@ jobs:
       # so the notices cannot fall silently out of step with what the app ships. It reads
       # tools/noticegen/shipped.json and never runs an export, so it stays CI-fast.
       #
-      # MUST run after the docs install: the generator reads each package's LICENSE from
-      # docs/node_modules first and the workspace root second. With docs deps absent it
-      # resolves a different set and reports a false "stale", which is exactly how it
-      # failed the first time it ran here.
+      # MUST run after the docs install: the generator reads each package's version and
+      # LICENSE from the exact directory shipped.json records for it, nearly all under
+      # docs/node_modules. With docs deps absent (or laid out differently since the scan)
+      # it fails and names the missing directories rather than reading another copy.
       - name: Check third-party licence notices are up to date
         run: bun run notices:gen:check
 

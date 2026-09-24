@@ -22,6 +22,16 @@
  * wrong answer (it reports 531 packages and attributes copyleft code the app never
  * contains).
  *
+ * WHERE EACH PACKAGE IS READ FROM. shipped.json maps every package to the directories it
+ * shipped from, and version, licence and notice text are read from exactly those
+ * directories. Resolving a bare name instead (docs/node_modules first, then the root) is
+ * a guess whenever an install holds more than one copy: a docs devDependency once hoisted
+ * entities@7 over dom-serializer's entities@4, and a by-name lookup reports whichever copy
+ * sits at the top, whether or not it is the one the bundle took. A package that ships two
+ * versions lists each; a recorded directory missing from disk (or holding another
+ * package) is a stale install or a stale scan, and fails the run rather than falling back
+ * to another copy.
+ *
  * HOW TEXTS ARE DEDUPED. Sixty-odd MIT licences are byte-identical apart from their
  * copyright line, so storing each in full would bloat the bundle for no legal benefit.
  * Each licence file is split into the copyright lines (kept PER PACKAGE, because that is
@@ -41,6 +51,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const repo = resolve(here, "../..");
 const docs = join(repo, "docs");
 const OUT = join(docs, "src/data/third-party-notices.ts");
+const SHIPPED = join(here, "shipped.json");
 
 // Canvas itself is first-party, and so is its optional Android blur integration, published
 // from this repository's packages/canvas-blur. Both are described in their own paragraph on
@@ -58,7 +69,8 @@ const LICENSE_FILES = [
 // The second file is the one carrying the obligation, so it is collected separately.
 const FONT_LICENSE_FILES = ["LICENSE_FONT", "OFL.txt", "OFL"];
 
-interface Pkg {
+/** One licence file of one shipped package version (a dual-licensed package has two). */
+export interface Pkg {
   name: string;
   version: string;
   license: string;
@@ -68,13 +80,10 @@ interface Pkg {
   bodyTitle: string;
 }
 
-/** Resolve a package directory the way Node would from the docs app. */
-function resolvePkgDir(name: string): string | null {
-  for (const base of [join(docs, "node_modules"), join(repo, "node_modules")]) {
-    const dir = join(base, name);
-    if (existsSync(join(dir, "package.json"))) return dir;
-  }
-  return null;
+/** shipped.json as tools/noticegen/scan.ts writes it (only the part read here). */
+export interface Shipped {
+  /** Package name to the repo-relative directories it ships from. */
+  packages: Record<string, string[]>;
 }
 
 function readJson(p: string): Record<string, unknown> | null {
@@ -155,6 +164,9 @@ function titleFor(body: string, declared: string): string {
   if (/Redistribution and use in source and binary forms/i.test(body)) {
     return /neither the name/i.test(body) ? "BSD 3-Clause License" : "BSD 2-Clause License";
   }
+  // mdn-data's CSS data (compiled into the native bundles by css-tree) is dedicated to
+  // the public domain; the dedication's own heading names it.
+  if (/^\s*CC0 1\.0 Universal/i.test(body)) return "CC0 1.0 Universal";
   return declared;
 }
 
@@ -215,94 +227,181 @@ function collect(dir: string, name: string, version: string, declared: string): 
 
 // ---- read the shipped set and collect each package's licence -------------------------
 
-const SHIPPED = join(here, "shipped.json");
-if (!existsSync(SHIPPED)) {
-  console.error(`notices:gen: ${SHIPPED} is missing. Run \`bun run notices:scan\` first.`);
-  process.exit(1);
-}
-const shipped = JSON.parse(readFileSync(SHIPPED, "utf8")) as { packages: string[] };
-
-const found: Pkg[] = [];
-const missing: string[] = [];
-
-for (const name of shipped.packages) {
-  if (FIRST_PARTY.has(name)) continue;
-
-  const dir = resolvePkgDir(name);
-  const pj = dir ? readJson(join(dir, "package.json")) : null;
-  if (!dir || !pj) {
-    missing.push(name);
-    continue;
+/** Read shipped.json, refusing a missing file or the older names-only format. */
+export function readShipped(file: string): Shipped {
+  if (!existsSync(file)) {
+    throw new Error(`${file} is missing. Run \`bun run notices:scan\` first.`);
   }
-  found.push(...collect(dir, name, String(pj.version ?? "0.0.0"), licenseOf(pj)));
-}
-
-// ---- dedupe bodies ------------------------------------------------------------------
-
-const bodies = new Map<string, { id: number; title: string; body: string }>();
-for (const p of found) {
-  if (!p.bodyHash || !p.body) continue;
-  if (!bodies.has(p.bodyHash)) {
-    bodies.set(p.bodyHash, { id: bodies.size, title: p.bodyTitle, body: p.body });
+  const raw = JSON.parse(readFileSync(file, "utf8")) as { packages?: unknown };
+  const packages = raw.packages;
+  const valid =
+    packages !== null &&
+    typeof packages === "object" &&
+    !Array.isArray(packages) &&
+    Object.values(packages).every((dirs) => Array.isArray(dirs) && dirs.length > 0 && dirs.every((d) => typeof d === "string"));
+  if (!valid) {
+    throw new Error(
+      `${file} does not map each package to the directories it ships from (it predates that format, or was edited by hand). ` +
+        "Run `bun run notices:scan` to record them.",
+    );
   }
+  return { packages: packages as Record<string, string[]> };
 }
 
-// Stable ordering: OFL first (it is the one with the bundling obligation), then by how
-// many packages share the text, so the big shared licences come before the one-offs.
-const usage = new Map<string, number>();
-for (const p of found) if (p.bodyHash) usage.set(p.bodyHash, (usage.get(p.bodyHash) ?? 0) + 1);
-const ordered = [...bodies.entries()].sort((a, b) => {
-  const ofl = (x: string) => (x.includes("Open Font") ? 0 : 1);
-  return ofl(a[1].title) - ofl(b[1].title) || (usage.get(b[0])! - usage.get(a[0])!) || a[1].title.localeCompare(b[1].title);
-});
-const idOf = new Map<string, number>();
-ordered.forEach(([hash], i) => idOf.set(hash, i));
+/**
+ * Collect the licence files of every shipped package from the directories shipped.json
+ * records, relative to `root` (the repository).
+ *
+ * Each distinct version gets its own rows; two copies of one version are one package, so
+ * the second is only checked, not collected again. Every recorded directory must exist and
+ * hold the package it is recorded for. There is deliberately no fallback to another copy
+ * of the same name: that fallback is the by-name lookup this format replaced, and it
+ * silently reports a version the app does not ship.
+ */
+export function collectShipped(root: string, shipped: Shipped): Pkg[] {
+  const found: Pkg[] = [];
+  const missing: string[] = [];
+  const mismatched: string[] = [];
 
-// One entry PER PACKAGE, not per licence file. A dual-licensed package contributes two
-// files and therefore two `found` rows, but it is still one package and must appear once
-// in the table, carrying both licences.
-const merged = new Map<
-  string,
-  { name: string; version: string; licenses: string[]; textIds: number[] }
->();
-for (const p of found) {
-  const e = merged.get(p.name) ?? {
-    name: p.name,
-    version: p.version,
-    licenses: [],
-    textIds: [],
-  };
-  if (!e.licenses.includes(p.license)) e.licenses.push(p.license);
-  const id = p.bodyHash != null ? idOf.get(p.bodyHash) : undefined;
-  if (id !== undefined && !e.textIds.includes(id)) e.textIds.push(id);
-  merged.set(p.name, e);
+  for (const [name, dirs] of Object.entries(shipped.packages)) {
+    if (FIRST_PARTY.has(name)) continue;
+
+    const versions = new Set<string>();
+    for (const at of dirs) {
+      const dir = join(root, at);
+      const pj = readJson(join(dir, "package.json"));
+      if (!pj) {
+        missing.push(`${name} (${at})`);
+        continue;
+      }
+      if (pj.name !== name) {
+        mismatched.push(`${at} holds ${typeof pj.name === "string" ? pj.name : "an unnamed package"}, not ${name}`);
+        continue;
+      }
+      const version = String(pj.version ?? "0.0.0");
+      if (versions.has(version)) continue;
+      versions.add(version);
+      found.push(...collect(dir, name, version, licenseOf(pj)));
+    }
+  }
+
+  // Fail loudly rather than quietly emitting a smaller or different file. Most of the set
+  // lives ONLY in docs/node_modules, so running before `bun install` in docs/ misses half
+  // of it and the output differs wildly; without this the symptom is a baffling "stale"
+  // from --check, which is exactly how this first failed in CI. A directory that holds a
+  // different package, or is gone although both installs are current, means the install
+  // layout changed since the scan (a new dependency re-hoisted a shared one).
+  if (missing.length || mismatched.length) {
+    const total = Object.keys(shipped.packages).length;
+    const bad = missing.length + mismatched.length;
+    const lines = [
+      `${bad} recorded package ${bad === 1 ? "directory" : "directories"} (of ${total} shipped packages) not installed as recorded.`,
+      "Run `bun install --frozen-lockfile` in BOTH the workspace root and docs/ first (most of the set is only in docs/node_modules).",
+      "If both installs are current, the layout changed since the last scan: run `bun run notices:scan`, then `bun run notices:gen`.",
+    ];
+    if (missing.length) {
+      lines.push(`Missing: ${missing.slice(0, 12).join(", ")}${missing.length > 12 ? `, +${missing.length - 12} more` : ""}`);
+    }
+    if (mismatched.length) lines.push(`Holding another package: ${mismatched.join("; ")}`);
+    throw new Error(lines.join("\n"));
+  }
+  return found;
 }
-const packages = [...merged.values()].sort((a, b) => a.name.localeCompare(b.name));
 
-const texts = ordered.map(([hash, v], i) => ({
-  id: i,
-  title: v.title,
-  body: v.body,
-  // Notices belong to the LICENCE FILE they were read from, not to the package as a
-  // whole. A dual-licensed font package holds two unrelated copyrights (Expo's, over the
-  // wrapper code, and the Geist authors', over the typeface); attaching both to both
-  // texts would put Expo's name on the OFL and imply it holds rights in the font.
-  notices: [
-    ...new Set(found.filter((p) => p.bodyHash === hash).flatMap((p) => p.copyright)),
-  ].sort(),
-  packages: packages.filter((p) => p.textIds.includes(i)).map((p) => p.name),
-  count: usage.get(hash) ?? 0,
-}));
+/** One row of the notices table: a package at one shipped version. */
+export interface NoticeEntry {
+  name: string;
+  version: string;
+  licenses: string[];
+  textIds: number[];
+}
 
-// Count DISTINCT packages per licence; a dual-licensed package counts once under each.
-const byLicense = new Map<string, number>();
-for (const p of packages) for (const l of p.licenses) byLicense.set(l, (byLicense.get(l) ?? 0) + 1);
-const breakdown = [...byLicense.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+export interface Notices {
+  packages: NoticeEntry[];
+  texts: { id: number; title: string; body: string; notices: string[]; packages: string[]; count: number }[];
+  breakdown: [string, number][];
+  /** The complete third-party-notices.ts module. */
+  rendered: string;
+}
 
-// ---- emit ---------------------------------------------------------------------------
+/** Turn the collected licence files into the notices module. */
+export function renderNotices(found: Pkg[]): Notices {
+  const keyOf = (p: { name: string; version: string }) => `${p.name}@${p.version}`;
 
-const q = (s: string) => JSON.stringify(s);
-const header = `/*
+  // ---- dedupe bodies ----------------------------------------------------------------
+
+  const bodies = new Map<string, { id: number; title: string; body: string }>();
+  for (const p of found) {
+    if (!p.bodyHash || !p.body) continue;
+    if (!bodies.has(p.bodyHash)) {
+      bodies.set(p.bodyHash, { id: bodies.size, title: p.bodyTitle, body: p.body });
+    }
+  }
+
+  // How many table rows (a package at one version) carry each text.
+  const carriers = new Map<string, Set<string>>();
+  for (const p of found) {
+    if (!p.bodyHash) continue;
+    const rows = carriers.get(p.bodyHash) ?? new Set<string>();
+    rows.add(keyOf(p));
+    carriers.set(p.bodyHash, rows);
+  }
+  const usage = new Map([...carriers].map(([hash, rows]) => [hash, rows.size]));
+
+  // Stable ordering: OFL first (it is the one with the bundling obligation), then by how
+  // many packages share the text, so the big shared licences come before the one-offs.
+  const ordered = [...bodies.entries()].sort((a, b) => {
+    const ofl = (x: string) => (x.includes("Open Font") ? 0 : 1);
+    return ofl(a[1].title) - ofl(b[1].title) || (usage.get(b[0])! - usage.get(a[0])!) || a[1].title.localeCompare(b[1].title);
+  });
+  const idOf = new Map<string, number>();
+  ordered.forEach(([hash], i) => idOf.set(hash, i));
+
+  // One entry PER PACKAGE VERSION, not per licence file. A dual-licensed package
+  // contributes two files and therefore two `found` rows, but it is still one package and
+  // must appear once in the table, carrying both licences. A package that ships two
+  // versions appears once per version, each with its own licence files.
+  const merged = new Map<string, NoticeEntry>();
+  for (const p of found) {
+    const e = merged.get(keyOf(p)) ?? {
+      name: p.name,
+      version: p.version,
+      licenses: [],
+      textIds: [],
+    };
+    if (!e.licenses.includes(p.license)) e.licenses.push(p.license);
+    const id = p.bodyHash != null ? idOf.get(p.bodyHash) : undefined;
+    if (id !== undefined && !e.textIds.includes(id)) e.textIds.push(id);
+    merged.set(keyOf(p), e);
+  }
+  const packages = [...merged.values()].sort(
+    (a, b) => a.name.localeCompare(b.name) || a.version.localeCompare(b.version, "en", { numeric: true }),
+  );
+
+  const texts = ordered.map(([hash, v], i) => ({
+    id: i,
+    title: v.title,
+    body: v.body,
+    // Notices belong to the LICENCE FILE they were read from, not to the package as a
+    // whole. A dual-licensed font package holds two unrelated copyrights (Expo's, over the
+    // wrapper code, and the Geist authors', over the typeface); attaching both to both
+    // texts would put Expo's name on the OFL and imply it holds rights in the font.
+    notices: [
+      ...new Set(found.filter((p) => p.bodyHash === hash).flatMap((p) => p.copyright)),
+    ].sort(),
+    packages: [...new Set(packages.filter((p) => p.textIds.includes(i)).map((p) => p.name))],
+    count: usage.get(hash) ?? 0,
+  }));
+
+  // Count table rows per licence; a dual-licensed package counts once under each.
+  const byLicense = new Map<string, number>();
+  for (const p of packages) for (const l of p.licenses) byLicense.set(l, (byLicense.get(l) ?? 0) + 1);
+  const breakdown = [...byLicense.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+
+  // ---- emit -------------------------------------------------------------------------
+
+  const q = (s: string) => JSON.stringify(s);
+  const header = `/*
  * GENERATED by tools/noticegen/generate.ts. Do not edit by hand.
  * Run \`bun run notices:gen\` after changing the docs app's runtime dependencies.
  *
@@ -336,7 +435,7 @@ export interface NoticeText {
 }
 `;
 
-const body = `
+  const body = `
 export const THIRD_PARTY_TITLE = "Open Source Licenses";
 
 export const THIRD_PARTY_INTRO =
@@ -358,39 +457,39 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = ${JSON.stringify(packages, 
 export const THIRD_PARTY_TEXTS: NoticeText[] = ${JSON.stringify(texts, null, 2)};
 `;
 
-const rendered = header + body;
-
-// Fail loudly rather than quietly emitting a smaller file. 47 of the 88 shipped packages
-// live ONLY in docs/node_modules, so running before `bun install` in docs/ resolves half
-// the set and the output differs wildly. Without this the symptom is a baffling "stale"
-// from --check, which is exactly how this first failed in CI.
-if (missing.length) {
-  console.error(
-    `notices:gen: ${missing.length} of ${shipped.packages.length} shipped packages could not be resolved.\n` +
-      `Run \`bun install\` in BOTH the workspace root and docs/ first (most of the set is only in docs/node_modules).\n` +
-      `Unresolved: ${missing.slice(0, 12).join(", ")}${missing.length > 12 ? `, +${missing.length - 12} more` : ""}`,
-  );
-  process.exit(1);
+  return { packages, texts, breakdown, rendered: header + body };
 }
 
-const check = process.argv.includes("--check");
-const existing = existsSync(OUT) ? readFileSync(OUT, "utf8") : null;
+// ---- run ----------------------------------------------------------------------------
 
-if (check) {
-  if (existing !== rendered) {
-    console.error(
-      `notices:gen --check FAILED: ${OUT} is stale.\n` +
-        `Run \`bun run notices:gen\` and commit the result.`,
-    );
+if (import.meta.main) {
+  let notices: Notices;
+  try {
+    notices = renderNotices(collectShipped(repo, readShipped(SHIPPED)));
+  } catch (err) {
+    console.error(`notices:gen: ${err instanceof Error ? err.message : String(err)}`);
     process.exit(1);
   }
-  console.log(
-    `notices:gen --check verified ${packages.length} packages and ${texts.length} licence texts; notices in sync.`,
-  );
-} else {
-  writeFileSync(OUT, rendered);
-  console.log(`notices:gen: wrote ${OUT}`);
-  console.log(`  ${packages.length} package entries, ${texts.length} distinct licence texts`);
-  for (const [license, count] of breakdown) console.log(`  ${String(count).padStart(3)}  ${license}`);
-  if (missing.length) console.log(`  NOTE: ${missing.length} unresolved (not installed): ${missing.join(", ")}`);
+  const { packages, texts, breakdown, rendered } = notices;
+
+  const check = process.argv.includes("--check");
+  const existing = existsSync(OUT) ? readFileSync(OUT, "utf8") : null;
+
+  if (check) {
+    if (existing !== rendered) {
+      console.error(
+        `notices:gen --check FAILED: ${OUT} is stale.\n` +
+          `Run \`bun run notices:gen\` and commit the result.`,
+      );
+      process.exit(1);
+    }
+    console.log(
+      `notices:gen --check verified ${packages.length} packages and ${texts.length} licence texts; notices in sync.`,
+    );
+  } else {
+    writeFileSync(OUT, rendered);
+    console.log(`notices:gen: wrote ${OUT}`);
+    console.log(`  ${packages.length} package entries, ${texts.length} distinct licence texts`);
+    for (const [license, count] of breakdown) console.log(`  ${String(count).padStart(3)}  ${license}`);
+  }
 }

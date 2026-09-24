@@ -433,13 +433,17 @@ Two obligations follow from the dependency audit and are worth not losing:
   and node-forge (BSD-3-Clause OR GPL-2.0), neither of which is in the app. The scan
   instead unions four measured signals: what survives into the web, iOS and Android JS
   bundles (read from source-mapped exports, written to a temp directory and discarded),
-  what Expo autolinks (an expo-module.config.json), what classic react-native-config
-  autolinking links (podspec/gradle modules such as gesture-handler and reanimated, plus
-  react-native itself), and the lucide-static icon data the generators bake in. That
-  gives 119; scanning only the web bundle silently missed everything that ships natively
-  alone. Second, when splitting a licence file into "copyright notice" and "body", only
-  scan the HEADER: licence bodies are full of lines that begin with the word copyright,
-  and matching those both invents fake notices and deletes real clauses out of the OFL.
+  what Expo autolinking links, what classic react-native-config autolinking links
+  (podspec/gradle modules such as gesture-handler and reanimated, plus react-native
+  itself), and the lucide-static icon data and typefaces the generators bake in. That
+  gives 120; scanning only the web bundle silently missed everything that ships natively
+  alone. Second, record WHERE each package shipped from, not just its name: an install
+  can hold two copies of one package (a docs devDependency once hoisted entities 7 over
+  dom-serializer's entities 4), so shipped.json maps each name to the directories the
+  bundler and autolinking actually used, and the generator reads the licence there. Third,
+  when splitting a licence file into "copyright notice" and "body", only scan the HEADER:
+  licence bodies are full of lines that begin with the word copyright, and matching those
+  both invents fake notices and deletes real clauses out of the OFL.
 - **The sample avatars are generated, not photographed.** `docs/public/*.jpg` were
   previously seven 128x128 photographs of identifiable real people with no recorded
   source, which meant shipping two unverifiable rights at once: copyright in the image
