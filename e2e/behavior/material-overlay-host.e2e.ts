@@ -13,8 +13,11 @@ for (const width of [1280, 390]) for (const scheme of ["light", "dark"] as const
     const scroller = page.locator("[data-page-scroll]");
     const trigger = page.getByRole("button", { name: "Material dialog", exact: true });
     // Open from a scrolled page, the case this checks: scroll the page to its end (at 390
-    // the fixture is taller than the viewport), then bring the trigger into view.
-    await scroller.evaluate(element => element.scrollTo({ top: element.scrollHeight }));
+    // the fixture is taller than the viewport), then bring the trigger into view. Set
+    // scrollTop rather than calling scrollTo: react-native-web puts its ScrollView method
+    // on the scroller's node, which reads `{ x, y, animated }`, so a DOM `{ top }` call
+    // animates the page back to the top.
+    await scroller.evaluate(element => { element.scrollTop = element.scrollHeight; });
     await trigger.evaluate(element => element.scrollIntoView({ block: "nearest" }));
     if (width === 390) expect(await scroller.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
     await trigger.click();
