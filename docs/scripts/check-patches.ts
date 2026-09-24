@@ -20,8 +20,17 @@
 //    its behaviour is guarded in a browser instead: e2e/behavior/hydration-ids.e2e.ts,
 //    which the CI e2e job runs on the export.
 //
-// The root unit suite cannot do either: it runs before the docs install, on a different
-// React, and bun there has no web platform resolution.
+// 3. The @expo/cli patch still does its job (patches/@expo%2Fcli@57.0.18.patch). The
+//    export names each page's file after its route and renders the page at a location
+//    derived from that name by stripping a trailing `index`. Unpatched, it stripped the
+//    letters from any last segment ENDING in "index", so the page shipped as
+//    /components/carousel/defaultindex was rendered for /components/carousel/default and
+//    failed to hydrate (React error #418). This runs the export's own getHtmlFiles over a
+//    manifest holding such a route and requires every page to render at its own path.
+//    e2e/behavior/prerendered-location.e2e.ts loads the real page on the export as well.
+//
+// The root unit suite cannot do any of this: it runs before the docs install, on a
+// different React, and bun there has no web platform resolution.
 //
 // PREREQUISITE: the workspace ROOT install, as well as the docs install. The probe's DOM
 // comes from @happy-dom/global-registrator, which only the root package.json declares; bun
@@ -244,12 +253,49 @@ async function checkDevRoot(): Promise<string[]> {
   return problems;
 }
 
+interface HtmlFile {
+  filePath: string;
+  pathname: string;
+}
+
+async function checkExportPaths(): Promise<string[]> {
+  const { getHtmlFiles } = await load<{
+    getHtmlFiles: (options: { manifest: unknown; includeGroupVariations: boolean }) => HtmlFile[];
+  }>(join(MODULES, "@expo", "cli", "build", "src", "export", "exportStaticAsync.js"));
+  // The leaves of a route manifest, one per page, each with the location it must render
+  // at. The variant name that ends in "index" is the case the patch exists for; the rest
+  // are the index forms the export has always collapsed onto their parent path.
+  const expected: Record<string, { path: string; location: string }> = {
+    index: { path: "", location: "" },
+    "components/index": { path: "components", location: "components" },
+    "(home)/index": { path: "(home)", location: "(home)" },
+    "components/carousel/loop": { path: "components/carousel/loop", location: "components/carousel/loop" },
+    "components/carousel/defaultindex": { path: "components/carousel/defaultindex", location: "components/carousel/defaultindex" },
+  };
+  const screens = Object.fromEntries(
+    Object.entries(expected).map(([key, { path }]) => [key, { path, screens: {}, _route: { type: "route" } }]),
+  );
+  // The static export (app.json `web.output: "static"`, so no server) asks for the group
+  // variations, which is the call made here.
+  const files = getHtmlFiles({ manifest: { screens }, includeGroupVariations: true });
+  const problems: string[] = [];
+  for (const [key, { location }] of Object.entries(expected)) {
+    const file = files.find((f) => f.filePath === `${key}.html`);
+    if (!file) problems.push(`the export writes no ${key}.html for the route ${key}`);
+    else if (file.pathname !== location) {
+      problems.push(`the export renders ${file.filePath} at "/${file.pathname}", not "/${location}", so the page hydrates at a URL it was not rendered for`);
+    }
+  }
+  return problems;
+}
+
 const inForce = checkPatchesInForce();
 const devRoot = inForce.length === 0 ? await checkDevRoot() : [];
-const problems = [...inForce, ...devRoot];
+const exportPaths = inForce.length === 0 ? await checkExportPaths() : [];
+const problems = [...inForce, ...devRoot, ...exportPaths];
 if (problems.length > 0) {
   console.error(`check:patches - ${problems.length} problem(s):\n${problems.map((p) => `  - ${p}`).join("\n")}`);
   process.exit(1);
 }
 const count = Object.keys(readJson<Pkg>(join(DOCS, "package.json")).patchedDependencies ?? {}).length;
-console.log(`check:patches - ${count} patches in force, and the dev root hydrates the server's useIds`);
+console.log(`check:patches - ${count} patches in force, the dev root hydrates the server's useIds, and the export renders every page at its own path`);

@@ -1,0 +1,20 @@
+diff --git a/build/src/export/exportStaticAsync.js b/build/src/export/exportStaticAsync.js
+index 456611d4ba6a968f542293e5253eb8834d77e56f..12e815354a9af78a45729e0f5ab8722f160f1c82 100644
+--- a/build/src/export/exportStaticAsync.js
++++ b/build/src/export/exportStaticAsync.js
+@@ -457,7 +457,14 @@ function getHtmlFiles({ manifest, includeGroupVariations }) {
+         return {
+             ...value,
+             filePath,
+-            pathname: filePathLocation.replace(/(\/?index)?$/, '')
++            // PATCH (@ionizeio/canvas-docs): strip a trailing `index` only when it is a whole
++            // path segment. The original `/(\/?index)?$/` made the slash optional, so a last
++            // segment that merely ENDS in "index" lost those letters as well: the page written
++            // to components/carousel/defaultindex.html was rendered for the location
++            // /components/carousel/default, a different route, and the client hydrating it at
++            // its real URL built a different tree (production React error #418). The root
++            // `index` and a `/index` segment still map to their parent path, as before.
++            pathname: filePathLocation.replace(/(^|\/)index$/, '')
+         };
+     });
+ }
