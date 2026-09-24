@@ -171,7 +171,7 @@ export default function TypographyScreen() {
 
         <TokenSection
           title="Font families"
-          description="Two families, registered by the consumer: the package ships no font files. Hand the registered faces to <ThemeProvider fonts> (one family that carries every weight, or a face per weight) and every kit label renders in them; omit it and the system face stands in. On the web the --font-sans / --font-mono stacks fall back to system faces until Manrope loads."
+          description="Two families, registered by the consumer: the package ships no font files. Hand the registered faces to the root <ThemeProvider fonts> (one family that carries every weight, or a face per weight) and every kit label renders in them, under nested providers too; omit it and the system face stands in. On the web the --font-sans / --font-mono stacks fall back to system faces until Manrope loads."
         >
           <Grid cols={c2}>
             {[

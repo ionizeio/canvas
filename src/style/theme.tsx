@@ -222,9 +222,11 @@ export function ThemeProvider({ dark, light, scheme, ssrScheme, mint, ssrPalette
   const increasedContrast = useIncreasedContrast();
   // The registered faces are an app-level fact (what the app loaded), not a
   // per-subtree theme choice, so a provider that omits `fonts` keeps the nearest
-  // parent provider's (or the value a Portal re-provides in its outlet). Only the
-  // faces inherit: tokens, scheme, palette and surface resolve from this provider's
-  // own props (see the `tokens` prop). The memo below keys on the resolved map, not
+  // parent provider's (or the value a Portal re-provides in its outlet). Of the theme
+  // axes only the faces inherit: tokens, scheme, palette and surface resolve from this
+  // provider's own props (see the `tokens` prop). (`ssrBreakpoint` also passes through
+  // a provider that omits it, since only a provider that sets it re-provides the
+  // breakpoint context.) The memo below keys on the resolved map, not
   // on the parent's whole value, so a parent scheme or surface change does not
   // re-create this provider's value.
   const inheritedFonts = useContext(ThemeContext)?.fonts;

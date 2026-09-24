@@ -5,7 +5,7 @@ import { H3, P, Rule, InlineCode } from "../../ui/prose";
 import { PageNav } from "../../ui/page-nav";
 import { CodeBlock } from "../../ui/code-block";
 import { Callout } from "../../ui/tokens-kit";
-import { CANVAS_FONTS, sans } from "../../ui/fonts";
+import { sans } from "../../ui/fonts";
 import { useDocsTheme } from "../../theme/docs-theme";
 
 // The page's teaching snippets. The helper ones mirror src/theme.ts behavior
@@ -30,6 +30,28 @@ const { scheme, palette, surface, tokens, dark } = useTheme();
 // scheme:  "light" | "dark"      palette: "blush" | "mint"
 // surface: "solid" | "glass"     tokens:  active color tokens
 // dark:    scheme === "dark"`;
+const NESTED = `import { ThemeProvider, useTheme } from "@ionizeio/canvas";
+import { FONTS, BRAND } from "./theme"; // module constants
+
+// Register the faces once, on the root provider.
+export function App() {
+  return (
+    <ThemeProvider fonts={FONTS} tokens={BRAND}>
+      <Screens />
+    </ThemeProvider>
+  );
+}
+
+// A nested provider keeps the root's faces. Its scheme, palette, surface and
+// tokens come from its own props, so pass what it should carry on.
+function GlassPanel({ children }) {
+  const { dark } = useTheme();
+  return (
+    <ThemeProvider dark={dark} light={!dark} glass tokens={BRAND}>
+      {children}
+    </ThemeProvider>
+  );
+}`;
 const DARK_TOGGLE = `<!-- Light (default) -->
 <html>
 
@@ -111,10 +133,11 @@ setDensity("compact");  // updates CSS spacing; also map to component booleans`;
 
 // One palette's preview: the same kit components under a nested provider in that
 // palette. Both render in the light scheme, where the palettes differ, and solid, so the
-// palette's own fills show whatever material the page is in.
+// palette's own fills show whatever material the page is in. It inherits only the docs'
+// registered faces from the root provider; its tokens are its own palette's, unbranded.
 function PalettePreview({ mint, label }: { mint?: boolean; label: string }) {
   return (
-    <ThemeProvider light mint={mint} solid fonts={CANVAS_FONTS}>
+    <ThemeProvider light mint={mint} solid>
       <Card>
         <Column snug>
           <Typography h5>{label}</Typography>
@@ -177,6 +200,25 @@ export default function ThemingScreen() {
             Without it React keeps the server&apos;s inline colors on elements that never re-render, leaving components stuck in
             the server&apos;s scheme.
           </Callout>
+          <H3>Typefaces and nested providers</H3>
+          <P>
+            Hand the faces the app registered to the root provider&apos;s <InlineCode>fonts</InlineCode> prop, once: one family
+            that carries every weight, or a face per weight. They are what the app loaded, not a theme choice, so a nested{" "}
+            <InlineCode>ThemeProvider</InlineCode> that omits <InlineCode>fonts</InlineCode> keeps the nearest parent&apos;s faces,
+            in the overlays it opens too. One that passes <InlineCode>fonts</InlineCode> uses its own map in place of the
+            parent&apos;s (the roles are not merged), and an empty map returns that subtree to the system face.
+          </P>
+          <P>
+            No other theme axis is inherited. A nested provider resolves its scheme, palette, surface and tokens from its own props:
+            omitting <InlineCode>dark</InlineCode> / <InlineCode>light</InlineCode> follows the OS appearance, omitting{" "}
+            <InlineCode>mint</InlineCode> paints blush, and omitting <InlineCode>tokens</InlineCode> paints its palette unbranded.
+            That is how a subtree shows a palette or brand of its own, as the palette previews on this page do. Pass the same{" "}
+            <InlineCode>tokens</InlineCode> constant again to carry a rebrand into a nested provider, and pass both{" "}
+            <InlineCode>{"dark={dark}"}</InlineCode> and <InlineCode>{"light={!dark}"}</InlineCode>, with{" "}
+            <InlineCode>dark</InlineCode> read from <InlineCode>useTheme()</InlineCode>, to follow the parent&apos;s scheme (with{" "}
+            <InlineCode>dark</InlineCode> alone, a light parent leaves the nested provider on the OS appearance).
+          </P>
+          <CodeBlock code={NESTED} />
         </Section>
 
         <Rule />
