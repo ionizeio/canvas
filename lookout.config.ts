@@ -67,7 +67,8 @@ const componentRoutes: RouteDef[] = sidebar.flatMap((group) =>
 // matching when the example changed, so the sweep judged a closed Select as an open
 // one. Here they are wrapped as lookout StateRecipes: a settle pause after the click,
 // Escape to restore, and element:null so the shot is the full page, since an open
-// overlay portals to a stage-level outlet OUTSIDE the preview card.
+// overlay portals OUTSIDE the preview card: to the stage-level outlet, or, for an
+// anchored card that closes on an outside tap, to the app root's outlet.
 // ---------------------------------------------------------------------------
 
 const stage = (page: Page) => page.locator("[data-preview-stage]").filter({ has: page.locator("[data-preview-card]") }).first();
@@ -78,7 +79,7 @@ const states: Record<string, StateRecipe> = Object.fromEntries(
     {
       prepare: async (page: Page) => {
         await recipe.open(page, stage(page));
-        const host = recipe.atDocumentRoot ? page : stage(page).locator("..");
+        const host = recipe.atDocumentRoot || recipe.inWindowLayer ? page : stage(page).locator("..");
         await host.getByRole(recipe.role).last().waitFor({ state: "visible" });
       },
       restore: async (page: Page) => {

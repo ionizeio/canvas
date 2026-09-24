@@ -49,6 +49,7 @@
 import { createContext, useContext, useSyncExternalStore, type ReactNode } from "react";
 import { Dimensions, useWindowDimensions } from "react-native";
 import { breakpoints, type BreakpointKey } from "./tokens.js";
+import { BreakpointOverrideContext } from "./breakpoint-override.js";
 
 export type { BreakpointKey } from "./tokens.js";
 
@@ -134,10 +135,6 @@ function getBucketSnapshot(): BreakpointKey | "base" {
  *  prop feeds this; components never read it directly (useBreakpoint does). */
 export const SsrBreakpointContext = createContext<BreakpointKey | "base">("base");
 
-// The simulation seam: a non-null value pins the bucket every viewport hook
-// resolves for the subtree, overriding the real window. See BreakpointOverride.
-const BreakpointOverrideContext = createContext<BreakpointKey | "base" | null>(null);
-
 /**
  * Pin the viewport bucket for a subtree: every `useBreakpoint` /
  * `useResponsive` / `useFormFactor` consumer under the provider resolves
@@ -147,12 +144,13 @@ const BreakpointOverrideContext = createContext<BreakpointKey | "base" | null>(n
  * viewport applies), which lets a switcher's "desktop" state simply stop
  * simulating.
  *
- * Two boundaries to know:
- * - Context reaches REACT descendants. The kit Portal renders overlay
- *   children at the OverlayProvider's outlet, so an override mounted BELOW
- *   the provider never reaches portaled overlay content (menus, dialogs,
- *   toasts): mount the override above the OverlayProvider when overlays
- *   should simulate too, as the docs playground does.
+ * Two things to know:
+ * - Portaled overlay content (menus, dialogs, toasts) resolves the override of
+ *   the component that opened it, wherever the OverlayProvider sits: the kit
+ *   Portal carries the publisher's override into the outlet it renders in, the
+ *   way it carries the theme, because a card that closes on an outside tap
+ *   paints in the window's outermost provider, above any override mounted
+ *   around a nearer one (the docs playground's).
  * - This simulates the VIEWPORT tier only. Container-measured components
  *   (DataTable, Grid, Row `stacks`) follow their real measured width:
  *   constrain the subtree's width to the matching size alongside the

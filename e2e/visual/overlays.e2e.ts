@@ -5,9 +5,11 @@
  * state you cannot see at rest. An open dialog's scrim, a menu's elevation, a
  * listbox's selected row: none of that appears in the card shot.
  *
- * Anchored overlays portal into the Playground's stage outlet, so the stage is the
- * frame. Drawer and ActionSheet go through react-native-web's Modal, which renders at
- * the document root, so those two are full-page.
+ * Anchored overlays are placed within the Playground's stage (a card that closes on
+ * an outside tap paints in the app root's outlet, over the stage), so the stage is the
+ * frame: its screenshot takes whatever is painted over it. Drawer and ActionSheet go
+ * through react-native-web's Modal, which renders at the document root, so those two
+ * are full-page.
  */
 import { OVERLAYS } from "../support/overlays";
 import { fitElementForScreenshot, gotoDocs, settledBox, stage } from "../support/docs";

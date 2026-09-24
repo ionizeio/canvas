@@ -193,12 +193,15 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
     // menu / dialog / peek simulates the same tier as the inline preview.
     <BreakpointOverride value={simulating ? simulated.bucket : null}>
     {/* ONE overlay host per stage (not per cell). A portaled overlay (an open
-        Dropdown / Select / Autocomplete / Popover / Row-menu menu) renders into this
-        stage-level outlet, which paints above ALL device rows AND the code block, so
-        it is neither clipped by the stage nor occluded by a lower row's trigger.
+        Dropdown / Select / Autocomplete / Popover / Row-menu menu) is placed by this
+        stage-level outlet and paints above ALL device rows AND the code block, so it
+        is neither clipped by the stage nor occluded by a lower row's trigger.
         Anchoring stays correct: AnchoredOverlay measures the trigger relative to this
-        outlet. Because overlays no longer render inside the stage card, the card never
-        has to contain them (and it does not clip at all; see the card below). */}
+        outlet. A menu that closes on an outside tap paints in the app root's outlet at
+        that same place, so a tap anywhere beside the stage closes it too; a dialog or a
+        demo pinned open paints here. Because overlays no longer render inside the stage
+        card, the card never has to contain them (and it does not clip at all; see the
+        card below). */}
     <OverlayProvider style={{ flex: 1, minWidth: 0 }}>
       <IconSearchContext.Provider value={query}>
       <View

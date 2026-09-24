@@ -51,7 +51,9 @@ for (const scheme of ["dark", "light"] as const) {
           await overlay.open(page);
           await expect(overlay.panel(page)).toHaveCount(closed + overlay.adds);
           await expect(overlay.panel(page).last()).toBeVisible();
-          await attachMaterialEvidence(page, testInfo, "glass-open", stage(page), metadata, overlay.atDocumentRoot);
+          // A card in the window's layer paints outside the stage, so its evidence is the
+          // page, like a document-root Modal's.
+          await attachMaterialEvidence(page, testInfo, "glass-open", stage(page), metadata, overlay.atDocumentRoot || overlay.inWindowLayer);
           await page.keyboard.press("Escape");
           await expect(overlay.panel(page)).toHaveCount(closed);
         } else if (route.slug === "toast") {
@@ -70,7 +72,7 @@ for (const scheme of ["dark", "light"] as const) {
         if (overlay) {
           await overlay.open(page);
           await expect(overlay.panel(page).last()).toBeVisible();
-          const host = overlay.atDocumentRoot ? page.locator("body") : stage(page).locator("..");
+          const host = overlay.atDocumentRoot || overlay.inWindowLayer ? page.locator("body") : stage(page).locator("..");
           await expectNoMaterialEffects(host);
         }
       });

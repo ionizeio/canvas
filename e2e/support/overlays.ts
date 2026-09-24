@@ -14,7 +14,7 @@ export interface BoundOverlay {
   slug: string;
   /** Open it, and return once the click has been dispatched. */
   open: (page: Page) => Promise<void>;
-  /** The overlay's role in its own preview host, or document-root Modal. */
+  /** The overlay's role in its own preview host, the window's layer, or a document-root Modal. */
   panel: (page: Page) => Locator;
   /** How many of those one opening adds. */
   adds: number;
@@ -23,6 +23,7 @@ export interface BoundOverlay {
   expands?: boolean;
   restoresFocus?: boolean;
   atDocumentRoot?: boolean;
+  inWindowLayer?: boolean;
 }
 
 function bind(recipe: OverlayRecipe): BoundOverlay {
@@ -30,9 +31,12 @@ function bind(recipe: OverlayRecipe): BoundOverlay {
     slug: recipe.slug,
     open: (page) => recipe.open(page as never, stage(page) as never),
     // The stage's OverlayProvider wraps both the preview and its sibling portal
-    // outlet. Scope to that host so portaled menus are included but permanently
-    // open Do/Don't panels cannot satisfy the Playground's readiness assertion.
-    panel: (page) => recipe.atDocumentRoot
+    // outlet. Scope to that host so portaled panels are included but permanently
+    // open Do/Don't panels cannot satisfy the Playground's readiness assertion. A
+    // card in the window's layer paints outside the stage, in the app root's outlet,
+    // so it is found page-wide; the specs count before and after opening, and that
+    // outlet comes last in the document, so `.last()` is the card just opened.
+    panel: (page) => recipe.atDocumentRoot || recipe.inWindowLayer
       ? page.getByRole(recipe.role)
       : stage(page).locator("..").getByRole(recipe.role),
     adds: recipe.adds,
@@ -40,6 +44,7 @@ function bind(recipe: OverlayRecipe): BoundOverlay {
     expands: recipe.expands,
     restoresFocus: recipe.restoresFocus,
     atDocumentRoot: recipe.atDocumentRoot,
+    inWindowLayer: recipe.inWindowLayer,
   };
 }
 

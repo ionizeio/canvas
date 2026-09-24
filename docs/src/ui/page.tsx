@@ -10,14 +10,17 @@ import { DocsHead } from "./docs-head";
 // the 24/28/80 padding, centered). ScreenFrame adds the native header + search overlay
 // on iOS/Android and is a transparent passthrough on web.
 //
-// The OverlayProvider is the page-level overlay host: anchored overlays opened
-// anywhere in the page body (a Dropdown in a Do/Don't card, a Select in a template
-// preview) portal into its outlet, so they paint ABOVE later page content and
-// overflow their card instead of being clipped by it or painted under a sibling
-// (every react-native-web View is its own stacking context, so an inline menu can
-// never z-lift past its card's later siblings). It sits INSIDE the scroll content,
-// so portaled cards scroll with the page and stay glued to their triggers.
-// Playground stages mount their own nearer host and stay stage-contained.
+// The OverlayProvider is the page-level overlay host: overlays opened anywhere in
+// the page body (a Dropdown in a Do/Don't card, a Select in a template preview) are
+// placed by its outlet, so they paint ABOVE later page content and overflow their
+// card instead of being clipped by it or painted under a sibling (every
+// react-native-web View is its own stacking context, so an inline menu can never
+// z-lift past its card's later siblings). It sits INSIDE the scroll content, so a
+// card pinned open for a demo scrolls with the page and stays glued to its trigger.
+// A card that closes on an outside tap paints in the app root's outlet instead,
+// placed exactly where this one would put it, so its backdrop spans the window and
+// holds the page still while it is open. Playground stages mount their own nearer
+// host and place their overlays within the stage the same way.
 export function Page({ children, viewportOverlays = false }: { children: ReactNode; viewportOverlays?: boolean }) {
   const { tokens } = useTheme();
   // Runtime fixtures need viewport modals and a sibling capture plane. Keep the

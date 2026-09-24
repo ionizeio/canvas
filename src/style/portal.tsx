@@ -11,8 +11,11 @@
 // Portal.Host pattern.
 //
 // Mount one <OverlayProvider> at an app's root for screen-level overlays; the
-// docs mount one per example stage so a portaled overlay stays contained to its
-// stage card instead of covering the gallery.
+// docs mount one per example stage so a portaled overlay is placed within its
+// stage card. A nested provider frames its overlays, it does not bound the window:
+// a card that closes on an outside tap paints, with its dismiss backdrop, in the
+// window's outermost provider (its layer, src/style/overlay-layer.tsx), so a tap
+// anywhere off it closes it, the way a platform menu behaves.
 //
 // Re-render isolation: the registry lives in refs (not provider state) and the
 // only component that reads it is the sibling <Outlet>, which subscribes via
@@ -27,7 +30,6 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useId,
   useMemo,
   useRef,
   useSyncExternalStore,
@@ -40,9 +42,7 @@ import {
 } from "./glass-surface/glass-surface.shared.js";
 import { createCaptureTarget } from "./glass-surface/capture-target.js";
 import { GlassBlurTargetHost, blurTargetMountable } from "./glass-surface/glass-blur-target.js";
-import { EntranceReadinessContext } from "./entrance-readiness.js";
-import { useTheme } from "./theme.js";
-import { ResolvedThemeProvider } from "./theme-context.js";
+import { registerOverlayLayer, usePortalMount } from "./overlay-layer.js";
 
 // What a <Portal> (and an anchored overlay) needs from its host. `measureOutlet`
 // is exposed so an anchored overlay can measure a trigger RELATIVE TO the outlet
@@ -181,7 +181,7 @@ export function OverlayProvider({ children, style, separateWindow = false, viewp
 
   const host = useMemo<OverlayHost>(() => {
     const emit = () => listeners.current.forEach((l) => l());
-    return {
+    const created: OverlayHost = {
       mount(id, node) {
         const next = new Map(snapshot.current);
         next.set(id, node);
@@ -231,6 +231,10 @@ export function OverlayProvider({ children, style, separateWindow = false, viewp
         measureOwn((bounds) => { own = bounds; settle(); });
       },
     };
+    // Inside a parent's window this host is a frame in the parent's layer; at an app
+    // root or in a separate window (`parent` is null there) it is a layer itself.
+    registerOverlayLayer(created, parent);
+    return created;
   }, [parent, viewport]);
 
   const subscribe = useCallback((listener: () => void) => {
@@ -291,41 +295,6 @@ export interface PortalProps {
  */
 export function Portal({ children }: PortalProps) {
   const host = useOverlayHost();
-  const id = useId();
-  const entranceReady = useContext(EntranceReadinessContext);
-  const theme = useTheme();
-
-  // Publish the CURRENT children on every render (children is a fresh node each
-  // render, so the teleported tree is never stale). Cheap: it sets the provider's
-  // registry, not this component's state. A LAYOUT effect, so the outlet's
-  // re-render is flushed in the same commit sequence as the publisher's: the
-  // teleported tree never lags its owner by a scheduler hop, which on a
-  // measure-then-mount opening (an anchored card) was a hop per step, and a
-  // frame could paint the owner's state (its backdrop) before the outlet's.
-  useIsomorphicLayoutEffect(() => {
-    // Registry nodes render in a sibling outlet, so preserve the publisher's
-    // resolved theme and entrance readiness. Keep the providers stable across
-    // updates to retain foreground state. Capture targets intentionally come
-    // from the outlet: copying the publisher's target can create a native cycle.
-    if (!host) return;
-    host.mount(id,
-      <ResolvedThemeProvider value={theme}>
-        <EntranceReadinessContext.Provider value={entranceReady}>{children}</EntranceReadinessContext.Provider>
-      </ResolvedThemeProvider>,
-    );
-  });
-
-  // Cleanup runs ONLY on true unmount, or when the host changes. Kept separate
-  // from the publish effect: a combined effect would tear down and re-add the
-  // node every render (flicker, lost focus). A layout effect like the publish,
-  // so that when a provider swaps its host the retire from the old host (this
-  // cleanup, run in the mutation phase) still precedes the publish to the new
-  // one (the layout phase): the two hosts share the provider's registry, and a
-  // retire landing after the publish would empty the outlet.
-  useIsomorphicLayoutEffect(() => {
-    if (!host) return;
-    return () => host.unmount(id);
-  }, [host, id]);
-
+  usePortalMount(host, children);
   return host ? null : <>{children}</>;
 }

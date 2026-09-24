@@ -198,15 +198,18 @@ describe("a card opened above its trigger on a scrolled host", () => {
   });
 
   it("anchors the hosted card by that inset alone and keeps its scrollport from growing into the cap", async () => {
+    // The page outlet is scrolled 80pt above the window's top edge.
+    const PAGE_TOP = -80;
+    const WINDOW_HEIGHT = 874;
     const measure = spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (this: Element) {
       // The window band is the root outlet; the page outlet is the content host
       // inside the scrolled page; the trigger is the Dropdown's own wrapper.
       const outlet = getComputedStyle(this).zIndex === "1000";
       const inPage = this.closest('[data-testid="page"]') !== null;
       const [x, y, width, height] = this.getAttribute("data-testid") === "edge-menu"
-        ? [28, 612, 119, SCROLLED_HOST.triggerHeight]
-        : outlet && inPage ? [28, -80, 346, SCROLLED_HOST.outletHeight]
-        : outlet ? [0, 0, 402, 874]
+        ? [28, SCROLLED_HOST.triggerTop + PAGE_TOP, 119, SCROLLED_HOST.triggerHeight]
+        : outlet && inPage ? [28, PAGE_TOP, 346, SCROLLED_HOST.outletHeight]
+        : outlet ? [0, 0, 402, WINDOW_HEIGHT]
         : [0, 0, 0, 0];
       return { x, y, width, height, top: y, left: x, right: x + width, bottom: y + height, toJSON: () => ({}) };
     });
@@ -229,14 +232,21 @@ describe("a card opened above its trigger on a scrolled host", () => {
       const below = fitOverlayHeight({ ...host, desiredHeight: null });
       const above = fitOverlayHeight({ ...host, desiredHeight: 245 });
       expect(above.side).toBe("above");
-      // The portal attaches the card concealed, placed below, until it is measured.
+      // The portal attaches the card concealed, placed below, until it is measured. A
+      // menu that closes on an outside tap paints in the window's outlet (the root, at
+      // the origin here) at the place the page outlet gives it, so each offset is the
+      // page outlet's fit moved by where that outlet sits in the window.
       const menu = await screen.findByRole("menu", { hidden: true });
       const parts = hostedEntranceParts(menu);
       const wrapperStyle = () => parts.entrance.getAttribute("style") ?? "";
-      await waitFor(() => expect(wrapperStyle()).toContain(`top: ${below.top}px`));
+      await waitFor(() => expect(wrapperStyle()).toContain(`top: ${below.top! + PAGE_TOP}px`));
       // 233pt of rows in a 245pt card: taller than the band below the trigger.
       layoutHostedEntrance(menu, { width: 200, height: 245 }, { width: 200, height: 233 });
-      await waitFor(() => expect(wrapperStyle()).toContain(`bottom: ${SCROLLED_HOST.outletHeight - (SCROLLED_HOST.triggerTop - dropdownSkin.menuGap)}px`));
+      // The card's bottom edge sits the gap above the trigger's top, counted up from the
+      // window outlet's bottom edge: the page outlet's inset plus the page outlet's
+      // bottom edge's distance from the window's.
+      expect(above.bottom! + WINDOW_HEIGHT - (PAGE_TOP + SCROLLED_HOST.outletHeight)).toBe(WINDOW_HEIGHT - (SCROLLED_HOST.triggerTop + PAGE_TOP - dropdownSkin.menuGap));
+      await waitFor(() => expect(wrapperStyle()).toContain(`bottom: ${WINDOW_HEIGHT - (SCROLLED_HOST.triggerTop + PAGE_TOP - dropdownSkin.menuGap)}px`));
       // Nothing but that inset may size or place the wrapper along the page: no top,
       // and no height of its own, so it is exactly as tall as the card it wraps.
       expect(wrapperStyle()).not.toMatch(/(^|; )top:/);

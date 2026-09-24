@@ -8,11 +8,26 @@
 // iOS accessibility escape makes, so a card nested in another overlay closes first.
 //
 // When an <OverlayProvider> is mounted (an app root, or a docs example stage),
-// the card plus a full-bleed dismiss backdrop are portaled into its outlet and
+// the card plus a full-bleed dismiss backdrop are portaled into an outlet and
 // the card is positioned at the trigger's coordinates measured RELATIVE TO the
 // outlet (measureInWindow on both, subtract). So the card escapes the trigger's
 // bounds with NO position:"fixed" and NO Platform.OS branch, and a tap anywhere
 // off the card dismisses it on every platform.
+//
+// Which outlet: the nearest provider is the FRAME the card is placed in (its
+// edges clamp the card, its visible band caps it), and a card that can close
+// paints in its window's LAYER, the outermost provider (src/style/overlay-layer.tsx),
+// so its backdrop covers the whole window and not only a nested provider's box (a
+// docs stage caught taps inside itself and let a tap beside it through). The card's
+// frame placement is carried over by the frame's offset inside the layer, so it
+// lands exactly where the frame would have put it, as wide as the frame lets it grow.
+// While the backdrop is up the page under it takes no touches or wheel, but a
+// keyboard or an app can still scroll it, and no layout event reports that, so an
+// open card re-reads where its trigger and outlets sit each frame and re-places when
+// one of them moved (what an Android PopupWindow does for its anchor). A card opened
+// inside such a card keeps the same frame (OverlayFrameContext), not the layer it now
+// renders in. A card that cannot close stays in its frame's own outlet and scrolls
+// with the content.
 //
 // With no provider it degrades to the kit's pre-portal inline anchor (the
 // caller's own absolute top:100% style, passed as `inlineStyle`), so an unhosted
@@ -39,7 +54,8 @@
 
 import { createContext, type ReactNode, type RefObject, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { View, Pressable, StyleSheet, useWindowDimensions, type LayoutChangeEvent, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
-import { Portal, useOverlayHost, type OverlayHost } from "./portal.js";
+import { useOverlayHost, type OverlayHost } from "./portal.js";
+import { overlayLayerOf, OverlayFrameContext, PortalInto } from "./overlay-layer.js";
 import { GlassSurface } from "./glass-surface/glass-surface.js";
 import { PlainSurface } from "./glass-surface/glass-surface.shared.js";
 import { Entrance } from "./entrance.js";
@@ -55,8 +71,9 @@ export const useOverlaySide = () => useContext(OverlaySideContext).side;
 /** Trigger center in card-local coordinates for collision-aware decorations. */
 export const useOverlayAnchor = () => useContext(OverlaySideContext);
 
-// A transparent layer filling the outlet: it catches a tap anywhere off the card
-// and dismisses. Transparent (no fill): anchored menus do not dim the page.
+// A transparent layer filling the outlet (the window's layer, for a card that can
+// close): it catches a tap anywhere off the card and dismisses. Transparent (no
+// fill): anchored menus do not dim the page.
 const BACKDROP: ViewStyle = { position: "absolute", top: 0, right: 0, bottom: 0, left: 0 };
 
 export interface AnchoredOverlayProps {
@@ -81,8 +98,8 @@ export interface AnchoredOverlayProps {
   inlineStyle?: StyleProp<ViewStyle>;
   /**
    * Whether an outside tap or Android's hardware back can actually dismiss the
-   * card (default true). Pass false when dismissal is a no-op — a controlled
-   * `open` with no change handler (e.g. a docs example pinned open) — so the
+   * card (default true). Pass false when dismissal is a no-op (a controlled
+   * `open` with no change handler, e.g. a docs example pinned open), so the
    * full-bleed dismiss backdrop is skipped instead of silently swallowing every
    * tap under an overlay that can never close, and back is left to the page.
    */
@@ -178,6 +195,9 @@ export function AnchoredOverlay({
   ownsScroll = false,
 }: AnchoredOverlayProps) {
   const host = useOverlayHost();
+  // The frame the card is placed in: the nearest provider, or, inside a card that paints
+  // in its window's layer, that card's own frame.
+  const frame = useContext(OverlayFrameContext) ?? host;
 
   // Hardware back closes a card that can close, hosted or inline. The owner's escape
   // scope takes the request when it passes one (every kit consumer does), so a card
@@ -199,6 +219,7 @@ export function AnchoredOverlay({
   return (
     <HostedAnchoredOverlay
       host={host}
+      frame={frame ?? host}
       open={open}
       onDismiss={onDismiss}
       onAccessibilityEscape={onAccessibilityEscape}
@@ -275,7 +296,10 @@ function OverlayCard({
 
 interface HostedProps {
   onAccessibilityEscape?: ViewProps["onAccessibilityEscape"];
+  /** The nearest provider: where a card that cannot close paints. */
   host: OverlayHost;
+  /** The provider whose outlet the card is placed in (see AnchoredOverlay's header). */
+  frame: OverlayHost;
   open: boolean;
   onDismiss: () => void;
   triggerRef: RefObject<View | null>;
@@ -304,6 +328,13 @@ interface Rect {
 
 // Horizontal inset kept between a width-aware card and the outlet's edges.
 const CLAMP_INSET = 8;
+
+// Where a frame's edges sit inside the layer's outlet, each measured inward from the
+// layer's own edge. All zero when the card paints in its frame's own outlet.
+interface FrameOffset { left: number; top: number; right: number; bottom: number }
+const IN_PLACE: FrameOffset = { left: 0, top: 0, right: 0, bottom: 0 };
+// A frame-relative edge distance moved to the layer's edge; an unset edge stays unset.
+const toLayer = (edge: number | undefined, offset: number) => (edge == null ? undefined : edge + offset);
 
 /**
  * The card's outlet-relative position (pure, so the branch logic is testable).
@@ -373,10 +404,17 @@ export function placeOverlay(
   return { left: Math.max(CLAMP_INSET, x), top: below.top };
 }
 
-function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, triggerRef, gap, cardStyle, dismissable, cardWidth, centered, preferSide, alignEnd, rtl, opaque, dense, onCardMount, ownsScroll, children, decoration }: HostedProps) {
+function HostedAnchoredOverlay({ host, frame, open, onDismiss, onAccessibilityEscape, triggerRef, gap, cardStyle, dismissable, cardWidth, centered, preferSide, alignEnd, rtl, opaque, dense, onCardMount, ownsScroll, children, decoration }: HostedProps) {
   const isOpen = useRef(open);
   isOpen.current = open;
+  // The outlet the card paints in: its window's layer when an outside tap can close
+  // it, so the backdrop spans the window; otherwise its nearest provider's (see the
+  // header). `inPlace` when that is the frame's own outlet.
+  const layer = dismissable ? overlayLayerOf(frame) : host;
+  const inPlace = layer === frame;
   const [rect, setRect] = useState<Rect | null>(null);
+  // Where the frame sits in the layer, measured with the trigger.
+  const [frameOffset, setFrameOffset] = useState<FrameOffset>(IN_PLACE);
   // The outlet's width, captured alongside the trigger measure; only needed for
   // width-aware (clamped) placement.
   const [outletWidth, setOutletWidth] = useState<number | null>(null);
@@ -402,12 +440,13 @@ function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, t
   // effect deps; the values themselves aren't read.
   const { width, height } = useWindowDimensions();
 
-  useEffect(() => host.subscribeLayout?.(() => setLayoutRevision((revision) => revision + 1)), [host]);
+  useEffect(() => frame.subscribeLayout?.(() => setLayoutRevision((revision) => revision + 1)), [frame]);
 
   useIsomorphicLayoutEffect(() => {
     if (!open) {
       setRect(null);
       setOutlet(null);
+      setFrameOffset(IN_PLACE);
       setSizes({ content: null, viewport: null, card: null, width: null, cap: null });
       lastSide.current = "below";
       revealed.current = false;
@@ -416,8 +455,9 @@ function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, t
     let cancelled = false;
     let landed = false;
     let raf = 0;
-    // The trigger's box, the outlet's box and the visible band are three
-    // independent reads, so they are issued together and joined, not chained:
+    // The trigger's box, the outlet's box and the visible band (and the layer's
+    // outlet, when the card paints there) are independent reads, so they are issued
+    // together and joined, not chained:
     // react-native-web answers every measureInWindow on a macrotask of its own,
     // so a chain cost three task hops before the card could mount, and Fabric
     // answers synchronously, so from a layout effect the rect lands inside the
@@ -449,11 +489,12 @@ function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, t
       if (trigger) {
         let triggerBox: Rect | null = null;
         let outletBox: Rect | null = null;
+        let layerBox: Rect | null = null;
         let band: { y: number; height: number } | null = null;
         const settle = () => {
-          if (cancelled || landed || !triggerBox || !outletBox) return;
+          if (cancelled || landed || !triggerBox || !outletBox || (!inPlace && !layerBox)) return;
           // A host without a visible band is bounded by its outlet.
-          const visible = host.measureVisibleBounds ? band : { y: outletBox.y, height: outletBox.height };
+          const visible = frame.measureVisibleBounds ? band : { y: outletBox.y, height: outletBox.height };
           if (!visible) return;
           // A zero box is a trigger that has not been laid out yet: try again next frame.
           if (triggerBox.width === 0 && triggerBox.height === 0) { unusable = true; return; }
@@ -464,17 +505,31 @@ function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, t
           setRect({ x: triggerBox.x - outletBox.x, y: triggerBox.y - outletBox.y, width: triggerBox.width, height: triggerBox.height });
           setOutletWidth(outletBox.width);
           setOutlet({ height: outletBox.height, visibleTop: visible.y - outletBox.y, visibleBottom: visible.y + visible.height - outletBox.y });
+          // Everything above is in the frame's coordinates, as if the card painted in
+          // the frame; the offset moves the result to the layer the card paints in
+          // (only measured when that is another outlet).
+          setFrameOffset(!layerBox ? IN_PLACE : {
+            left: outletBox.x - layerBox.x,
+            top: outletBox.y - layerBox.y,
+            right: layerBox.x + layerBox.width - (outletBox.x + outletBox.width),
+            bottom: layerBox.y + layerBox.height - (outletBox.y + outletBox.height),
+          });
+          follow(trigger, placed(triggerBox, outletBox, layerBox));
         };
         trigger.measureInWindow((x, y, w, h) => {
           triggerBox = { x, y, width: w, height: h };
           settle();
         });
-        host.measureOutlet((x, y, w, h) => {
+        frame.measureOutlet((x, y, w, h) => {
           outletBox = { x, y, width: w, height: h };
           settle();
         });
-        host.measureVisibleBounds?.((bounds) => {
+        frame.measureVisibleBounds?.((bounds) => {
           band = bounds;
+          settle();
+        });
+        if (!inPlace) layer.measureOutlet((x, y, w, h) => {
+          layerBox = { x, y, width: w, height: h };
           settle();
         });
       } else unusable = true;
@@ -487,12 +542,41 @@ function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, t
       if (unusable || frames - issuedAt >= PATIENCE) attempt();
       else raf = requestAnimationFrame(tick);
     };
+    // Where the trigger and the frame sit relative to the outlet the card paints in, and
+    // the trigger's size: what the placement above was computed from.
+    const placed = (triggerBox: Rect, outletBox: Rect, layerBox: Rect | null) => {
+      const paint = layerBox ?? outletBox;
+      return [triggerBox.x - paint.x, triggerBox.y - paint.y, triggerBox.width, triggerBox.height, outletBox.x - paint.x, outletBox.y - paint.y];
+    };
+    // After the card lands, keep reading those each frame and re-place (a new layout
+    // revision re-runs this effect) as soon as one moved: nothing else reports a keyboard
+    // or programmatic scroll of the content between the trigger and the card's outlet.
+    // Reading costs a window measure or three a frame while a card is open; React only
+    // commits when something moved.
+    const follow = (trigger: View, at: number[]) => {
+      const watch = () => {
+        if (cancelled) return;
+        let triggerBox: Rect | null = null;
+        let outletBox: Rect | null = null;
+        let layerBox: Rect | null = null;
+        const compare = () => {
+          if (cancelled || !triggerBox || !outletBox || (!inPlace && !layerBox)) return;
+          const now = placed(triggerBox, outletBox, layerBox);
+          if (now.some((value, index) => Math.abs(value - at[index]!) > 0.5)) setLayoutRevision((revision) => revision + 1);
+          else raf = requestAnimationFrame(watch);
+        };
+        trigger.measureInWindow((x, y, w, h) => { triggerBox = { x, y, width: w, height: h }; compare(); });
+        frame.measureOutlet((x, y, w, h) => { outletBox = { x, y, width: w, height: h }; compare(); });
+        if (!inPlace) layer.measureOutlet((x, y, w, h) => { layerBox = { x, y, width: w, height: h }; compare(); });
+      };
+      raf = requestAnimationFrame(watch);
+    };
     attempt();
     return () => {
       cancelled = true;
       cancelAnimationFrame(raf);
     };
-  }, [open, width, height, host, triggerRef, gap, layoutRevision]);
+  }, [open, width, height, frame, layer, inPlace, triggerRef, gap, layoutRevision]);
 
   // A width-aware card never renders wider than its outlet: when the outlet is
   // narrower than the card plus its edge insets (a phone-width screen or docs
@@ -553,27 +637,36 @@ function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, t
     if (open && measured && fittedSide) lastSide.current = fittedSide;
   }, [open, measured, fittedSide]);
   const cappedStyle = fit ? [fittedCardStyle, { maxHeight: cap! }] : fittedCardStyle;
+  // In the frame's own outlet a card anchored by one edge may grow to the frame's far
+  // edge; in the layer's outlet that room is the layer's, so it is handed the frame's.
+  const anchorEdge = horizontal?.left ?? horizontal?.right;
+  const frameRoom = !inPlace && anchorEdge != null && outletWidth != null && outletWidth > 0 ? outletWidth - anchorEdge : undefined;
 
   if (!open) return null;
 
   return (
-    <Portal>
-      {/* The dismiss backdrop only earns its keep when a tap on it can close the
-          card; a non-dismissable overlay renders without it so the page under an
-          always-open card stays interactive. */}
-      {dismissable ? <Pressable accessible={false} focusable={false} tabIndex={-1} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden aria-hidden style={BACKDROP} onPress={onDismiss} /> : null}
-      {/* Hold the card until the first measurement lands, so it never flashes at
-          (0,0). The backdrop above is transparent, so a frame before the card
-          shows nothing. */}
-      {rect && horizontal && fit ? (
-        <OverlaySideContext.Provider value={anchorGeometry}>
-          <OverlayScrollContext.Provider value={report}>
-            <Entrance ready={measured} style={{ position: "absolute", left: horizontal.left, right: horizontal.right, top: fit.top, bottom: fit.bottom }}>
-              <OverlayCard onAccessibilityEscape={onAccessibilityEscape} cardStyle={cappedStyle} opaque={opaque} dense={dense} onMount={onCardMount} ownsScroll={ownsScroll} onLayout={onCardLayout} ready={measured} decoration={decoration}>{children}</OverlayCard>
-            </Entrance>
-          </OverlayScrollContext.Provider>
-        </OverlaySideContext.Provider>
-      ) : null}
-    </Portal>
+    <PortalInto host={layer}>
+      {/* A card opened from inside this one is placed by the same frame, not by the
+          layer this one renders in (which would clamp it to the window and drop the
+          frame's insets). Only needed when those differ. */}
+      <OverlayFrameContext.Provider value={inPlace ? null : frame}>
+        {/* The dismiss backdrop only earns its keep when a tap on it can close the
+            card; a non-dismissable overlay renders without it so the page under an
+            always-open card stays interactive. */}
+        {dismissable ? <Pressable accessible={false} focusable={false} tabIndex={-1} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden aria-hidden style={BACKDROP} onPress={onDismiss} /> : null}
+        {/* Hold the card until the first measurement lands, so it never flashes at
+            (0,0). The backdrop above is transparent, so a frame before the card
+            shows nothing. */}
+        {rect && horizontal && fit ? (
+          <OverlaySideContext.Provider value={anchorGeometry}>
+            <OverlayScrollContext.Provider value={report}>
+              <Entrance ready={measured} style={{ position: "absolute", left: toLayer(horizontal.left, frameOffset.left), right: toLayer(horizontal.right, frameOffset.right), top: toLayer(fit.top, frameOffset.top), bottom: toLayer(fit.bottom, frameOffset.bottom), maxWidth: frameRoom }}>
+                <OverlayCard onAccessibilityEscape={onAccessibilityEscape} cardStyle={cappedStyle} opaque={opaque} dense={dense} onMount={onCardMount} ownsScroll={ownsScroll} onLayout={onCardLayout} ready={measured} decoration={decoration}>{children}</OverlayCard>
+              </Entrance>
+            </OverlayScrollContext.Provider>
+          </OverlaySideContext.Provider>
+        ) : null}
+      </OverlayFrameContext.Provider>
+    </PortalInto>
   );
 }

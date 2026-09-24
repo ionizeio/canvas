@@ -80,13 +80,17 @@ share measured viewport bounds, move above their triggers when needed, and scrol
 long content within the available height. Opening a hosted menu preserves the
 trigger's native view hierarchy and focus.
 
-Nested providers can scope where cards render without restricting them to the
-height of a short form. They inherit the root's visible bounds. Use
+Nested providers can scope where cards are placed without restricting them to the
+height of a short form. They inherit the root's visible bounds. A card that closes
+on an outside tap still paints in the window's outermost provider, at the place
+its nearest provider gives it, so a tap anywhere off it closes it, and the page
+under it takes no touches until it closes. Use
 `<OverlayProvider viewport>` for a deliberately bounded nested panel, whose size
 must come from its viewport rather than its content. Use
 `<OverlayProvider separateWindow>` inside a custom React Native `Modal`; its
-measurements must not inherit bounds from a different native window. Canvas
-`Drawer` supplies this boundary automatically.
+measurements must not inherit bounds from a different native window, and without
+it a card that closes on an outside tap paints in the main window's outermost
+provider, behind the `Modal`. Canvas `Drawer` supplies this boundary automatically.
 
 When page content scrolls under a header, declare the header's measured height as
 `viewportInsets={{ top: headerHeight }}` on the root or a nested `viewport` host.

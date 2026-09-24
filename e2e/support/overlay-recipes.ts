@@ -37,6 +37,12 @@ export interface OverlayRecipe {
   restoresFocus?: boolean;
   /** True when the overlay renders through a Modal at the document root. */
   atDocumentRoot?: boolean;
+  /**
+   * True when the open card paints in the window's outermost OverlayProvider, not in
+   * the stage's own: every anchored card that closes on an outside tap does, so its
+   * dismiss layer covers the whole window. It is still placed within the stage.
+   */
+  inWindowLayer?: boolean;
 }
 
 const lastButton = (stage: Locator, name: string | RegExp) =>
@@ -72,6 +78,7 @@ export const OVERLAY_RECIPES: OverlayRecipe[] = [
     role: "dialog",
     adds: 1,
     restoresFocus: true,
+    inWindowLayer: true,
   },
   {
     slug: "dropdown",
@@ -81,6 +88,7 @@ export const OVERLAY_RECIPES: OverlayRecipe[] = [
     adds: 1,
     expands: true,
     restoresFocus: true,
+    inWindowLayer: true,
   },
   {
     slug: "row-menu",
@@ -91,6 +99,7 @@ export const OVERLAY_RECIPES: OverlayRecipe[] = [
     role: "menu",
     adds: 1,
     expands: true,
+    inWindowLayer: true,
   },
   {
     // The collapsed field is a button named for its label. It used to be opened by the
@@ -101,6 +110,7 @@ export const OVERLAY_RECIPES: OverlayRecipe[] = [
     role: "listbox",
     adds: 1,
     expands: true,
+    inWindowLayer: true,
   },
   {
     // The field is a combobox, not a bare textbox: the old locator matched the page's
@@ -115,6 +125,7 @@ export const OVERLAY_RECIPES: OverlayRecipe[] = [
     role: "listbox",
     adds: 1,
     expands: true,
+    inWindowLayer: true,
   },
   {
     // The default example is the COLLAPSED trigger, not an inline palette, so the
@@ -125,6 +136,7 @@ export const OVERLAY_RECIPES: OverlayRecipe[] = [
     role: "listbox",
     adds: 1,
     expands: true,
+    inWindowLayer: true,
   },
   {
     slug: "action-sheet",
@@ -154,6 +166,7 @@ export const PHONE_INPUT_RECIPE: OverlayRecipe = {
   role: "listbox",
   adds: 1,
   expands: true,
+  inWindowLayer: true,
 };
 
 /** Material captures share these exact input recipes with Lookout. */

@@ -57,7 +57,7 @@ for (const width of [1280, 390]) for (const scheme of ["light", "dark"] as const
   });
 }
 
-for (const slug of ["dialog", "dropdown"]) test(`${slug} catalogue overlay keeps its contained host`, async ({ page }, info) => {
+for (const slug of ["dialog"]) test(`${slug} catalogue overlay keeps its contained host`, async ({ page }, info) => {
   await gotoDocs(page, `/components/${slug}`, { scheme: "dark", surface: "glass", viewport: { width: 390, height: 900 } });
   await expect(stage(page)).toBeVisible();
   const recipe = OVERLAYS.find(entry => entry.slug === slug)!;
@@ -73,3 +73,35 @@ for (const slug of ["dialog", "dropdown"]) test(`${slug} catalogue overlay keeps
   await page.keyboard.press("Escape");
   await expect(panel).toHaveCount(initial);
 });
+
+// A catalogue menu is placed within its stage but paints in the app root's outlet, so a
+// click anywhere beside the stage closes it and goes no further, as a platform menu's
+// does. Its dismiss layer used to fill only the stage's own outlet, so a click on the
+// page around the stage left the menu open (on the web, iOS and Android alike).
+for (const slug of ["dropdown", "row-menu"]) for (const width of [1280, 390]) {
+  test(`${slug} catalogue menu is placed in its stage and closes on a click beside it at ${width}`, async ({ page }) => {
+    await gotoDocs(page, `/components/${slug}`, { scheme: "dark", surface: "glass", viewport: { width, height: 900 } });
+    await expect(stage(page)).toBeVisible();
+    const recipe = OVERLAYS.find(entry => entry.slug === slug)!;
+    const panel = recipe.panel(page);
+    const trigger = recipe.trigger(page);
+    const initial = await panel.count();
+    await recipe.open(page);
+    await expect(panel).toHaveCount(initial + recipe.adds);
+    const menu = panel.last();
+    await expect(menu).toBeVisible();
+    await expect(trigger).toHaveAttribute("aria-expanded", "true");
+    // Placed by the stage: inside its left and right edges.
+    const frame = (await stage(page).boundingBox())!;
+    const card = (await menu.boundingBox())!;
+    expect(card.x).toBeGreaterThanOrEqual(frame.x - 0.5);
+    expect(card.x + card.width).toBeLessThanOrEqual(frame.x + frame.width + 0.5);
+    // The page's own heading, above the stage.
+    const heading = page.getByRole("heading", { level: 1 }).first();
+    const box = (await heading.boundingBox())!;
+    expect(box.y + box.height).toBeLessThan(frame.y);
+    await page.mouse.click(box.x + 8, box.y + box.height / 2);
+    await expect(panel).toHaveCount(initial);
+    await expect(trigger).toHaveAttribute("aria-expanded", "false");
+  });
+}
