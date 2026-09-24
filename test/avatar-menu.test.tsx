@@ -13,7 +13,7 @@ import {
 } from "../src/atoms/dropdown/dropdown.styles.ts";
 import { OverlayProvider } from "../src/style/portal.tsx";
 import { lightColors, darkColors } from "../src/style/tokens.ts";
-import { alpha, mixOklab } from "../src/style/color.ts";
+import { contrastRatio } from "../src/style/color.ts";
 import type { DropdownItem } from "../src/atoms/dropdown/dropdown.tsx";
 
 // AvatarMenu: the account identity pill (avatar + name/email + chevron) wired to
@@ -165,19 +165,21 @@ describe("AvatarMenu pill", () => {
 
   // The chevron repeats the button's own state, so it must actually flip: a glyph
   // frozen pointing down says "closed" over an open menu.
-  it("flips the chevron up while the menu is open, and never while disabled", () => {
+  it("keeps the chevron still and fills the pill while the menu is open, never while disabled", () => {
     const closed = ui(<AvatarMenu name={NAME} email={EMAIL} items={ITEMS} />).container;
-    expect(chevron(closed).style.transform).toBe("rotate(0deg)");
+    expect(chevron(closed).style.transform).toBe("");
+    expect(pill(closed).style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
     cleanup();
 
     const open = ui(<AvatarMenu open name={NAME} email={EMAIL} items={ITEMS} />).container;
-    expect(chevron(open).style.transform).toBe("rotate(180deg)");
+    expect(chevron(open).style.transform).toBe("");
+    expect(pill(open).style.backgroundColor).toBe(asRgba(lightColors.accent));
     cleanup();
 
-    // A disabled pill can never read as open, so the glyph stays down even when
-    // `open` is forced, matching the collapsed aria-expanded.
+    // A disabled pill can never read as open, so it stays bare even when `open` is
+    // forced, matching the collapsed aria-expanded.
     const inert = ui(<AvatarMenu open disabled name={NAME} email={EMAIL} items={ITEMS} />).container;
-    expect(chevron(inert).style.transform).toBe("rotate(0deg)");
+    expect(pill(inert).style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
     expect(trigger(inert).getAttribute("aria-expanded")).toBe("false");
   });
 
@@ -251,7 +253,7 @@ describe("AvatarMenu open state", () => {
     expect(changes).toEqual([true]);
     expect(container.querySelector('[role="menu"]')).toBeNull();
     expect(trigger(container).getAttribute("aria-expanded")).toBe("false");
-    expect(chevron(container).style.transform).toBe("rotate(0deg)");
+    expect(pill(container).style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
   });
 
   it("honours a controlled open prop and reports every change", () => {
@@ -406,95 +408,57 @@ describe("AvatarMenu accessibility and disabled", () => {
   });
 });
 
-describe("AvatarMenu per-OS pill metrics", () => {
-  // The identity pill's numbers are the web hand-off's --p-idpill-* tokens
-  // (styles/tokens/platforms.css), transcribed into the RN skins so native reads
-  // them from the skin and never from the CSS. These lock the transcription for
-  // all three platforms without needing a native render.
+describe("AvatarMenu: Dark Factory's identity pill on every platform", () => {
+  // No platform ships an identity pill, so every platform takes Dark Factory's (its
+  // TopBar role switcher); the numbers are the web hand-off's --p-idpill-* tokens
+  // (styles/tokens/platforms.css), which native reads from the skin, never the CSS.
 
-  it("web: a 32px secondary capsule with a hairline that only colours when open", () => {
-    expect(webMenuSkin.menuPill).toMatchObject({ height: 32, gap: 8, paddingStart: 4, paddingEnd: 10, borderWidth: 1 });
-    expect(webMenuSkin.menuPillName).toMatchObject({ fontSize: 13, lineHeight: 16, fontWeight: "500" });
-    // Tracking is 0 on web, so the skin sets none at all.
-    expect(webMenuSkin.menuPillName.letterSpacing).toBeUndefined();
-
-    const closed = webMenuSkin.menuPillFill(lightColors, false);
-    expect(closed.backgroundColor).toBe(lightColors.secondary);
-    expect(closed.borderColor).toBe("transparent");
-
-    const open = webMenuSkin.menuPillFill(lightColors, true);
-    expect(open.borderColor).toBe(lightColors.input);
-    // The open fill is the hand-off's
-    // `color-mix(in oklab, var(--foreground) 6%, var(--secondary))`, computed in
-    // Oklab rather than approximated with an sRGB channel lerp.
-    expect(open.backgroundColor).toBe(mixOklab(lightColors.secondary, lightColors.foreground, 0.06));
-
-    // The same mix in dark, where the lift goes the other way (toward the light ink).
-    expect(webMenuSkin.menuPillFill(darkColors, true).backgroundColor).toBe(mixOklab(darkColors.secondary, darkColors.foreground, 0.06));
+  it("is one skin on the web, iOS and Android", () => {
+    expect(iosMenuSkin).toBe(webMenuSkin);
+    expect(androidMenuSkin).toBe(webMenuSkin);
   });
 
-  it("iOS: a 36pt capsule whose border hairline is always visible", () => {
-    expect(iosMenuSkin.menuPill).toMatchObject({ height: 36, gap: 8, paddingStart: 5, paddingEnd: 12, borderWidth: 1 });
-    expect(iosMenuSkin.menuPillName).toMatchObject({ fontSize: 15, lineHeight: 20, fontWeight: "600", letterSpacing: -0.15 });
-
-    const closed = iosMenuSkin.menuPillFill(lightColors, false);
-    expect(closed.backgroundColor).toBe("transparent");
-    expect(closed.borderColor).toBe(lightColors.border);
-    expect(iosMenuSkin.menuPillFill(lightColors, true).backgroundColor).toBe(lightColors.secondary);
+  it("is a bare 32px pill that takes the accent fill under the pointer and while open", () => {
+    expect(webMenuSkin.menuPill).toMatchObject({ height: 32, gap: 10, paddingStart: 2, paddingEnd: 8 });
+    expect(webMenuSkin.menuPill.borderWidth).toBeUndefined();
+    expect(webMenuSkin.menuPillFill(lightColors, false)).toEqual({ backgroundColor: "transparent" });
+    expect(webMenuSkin.menuPillFill(lightColors, true)).toEqual({ backgroundColor: lightColors.accent });
+    expect(webMenuSkin.menuPillName).toMatchObject({ fontSize: 12, lineHeight: 14, fontWeight: "700" });
+    expect(webMenuSkin.menuPillSecondary).toMatchObject({ fontSize: 10.5, lineHeight: 13, fontWeight: "600" });
+    expect(webMenuSkin.menuChevronSize).toBe(14);
   });
 
-  it("Android: a 40dp tonal pill with no visible outline", () => {
-    expect(androidMenuSkin.menuPill).toMatchObject({ height: 40, gap: 8, paddingStart: 6, paddingEnd: 14, borderWidth: 1 });
-    expect(androidMenuSkin.menuPillName).toMatchObject({ fontSize: 14, lineHeight: 20, fontWeight: "500", letterSpacing: 0.1 });
-
-    const closed = androidMenuSkin.menuPillFill(lightColors, false);
-    // primary at 12% closed, 20% open: the M3 state-layer model.
-    expect(closed.backgroundColor).toBe(alpha(lightColors.primary, 0.12));
-    expect(closed.borderColor).toBe("transparent");
-    expect(androidMenuSkin.menuPillFill(lightColors, true).backgroundColor).toBe(alpha(lightColors.primary, 0.2));
+  it("rings the viewer's disc in the violet glow, over a ring of the card", () => {
+    const glow = webMenuSkin.menuDiscGlow(lightColors).boxShadow as string;
+    expect(glow).toContain(`2px ${lightColors.card}`);
+    expect(glow).toContain(`3.5px ${lightColors.primary}`);
+    const { container } = ui(<AvatarMenu name={NAME} email={EMAIL} items={ITEMS} />);
+    const ring = pill(container).firstElementChild as HTMLElement;
+    expect(ring.style.boxShadow).toContain("3.5px");
   });
 
-  // The three tests above prove the skin FUNCTION returns the right pair. They say
-  // nothing about the call site: a pill hard-wired to `menuPillFill(tokens, false)`
-  // satisfies every one of them and still never lights up. These render each
-  // platform build in both states and read the paint back off the capsule.
-  it("paints the skin's own closed AND open fill on the rendered capsule, on every platform build", async () => {
-    for (const { name, file, skin } of PLATFORM_MENUS) {
+  it("paints the rest and the open fill on the rendered pill, on every platform build", async () => {
+    for (const { name, file } of PLATFORM_MENUS) {
       const Menu = await loadMenu(file);
-      const shut = skin.menuPillFill(lightColors, false);
-      const lit = skin.menuPillFill(lightColors, true);
-
       const closed = pill(ui(<Menu name={NAME} email={EMAIL} items={ITEMS} />).container);
-      expect(closed.style.backgroundColor, name).toBe(asRgba(shut.backgroundColor as string));
-      expect(closed.style.borderColor, name).toBe(asRgba(shut.borderColor as string));
+      expect(closed.style.backgroundColor, name).toBe("rgba(0, 0, 0, 0.00)");
       cleanup();
-
       const open = pill(ui(<Menu open name={NAME} email={EMAIL} items={ITEMS} />).container);
-      expect(open.style.backgroundColor, name).toBe(asRgba(lit.backgroundColor as string));
-      expect(open.style.borderColor, name).toBe(asRgba(lit.borderColor as string));
-
-      // The two states are genuinely different paint on every platform (web lifts
-      // the fill and colours the hairline, iOS fills a transparent capsule,
-      // Android steps the tonal layer 12% -> 20%), so no single hard-coded
-      // variant can satisfy both halves above.
-      expect(
-        open.style.backgroundColor !== closed.style.backgroundColor ||
-          open.style.borderColor !== closed.style.borderColor,
-        name,
-      ).toBe(true);
+      expect(open.style.backgroundColor, name).toBe(asRgba(lightColors.accent));
       cleanup();
     }
   });
 
-  it("shares the 11/14 secondary line and the 14px chevron across platforms", () => {
-    for (const skin of [webMenuSkin, iosMenuSkin, androidMenuSkin]) {
-      expect(skin.menuPillSecondary).toMatchObject({ fontSize: 11, lineHeight: 14 });
-      expect(skin.menuChevronSize).toBe(14);
+  it("fills at once under the pointer, and keeps the email line at 4.5:1 on that fill", () => {
+    const { container } = ui(<AvatarMenu name={NAME} email={EMAIL} items={ITEMS} />);
+    const capsule = pill(container);
+    fireEvent.pointerEnter(capsule, { pointerType: "mouse" });
+    expect(capsule.style.backgroundColor).toBe(asRgba(lightColors.accent));
+    fireEvent.pointerLeave(capsule);
+    expect(capsule.style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
+    for (const t of [lightColors, darkColors]) {
+      expect(contrastRatio(t["muted-foreground"], t.accent)).toBeGreaterThanOrEqual(4.5);
     }
-    // The secondary line follows its platform's name tracking.
-    expect(webMenuSkin.menuPillSecondary.letterSpacing).toBeUndefined();
-    expect(iosMenuSkin.menuPillSecondary.letterSpacing).toBe(-0.15);
-    expect(androidMenuSkin.menuPillSecondary.letterSpacing).toBe(0.1);
   });
 });
 
@@ -536,34 +500,16 @@ describe("Avatar tiny: the identity pill's disc", () => {
 });
 
 describe("AvatarMenu capsule inset", () => {
-  // The hand-off's capsule is 32 / 36 / 40 tall on web / iOS / Android around a
-  // 24px avatar, so the disc sits in a 4 / 6 / 8 inset measured from the outer
-  // edge (RN sizes a box the way `box-sizing: border-box` does, so the 1px
-  // hairline is inside that). A 28px `small` disc would leave 2 on web, which
-  // reads as a ring around the photo rather than a capsule.
-  const inset = (height: number) => (height - DISC) / 2;
-
-  it("leaves the hand-off's 4 / 6 / 8 around the disc", () => {
-    expect(inset(webMenuSkin.menuPill.height as number)).toBe(4);
-    expect(inset(iosMenuSkin.menuPill.height as number)).toBe(6);
-    expect(inset(androidMenuSkin.menuPill.height as number)).toBe(8);
-  });
-
-  it("puts a tiny (24px) avatar inside the rendered pill", () => {
+  // Dark Factory's pill holds its disc 2px inside the capsule; the kit's `small` (28px)
+  // disc in the 32px pill keeps that inset.
+  it("holds a small (28px) disc 2px inside the 32px pill", () => {
+    expect(((webMenuSkin.menuPill.height as number) - 28) / 2).toBe(2);
+    expect(webMenuSkin.menuPill.paddingStart).toBe(2);
     ui(<AvatarMenu name={NAME} email={EMAIL} items={ITEMS} />);
     // The initials Text is the avatar box's only child, so its parent IS the disc.
     const disc = screen.getByText("RC").parentElement as HTMLElement;
-    expect(disc.style.width).toBe(`${DISC}px`);
-    expect(disc.style.height).toBe(`${DISC}px`);
-  });
-
-  it("caps the capsule's leading edge with the same 4, inside the hairline", () => {
-    // paddingStart 4 sits INSIDE the 1px hairline, so the disc's leading gap
-    // measures 5 against a 4 top and bottom. That is what the hand-off's own
-    // border-box pill measures too (padding-left 4px over a 1px border), and RN
-    // sizes a box the same way, so the two agree.
-    expect(webMenuSkin.menuPill.paddingStart).toBe(4);
-    expect(inset(webMenuSkin.menuPill.height as number)).toBe(4);
+    expect(disc.style.width).toBe("28px");
+    expect(disc.style.height).toBe("28px");
   });
 });
 

@@ -193,12 +193,15 @@
   --p-select-row-radius:10px;--p-select-row-pad-x:12px;--p-select-row-pad-y:10px;--p-select-row-gap:10px;--p-select-row-min-h:0px;
   --p-select-row-font:14px;--p-select-row-lh:20px;--p-select-row-selected-fill:var(--accent);
   --p-select-check-color:var(--popover-foreground);--p-select-check-weight:400;
-  /* AvatarMenu identity pill (an addition, built on Avatar + Dropdown) */
-  --p-idpill-h:32px;--p-idpill-gap:8px;--p-idpill-pad-start:4px;--p-idpill-pad-end:10px;
-  --p-idpill-border:1px;--p-idpill-border-color:transparent;
-  --p-idpill-fill:var(--secondary);--p-idpill-open-fill:color-mix(in oklab, var(--foreground) 6%, var(--secondary));
-  --p-idpill-open-border-color:var(--input);
-  --p-idpill-name:13px;--p-idpill-name-lh:16px;--p-idpill-name-weight:500;--p-idpill-tracking:0px;
+  /* AvatarMenu identity pill (avatar.styles.ts webMenuSkin, every platform: Dark Factory's
+     pill, bare at rest, the accent fill under the pointer and while open, a 28px disc in
+     the viewer's violet glow, 12/700 name over the 10.5/600 muted email, a static chevron) */
+  --p-idpill-h:32px;--p-idpill-gap:10px;--p-idpill-pad-start:2px;--p-idpill-pad-end:8px;
+  --p-idpill-border:0px;--p-idpill-border-color:transparent;
+  --p-idpill-fill:transparent;--p-idpill-open-fill:var(--accent);--p-idpill-hover-fill:var(--accent);
+  --p-idpill-open-border-color:transparent;
+  --p-idpill-name:12px;--p-idpill-name-lh:14px;--p-idpill-name-weight:700;--p-idpill-tracking:0px;
+  --p-idpill-disc:28px;--p-idpill-glow:0px 0px 0px 2px var(--card), 0px 0px 0px 3.5px var(--primary);
   /* Autocomplete (autocomplete.styles.ts webSkin) */
   --p-ac-h:48px;--p-ac-radius:10px;--p-ac-radius-bottom:10px;--p-ac-border:1px;--p-ac-underline:0px;
   --p-ac-border-color:var(--input);--p-ac-underline-rest:var(--input);--p-ac-fill:var(--card);--p-ac-pad-x:16px;
@@ -514,11 +517,6 @@
   --p-drawer-scrim:rgba(0,0,0,0.2);--p-drawer-border:0px;--p-drawer-shadow:0px 15px 50px rgba(0,0,0,0.18);
   --p-drawer-side-radius:38px;--p-drawer-sheet-radius:38px;
   --p-drawer-handle-w:60px;--p-drawer-handle-h:4px;--p-drawer-handle-top:5px;
-  /* AvatarMenu — iOS: a hairline-outlined 36pt capsule on the plain background, SF tracking */
-  --p-idpill-h:36px;--p-idpill-pad-start:5px;--p-idpill-pad-end:12px;
-  --p-idpill-border:1px;--p-idpill-border-color:var(--border);
-  --p-idpill-fill:transparent;--p-idpill-open-fill:var(--secondary);--p-idpill-open-border-color:var(--border);
-  --p-idpill-name:15px;--p-idpill-name-lh:20px;--p-idpill-name-weight:600;--p-idpill-tracking:-0.15px;
   /* Autocomplete — iOS 27: a filled 10pt continuous field, 26pt menu, check-only selection */
   --p-ac-h:44px;--p-ac-radius:8px;--p-ac-radius-bottom:8px;--p-ac-fill:var(--secondary);
   --p-ac-font:15px;--p-ac-lh:20px;--p-ac-chevron:var(--primary);
@@ -745,11 +743,6 @@
   --p-drawer-scrim:rgba(0,0,0,0.32);--p-drawer-border:0px;--p-drawer-shadow:var(--shadow-sm);
   --p-drawer-side-radius:16px;--p-drawer-sheet-radius:28px;--p-drawer-sheet-max:640px /* @kind other */;
   --p-drawer-handle-w:32px;--p-drawer-handle-h:4px;--p-drawer-handle-top:16px;
-  /* AvatarMenu — M3: a 40dp tonal pill (12% primary), M3 label tracking */
-  --p-idpill-h:40px;--p-idpill-pad-start:6px;--p-idpill-pad-end:14px;
-  --p-idpill-fill:color-mix(in oklab, var(--primary) 12%, transparent);
-  --p-idpill-open-fill:color-mix(in oklab, var(--primary) 20%, transparent);--p-idpill-open-border-color:transparent;
-  --p-idpill-name:14px;--p-idpill-name-lh:20px;--p-idpill-tracking:0.1px;
   /* Autocomplete — M3 exposed dropdown: filled 56dp field, 4dp elevated menu, 48dp rows */
   --p-ac-h:56px;--p-ac-radius:4px;--p-ac-radius-bottom:0px;--p-ac-border:0px;--p-ac-underline:1px;
   --p-ac-border-color:transparent;--p-ac-underline-rest:var(--muted-foreground);

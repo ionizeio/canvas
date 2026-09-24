@@ -27,6 +27,16 @@ export function pressDim(pressed: boolean, opacity = 0.9) {
   return pressed && Platform.OS !== "android" ? { opacity } : null;
 }
 
+// The dim each platform's own disabled controls take (the hand-off's --p-disabled): iOS's
+// 0.4, Material 3's 0.38, and 0.5 on the web. For a skin that one component shares across
+// every platform, evaluated once in the platform's own bundle like platformMinTarget.
+// Platform-parameterized for tests.
+export function platformDisabledDim(os: string = Platform.OS): number {
+  if (os === "ios") return 0.4;
+  if (os === "android") return 0.38;
+  return 0.5;
+}
+
 // Android-only `overflow:"hidden"`. Add it to a rounded PARENT so it clips a bounded-ripple
 // CHILD (a menu/list card whose rows carry the ripple) to the parent's rounded corners. The
 // clip is Android-only so an iOS shadow on the parent (which `overflow:"hidden"` would mask)

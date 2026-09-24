@@ -10,9 +10,9 @@ export const AvatarGroup = createAvatarGroup(webSkin);
 
 // The pill's menu is THIS platform's Dropdown, injected rather than imported: a bare
 // import resolves the web module in a browser bundler, which would render the web menu
-// under the iOS and Android pills in the docs. The hand-off stands the account menu off
-// by 6 where a plain dropdown uses 4, and that lives in the skin, not in a prop.
-const MenuDropdown = createDropdown({ ...dropdownWebSkin, menuGap: 6 });
+// under the iOS and Android pills in the docs. On the web it stands off by Dark
+// Factory's menu offset, as every web menu does.
+const MenuDropdown = createDropdown(dropdownWebSkin);
 export const AvatarMenu = createAvatarMenu(webMenuSkin, MenuDropdown);
 export type { AvatarProps, AvatarGroupProps } from "./avatar.shared.js";
 export type { AvatarMenuProps } from "./avatar-menu.shared.js";

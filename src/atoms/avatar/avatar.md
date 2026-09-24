@@ -37,7 +37,7 @@ Each name resolves to one of ten hues through a stable hash, so the same person 
 
 ### Sizes
 
-Four steps: `tiny` (24px), `small` (28px), the default 40px row avatar, and `large` (48px). The initials take about a third of the disc, and a little more on the two small ones (10px on `tiny`, 11px on `small`) so a pair of letters still reads there. `tiny` is the disc `AvatarMenu` builds its capsule around, so a standalone tiny avatar and the one inside a pill are the same circle. Precedence when several are passed: `tiny` beats `small` beats `large`.
+Four steps: `tiny` (24px), `small` (28px), the default 40px row avatar, and `large` (48px). The initials take about a third of the disc, and a little more on the two small ones (10px on `tiny`, 11px on `small`) so a pair of letters still reads there. `small` is the disc `AvatarMenu` builds its capsule around, so a standalone small avatar and the one inside a pill are the same circle. Precedence when several are passed: `tiny` beats `small` beats `large`.
 
 ```tsx
 <Row relaxed alignCenter>
@@ -87,7 +87,7 @@ Built on Dropdown, so in glass mode the menu is Dropdown's dense-layer glass car
 under the capsule, which keeps its place, its press and its accessible name
 throughout.
 
-The whole account control in one component. `AvatarMenu` renders a single capsule trigger (the avatar, the name over the muted email, a chevron that turns as the menu opens) and the account menu itself, with `name` and `email` repeated as the menu's own identity header. One press target covers the capsule, so nothing beside it has to be wired up.
+The whole account control in one component. `AvatarMenu` renders a single capsule trigger (the avatar in the viewer's violet glow ring, the name over the muted email, a chevron) and the account menu itself, with `name` and `email` repeated as the menu's own identity header. One press target covers the capsule, so nothing beside it has to be wired up. The capsule is Dark Factory's identity pill on every platform: bare at rest, it fills under the pointer and while its menu is open; the menu is each platform's own Dropdown.
 
 ```tsx
 <AvatarMenu

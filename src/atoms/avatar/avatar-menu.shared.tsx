@@ -1,36 +1,30 @@
 import type { ReactElement } from "react";
-import { View, Text, useControllableState, type ColorTokens, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
-import { GlassPane, paneStyle } from "../../style/glass-surface/glass-pane.js";
+import { View, Text, useControllableState, withInnerFill, type ColorTokens, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
+import { useHover } from "../../style/hover.js";
 import type { DropdownItem, DropdownProps } from "../dropdown/dropdown.shared.js";
 import { Icon } from "../icon/icon.js";
 import { createAvatar, type AvatarSkin } from "./avatar.shared.js";
 
 // Shared AvatarMenu shell. AvatarMenu is the account IDENTITY PILL: one capsule
 // trigger holding the avatar, the person's name over their email, and a trailing
-// chevron that rotates while the menu is open, wired to the kit's own Dropdown for
-// the menu itself. It exists so no app (or docs topbar) hand-composes an account
-// menu out of an Avatar, a hand-rolled name column, and a chevron: the anatomy,
-// the per-OS pill metrics, the open fill, and the accessible name live here once.
+// chevron, wired to the kit's own Dropdown for the menu itself. It exists so no app
+// (or docs topbar) hand-composes an account menu out of an Avatar, a hand-rolled name
+// column, and a chevron: the anatomy, the pill's look, the viewer's glow and the
+// accessible name live here once.
 //
 // The capsule is passed to Dropdown as its CUSTOM TRIGGER, so Dropdown's own
 // Pressable owns the press, the open/close toggle, the outside-tap dismissal, and
 // the button role. There is deliberately no second Pressable inside the capsule
 // (that would nest one interactive element in another; see
 // test/no-console-violations.test.tsx). AvatarMenu owns the open state so the pill
-// can paint its open fill and rotate the chevron, and passes open/onOpenChange
-// down to keep Dropdown in step.
+// can paint its open fill, and passes open/onOpenChange down to keep Dropdown in step.
 //
-// The pill's disc is the Avatar `tiny` step (24px), the size the design spec draws
-// inside the capsule on every platform, so the inset around it stays 4 on web, 6
-// on iOS, and 8 on Android instead of collapsing to a ring around the photo.
-//
-// AvatarMenu is a "Light" platform treatment on the same AvatarSkin family as
-// Avatar and AvatarGroup: one structure and one behavior, with the capsule's
-// height, padding, fill, border, and label type supplied per OS by the skin
-// (a 32px `secondary` capsule on web, a 36pt hairline-outlined capsule on iOS, a
-// 40dp tonal Material 3 pill on Android). The menu surface is the platform's own
-// Dropdown skin, so the popover matches the OS with no work here.
+// The pill is Dark Factory's identity pill on every platform (no platform ships one):
+// bare at rest, so under glass it paints no surface of its own and takes no pane; the
+// skin's fill under the pointer and while the menu is open (an ink tint under glass);
+// the `small` (28px) disc in the viewer's glow ring; a static chevron. The menu surface
+// is the platform's own Dropdown, so the popover matches the OS with no work here.
 
 /**
  * The identity-pill entries an AvatarMenu skin adds to the Avatar skin family.
@@ -39,13 +33,15 @@ import { createAvatar, type AvatarSkin } from "./avatar.shared.js";
  * lives in this file; a skin owns only the numbers that shift per OS.
  */
 export interface AvatarMenuSkin extends AvatarSkin {
-  /** Capsule metrics: height, gap, start/end padding, radius, hairline width. */
+  /** Capsule metrics: height, gap, start/end padding. */
   menuPill: ViewStyle;
-  /** Capsule fill and border color, closed and open, from the theme tokens. */
-  menuPillFill: (t: ColorTokens, open: boolean) => ViewStyle;
+  /** Capsule fill, at rest and while hovered or open, from the theme tokens. */
+  menuPillFill: (t: ColorTokens, active: boolean) => ViewStyle;
+  /** The viewer's glow ring around the disc (a wrapper's shadow). */
+  menuDiscGlow: (t: ColorTokens) => ViewStyle;
   /** The name line's type (size / line-height / weight / tracking). */
   menuPillName: TextStyle;
-  /** The secondary (email) line's type: 11/14 everywhere, tracking per OS. */
+  /** The secondary (email) line's type. */
   menuPillSecondary: TextStyle;
   /** Trailing chevron glyph size, in px. */
   menuChevronSize: number;
@@ -133,7 +129,11 @@ export function createAvatarMenu(skin: AvatarMenuSkin, Dropdown: (props: Dropdow
     // Trailing-edge by default; `alignStart` is the only way to the leading edge,
     // and an explicit `alignEnd` outranks it.
     const menuAlignEnd = alignEnd || !alignStart;
-    const pillShape = [skin.menuPill, { borderRadius: PILL_RADIUS }, skin.menuPillFill(tokens, expanded)];
+    // The pill fills under the pointer and while its menu is open; under glass the fill
+    // is an ink tint over whatever the pill sits on, never an opaque patch.
+    const { hovered, target } = useHover(!disabled);
+    const active = expanded || (hovered && !disabled);
+    const pillFill = active ? withInnerFill(theme, skin.menuPillFill(tokens, true), "firm") : skin.menuPillFill(tokens, false);
     const disabledInk = theme.surface === "glass" && disabled ? { opacity: skin.menuDisabledOpacity } : null;
 
     return (
@@ -170,11 +170,12 @@ export function createAvatarMenu(skin: AvatarMenuSkin, Dropdown: (props: Dropdow
             own: it is NOT a Pressable, since nesting one inside Dropdown's would
             make a doubly-focusable, invalid control
             (test/no-console-violations.test.tsx locks that). */}
-        <View style={paneStyle(theme, pillShape)}>
-          <GlassPane layer="control" shape={pillShape} interactive={!disabled} />
-          {/* `tiny` (24px) is the disc the capsule is drawn around: it leaves the
-              design spec's 4/6/8 inset inside the 32/36/40 pill on web/iOS/Android. */}
-          <Avatar tiny src={src} name={name} initials={initials} />
+        <View style={[skin.menuPill, { borderRadius: PILL_RADIUS }, pillFill]} {...target}>
+          {/* The viewer's disc in its glow ring: the `small` (28px) step, 2px inside the
+              32px pill. */}
+          <View style={skin.menuDiscGlow(tokens)}>
+            <Avatar small src={src} name={name} initials={initials} />
+          </View>
           {compact ? null : (
             <View style={[IDENTITY_COLUMN, disabledInk]}>
               {name ? (
@@ -189,9 +190,9 @@ export function createAvatarMenu(skin: AvatarMenuSkin, Dropdown: (props: Dropdow
               ) : null}
             </View>
           )}
-          {/* The chevron points down when closed and flips up while the menu is open;
-              it repeats the button's own state, so it stays decorative. */}
-          <View style={[{ transform: [{ rotate: expanded ? "180deg" : "0deg" }] }, disabledInk]}>
+          {/* A static chevron, as Dark Factory's pill has: the button's own state names
+              whether the menu is open, so it stays decorative. */}
+          <View style={disabledInk}>
             <Icon chevronDown size={skin.menuChevronSize} muted decorative />
           </View>
         </View>
