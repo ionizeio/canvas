@@ -8,7 +8,7 @@ import { PageNav } from "../../ui/page-nav";
 const INSTALL = `npm install @ionizeio/canvas react react-native react-native-svg`;
 
 const OPTIONAL_INSTALL = `# add only the ones whose feature you use
-npm install react-native-qrcode-svg react-native-safe-area-context expo-blur expo-glass-effect expo-clipboard
+npm install react-native-qrcode-svg expo-video react-native-safe-area-context expo-blur expo-glass-effect expo-clipboard
 
 # Android 12+ capture support in an Expo SDK 57 native build
 npm install @ionizeio/canvas-blur`;
@@ -169,6 +169,11 @@ export default function IntegrationScreen() {
           <P muted>
             <InlineCode>react-native-qrcode-svg</InlineCode>: renders the <InlineCode>QRCode</InlineCode> component;
             without it, <InlineCode>QRCode</InlineCode> shows an empty labeled frame.
+          </P>
+          <P muted>
+            <InlineCode>expo-video</InlineCode>: plays clips in the <InlineCode>Video</InlineCode> component (a native
+            module: rebuild the app after installing it). Without it, <InlineCode>Video</InlineCode> keeps its size and
+            poster in a labeled frame.
           </P>
           <P muted>
             <InlineCode>expo-glass-effect</InlineCode>: native Liquid Glass for eligible functional surfaces on supported

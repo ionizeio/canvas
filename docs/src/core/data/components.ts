@@ -450,6 +450,12 @@ export const COMPONENTS: ComponentDoc[] = [
     description: "Type scale classes for headings, body text, and helper styles.",
     category: "Atoms",
   },
+  {
+    slug: "video",
+    name: "Video",
+    description: "Plays a clip with a poster: tap to play inline, or full transport controls (the platform's own on iOS and Android, the kit's bar on the web), with boolean fit, autoplay, loop and muted props.",
+    category: "Atoms",
+  },
 
   {
     slug: "spinner",

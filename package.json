@@ -106,21 +106,19 @@
     "access": "public"
   },
   "peerDependencies": {
-    "react": ">=18",
-    "react-native": ">=0.74",
-    "react-native-svg": ">=14",
-    "react-native-qrcode-svg": ">=6",
-    "react-native-safe-area-context": ">=4",
+    "@ionizeio/canvas-blur": "*",
     "expo-blur": "*",
     "expo-clipboard": "*",
     "expo-glass-effect": "*",
-    "@ionizeio/canvas-blur": "*"
+    "expo-video": "*",
+    "react": ">=18",
+    "react-native": ">=0.74",
+    "react-native-qrcode-svg": ">=6",
+    "react-native-safe-area-context": ">=4",
+    "react-native-svg": ">=14"
   },
   "peerDependenciesMeta": {
-    "react-native-qrcode-svg": {
-      "optional": true
-    },
-    "react-native-safe-area-context": {
+    "@ionizeio/canvas-blur": {
       "optional": true
     },
     "expo-blur": {
@@ -132,7 +130,13 @@
     "expo-glass-effect": {
       "optional": true
     },
-    "@ionizeio/canvas-blur": {
+    "expo-video": {
+      "optional": true
+    },
+    "react-native-qrcode-svg": {
+      "optional": true
+    },
+    "react-native-safe-area-context": {
       "optional": true
     }
   },
@@ -158,6 +162,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "expo-blur": "~57.0.2",
     "expo-glass-effect": "~57.0.1",
+    "expo-video": "~57.0.2",
     "happy-dom": "^20.10.6",
     "husky": "^9.1.7",
     "lucide-static": "^1.24.0",

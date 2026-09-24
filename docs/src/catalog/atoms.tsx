@@ -81,6 +81,30 @@ function ImagePreview() {
   );
 }
 
+function VideoPreview() {
+  const { tokens } = useTheme();
+  return (
+    <View
+      style={{
+        width: 64,
+        height: 48,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: tokens.border,
+        backgroundColor: alpha(tokens.muted, 0.5),
+        overflow: "hidden",
+      }}
+    >
+      <Svg width={62} height={46} viewBox="0 0 62 46" opacity={0.55}>
+        <Polygon points="26,10 26,26 39,18" fill={tokens["muted-foreground"]} />
+        <Path d="M0 35 H62" stroke={tokens["muted-foreground"]} strokeWidth={1} opacity={0.5} />
+        <Path d="M8 40.5 H25" stroke={tokens["muted-foreground"]} strokeWidth={2} strokeLinecap="round" />
+        <Path d="M25 40.5 H54" stroke={tokens["muted-foreground"]} strokeWidth={2} strokeLinecap="round" opacity={0.35} />
+      </Svg>
+    </View>
+  );
+}
+
 function TextInputPreview() {
   const { tokens } = useTheme();
   return (
@@ -535,4 +559,5 @@ export const ATOMS_TILES: CatTile[] = [
   { title: "Textarea", href: "/components/textarea", Preview: TextareasPreview },
   { title: "Switch", href: "/components/switch", Preview: SwitchPreview },
   { title: "Tooltip", href: "/components/tooltip", Preview: TooltipsPreview },
+  { title: "Video", href: "/components/video", Preview: VideoPreview },
 ];

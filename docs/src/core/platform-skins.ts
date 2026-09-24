@@ -115,10 +115,12 @@ import { MetricBreakdown as MetricBreakdownIOS } from "../../../src/charts/metri
 import { MetricBreakdown as MetricBreakdownAndroid } from "../../../src/charts/metric-breakdown/metric-breakdown.android.js";
 import { GeoMap as GeoMapIOS } from "../../../src/charts/geo-map/geo-map.ios.js";
 import { GeoMap as GeoMapAndroid } from "../../../src/charts/geo-map/geo-map.android.js";
+import { Video as VideoIOS } from "../../../src/atoms/video/video.ios.js";
+import { Video as VideoAndroid } from "../../../src/atoms/video/video.android.js";
 
 export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> = {
   ios: {
-    Switch: SwitchIOS, Button: ButtonIOS, Checkbox: CheckboxIOS, Listbox: ListboxIOS, Radio: RadioIOS, RadioGroup: RadioGroupIOS,
+    Video: VideoIOS, Switch: SwitchIOS, Button: ButtonIOS, Checkbox: CheckboxIOS, Listbox: ListboxIOS, Radio: RadioIOS, RadioGroup: RadioGroupIOS,
     Input: InputIOS, Textarea: TextareaIOS, ButtonGroup: ButtonGroupIOS, Select: SelectIOS,
     Autocomplete: AutocompleteIOS, Dropdown: DropdownIOS, Popover: PopoverIOS, Tooltip: TooltipIOS,
     RowMenu: RowMenuIOS, Dialog: DialogIOS, AlertDialog: AlertDialogIOS,
@@ -138,7 +140,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     DashboardGrid: DashboardGridIOS, MetricBreakdown: MetricBreakdownIOS, GeoMap: GeoMapIOS,
   },
   android: {
-    Switch: SwitchAndroid, Button: ButtonAndroid, Checkbox: CheckboxAndroid, Listbox: ListboxAndroid, Radio: RadioAndroid, RadioGroup: RadioGroupAndroid,
+    Video: VideoAndroid, Switch: SwitchAndroid, Button: ButtonAndroid, Checkbox: CheckboxAndroid, Listbox: ListboxAndroid, Radio: RadioAndroid, RadioGroup: RadioGroupAndroid,
     Input: InputAndroid, Textarea: TextareaAndroid, ButtonGroup: ButtonGroupAndroid, Select: SelectAndroid,
     Autocomplete: AutocompleteAndroid, Dropdown: DropdownAndroid, Popover: PopoverAndroid, Tooltip: TooltipAndroid,
     RowMenu: RowMenuAndroid, Dialog: DialogAndroid, AlertDialog: AlertDialogAndroid,

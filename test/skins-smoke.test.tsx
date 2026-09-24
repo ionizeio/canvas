@@ -101,6 +101,7 @@ const CASES: SkinCase[] = [
   { name: "Popover", dir: "atoms/popover", file: "popover", props: { inline: true, title: "Title", description: "Body", actionLabel: "OK" } },
   { name: "Progress", dir: "atoms/progress", file: "progress", props: { value: 0.6 } },
   { name: "QRCode", dir: "atoms/qrcode", file: "qrcode", props: { value: "https://example.com" } },
+  { name: "Video", dir: "atoms/video", file: "video", props: { source: { uri: "https://example.com/clip.mp4" }, controls: true } },
   { name: "Radio", dir: "atoms/radio", file: "radio", props: { checked: false }, children: "Option" },
   {
     // The group builds from the Radio skin, so iOS mounts its checkmark list section here.

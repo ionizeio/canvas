@@ -36,3 +36,4 @@ export * from "./switch/switch.js";
 export * from "./textarea/textarea.js";
 export * from "./tooltip/tooltip.js";
 export * from "./typography/typography.js";
+export * from "./video/video.js";

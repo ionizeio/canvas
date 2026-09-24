@@ -23,7 +23,7 @@ describe.skipIf(!hasDist)("dist artifact", () => {
       "Button", "Badge", "Avatar", "AvatarGroup", "AvatarMenu", "Chip", "Emblem", "Row", "Column", "Sparkline",
       "Card", "DescriptionList", "Field", "Form", "FormSection", "Stats",
       "Chart", "StackedBar", "Gauge", "Heatmap", "LineChart", "AreaChart", "PieChart", "ScatterPlot", "CandlestickChart", "DepthChart", "BarList", "MetricBreakdown", "UptimeBar", "ServiceHealthList", "BulletChart", "ProgressRing", "ComposedChart", "RangeAreaChart", "Histogram", "BoxPlot", "WaterfallChart", "RadialBarChart", "FunnelChart", "RadarChart", "Treemap", "DataTable", "Dialog", "Toast",
-      "ThemeProvider", "GlassSurface", "QRCode",
+      "ThemeProvider", "GlassSurface", "QRCode", "Video",
     ]) {
       expect(typeof (kit as Record<string, unknown>)[name]).not.toBe("undefined");
     }

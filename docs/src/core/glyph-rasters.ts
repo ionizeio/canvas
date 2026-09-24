@@ -91,4 +91,5 @@ export const GLYPH_RASTERS: Record<string, number> = {
   userCheck: require("../../assets/images/menu-glyphs/userCheck.png"),
   userPlus: require("../../assets/images/menu-glyphs/userPlus.png"),
   users: require("../../assets/images/menu-glyphs/users.png"),
+  video: require("../../assets/images/menu-glyphs/video.png"),
 };

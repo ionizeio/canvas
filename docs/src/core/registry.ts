@@ -45,6 +45,7 @@ export const COMPONENT_DOC_KEYS: Record<string, string> = {
   "textarea": "./atoms/textarea/textarea-docs.tsx",
   "tooltip": "./atoms/tooltip/tooltip-docs.tsx",
   "typography": "./atoms/typography/typography-docs.tsx",
+  "video": "./atoms/video/video-docs.tsx",
   "view": "./atoms/view/view-docs.tsx",
   "accordion": "./molecules/accordion/accordion-docs.tsx",
   "action-panels": "./molecules/action-panels/action-panels-docs.tsx",

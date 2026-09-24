@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, PieChart } = scope;
+  const { Video, Card, PieChart } = scope;
   return (
 <Card padded>
   <PieChart

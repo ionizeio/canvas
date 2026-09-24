@@ -44,6 +44,7 @@ export const FIRST_EXAMPLE_CODE: Record<string, string> = {
   "textarea": "<Textarea placeholder=\"A few words about this project\" />",
   "tooltip": "<Tooltip label=\"Open settings\" trigger=\"Settings\" open />",
   "typography": "<Typography>The quick brown fox</Typography>",
+  "video": "<Video source={{ uri: \"/video-sample.mp4\" }} poster={{ uri: \"/video-sample.jpg\" }} accessibilityLabel=\"Sample clip\" />",
   "view": "<View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: tokens.primary }} />",
   "accordion": "<Accordion\n  items={[\n    { key: \"what\", title: \"What is Canvas?\", content: \"A universal React Native UI kit for iOS, Android, and the web.\" },\n    { key: \"access\", title: \"Is it accessible?\", content: \"Yes. Each header is a button that exposes its expanded state.\" },\n    { key: \"theme\", title: \"Is it themed?\", content: \"Yes. Every color comes from the active theme tokens.\" }\n  ]}\n  defaultValue=\"what\"\n/>",
   "action-panels": "<ActionPanel\n  title=\"Export your data\"\n  description=\"Download everything in this workspace as a ZIP archive.\"\n  actionLabel=\"Export\"\n/>",

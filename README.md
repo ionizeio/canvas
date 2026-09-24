@@ -32,12 +32,13 @@ Install the optional peers needed by your app's features. The package remains us
 | `expo-glass-effect` | you want native Liquid Glass on supported iOS 26+ devices | forced glass uses `expo-blur` when available, otherwise the skin's solid fill; automatic surface mode remains solid |
 | `@ionizeio/canvas-blur` | you want Canvas backdrop capture and frost on Android 12+ in Expo SDK 57 (module 0.1.0+) | Canvas uses another supported material or the complete solid appearance |
 | `expo-blur` | you want static frost on iOS, including content beneath iOS 26 Liquid Glass, or supported legacy Android frost | surfaces use their solid fill when no other material is available; browser frost/lenses, native Liquid Glass and the Android capture module remain independent |
+| `expo-video` | you play clips with `Video` | the frame keeps its size and poster, labeled, and warns once in development |
 | `expo-clipboard` | you want `CodeBlock` to copy text on native | web can use `navigator.clipboard`; native copying needs a supplied `onCopy` handler |
 | `react-native-safe-area-context` | you want safe-area insets in Canvas shells, with your app's `SafeAreaProvider` | safe-area wrappers render as plain views without insets |
 
 ```bash
 # add any subset you actually use
-npm install react-native-qrcode-svg expo-glass-effect expo-blur expo-clipboard react-native-safe-area-context
+npm install react-native-qrcode-svg expo-video expo-glass-effect expo-blur expo-clipboard react-native-safe-area-context
 # Android native capture also requires rebuilding your custom native app
 npm install @ionizeio/canvas-blur
 ```

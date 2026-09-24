@@ -309,6 +309,11 @@
             "slug": "typography",
             "label": "Typography",
             "icon": "type"
+          },
+          {
+            "slug": "video",
+            "label": "Video",
+            "icon": "video"
           }
         ]
       },
