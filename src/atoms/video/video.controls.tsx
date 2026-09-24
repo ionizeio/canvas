@@ -11,7 +11,12 @@ import { Typography } from "../typography/typography.js";
 // controls in a Row so they take Dark Factory's look from their own web skins. iOS and Android never render it:
 // their entries hand `controls` to the platform's own player controls.
 
-export interface VideoControlsProps {
+/**
+ * What the Video shell hands its control bar: the playback state and the handlers that
+ * change it. An internal part contract, not public API (it is deliberately not named
+ * `*Props`, which the docs generator publishes as a component's prop table).
+ */
+export interface VideoTransport {
   playing: boolean;
   muted: boolean;
   /** Seconds played. */
@@ -38,7 +43,7 @@ export function clock(seconds: number): string {
   return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, "0")}`;
 }
 
-export function VideoControls(props: VideoControlsProps) {
+export function VideoControls(props: VideoTransport) {
   const { playing, muted, currentTime, duration, label } = props;
   const Button = props.Button ?? WebButton;
   const Slider = props.Slider ?? WebSlider;

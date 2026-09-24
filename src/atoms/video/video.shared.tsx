@@ -8,7 +8,7 @@ import { Icon as WebIcon } from "../icon/icon.js";
 import { Image } from "../image/image.js";
 import { type ImageRadius } from "../image/image.shared.js";
 import { Spinner as WebSpinner } from "../spinner/spinner.js";
-import { VideoControls as WebVideoControls, type VideoControlsProps } from "./video.controls.js";
+import { VideoControls as WebVideoControls, type VideoTransport } from "./video.controls.js";
 import { type VideoSkin } from "./video.styles.js";
 
 // expo-video is an OPTIONAL peer (a native module), loaded with a guarded literal
@@ -94,13 +94,13 @@ export interface VideoParts {
   /** `controls` hands the frame to the platform's own player controls (iOS, Android). */
   nativeControls?: boolean;
   /** The kit's control bar, drawn when `controls` is on and the platform has none of its own. */
-  Controls?: ComponentType<VideoControlsProps>;
+  Controls?: ComponentType<VideoTransport>;
   Emblem?: typeof WebEmblem;
   Icon?: typeof WebIcon;
   Spinner?: typeof WebSpinner;
   /** The platform's Button and Slider for the kit's bar (the web builds by default). */
-  Button?: VideoControlsProps["Button"];
-  Slider?: VideoControlsProps["Slider"];
+  Button?: VideoTransport["Button"];
+  Slider?: VideoTransport["Slider"];
 }
 
 type Fit = "contain" | "cover" | "fill";
@@ -120,9 +120,9 @@ function fitFlags(fit: Fit) {
 }
 
 interface Kit {
-  Controls: ComponentType<VideoControlsProps>;
-  Button?: VideoControlsProps["Button"];
-  Slider?: VideoControlsProps["Slider"];
+  Controls: ComponentType<VideoTransport>;
+  Button?: VideoTransport["Button"];
+  Slider?: VideoTransport["Slider"];
   Emblem: typeof WebEmblem;
   Icon: typeof WebIcon;
   Spinner: typeof WebSpinner;
