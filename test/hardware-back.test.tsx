@@ -11,7 +11,8 @@ import { ActionSheet } from "../src/organisms/action-sheet/action-sheet.tsx";
 // shim logs console.error("BackHandler is not supported on web…") on EVERY
 // addEventListener call, so an unguarded hardware-back subscription spams every
 // web consumer's console each time an overlay opens. useHardwareBack (shared by
-// Drawer, ActionSheet, and the Sidebar drill-down) must therefore never touch
+// the full-screen overlays, the Sidebar drill-down and every card AnchoredOverlay
+// floats; test/anchored-overlay-dismissal.test.tsx) must therefore never touch
 // BackHandler on web. These tests run under the react-native-web alias, i.e. the
 // exact environment the bug reproduced in.
 

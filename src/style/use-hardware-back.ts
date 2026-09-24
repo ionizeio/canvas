@@ -1,8 +1,9 @@
 import { useEffect, useRef } from "react";
 import { BackHandler, Platform } from "react-native";
 
-// Hardware-back-to-dismiss for open overlays (Drawer, ActionSheet, the Sidebar
-// drill-down): the native mirror of useEscapeKey. While `active`, a BackHandler
+// Hardware-back-to-dismiss for open overlays (Drawer, ActionSheet, Dialog and
+// AlertDialog over the page, the Sidebar drill-down, and every card AnchoredOverlay
+// floats: the menus, lists, popovers and peeks): the native mirror of useEscapeKey. While `active`, a BackHandler
 // subscription catches the Android hardware/gesture back, calls `onBack` (close
 // the overlay, or pop a level), and consumes the event so the app does not
 // navigate back or exit underneath the overlay. BackHandler fires on Android

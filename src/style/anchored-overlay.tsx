@@ -1,6 +1,12 @@
 // AnchoredOverlay: a floating card fitted beside a trigger, with
 // cross-platform outside-tap dismissal, from RN primitives only.
 //
+// Android's hardware back dismisses an open card too, on both paths below: it is
+// the platform's own "back out of this", so it closes the menu and never reaches
+// the navigator underneath (a page that went back with its menu still open was the
+// bug). The press routes through the owner's escape scope, the same request an
+// iOS accessibility escape makes, so a card nested in another overlay closes first.
+//
 // When an <OverlayProvider> is mounted (an app root, or a docs example stage),
 // the card plus a full-bleed dismiss backdrop are portaled into its outlet and
 // the card is positioned at the trigger's coordinates measured RELATIVE TO the
@@ -41,6 +47,7 @@ import { EntranceReadinessContext } from "./entrance-readiness.js";
 import { fitOverlayHeight, type OverlaySide } from "./overlay-layout.js";
 import { OverlayScrollContext, OverlayScrollView } from "./overlay-scroll.js";
 import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect.js";
+import { useHardwareBack } from "./use-hardware-back.js";
 
 const OverlaySideContext = createContext<{ side: OverlaySide; centerX?: number; cardWidth?: number }>({ side: "below" });
 /** The actual collision-resolved edge for a card's directional decoration. */
@@ -73,11 +80,11 @@ export interface AnchoredOverlayProps {
    *  used only in the no-host fallback. */
   inlineStyle?: StyleProp<ViewStyle>;
   /**
-   * Whether an outside tap can actually dismiss the card (default true). Pass
-   * false when dismissal is a no-op — a controlled `open` with no change handler
-   * (e.g. a docs example pinned open) — so the full-bleed dismiss backdrop is
-   * skipped instead of silently swallowing every tap under an overlay that can
-   * never close.
+   * Whether an outside tap or Android's hardware back can actually dismiss the
+   * card (default true). Pass false when dismissal is a no-op — a controlled
+   * `open` with no change handler (e.g. a docs example pinned open) — so the
+   * full-bleed dismiss backdrop is skipped instead of silently swallowing every
+   * tap under an overlay that can never close, and back is left to the page.
    */
   dismissable?: boolean;
   /**
@@ -171,6 +178,12 @@ export function AnchoredOverlay({
   ownsScroll = false,
 }: AnchoredOverlayProps) {
   const host = useOverlayHost();
+
+  // Hardware back closes a card that can close, hosted or inline. The owner's escape
+  // scope takes the request when it passes one (every kit consumer does), so a card
+  // open inside another overlay closes before its parent; without one, back does what
+  // an outside tap does.
+  useHardwareBack(open && dismissable, onAccessibilityEscape ?? onDismiss);
 
   // No provider: render the card inline in place, exactly as the kit did before
   // the portal layer (absolute anchor under the trigger, no backdrop). Entrance
