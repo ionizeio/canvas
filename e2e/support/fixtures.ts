@@ -7,7 +7,9 @@
  *             Content-Security-Policy, or failed to load a same-origin asset. This is
  *             the whole reason the suite is worth running at all on most routes: a
  *             react-native-web screen that throws in an effect still paints, so
- *             "it rendered" proves very little on its own.
+ *             "it rendered" proves very little on its own. On the export it cannot
+ *             catch an attribute that hydrated with the wrong value: production React
+ *             logs nothing for one. e2e/behavior/hydration-ids.e2e.ts checks those.
  *   registry  Stubs the npm registry. docs/src/ui/use-latest-version.ts re-fetches
  *             the published version EVERY time a screen gains focus, so leaving it
  *             live would make every test depend on the network and on npm's latency.

@@ -1,0 +1,68 @@
+diff --git a/build/static/renderStaticContent.js b/build/static/renderStaticContent.js
+index 748a99e971118d0ad48616d5296805a413055adb..1e9bd430ab0ac0628b1355965081d8b9c753962c 100644
+--- a/build/static/renderStaticContent.js
++++ b/build/static/renderStaticContent.js
+@@ -52,6 +52,7 @@ const _ctx_1 = require("expo-router/_ctx");
+ const head_1 = __importDefault(require("expo-router/head"));
+ const static_1 = require("expo-router/internal/static");
+ const server_1 = __importDefault(require("react-dom/server"));
++const react_native_web_1 = require("react-native-web");
+ const getRootComponent_1 = require("./getRootComponent");
+ const debug_1 = require("../utils/debug");
+ const html_1 = require("../utils/html");
+@@ -71,14 +72,18 @@ function resetReactNavigationContexts() {
+ function prepareRenderContext(location, options) {
+     const headContext = {};
+     const Root = (0, getRootComponent_1.getRootComponent)();
+-    const { 
+-    // NOTE: The `element` that's returned adds two extra Views and
+-    // the seemingly unused `RootTagContext.Provider`.
+-    element, getStyleElement, } = (0, static_1.registerStaticRootComponent)(expo_router_1.ExpoRoot, {
+-        location,
+-        context: _ctx_1.ctx,
+-        wrapper: ({ children }) => ((0, jsx_runtime_1.jsx)(Root, { children: (0, jsx_runtime_1.jsx)("div", { id: "root", children: children }) })),
+-    });
++    // PATCH (@ionizeio/canvas-docs): the app is ExpoRoot itself, in the shape the client
++    // hydrates (expo-router/build/qualified-entry.js renders Head.Provider > ExpoRoot into
++    // #root), with no document wrapper and no react-native-web AppContainer. The client
++    // hydrates #root alone (expo/src/launch/AppRegistry.web.tsx calls hydrateRoot on it)
++    // from an empty useId tree context, so anything rendered ABOVE #root in the same React
++    // tree shifts every useId below it: +html's <html> holds [head, body] and its <body>
++    // holds [#root, bodyNodes], two array forks the client never has. The server then
++    // wrote different ids than the client built (a field's label id and its input's
++    // aria-labelledby, an Autocomplete's aria-controls), React DEV reported the mismatch,
++    // and production React kept the server's ids silently beside client-rendered nodes
++    // that use the client's. getStaticContent renders the document shell separately.
++    const element = (0, jsx_runtime_1.jsx)(expo_router_1.ExpoRoot, { location, context: _ctx_1.ctx });
+     // This MUST be run before `ReactDOMServer.renderToString` to prevent
+     // "Warning: Detected multiple renderers concurrently rendering the same context provider. This is currently unsupported."
+     resetReactNavigationContexts();
+@@ -88,12 +93,25 @@ function prepareRenderContext(location, options) {
+             [loaderKey]: options?.loader?.data ?? null,
+         }
+         : null;
+-    return { headContext, element, getStyleElement, loadedData };
++    return { headContext, Root, element, loadedData };
++}
++// PATCH (@ionizeio/canvas-docs): react-native-web's stylesheet as the app's render filled
++// it, the element registerStaticRootComponent's getStyleElement returned (expo's web
++// AppRegistry reads the sheet the same way).
++function getStyleElement() {
++    const sheet = react_native_web_1.StyleSheet.getSheet();
++    return (0, jsx_runtime_1.jsx)("style", { dangerouslySetInnerHTML: { __html: sheet.textContent }, id: sheet.id });
+ }
+ async function getStaticContent(location, options) {
+     return Font.withServerContext(() => {
+-        const { headContext, element, getStyleElement, loadedData } = prepareRenderContext(location, options);
+-        const html = server_1.default.renderToString((0, jsx_runtime_1.jsx)(head_1.default.Provider, { context: headContext, children: (0, jsx_runtime_1.jsx)(static_1.InnerRoot, { loadedData: loadedData, children: element }) }));
++        const { headContext, Root, element, loadedData } = prepareRenderContext(location, options);
++        // PATCH (@ionizeio/canvas-docs): two renders. The app first, as its own React tree
++        // (so its useId context starts empty, as the client's does), which also fills the
++        // Helmet context, the stylesheet and the font registry that the steps below read.
++        // Then the +html document with that markup placed into #root: the document is
++        // never hydrated, so nothing it renders can shift the app's ids.
++        const app = server_1.default.renderToString((0, jsx_runtime_1.jsx)(head_1.default.Provider, { context: headContext, children: (0, jsx_runtime_1.jsx)(static_1.InnerRoot, { loadedData: loadedData, children: element }) }));
++        const html = server_1.default.renderToString((0, jsx_runtime_1.jsx)(Root, { children: (0, jsx_runtime_1.jsx)("div", { id: "root", dangerouslySetInnerHTML: { __html: app } }) }));
+         // Eval the CSS after the HTML is rendered so that the CSS is in the same order
+         const css = server_1.default.renderToStaticMarkup(getStyleElement());
+         let output = mixHeadComponentsWithStaticResults(headContext.helmet, html);

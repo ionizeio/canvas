@@ -17,6 +17,9 @@
  *                     miss) with the production Content-Security-Policy from
  *                     docs/public/_headers. This is the canonical run: it tests
  *                     the bytes that ship. Build it with `cd docs && bun run build:web`.
+ *                     Production React does not report a hydration mismatch in an
+ *                     attribute, so here the console gate cannot see one: the ids a
+ *                     page hydrates are checked by e2e/behavior/hydration-ids.e2e.ts.
  *
  * There are no retries on purpose. A test that only passes sometimes is a defect in
  * the test or the app, and hiding it behind a retry is the shortcut this repo does

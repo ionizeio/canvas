@@ -14,7 +14,10 @@ const expo = spawn("expo", ["start", ...process.argv.slice(2)], {
   // of expo-router's dev default of rendering from scratch over the server's markup: a
   // hydration mismatch then shows in the dev console rather than only in production,
   // and the paint-first document the dev middleware serves (scripts/dev-documents.cjs)
-  // becomes interactive in place. An explicit environment wins.
+  // becomes interactive in place. An explicit environment wins. This is what surfaced
+  // Expo's useId shift under #root (docs/patches): production React never diffs a
+  // hydrated attribute, so the export kept the wrong ids silently, and only a hydrating
+  // development build reports them. Keep hydrating here.
   env: { EXPO_WEB_DEV_HYDRATE: "1", ...process.env },
 });
 

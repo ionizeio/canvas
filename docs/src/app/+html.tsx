@@ -4,13 +4,25 @@ import { breakpoints, type BreakpointKey } from "@ionizeio/canvas";
 import { FLUID_TEXT, fluidTextAt, type FluidRole } from "../lib/fluid-type";
 
 // The document every pre-rendered page is written into (app.json `web.output:
-// "static"`). expo-router renders each route inside this root at export time, and the
-// dev server does the same per request, so this is where the SITE-WIDE head lives:
-// the description and the Open Graph / Twitter card. The per-page tags, the document
-// title and the canonical link, come from the app (docs/src/ui/docs-head.tsx) and are
-// merged into `headNodes` here; the exporter adds the stylesheet, the registered fonts'
-// @font-face rules and preloads, the favicon and the bundle. (A public/index.html
-// template is only read for a single-page export and would be ignored here.)
+// "static"`). The export writes each route into it, and the dev server does the same
+// per request, so this is where the SITE-WIDE head lives: the description and the Open
+// Graph / Twitter card. The per-page tags, the document title and the canonical link,
+// come from the app (docs/src/ui/docs-head.tsx, through expo-router/head), and the
+// static renderer splices them into <head> as text once this document has rendered,
+// the same way it adds the stylesheet, the registered fonts' @font-face rules and
+// preloads, and the favicon (the exporter adds the bundle's script tags afterwards).
+// Nothing provides the server document context in a static render, so `headNodes`,
+// `bodyNodes` and the attribute objects below are empty here; only Expo's streaming
+// renderer fills them. (A public/index.html template is only read for a single-page
+// export and would be ignored here.)
+//
+// The app is rendered as a React tree of its own and its markup placed into #root
+// (docs/patches/@expo%2Frouter-server@57.0.7.patch patches Expo's static renderer to do
+// that), because #root is exactly what the client hydrates, from an empty useId
+// context. So nothing this document renders around #root reaches the app: no context,
+// no state, and no position in the tree. Rendered inside this document, as Expo does
+// unpatched, the app sat under <html> and <body>, which hold two children each, and
+// every useId below #root came out different from the client's.
 //
 // This file is the one place in the docs that renders raw DOM elements, by design: it
 // is the web document around the app, not UI, and expo-router ignores it on iOS and

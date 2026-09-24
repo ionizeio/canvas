@@ -134,6 +134,14 @@ jobs:
         working-directory: docs
         run: bun install --frozen-lockfile
 
+      # The docs patch Expo (docs/patches, patchedDependencies in docs/package.json), and
+      # bun skips a patch without a word once a version bump leaves its key behind. This
+      # fails instead, checks every patch is applied, and hydrates a useId probe under the
+      # patched Expo dev wrapper with the docs' own React. MUST run after the docs install.
+      - name: Check the docs' dependency patches are in force
+        working-directory: docs
+        run: bun run check:patches
+
       # The /licenses screen carries obligations, not decoration: MIT requires its notice
       # to ship with the software and OFL-1.1 requires the same for the bundled Geist
       # typefaces. This fails if a dependency changed without re-running `notices:gen`,

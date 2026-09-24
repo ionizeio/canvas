@@ -1,0 +1,48 @@
+diff --git a/src/launch/withDevTools.web.tsx b/src/launch/withDevTools.web.tsx
+index 65e42de23822e88fae9f00a3c86160a8a5732d89..eeb784dc10e8cb2015cdc27b0d6462895629beeb 100644
+--- a/src/launch/withDevTools.web.tsx
++++ b/src/launch/withDevTools.web.tsx
+@@ -2,16 +2,37 @@ import * as React from 'react';
+ 
+ import DevLoadingView from '../environment/DevLoadingView';
+ 
++// PATCH (@ionizeio/canvas-docs): the root this wrapper returns is the root the client
++// hydrates into #root, so it must be exactly the app. It used to return
++// <><App /><DevLoadingView /></>, and a two-child array is a useId fork: in development
++// every useId under the app gained a slot the server render and the production client
++// never have, so a hydrated page's ids differed from the server's (React DEV reports the
++// mismatch on every page that hydrates one). The Fast Refresh toast now mounts in a React
++// root of its own, beside #root in <body>.
++const DEV_LOADING_VIEW_HOST_ID = 'expo-dev-loading-view';
++
++function useDevLoadingViewRoot() {
++  React.useEffect(() => {
++    // Mounted once per page. The host in the DOM is the guard, so a second
++    // registerRootComponent (expo-router's renderRootComponent registers a fallback root
++    // when the first one throws) or an effect that runs twice adds no second toast root.
++    if (typeof document === 'undefined' || document.getElementById(DEV_LOADING_VIEW_HOST_ID)) {
++      return;
++    }
++    const host = document.createElement('div');
++    host.id = DEV_LOADING_VIEW_HOST_ID;
++    document.body.appendChild(host);
++    const { createRoot } = require('react-dom/client');
++    createRoot(host).render(<DevLoadingView />);
++  }, []);
++}
++
+ export function withDevTools<TComponent extends React.ComponentType<any>>(
+   AppRootComponent: TComponent
+ ): React.ComponentType<React.ComponentProps<TComponent>> {
+   function WithDevTools(props: React.ComponentProps<TComponent>) {
+-    return (
+-      <>
+-        <AppRootComponent {...props} />
+-        <DevLoadingView />
+-      </>
+-    );
++    useDevLoadingViewRoot();
++    return <AppRootComponent {...props} />;
+   }
+ 
+   if (process.env.NODE_ENV !== 'production') {

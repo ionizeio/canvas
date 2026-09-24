@@ -48,12 +48,15 @@
     "typecheck": "tsc --noEmit",
     "check:nav": "bun scripts/check-nav-sync.ts",
     "check:skins": "bun scripts/check-platform-skins.ts",
+    "check:patches": "bun scripts/check-patches.ts",
     "lighthouse": "bun scripts/lighthouse.ts",
     "eas-build-pre-install": "bun install --cwd .. --frozen-lockfile",
     "fonts:subset": "node scripts/subset-fonts.mjs"
   },
   "patchedDependencies": {
-    "expo-modules-jsi@57.0.5": "patches/expo-modules-jsi@57.0.5.patch"
+    "expo-modules-jsi@57.0.5": "patches/expo-modules-jsi@57.0.5.patch",
+    "@expo/router-server@57.0.7": "patches/@expo%2Frouter-server@57.0.7.patch",
+    "expo@57.0.16": "patches/expo@57.0.16.patch"
   },
   "expo": {
     "autolinking": {
