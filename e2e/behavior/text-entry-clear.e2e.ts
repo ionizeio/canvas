@@ -1,5 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
 import { gotoDocs, platformRow } from "../support/docs";
+import { LINE_START } from "../support/keys";
 import { expectNoMaterialEffects, readMaterialEffects } from "../support/material-evidence";
 import { expect, test } from "../support/fixtures";
 
@@ -65,7 +66,8 @@ for (const recipe of [...fields, ...additional]) for (const width of [1280, 390]
       // Select-all tests the editor's native selection without those commands.
       await field.press("ControlOrMeta+a");
     } else {
-      await field.press("Home");
+      // The line's start, not Home: a Mac's Home scrolls the page (support/keys.ts).
+      await field.press(LINE_START);
       await field.press("Shift+ArrowRight");
       await field.press("Shift+ArrowRight");
     }

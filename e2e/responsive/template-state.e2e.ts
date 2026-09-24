@@ -18,6 +18,7 @@
 import type { Locator, Page } from "@playwright/test";
 import { gotoDocs, settled } from "../support/docs";
 import { expect, test } from "../support/fixtures";
+import { LINE_END } from "../support/keys";
 
 type Arrangement = "beside" | "above";
 
@@ -128,8 +129,9 @@ for (const c of CASES) {
       await expect.poll(() => arrangement(field, c.partner!(page)), { message: `${c.slug} never stacked at 390` }).toBe("above");
     }
     const node = await field.elementHandle();
-    // Settings' fields hold a saved value; type after it.
-    await field.press("End");
+    // Settings' fields hold a saved value; type after it. The line's end, not End:
+    // a Mac's End scrolls the page (support/keys.ts).
+    await field.press(LINE_END);
     await field.pressSequentially("typed on a phone");
     await settled(async () => field.boundingBox());
     expect(await page.evaluate(() => (window as unknown as { __removedFields: string[] }).__removedFields)).toEqual([]);
