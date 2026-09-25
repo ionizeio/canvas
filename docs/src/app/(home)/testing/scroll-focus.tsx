@@ -9,6 +9,16 @@ const columns = ["Name", "Location", "Status", "Joined", "Team"];
 const cities = ["Calgary", "Charlottetown", "Edmonton", "Fredericton", "Halifax", "Iqaluit", "Montréal", "Ottawa", "Québec", "Regina", "Saskatoon", "St. John's", "Toronto", "Vancouver", "Victoria", "Whitehorse", "Winnipeg", "Yellowknife"];
 const slides = [{ key: "one", content: "Slide 1" }, { key: "two", content: "Slide 2" }, { key: "three", content: "Slide 3" }];
 const rows = [["Ada", "Montréal", "Active", "2026-01-02", "Design"], ["Sam", "Toronto", "Active", "2026-03-04", "Engineering"]];
+// More rows than the windowed table's bounded height shows, none of them focusable, so
+// its body scrolls with nothing inside it to take a Tab.
+const people = ["Ada", "Sam", "Lee", "Kim", "Noor", "Ravi", "Iris", "Theo"];
+const manyRows = Array.from({ length: 40 }, (_, i) => [
+  `${people[i % people.length]} ${i + 1}`,
+  cities[i % cities.length]!,
+  i % 5 === 0 ? "Invited" : "Active",
+  `2026-${String((i % 12) + 1).padStart(2, "0")}-${String((i % 28) + 1).padStart(2, "0")}`,
+  i % 2 === 0 ? "Design" : "Engineering",
+]);
 // A year of days (53 whole weeks) with a count on every third one, so the grid is 773 px
 // wide: wider than a phone's page, narrower than a desktop's.
 const days = Array.from({ length: 371 }, (_, i) => ({
@@ -62,6 +72,12 @@ export default function ScrollFocusFixture() {
           <Card flat flush style={{ overflow: "hidden" }}>
             <DataTable testID="scroll-attached" attached columns={columns} rows={rows} />
           </Card>
+        </Column>
+        <Column snug>
+          <Typography h2>Windowed data table</Typography>
+          <Button outline testID="before-windowed">Before windowed data table</Button>
+          <DataTable testID="scroll-windowed" virtualized columns={columns} rows={manyRows} style={{ maxHeight: 240 }} />
+          <Button outline testID="after-windowed">After windowed data table</Button>
         </Column>
         <Column snug>
           <Typography h2>Calendar heatmap</Typography>

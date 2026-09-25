@@ -2,7 +2,7 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { Fragment, type ComponentType, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { consumeEscapeKey } from "../../style/escape-layer.js";
-import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
+import { useHorizontalScrollFocus, useScrollFocus } from "../../style/use-scroll-focus.js";
 import { useFocusFrame } from "../../style/focus-frame.js";
 import { FlatList, StyleSheet, ScrollView, type TextInputProps, type ViewProps, type ViewStyle as RNViewStyle } from "react-native";
 import { View, Pressable, Text, TextInput, useControllableState, controlRipple, devWarn, breakpoints, useContainerWidth, tabularNums, type BreakpointKey, type StyleProp, type TextStyle, type ViewStyle, type LayoutStyle, useFillStyle, GlassSurface, GlassPane, paneStyle, PANE_SIBLING_INPUT, withInnerFill, FOCUS_RESET } from "../../style/index.js";
@@ -463,11 +463,22 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       "[canvas] <DataTable stackBreakpoint>: `stackBreakpoint` refines `stacks` and does nothing without it.",
     );
     const scrollFocus = useHorizontalScrollFocus();
-    // The overflowing scroller is a keyboard stop flush inside the table's clipping
+    // A windowed body scrolls its rows on its own, so it is a keyboard stop too while
+    // they overflow, whatever the rows hold, as the pan scroller is. Left alone,
+    // Chromium and Firefox made a read-only table's body a stop anyway (a scroller
+    // with nothing focusable inside) and drew their own ring on it, while WebKit left
+    // it out of the tab order.
+    // The stop sits inside the table, where only rows and row groups belong, so the
+    // scroller is the table's body row group rather than a focusable generic node.
+    const bodyFocus = useScrollFocus("vertical");
+    // Each overflowing scroller is a keyboard stop flush inside the table's clipping
     // surface, so the surface draws its focus ring (src/style/focus-frame.tsx): around
     // itself, or just inside its edge when `attached` puts it flush inside a parent
-    // frame that would clip a ring drawn around it.
-    const focusFrame = useFocusFrame();
+    // frame that would clip a ring drawn around it. Each scroller keeps its own
+    // keyboard state, so the body unmounting (a table turning to its loading rows)
+    // clears only its own ring.
+    const panFrame = useFocusFrame();
+    const bodyFrame = useFocusFrame();
     // SwiftUI Table collapses to its PRIMARY (first) column in compact width on
     // iPhone; the iOS skin opts in. Every other platform renders all columns,
     // and a stacked table shows every column on iOS too.
@@ -749,6 +760,10 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       ))
     ) : windowed ? (
       <FlatList
+        {...bodyFocus}
+        {...bodyFrame.target}
+        role="rowgroup"
+        style={FOCUS_RESET}
         data={pageIndices}
         renderItem={({ item }) => renderDataRow(rows[item]!, item)}
         keyExtractor={(item) => keyOf(rows[item]!, item)}
@@ -804,7 +819,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       <GlassSurface
         layer="content"
         testID={testID}
-        style={[wrap, attached ? null : focusFrame.ring()]}
+        style={[wrap, attached ? null : panFrame.ring() ?? bodyFrame.ring()]}
         role={canPan ? undefined : "table"}
         onLayout={onMeasureLayout}
       >
@@ -822,7 +837,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
           // first tap dismissing the keyboard.
           <ScrollView
             {...scrollFocus}
-            {...focusFrame.target}
+            {...panFrame.target}
             horizontal
             showsHorizontalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
@@ -861,7 +876,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
             />
           </View>
         ) : null}
-        {attached ? focusFrame.innerRing(wrap) : null}
+        {attached ? panFrame.innerRing(wrap) ?? bodyFrame.innerRing(wrap) : null}
       </GlassSurface>
     );
 

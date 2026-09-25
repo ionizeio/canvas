@@ -5,9 +5,12 @@ import { gotoDocs } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 
 // The scrollport under a fixture section: the one tab stop, except in the Carousel,
-// whose arrows and dots are buttons beside it.
+// whose arrows and dots are buttons beside it, and in the windowed table, whose body
+// row group scrolls its rows inside the scroller its columns pan in on a phone.
 const scrollportOf = (page: Page, name: string) =>
-  page.getByTestId(`scroll-${name}`).locator(name === "carousel" ? '[tabindex="0"]:not([role="button"])' : '[tabindex="0"]');
+  name === "windowed"
+    ? page.getByTestId("scroll-windowed").getByRole("rowgroup")
+    : page.getByTestId(`scroll-${name}`).locator(name === "carousel" ? '[tabindex="0"]:not([role="button"])' : '[tabindex="0"]');
 
 // The frame around a focused scrollport, and the node that draws its ring. A scroller
 // flush inside a clipping card cannot show its own (the card clips one outside it, and
@@ -115,11 +118,54 @@ for (const width of [1280, 390]) {
   }
 }
 
+// A windowed table's body scrolls its rows under the fixed header on its own, so it is
+// a stop of its own while they overflow, after the scroller its columns pan in on a
+// phone. Left alone, Chromium and Firefox made it an unmanaged stop that drew the
+// browser's ring (clipped to one edge on a phone) and WebKit skipped it; the table's
+// card draws the theme's ring for it, as for the pan scroller.
+for (const width of [1280, 390]) {
+  for (const scheme of ["light", "dark"] as const) {
+    test(`a windowed table's overflowing body is a stop its card rings (${width}, ${scheme})`, async ({ page }, testInfo) => {
+      await gotoDocs(page, "/testing/scroll-focus", { scheme, viewport: { width, height: 900 } });
+      const ring = rgb(colorsFor("blush", scheme).ring);
+      const table = page.getByTestId("scroll-windowed");
+      const body = scrollportOf(page, "windowed");
+      await expect(table.locator('[tabindex="0"]')).toHaveCount(width < 640 ? 2 : 1);
+      await page.getByTestId("before-windowed").focus();
+      await page.keyboard.press("Tab");
+      if (width < 640) {
+        // The pan scroller surrounds the table, so it comes first.
+        await expect(table.locator('[tabindex="0"]').first()).toBeFocused();
+        await page.keyboard.press("Tab");
+      }
+      await expect(body).toBeFocused();
+      // Chromium's own node for the stop: the table's row group, with no name taken from
+      // its rows, so focusing it does not read every rendered row's text out as its name.
+      const session = await page.context().newCDPSession(page);
+      const { result } = await session.send("Runtime.evaluate", { expression: "document.activeElement" });
+      const { node } = await session.send("DOM.describeNode", { objectId: result.objectId });
+      const { nodes } = await session.send("Accessibility.getPartialAXTree", { backendNodeId: node.backendNodeId, fetchRelatives: false });
+      expect(nodes.map((ax) => ({ role: ax.role?.value, name: ax.name?.value }))).toEqual([{ role: "rowgroup", name: "" }]);
+      await expect.poll(() => outlineOf(table)).toEqual({ style: "solid", color: ring });
+      expect((await outlineOf(body)).style).toBe("none");
+      expect(await ringShows(page, table, ring)).toEqual(ALL_SIDES);
+      await page.keyboard.press("ArrowDown");
+      await expect.poll(() => body.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+      const screenshot = testInfo.outputPath("scroll-windowed-focused.png");
+      await page.screenshot({ path: screenshot });
+      await testInfo.attach("scroll-windowed-focused", { path: screenshot, contentType: "image/png" });
+      await page.keyboard.press("Tab");
+      await expect(page.getByTestId("after-windowed")).toBeFocused();
+      await expect.poll(async () => (await outlineOf(table)).style).toBe("none");
+    });
+  }
+}
+
 // A pointer press focuses a scrollport the way :focus-visible leaves unmarked, so no
 // ring appears until a key is pressed on it.
 test("a click into a scrollport draws no ring until a key is pressed", async ({ page }) => {
   await gotoDocs(page, "/testing/scroll-focus", { viewport: { width: 390, height: 900 } });
-  for (const name of ["plain", "table", "carousel"]) {
+  for (const name of ["plain", "table", "windowed", "carousel"]) {
     const scrollport = scrollportOf(page, name);
     await scrollport.click();
     await expect(scrollport).toBeFocused();

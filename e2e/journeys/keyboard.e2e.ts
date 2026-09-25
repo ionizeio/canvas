@@ -176,3 +176,27 @@ test("a video still goes full screen from the keyboard", async ({ page }) => {
   await page.evaluate(() => document.exitFullscreen());
   await expect.poll(inFullScreen).toBe("nothing");
 });
+
+test("a windowed table's overflowing body is one keyboard stop, in every engine", async ({ page }) => {
+  // A virtualized DataTable scrolls its rows in a list of their own under the fixed
+  // header. Left to the browser, Chromium and Firefox made that list a stop when nothing
+  // inside it could take focus (a read-only table's rows) and drew their own ring on it,
+  // while WebKit skipped it, so its keyboard could not reach the rows below the fold.
+  // The table makes the body its row group and a stop while the rows overflow, and its
+  // surface draws the theme's ring for it. PageDown scrolls a focused scroller in every
+  // engine; Playwright's WebKit on a Mac scrolls none with the arrow keys.
+  await gotoDocs(page, "/testing/scroll-focus", { scheme: "light", viewport: { width: 1280, height: 900 } });
+  const table = page.getByTestId("scroll-windowed");
+  const body = table.getByRole("rowgroup");
+  const outline = (locator: Locator) => locator.evaluate((node) => getComputedStyle(node).outlineStyle);
+  await page.getByTestId("before-windowed").focus();
+  await page.keyboard.press("Tab");
+  await expect(body).toBeFocused();
+  await expect.poll(() => outline(table)).toBe("solid");
+  expect(await outline(body)).toBe("none");
+  await page.keyboard.press("PageDown");
+  await expect.poll(() => body.evaluate((node) => node.scrollTop)).toBeGreaterThan(0);
+  await page.keyboard.press("Tab");
+  await expect(page.getByTestId("after-windowed")).toBeFocused();
+  await expect.poll(() => outline(table)).toBe("none");
+});

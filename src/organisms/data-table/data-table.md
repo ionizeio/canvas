@@ -25,6 +25,14 @@ The iOS first-column layout is the exception: below that width the columns
 after the first leave the table, with any editor or custom cell in them, and
 mount again when it widens.
 
+A `virtualized` table's body scrolls its rows under the fixed header. On the
+web, while those rows overflow, the body is a keyboard tab stop of its own
+(after the column scroller when a narrow table pans, and before the rows'
+controls when they have any), the keyboard can scroll it, and while it has
+keyboard focus the table's surface draws the same focus ring. The body is the
+table's row group, so the rows it renders stay inside the table for a screen
+reader rather than behind an unnamed focusable node.
+
 ## Usage
 
 ```tsx

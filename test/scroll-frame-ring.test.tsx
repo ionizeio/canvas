@@ -10,6 +10,7 @@ import { CodeBlock } from "../src/molecules/code-block/code-block.tsx";
 import { CodeBlock as IOSCodeBlock } from "../src/molecules/code-block/code-block.ios.tsx";
 import { CodeBlock as AndroidCodeBlock } from "../src/molecules/code-block/code-block.android.tsx";
 import { DataTable } from "../src/organisms/data-table/data-table.tsx";
+import { DataTable as IOSDataTable } from "../src/organisms/data-table/data-table.ios.tsx";
 import { DataTable as AndroidDataTable } from "../src/organisms/data-table/data-table.android.tsx";
 import { Carousel } from "../src/organisms/carousel/carousel.tsx";
 import { Carousel as IOSCarousel } from "../src/organisms/carousel/carousel.ios.tsx";
@@ -24,8 +25,10 @@ import { LOOKS, lookProps, type Look } from "./fixtures/looks.ts";
 // lands on the scroller, and the scroller draws none. A pointer focus draws no ring,
 // as :focus-visible draws none. An `attached` table sits flush inside a parent frame
 // that would clip that ring, so it draws the ring just inside its edge, on a layer
-// above the scroller. The calendar Heatmap's scroller has room around it and keeps its
-// own ring (test/heatmap-scroll-focus.test.tsx).
+// above the scroller. A windowed DataTable's body scrolls its rows on its own, inside the
+// same card, so it is a stop of its own while its rows overflow and the card rings it
+// the same way. The calendar Heatmap's scroller has room around it and keeps its own
+// ring (test/heatmap-scroll-focus.test.tsx).
 
 let warnSpy: ReturnType<typeof spyOn>;
 beforeEach(() => {
@@ -40,10 +43,10 @@ afterEach(() => {
 // happy-dom has no ResizeObserver, so RNW never fires onLayout on its own: deliver a
 // node's measured width through the handler RNW attaches to it.
 type LayoutHost = HTMLElement & { __reactLayoutHandler?: (event: unknown) => void };
-function layOut(node: HTMLElement, width: number) {
+function layOut(node: HTMLElement, width: number, height = 120) {
   const handler = (node as LayoutHost).__reactLayoutHandler;
   if (!handler) throw new Error("The node has no onLayout handler");
-  act(() => handler({ nativeEvent: { layout: { x: 0, y: 0, width, height: 120 } }, timeStamp: 1 }));
+  act(() => handler({ nativeEvent: { layout: { x: 0, y: 0, width, height } }, timeStamp: 1 }));
 }
 
 // The one horizontal scroller under `root`: RNW styles it overflow-x auto.
@@ -61,9 +64,24 @@ function overflow(scroller: HTMLElement, viewport = 284, contentWidth = 900) {
   expect(scroller.tabIndex).toBe(0);
 }
 
+// Lay a windowed body out `viewport` tall around rows `contentHeight` tall (its content
+// container is its first child).
+function layOutRows(body: HTMLElement, viewport: number, contentHeight: number) {
+  layOut(body, 600, viewport);
+  layOut(body.firstElementChild as HTMLElement, 600, contentHeight);
+}
+
+// ...so that its rows overflow and it becomes a keyboard stop.
+function overflowDown(body: HTMLElement, viewport = 196, contentHeight = 2000) {
+  layOutRows(body, viewport, contentHeight);
+  expect(body.tabIndex).toBe(0);
+}
+
 const LONG = 'const destinations = ["Montréal", "Toronto", "Vancouver", "Halifax", "Victoria", "Québec"];';
 const COLUMNS = ["Name", "Location", "Status", "Joined", "Team"];
 const ROWS = [["Ada", "Montréal", "Active", "2026-01-02", "Design"], ["Sam", "Toronto", "Active", "2026-03-04", "Engineering"]];
+// More rows than a 240 px table shows.
+const MANY_ROWS = Array.from({ length: 40 }, (_, i) => [`Name ${i + 1}`, "Montréal", "Active", "2026-01-02", "Design"]);
 const SLIDES = [{ key: "a", content: "One" }, { key: "b", content: "Two" }, { key: "c", content: "Three" }];
 
 interface Case {
@@ -101,6 +119,20 @@ function dataTable(name: string, node: ReactNode): Case {
   };
 }
 
+// A windowed table's body: its row group scrolls the rows under the fixed header.
+function windowedTable(name: string, node: ReactNode): Case {
+  return {
+    name,
+    node,
+    stop() {
+      const frame = screen.getByTestId("subject");
+      const scroller = screen.getByRole("rowgroup");
+      overflowDown(scroller);
+      return { scroller, frame };
+    },
+  };
+}
+
 function carousel(name: string, node: ReactNode): Case {
   return {
     name,
@@ -128,6 +160,9 @@ const CASES: Case[] = [
   codeBlock("terminal CodeBlock (android)", <AndroidCodeBlock testID="subject" terminal code={LONG} />),
   dataTable("DataTable (web)", <DataTable testID="subject" columns={COLUMNS} rows={ROWS} />),
   dataTable("DataTable (android)", <AndroidDataTable testID="subject" columns={COLUMNS} rows={ROWS} />),
+  windowedTable("windowed DataTable body (web)", <DataTable testID="subject" virtualized style={{ maxHeight: 240 }} columns={COLUMNS} rows={MANY_ROWS} />),
+  windowedTable("windowed DataTable body (ios)", <IOSDataTable testID="subject" virtualized style={{ maxHeight: 240 }} columns={COLUMNS} rows={MANY_ROWS} />),
+  windowedTable("windowed DataTable body (android)", <AndroidDataTable testID="subject" virtualized style={{ maxHeight: 240 }} columns={COLUMNS} rows={MANY_ROWS} />),
   carousel("Carousel (web)", <Carousel testID="subject" items={SLIDES} />),
   carousel("Carousel (ios)", <IOSCarousel testID="subject" items={SLIDES} />),
   carousel("Carousel (android)", <AndroidCarousel testID="subject" items={SLIDES} />),
@@ -205,6 +240,110 @@ describe("an attached DataTable", () => {
       expect(outline(layer, "offset")).toBe(`-${FOCUS_RING_WIDTH}px`);
       expect(layer.style.position).toBe("absolute");
       expect(getComputedStyle(layer).pointerEvents).toBe("none");
+      expect(layer.getAttribute("aria-hidden")).toBe("true");
+      expect(scroller.compareDocumentPosition(layer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      fireEvent.blur(scroller);
+      expect(frame.lastElementChild === layer).toBe(false);
+    });
+  }
+});
+
+describe("a windowed DataTable body", () => {
+  const blush = LOOKS[0]!;
+  const table = (props: { attached?: boolean; loading?: boolean } = {}) => (
+    <ThemeProvider solid>
+      <DataTable testID="subject" virtualized style={{ maxHeight: 240 }} columns={COLUMNS} rows={MANY_ROWS} {...props} />
+    </ThemeProvider>
+  );
+
+  // The attribute, not the property: a div with no tabindex also reports -1, and it is
+  // exactly the unmanaged scroller Chromium and Firefox made a stop of their own accord.
+  it("is a keyboard stop only while its rows overflow", () => {
+    render(table());
+    const body = screen.getByRole("rowgroup");
+    expect(body.getAttribute("tabindex")).toBe("-1");
+    layOutRows(body, 196, 150);
+    expect(body.getAttribute("tabindex")).toBe("-1");
+    layOutRows(body, 196, 2000);
+    expect(body.getAttribute("tabindex")).toBe("0");
+    layOutRows(body, 2400, 2000);
+    expect(body.getAttribute("tabindex")).toBe("-1");
+  });
+
+  it("is a stop whatever its rows hold, just before the first row's controls", () => {
+    render(
+      <ThemeProvider solid>
+        <DataTable testID="subject" selectable virtualized style={{ maxHeight: 240 }} columns={COLUMNS} rows={MANY_ROWS} />
+      </ThemeProvider>,
+    );
+    const body = screen.getByRole("rowgroup");
+    overflowDown(body);
+    const boxes = screen.getAllByRole("checkbox");
+    // The header's select-all box comes before the body, every row's box inside it.
+    expect(body.contains(boxes[0]!)).toBe(false);
+    expect(boxes[0]!.compareDocumentPosition(body) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(boxes.slice(1).length).toBeGreaterThan(0);
+    for (const box of boxes.slice(1)) expect(body.contains(box)).toBe(true);
+  });
+
+  it("is the table's body row group, beside the header row inside the table", () => {
+    render(table());
+    const body = screen.getByRole("rowgroup");
+    const header = screen.getAllByRole("row")[0]!;
+    expect(screen.getByRole("table").contains(body)).toBe(true);
+    expect(body.contains(header)).toBe(false);
+    expect(body.querySelectorAll('[role="row"]').length).toBeGreaterThan(0);
+  });
+
+  it("shares the card's ring with the pan scroller at phone widths, each stop in turn", () => {
+    render(table());
+    const frame = screen.getByTestId("subject");
+    layOut(frame, 375);
+    const pan = screen.getByRole("table").parentElement!.parentElement as HTMLElement;
+    overflow(pan, 375, 550);
+    const body = screen.getByRole("rowgroup");
+    overflowDown(body);
+    fireEvent.keyUp(pan, { key: "Tab" });
+    expectRing(frame, blush);
+    // Tab moves on from the pan scroller to the body, inside it.
+    fireEvent.blur(pan);
+    fireEvent.focus(body);
+    fireEvent.keyUp(body, { key: "Tab" });
+    expectRing(frame, blush);
+    expect(outline(body, "style")).toBe("none");
+    fireEvent.blur(body);
+    expectNoRing(frame);
+  });
+
+  it("clears the body's ring when it turns to its loading rows, and leaves the pan scroller's", () => {
+    const { rerender } = render(table());
+    const frame = screen.getByTestId("subject");
+    layOut(frame, 375);
+    const pan = screen.getByRole("table").parentElement!.parentElement as HTMLElement;
+    overflow(pan, 375, 550);
+    overflowDown(screen.getByRole("rowgroup"));
+    fireEvent.keyUp(screen.getByRole("rowgroup"), { key: "Tab" });
+    expectRing(frame, blush);
+    rerender(table({ loading: true }));
+    expect(screen.queryByRole("rowgroup")).toBeNull();
+    expectNoRing(frame);
+    rerender(table());
+    overflowDown(screen.getByRole("rowgroup"));
+    fireEvent.keyUp(pan, { key: "Tab" });
+    rerender(table({ loading: true }));
+    expectRing(frame, blush);
+  });
+
+  for (const look of LOOKS) {
+    it(`draws the ${look.name} palette's ring just inside an attached table's edge for its body`, () => {
+      ui(<DataTable testID="subject" attached virtualized style={{ maxHeight: 240 }} columns={COLUMNS} rows={MANY_ROWS} />, lookProps(look));
+      const { scroller, frame } = windowedTable("", null).stop();
+      fireEvent.keyUp(scroller, { key: "Tab" });
+      expectNoRing(frame);
+      const layer = frame.lastElementChild as HTMLElement;
+      expect(channels(outline(layer, "color"))).toBe(channels(look.tokens.ring));
+      expect(outline(layer, "style")).toBe("solid");
+      expect(outline(layer, "offset")).toBe(`-${FOCUS_RING_WIDTH}px`);
       expect(layer.getAttribute("aria-hidden")).toBe("true");
       expect(scroller.compareDocumentPosition(layer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
       fireEvent.blur(scroller);
