@@ -43,11 +43,13 @@ import { CARET_BLINK } from "../../style/motion.js";
 // in local state for the active-cell highlight ONLY; the value flows through
 // useControllableState, so InputOTP works controlled OR uncontrolled (a bare one is typeable).
 //
-// Because that one input spans the whole row, a tap drops the native caret wherever
-// the pointer landed, which on a partly-entered code is the MIDDLE of the string. The
-// caret is therefore pinned to the end of the value (see handleSelectionChange below), so
-// a keystroke always lands in the first unfilled cell no matter which cell was tapped; a
-// range the platform selects is left where it is, so its Cut, Copy and Paste still work.
+// Because that one input spans the whole row, a tap drops the native caret wherever the
+// pointer landed. Its invisible text sits at the start of the row, so a press past the code
+// lands at its end on its own; a press on the code itself can still land in the MIDDLE of a
+// partly-entered code, so the caret is pinned to the end of the value (see
+// handleSelectionChange below), and a keystroke always lands in the first unfilled cell no
+// matter which cell was tapped. A range the platform selects is left where it is, so its
+// Cut, Copy and Paste still work.
 
 export type Size = "small" | "base" | "large";
 
@@ -127,9 +129,9 @@ export interface InputOTPParts {
    * offers the long-press Paste popup only while the cursor is on: `caretHidden` turns the
    * cursor off (EditText.setCursorVisible(false)), and Editor.prepareCursorControllers then
    * disables the insertion controller that a long press on the field starts the popup from.
-   * Android 9 is the exception: React Native cannot recolour its cursor, so there it stays
-   * off. iOS and the web leave it off: iOS opens its edit menu, with Paste, at a hidden caret,
-   * and the web's input is see-through.
+   * Before Android 10 React Native cannot recolour the cursor, so there it stays off
+   * (androidParts in input-otp.android.tsx). iOS and the web leave it off: iOS opens its
+   * edit menu, with Paste, at a hidden caret, and the web's input is see-through.
    */
   inklessCaret?: boolean;
   /**
@@ -137,8 +139,8 @@ export interface InputOTPParts {
    * collapsed back to the end of the code, as a stray caret is. iOS passes it, because its
    * selection band and grabbers take the selection colour's hue at an alpha of their own, so
    * a range over the capture input's invisible glyphs would paint a band and two grabbers
-   * across the middle of the row, off the cells it selects; so does Android 9, whose handles
-   * React Native cannot recolour. Android and the web otherwise leave it off and keep a range:
+   * across the row, off the cells it selects; so does Android before 10, whose handles React
+   * Native cannot recolour. Android and the web otherwise leave it off and keep a range:
    * Android's highlight and handles honour the colour's zero alpha, the web's input is
    * see-through, and Android's selection toolbar (Cut, Copy, Paste) only survives while its
    * range does.
@@ -259,13 +261,15 @@ export function createInputOTP(skin: InputOTPSkin, parts: InputOTPParts = {}) {
     }, [value, length]);
 
     // The range the platform selected, and the code it was selected on: held while the
-    // field still shows that code (see the selection below). An edit ends it, since
-    // whatever replaced the range is a new code.
+    // field still shows that code (see the selection below). Any change to the code lets
+    // go of it (typing, a paste over it, a parent's update), here during the render, so the
+    // same code coming back later (a parent that clears the field and fills it again) never
+    // brings back a selection nobody made.
     const [range, setRange] = useState<{ start: number; end: number; code: string } | null>(null);
+    if (range !== null && range.code !== value) setRange(null);
     const held = range !== null && range.code === value ? range : null;
 
     const handleChange = (raw: string) => {
-      setRange(null);
       setValue(cleanCode(raw, length, alphanumeric));
     };
 
@@ -458,7 +462,15 @@ export function createInputOTP(skin: InputOTPSkin, parts: InputOTPParts = {}) {
                 width: "100%",
                 height: "100%",
                 backgroundColor: "transparent",
-                textAlign: "center",
+                // The invisible code sits at the start of the row, so a press anywhere past
+                // it lands at the END of the code, where the next character belongs: the
+                // platform itself puts its caret, its Paste popup and its edit menu there, and
+                // the pin has nothing to correct. Centred, a press left of the code landed
+                // before it, and every correction the pin pushed is, on Android, a rewrite of
+                // the text that its editor takes as an edit: it closed the Paste popup a long
+                // press on a filled cell had opened, and a field never focused reported no
+                // caret to correct at all, so its Paste went in before the code.
+                textAlign: "left",
               },
               // Paints nothing: the cells render the value, this only captures input.
               // See-through on the web, inkless at full opacity where the platform drops
