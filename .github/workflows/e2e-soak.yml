@@ -24,7 +24,9 @@ name: E2E soak (canvas)
 # the same workers and browsers; `fresh` makes each pass its own run, so every pass meets
 # its first tests in newly launched browsers, the moment a shard reaches a project (the
 # Firefox paint check that never got an answer, 2026-09-25, struck a worker's second
-# test, while four Firefoxes had just started).
+# test, while four Firefoxes had just started). `protocol_events: on` attaches to each
+# failed test the execution contexts created, destroyed and cleared, the navigations,
+# and every evaluation with whether it was answered, from Playwright's own protocol log.
 #
 # `ref` replays another commit of this repository with this workflow, to learn whether
 # a failure seen there still happens (a commit older than the probe runs without it;
@@ -91,6 +93,13 @@ on:
         description: 'Probe a test still running this many milliseconds after it started (e2e/support/hang-probe.ts); set it below the step that hangs times out'
         default: 40000
         type: number
+      protocol_events:
+        description: "Attach to each failed test the protocol events that decide which JavaScript worlds Playwright can reach (e2e/support/protocol-events.ts)"
+        default: 'off'
+        type: choice
+        options:
+          - 'off'
+          - 'on'
       trace:
         description: 'Playwright tracing (the suite keeps traces of failures; off also stops the screencast a trace records)'
         default: retain-on-failure
@@ -270,6 +279,7 @@ jobs:
           E2E_SOAK_CHROMIUM_ARGS: ${{ inputs.chromium_args }}
           E2E_SOAK_DEFAULT_PACING: ${{ inputs.pacing == 'chromium-default' && '1' || '' }}
           E2E_HANG_PROBE_MS: ${{ inputs.hang_probe_ms }}
+          E2E_PROTOCOL_EVENTS: ${{ inputs.protocol_events == 'on' && '1' || '' }}
           DEBUG: pw:browser
         run: |
           # At most seven digits: a timer holds 2^31 - 1 ms and fires at once past it.

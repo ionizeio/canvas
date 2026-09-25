@@ -1,7 +1,7 @@
 /**
  * The `test` every spec imports.
  *
- * Three automatic fixtures wrap every test in every project:
+ * Four automatic fixtures wrap every test in every project:
  *
  *   errors    Fails the test if the page logged a console error, threw, violated the
  *             Content-Security-Policy, or failed to load a same-origin asset. This is
@@ -17,11 +17,15 @@
  *             test still running that long after it started gets the browser's
  *             state attached (in Chromium the renderer's, with a compositor trace);
  *             see hang-probe.ts.
+ *   protocolEvents  Off unless E2E_PROTOCOL_EVENTS is "1" (a soak input). A failed
+ *             test gets the protocol events that decide which JavaScript worlds
+ *             Playwright can reach attached; see protocol-events.ts.
  *
  * All are `auto`, so a spec gets them without naming them.
  */
 import { test as base, expect, type Page } from "@playwright/test";
 import { hangProbeDelay, probeHang } from "./hang-probe";
+import { protocolRecorder } from "./protocol-events";
 
 export interface PageProblems {
   consoleErrors: string[];
@@ -119,7 +123,20 @@ function describe(problems: PageProblems): string[] {
   return lines;
 }
 
-export const test = base.extend<{ problems: PageProblems; registry: void; hangProbe: void }>({
+export const test = base.extend<{ problems: PageProblems; registry: void; hangProbe: void; protocolEvents: void }>({
+  // First and with no dependencies, so its record starts before the page is created
+  // and ends after it is closed.
+  protocolEvents: [
+    async ({}, use, testInfo) => {
+      const recorder = protocolRecorder();
+      if (!recorder) return use();
+      recorder.reset();
+      await use();
+      if (testInfo.status !== testInfo.expectedStatus) await recorder.attach(testInfo);
+    },
+    { auto: true },
+  ],
+
   registry: [
     async ({ page }, use) => {
       await page.route("https://registry.npmjs.org/**", (route) =>
