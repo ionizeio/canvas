@@ -46,11 +46,17 @@ const swap = (uri: number) => ({ uri, display: FontDisplay.SWAP });
 // the pre-rendered head preloads them and declares them, so they are loading before
 // the bundle has even arrived, and the server always renders the tree. Asking the hook
 // instead would make the hydration render depend on the browser's CSSOM: expo-font
-// decides a face is loaded by comparing the @font-face rule's `fontFamily` string, and
-// Firefox serialises that name with quotes, so it answered "not loaded" there, the
-// hydration render produced an empty tree against a full page, and React rebuilt the
-// whole document. On iOS and Android the answer is the real one: the faces are read
-// from the bundle, and the tree waits for them.
+// decides a face is loaded by finding its @font-face rule, and before 57.0.2 it compared
+// the rule's `fontFamily` string as serialised, which Firefox quotes, so it answered
+// "not loaded" there, the hydration render produced an empty tree against a full page,
+// and React rebuilt the whole document. The hook still runs on the web client, and its
+// mount effect loads every face it does not find: with that comparison it declared all
+// seven again in Firefox right after hydration (the style element moved seven times,
+// a second rule per face, every face fetched again, the text hidden and then set in a
+// fallback face before its own). So the docs need expo-font 57.0.2 or later, and
+// e2e/journeys/fonts.e2e.ts holds every engine to adopting the document's faces. On iOS
+// and Android the answer is the real one: the faces are read from the bundle, and the
+// tree waits for them.
 export function useDocsFonts(): [boolean, Error | null] {
   const [loaded, error] = useFonts({
     Manrope_400Regular: swap(Manrope_400Regular),

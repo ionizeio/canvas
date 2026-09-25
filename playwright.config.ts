@@ -131,7 +131,7 @@ export default defineConfig({
     ...(["chromium", "firefox", "webkit"] as const).map((browserName) => ({
       name: `journeys-${browserName}`,
       testDir: "./e2e/journeys",
-      testMatch: ["**/keyboard.e2e.ts", "**/identity.e2e.ts", "**/control-refs.e2e.ts", "**/shell-search.e2e.ts", "**/carousel.e2e.ts", "**/overlay-placement.e2e.ts"],
+      testMatch: ["**/keyboard.e2e.ts", "**/identity.e2e.ts", "**/control-refs.e2e.ts", "**/shell-search.e2e.ts", "**/carousel.e2e.ts", "**/overlay-placement.e2e.ts", "**/fonts.e2e.ts"],
       use: { browserName, userAgent: undefined },
     })),
     {

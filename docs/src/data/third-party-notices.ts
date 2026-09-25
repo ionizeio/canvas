@@ -643,7 +643,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-font",
-    "version": "57.0.1",
+    "version": "57.0.4",
     "licenses": [
       "MIT"
     ],
