@@ -1,11 +1,18 @@
 import { useState } from "react";
-import { Button, CodeBlock, Column, DataTable, Typography } from "@ionizeio/canvas";
+import { Button, CodeBlock, Column, DataTable, Heatmap, Typography } from "@ionizeio/canvas";
 import { Page } from "../../../ui/page";
 
 const LONG = 'const destinations = ["Montréal", "Toronto", "Vancouver", "Halifax", "Victoria", "Québec", "Winnipeg", "Calgary", "Ottawa", "Edmonton"];';
 const SHORT = "const ready = true;";
 const columns = ["Name", "Location", "Status", "Joined", "Team"];
 const rows = [["Ada", "Montréal", "Active", "2026-01-02", "Design"], ["Sam", "Toronto", "Active", "2026-03-04", "Engineering"]];
+// A year of days (53 whole weeks) with a count on every third one, so the grid is 773 px
+// wide: wider than a phone's page, narrower than a desktop's.
+const days = Array.from({ length: 371 }, (_, i) => ({
+  value: i % 3 === 0 ? ((i % 4) + 1) / 4 : 0,
+  count: i % 3 === 0 ? (i % 4) + 1 : 0,
+  date: new Date(Date.UTC(2025, 8, 21 + i)).toISOString().slice(0, 10),
+}));
 
 // Hidden from navigation. Real kit scrollports share the same native measurement
 // and focus props on this route, including in the installed native docs app.
@@ -44,6 +51,11 @@ export default function ScrollFocusFixture() {
           <Typography h2>Data table</Typography>
           <Button outline testID="before-table">Before data table</Button>
           <DataTable testID="scroll-table" columns={columns} rows={rows} />
+        </Column>
+        <Column snug>
+          <Typography h2>Calendar heatmap</Typography>
+          <Button outline testID="before-heatmap">Before calendar heatmap</Button>
+          <Heatmap testID="scroll-heatmap" calendar label="Contribution activity" values={days} />
         </Column>
       </Column>
     </Page>

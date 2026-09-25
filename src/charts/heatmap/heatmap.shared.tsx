@@ -4,6 +4,7 @@ import { View, Text, Pressable, useTheme, alpha, devWarn, type ColorTokens, type
 import { announceSelection, ChartInspectionSurface } from "../shared/chart-inspect.js";
 import { estimateTextWidth } from "../shared/chart-math.js";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
+import { useFocusRingStyle } from "../../style/pressable.js";
 
 // Heatmap is a "Shared" platform treatment (data visualization is
 // platform-neutral): one implementation serves iOS, Android, and the web.
@@ -142,8 +143,14 @@ function HeatmapLevelLegend({ tokens }: { tokens: ColorTokens }) {
 // the grid overflows it (a fitting one would claim a sideways drag it cannot
 // scroll, dropping a cell's press and the page's scroll), and always elsewhere,
 // where a disabled scroller sets `touch-action: none` on the web. Cells are
-// pointer-only (accessible={false}); the grid's image role + summarizing name
-// carry the data for assistive tech, so a year of days is not 365 tab stops.
+// pointer-only (accessible={false}, and tabIndex={-1} because react-native-web's
+// Pressable stays a tab stop whatever `focusable` says); the grid's image role +
+// summarizing name carry the data for assistive tech, so a year of days is not 365
+// tab stops. The keyboard's one stop is the scroller itself, while the grid overflows
+// it: Tab lands on it, the arrow keys pan it, and Chromium names it from the one
+// image inside, so it announces the same summary (e2e/behavior/scroll-focus.e2e.ts
+// reads that name). It takes no role or name of its own, which would only repeat the
+// image's (and a region would add a landmark).
 const CAL_CELL = 11;
 const CAL_GAP = 3;
 const CAL_PITCH = CAL_CELL + CAL_GAP;
@@ -154,7 +161,8 @@ const CAL_MONTH_H = 15; // month-label row
 function CalendarHeatmap({ cells, label, caption, hideLegend, testID, style }: HeatmapProps & { cells: HeatmapCell[] }) {
   const { tokens } = useTheme();
   const [active, setActive] = useState<number | null>(null);
-  const { scrollEnabled, onLayout, onContentSizeChange } = useHorizontalScrollFocus();
+  const scrollport = useHorizontalScrollFocus();
+  const focusRing = useFocusRingStyle();
 
   const cols = Math.ceil(cells.length / CAL_ROWS);
   const gridW = cols * CAL_PITCH - CAL_GAP;
@@ -206,7 +214,7 @@ function CalendarHeatmap({ cells, label, caption, hideLegend, testID, style }: H
       {caption ? (
         <Text style={{ marginBottom: 10, fontSize: 13, lineHeight: 18, fontWeight: "500", color: tokens["card-foreground"] }}>{caption}</Text>
       ) : null}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} scrollEnabled={scrollEnabled} onLayout={onLayout} onContentSizeChange={onContentSizeChange}>
+      <ScrollView {...scrollport} horizontal showsHorizontalScrollIndicator={false} style={focusRing}>
         <View {...img}>
           {hasDates ? (
             // Month labels are absolutely placed at their column so each abbreviation
@@ -246,6 +254,7 @@ function CalendarHeatmap({ cells, label, caption, hideLegend, testID, style }: H
                           key={r}
                           accessible={false}
                           focusable={false}
+                          tabIndex={-1}
                           onPress={() => inspect(idx, true)}
                           onHoverIn={() => inspect(idx, false)}
                           onHoverOut={() => setActive((prev) => (prev === idx ? null : prev))}

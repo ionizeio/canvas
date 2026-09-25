@@ -1,0 +1,5 @@
+---
+"@ionizeio/canvas": patch
+---
+
+The calendar Heatmap is one keyboard stop on the web instead of one per day. Its day cells asked to stay out of the tab order with `focusable={false}`, which react-native-web's Pressable overrides with a tab index of its own, so crossing a year took 372 presses of Tab through cells with no role or name, and the arrow keys never panned the grid. The cells now also pass `tabIndex={-1}`, and the grid's scroller takes the scrollport keyboard stop DataTable, CodeBlock and Carousel share: only while the grid overflows, Tab lands on the scroller, the arrow keys pan it, and it wears the theme's focus ring. The scroller takes no role or name of its own: Chromium names it from the one image inside, so it announces the grid's summary ("Contribution activity, 371 days, 1317 total"). Pressing or hovering a day still opens its flag, and iOS and Android are unchanged apart from the scroller becoming keyboard focusable on Android while the grid overflows, as DataTable's and CodeBlock's are.
