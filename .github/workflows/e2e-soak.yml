@@ -355,7 +355,10 @@ jobs:
       # module and offset of the instruction (a content process, say; Firefox's parent
       # catches the fault and re-raises it, which the kernel does not log). Reading the
       # log changes nothing, so every lane keeps those lines. With crash_dumps on, each
-      # core the replay left gets its gdb report and is kept, compressed, beside it.
+      # core the replay left gets its gdb report and is kept, compressed, beside it, with
+      # the Playwright browser build that wrote it: a core reads only against its exact
+      # binaries, and Playwright's are stripped, so naming a frame later takes these
+      # files and the report's module offsets.
       - name: Keep the crashes
         if: always()
         env:
@@ -381,6 +384,10 @@ jobs:
             zstd -q -T0 "$core" -o "crash-reports/$name.zst"
             node scripts/soak-crash-dumps.mjs report "$core" "crash-reports/$name.txt" || status=1
           done
+          builds="$HOME/.cache/ms-playwright"
+          for core in "${cores[@]}"; do file -b "$core"; done \
+            | sed -n "s|.*execfn: '$builds/\([^/']*\)/.*|\1|p" | sort -u \
+            | while read -r build; do tar --zstd -cf "crash-reports/$build.tar.zst" -C "$builds" "$build"; done
           exit "$status"
 
       - name: Upload the lane's report
