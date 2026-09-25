@@ -8,17 +8,34 @@ name: E2E soak (canvas)
 # in a browser that has lived through a whole shard: the glass material captures that
 # hung in Chromium's Page.captureScreenshot a few Deploy runs in thirty (2026-09)
 # passed a hundred times in a row when replayed alone. So this replays a spec in
-# order, several passes per lane (each pass is the whole selection, in the order a
-# shard runs it), on parallel lanes, against a fresh export, with the hang probe
-# armed (e2e/support/hang-probe.ts): a test still running after E2E_HANG_PROBE_MS
-# gets the renderer's state and a compositor trace attached to its report, and
-# DEBUG=pw:browser puts each browser's own log beside the test that was running.
+# order, several passes per lane (each pass is the whole selection in the order a
+# shard runs it, in fresh workers), on parallel lanes, against a fresh export, with
+# the hang probe armed (e2e/support/hang-probe.ts): a test still running after
+# E2E_HANG_PROBE_MS gets the renderer's state and a compositor trace attached to its
+# report, and DEBUG=pw:browser puts each browser's own log beside the running test.
+#
+# `ref` replays another commit of this repository with this workflow, to learn whether
+# a failure seen there still happens (a commit older than the probe runs without it;
+# Playwright's own trace and error context still land in the report).
 #
 # Every input reaches the shell through `env`, never through `${{ }}` inside a script,
 # and the spec path is checked before use.
 on:
   workflow_dispatch:
     inputs:
+      ref:
+        description: 'The commit to replay (empty for the dispatched one)'
+        default: ''
+        type: string
+      lanes:
+        description: 'Parallel lanes, each its own runner'
+        default: '8'
+        type: choice
+        options:
+          - '4'
+          - '8'
+          - '12'
+          - '16'
       spec:
         description: 'The spec to replay, an e2e/**/*.e2e.ts path'
         default: e2e/visual/materials.e2e.ts
@@ -42,8 +59,9 @@ on:
           - behavior
           - a11y
 
+# Soaks of different commits run side by side; a second soak of the same commit waits.
 concurrency:
-  group: e2e-soak
+  group: e2e-soak-${{ inputs.ref || github.sha }}
   cancel-in-progress: false
 
 permissions:
@@ -53,11 +71,24 @@ env:
   HUSKY: '0'
 
 jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      lanes: ${{ steps.lanes.outputs.lanes }}
+    steps:
+      - id: lanes
+        env:
+          LANES: ${{ inputs.lanes }}
+        run: echo "lanes=[$(seq -s, 1 "$LANES")]" >> "$GITHUB_OUTPUT"
+
   export:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -90,7 +121,7 @@ jobs:
           retention-days: 1
 
   soak:
-    needs: export
+    needs: [plan, export]
     runs-on: ubuntu-latest
     # Five passes of the material spec take about 45 minutes on a lane; each hang
     # costs two more (the test and its teardown both run out their 60 s).
@@ -98,9 +129,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        lane: [1, 2, 3, 4]
+        lane: ${{ fromJSON(needs.plan.outputs.lanes) }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
 
       - name: Check the spec path
         env:
