@@ -28,6 +28,13 @@ name: E2E soak (canvas)
 # failed test the execution contexts created, destroyed and cleared, the navigations,
 # and every evaluation with whether it was answered, from Playwright's own protocol log.
 #
+# A browser that crashes outright (Firefox's parent process died of SIGSEGV about once
+# in 90,000 journey tests, 2026-09) leaves only "Target page, context or browser has been
+# closed" in the report. Every lane keeps the kernel's line for any process a fault
+# killed (which thread, the address, the module and offset of the instruction), and
+# `crash_dumps: on` keeps the whole core dump with a gdb report of every thread's stack
+# (scripts/soak-crash-dumps.mjs; Playwright's Firefox has no crash reporter of its own).
+#
 # `ref` replays another commit of this repository with this workflow, to learn whether
 # a failure seen there still happens (a commit older than the probe runs without it;
 # Playwright's own trace and error context still land in the report). `trace`, `channel`
@@ -95,6 +102,13 @@ on:
         type: number
       protocol_events:
         description: "Attach to each failed test the protocol events that decide which JavaScript worlds Playwright can reach (e2e/support/protocol-events.ts)"
+        default: 'off'
+        type: choice
+        options:
+          - 'off'
+          - 'on'
+      crash_dumps:
+        description: "Keep a core dump of every process that crashes during the replay, with a gdb report of its threads' stacks (scripts/soak-crash-dumps.mjs); the lane first proves the capture on a browser it crashes itself"
         default: 'off'
         type: choice
         options:
@@ -265,12 +279,29 @@ jobs:
             *) printf '::error::no browser is known for project %q\n' "$PROJECT"; exit 1 ;;
           esac
           bunx playwright install --with-deps "$browser"
+          echo "SOAK_BROWSER=$browser" >> "$GITHUB_ENV"
 
       - name: Take the export
         uses: actions/download-artifact@v8
         with:
           name: soak-docs-dist
           path: docs/dist
+
+      # A crashed browser leaves nothing but the kernel's core dump (Playwright's Firefox
+      # has no crash reporter of its own), and only where kernel.core_pattern names a
+      # writable place and the core size limit allows it, which Replay lifts for its own
+      # processes. The self-test crashes a browser of the project's engine first, so a lane
+      # whose capture cannot work fails here instead of after an hour of replay.
+      - name: Arm core dumps
+        if: inputs.crash_dumps == 'on'
+        run: |
+          mkdir -p "$RUNNER_TEMP/cores" crash-reports
+          # %P is the pid Playwright's browser log prints, %e the crashing thread's name.
+          sudo sysctl -w "kernel.core_pattern=$RUNNER_TEMP/cores/core.%P.%e"
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends gdb
+          ulimit -c unlimited
+          node scripts/soak-crash-dumps.mjs self-test "$SOAK_BROWSER" "$RUNNER_TEMP/cores" crash-reports/self-test.txt
 
       - name: Replay
         env:
@@ -285,8 +316,12 @@ jobs:
           E2E_SOAK_DEFAULT_PACING: ${{ inputs.pacing == 'chromium-default' && '1' || '' }}
           E2E_HANG_PROBE_MS: ${{ inputs.hang_probe_ms }}
           E2E_PROTOCOL_EVENTS: ${{ inputs.protocol_events == 'on' && '1' || '' }}
+          CRASH_DUMPS: ${{ inputs.crash_dumps }}
           DEBUG: pw:browser
         run: |
+          # The limit holds for this shell's children: the test runner, its workers and
+          # every browser they launch.
+          if [ "$CRASH_DUMPS" = on ]; then ulimit -c unlimited; fi
           # At most seven digits: a timer holds 2^31 - 1 ms and fires at once past it.
           if ! [[ "$E2E_HANG_PROBE_MS" =~ ^[1-9][0-9]{0,6}$ ]]; then
             printf '::error::hang_probe_ms must be a whole number of milliseconds under 10000000, not %q\n' "$E2E_HANG_PROBE_MS"; exit 1
@@ -313,6 +348,39 @@ jobs:
           echo "$failed of $PASSES fresh-browser passes failed"
           [ "$failed" -eq 0 ]
 
+      # The kernel logs each process a fault killed, as "firefox[4201]: segfault at 0 ip
+      # ... error 6 in libxul.so[2a3c10d,7f3c50000000+6000000]" and a line of the code
+      # around it: the thread, the address it touched, and the module and offset of the
+      # instruction. Reading the log changes nothing, so every lane keeps those lines.
+      # With crash_dumps on, each core the replay left gets its gdb report and is kept,
+      # compressed, beside it.
+      - name: Keep the crashes
+        if: always()
+        env:
+          CRASH_DUMPS: ${{ inputs.crash_dumps }}
+        run: |
+          mkdir -p crash-reports
+          kernel=$(sudo dmesg)
+          if grep -E -A1 'segfault at|traps:|general protection' <<< "$kernel" > crash-reports/kernel.txt; then
+            cat crash-reports/kernel.txt
+          else
+            echo "The kernel logged no fault on this lane."
+          fi
+          [ "$CRASH_DUMPS" = on ] || exit 0
+          shopt -s nullglob
+          cores=("$RUNNER_TEMP"/cores/core.*)
+          echo "${#cores[@]} core dumps from the replay"
+          # The core first, so a report that fails loses nothing, and every core is kept
+          # before the step fails for one.
+          status=0
+          for core in "${cores[@]}"; do
+            # A thread name may carry spaces or other characters an artifact path refuses.
+            name=$(basename "$core" | tr -c 'A-Za-z0-9._\n-' '_')
+            zstd -q -T0 "$core" -o "crash-reports/$name.zst"
+            node scripts/soak-crash-dumps.mjs report "$core" "crash-reports/$name.txt" || status=1
+          done
+          exit "$status"
+
       - name: Upload the lane's report
         if: always()
         uses: actions/upload-artifact@v7
@@ -321,4 +389,5 @@ jobs:
           path: |
             playwright-report/
             test-results/
+            crash-reports/
           retention-days: 7
