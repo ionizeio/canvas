@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Checkbox, Form, FormSection, Input } = scope;
   return (
-<Form submitLabel="Save">
+<Form submitLabel="Save" cancelLabel="Cancel">
   <FormSection title="Personal info" description="This information will be displayed on your public profile.">
     <Input label="Full name" defaultValue="Rachel Chen" />
     <Input label="Email" defaultValue="rachel@example.com" />

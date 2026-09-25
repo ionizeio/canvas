@@ -184,10 +184,14 @@
      with a 13 / 20 value; the count and the Field message in Dark Factory's `small` (11.5 / 17 / 600) */
   --p-textarea-fill:var(--field-fill);--p-textarea-underline-rest:var(--input);--p-textarea-lh:20px;
   --p-field-caption-font:11.5px;--p-field-caption-lh:17px;--p-field-caption-weight:600;--p-field-caption-tracking:0px;
-  /* Form (form.styles.ts webSkin) */
-  --p-form-stack:16px;--p-form-section-stack:12px;--p-form-actions-gap:8px;
-  --p-form-title:14px;--p-form-title-lh:20px;--p-form-title-weight:600;--p-form-title-tracking:0px;
-  --p-form-desc:12px;--p-form-desc-lh:16px;--p-form-desc-tracking:0px;
+  /* Form (form.styles.ts webSkin, Android too: Dark Factory's form). Rows 18 apart and the actions
+     row one more row (no margin of its own), the ghost Cancel beside the raised primary submit 10
+     apart; the two-up grid's cells 14 apart, two-up from a 414px row (two 200px cells and the gap);
+     the section title Dark Factory's heading over its 12 / 500 muted meta line */
+  --p-form-stack:18px;--p-form-section-stack:12px;--p-form-actions-gap:10px;--p-form-actions-top:0px;
+  --p-form-grid-gap:14px;--p-form-grid-from:414px;
+  --p-form-title:14px;--p-form-title-lh:19px;--p-form-title-weight:700;--p-form-title-tracking:0px;
+  --p-form-desc:12px;--p-form-desc-lh:17px;--p-form-desc-weight:500;--p-form-desc-tracking:0px;
   /* Breadcrumb (breadcrumb.styles.ts webSkin) */
   /* TabBar (tab-bar.styles.ts webSkin: mirrors the iOS look, except it takes M3's
      active-indicator pill so a web shell's bar and rail agree on "you are here";
@@ -580,10 +584,12 @@
   /* Textarea, iOS: the same white reference box as the Input; captions are SF footnote-sized */
   --p-textarea-fill:var(--card);--p-textarea-lh:24px;
   --p-field-caption-font:12px;--p-field-caption-lh:16px;--p-field-caption-weight:400;--p-field-caption-tracking:-0.08px;
-  /* Form — SwiftUI Form / HIG "Entering data": footnote-emphasized headings, roomier stack */
-  --p-form-stack:20px;--p-form-actions-gap:12px;
-  --p-form-title:13px;--p-form-title-lh:18px;--p-form-title-tracking:-0.08px;
-  --p-form-desc:13px;--p-form-desc-lh:18px;--p-form-desc-tracking:-0.08px;
+  /* Form, iOS: SwiftUI Form / HIG "Entering data": footnote-emphasized headings, roomier stack, an
+     outline Cancel beside the plain primary submit; the two-up grid 16 apart past the lg step */
+  --p-form-stack:20px;--p-form-actions-gap:12px;--p-form-actions-top:8px;
+  --p-form-grid-gap:16px;--p-form-grid-from:513px;
+  --p-form-title:13px;--p-form-title-lh:18px;--p-form-title-weight:600;--p-form-title-tracking:-0.08px;
+  --p-form-desc:13px;--p-form-desc-lh:18px;--p-form-desc-weight:400;--p-form-desc-tracking:-0.08px;
   /* TabBar — iOS 26 FLOATS the tab bar in the Liquid Glass layer: a capsule inset from the
      display edges, no hairline, content passing beneath it. Not an edge-to-edge bar. */
   --p-tabbar-h:56px;--p-tabbar-item-pad-y:6px;--p-tabbar-label:10px;--p-tabbar-label-lh:13px;--p-tabbar-label-tracking:-0.2px;
@@ -812,8 +818,6 @@
   --p-textarea-fill:var(--muted);--p-textarea-lh:20px;
   --p-textarea-underline-rest:var(--muted-foreground);
   --p-field-caption-font:12px;--p-field-caption-lh:16px;--p-field-caption-weight:400;--p-field-caption-tracking:0.4px;
-  /* Form — M3: prominent 700 title weight, body-small description */
-  --p-form-title-weight:700;--p-form-desc-tracking:0.4px;
   /* Breadcrumb — M3 body/label tracking */
   --p-crumb-tracking:0.1px;--p-crumb-sep-tracking:0.5px;
   /* TabBar — M3 navigation bar: 80dp edge-to-edge, no hairline, 56x32dp active-indicator pill.

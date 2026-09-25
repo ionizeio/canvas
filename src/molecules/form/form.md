@@ -2,6 +2,13 @@
 
 Stitch your own fields; Form adds the rhythm, the sections, the actions row, and submit.
 
+On the web the Form keeps Dark Factory's rhythm: rows 18px apart, and the actions row one more
+row at that rhythm, a ghost cancel beside the raised primary submit, 10px apart. A two-column
+form's cells sit 14px apart, two to a line once the form is 414px wide (two 200px cells and the
+gap), and stack below that. A section's title is the 14px bold heading over a 12px muted line.
+Android takes the same form with its Material 3 buttons. iOS keeps its SF section type, its
+roomier 20px rhythm, and an outline cancel beside the primary submit.
+
 ## Usage
 
 On the web, Enter confirms an active Autocomplete suggestion before it can submit the form. A subsequent Enter submits after the list closes. Enter used to confirm an input-method candidate never submits, and holding Enter does not repeat submission. Multiline fields retain Enter for newlines. On native platforms, each field's `onSubmitEditing` owns the return-key action.
@@ -39,7 +46,7 @@ Form is a composition surface: you stitch the field atoms as children and keep t
 ### Sections
 
 ```tsx
-<Form submitLabel="Save">
+<Form submitLabel="Save" cancelLabel="Cancel">
   <FormSection title="Personal info" description="This information will be displayed on your public profile.">
     <Input label="Full name" defaultValue="Rachel Chen" />
     <Input label="Email" defaultValue="rachel@example.com" />
@@ -227,10 +234,10 @@ Form is a composition surface: you stitch the field atoms as children and keep t
 **Don't** — Hand-rolled headings spliced between fields carry no grouping semantics, so assistive tech never hears which section a field belongs to.
 
 ```tsx
-<View style={{ width: 560, maxWidth: "100%", gap: 16 }}>
-  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Personal info</Text>
+<View style={{ width: 560, maxWidth: "100%", gap: 18 }}>
+  <Text style={{ fontSize: 14, lineHeight: 19, fontWeight: "700", color: tokens.foreground }}>Personal info</Text>
   <Input label="Full name" defaultValue="Rachel Chen" />
-  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Billing</Text>
+  <Text style={{ fontSize: 14, lineHeight: 19, fontWeight: "700", color: tokens.foreground }}>Billing</Text>
   <Input label="Card number" defaultValue="•••• 4242" />
 </View>
 ```

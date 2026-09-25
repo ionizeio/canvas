@@ -328,7 +328,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "form",
     name: "Form",
-    description: "Stitch your own field atoms inside it; Form adds the stacked or two-column rhythm, titled sections, and the submit/cancel actions row.",
+    description: "Stitch your own field atoms inside it; Form adds the stacked or two-column rhythm, titled sections, and the submit/cancel actions row. On the web and Android it takes Dark Factory's form: rows 18px apart, two columns from 414px, and a ghost cancel beside the raised primary submit; iOS keeps its SF section type and roomier rhythm.",
     category: "Molecules",
     stageAlign: "start",
   },

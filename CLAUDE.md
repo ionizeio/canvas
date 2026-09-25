@@ -313,10 +313,12 @@ layers, each with its own under-fill token (`glass-tint*` in `src/style/tokens.t
   Alert) passes a `tint`.
 - **Control** (`glass-tint-control`, the bright "puck"): every control that paints a
   surface of its own, the field boxes (Input, Textarea, Select, Autocomplete,
-  PhoneInput, Stepper, InputOTP), Button, ButtonGroup, Tabs pills, Chip, Badge, Kbd,
-  Switch tracks, Checkbox boxes, Radio rings, Progress rails, Steps circles, the Slider
-  knob, the neutral Avatar tile (an initials disc paints its identity gradient, like a
-  photo). A BRAND fill (a primary or destructive Button,
+  PhoneInput, Stepper, InputOTP, the Command trigger; on the web each is Dark
+  Factory's clear well, the control pane drawn `clear`: a light card veil with no
+  frost, and natively the stable control material), Button, ButtonGroup, Tabs pills,
+  Chip, Badge, Kbd, Switch tracks, Checkbox boxes, Radio rings, Progress rails, Steps
+  circles, the Slider knob, the neutral Avatar tile (an initials disc paints its
+  identity gradient, like a photo). A BRAND fill (a primary or destructive Button,
   a checked Switch or Checkbox, a selected tab, page, day or step) is brand-tinted
   glass: `brand={tokens.primary}`, whose under-fill `brandTint` keeps as sheer as its
   ink's WCAG 4.5:1 allows (on iOS 26 it is the GlassView's own `tintColor`). A toned

@@ -1,6 +1,6 @@
 import { Children, useEffect, useId, useRef, type ComponentType, type ElementRef, type ReactNode } from "react";
 import { type Role } from "react-native";
-import { View, Text, useTheme, useContainerWidth, widths, type ColorTokens, type StyleProp, type TextStyle, type ViewStyle, type LayoutStyle, type MeasureProps, useFillStyle } from "../../style/index.js";
+import { View, Text, useTheme, useContainerWidth, type ColorTokens, type TextStyle, type ViewStyle, type LayoutStyle, type MeasureProps, useFillStyle } from "../../style/index.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
 import * as s from "./form.styles.js";
@@ -11,8 +11,8 @@ import * as s from "./form.styles.js";
 // Form contributes only what the group needs as a whole:
 //   - the vertical rhythm between rows (and the optional two-column flow that
 //     collapses to one column on phones, desktop-first),
-//   - the actions row: a primary submit + an outline cancel composed from the kit
-//     Button, rendered when a label is given,
+//   - the actions row: a primary submit + a cancel composed from the kit Button in
+//     the looks the skin names, rendered when a label is given,
 //   - form semantics for assistive tech, and Enter-to-submit on the web.
 // It deliberately owns NO field state and collects no values: `onSubmit` is a
 // plain callback, and the caller reads its own state (this keeps every atom
@@ -21,8 +21,9 @@ import * as s from "./form.styles.js";
 // Form is a "Light" platform treatment. Neither iOS nor Android ships a native
 // form control (PLATFORM-REFERENCES.md): SwiftUI Form renders as a grouped inset
 // list, and Material 3 composes forms from text fields, selection controls, and
-// buttons. So the per-OS touches are conventions only (SF type/rhythm on iOS, M3
-// type tracking on Android), and the WEB look is kept verbatim.
+// buttons. So the web takes Dark Factory's form (its rhythm, its section heading,
+// a ghost Cancel beside the raised primary submit), Android takes the web's skin
+// with its own Material 3 Button, and iOS keeps its SF type and grouped rhythm.
 
 // The submit/cancel Button the Form composes, typed as the atom component so the
 // public atom API is preserved across every build path. Each platform's thin
@@ -48,6 +49,14 @@ export interface FormSkin {
   stack: ViewStyle;
   /** A section's internal rhythm (header block to rows, row to row). */
   sectionStack: ViewStyle;
+  /** The gap between the two-column flow's cells, across a line and between lines. */
+  twoColumnGap: number;
+  /** The narrowest rows width (px) that lays the two-column flow out two-up; below it the cells stack. */
+  twoColumnFrom: number;
+  /** The looks the Cancel Button takes (web = ghost). */
+  cancelButton: { outline?: boolean; ghost?: boolean };
+  /** The looks the primary submit Button takes beside `primary` (web = raised). */
+  submitButton: { raised?: boolean };
 }
 
 export interface FormSectionProps {
@@ -77,7 +86,7 @@ export interface FormProps extends MeasureProps {
   twoColumn?: boolean;
   /** Label for the primary submit button. Passing it (or `cancelLabel`) renders the actions row. */
   submitLabel?: string;
-  /** Renders an outline cancel button before the submit button. */
+  /** Renders a cancel button before the submit button: ghost on the web and Android, outline on iOS. */
   cancelLabel?: string;
   /**
    * Fired when the submit button is pressed, and on the web when Enter is
@@ -133,22 +142,26 @@ export function createForm(skin: FormSkin, Button: ButtonComponent = WebButton) 
     // collapse to a single full-width column in narrow ones (desktop-first). The
     // form measures its own row wrapper rather than the window (the DataTable
     // precedent): a form inside a narrow desktop column stacks too, instead of
-    // crushing two-up. The threshold is the `lg` step of the width scale (512),
-    // not a viewport breakpoint: a two-up split narrower than that cannot give
-    // each column a usable field, while a form in an `xl` (576) Container stays
-    // two-up.
+    // crushing two-up. The threshold is the skin's (`twoColumnFrom`), a container
+    // width and not a viewport breakpoint: on the web the width at which two of
+    // the cells' 200px floors and the gap fit (Dark Factory's AutoGrid, 414), so a
+    // two-up split never gives a column less than a usable field. Two-up lays at
+    // most two cells on a line (twoUpCell), however wide the row. Only the two-up
+    // row wraps: a wrapping column sizes its line to its widest cell rather than
+    // stretching the cells, so the stacked cells would sit at their 200 floor
+    // instead of filling the form.
     // FILL: the form spans the parent it is given; its measure is a Container step.
     const fill = useFillStyle("Form", props);
     const { width: rowsWidth, onLayout: onRowsLayout } = useContainerWidth();
-    const twoUp = rowsWidth <= 0 || rowsWidth > widths.lg;
+    const twoUp = rowsWidth <= 0 || rowsWidth >= skin.twoColumnFrom;
 
     const rows = twoColumn ? (
       <View
         onLayout={onRowsLayout}
-        style={{ flexDirection: twoUp ? "row" : "column", flexWrap: "wrap", gap: s.twoColumnGap }}
+        style={{ flexDirection: twoUp ? "row" : "column", flexWrap: twoUp ? "wrap" : "nowrap", gap: skin.twoColumnGap }}
       >
         {Children.toArray(children).map((child, i) => (
-          <View key={i} style={[twoUp ? s.flex1 : s.flexAuto, s.twoColumnItem]}>
+          <View key={i} style={[twoUp ? s.twoUpCell : s.flexAuto, s.twoColumnItem]}>
             {child}
           </View>
         ))}
@@ -161,12 +174,12 @@ export function createForm(skin: FormSkin, Button: ButtonComponent = WebButton) 
       submitLabel != null || cancelLabel != null ? (
         <View style={skin.actions}>
           {cancelLabel != null ? (
-            <Button outline disabled={disabled} onPress={onCancel}>
+            <Button {...skin.cancelButton} disabled={disabled} onPress={onCancel}>
               {cancelLabel}
             </Button>
           ) : null}
           {submitLabel != null ? (
-            <Button primary disabled={disabled} onPress={onSubmit}>
+            <Button primary {...skin.submitButton} disabled={disabled} onPress={onSubmit}>
               {submitLabel}
             </Button>
           ) : null}

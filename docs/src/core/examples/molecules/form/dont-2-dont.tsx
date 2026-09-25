@@ -5,10 +5,10 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { tokens, View, Text, Card, Input } = scope;
   return (
-<View style={{ width: 560, maxWidth: "100%", gap: 16 }}>
-  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Personal info</Text>
+<View style={{ width: 560, maxWidth: "100%", gap: 18 }}>
+  <Text style={{ fontSize: 14, lineHeight: 19, fontWeight: "700", color: tokens.foreground }}>Personal info</Text>
   <Input label="Full name" defaultValue="Rachel Chen" />
-  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Billing</Text>
+  <Text style={{ fontSize: 14, lineHeight: 19, fontWeight: "700", color: tokens.foreground }}>Billing</Text>
   <Input label="Card number" defaultValue="•••• 4242" />
 </View>
   );
