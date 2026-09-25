@@ -126,7 +126,7 @@ on:
           - suite
           - chromium-default
       playwright:
-        description: 'Another @playwright/test release to soak with, e.g. 1.63.0, installed on the runner only (empty for the lockfile one)'
+        description: 'Another Playwright release to soak with, e.g. 1.63.0 or 1.64.0-alpha-2026-09-25, installed on the runner only (empty for the lockfile one)'
         default: ''
         type: string
 
@@ -235,11 +235,16 @@ jobs:
         env:
           PLAYWRIGHT_VERSION: ${{ inputs.playwright }}
         run: |
-          if ! [[ "$PLAYWRIGHT_VERSION" =~ ^1\.[0-9]+\.[0-9]+$ ]]; then
-            printf '::error::playwright must be a release like 1.63.0, not %q\n' "$PLAYWRIGHT_VERSION"; exit 1
+          # A release (1.63.0) or a prerelease (1.64.0-alpha-2026-09-25, 1.63.0-beta-1789413634000).
+          if ! [[ "$PLAYWRIGHT_VERSION" =~ ^1\.[0-9]+\.[0-9]+(-(alpha|beta)-[0-9][0-9-]*)?$ ]]; then
+            printf '::error::playwright must be a release like 1.63.0 or a prerelease like 1.64.0-alpha-2026-09-25, not %q\n' "$PLAYWRIGHT_VERSION"; exit 1
           fi
-          bun add --dev --exact "@playwright/test@$PLAYWRIGHT_VERSION"
-          bunx playwright --version
+          # Both packages, so the CLI that installs and launches the browsers is the same
+          # release as the test runner.
+          bun add --dev --exact "@playwright/test@$PLAYWRIGHT_VERSION" "playwright@$PLAYWRIGHT_VERSION"
+          installed=$(bunx playwright --version)
+          echo "$installed"
+          [ "$installed" = "Version $PLAYWRIGHT_VERSION" ] || { printf '::error::bunx playwright reports %q, not %q\n' "$installed" "$PLAYWRIGHT_VERSION"; exit 1; }
 
       - name: Cache the Playwright browsers
         uses: actions/cache@v6
