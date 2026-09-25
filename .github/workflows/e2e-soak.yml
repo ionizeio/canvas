@@ -20,7 +20,11 @@ name: E2E soak (canvas)
 # only a stuck one; a spec whose stuck step gives up sooner (gotoDocs waits 20 s for the
 # page to paint) needs a lower value, or the test fails before the probe runs. `project`
 # takes any project in playwright.config.ts, the cross-engine journeys included, and the
-# lane installs only the browser that project runs.
+# lane installs only the browser that project runs. `browsers: shared` runs every pass in
+# the same workers and browsers; `fresh` makes each pass its own run, so every pass meets
+# its first tests in newly launched browsers, the moment a shard reaches a project (the
+# Firefox paint check that never got an answer, 2026-09-25, struck a worker's second
+# test, while four Firefoxes had just started).
 #
 # `ref` replays another commit of this repository with this workflow, to learn whether
 # a failure seen there still happens (a commit older than the probe runs without it;
@@ -58,9 +62,16 @@ on:
         default: ''
         type: string
       passes:
-        description: 'Passes over the selection per lane (Playwright --repeat-each)'
+        description: 'Passes over the selection per lane (Playwright --repeat-each, or one run per pass with fresh browsers)'
         default: 5
         type: number
+      browsers:
+        description: 'shared: every pass in the same workers and browsers (--repeat-each); fresh: each pass its own run, so every pass starts new workers and browsers the way a shard meets its first tests'
+        default: shared
+        type: choice
+        options:
+          - shared
+          - fresh
       project:
         description: 'Playwright project'
         default: visual
@@ -252,6 +263,7 @@ jobs:
           SPEC: ${{ inputs.spec }}
           GREP: ${{ inputs.grep }}
           PASSES: ${{ inputs.passes }}
+          BROWSERS: ${{ inputs.browsers }}
           PROJECT: ${{ inputs.project }}
           TRACE: ${{ inputs.trace }}
           E2E_SOAK_CHANNEL: ${{ inputs.channel == 'chromium' && 'chromium' || '' }}
@@ -260,12 +272,31 @@ jobs:
           E2E_HANG_PROBE_MS: ${{ inputs.hang_probe_ms }}
           DEBUG: pw:browser
         run: |
-          if ! [[ "$E2E_HANG_PROBE_MS" =~ ^[1-9][0-9]*$ ]]; then
-            printf '::error::hang_probe_ms must be a whole number of milliseconds, not %q\n' "$E2E_HANG_PROBE_MS"; exit 1
+          # At most seven digits: a timer holds 2^31 - 1 ms and fires at once past it.
+          if ! [[ "$E2E_HANG_PROBE_MS" =~ ^[1-9][0-9]{0,6}$ ]]; then
+            printf '::error::hang_probe_ms must be a whole number of milliseconds under 10000000, not %q\n' "$E2E_HANG_PROBE_MS"; exit 1
           fi
-          set -- "$SPEC" -c playwright.soak.config.ts --project="$PROJECT" --repeat-each="$PASSES" --trace="$TRACE" --reporter=list,html
+          if ! [[ "$PASSES" =~ ^[1-9][0-9]{0,3}$ ]]; then
+            printf '::error::passes must be a whole number from 1 to 9999, not %q\n' "$PASSES"; exit 1
+          fi
+          set -- "$SPEC" -c playwright.soak.config.ts --project="$PROJECT" --trace="$TRACE" --reporter=list,html
           if [ -n "$GREP" ]; then set -- "$@" --grep "$GREP"; fi
-          bunx playwright test "$@"
+          if [ "$BROWSERS" = shared ]; then
+            bunx playwright test "$@" --repeat-each="$PASSES"
+            exit
+          fi
+          # One run per pass. A passing run's report is dropped and a failing one kept
+          # under its pass number, so the lane uploads the failures' evidence only.
+          failed=0
+          for pass in $(seq 1 "$PASSES"); do
+            if PLAYWRIGHT_HTML_OUTPUT_DIR="playwright-report/pass-$pass" bunx playwright test "$@" --output="test-results/pass-$pass"; then
+              rm -rf "playwright-report/pass-$pass" "test-results/pass-$pass"
+            else
+              failed=$((failed + 1))
+            fi
+          done
+          echo "$failed of $PASSES fresh-browser passes failed"
+          [ "$failed" -eq 0 ]
 
       - name: Upload the lane's report
         if: always()

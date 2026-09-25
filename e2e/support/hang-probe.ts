@@ -64,8 +64,9 @@ export function hangProbeDelay(): number | null {
   const raw = process.env.E2E_HANG_PROBE_MS;
   if (!raw) return null;
   const delay = Number(raw);
-  if (!Number.isFinite(delay) || delay <= 0) {
-    throw new Error(`E2E_HANG_PROBE_MS must be a positive number of milliseconds, not "${raw}"`);
+  // setTimeout holds at most 2^31 - 1 ms and fires at once for anything longer.
+  if (!Number.isInteger(delay) || delay <= 0 || delay > 2 ** 31 - 1) {
+    throw new Error(`E2E_HANG_PROBE_MS must be a whole number of milliseconds a timer can hold, not "${raw}"`);
   }
   return delay;
 }
@@ -104,8 +105,15 @@ interface ThreadSample {
 
 function readThreads(pid: number): ThreadSample[] {
   const task = `/proc/${pid}/task`;
-  if (!fs.existsSync(task)) return [];
-  return fs.readdirSync(task).flatMap((tid) => {
+  let tids: string[];
+  try {
+    tids = fs.readdirSync(task);
+  } catch {
+    // The process exited: the probe samples every browser on the machine, and other
+    // workers' content processes come and go with their contexts.
+    return [];
+  }
+  return tids.flatMap((tid) => {
     try {
       const stat = fs.readFileSync(`${task}/${tid}/stat`, "utf8");
       // The command name is parenthesized and may hold spaces; the fields after it
@@ -136,10 +144,13 @@ function threadActivity(before: Map<number, ThreadSample[]>, after: Map<number, 
 
 /**
  * The Firefox and WebKit processes on this machine, by the kernel's (15 character)
- * command names. A soak lane runs a browser per worker, so these are all of them, not
- * just the stuck test's: a content process spinning or blocked still stands out.
+ * command names: Gecko's parent and content processes, and WebKit's MiniBrowser with
+ * its web and network processes in both Linux builds Playwright ships (WPE, which it
+ * runs headless, and GTK). A soak lane runs a browser per worker, so these are all of
+ * them, not just the stuck test's: a content process spinning or blocked still stands
+ * out.
  */
-const ENGINE_PROCESS = /^(firefox|GeckoMain|Isolated Web Co|Web Content|WebKitWebProces|WebKitNetworkPr)/;
+const ENGINE_PROCESS = /^(firefox|GeckoMain|Isolated Web Co|Web Content|MiniBrowser|WPEWebProcess|WPENetworkProc|WebKitWebProces|WebKitNetworkPr)/;
 
 function engineProcesses(): { pid: number; name: string }[] {
   return fs.readdirSync("/proc").filter((entry) => /^\d+$/.test(entry)).flatMap((entry) => {
