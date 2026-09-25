@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
-import { describe, it, expect, afterEach } from "bun:test";
+import { describe, it, expect, afterEach, spyOn } from "bun:test";
 import { act, render, cleanup, fireEvent, screen } from "@testing-library/react";
-import { Platform } from "react-native";
+import { AccessibilityInfo, Platform } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Tabs } from "../src/organisms/tabs/tabs.tsx";
 import { Tabs as AndroidTabs } from "../src/organisms/tabs/tabs.android.tsx";
@@ -17,20 +17,27 @@ import { Heatmap as AndroidHeatmap } from "../src/charts/heatmap/heatmap.android
 // row, board or grid must not cancel a press that drifts sideways or keep the page from
 // scrolling. Every other platform keeps a fitting scroller enabled (react-native-web
 // renders a disabled one as touch-action: none, and a finger on it could no longer
-// scroll the page), and this holds for every entry the docs' three-up renders. Either
-// way the element tree stays put: scrollEnabled is a prop of the same scroller.
+// scroll the page), and this holds for every entry the docs' three-up renders. While
+// TalkBack explores by touch an Android scroller stays enabled too: React Native's
+// disabled horizontal scroller drops the hover events touch exploration is made of,
+// which would hide the row's tabs, the board's cards and the grid from an exploring
+// finger. Either way the element tree stays put: scrollEnabled is a prop of the same
+// scroller.
 
 afterEach(cleanup);
 
 const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
 
-function onPlatform(os: string, run: () => void) {
+// `exploring` is whether Android reports touch exploration (TalkBack) as on.
+async function onPlatform(os: string, run: () => Promise<void>, exploring = false) {
   const original = Object.getOwnPropertyDescriptor(Platform, "OS")!;
   Object.defineProperty(Platform, "OS", { configurable: true, value: os });
+  const read = spyOn(AccessibilityInfo, "isScreenReaderEnabled").mockResolvedValue(exploring);
   try {
-    run();
+    await run();
   } finally {
     cleanup();
+    read.mockRestore();
     Object.defineProperty(Platform, "OS", original);
   }
 }
@@ -56,6 +63,11 @@ function scroller(): HTMLElement {
   return found[0]!;
 }
 const content = () => scroller().firstElementChild as HTMLElement;
+// Mount, then let the touch exploration read settle.
+async function mounted(mount: () => void) {
+  mount();
+  await act(async () => {});
+}
 const takesDrags = () => getComputedStyle(scroller()).touchAction !== "none";
 
 // Lay the scroller out `viewport` wide around content `contentWidth` wide.
@@ -134,9 +146,9 @@ function dayCells(): HTMLElement[] {
 for (const c of cases) {
   describe(`${c.name} horizontal scroller`, () => {
     for (const [entry, mount] of c.entries) {
-      it(`takes a drag on Android only while its content overflows (${entry} entry)`, () => onPlatform("android", () => {
+      it(`takes a drag on Android only while its content overflows (${entry} entry)`, () => onPlatform("android", async () => {
         picked = null;
-        mount();
+        await mounted(mount);
         const kept = [scroller(), ...c.nodes()];
         // Unmeasured, it cannot know it overflows.
         expect(takesDrags()).toBe(false);
@@ -151,8 +163,16 @@ for (const c of cases) {
         expect(c.pressed()).toBe(true);
       }));
 
-      it(`keeps its scroller taking drags on the web, fitting or not (${entry} entry)`, () => onPlatform("web", () => {
-        mount();
+      it(`keeps its scroller taking drags on Android while TalkBack explores by touch (${entry} entry)`, () => onPlatform("android", async () => {
+        await mounted(mount);
+        for (const [viewport, contentWidth] of STATES) {
+          layOutScroller(viewport, contentWidth);
+          expect(takesDrags()).toBe(true);
+        }
+      }, true));
+
+      it(`keeps its scroller taking drags on the web, fitting or not (${entry} entry)`, () => onPlatform("web", async () => {
+        await mounted(mount);
         expect(takesDrags()).toBe(true);
         for (const [viewport, contentWidth] of STATES) {
           layOutScroller(viewport, contentWidth);

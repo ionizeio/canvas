@@ -62,8 +62,9 @@ A row longer than its container pans horizontally instead of clipping, at any
 container width and with no prop: the scroller is inert while the row fits,
 and on Android it then takes no sideways drag either, so a tap that drifts
 sideways still selects its tab and a swipe that starts across the row scrolls
-the page. Selecting a tab (press or arrow key) scrolls it fully into view with a sliver
-of its neighbor left showing. `block` shares the row equally and never
+the page (while TalkBack explores by touch the scroller stays enabled, so the
+exploring finger reaches every tab). Selecting a tab (press or arrow key)
+scrolls it fully into view with a sliver of its neighbor left showing. `block` shares the row equally and never
 overflows; a vertical rail stacks instead.
 
 ```tsx

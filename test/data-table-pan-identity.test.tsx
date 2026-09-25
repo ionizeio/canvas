@@ -1,7 +1,7 @@
 import { useEffect, type ComponentType, type ReactNode } from "react";
 import { describe, it, expect, beforeEach, afterEach, spyOn } from "bun:test";
 import { act, render, cleanup, fireEvent, screen } from "@testing-library/react";
-import { Platform } from "react-native";
+import { AccessibilityInfo, Platform } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { resetDevWarnings } from "../src/style/dev-warn.ts";
 import { DataTable, type DataTableProps } from "../src/organisms/data-table/data-table.tsx";
@@ -158,25 +158,30 @@ for (const [platform, Table] of [["web", DataTable], ["android", AndroidDataTabl
 // cannot scroll, so on Android the scroller takes a drag only while the table
 // overflows it: a fitting table must not cancel a row's press that drifts sideways or
 // keep the page from scrolling. This holds for every entry an Android device renders
-// (the docs' three-up draws the web entry there too).
-function onAndroid(run: () => void) {
+// (the docs' three-up draws the web entry there too). TalkBack's touch exploration is
+// off here; while it is on the scroller stays enabled (test/scroll-focus.test.tsx).
+async function onAndroid(run: () => Promise<void>) {
   const original = Object.getOwnPropertyDescriptor(Platform, "OS")!;
   Object.defineProperty(Platform, "OS", { configurable: true, value: "android" });
+  const read = spyOn(AccessibilityInfo, "isScreenReaderEnabled").mockResolvedValue(false);
   try {
-    run();
+    await run();
   } finally {
     cleanup();
+    read.mockRestore();
     Object.defineProperty(Platform, "OS", original);
   }
 }
 
 for (const [platform, Table] of [["web", DataTable], ["android", AndroidDataTable]] as Array<[string, ComponentType<DataTableProps>]>) {
-  it(`takes a drag on Android only while the table overflows its scroller (${platform} entry)`, () => onAndroid(() => {
+  it(`takes a drag on Android only while the table overflows its scroller (${platform} entry)`, () => onAndroid(async () => {
     const rows = [
       ["Ada", <Live key="a" label="Active" />, "Eng"],
       ["Bob", <Live key="b" label="Away" />, "Ops"],
     ];
     ui(<Table testID="table" onRowPress={() => {}} columns={COLUMNS} rows={rows} />);
+    // Let the touch exploration read settle.
+    await act(async () => {});
     const nodes = [scroller(), ...screen.getAllByRole("row")];
     expect(takesDrags()).toBe(false);
     // Fitting; panning with room to spare (three 110px minimums in 375); panning past

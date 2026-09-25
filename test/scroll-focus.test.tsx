@@ -1,7 +1,7 @@
-import { afterEach, expect, it } from "bun:test";
+import { afterEach, expect, it, spyOn } from "bun:test";
 import { useEffect } from "react";
 import { act, cleanup, renderHook } from "@testing-library/react";
-import { Platform, type LayoutChangeEvent } from "react-native";
+import { AccessibilityInfo, Platform, type LayoutChangeEvent } from "react-native";
 import { useHorizontalScrollFocus, useScrollFocus } from "../src/style/use-scroll-focus.ts";
 
 afterEach(cleanup);
@@ -84,20 +84,45 @@ it("re-renders only when the overflow flips, not on every resize", () => {
 
 // Android's HorizontalScrollView claims any sideways drag past touch slop even when it
 // cannot scroll; every other platform keeps a fitting scroller enabled (on the web a
-// disabled one sets touch-action: none).
-function onPlatform(os: string, run: () => void) {
+// disabled one sets touch-action: none). On Android a disabled scroller also drops the
+// hover events TalkBack's touch exploration is made of, so it stays enabled while
+// touch exploration is on or not yet read. `exploring` is what the platform reports
+// ("pending" never settles the read); `setExploring` fires a live change.
+async function onPlatform(
+  os: string,
+  run: (setExploring: (value: boolean) => void) => void | Promise<void>,
+  exploring: boolean | "pending" = false,
+) {
   const original = Object.getOwnPropertyDescriptor(Platform, "OS")!;
   Object.defineProperty(Platform, "OS", { configurable: true, value: os });
+  const handlers: Array<(value: boolean) => void> = [];
+  const read = spyOn(AccessibilityInfo, "isScreenReaderEnabled").mockImplementation(
+    () => (exploring === "pending" ? new Promise<boolean>(() => {}) : Promise.resolve(exploring)),
+  );
+  const add = spyOn(AccessibilityInfo, "addEventListener").mockImplementation(((event: string, handler: (value: boolean) => void) => {
+    if (event === "screenReaderChanged") handlers.push(handler);
+    return { remove: () => {} };
+  }) as typeof AccessibilityInfo.addEventListener);
   try {
-    run();
+    await run((value) => act(() => handlers.forEach((handler) => handler(value))));
+    if (os !== "android") {
+      // Only Android reads touch exploration; nothing else subscribes to it.
+      expect(read).not.toHaveBeenCalled();
+      expect(add.mock.calls.some(([event]) => event === "screenReaderChanged")).toBe(false);
+    }
   } finally {
     cleanup();
+    read.mockRestore();
+    add.mockRestore();
     Object.defineProperty(Platform, "OS", original);
   }
 }
+// Let the touch exploration read settle.
+const settle = () => act(async () => {});
 
-it("lets an Android scroller take a drag only while its content overflows", () => onPlatform("android", () => {
+it("lets an Android scroller take a drag only while its content overflows", () => onPlatform("android", async () => {
   const { result } = renderHook(useHorizontalScrollFocus);
+  await settle();
   expect(result.current.scrollEnabled).toBe(false);
   act(() => result.current.onLayout(layout(320)));
   act(() => result.current.onContentSizeChange(320, 80));
@@ -108,9 +133,30 @@ it("lets an Android scroller take a drag only while its content overflows", () =
   expect(result.current.scrollEnabled).toBe(false);
 }));
 
+it("keeps a fitting Android scroller taking drags while TalkBack explores by touch", () => onPlatform("android", async (setExploring) => {
+  const { result } = renderHook(useHorizontalScrollFocus);
+  await settle();
+  act(() => result.current.onLayout(layout(320)));
+  act(() => result.current.onContentSizeChange(320, 80));
+  expect(result.current.scrollEnabled).toBe(true);
+  setExploring(false);
+  expect(result.current.scrollEnabled).toBe(false);
+  setExploring(true);
+  expect(result.current.scrollEnabled).toBe(true);
+}, true));
+
+it("counts touch exploration as on until Android has reported it", () => onPlatform("android", async () => {
+  const { result } = renderHook(useHorizontalScrollFocus);
+  await settle();
+  act(() => result.current.onLayout(layout(320)));
+  act(() => result.current.onContentSizeChange(320, 80));
+  expect(result.current.scrollEnabled).toBe(true);
+}, "pending"));
+
 for (const os of ["web", "ios"]) {
-  it(`keeps a fitting scroller enabled on ${os}`, () => onPlatform(os, () => {
+  it(`keeps a fitting scroller enabled on ${os}`, () => onPlatform(os, async () => {
     const { result } = renderHook(useHorizontalScrollFocus);
+    await settle();
     expect(result.current.scrollEnabled).toBe(true);
     act(() => result.current.onLayout(layout(320)));
     act(() => result.current.onContentSizeChange(320, 80));
