@@ -111,6 +111,27 @@ describe("the capture input", () => {
     });
   }
 
+  // A pasted or autofilled code arrives as one change, and the platform cuts it at the
+  // input's maxLength BEFORE the shell sees it (a browser and both native text inputs
+  // enforce the attribute on inserted text). The helper delivers it that way. A capture
+  // input capped at the cell count cut "65-43 21" to "65-43 " and kept 6543.
+  function paste(input: HTMLInputElement, text: string) {
+    const max = input.hasAttribute("maxlength") ? Number(input.getAttribute("maxlength")) : Infinity;
+    fireEvent.change(input, { target: { value: text.slice(0, max) } });
+  }
+
+  for (const [name, InputOTP] of [["web", WebInputOTP], ...NATIVE] as const) {
+    it(`${name}: keeps every digit of a formatted paste`, () => {
+      for (const [pasted, code] of [["123-456", "123456"], ["123 456", "123456"], ["65-43 21", "654321"], ["(555) 012-3456", "555012"]] as const) {
+        const { root, input } = renderField(InputOTP);
+        paste(input, pasted);
+        expect(input.value, pasted).toBe(code);
+        expect(root.textContent, pasted).toContain(code);
+        cleanup();
+      }
+    });
+  }
+
   it("never corrects or flags a code on any platform", () => {
     // An opaque capture would paint autocorrect's prompt and marks over the cells, and a
     // correction rewrites an alphanumeric code into a word whichever way it is hidden.

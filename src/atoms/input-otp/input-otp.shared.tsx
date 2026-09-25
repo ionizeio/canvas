@@ -443,7 +443,10 @@ export function createInputOTP(skin: InputOTPSkin, parts: InputOTPParts = {}) {
             secureTextEntry={!!masked}
             textContentType="oneTimeCode"
             autoComplete="one-time-code"
-            maxLength={length}
+            // No maxLength: the platform would cut a pasted or autofilled code at the cell count
+            // BEFORE cleanCode strips its separators ("65-43 21" arrived as "65-43 ", six
+            // characters, four digits). cleanCode slices to the cell count itself, and the input
+            // is controlled, so a longer entry never shows.
             // The selection is ink too, and paints none: a band (and, on Android, the
             // handles, which take this colour) over glyphs nobody sees would sit off the
             // cells. react-native-web drops the prop; its see-through input shows none.
