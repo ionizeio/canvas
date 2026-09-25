@@ -16,10 +16,11 @@ import { platformBlocks, platformValue, pxValue } from "../tools/tokens/css-toke
 import { layoutElement } from "./entrance-layout.ts";
 
 // Form takes Dark Factory's form on the web and Android (SKN-6e): its MintDialog's rhythm
-// (rows 18 apart, the actions row one more row with a ghost Cancel beside the raised
-// primary submit, 10 apart), its AutoGrid's two-up grid (14 apart, a 200 cell floor, at
-// most two columns, so two-up from 414) and its SectionHeading's type. Android aliases the
-// web skin and still injects its Material 3 Button; iOS keeps its SwiftUI form.
+// (rows 18 apart, the actions row one more row with its ghost Cancel, the neutral hairline
+// pill the kit's web Button draws for `outline`, beside the raised primary submit, 10
+// apart), its AutoGrid's two-up grid (14 apart, a 200 cell floor, at most two columns, so
+// two-up from 414) and its SectionHeading's type. Android aliases the web skin and still
+// injects its Material 3 Button; iOS keeps its SwiftUI form.
 
 afterEach(cleanup);
 
@@ -56,7 +57,6 @@ describe("the skins", () => {
     expect(web.twoColumnGap).toBe(14);
     expect(web.twoColumnFrom).toBe(414);
     expect(web.twoColumnFrom).toBe(2 * (skins.twoColumnItem.minWidth as number) + web.twoColumnGap);
-    expect(web.cancelButton).toEqual({ ghost: true });
     expect(web.submitButton).toEqual({ raised: true });
   });
 
@@ -78,7 +78,6 @@ describe("the skins", () => {
     expect(ios.twoColumnGap).toBe(16);
     // Two-up only past the lg step, as before.
     expect(ios.twoColumnFrom).toBe(widths.lg + 1);
-    expect(ios.cancelButton).toEqual({ outline: true });
     expect(ios.submitButton).toEqual({});
   });
 
@@ -123,9 +122,12 @@ describe("the rendered web form", () => {
 
       const cancel = screen.getByRole("button", { name: "Cancel" });
       const save = screen.getByRole("button", { name: "Save" });
-      // A ghost Cancel: no fill, no edge, no glow.
+      // Dark Factory's ghost Cancel is its neutral hairline pill, the kit's outline Button:
+      // no fill, the 1px `border` hairline, the foreground label, no glow.
       expect(norm(cancel.style.backgroundColor), name).toBe("0,0,0,0.00");
-      expect(norm(cancel.style.borderTopColor || cancel.style.borderColor), name).toBe("0,0,0,0.00");
+      expect(cancel.style.borderTopWidth || cancel.style.borderWidth, name).toBe("1px");
+      expect(norm(cancel.style.borderTopColor || cancel.style.borderColor), name).toBe(norm(t.border));
+      expect(norm(screen.getByText("Cancel").style.color), name).toBe(norm(t.foreground));
       expect(cancel.style.boxShadow, name).toBe("");
       // The raised primary submit rests on the glow in the action colour.
       expect(norm(save.style.backgroundColor), name).toBe(norm(actionFill(t)));
@@ -224,7 +226,7 @@ describe("the platform actions", () => {
     expect(save.style.boxShadow).toBe("");
   });
 
-  it("renders Android's Material 3 Buttons as a ghost Cancel and a raised primary submit", () => {
+  it("renders Android's Material 3 Buttons as an outlined Cancel and a raised primary submit", () => {
     render(
       <ThemeProvider light solid>
         <AndroidForm submitLabel="Save" cancelLabel="Cancel">
@@ -232,9 +234,11 @@ describe("the platform actions", () => {
         </AndroidForm>
       </ThemeProvider>,
     );
+    // The Material 3 outlined button: no fill, a 1dp outline in `input`.
     const cancel = screen.getByRole("button", { name: "Cancel" });
     expect(norm(cancel.style.backgroundColor)).toBe("0,0,0,0.00");
-    expect(cancel.style.borderTopWidth || cancel.style.borderWidth || "0px").toMatch(/^0(px)?$/);
+    expect(cancel.style.borderTopWidth || cancel.style.borderWidth).toBe("1px");
+    expect(norm(cancel.style.borderTopColor || cancel.style.borderColor)).toBe(norm(lightColors.input));
     // Android draws a raised glow on the button's ripple-clip wrapper (button-look.test.tsx).
     const save = screen.getByRole("button", { name: "Save" });
     expect(save.parentElement!.style.boxShadow).toMatch(/12px 22px -10px/);

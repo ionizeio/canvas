@@ -185,9 +185,10 @@
   --p-textarea-fill:var(--field-fill);--p-textarea-underline-rest:var(--input);--p-textarea-lh:20px;
   --p-field-caption-font:11.5px;--p-field-caption-lh:17px;--p-field-caption-weight:600;--p-field-caption-tracking:0px;
   /* Form (form.styles.ts webSkin, Android too: Dark Factory's form). Rows 18 apart and the actions
-     row one more row (no margin of its own), the ghost Cancel beside the raised primary submit 10
-     apart; the two-up grid's cells 14 apart, two-up from a 414px row (two 200px cells and the gap);
-     the section title Dark Factory's heading over its 12 / 500 muted meta line */
+     row one more row (no margin of its own), the outline Cancel (Dark Factory's hairline ghost
+     pill) beside the raised primary submit 10 apart; the two-up grid's cells 14 apart, two-up
+     from a 414px row (two 200px cells and the gap); the section title Dark Factory's heading over
+     its 12 / 500 muted meta line */
   --p-form-stack:18px;--p-form-section-stack:12px;--p-form-actions-gap:10px;--p-form-actions-top:0px;
   --p-form-grid-gap:14px;--p-form-grid-from:414px;
   --p-form-title:14px;--p-form-title-lh:19px;--p-form-title-weight:700;--p-form-title-tracking:0px;

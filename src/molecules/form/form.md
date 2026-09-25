@@ -3,11 +3,12 @@
 Stitch your own fields; Form adds the rhythm, the sections, the actions row, and submit.
 
 On the web the Form keeps Dark Factory's rhythm: rows 18px apart, and the actions row one more
-row at that rhythm, a ghost cancel beside the raised primary submit, 10px apart. A two-column
-form's cells sit 14px apart, two to a line once the form is 414px wide (two 200px cells and the
-gap), and stack below that. A section's title is the 14px bold heading over a 12px muted line.
-Android takes the same form with its Material 3 buttons. iOS keeps its SF section type, its
-roomier 20px rhythm, and an outline cancel beside the primary submit.
+row at that rhythm, the outline cancel (Dark Factory's hairline pill) beside the raised primary
+submit, 10px apart. A two-column form's cells sit 14px apart, two to a line once the form is
+414px wide (two 200px cells and the gap), and stack below that; an odd last field takes the
+whole line, so a two-column form can give one field a full-width row. A section's title is the
+14px bold heading over a 12px muted line. Android takes the same form with its Material 3
+buttons. iOS keeps its SF section type, its roomier 20px rhythm, and a plain primary submit.
 
 ## Usage
 

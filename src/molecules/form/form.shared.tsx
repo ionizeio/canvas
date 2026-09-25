@@ -11,8 +11,8 @@ import * as s from "./form.styles.js";
 // Form contributes only what the group needs as a whole:
 //   - the vertical rhythm between rows (and the optional two-column flow that
 //     collapses to one column on phones, desktop-first),
-//   - the actions row: a primary submit + a cancel composed from the kit Button in
-//     the looks the skin names, rendered when a label is given,
+//   - the actions row: a primary submit (in the look the skin names) + an outline
+//     cancel composed from the kit Button, rendered when a label is given,
 //   - form semantics for assistive tech, and Enter-to-submit on the web.
 // It deliberately owns NO field state and collects no values: `onSubmit` is a
 // plain callback, and the caller reads its own state (this keeps every atom
@@ -22,8 +22,8 @@ import * as s from "./form.styles.js";
 // form control (PLATFORM-REFERENCES.md): SwiftUI Form renders as a grouped inset
 // list, and Material 3 composes forms from text fields, selection controls, and
 // buttons. So the web takes Dark Factory's form (its rhythm, its section heading,
-// a ghost Cancel beside the raised primary submit), Android takes the web's skin
-// with its own Material 3 Button, and iOS keeps its SF type and grouped rhythm.
+// its hairline Cancel beside the raised primary submit), Android takes the web's
+// skin with its own Material 3 Button, and iOS keeps its SF type and grouped rhythm.
 
 // The submit/cancel Button the Form composes, typed as the atom component so the
 // public atom API is preserved across every build path. Each platform's thin
@@ -53,8 +53,6 @@ export interface FormSkin {
   twoColumnGap: number;
   /** The narrowest rows width (px) that lays the two-column flow out two-up; below it the cells stack. */
   twoColumnFrom: number;
-  /** The looks the Cancel Button takes (web = ghost). */
-  cancelButton: { outline?: boolean; ghost?: boolean };
   /** The looks the primary submit Button takes beside `primary` (web = raised). */
   submitButton: { raised?: boolean };
 }
@@ -86,7 +84,7 @@ export interface FormProps extends MeasureProps {
   twoColumn?: boolean;
   /** Label for the primary submit button. Passing it (or `cancelLabel`) renders the actions row. */
   submitLabel?: string;
-  /** Renders a cancel button before the submit button: ghost on the web and Android, outline on iOS. */
+  /** Renders an outline cancel button before the submit button. */
   cancelLabel?: string;
   /**
    * Fired when the submit button is pressed, and on the web when Enter is
@@ -170,11 +168,15 @@ export function createForm(skin: FormSkin, Button: ButtonComponent = WebButton) 
       children
     );
 
+    // The Cancel is the outline Button on every platform. On the web that is Dark
+    // Factory's `ghost` button (its neutral hairline pill, which the kit's web Button
+    // draws for `outline`; the kit's `ghost` has no border), on Android the Material 3
+    // outlined button, and on iOS the kit's iOS outline button.
     const actions =
       submitLabel != null || cancelLabel != null ? (
         <View style={skin.actions}>
           {cancelLabel != null ? (
-            <Button {...skin.cancelButton} disabled={disabled} onPress={onCancel}>
+            <Button outline disabled={disabled} onPress={onCancel}>
               {cancelLabel}
             </Button>
           ) : null}

@@ -6,13 +6,13 @@ import { type FormSkin } from "./form.shared.js";
 // Per-OS Form skins. Form is a "Light" platform treatment: ONE structure (the
 // stitched rows, the optional two-column flow, the actions row) lives in
 // form.shared.tsx; only the section-heading TYPE, the vertical RHYTHM (the stack
-// and grid gaps, where the grid turns two-up) and the looks of the two composed
-// Buttons shift per OS.
+// and grid gaps, where the grid turns two-up) and the look of the composed submit
+// Button shift per OS.
 //
 // Neither iOS nor Android ships a native "form" control (PLATFORM-REFERENCES.md):
 //   - Web: Dark Factory's form (its MintDialog and SectionHeading): rows 18 apart,
 //     the two-up grid 14 apart, a `heading` section title over a 12 / 500 muted
-//     line, and a ghost Cancel beside the raised primary submit, 10 apart.
+//     line, and its hairline Cancel beside the raised primary submit, 10 apart.
 //   - iOS: SwiftUI Form renders as a grouped inset list; the HIG "Entering data"
 //     page is the convention reference (a touch more breathing room, SF type).
 //   - Android: Material 3 has no form component; forms are composed from text
@@ -21,15 +21,17 @@ import { type FormSkin } from "./form.shared.js";
 //
 // The interactive parts (the composed fields, the Submit/Cancel buttons) are the
 // already-skinned atoms; they bring their own per-OS fidelity (shape, press
-// feedback, focus), so the Form's own skin carries only which Button looks it asks for.
+// feedback, focus), so the Form's own skin carries only the look it asks of the submit.
 
 // ---------- shared structural fragments (identical across platforms) ----------
 // The two-column cell: a basis between a third and a half of the row (less the gap)
 // puts exactly two cells on a line without measuring them (three never fit), and the
-// pair then grows to share the row; a lone last cell takes the whole line. The
-// stacked cell keeps its content basis. The floor keeps a cell from collapsing under
-// a squeezed row. These are layout, not platform-varying, so they stay shared and the
-// shell imports them directly.
+// pair then grows to share the row. A lone last cell takes the whole line, which is
+// how a two-column form gives one field a full-width row (the email under the names);
+// Dark Factory's AutoGrid keeps it one column wide and opts a tile into the full row
+// instead, an opt-in the Form has no prop for. The stacked cell keeps its content
+// basis. The floor keeps a cell from collapsing under a squeezed row. These are
+// layout, not platform-varying, so they stay shared and the shell imports them directly.
 export const twoUpCell: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "40%" };
 export const flexAuto: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "auto" };
 const CELL_FLOOR = 200;
@@ -40,8 +42,11 @@ export const twoColumnItem: ViewStyle = { minWidth: CELL_FLOOR };
 // the SectionHeading's meta, 12 / 500 in the muted ink at its 1.4 line height (17,
 // ceiled like every line in type-scale.ts). The rows are its Dialog body's 18 apart,
 // and the actions row is one more row at that rhythm (no margin of its own), its
-// Cancel and submit 10 apart as in its dialog footer. The two-up grid is its AutoGrid
-// (a 200 cell floor, 14 apart, at most two columns), so two columns fit from 414.
+// Cancel and submit 10 apart as in its dialog footer. Its Cancel is its `ghost` Button,
+// the neutral hairline pill the kit's web Button draws for `outline` (the kit's `ghost`
+// has no border), so the shell's outline Cancel is already Dark Factory's. The two-up
+// grid is its AutoGrid (a 200 cell floor, 14 apart, at most two columns), so two
+// columns fit from 414.
 const WEB_GRID_GAP = 14;
 export const webSkin: FormSkin = {
   sectionTitle: (t: ColorTokens): TextStyle => ({ ...typeScale.heading, color: t.foreground }),
@@ -51,7 +56,6 @@ export const webSkin: FormSkin = {
   sectionStack: { gap: 12 },
   twoColumnGap: WEB_GRID_GAP,
   twoColumnFrom: 2 * CELL_FLOOR + WEB_GRID_GAP,
-  cancelButton: { ghost: true },
   submitButton: { raised: true },
 };
 
@@ -71,12 +75,11 @@ export const iosSkin: FormSkin = {
   sectionStack: { gap: 12 },
   twoColumnGap: 16,
   twoColumnFrom: widths.lg + 1,
-  cancelButton: { outline: true },
   submitButton: {},
 };
 
 // ---------- Android (Material 3: text fields + selection controls + buttons) ----------
 // M3 has no form component, so Android takes the web's form (the design language's
-// item 3). The entry still passes the Material 3 Button, so the ghost Cancel and the
+// item 3). The entry still passes the Material 3 Button, so the outlined Cancel and the
 // raised primary submit keep their M3 shape.
 export const androidSkin: FormSkin = webSkin;
