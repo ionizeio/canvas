@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { ComponentType } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import type { InputOTPProps } from "../src/atoms/input-otp/input-otp.shared.tsx";
@@ -28,13 +28,31 @@ function channels(color: string): number[] {
 interface Fiber {
   memoizedProps?: Record<string, unknown>;
   return: Fiber | null;
+  child: Fiber | null;
+  sibling: Fiber | null;
+  stateNode?: unknown;
+}
+
+/** The committed fiber of a DOM node. The node keeps the fiber it was created with, which
+ *  after an update can be the stale copy, so this finds it again in the root's current tree. */
+function committedFiber(dom: Element): Fiber {
+  const node = dom as unknown as Record<string, Fiber>;
+  let root = node[Object.keys(node).find((key) => key.startsWith("__reactFiber$"))!]!;
+  while (root.return) root = root.return;
+  const stack = [(root.stateNode as { current: Fiber }).current];
+  while (stack.length) {
+    const fiber = stack.pop()!;
+    if (fiber.stateNode === dom) return fiber;
+    if (fiber.sibling) stack.push(fiber.sibling);
+    if (fiber.child) stack.push(fiber.child);
+  }
+  throw new Error("the node is not in the committed tree");
 }
 
 /** The props the shell handed its TextInput, read from React's tree: react-native-web
- *  renders no attribute for `selectionColor`, so the DOM cannot show it. */
+ *  renders no attribute for `selectionColor` (or `selection`), so the DOM cannot show it. */
 function textInputProps(input: HTMLInputElement): Record<string, unknown> {
-  const node = input as unknown as Record<string, Fiber>;
-  let fiber: Fiber | null = node[Object.keys(node).find((key) => key.startsWith("__reactFiber$"))!]!;
+  let fiber: Fiber | null = committedFiber(input);
   while (fiber && !(fiber.memoizedProps && "selectionColor" in fiber.memoizedProps)) fiber = fiber.return;
   if (!fiber) throw new Error("no TextInput above the capture input");
   return fiber.memoizedProps!;
@@ -104,5 +122,101 @@ describe("the capture input", () => {
       expect(input.type).toBe("password");
       cleanup();
     }
+  });
+
+  it("keeps one-time-code autofill on every platform, whichever way its caret is hidden", () => {
+    for (const InputOTP of [WebInputOTP, IosInputOTP, AndroidInputOTP]) {
+      const { input } = renderField(InputOTP);
+      const props = textInputProps(input);
+      expect(props.textContentType).toBe("oneTimeCode");
+      expect(props.autoComplete).toBe("one-time-code");
+      cleanup();
+    }
+  });
+});
+
+// The platform caret paints nothing on every platform, and how is the platform's part
+// (InputOTPParts.inklessCaret). Android keeps its cursor on and inks it clear: its editor opens
+// the long-press Paste popup only while the cursor is on, and `caretHidden` switches it off
+// (EditText.setCursorVisible(false) disables the editor's insertion controller). iOS and the
+// web switch it off, as before: iOS opens its edit menu at a hidden caret.
+describe("the capture input's caret", () => {
+  it("Android: stays on for the editor, with a cursor and handles that paint nothing", () => {
+    const { input } = renderField(AndroidInputOTP, { defaultValue: "12" });
+    const props = textInputProps(input);
+    expect(props.caretHidden).toBe(false);
+    for (const color of [props.cursorColor, props.selectionHandleColor] as string[]) {
+      const [r, g, b, a] = channels(color);
+      expect(a).toBe(0);
+      // Not the integer 0 that Android reads as "no colour" and replaces with the theme's.
+      expect(r + g + b).toBeGreaterThan(0);
+    }
+  });
+
+  for (const [name, InputOTP] of [["the web", WebInputOTP], ["iOS", IosInputOTP]] as const) {
+    it(`${name}: is switched off`, () => {
+      const { input } = renderField(InputOTP, { defaultValue: "12" });
+      expect(textInputProps(input).caretHidden).toBe(true);
+    });
+  }
+});
+
+/** Select a range in the capture input the way the platform reports one. */
+function selectRange(input: HTMLInputElement, start: number, end: number) {
+  act(() => {
+    input.setSelectionRange(start, end);
+    fireEvent.select(input);
+  });
+}
+
+/** The selection the shell hands its TextInput: React Native re-applies it over whatever
+ *  selection the platform reports that differs, so this is what the field keeps. */
+function handedSelection(input: HTMLInputElement) {
+  return textInputProps(input).selection as { start: number; end: number };
+}
+
+// A range the platform selects (select-all, the word a long press or a double tap picks, a
+// dragged handle) is mirrored back as the controlled selection, so React Native never
+// re-applies anything over it. On Android re-applying it rewrites the text, which the editor
+// takes as an edit that stops the selection toolbar: a long press on the digits offered no
+// Paste, and a range widened to the whole code lost its toolbar the same way. iOS paints its
+// selection band and grabbers whatever their colour (InputOTPParts.visibleSelection), so
+// there a range goes back to the end of the code like a stray caret.
+describe("a selection", () => {
+  for (const [name, InputOTP] of [["the web", WebInputOTP], ["Android", AndroidInputOTP]] as const) {
+    it(`${name}: is kept exactly where the platform put it`, () => {
+      const { input } = renderField(InputOTP, { defaultValue: "123" });
+      selectRange(input, 0, 3);
+      expect(handedSelection(input)).toEqual({ start: 0, end: 3 });
+      expect([input.selectionStart, input.selectionEnd]).toEqual([0, 3]);
+      // Part of the code (one word of it): kept as it is, not widened.
+      selectRange(input, 1, 3);
+      expect(handedSelection(input)).toEqual({ start: 1, end: 3 });
+      expect([input.selectionStart, input.selectionEnd]).toEqual([1, 3]);
+    });
+
+    it(`${name}: lets go once the code changes, and pins the caret to the new end`, () => {
+      const { input } = renderField(InputOTP, { defaultValue: "123" });
+      selectRange(input, 0, 3);
+      // A paste over the selected code replaces it.
+      fireEvent.change(input, { target: { value: "482913" } });
+      expect(input.value).toBe("482913");
+      expect(handedSelection(input)).toEqual({ start: 6, end: 6 });
+    });
+
+    it(`${name}: lets go when the caret collapses, and still pins a stray caret to the end`, () => {
+      const { input } = renderField(InputOTP, { defaultValue: "123" });
+      selectRange(input, 0, 3);
+      selectRange(input, 1, 1);
+      expect(handedSelection(input)).toEqual({ start: 3, end: 3 });
+      expect([input.selectionStart, input.selectionEnd]).toEqual([3, 3]);
+    });
+  }
+
+  it("iOS: goes back to the end of the code, where its band would not show", () => {
+    const { input } = renderField(IosInputOTP, { defaultValue: "123" });
+    selectRange(input, 0, 3);
+    expect(handedSelection(input)).toEqual({ start: 3, end: 3 });
+    expect([input.selectionStart, input.selectionEnd]).toEqual([3, 3]);
   });
 });

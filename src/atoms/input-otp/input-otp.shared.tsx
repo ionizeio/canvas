@@ -34,8 +34,8 @@ import { CARET_BLINK } from "../../style/motion.js";
 // Architecture (the crux): the field is driven by ONE real <TextInput> so native
 // SMS autofill, the one-time-code keyboard suggestion, and paste all flow into a
 // single value. That input is positioned ABSOLUTELY to fill the whole row and paints
-// nothing (caret hidden; see-through on the web, inkless at full opacity on iOS and
-// Android, per InputOTPParts), so tapping anywhere
+// nothing (see-through on the web, inkless at full opacity on iOS and Android, its caret
+// switched off or inked clear, per InputOTPParts), so tapping anywhere
 // on the segmented row focuses it and autofill/paste land in it. The visible
 // segment cells (a View + a Text per character) are laid out underneath and read
 // from the resolved `value`; the "active" cell (index === value.length, clamped
@@ -45,8 +45,9 @@ import { CARET_BLINK } from "../../style/motion.js";
 //
 // Because that one input spans the whole row, a tap drops the native caret wherever
 // the pointer landed, which on a partly-entered code is the MIDDLE of the string. The
-// selection is therefore pinned to the end of the value (see pinCaret below), so a
-// keystroke always lands in the first unfilled cell no matter which cell was tapped.
+// caret is therefore pinned to the end of the value (see handleSelectionChange below), so
+// a keystroke always lands in the first unfilled cell no matter which cell was tapped; a
+// range the platform selects is left where it is, so its Cut, Copy and Paste still work.
 
 export type Size = "small" | "base" | "large";
 
@@ -105,9 +106,9 @@ export interface InputOTPSkin {
   disabledLook: (t: ColorTokens, focused: boolean) => FieldDisabledLook;
 }
 
-// The per-platform piece an entry threads in beside its skin: how the capture input paints
-// nothing. The look is the same everywhere; what differs is what each platform still sees
-// of a view it cannot see through.
+// The per-platform pieces an entry threads in beside its skin: how the capture input, its
+// caret and its selection paint nothing. The look is the same everywhere; what differs is
+// what each platform still sees, or still draws, of an input nobody is meant to see.
 export interface InputOTPParts {
   /**
    * Hide the capture input by its ink (a text and selection colour that paints nothing) at
@@ -120,6 +121,29 @@ export interface InputOTPParts {
    * applied with `!important`, which no inline style overrides).
    */
   opaqueCapture?: boolean;
+  /**
+   * Keep the platform's caret on and hide it by its ink (a cursor and handle colour that
+   * paints nothing), instead of switching it off. Android passes it, because its text editor
+   * offers the long-press Paste popup only while the cursor is on: `caretHidden` turns the
+   * cursor off (EditText.setCursorVisible(false)), and Editor.prepareCursorControllers then
+   * disables the insertion controller that a long press on the field starts the popup from.
+   * Android 9 is the exception: React Native cannot recolour its cursor, so there it stays
+   * off. iOS and the web leave it off: iOS opens its edit menu, with Paste, at a hidden caret,
+   * and the web's input is see-through.
+   */
+  inklessCaret?: boolean;
+  /**
+   * The platform paints a selection that no colour hides, so the field keeps none: a range is
+   * collapsed back to the end of the code, as a stray caret is. iOS passes it, because its
+   * selection band and grabbers take the selection colour's hue at an alpha of their own, so
+   * a range over the capture input's invisible glyphs would paint a band and two grabbers
+   * across the middle of the row, off the cells it selects; so does Android 9, whose handles
+   * React Native cannot recolour. Android and the web otherwise leave it off and keep a range:
+   * Android's highlight and handles honour the colour's zero alpha, the web's input is
+   * see-through, and Android's selection toolbar (Cut, Copy, Paste) only survives while its
+   * range does.
+   */
+  visibleSelection?: boolean;
 }
 
 // Size precedence within the axis: large > small > default (first match wins),
@@ -179,7 +203,7 @@ function Caret({ style }: { style: ViewStyle }) {
 
 /** Build an InputOTP component from a platform skin (plus the platform's capture part). */
 export function createInputOTP(skin: InputOTPSkin, parts: InputOTPParts = {}) {
-  const { opaqueCapture } = parts;
+  const { opaqueCapture, inklessCaret, visibleSelection } = parts;
   const InputOTP = forwardRef<RNTextInput, InputOTPProps>(function InputOTP(props, ref) {
     const {
       length = 6,
@@ -234,37 +258,67 @@ export function createInputOTP(skin: InputOTPSkin, parts: InputOTPParts = {}) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [value, length]);
 
+    // The range the platform selected, and the code it was selected on: held while the
+    // field still shows that code (see the selection below). An edit ends it, since
+    // whatever replaced the range is a new code.
+    const [range, setRange] = useState<{ start: number; end: number; code: string } | null>(null);
+    const held = range !== null && range.code === value ? range : null;
+
     const handleChange = (raw: string) => {
+      setRange(null);
       setValue(cleanCode(raw, length, alphanumeric));
     };
 
-    // Caret pinning. `caret` is the selection handed to the input, and it always sits at
-    // the end of the code. Its object IDENTITY is what drives re-application (a platform
-    // only pushes `selection` down when it changes), so the memo deliberately yields a new
-    // object in exactly two cases and no others: the code's length changed (typing, paste,
-    // autofill, a controlled update), or a tap dropped the caret somewhere it does not
+    // Caret pinning. `selection` is handed to the input: the end of the code, so a keystroke
+    // always lands in the first unfilled cell, or the range the platform selected, left
+    // exactly where the platform put it. React Native re-applies a controlled `selection`
+    // over any selection the platform reports that differs from it, and on Android it
+    // re-applies it by writing the text back too, which the editor takes as an edit: that
+    // hides its handles, ends the long-press drag and stops the selection toolbar. So a
+    // range (select-all, the word a long press or a double tap selects, a dragged handle)
+    // is mirrored, never corrected: pushed back to the end, a long press on the digits
+    // opened no toolbar on Android, and widened to the whole code, a long press on one word
+    // of an alphanumeric code lost its toolbar the same way. Held, the platform's toolbar or
+    // edit menu stays up, and its Cut, Copy and Paste act on the range, so a paste over a
+    // selected code replaces it instead of being refused by maxLength. A platform whose
+    // selection shows whatever its colour (InputOTPParts.visibleSelection) keeps no range:
+    // there a range is a stray caret, since a band off the cells would misstate what is
+    // selected.
+    //
+    // The object's IDENTITY is what drives re-application on the web (react-native-web
+    // applies `selection` when the prop changes), so the memo yields a new object only when
+    // the place changed (the code's length on typing, paste, autofill or a controlled
+    // update; a range held or let go), or when a tap put the caret somewhere it does not
     // belong. Rebuilding it on every render instead would re-collapse the selection on any
     // unrelated re-render, and holding it fixed would fight the caret while typing.
     const [strayCaret, reportStrayCaret] = useReducer((n: number) => n + 1, 0);
-    const caret = useMemo(
-      () => ({ start: value.length, end: value.length }),
+    const selectionStart = held ? held.start : value.length;
+    const selectionEnd = held ? held.end : value.length;
+    const selection = useMemo(
+      () => ({ start: selectionStart, end: selectionEnd }),
       // `strayCaret` is a deliberate identity-only dependency: a stray tap leaves the END
       // of the code where it was, so nothing in the body changes and only a fresh object
       // can make the platform re-apply the selection. Excluding it would strand the caret
       // wherever the tap left it.
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      [value.length, strayCaret],
+      [selectionStart, selectionEnd, strayCaret],
     );
     const handleSelectionChange = (
       e: NativeSyntheticEvent<TextInputSelectionChangeEventData>,
     ) => {
       const { start, end } = e.nativeEvent.selection;
+      if (start !== end && !visibleSelection) {
+        // A range: held where the platform put it.
+        if (held === null || held.start !== start || held.end !== end) setRange({ start, end, code: value });
+        return;
+      }
+      // A collapsed caret lets go of any range.
+      if (range !== null) setRange(null);
       // Already where it belongs.
       if (start === value.length && end === value.length) return;
-      // A full-range selection is select-all: left alone, so a paste still REPLACES a
-      // complete code instead of being refused by maxLength. Any other position is a
-      // stray caret and gets pushed back to the end, where the next character belongs.
-      if (start === 0 && end === value.length) return;
+      // Anywhere else is a stray caret (a tap drops it where the finger landed), or a range
+      // the platform would paint off the cells: pushed back to the end, where the next
+      // character belongs.
       reportStrayCaret();
     };
 
@@ -358,10 +412,15 @@ export function createInputOTP(skin: InputOTPSkin, parts: InputOTPParts = {}) {
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
             // Pinned to the end of the code so a tap on any cell still appends at the
-            // first unfilled one (see handleSelectionChange).
-            selection={caret}
+            // first unfilled one, or holding the whole code (see handleSelectionChange).
+            selection={selection}
             onSelectionChange={handleSelectionChange}
-            caretHidden
+            // The platform caret paints nothing either way: switched off, or kept on for a
+            // platform that ties its long-press Paste to it and inked clear, with its handles
+            // (InputOTPParts.inklessCaret). The cells draw the kit's own caret.
+            caretHidden={!inklessCaret}
+            cursorColor={NO_INK}
+            selectionHandleColor={NO_INK}
             inputMode={alphanumeric ? "text" : "numeric"}
             keyboardType={alphanumeric ? "default" : "number-pad"}
             // Codes are entered exactly as shown: nothing is re-cased, corrected or flagged
@@ -374,8 +433,8 @@ export function createInputOTP(skin: InputOTPSkin, parts: InputOTPParts = {}) {
             // masks it for real: RN hides it natively and RNW emits a password
             // input, so a screen reader / the DOM value / password-manager UI no
             // longer expose the raw passcode (the cell bullets alone were purely
-            // cosmetic). Keep `textContentType="oneTimeCode"` set regardless —
-            // iOS still honors it for SMS autofill even with secure entry — so
+            // cosmetic). Keep `textContentType="oneTimeCode"` set regardless (iOS
+            // still honors it for SMS autofill even with secure entry), so
             // one-time-code autofill keeps landing in both modes.
             secureTextEntry={!!masked}
             textContentType="oneTimeCode"
