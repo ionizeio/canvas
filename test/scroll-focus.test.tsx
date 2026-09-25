@@ -1,6 +1,6 @@
 import { afterEach, expect, it } from "bun:test";
 import { act, cleanup, renderHook } from "@testing-library/react";
-import type { LayoutChangeEvent } from "react-native";
+import { Platform, type LayoutChangeEvent } from "react-native";
 import { useHorizontalScrollFocus, useScrollFocus } from "../src/style/use-scroll-focus.ts";
 
 afterEach(cleanup);
@@ -52,3 +52,41 @@ it("tracks changed snippet or table content independently of viewport layout", (
   act(() => result.current.onLayout(layout(0)));
   expect(result.current.focusable).toBe(false);
 });
+
+// Android's HorizontalScrollView claims any sideways drag past touch slop even when it
+// cannot scroll; every other platform keeps a fitting scroller enabled (on the web a
+// disabled one sets touch-action: none).
+function onPlatform(os: string, run: () => void) {
+  const original = Object.getOwnPropertyDescriptor(Platform, "OS")!;
+  Object.defineProperty(Platform, "OS", { configurable: true, value: os });
+  try {
+    run();
+  } finally {
+    cleanup();
+    Object.defineProperty(Platform, "OS", original);
+  }
+}
+
+it("lets an Android scroller take a drag only while its content overflows", () => onPlatform("android", () => {
+  const { result } = renderHook(useHorizontalScrollFocus);
+  expect(result.current.scrollEnabled).toBe(false);
+  act(() => result.current.onLayout(layout(320)));
+  act(() => result.current.onContentSizeChange(320, 80));
+  expect(result.current.scrollEnabled).toBe(false);
+  act(() => result.current.onContentSizeChange(800, 80));
+  expect(result.current.scrollEnabled).toBe(true);
+  act(() => result.current.onLayout(layout(800)));
+  expect(result.current.scrollEnabled).toBe(false);
+}));
+
+for (const os of ["web", "ios"]) {
+  it(`keeps a fitting scroller enabled on ${os}`, () => onPlatform(os, () => {
+    const { result } = renderHook(useHorizontalScrollFocus);
+    expect(result.current.scrollEnabled).toBe(true);
+    act(() => result.current.onLayout(layout(320)));
+    act(() => result.current.onContentSizeChange(320, 80));
+    expect(result.current.scrollEnabled).toBe(true);
+    act(() => result.current.onContentSizeChange(800, 80));
+    expect(result.current.scrollEnabled).toBe(true);
+  }));
+}

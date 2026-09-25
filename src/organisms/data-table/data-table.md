@@ -7,7 +7,9 @@ Treat `rows` and `columns` as immutable inputs. When editing data, replace the o
 On narrow web and Android layouts, columns pan horizontally when they exceed
 the table width. The overflowing scrollport is a keyboard tab stop, so the
 platform's arrow keys can reveal the remaining columns. A table that fits adds
-no scrolling tab stop. The iOS compact primary-column layout is unchanged.
+no scrolling tab stop, and on Android it takes no sideways drag either, so a tap
+that drifts sideways still presses its row and a swipe that starts across it
+scrolls the page. The iOS compact primary-column layout is unchanged.
 Crossing that width changes the layout only: rows, custom cells, an open
 editor with its text and focus, and a windowed body's scroll position stay as
 they are when a window is resized across it or a phone measures the table on

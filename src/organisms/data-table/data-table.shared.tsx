@@ -720,10 +720,14 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
         onLayout={onMeasureLayout}
       >
         {canPan ? (
-          // The scroller stays enabled while the table fits: its content is then
-          // exactly the scrollport's width, so there is nothing to scroll and no
-          // tab stop, whereas `scrollEnabled={false}` sets `touch-action: none`
-          // on the web and a finger on the table could no longer scroll the page.
+          // While the table fits, its content is exactly the scrollport's width,
+          // so there is nothing to scroll and no tab stop. `scrollFocus` also
+          // decides whether the scroller takes a drag: on Android only while the
+          // table overflows (its horizontal scroller would otherwise claim a
+          // sideways drag it cannot scroll, dropping a row's press and the
+          // page's scroll), and always on the web, where a disabled scroller
+          // sets `touch-action: none` and a finger on the table could no longer
+          // scroll the page.
           // Taps reach the table's own controls while a soft keyboard is up (an
           // open editor's Save, a row's checkbox); the default would spend the
           // first tap dismissing the keyboard.
