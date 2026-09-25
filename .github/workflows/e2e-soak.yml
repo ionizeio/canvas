@@ -8,9 +8,10 @@ name: E2E soak (canvas)
 # in a browser that has lived through a whole shard: the glass material captures that
 # hung in Chromium's Page.captureScreenshot a few Deploy runs in thirty (2026-09)
 # passed a hundred times in a row when replayed alone, and this soak is what found and
-# proved their fix (CHROMIUM_ARGS in playwright.config.ts). So this replays a spec in
-# order, several passes per lane (each pass is the whole selection in the order a
-# shard runs it, in fresh workers), on parallel lanes, against a fresh export, with
+# proved their fix (CHROMIUM_ARGS in playwright.config.ts). So this replays a spec, or
+# a directory of them such as a project's whole journey set, in order, several passes
+# per lane (each pass is the whole selection in the order a shard runs it, in fresh
+# workers), on parallel lanes, against a fresh export, with
 # the hang probe armed (e2e/support/hang-probe.ts): a test still running after
 # `hang_probe_ms` gets the browser's state attached to its report (a Chromium renderer's
 # with a compositor trace; for Firefox and WebKit whether the page still answers a new
@@ -49,7 +50,7 @@ on:
           - '12'
           - '16'
       spec:
-        description: 'The spec to replay, an e2e/**/*.e2e.ts path'
+        description: 'What to replay: an e2e/**/*.e2e.ts spec, or a directory of specs under e2e/ (the project still picks which of them run)'
         default: e2e/visual/materials.e2e.ts
         type: string
       grep:
@@ -184,10 +185,14 @@ jobs:
         env:
           SPEC: ${{ inputs.spec }}
         run: |
-          if ! [[ "$SPEC" =~ ^e2e/[A-Za-z0-9/_.-]+\.e2e\.ts$ ]]; then
-            printf '::error::spec must be an e2e/**/*.e2e.ts path, not %q\n' "$SPEC"; exit 1
+          # A spec file, or a directory with no dots in its path (so never `..`).
+          if [[ "$SPEC" =~ ^e2e/[A-Za-z0-9/_.-]+\.e2e\.ts$ ]]; then
+            test -f "$SPEC" || { printf '::error::%q does not exist\n' "$SPEC"; exit 1; }
+          elif [[ "$SPEC" =~ ^e2e(/[A-Za-z0-9_-]+)*/?$ ]]; then
+            test -d "$SPEC" || { printf '::error::%q is not a directory\n' "$SPEC"; exit 1; }
+          else
+            printf '::error::spec must be an e2e/**/*.e2e.ts path or a directory under e2e/, not %q\n' "$SPEC"; exit 1
           fi
-          test -f "$SPEC" || { printf '::error::%q does not exist\n' "$SPEC"; exit 1; }
 
       - uses: oven-sh/setup-bun@v2
         with:
