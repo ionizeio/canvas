@@ -60,7 +60,7 @@ const compareSnapshots = process.platform === "linux" || !!process.env.E2E_FORCE
 // the page clock drives the page's own timers. It mitigates a Chromium defect rather
 // than curing it (the one hang left had the same profile), and it stays until a
 // Chromium release is soaked clean without it.
-const CHROMIUM_ARGS = ["--disable-frame-rate-limit"];
+export const CHROMIUM_ARGS = ["--disable-frame-rate-limit"];
 
 type SuiteProject = Project<PlaywrightTestOptions, PlaywrightWorkerOptions>;
 

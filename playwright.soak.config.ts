@@ -6,12 +6,14 @@
  *   E2E_SOAK_CHANNEL        "chromium" runs full Chromium in its new headless mode
  *                           instead of the headless shell Playwright launches by default.
  *   E2E_SOAK_CHROMIUM_ARGS  extra Chromium command-line switches, space separated.
+ *   E2E_SOAK_DEFAULT_PACING "1" drops the suite's own CHROMIUM_ARGS, so a soak can see
+ *                           what a Chromium release does with its default frame pacing.
  *
- * Both apply to the Chromium projects only. It sits beside playwright.config.ts so the
+ * They apply to the Chromium projects only. It sits beside playwright.config.ts so the
  * paths that configuration spells relative to itself mean the same thing here.
  */
 import { defineConfig } from "@playwright/test";
-import base from "./playwright.config";
+import base, { CHROMIUM_ARGS } from "./playwright.config";
 
 const channel = process.env.E2E_SOAK_CHANNEL || undefined;
 if (channel !== undefined && channel !== "chromium") {
@@ -23,6 +25,9 @@ if (notASwitch) throw new Error(`E2E_SOAK_CHROMIUM_ARGS takes --switches only, n
 
 type SuiteProject = NonNullable<typeof base.projects>[number];
 const isChromium = (project: SuiteProject) => (project.use?.browserName ?? "chromium") === "chromium";
+const defaultPacing = process.env.E2E_SOAK_DEFAULT_PACING === "1";
+const suiteArgs = (project: SuiteProject) => (project.use?.launchOptions?.args ?? [])
+  .filter((arg) => !(defaultPacing && CHROMIUM_ARGS.includes(arg)));
 
 export default defineConfig({
   ...base,
@@ -34,7 +39,7 @@ export default defineConfig({
           ...(channel ? { channel } : {}),
           launchOptions: {
             ...project.use?.launchOptions,
-            args: [...(project.use?.launchOptions?.args ?? []), ...args],
+            args: [...suiteArgs(project), ...args],
           },
         },
       }

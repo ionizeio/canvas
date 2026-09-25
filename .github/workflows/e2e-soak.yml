@@ -19,8 +19,10 @@ name: E2E soak (canvas)
 # a failure seen there still happens (a commit older than the probe runs without it;
 # Playwright's own trace and error context still land in the report). `trace`, `channel`
 # and `chromium_args` test a hypothesis about the browser: they reach the run through
-# playwright.soak.config.ts, never the configuration every other run uses. Soaks run
-# side by side, so two hypotheses about one commit can be compared at once.
+# playwright.soak.config.ts, never the configuration every other run uses; `pacing`
+# drops the suite's own switches and `playwright` soaks another release, both to tell
+# whether a newer Chromium still needs them. Soaks run side by side, so two hypotheses
+# about one commit can be compared at once.
 #
 # Every input reaches the shell through `env`, never through `${{ }}` inside a script,
 # and the spec path is checked before use.
@@ -78,6 +80,17 @@ on:
           - chromium
       chromium_args:
         description: 'Extra Chromium switches for the Chromium projects, space separated (playwright.soak.config.ts)'
+        default: ''
+        type: string
+      pacing:
+        description: "Frame pacing: the suite's own switches (CHROMIUM_ARGS in playwright.config.ts), or Chromium's default"
+        default: suite
+        type: choice
+        options:
+          - suite
+          - chromium-default
+      playwright:
+        description: 'Another @playwright/test release to soak with, e.g. 1.63.0, installed on the runner only (empty for the lockfile one)'
         default: ''
         type: string
 
@@ -176,6 +189,20 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
+      # On this runner only: nothing is committed, and the export was built above
+      # with the lockfile's dependencies.
+      - name: Use another Playwright release
+        if: inputs.playwright != ''
+        env:
+          PLAYWRIGHT_VERSION: ${{ inputs.playwright }}
+        run: |
+          case "$PLAYWRIGHT_VERSION" in
+            1.[0-9]*.[0-9]*) ;;
+            *) echo "::error::playwright must be a release like 1.63.0, not '$PLAYWRIGHT_VERSION'"; exit 1 ;;
+          esac
+          bun add --dev --exact "@playwright/test@$PLAYWRIGHT_VERSION"
+          bunx playwright --version
+
       - name: Cache the Playwright browsers
         uses: actions/cache@v6
         with:
@@ -200,6 +227,7 @@ jobs:
           TRACE: ${{ inputs.trace }}
           E2E_SOAK_CHANNEL: ${{ inputs.channel == 'chromium' && 'chromium' || '' }}
           E2E_SOAK_CHROMIUM_ARGS: ${{ inputs.chromium_args }}
+          E2E_SOAK_DEFAULT_PACING: ${{ inputs.pacing == 'chromium-default' && '1' || '' }}
           # Every material test finishes in under 25 s on this runner; one still
           # running at 40 s is stuck.
           E2E_HANG_PROBE_MS: '40000'
