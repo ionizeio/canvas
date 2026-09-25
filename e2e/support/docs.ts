@@ -100,12 +100,30 @@ export async function gotoDocs(page: Page, route: string, options: GotoOptions =
   if ((await page.locator("#root").count()) > 0) {
     await page.locator("html[data-hydrated]").waitFor({ state: "attached", timeout: 20_000 });
   }
-  await expect
-    .poll(() => readScheme(page), {
-      timeout: 20_000,
-      message: `${route} never painted in ${scheme} (a missing font or a failed bundle both look like this)`,
-    })
-    .toBe(scheme);
+  // What the poll saw decides what a failure says. A page read in the wrong look, or
+  // with nothing opaque, has a paint problem; a page whose evaluation never returned
+  // was never read at all. Blaming the paint for the second sent the first look at a
+  // Firefox failure (Deploy 36101320198) after a cause the trace ruled out: that page
+  // was painted dark, and the detector's first evaluation was the call that never came
+  // back.
+  let readings = 0;
+  let last: Scheme | null = null;
+  try {
+    await expect
+      .poll(async () => {
+        last = await readScheme(page);
+        readings += 1;
+        return last;
+      }, { timeout: 20_000 })
+      .toBe(scheme);
+  } catch (error) {
+    throw new Error(
+      readings === 0
+        ? `${route} was never read: the paint check's first evaluation did not return within 20 s, whatever the page painted`
+        : `${route} never painted in ${scheme}: ${readings} readings, the last ${last ?? "finding no opaque background"} (a missing font or a failed bundle both look like this)`,
+      { cause: error },
+    );
+  }
 }
 
 /**
