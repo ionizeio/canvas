@@ -279,9 +279,16 @@
   --p-sheet-row-min-h:57px;--p-sheet-row-pad-x:16px;--p-sheet-row-radius:0px;--p-sheet-row-fill:transparent;
   --p-sheet-row-font:17px;--p-sheet-row-lh:22px;--p-sheet-row-weight:400;--p-sheet-row-tracking:0px;
   --p-sheet-row-label:var(--popover-foreground);--p-sheet-row-align:center /* @kind other */;--p-sheet-row-justify:center /* @kind other */;--p-sheet-row-text-align:center /* @kind other */;
-  /* Command palette (command.styles.ts webSkin) */
-  --p-cmd-radius:12px;--p-cmd-search-pad-x:16px;--p-cmd-search-pad-y:14px;--p-cmd-search-gap:8px;--p-cmd-search-min-h:0px;--p-cmd-glyph:16px;
-  --p-cmd-row-pad-x:16px;--p-cmd-row-pad-y:10px;--p-cmd-row-min-h:40px;--p-cmd-row-font:14px;--p-cmd-row-lh:20px;--p-cmd-row-tracking:0px;
+  /* Command palette (command.styles.ts webSkin, iOS and Android too: no platform ships a command
+     palette. Dark Factory's menu panel at the 18px dialog corner with its 8px inset; the search row
+     is its SearchField (a 15px search Icon 10 from the 13 / 600 value, the border rule turning ring
+     2px while focused); results are its menu rows (8 x 10 at an 8px corner, 12.5 / 700, 2px apart,
+     the active row on accent); the footer its MenuNote (a border hairline over 11 / 500 muted text).
+     The trigger is the field frame, 40 tall, holding the search Icon and the SearchField's tracked
+     uppercase placeholder in muted-foreground. On an iPhone and on Android the rows, the search row
+     and the trigger grow to the 44pt / 48dp minimum) */
+  --p-cmd-radius:18px;--p-cmd-search-pad-x:10px;--p-cmd-search-pad-y:8px;--p-cmd-search-gap:10px;--p-cmd-search-min-h:0px;--p-cmd-glyph:15px;
+  --p-cmd-row-pad-x:10px;--p-cmd-row-pad-y:8px;--p-cmd-row-min-h:0px;--p-cmd-row-font:12.5px;--p-cmd-row-lh:17px;--p-cmd-row-tracking:0px;
   /* Accordion (accordion.styles.ts webSkin — Radix/shadcn) */
   --p-acc-container-radius:0px;--p-acc-container-border:0px;--p-acc-container-fill:transparent;
   --p-acc-card-radius:14px;--p-acc-card-inset:20px;--p-acc-sep-inset:0px;
@@ -521,9 +528,6 @@
   --p-sheet-divider-h:0px;--p-sheet-rows-gap:10px;
   --p-sheet-row-min-h:48px;--p-sheet-row-radius:9999px;--p-sheet-row-fill:color-mix(in oklab, var(--foreground) 10%, transparent);
   --p-sheet-row-weight:500;--p-sheet-row-tracking:-0.43px;--p-sheet-row-label:var(--foreground);
-  /* Command — iOS: 16pt continuous card, 44pt rows at 17/22 */
-  --p-cmd-radius:16px;--p-cmd-search-pad-x:16px;--p-cmd-search-pad-y:14px;--p-cmd-search-gap:10px;--p-cmd-search-min-h:44px;--p-cmd-glyph:20px;
-  --p-cmd-row-pad-x:16px;--p-cmd-row-pad-y:11px;--p-cmd-row-min-h:44px;--p-cmd-row-font:17px;--p-cmd-row-lh:22px;--p-cmd-row-tracking:-0.4px;
   /* Dialog — iOS 27 alert: borderless 28pt card, 30% scrim, capsule actions */
   --p-dialog-scrim:rgba(0,0,0,0.3);--p-dialog-radius:28px;--p-dialog-border:0px;--p-dialog-shadow:var(--shadow-lg);
   --p-dialog-title:20px;--p-dialog-title-lh:25px;--p-dialog-title-weight:700;
@@ -748,9 +752,6 @@
   --p-sheet-row-min-h:56px;--p-sheet-row-pad-x:24px;
   --p-sheet-row-font:16px;--p-sheet-row-lh:24px;--p-sheet-row-tracking:0.5px;--p-sheet-row-label:var(--popover-foreground);
   --p-sheet-row-justify:flex-start /* @kind other */;--p-sheet-row-text-align:left /* @kind other */;
-  /* Command — M3: 48dp rows at 16/24 +0.5 */
-  --p-cmd-search-pad-x:16px;--p-cmd-search-pad-y:14px;--p-cmd-search-gap:12px;--p-cmd-search-min-h:48px;--p-cmd-glyph:20px;
-  --p-cmd-row-pad-x:16px;--p-cmd-row-pad-y:12px;--p-cmd-row-min-h:48px;--p-cmd-row-font:16px;--p-cmd-row-lh:24px;--p-cmd-row-tracking:0.5px;
   /* Dialog — M3 basic dialog: 28dp elevated card, 32% scrim, flat text-button actions */
   --p-dialog-scrim:rgba(0,0,0,0.32);--p-dialog-radius:28px;--p-dialog-border:0px;--p-dialog-shadow:var(--shadow-lg);
   --p-dialog-title:22px;--p-dialog-title-lh:28px;--p-dialog-title-weight:500;
@@ -861,7 +862,7 @@
   --p-drag-handle-size:40px;--p-drag-handle-radius:20px;--p-drag-handle-icon:20px;
 
   /* Declared where the skin differs from the web value this block would otherwise inherit. */
-  --p-acc-card-radius:12px;--p-cmd-radius:8px;--p-table-radius:8px;--p-tab-track-radius:0px;--p-tab-item-radius:0px;--p-tabbar-radius:0px;--p-tabbar-item-radius:0px;
+  --p-acc-card-radius:12px;--p-table-radius:8px;--p-tab-track-radius:0px;--p-tab-item-radius:0px;--p-tabbar-radius:0px;--p-tabbar-item-radius:0px;
 }
 
 /* iOS skin values that resolve PER SCHEME upstream: the drawer scrim

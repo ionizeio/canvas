@@ -398,7 +398,7 @@ components:
     tip-radius: "8px"
     tip-shadow: "var(--shadow-md)"
   command:
-    cmd-radius: "12px"
+    cmd-radius: "18px"
   datatable:
     table-radius: "14px"
   draghandle:
@@ -497,8 +497,6 @@ platformSkins:
       steps-connector-radius: "9999px"
     popover:
       popover-radius: "26px"
-    command:
-      cmd-radius: "16px"
     datatable:
       table-radius: "10px"
     draghandle:
@@ -609,8 +607,6 @@ platformSkins:
     tooltip:
       tip-radius: "4px"
       tip-shadow: none
-    command:
-      cmd-radius: "8px"
     datatable:
       table-radius: "8px"
     draghandle:

@@ -360,7 +360,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "command",
     name: "Command",
-    description: "Cmd+K search: navigation, actions, recent items.",
+    description: "Cmd+K search: navigation, actions, recent items. No platform ships a command palette, so every platform draws Dark Factory's: its menu panel at the dialog corner, a search field over menu rows and eyebrow headings, and a field-framed trigger.",
     category: "Organisms",
     stageAlign: "start",
   },

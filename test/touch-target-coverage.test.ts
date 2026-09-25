@@ -65,7 +65,6 @@ const COVERED_ANOTHER_WAY: Record<string, string> = {
   "organisms/action-sheet": "rows are 48/56 tall by skin",
   "organisms/calendar": "hitSlop on the month chevrons",
   "organisms/carousel": "hitSlop on the dots and the arrows",
-  "organisms/command": "rows are 44/48 tall by skin",
   "organisms/data-table": "rows and action buttons carry pressableMinHeight",
   "organisms/filter-panel": "option rows are 44/48 tall by skin",
   "organisms/toast": "hitSlop on the dismiss and the action, split where they face each other, which their RippleClips carry on Android",

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ComponentRef } from "react";
-import { Autocomplete, Button, ButtonGroup, Card, Column, Dialog, Drawer, Dropdown, Input, InputOTP, PhoneInput, Row, Select, Slider, Switch, ThemeProvider, Typography, useReducedMotion } from "@nannier-com/canvas";
+import { Autocomplete, Button, ButtonGroup, Card, Column, Command, Dialog, Drawer, Dropdown, Input, InputOTP, PhoneInput, Row, Select, Slider, Switch, ThemeProvider, Typography, useReducedMotion } from "@nannier-com/canvas";
 
 type Stats = { hosts: number; activeHosts: number; recordings: number; frostViews: number; frameListeners: number };
 declare const require: (name: string) => unknown;
@@ -99,13 +99,15 @@ export function MaterialsBody() {
       <ThemeProvider glass={nested} solid={!nested}>
         <Card><Typography>Nested glass remains active while its parent is solid.</Typography></Card>
       </ThemeProvider>
-      {/* The field wells: under web glass the Select trigger, the Autocomplete and PhoneInput
-          are the clear well the Input is, and their option lists the dense menu. */}
+      {/* The field wells: under web glass the Select trigger, the Autocomplete, PhoneInput and
+          the Command's search trigger are the clear well the Input is, the option lists the
+          dense menu, and the Command's palette the functional panel. */}
       <Card>
         <Column snug>
           <Select label="Material select" options={["Keep editor", "Review settings"]} defaultValue="Keep editor" testID="material-select" />
           <Autocomplete label="Material search" options={["Ada Lovelace", "Grace Hopper"]} defaultValue="Grace Hopper" testID="material-search" />
           <PhoneInput label="Material phone" defaultCountry="GB" testID="material-phone" />
+          <Command trigger footer testID="material-command" groups={[{ heading: "Editor", items: [{ label: "Keep editor", icon: "file", shortcut: "Ctrl+K" }, { label: "Review settings", icon: "settings" }] }]} />
         </Column>
       </Card>
       <CodeField />

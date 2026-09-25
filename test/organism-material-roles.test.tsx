@@ -52,19 +52,26 @@ const frostOf = (material: HTMLElement) => material.querySelector<HTMLElement>('
 const mode = (children: ReactNode, glass: boolean) => <ThemeProvider light glass={glass} solid={!glass}>{children}</ThemeProvider>;
 
 describe("organism material roles", () => {
-  it("preserves Command's unfilled Search trigger across material modes", () => {
+  // SKN-6d: the Search trigger became Dark Factory's field frame, so it takes the field's
+  // well like every web field (it was unfilled and outlined): the field fill in solid mode,
+  // the clear well behind its content under glass, one node across the switch.
+  it("gives Command's Search trigger the field's well across material modes", () => {
     browser(true);
     const children = <Command trigger groups={[{ heading: "Actions", items: [{ label: "New file" }] }]} />;
     const result = render(mode(children, true));
     const trigger = screen.getByRole("button", { name: /Search/ });
-    // Its Kbd is an independently surfaced passive keycap, so inspect only the
-    // trigger's own fill and boundary rather than forbidding all child material.
+    // Its Kbd is an independently surfaced passive keycap with its own material, so inspect
+    // only the trigger's own box and the pane it holds first, behind its content.
     expect(trigger.style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
-    expect(trigger.style.borderColor).not.toContain("0.00");
-    const original = trigger.style.cssText;
+    expect(trigger.style.borderColor).toContain("0.00");
+    const [well] = materials(trigger.firstElementChild!);
+    expect(well, "the trigger's own pane").toBeDefined();
+    expect(frostOf(well!), "the clear well frosts nothing").toBeNull();
     result.rerender(mode(children, false));
     expect(screen.getByRole("button", { name: /Search/ })).toBe(trigger);
-    expect(trigger.style.cssText).toBe(original);
+    expect(materials(trigger)).toHaveLength(0);
+    expect(trigger.style.backgroundColor).toBe("rgba(255, 255, 255, 0.70)");
+    expect(trigger.style.borderColor).not.toContain("0.00");
   });
 
   it("restores DashboardGrid edit-cell fill when its inherited content frost is unavailable", () => {

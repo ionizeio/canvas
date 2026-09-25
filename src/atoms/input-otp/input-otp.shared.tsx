@@ -1,4 +1,4 @@
-import { useTextEntryMaterial } from "../../style/text-entry-material.js";
+import { paneShapeInside, useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { Fragment, forwardRef, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import {
   type NativeSyntheticEvent,
@@ -11,7 +11,6 @@ import {
   TextInput,
   LoopView,
   createLoopChannel,
-  cornerRadii,
   useHugStyle,
   useControllableState,
   useReducedMotion,
@@ -124,22 +123,6 @@ const RUN: ViewStyle = { flexDirection: "row", alignItems: "center" };
 // Digits only unless `alphanumeric`, and never longer than the cell count.
 function cleanCode(raw: string, length: number, alphanumeric?: boolean): string {
   return (alphanumeric ? raw : raw.replace(DIGITS_ONLY, "")).slice(0, length);
-}
-
-// The shape a cell's GlassPane takes. An Input's pane is the field's sibling and covers the
-// field's whole box; a cell's pane is the cell's CHILD, so it fills the cell's padding box,
-// inside the cell's border. It therefore takes the corner radii alone, each inset by that
-// border so the corners stay concentric, and no border of its own: the clear well and its
-// rim then sit flush inside the ring, as an Input's do, and a material that keeps the
-// pane's own paint (a frost that resolves solid, such as Android's with no capture target)
-// draws no second outline inside the cell's.
-function paneShapeInside(shape: ViewStyle): ViewStyle {
-  const inset = typeof shape.borderWidth === "number" ? shape.borderWidth : 0;
-  const radii = cornerRadii(shape) as Record<string, unknown>;
-  for (const [key, value] of Object.entries(radii)) {
-    if (typeof value === "number") radii[key] = Math.max(0, value - inset);
-  }
-  return radii as ViewStyle;
 }
 
 // The active-cell caret blinks, the insertion point's idiom on every platform (the iOS

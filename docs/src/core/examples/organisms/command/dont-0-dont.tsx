@@ -5,9 +5,9 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { tokens, Text, Pressable, Icon } = scope;
   return (
-<Pressable style={{ flexDirection: "row", alignItems: "center", gap: 8, alignSelf: "flex-start", borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: "transparent", paddingHorizontal: 12, paddingVertical: 6 }}>
-  <Icon search muted size={14} />
-  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>Search...</Text>
+<Pressable style={{ flexDirection: "row", alignItems: "center", gap: 10, alignSelf: "flex-start", height: 40, borderRadius: 10, borderWidth: 1, borderColor: tokens["field-border"], backgroundColor: tokens["field-fill"], paddingHorizontal: 12 }}>
+  <Icon search muted size={15} />
+  <Text style={{ fontSize: 10.5, lineHeight: 16, fontWeight: "700", letterSpacing: 1.68, textTransform: "uppercase", color: tokens["muted-foreground"] }}>Search...</Text>
 </Pressable>
   );
 }

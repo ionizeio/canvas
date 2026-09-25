@@ -409,7 +409,7 @@ export const SKIN_FAMILIES: SkinFamily[] = [
   {
     name: "Command",
     module: "organisms/command/command",
-    checks: [{ token: "p-cmd-radius", read: (s) => num(at(s, "cardShape", "borderRadius")) }],
+    checks: [{ token: "p-cmd-radius", read: (s, t) => num(styleOf(s.panel, t)?.borderRadius) }],
   },
   {
     name: "DataTable",

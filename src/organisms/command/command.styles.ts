@@ -1,363 +1,220 @@
-import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow, surfaceRipple, shape } from "../../style/index.js";
-import { activeIndicator } from "../../style/active-indicator.js";
-import { fieldBorder } from "../../style/field-colors.js";
+import { Platform, type ViewStyle, type TextStyle } from "react-native";
+import { activeIndicator, platformMinTarget, shape, surfaceRipple, type ColorTokens, type TouchTargetSkin } from "../../style/index.js";
+import { FIELD_HEIGHT, FIELD_ICON, FIELD_ICON_GAP, FIELD_INSET, fieldFrame, fieldValue } from "../../style/field-look.js";
+import {
+  MENU_ICON,
+  MENU_OFFSET,
+  MENU_ROW_GAP,
+  menuPanel,
+  menuRow,
+  menuRowLabel,
+  menuRowPressed,
+  menuSection,
+} from "../../style/menu-look.js";
 
-// Co-located Command skins, one per platform, all driven by the brand tokens
-// (passed in from useTheme so they follow light/dark and the glass surface, since
-// the shell renders the panel through GlassSurface, which strips the skin's fill
-// and paints the active material over its own `glass-tint`; the `popover` token
-// itself is opaque in both modes and glass never rewrites it). Command is a
-// "Light" platform treatment: ONE structure (the GlassSurface panel, the search
-// row, grouped result rows, the optional group heading, the optional footer, and
-// the collapsed trigger) with small per-OS touches. The BRAND survives on every
-// platform — the accent highlight, the popover/foreground/muted tokens, never a
-// platform default color.
-//
-// The skin covers ONLY the search row + the grouped result rows + the active-row
-// highlight, per the component guidance: the GlassSurface panel and its
-// material, the card shell, the collapsed trigger, the group heading, the footer
-// hint bar, and the Kbd caps stay shared in the shell and are NOT re-skinned.
-//
-// Reference catalog (PLATFORM-REFERENCES.md, command row): the web look matches
-// shadcn/cmdk (the current Canvas look, lifted verbatim). iOS and Android have
-// NO native command palette (both `(none)`), so those skins keep the same
-// structure and apply only the platform's list-row conventions:
-//   iOS (HIG grouped list rows): comfortable ~44pt rows, body type (17/22) with
-//     tightened tracking, a slightly larger search row; the active/pressed row
-//     tints with the brand `accent` and the row dims to ~0.8 opacity on press
-//     (no ripple).
-//   Android (Material 3 list items): ~48dp rows, body-large type (16/24 with
-//     +0.5 tracking), an M3 search row; the active/pressed row tints with
-//     `accent` and press shows an android_ripple (the surfaceRipple state layer:
-//     on-surface ink at ~10%).
-//   Web: the established Canvas look (the current command rows, lifted verbatim)
-//     — a 12/12 search row, 14/20 muted type, 12/8 result rows, 14/20 foreground
-//     type, the `accent` fill for both the active and the pressed row.
+// The Command skin: one look on every platform. Neither iOS nor Material 3 ships a command
+// palette (PLATFORM-REFERENCES.md), and Dark Factory has none either, so all three platforms
+// take one palette built from Dark Factory's own parts (the design language's item 3):
+//   - the palette is Dark Factory's menu panel (src/style/menu-look.ts: the `popover` card,
+//     its hairline, the popover shadow and the 8px inset) at the dialog corner (18), a
+//     large floating surface, 420 wide and never wider than its parent;
+//   - the search row is Dark Factory's SearchField: a 15px search Icon 10 from the text, the
+//     field's 13 / 600 value, no frame of its own inside the panel, and the kit's focus rule
+//     under it: a `border` hairline that turns `ring` and thickens while the search holds
+//     focus (the field's own focus indicator, which Dark Factory does not draw);
+//   - the results are the menu's rows: an 8px corner, 8 x 10 padding, 14px icons and the
+//     12.5 / 700 label, 2px apart, 33 tall with or without a shortcut (its Kbd cap centres
+//     on the label's line); the row the keyboard or the pointer has made active takes the
+//     menu's pressed fill, and a group's heading is the menu's eyebrow section;
+//   - the footer is Dark Factory's MenuNote: a hairline over a muted 11 / 500 note, here the
+//     key hints beside their Kbd caps;
+//   - the collapsed trigger is Dark Factory's field frame (src/style/field-look.ts: the
+//     `field-fill` well at the 10px corner, the resting `field-border` line turning `ring`
+//     while the palette is open, 40 tall with a 12px inset) holding the search Icon and
+//     the SearchField's tracked uppercase placeholder, at full `muted-foreground` (Dark
+//     Factory's 0.9 opacity reads 3.60:1 on its shell) before the shortcut's Kbd.
+// Touch: on an iPhone and on Android the rows, the search row and the trigger grow to the
+// 44pt / 48dp minimum (platformMinTarget, read once when the module loads; the web keeps
+// Dark Factory's 33px rows). The press feedback stays each platform's own: Android's rows
+// ripple, and the others take the menu's pressed fill.
 
-// The contract a platform skin fulfills. The shell owns the structure (the
-// GlassSurface panel, the card shell, the trigger, the group heading, the footer)
-// and the open/close + active-index state; the skin maps tokens and the active
-// row state to RN style objects for the search row and the result rows, and
-// declares its press-feedback mode (iOS/web dim or tint inline, Android ripples).
-export interface CommandSkin {
+/** The palette's width: a bounds provider for its own rows, capped by its parent. */
+export const CARD_WIDTH = 420;
+
+/** The search row's vertical inset: Dark Factory's SearchField text padding. */
+const SEARCH_INSET_Y = 8;
+
+// Dark Factory's SearchField placeholder: tracked caps (0.16em) at 10.5 / 700, at 1.5 lines.
+const SEARCH_PLACEHOLDER: TextStyle = { fontSize: 10.5, lineHeight: 16, fontWeight: "700", letterSpacing: 1.68, textTransform: "uppercase" };
+
+// Dark Factory's MenuNote type: 11 / 500 at 1.45 lines.
+const NOTE_TEXT: TextStyle = { fontSize: 11, lineHeight: 16, fontWeight: "500" };
+
+// The contract the skin fulfills. The shell owns the structure (the palette surface, the
+// search input, the grouped rows, the footer, the trigger and its material) and the open,
+// query and active-row state; the skin maps tokens and state to style objects.
+export interface CommandSkin extends TouchTargetSkin {
+  /** The trigger is a field, so under web glass it is the clear text-entry well. */
+  liquid: boolean;
+  /** The palette card: shape, fill, hairline, shadow, inset and width. */
+  panel: (t: ColorTokens) => ViewStyle;
+  /** The standoff between the trigger and the palette. */
+  panelGap: number;
   /**
-   * The search row at the top of the panel: gap, padding, and the hairline under it,
-   * which turns `ring` and thickens while the search field holds focus (the field's
-   * keyboard focus indicator; the field suppresses the browser ring for it).
+   * The search row: gap, padding, and the rule under it, which turns `ring` and thickens
+   * while the search field holds focus (the field's keyboard focus indicator; the field
+   * suppresses the browser ring for it).
    */
   searchRow: (t: ColorTokens, focused: boolean) => ViewStyle;
-  /** The leading magnifier glyph size (px), rendered through the kit `Icon`
-   *  atom (`search`, tinted muted-foreground) — never a color emoji. */
+  /** The leading search Icon's size (px), tinted `muted-foreground`. */
   searchGlyphSize: number;
-  /** The search input's type metrics, in the muted placeholder color (the
-   *  shell repaints typed text with `foreground`). */
-  searchPlaceholder: (t: ColorTokens) => TextStyle;
-  /** The card's per-OS shape override (radius, and `borderCurve` on iOS): merged
-   *  over the shared `card()` base so iOS gets a rounder, continuous corner. */
-  cardShape: ViewStyle;
-  /** The collapsed trigger row's minimum tap height (px): the HIG/M3 minimum on
-   *  the native rows (44pt iOS, 48dp Android), the web look on web. */
-  triggerMinHeight: number;
-  /** The collapsed trigger row's resting border: the search-field hairline
-   *  (`field-border`, see src/style/field-colors.ts) on web and iOS, where the
-   *  trigger reads as a field; the 3:1 `input` boundary on Android. */
-  triggerBorder: (t: ColorTokens) => string;
-  /** A single result row layout (gap, padding, min height). */
-  rowBase: ViewStyle;
-  /** The active/pressed row fill (the brand accent surface on every platform). */
-  rowAccent: (t: ColorTokens) => ViewStyle;
-  /** A row's leading Canvas icon size (px), per platform. */
+  /** The search input's typed value. */
+  searchText: (t: ColorTokens) => TextStyle;
+  /** The search input's placeholder colour. */
+  searchPlaceholder: (t: ColorTokens) => string;
+  /** A group's heading above its rows. */
+  groupHeading: (t: ColorTokens) => TextStyle;
+  /** The space between rows. */
+  rowGap: number;
+  /** A result row's layout (gap, corner, padding, minimum height). */
+  row: ViewStyle;
+  /** The active row's fill: the row the keyboard or the pointer has made active. */
+  rowActive: (t: ColorTokens) => ViewStyle;
+  /** A pressed row's fill; null where the ripple carries the press (Android). */
+  rowPressed: ((t: ColorTokens) => ViewStyle) | null;
+  /** A row's leading Icon size (px). */
   iconSize: number;
-  /** A row's label type (takes the remaining width). */
+  /** A row's label (takes the remaining width). */
   rowLabel: (t: ColorTokens) => TextStyle;
-  /** iOS/web dim a row on press; Android ripples instead (null). */
-  rowPressedOpacity: number | null;
-  /** Android ripple over the rows; null on iOS/web. */
+  /**
+   * The box a row's trailing shortcut Kbd sits in: the label's line, so the 20px cap centres
+   * on it and a row with a shortcut is as tall as one without.
+   */
+  rowShortcut: ViewStyle;
+  /** The "No results" row, where a row would sit. */
+  emptyRow: ViewStyle;
+  emptyText: (t: ColorTokens) => TextStyle;
+  /** The footer: the hairline note row under the list. */
+  footer: (t: ColorTokens) => ViewStyle;
+  /** One hint cluster in the footer (its Kbd caps and its text). */
+  footerHint: ViewStyle;
+  footerText: (t: ColorTokens) => TextStyle;
+  /** The collapsed trigger: the field frame, its ring while the palette is open. */
+  trigger: (t: ColorTokens, open: boolean) => ViewStyle;
+  /** The trigger's search Icon size (px), tinted `muted-foreground`. */
+  triggerGlyphSize: number;
+  /** The trigger's placeholder label. */
+  triggerLabel: (t: ColorTokens) => TextStyle;
+  /** Android's ripple over a pressed row; null elsewhere. */
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
 }
 
-// ---------- card shell (shared across platforms) ----------
-// The floating palette card: the standard 420px width, rounded, bordered,
-// raised, clipping its rounded corners. (w-[420px] rounded-lg border
-// border-border bg-popover shadow-xl overflow-hidden.) `maxWidth:"100%"` beside the
-// width is the floating-container pattern (a palette is a bounds provider for its
-// own content): it keeps the 420px desktop palette but shrinks the card inside a
-// narrower parent, so it
-// never overflows a 390/393pt iPhone or a 360dp Android phone. GlassSurface
-// strips the fill and supplies the material when the surface is glass; the shape
-// (radius/border/clip) is the skin's, with the per-OS radius/curve layered on via
-// `skin.cardShape`. This base is identical on every platform: only the rows and
-// the corner shape are re-skinned.
-export const CARD_WIDTH = 420;
+/**
+ * What the platforms sharing this skin differ by, read for the running platform when the
+ * module loads, as platformMinTarget is. A parameter so the tests can build the skin an
+ * iPhone or an Android phone runs in the web harness.
+ */
+export interface SharedSkinPlatform {
+  /** The touch minimum: iOS's 44, Android's 48, none on the web. Rows, the search row and the trigger grow to it. */
+  minTarget: number | null;
+  /** Android's ripple over a pressed row; null where the row's pressed fill is the feedback. */
+  ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
+}
 
-export function card(tokens: ColorTokens): ViewStyle {
+/** The one Command skin, for a platform's touch minimum and press feedback. */
+export function sharedSkin({ minTarget, ripple }: SharedSkinPlatform): CommandSkin {
+  const grow: ViewStyle = minTarget == null ? {} : { minHeight: minTarget };
   return {
-    width: CARD_WIDTH,
-    maxWidth: "100%",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: tokens.border,
-    backgroundColor: tokens.popover,
-    overflow: "hidden",
-    ...shadow("xl", tokens),
+    liquid: true,
+    panel: (t) => ({
+      width: CARD_WIDTH,
+      maxWidth: "100%",
+      ...menuPanel(t),
+      borderRadius: shape.web.dialog,
+      overflow: "hidden",
+    }),
+    panelGap: MENU_OFFSET,
+    searchRow: (t, focused) => ({
+      flexDirection: "row",
+      alignItems: "center",
+      gap: FIELD_ICON_GAP,
+      paddingHorizontal: menuRow.paddingHorizontal,
+      paddingTop: SEARCH_INSET_Y,
+      ...activeIndicator({ active: focused, restColor: t.border, activeColor: t.ring, gap: SEARCH_INSET_Y }),
+      marginBottom: 4,
+      ...grow,
+    }),
+    searchGlyphSize: FIELD_ICON,
+    searchText: (t) => ({ ...fieldValue("base"), color: t.foreground }),
+    searchPlaceholder: (t) => t["muted-foreground"],
+    groupHeading: menuSection,
+    rowGap: MENU_ROW_GAP,
+    row: { ...menuRow, ...grow },
+    rowActive: menuRowPressed,
+    rowPressed: ripple == null ? menuRowPressed : null,
+    iconSize: MENU_ICON,
+    rowLabel: (t) => ({ ...menuRowLabel, color: t["popover-foreground"], flexGrow: 1, flexShrink: 1, flexBasis: "0%" }),
+    rowShortcut: { height: menuRowLabel.lineHeight, justifyContent: "center" },
+    emptyRow: { paddingHorizontal: menuRow.paddingHorizontal, paddingVertical: menuRow.paddingVertical },
+    emptyText: (t) => ({ ...menuRowLabel, color: t["muted-foreground"] }),
+    footer: (t) => ({
+      flexDirection: "row",
+      flexWrap: "wrap",
+      alignItems: "center",
+      columnGap: 12,
+      rowGap: 4,
+      borderTopWidth: 1,
+      borderTopColor: t.border,
+      marginTop: 4,
+      paddingTop: 8,
+      paddingHorizontal: menuRow.paddingHorizontal,
+      paddingBottom: 6,
+    }),
+    footerHint: { flexDirection: "row", alignItems: "center", gap: 4 },
+    footerText: (t) => ({ ...NOTE_TEXT, color: t["muted-foreground"] }),
+    trigger: (t, open) => ({
+      flexDirection: "row",
+      alignItems: "center",
+      gap: FIELD_ICON_GAP,
+      width: "100%",
+      height: Math.max(FIELD_HEIGHT.base, minTarget ?? 0),
+      paddingHorizontal: FIELD_INSET,
+      ...fieldFrame(t, { focused: open, error: false }),
+    }),
+    triggerGlyphSize: FIELD_ICON,
+    triggerLabel: (t) => ({ ...SEARCH_PLACEHOLDER, color: t["muted-foreground"], flexShrink: 1 }),
+    ripple,
+    minTarget,
   };
 }
 
-// In trigger mode the card floats below the collapsed trigger button.
-// (absolute top-full left-0 z-50 mt-3.)
-export const cardFloating: ViewStyle = {
-  position: "absolute",
-  top: "100%",
-  start: 0,
-  zIndex: 50,
-  marginTop: 12,
-};
+export const webSkin: CommandSkin = sharedSkin({
+  minTarget: platformMinTarget(),
+  ripple: Platform.OS === "android" ? surfaceRipple : null,
+});
 
-// ---------- group heading (shared across platforms) ----------
-// The optional uppercase section heading above a group's rows.
-// (uppercase text-xs text-muted-foreground px-3 pt-3 pb-1.)
-export function groupHeading(tokens: ColorTokens): TextStyle {
-  return {
-    textTransform: "uppercase",
-    fontSize: 12,
-    lineHeight: 16,
-    color: tokens["muted-foreground"],
-    paddingHorizontal: 12,
-    paddingTop: 12,
-    paddingBottom: 4,
-  };
+// No platform ships a command palette, so iOS and Android take the web's (the design
+// language's item 3).
+export const iosSkin: CommandSkin = webSkin;
+export const androidSkin: CommandSkin = webSkin;
+
+// ---------- structure (shared across platforms) ----------
+
+// In trigger mode with no overlay host, the card floats below the trigger inline.
+export function cardFloating(gap: number): ViewStyle {
+  return { position: "absolute", top: "100%", start: 0, zIndex: 50, marginTop: gap };
 }
 
-// ---------- collapsed trigger (shared across platforms) ----------
-// The wrapper around the collapsed trigger + the floating card. (relative w-full.)
+// The wrapper around the collapsed trigger and the floating card.
 export const triggerWrapper: ViewStyle = { position: "relative", width: "100%" };
 
 // When the palette is open in trigger mode, the wrapper is lifted into its own
 // stacking context above sibling content. react-native-web gives every
 // positioned View an implicit stacking context, so the floating card's own
 // `zIndex` is scoped INSIDE the `relative` wrapper and cannot rise above a later
-// sibling. Raising the wrapper's zIndex while open lifts the whole control —
-// trigger and palette together — above everything painted after it.
+// sibling. Raising the wrapper's zIndex while open lifts the whole control (trigger
+// and palette together) above everything painted after it.
 export const triggerWrapperLifted: ViewStyle = { zIndex: 50 };
 
-// The collapsed full-width search trigger button.
-// (flex-row items-center gap-2 w-full justify-start rounded-md border
-//  border-input bg-transparent px-3 py-1.5.)
-export function triggerRow(tokens: ColorTokens): ViewStyle {
-  return {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    width: "100%",
-    justifyContent: "flex-start",
-    borderRadius: 6,
-    borderWidth: 1,
-    backgroundColor: "transparent",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  };
-}
-
-// The trigger button's "Search..." label. (text-sm text-foreground.)
-export function triggerLabel(tokens: ColorTokens): TextStyle {
-  return { fontSize: 14, lineHeight: 20, color: tokens.foreground };
-}
-
-// Pushes the trailing kbd cap to the right edge of the trigger. (ml-auto.)
+// Pushes the trailing Kbd cap to the trigger's end.
 export const triggerKbd: ViewStyle = { marginStart: "auto" };
-
-// ---------- empty state (shared across platforms) ----------
-// The muted "No results" row shown when the query matches nothing.
-export const emptyRow: ViewStyle = {
-  alignItems: "center",
-  paddingHorizontal: 12,
-  paddingVertical: 24,
-};
-
-// The empty row's supporting text. (text-sm text-muted-foreground.)
-export function emptyText(tokens: ColorTokens): TextStyle {
-  return { fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] };
-}
-
-// ---------- footer hint bar (shared across platforms) ----------
-// The footer hint bar below the list. (flex-row items-center gap-3 border-t
-// border-border px-4 py-2.5.)
-export function footerBar(tokens: ColorTokens): ViewStyle {
-  return {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    alignItems: "center",
-    gap: 12,
-    borderTopWidth: 1,
-    borderColor: tokens.border,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  };
-}
-
-// A single hint cluster in the footer (kbd cap(s) + its text).
-// (flex-row items-center gap-1.)
-export const footerHint: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 4 };
-
-// A hint's supporting text. (text-xs text-muted-foreground.)
-export function footerText(tokens: ColorTokens): TextStyle {
-  return { fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] };
-}
-
-// ---------- Web: the established Canvas look (lifted verbatim) ----------
-// A 12/12 search row with a hairline under it (px-3 py-3, 14/20 muted glyph +
-// placeholder), result rows at px-3 py-2 (gap-3, 14/20 foreground), and the
-// `accent` fill for both the active and the pressed row (active:bg-accent). The
-// press feedback IS the accent fill (no opacity dim, no ripple).
-export const webSkin: CommandSkin = {
-  searchRow: (t, focused) => ({
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingTop: 14,
-    ...activeIndicator({ active: focused, restColor: t.border, activeColor: t.ring, gap: 13 }),
-  }),
-  // A 16px search icon; the kit uses a real monochrome Icon tinted muted-foreground
-  // (never a color emoji).
-  searchGlyphSize: 16,
-  searchPlaceholder: (t) => ({ fontSize: 14, lineHeight: 20, color: t["muted-foreground"] }),
-  // The Riskora palette card: the 16px menu corner.
-  cardShape: { borderRadius: shape.web.menu },
-  // 40px rows, the Riskora menu row.
-  triggerMinHeight: 40,
-  triggerBorder: (t) => fieldBorder(t),
-  rowBase: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  rowAccent: (t) => ({ backgroundColor: t.accent }),
-  iconSize: 16,
-  rowLabel: (t) => ({
-    fontSize: 14,
-    lineHeight: 20,
-    color: t.foreground,
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: "0%",
-  }),
-  rowPressedOpacity: null,
-  ripple: null,
-};
-
-// ---------- iOS (HIG grouped list rows): comfortable rows, body type, dim on press ----------
-// iOS has no native command palette, so the structure is unchanged; the rows
-// follow iOS grouped-list conventions: a comfortable ~44pt row height, iOS body
-// type (17/22) with tightened tracking (-0.4), a slightly larger search row
-// (px-4 py-3.5, 17/22 muted). The active/pressed row tints with the brand
-// `accent` (not the iOS system fill) and the row dims to ~0.8 opacity on press;
-// no ripple.
-export const iosSkin: CommandSkin = {
-  searchRow: (t, focused) => ({
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingHorizontal: 16,
-    paddingTop: 14,
-    ...activeIndicator({ active: focused, restColor: t.border, activeColor: t.ring, gap: 13 }),
-    minHeight: 44,
-  }),
-  // A 20px monochrome search Icon (muted-foreground) pairs with the 17/22
-  // placeholder — never the color emoji the shell used to draw.
-  searchGlyphSize: 20,
-  searchPlaceholder: (t) => ({
-    fontSize: 17,
-    lineHeight: 22,
-    letterSpacing: -0.4,
-    color: t["muted-foreground"],
-  }),
-  // iOS floating functional surfaces read rounder and smooth-cornered: a larger
-  // 16pt radius with the continuous (superellipse) corner curve (borderCurve is a
-  // no-op on web/Android). GlassSurface strips the border under glass.
-  cardShape: { borderRadius: 16, borderCurve: "continuous" },
-  // HIG minimum interactive target 44x44pt.
-  triggerMinHeight: 44,
-  triggerBorder: (t) => fieldBorder(t),
-  rowBase: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 11,
-    minHeight: 44,
-  },
-  rowAccent: (t) => ({ backgroundColor: t.accent }),
-  iconSize: 20,
-  rowLabel: (t) => ({
-    fontSize: 17,
-    lineHeight: 22,
-    letterSpacing: -0.4,
-    color: t.foreground,
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: "0%",
-  }),
-  rowPressedOpacity: 0.8,
-  ripple: null,
-};
-
-// ---------- Android (Material 3 list items): 48dp rows, body-large, ripple ----------
-// Android has no native command palette, so the structure is unchanged; the rows
-// follow M3 list-item conventions: a ~48dp row height, M3 body-large type
-// (16/24 with +0.5 body-large tracking), an M3 search row (px-4 py-3.5, 16/24
-// muted). The active/pressed row tints with the brand `accent`, and press shows
-// an android_ripple (the surfaceRipple M3 state layer: on-surface ink at ~10%,
-// bounded).
-export const androidSkin: CommandSkin = {
-  searchRow: (t, focused) => ({
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingTop: 14,
-    ...activeIndicator({ active: focused, restColor: t.border, activeColor: t.ring, gap: 13 }),
-    minHeight: 48,
-  }),
-  // A 20dp monochrome search Icon (muted-foreground ≈ M3 on-surface-variant) —
-  // the M3 search idiom, never the Noto color-emoji magnifier.
-  searchGlyphSize: 20,
-  searchPlaceholder: (t) => ({
-    fontSize: 16,
-    lineHeight: 24,
-    letterSpacing: 0.5,
-    color: t["muted-foreground"],
-  }),
-  // Android keeps the 8px card corner (the shared web look; borderCurve is iOS-only).
-  cardShape: { borderRadius: 8 },
-  // M3 minimum touch target 48x48dp.
-  triggerMinHeight: 48,
-  triggerBorder: (t) => t.input,
-  rowBase: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    minHeight: 48,
-  },
-  rowAccent: (t) => ({ backgroundColor: t.accent }),
-  iconSize: 20,
-  rowLabel: (t) => ({
-    fontSize: 16,
-    lineHeight: 24,
-    letterSpacing: 0.5,
-    color: t.foreground,
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: "0%",
-  }),
-  rowPressedOpacity: null,
-  // The M3 pressed state layer for a neutral list row is on-surface ink at ~10%,
-  // bounded (the card's overflow:"hidden" clips it) — the kit's surfaceRipple,
-  // not a primary-tinted ink.
-  ripple: (t) => surfaceRipple(t),
-};

@@ -1,8 +1,11 @@
 import { consumeEscapeKey, EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useId, useRef, useState } from "react";
 import { type Role, type TextInput as RNTextInput, type TextStyle } from "react-native";
-import { View, Text, TextInput, Pressable, useTheme, useControllableState, AnchoredOverlay, useOverlayHost, GlassSurface, FOCUS_RESET, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, TextInput, Pressable, useTheme, useControllableState, AnchoredOverlay, useOverlayHost, GlassSurface, GlassPane, RippleClip, cornerRadii, paneStyle, isGlass, withInnerFill, LayoutAxisProvider, ROW_AXIS, FOCUS_RESET, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
+import { menuRowPressStrength } from "../../style/menu-look.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
+import { paneShapeInside, useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { useActiveOptionScroll } from "../../style/use-active-option-scroll.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the command
@@ -15,21 +18,20 @@ import * as s from "./command.styles.js";
 
 // Shared Command shell. The structure, the public boolean-prop API, the data
 // shapes, the controlled/uncontrolled open state, the flat active-index walk, the
-// select/close handlers, and the trigger/footer composition all live here once. A
-// platform file supplies only its skin (the search-row + result-row shape,
-// density, type, the active-row highlight, and the press-feedback mode) and calls
-// createCommand.
+// select/close handlers, and the trigger/footer composition all live here once. The
+// skin (one for every platform: no platform ships a command palette) supplies the look,
+// the touch minimum and the press feedback, and the entry files call createCommand.
 //
 // Command: a Cmd+K style command palette rendered as a floating card. A search
-// row sits at the top (a leading magnifier glyph + a REAL text input: typing
+// row sits at the top (a leading search Icon + a REAL text input: typing
 // edits the query, controlled via `query`, self-managed via `defaultQuery`, the
 // standard library contract, and the grouped rows narrow to the labels matching
 // it), then one or more groups of result rows. Groups left with no matching row
 // drop out, heading included; a query matching nothing shows a muted "No
 // results" row. Each group can carry an optional uppercase heading; each row is
 // a leading icon glyph + a label + an optional trailing shortcut rendered as a
-// Kbd cap. The active row (a flat index across the visible rows) is highlighted
-// with the accent surface and resets to the first row on each keystroke.
+// Kbd cap. The active row (a flat index across the visible rows) takes the menu's
+// pressed fill and resets to the first row on each keystroke.
 //
 // In BARE mode (no `trigger`) this is the OPEN, inline palette card on its own:
 // no Modal, no scrim. `open` (default true) gates whether the card renders, so
@@ -39,11 +41,10 @@ import * as s from "./command.styles.js";
 // stacking context and is never overpainted by a later sibling or clipped by an
 // ancestor; it falls back to the inline absolute anchor with no OverlayProvider.
 //
-// Command is a "Light" platform treatment: ONE structure with small per-OS
-// touches (row density/height, type, and press feedback). The panel material
-// (GlassSurface), the card shell, the trigger, the group heading, the footer, and
-// the Kbd caps are shared and identical across platforms; only the search row and
-// the result rows are re-skinned.
+// Under glass the palette is a functional-layer GlassSurface, the active and pressed
+// rows' fills are ink tints on it (withInnerFill), and the collapsed trigger, a field,
+// is the text-entry material's well (the clear well on the web, the stable material
+// natively) behind its content, as a Select trigger's is.
 //
 // Style is configured through semantic boolean props (Canvas's only styling
 // API); there are no string-enum props.
@@ -113,10 +114,10 @@ export interface CommandProps {
   style?: StyleProp<ViewStyle>;
 }
 
-// The editable slice of the search row: fill the space after the magnifier and
-// drop the platform's default inner padding, so the skin's search row (height,
-// gutter) governs the footprint exactly as it did around the old static text.
-const searchInput: TextStyle = { flex: 1, paddingVertical: 0, paddingHorizontal: 0 };
+// The editable slice of the search row: fill the space after the search Icon and the
+// row's height (so a press anywhere in the row's band lands on the text), and drop the
+// platform's default inner padding, so the skin's search row governs the footprint.
+const searchInput: TextStyle = { flex: 1, alignSelf: "stretch", paddingVertical: 0, paddingHorizontal: 0 };
 
 /** Build a Command component from a platform skin. */
 export function createCommand(skin: CommandSkin) {
@@ -134,6 +135,10 @@ export function createCommand(skin: CommandSkin) {
       style,
     } = props;
     const { tokens } = useTheme();
+    // The palette's material, for the fills inside it: ink tints under glass.
+    const rowTheme = useMaterialTheme({ layer: "functional" });
+    // The trigger is a field: the text-entry material's well under glass.
+    const entryMaterial = useTextEntryMaterial(skin.liquid);
 
     // Controlled when `active` is provided, self-managed otherwise, so the
     // highlight follows hover instead of sitting frozen on the initial row.
@@ -239,6 +244,7 @@ export function createCommand(skin: CommandSkin) {
     if (!trigger && !open) return null;
 
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
+    const rowCorners = cornerRadii(skin.row);
 
     // Walk a flat counter across every visible group so `active` indexes the
     // whole filtered list.
@@ -247,9 +253,9 @@ export function createCommand(skin: CommandSkin) {
     // The card's inner content (search row + grouped result rows + optional
     // footer), WITHOUT the surface wrapper: the bare card wraps it in its own
     // GlassSurface, and in trigger mode AnchoredOverlay supplies the GlassSurface
-    // (portaling the card over the page). The search magnifier is the kit `Icon`
-    // (a template-tintable monochrome glyph) tinted muted-foreground — never a
-    // color emoji (which ignores tint and renders full-color on device).
+    // (portaling the card over the page). The search glyph is the kit `Icon` (a
+    // template-tintable monochrome glyph) tinted muted-foreground, never a color
+    // emoji (which ignores tint and renders full-color on device).
     const cardContent = (
       <>
         <View accessibilityRole="search" style={skin.searchRow(tokens, searchFocused)}>
@@ -257,9 +263,7 @@ export function createCommand(skin: CommandSkin) {
           <TextInput
             ref={searchRef}
             onKeyPress={onSearchKeyPress}
-            // The skin's searchPlaceholder carries the row's type metrics with the
-            // muted placeholder color; typed text repaints with `foreground`.
-            style={[skin.searchPlaceholder(tokens), searchInput, { color: tokens.foreground }, FOCUS_RESET]}
+            style={[skin.searchText(tokens), searchInput, FOCUS_RESET]}
             value={query}
             onFocus={() => setSearchFocused(true)}
             onBlur={() => setSearchFocused(false)}
@@ -270,7 +274,7 @@ export function createCommand(skin: CommandSkin) {
               setActive(0);
             }}
             placeholder={placeholder}
-            placeholderTextColor={skin.searchPlaceholder(tokens).color}
+            placeholderTextColor={skin.searchPlaceholder(tokens)}
             selectionColor={tokens.primary} // brand cursor / selection on every platform
             accessibilityLabel={fieldName}
             aria-label={fieldName}
@@ -282,22 +286,24 @@ export function createCommand(skin: CommandSkin) {
 
         <OverlayScrollView ref={results.listRef} onLayout={results.onLayout} onScroll={results.onScroll} onContentSizeChange={results.scrollActiveIntoView} scrollEventThrottle={16}>
         {q !== "" && total === 0 ? (
-          <View style={s.emptyRow}>
-            <Text style={s.emptyText(tokens)}>No results</Text>
+          <View style={skin.emptyRow}>
+            <Text style={skin.emptyText(tokens)}>No results</Text>
           </View>
         ) : null}
 
-        <View ref={results.listContentRef} collapsable={false} nativeID={listId} role={LISTBOX} accessibilityLabel={fieldName} aria-label={fieldName}>
+        <View ref={results.listContentRef} collapsable={false} nativeID={listId} role={LISTBOX} accessibilityLabel={fieldName} aria-label={fieldName} style={{ gap: skin.rowGap }}>
         {visibleGroups.map((group, gi) => (
-          <View key={`group-${gi}`} role="group" aria-label={group.heading ?? undefined}>
-            {group.heading != null ? <Text style={s.groupHeading(tokens)}>{group.heading}</Text> : null}
+          <View key={`group-${gi}`} role="group" aria-label={group.heading ?? undefined} style={{ gap: skin.rowGap }}>
+            {group.heading != null ? <Text style={skin.groupHeading(tokens)}>{group.heading}</Text> : null}
             {group.items.map((item, ii) => {
               flat += 1;
               const index = flat;
               const isActive = index === activeIndex;
               return (
+                // The row's bounded Android ripple is clipped to its rounded corners by this
+                // RippleClip parent: a node cannot clip its own ripple. See src/style/ripple-clip.
+                <RippleClip key={`item-${gi}-${ii}`} shape={rowCorners}>
                 <Pressable
-                  key={`item-${gi}-${ii}`}
                   nativeID={optionId(index)}
                   ref={(node) => {
                     if (node) results.rowRefs.current.set(optionId(index), node);
@@ -305,15 +311,16 @@ export function createCommand(skin: CommandSkin) {
                   }}
                   onLayout={() => results.onRowLayout(optionId(index))}
                   style={({ pressed }) => [
-                    skin.rowBase,
-                    // The active row always takes the brand accent highlight. The
-                    // press feedback then varies per OS: web (no ripple, no dim)
-                    // tints the row with the same accent fill; iOS dims to ~0.8
-                    // opacity; Android shows the android_ripple state layer.
-                    isActive || (pressed && skin.ripple == null && skin.rowPressedOpacity == null)
-                      ? skin.rowAccent(tokens)
-                      : null,
-                    skin.rowPressedOpacity != null && pressed ? { opacity: skin.rowPressedOpacity } : null,
+                    skin.row,
+                    // The active row takes the menu's pressed fill; a press takes it too
+                    // where no ripple carries the press (Android ripples instead). Under
+                    // glass both are ink tints on the palette, at the menu recipe's strength
+                    // for a row without a muted detail (a shortcut is its own Kbd keycap).
+                    isActive
+                      ? withInnerFill(rowTheme, skin.rowActive(tokens), menuRowPressStrength(false))
+                      : pressed && skin.rowPressed != null
+                        ? withInnerFill(rowTheme, skin.rowPressed(tokens), menuRowPressStrength(false))
+                        : null,
                   ]}
                   onHoverIn={() => setActive(index)}
                   onPress={() => {
@@ -325,10 +332,13 @@ export function createCommand(skin: CommandSkin) {
                   role="option"
                   aria-selected={isActive}
                 >
-                  {item.icon != null ? <Icon {...{ [item.icon]: true }} size={skin.iconSize} decorative /> : null}
-                  <Text style={skin.rowLabel(tokens)}>{item.label}</Text>
-                  {item.shortcut != null ? <Kbd>{item.shortcut}</Kbd> : null}
+                  <LayoutAxisProvider value={ROW_AXIS}>
+                    {item.icon != null ? <Icon {...{ [item.icon]: true }} size={skin.iconSize} decorative /> : null}
+                    <Text style={skin.rowLabel(tokens)}>{item.label}</Text>
+                    {item.shortcut != null ? <View style={skin.rowShortcut}><Kbd>{item.shortcut}</Kbd></View> : null}
+                  </LayoutAxisProvider>
                 </Pressable>
+                </RippleClip>
               );
             })}
           </View>
@@ -337,56 +347,70 @@ export function createCommand(skin: CommandSkin) {
         </OverlayScrollView>
 
         {footer ? (
-          <View style={s.footerBar(tokens)}>
-            <View style={s.footerHint}>
+          <View style={skin.footer(tokens)}>
+            <LayoutAxisProvider value={ROW_AXIS}>
+            <View style={skin.footerHint}>
               <Kbd>↑</Kbd>
               <Kbd>↓</Kbd>
-              <Text style={s.footerText(tokens)}>to navigate</Text>
+              <Text style={skin.footerText(tokens)}>to navigate</Text>
             </View>
-            <View style={s.footerHint}>
+            <View style={skin.footerHint}>
               <Kbd>↵</Kbd>
-              <Text style={s.footerText(tokens)}>to select</Text>
+              <Text style={skin.footerText(tokens)}>to select</Text>
             </View>
-            <View style={s.footerHint}>
+            <View style={skin.footerHint}>
               <Kbd>esc</Kbd>
-              <Text style={s.footerText(tokens)}>to close</Text>
+              <Text style={skin.footerText(tokens)}>to close</Text>
             </View>
+            </LayoutAxisProvider>
           </View>
         ) : null}
       </>
     );
 
     // Bare (trigger-less) mode: the card IS the root and carries the testID. The
-    // early return above already gated it on `open`, so it renders open here; the
-    // per-OS `cardShape` layers the iOS continuous corner over the shared card.
+    // early return above already gated it on `open`, so it renders open here.
     if (!trigger) {
       return (
-        <GlassSurface testID={testID} style={[s.card(tokens), skin.cardShape]}>
+        <GlassSurface testID={testID} style={skin.panel(tokens)}>
           {cardContent}
         </GlassSurface>
       );
     }
 
-    // Every skin keeps the Search trigger transparent and outlined. It inherits
-    // its host; the palette owns the functional material and Kbd owns its keycap.
-    // Trigger mode: the collapsed full-width search trigger, with the palette card
-    // portaled below it through AnchoredOverlay (gap 12 = the old mt-3). When an
-    // OverlayProvider hosts it the card floats OVER the page with an outside-tap
-    // dismiss backdrop; with no provider it falls back to the inline absolute
-    // anchor (s.cardFloating). The wrapper still lifts its own stacking context
+    // Trigger mode: the collapsed full-width search trigger, a field frame whose line
+    // turns `ring` while the palette is open, with the palette portaled below it through
+    // AnchoredOverlay. When an OverlayProvider hosts it the card floats OVER the page
+    // with an outside-tap dismiss backdrop; with no provider it falls back to the inline
+    // absolute anchor (cardFloating). The wrapper still lifts its own stacking context
     // while open for that inline-fallback case.
+    //
+    // Under glass the trigger drops its fill and resting line and a GlassPane paints the
+    // field's well behind its content (the clear well on the web, the stable material
+    // natively), across its padding box so the well's rim sits flush inside the line; the
+    // open ring stays on the trigger's own border. Kbd owns its separate keycap.
+    const triggerTheme = entryMaterial.theme;
+    const triggerShape = skin.trigger(triggerTheme.tokens, open);
+    const glassTrigger: ViewStyle | null = isGlass(triggerTheme)
+      ? { backgroundColor: "transparent", borderColor: open ? triggerShape.borderColor : "transparent" }
+      : null;
     return (
       <View ref={triggerRef} testID={testID} style={[s.triggerWrapper, open && !host ? s.triggerWrapperLifted : null, style]}>
         <Pressable
           accessibilityRole="button"
           accessibilityState={{ expanded: open }}
           aria-expanded={open}
-          style={[s.triggerRow(tokens), { minHeight: skin.triggerMinHeight, borderColor: skin.triggerBorder(tokens) }]}
+          style={[paneStyle(triggerTheme, triggerShape, open), glassTrigger]}
           onPress={() => setOpen(!open)}
         >
-          <Icon search muted size={14} />
-          <Text style={s.triggerLabel(tokens)}>Search...</Text>
-          <Kbd keys="⌘ K" style={s.triggerKbd} />
+          <GlassPane {...entryMaterial.paneProps} shape={paneShapeInside(triggerShape)} />
+          {/* The trigger is a row, so the hugging Kbd inside it centres on the row's cross
+              axis instead of taking a stretching Column's leading alignment. */}
+          <LayoutAxisProvider value={ROW_AXIS}>
+            <Icon search muted size={skin.triggerGlyphSize} />
+            <Text style={skin.triggerLabel(triggerTheme.tokens)}>Search...</Text>
+            <Kbd keys="⌘ K" style={s.triggerKbd} />
+          </LayoutAxisProvider>
         </Pressable>
         <AnchoredOverlay
           onAccessibilityEscape={escapeScope.onAccessibilityEscape}
@@ -395,10 +419,10 @@ export function createCommand(skin: CommandSkin) {
           open={open}
           onDismiss={() => setOpen(false)}
           triggerRef={triggerRef}
-          gap={12}
-          cardStyle={[s.card(tokens), skin.cardShape]}
+          gap={skin.panelGap}
+          cardStyle={skin.panel(tokens)}
           cardWidth={s.CARD_WIDTH}
-          inlineStyle={s.cardFloating}
+          inlineStyle={s.cardFloating(skin.panelGap)}
           // A controlled `open` with no onOpenChange can never actually close, so
           // the hosted dismiss backdrop is skipped (it would only block the page).
           dismissable={openProp === undefined || onOpenChange !== undefined}

@@ -88,8 +88,6 @@ import { StackedList as StackedListIOS } from "../../../src/molecules/stacked-li
 import { StackedList as StackedListAndroid } from "../../../src/molecules/stacked-lists/stacked-lists.android.js";
 import { Stats as StatsIOS } from "../../../src/molecules/stats/stats.ios.js";
 import { Stats as StatsAndroid } from "../../../src/molecules/stats/stats.android.js";
-import { Command as CommandIOS } from "../../../src/organisms/command/command.ios.js";
-import { Command as CommandAndroid } from "../../../src/organisms/command/command.android.js";
 import { DataTable as DataTableIOS } from "../../../src/organisms/data-table/data-table.ios.js";
 import { DataTable as DataTableAndroid } from "../../../src/organisms/data-table/data-table.android.js";
 import { Drawer as DrawerIOS } from "../../../src/organisms/drawer/drawer.ios.js";
@@ -129,7 +127,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     ActionPanel: ActionPanelIOS, Card: CardIOS, CardMedia: CardMediaIOS, DescriptionList: DescriptionListIOS,
     EmptyState: EmptyStateIOS, Field: FieldIOS, Feed: FeedIOS, Form: FormIOS, FormSection: FormSectionIOS,
     GridList: GridListIOS, MediaObject: MediaObjectIOS, PhoneInput: PhoneInputIOS, StackedList: StackedListIOS, Stats: StatsIOS,
-    Command: CommandIOS, DataTable: DataTableIOS, Drawer: DrawerIOS, FilterPanel: FilterPanelIOS,
+    DataTable: DataTableIOS, Drawer: DrawerIOS, FilterPanel: FilterPanelIOS,
     Stepper: StepperIOS, Collapsible: CollapsibleIOS,
     Carousel: CarouselIOS,
     Board: BoardIOS, BreadcrumbItem: BreadcrumbItemIOS,
@@ -149,7 +147,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     ActionPanel: ActionPanelAndroid, Card: CardAndroid, CardMedia: CardMediaAndroid, DescriptionList: DescriptionListAndroid,
     EmptyState: EmptyStateAndroid, Field: FieldAndroid, Feed: FeedAndroid, Form: FormAndroid, FormSection: FormSectionAndroid,
     GridList: GridListAndroid, MediaObject: MediaObjectAndroid, PhoneInput: PhoneInputAndroid, StackedList: StackedListAndroid, Stats: StatsAndroid,
-    Command: CommandAndroid, DataTable: DataTableAndroid, Drawer: DrawerAndroid, FilterPanel: FilterPanelAndroid,
+    DataTable: DataTableAndroid, Drawer: DrawerAndroid, FilterPanel: FilterPanelAndroid,
     Stepper: StepperAndroid, Collapsible: CollapsibleAndroid,
     Carousel: CarouselAndroid, Toast: ToastAndroid, ToastProvider: ToastProviderAndroid, useToast: useToastAndroid,
     Chip: ChipAndroid,
