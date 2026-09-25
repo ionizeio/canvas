@@ -323,9 +323,11 @@
      control. Each cell is Dark Factory's field frame, a separate square as tall as the field (34 / 40 /
      46), 6 / 8 / 10 apart, the field-fill well at the 10px corner with the field-border line turning ring on the
      active cell; the digit 600 in the foreground ink; the primary caret blinks on a one-second cycle
-     (Reduce Motion holds it). A disabled field takes the web field's disabled look on every platform
-     (each cell on the border hairline with no fill, the digits muted, no dim). On an iPhone and on
-     Android a cell grows taller to the 44pt / 48dp minimum where the square is shorter) */
+     (Reduce Motion holds it: the override at the end of this file). A disabled field takes the web
+     field's disabled look on every platform (each cell on the border hairline with no fill, the digits
+     muted, no dim). On an iPhone and on Android a cell grows taller to the 44pt / 48dp minimum where
+     the square is shorter; these rows, which iOS and Android read, carry the web's squares, as the
+     Autocomplete's carry the web's field) */
   --p-otp-seam:1px;--p-otp-seam-active:1px;--p-otp-shared-edge:1 /* @kind other */;--p-otp-gap-small:6px;--p-otp-gap-base:8px;--p-otp-gap-large:10px;
   --p-otp-w-small:34px;--p-otp-w-base:40px;--p-otp-w-large:46px;
   --p-otp-h-small:34px;--p-otp-h-base:40px;--p-otp-h-large:46px;
@@ -866,3 +868,9 @@
    (scrimOpacity(scheme): 0.2 light, 0.48 dark) and the switch off-track
    (switch.styles.ts IOS_OFF_TRACK, systemGray3: #c7c7cc light, #48484a dark). */
 .dark [data-platform="ios"],[data-platform="ios"].dark{--p-drawer-scrim:rgba(0,0,0,0.48);--p-switch-off-track:#48484a}
+
+/* Reduce Motion holds the InputOTP caret solid on every platform, as the kit does
+   (input-otp.shared.tsx): the blink is decorative, and the bar alone marks the insertion point. */
+@media (prefers-reduced-motion:reduce){
+  :root,[data-platform="web"]{--p-otp-caret-blink:none /* @kind other */}
+}

@@ -11,6 +11,7 @@ import {
   TextInput,
   LoopView,
   createLoopChannel,
+  cornerRadii,
   useHugStyle,
   useControllableState,
   useReducedMotion,
@@ -24,6 +25,7 @@ import {
   isGlass,
 } from "../../style/index.js";
 import type { FieldDisabledLook } from "../../style/field-look.js";
+import { CARET_BLINK } from "../../style/motion.js";
 
 // Shared InputOTP shell. The whole structure, state, and accessibility live here
 // ONCE; the skin (input-otp.styles.ts, one for every platform) supplies the cell
@@ -124,25 +126,36 @@ function cleanCode(raw: string, length: number, alphanumeric?: boolean): string 
   return (alphanumeric ? raw : raw.replace(DIGITS_ONLY, "")).slice(0, length);
 }
 
+// The shape a cell's GlassPane takes. An Input's pane is the field's sibling and covers the
+// field's whole box; a cell's pane is the cell's CHILD, so it fills the cell's padding box,
+// inside the cell's border. It therefore takes the corner radii alone, each inset by that
+// border so the corners stay concentric, and no border of its own: the clear well and its
+// rim then sit flush inside the ring, as an Input's do, and a material that keeps the
+// pane's own paint (a frost that resolves solid, such as Android's with no capture target)
+// draws no second outline inside the cell's.
+function paneShapeInside(shape: ViewStyle): ViewStyle {
+  const inset = typeof shape.borderWidth === "number" ? shape.borderWidth : 0;
+  const radii = cornerRadii(shape) as Record<string, unknown>;
+  for (const [key, value] of Object.entries(radii)) {
+    if (typeof value === "number") radii[key] = Math.max(0, value - inset);
+  }
+  return radii as ViewStyle;
+}
+
 // The active-cell caret blinks, the insertion point's idiom on every platform (the iOS
 // caret, the Material 3 cursor and a browser's text caret all pulse on a one-second
 // cycle): visible for 380ms, a 120ms fade out, hidden for 380ms, a 120ms fade back in.
-// The cycle is one table on a loop channel (src/style/loop.tsx), so no frame of it goes
+// The cycle is one table (CARET_BLINK, with the other motion tunables in
+// src/style/motion.ts) on a loop channel (src/style/loop.tsx), so no frame of it goes
 // through React: the native driver advances it on iOS and Android, and on the web it is
 // a compositor CSS animation. Each caret owns its channel and plays it from the top when
 // it appears, so a caret that moves to the next cell after a keystroke shows at once and
 // only then blinks. Reduce Motion holds the caret solid: the bar alone still marks the
 // insertion point.
-export const CARET_BLINK_PERIOD = 1000;
-export const CARET_BLINK: Pick<LoopTrack, "inputRange" | "outputRange"> = {
-  inputRange: [0, 0.38, 0.5, 0.88, 1],
-  outputRange: [1, 1, 0, 0, 1],
-};
-
 function Caret({ style }: { style: ViewStyle }) {
   const reduced = useReducedMotion();
-  const [channel] = useState(() => createLoopChannel({ period: CARET_BLINK_PERIOD }));
-  const blink = useMemo<LoopTrack>(() => ({ channel, ...CARET_BLINK }), [channel]);
+  const [channel] = useState(() => createLoopChannel({ period: CARET_BLINK.period }));
+  const blink = useMemo<LoopTrack>(() => ({ channel, ...CARET_BLINK.opacity }), [channel]);
   useEffect(() => {
     if (reduced) return;
     // Played from an effect, never during render: the web's phase is wall-clock derived.
@@ -173,10 +186,10 @@ export function createInputOTP(skin: InputOTPSkin) {
     const { theme } = entryMaterial;
     const { tokens } = theme;
     // Under glass the code field uses the skin's text-entry material: each cell takes its
-    // own GlassPane (the clear well on the web, the static material natively). A cell
-    // drops its fill and resting border under glass (the pane's material and rim carry
-    // them) and keeps only its ACTIVE border as state. A disabled field paints no
-    // material, as a disabled Input paints none.
+    // own GlassPane (the clear well on the web, the static material natively) across its
+    // padding box (paneShapeInside). A cell drops its fill and resting border under glass
+    // (the pane's material and rim carry them) and keeps only its ACTIVE border as state.
+    // A disabled field paints no material, as a disabled Input paints none.
     const glass = isGlass(theme);
     // HUG: the cell row keeps its content width inside a stretching Column.
     const hug = useHugStyle();
@@ -302,7 +315,7 @@ export function createInputOTP(skin: InputOTPSkin) {
                       accessibilityElementsHidden
                       importantForAccessibility="no-hide-descendants"
                     >
-                      {disabledLook ? null : <GlassPane {...entryMaterial.paneProps} shape={cellShape} />}
+                      {disabledLook ? null : <GlassPane {...entryMaterial.paneProps} shape={paneShapeInside(cellShape)} />}
                       {filled ? (
                         // U+25CF BLACK CIRCLE, not the U+2022 text bullet: at the digit font
                         // size the text bullet paints as a tiny dot, while BLACK CIRCLE reads

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, spyOn } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it, spyOn } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
@@ -6,12 +6,12 @@ import { AccessibilityInfo } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { darkColors, lightColors, mintColors, type ColorTokens } from "../src/style/tokens.ts";
 import { alpha } from "../src/style/color.ts";
-import { keyframes } from "../src/style/motion.ts";
+import { CARET_BLINK, keyframes } from "../src/style/motion.ts";
 import { trackAt } from "../src/style/loop.tsx";
 import { TOUCH_TARGET } from "../src/style/touch-target.ts";
 import { FIELD_HEIGHT, fieldDisabled, fieldFrame } from "../src/style/field-look.ts";
 import * as skins from "../src/atoms/input-otp/input-otp.styles.ts";
-import { CARET_BLINK, CARET_BLINK_PERIOD, type Size } from "../src/atoms/input-otp/input-otp.shared.tsx";
+import type { Size } from "../src/atoms/input-otp/input-otp.shared.tsx";
 import { InputOTP } from "../src/atoms/input-otp/input-otp.tsx";
 
 // InputOTP takes Dark Factory's field on every platform (SKN-6c): neither iOS nor Material 3
@@ -19,7 +19,24 @@ import { InputOTP } from "../src/atoms/input-otp/input-otp.tsx";
 // field recipe's frame (src/style/field-look.ts), and the caret blinks on the loop primitive
 // (src/style/loop.tsx) instead of an Animated.loop, keeping its one-second schedule.
 
-afterEach(cleanup);
+// The browser's material question (does it render a CSS backdrop filter?), answered per
+// test: yes gives the web's clear wells, no makes the material resolve solid, the case
+// Android's frost takes with no capture target.
+let backdrop = true;
+const restores: Array<() => void> = [];
+beforeEach(() => {
+  backdrop = true;
+  const css = Object.getOwnPropertyDescriptor(globalThis, "CSS");
+  Object.defineProperty(globalThis, "CSS", { configurable: true, value: { supports: () => backdrop } });
+  restores.push(() => {
+    if (css) Object.defineProperty(globalThis, "CSS", css);
+    else delete (globalThis as unknown as Record<string, unknown>).CSS;
+  });
+});
+afterEach(() => {
+  cleanup();
+  restores.splice(0).reverse().forEach((restore) => restore());
+});
 
 const ROOT = join(import.meta.dir, "..");
 const SIZES: Size[] = ["small", "base", "large"];
@@ -92,6 +109,16 @@ describe("one skin on every platform", () => {
     expect(box(skins.webSkin, "small")).toEqual([34, 34]);
   });
 
+  it("builds the one skin from the running platform's minimum", () => {
+    // iOS and Android alias the web skin, so the harness (the web, where the minimum is
+    // null) cannot see the native heights: the wiring is read from the source, as the
+    // touch-target coverage rule reads a shared skin's.
+    const source = readFileSync(join(ROOT, "src/atoms/input-otp/input-otp.styles.ts"), "utf8");
+    expect(source).toMatch(/export const webSkin: InputOTPSkin = sharedSkin\(\{ minTarget: platformMinTarget\(\) \}\);/);
+    expect(source).toMatch(/export const iosSkin: InputOTPSkin = webSkin;/);
+    expect(source).toMatch(/export const androidSkin: InputOTPSkin = webSkin;/);
+  });
+
   it("sets the digit at the field's weight in the foreground ink and the caret in the brand", () => {
     for (const [, t] of PALETTES) {
       expect(skins.webSkin.digit(t, "base")).toMatchObject({ fontSize: 18, fontWeight: "600", color: t.foreground });
@@ -139,16 +166,55 @@ describe("the rendered field", () => {
       expect(caretOf(root)).toBeUndefined();
     });
   }
+
+  // A cell's pane is the cell's child, inside its 1px border, so it takes the corner radii
+  // inset by that border and no border of its own: the well and its rim sit flush inside
+  // the ring, as an Input's do, rather than a pixel further in.
+  it("fills each cell's padding box with its well under glass, flush inside the ring", () => {
+    render(<ThemeProvider light glass><InputOTP length={4} testID="otp" /></ThemeProvider>);
+    const root = screen.getByTestId("otp");
+    act(() => (root.querySelector("input") as HTMLInputElement).focus());
+    const materials = [...root.querySelectorAll<HTMLElement>('[data-testid="glass-material"]')];
+    expect(materials).toHaveLength(4);
+    materials.forEach((material, index) => {
+      const pane = material.parentElement!;
+      const cell = pane.parentElement!;
+      expect(cell.style.borderRadius).toBe("10px");
+      expect(cell.style.borderWidth).toBe("1px");
+      // The ring on the active cell stays the cell's own; a resting cell's line is the rim.
+      expect(norm(cell.style.borderColor)).toBe(norm(index === 0 ? lightColors.ring : "transparent"));
+      expect(pane.style.borderRadius).toBe("9px");
+      expect(pane.style.borderWidth).toBe("");
+      expect(material.style.borderRadius).toBe("9px");
+    });
+  });
+
+  it("draws one outline per cell when the material resolves solid under glass", () => {
+    // No backdrop filter: the cells take their solid frame, and the pane, which keeps its
+    // own paint when its material resolves solid, adds no second line inside it.
+    backdrop = false;
+    render(<ThemeProvider light glass><InputOTP length={4} testID="otp" /></ThemeProvider>);
+    const root = screen.getByTestId("otp");
+    act(() => (root.querySelector("input") as HTMLInputElement).focus());
+    const cells = cellsOf(root);
+    expect(cells).toHaveLength(4);
+    cells.forEach((cell, index) => {
+      expect(norm(cell.style.backgroundColor)).toBe(norm(lightColors["field-fill"]!));
+      expect(norm(cell.style.borderColor)).toBe(norm(index === 0 ? lightColors.ring : lightColors["field-border"]!));
+      const outlined = [...cell.querySelectorAll<HTMLElement>("div")].filter((el) => el.style.borderWidth !== "" || el.style.borderColor !== "");
+      expect(outlined).toEqual([]);
+    });
+  });
 });
 
 describe("the caret blink", () => {
   it("keeps the one-second schedule the Animated.loop ran", () => {
     // The loop it replaced: opacity 1 - BLINK(t), a 1000ms timing eased by these keyframes.
     const BLINK = keyframes([[0, 0], [0.38, 0], [0.5, 1], [0.88, 1], [1, 0]]);
-    expect(CARET_BLINK_PERIOD).toBe(1000);
+    expect(CARET_BLINK.period).toBe(1000);
     for (let i = 0; i <= 200; i++) {
       const phase = i / 200;
-      expect(trackAt(CARET_BLINK, phase)).toBeCloseTo(1 - BLINK(phase), 10);
+      expect(trackAt(CARET_BLINK.opacity, phase)).toBeCloseTo(1 - BLINK(phase), 10);
     }
   });
 
@@ -161,8 +227,13 @@ describe("the caret blink", () => {
       await waitFor(() => expect(caretOf(root)?.className).toMatch(/animationKeyframes/));
       const caret = caretOf(root)!;
       expect(caret.className).toMatch(/animationDuration/);
-      // Played from the top when it appears: no time elapsed yet.
-      expect(caret.style.animationDelay).toMatch(/^-?0ms$/);
+      // Played from the top when it appears: the delay is only the time between the play
+      // and this render (the loop view rounds the wall clock to the millisecond, so a slow
+      // run reads -1ms or a little more), never a start partway through the cycle.
+      const delay = caret.style.animationDelay.match(/^(-?\d+)ms$/);
+      expect(delay).not.toBeNull();
+      expect(Number(delay![1])).toBeLessThanOrEqual(0);
+      expect(Number(delay![1])).toBeGreaterThan(-CARET_BLINK.period * 0.05);
       const css = [...document.styleSheets].flatMap((sheet) => [...sheet.cssRules].map((rule) => rule.cssText)).join("\n");
       expect(css).toMatch(/38\.0000%\s*\{\s*opacity:\s*1/);
       expect(css).toMatch(/50\.0000%\s*\{\s*opacity:\s*0/);
@@ -197,6 +268,9 @@ describe("the CSS hand-off", () => {
     expect(css.match(/--p-otp-radius:/g)).toHaveLength(1);
     expect(css).toContain("--p-otp-rest-border-color:var(--field-border)");
     expect(css).toContain("--p-otp-caret-blink:canvas-caret 1s linear infinite");
+    // Reduce Motion holds the hand-off's caret as it holds the kit's.
+    const reduced = css.match(/@media \(prefers-reduced-motion:reduce\)\{([\s\S]*?)\n\}/);
+    expect(reduced?.[1]).toContain("--p-otp-caret-blink:none");
     const base = readFileSync(join(ROOT, "styles/tokens/base.css"), "utf8");
     expect(base).toContain("@keyframes canvas-caret{0%,38%{opacity:1}50%,88%{opacity:0}100%{opacity:1}}");
   });

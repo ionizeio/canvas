@@ -98,6 +98,19 @@ export const HOVER = {
 /** CSS `ease`, the curve of every hover transition, spelled out as the reference's own. */
 export const HOVER_EASING = "cubic-bezier(0.25, 0.1, 0.25, 1)";
 
+// The InputOTP caret's blink, the one table of its tunables, judged against the
+// `otp-caret-blink` reference card in tools/native/liquid-motion.md: the insertion point's
+// one-second cycle on every platform, visible for 380 ms, a 120 ms fade out, hidden for
+// 380 ms, a 120 ms fade back in. `opacity` is the loop track over one cycle of a linear
+// channel (src/style/loop.tsx), so the native interpolation and the web keyframes are this
+// one table. Internal, as HOVER is (src/atoms/input-otp/input-otp.shared.tsx applies it).
+export const CARET_BLINK = {
+  /** One cycle, in ms. */
+  period: 1000,
+  /** The caret's opacity across one cycle (0..1). */
+  opacity: { inputRange: [0, 0.38, 0.5, 0.88, 1], outputRange: [1, 1, 0, 0, 1] },
+} as const;
+
 // Whether the user has asked the OS to reduce motion (iOS "Reduce Motion", Android
 // "Remove animations", and the web `prefers-reduced-motion` media query, which
 // react-native-web maps onto AccessibilityInfo). Components read this to drop or
