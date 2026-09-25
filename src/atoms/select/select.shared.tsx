@@ -2,13 +2,9 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { forwardRef, useId, useRef } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
-import { type Role } from "react-native";
 import { View, Pressable, Text, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, GlassPane, paneStyle, isGlass, withInnerFill } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
-
-// React Native's Role union omits the valid ARIA "listbox" role, so the option-list
-// container casts it. The value is correct on both web (DOM role) and native.
-const LISTBOX = "listbox" as Role;
+import { LISTBOX } from "../../style/listbox-role.js";
 
 import { Icon } from "../icon/icon.js";
 import { root, rootLifted, PANEL_ANCHOR, type SelectSkin, type Size } from "./select.styles.js";

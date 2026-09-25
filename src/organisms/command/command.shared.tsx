@@ -1,14 +1,11 @@
 import { consumeEscapeKey, EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useId, useRef, useState } from "react";
-import { type Role, type TextInput as RNTextInput, type TextStyle } from "react-native";
+import { type TextInput as RNTextInput, type TextStyle } from "react-native";
 import { View, Text, TextInput, Pressable, useTheme, useControllableState, AnchoredOverlay, useOverlayHost, GlassSurface, FOCUS_RESET, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { FocusFrameContext, useFocusFrame } from "../../style/focus-frame.js";
 import { useActiveOptionScroll } from "../../style/use-active-option-scroll.js";
-
-// React Native's Role union omits the valid ARIA "listbox" role, so the command
-// list container casts it. The value is correct on both web (DOM role) and native.
-const LISTBOX = "listbox" as Role;
+import { LISTBOX } from "../../style/listbox-role.js";
 import { Icon, type IconName } from "../../atoms/icon/icon.js";
 import { Kbd } from "../../atoms/kbd/kbd.js";
 import { type CommandSkin } from "./command.styles.js";

@@ -1,7 +1,7 @@
 import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { forwardRef, useEffect, useId, useRef, useState } from "react";
-import { type Role, type TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from "react-native";
+import { type TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from "react-native";
 import {
   View,
   Pressable,
@@ -27,14 +27,11 @@ import {
 } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
+import { LISTBOX } from "../../style/listbox-role.js";
 import { root, rootLifted, PANEL_ANCHOR } from "../../atoms/select/select.styles.js";
 import { type TextEntryProps } from "../../atoms/input/input.shared.js";
 import { PHONE_COUNTRIES, flagOf, type PhoneCountry } from "./countries.js";
 import { type PhoneInputSkin, type Size } from "./phone-input.styles.js";
-
-// React Native's Role union omits the valid ARIA "listbox" role, so the country-list
-// container casts it. The value is correct on both web (DOM role) and native.
-const LISTBOX = "listbox" as Role;
 
 // Shared PhoneInput shell. A phone number field: the Input's grouped box with a
 // COUNTRY segment at its start (the chosen country's flag and a caret, which open a

@@ -2,16 +2,12 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { consumeEscapeKey, EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { forwardRef, useEffect, useId, useRef, useState } from "react";
-import { Platform, type Role, type TextInput as RNTextInput } from "react-native";
+import { Platform, type TextInput as RNTextInput } from "react-native";
 import { View, Pressable, Text, TextInput, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, isGlass, PANE_SIBLING_INPUT, withInnerFill } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useActiveOptionScroll } from "../../style/use-active-option-scroll.js";
 import { AccessibilityReturnBoundary, accessibilitySelectionProps, useAccessibilityReturn } from "../../style/use-accessibility-return.js";
-
-// React Native's Role union omits the valid ARIA "listbox" role, so the option-list
-// container casts it for web semantics. Native options retain their labels and
-// selected accessibility state; Android does not map listbox to a native role.
-const LISTBOX = "listbox" as Role;
+import { LISTBOX } from "../../style/listbox-role.js";
 import { wrapper, wrapperLifted } from "./autocomplete.styles.js";
 import { type AutocompleteSkin, type Size } from "./autocomplete.styles.js";
 

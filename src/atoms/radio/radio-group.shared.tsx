@@ -22,8 +22,7 @@ import type { RadioSkin } from "./radio.shared.js";
 // wrapping row never wraps: in a Row it grows to the sum of its options and runs past its
 // parent (the Radio page's card example scrolled the page sideways at phone width).
 
-// RN's Role union omits "radiogroup" (it is a valid ARIA role), so cast it once.
-const RADIOGROUP = "radiogroup" as Role;
+const RADIOGROUP: Role = "radiogroup";
 
 // Default column stack and the optional row layout. Defined here (component
 // internals) the way Radio defines its own row; this is not a call-site restyle.

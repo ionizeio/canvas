@@ -31,9 +31,7 @@ import * as s from "./form.styles.js";
 // device Metro resolves the right extension regardless.
 export type ButtonComponent = ComponentType<ButtonProps>;
 
-// RN's Role union omits "form" (it is a valid ARIA role), so cast it once. RNW
-// forwards it to the DOM; native ignores an unknown role.
-const FORM = "form" as Role;
+const FORM: Role = "form";
 
 // The per-OS-varying style pieces the Form's own surface contributes. Everything
 // else (the layouts, the responsive collapse, the composed Button) is shared.

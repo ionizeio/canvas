@@ -2,8 +2,8 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { useHover } from "../../style/hover.js";
 import { useState, type ComponentType } from "react";
 import { CheckboxIndicator as WebCheckboxIndicator } from "../checkbox/indicator/index.js";
-import { type Role } from "react-native";
 import { View, Pressable, Text, useControllableState, useFillStyle, useRovingFocus, isRTL, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, withInnerFill, GlassPane, paneStyle } from "../../style/index.js";
+import { LISTBOX } from "../../style/listbox-role.js";
 
 // Shared Listbox shell. An inline, selectable list of options rendered directly
 // (not a popover). Each row is a Pressable. Two selection modes, mutually
@@ -26,9 +26,6 @@ import { View, Pressable, Text, useControllableState, useFillStyle, useRovingFoc
 // label type, the mark, press feedback) and its selection Checkbox artwork, and
 // calls createListbox. Neither iOS nor Material 3 has a listbox control, so the row
 // look is the kit's own on every platform; only the mark follows the platform.
-
-// RN's Role union omits "listbox" (it is a valid ARIA role), so cast it once.
-const LISTBOX = "listbox" as Role;
 
 export type Mode = "single" | "multi";
 export type Size = "small" | "medium" | "large";
@@ -332,8 +329,8 @@ export function createListbox(skin: ListboxSkin, parts: ListboxParts = {}) {
     ];
 
     // A selectable list of options is a `listbox` of `option`s (single-select)
-    // or a group of `checkbox` rows (multi-select); "option"/"checkbox" are in
-    // RN's Role union, "listbox" is the hoisted cast above.
+    // or a group of `checkbox` rows (multi-select). LISTBOX spells the list's role
+    // for the runtime: the web's listbox, and a list natively (src/style/listbox-role.ts).
     return (
       <View style={container} role={mode === "multi" ? "group" : LISTBOX} testID={props.testID}
         accessibilityLabel={accessibleName} aria-label={accessibleName}>

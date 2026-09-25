@@ -1,7 +1,6 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useCallback, useContext, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
-import { type Role } from "react-native";
 import { View, Text, GlassSurface, AnchoredOverlay, useOverlayHost, useMeasuredWidth, usePopoverFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button as WebButton } from "../button/button.js";
 import { type PopoverSkin, type Placement } from "./popover.styles.js";
@@ -28,7 +27,7 @@ function PopoverFocusPanel({ focusRef, children }: { focusRef: RefObject<View | 
     if (ready && node.current) focusRef.current = node.current;
   }, [ready, attachment, focusRef]);
 
-  return <View ref={attach} tabIndex={-1} role={"dialog" as Role}>{children}</View>;
+  return <View ref={attach} tabIndex={-1} role="dialog">{children}</View>;
 }
 
 function PopoverArrow({ skin, tokens, placement }: { skin: PopoverSkin; tokens: ColorTokens; placement: Placement }) {
