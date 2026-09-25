@@ -33,6 +33,7 @@ import { type BoardColumn, type BoardItem, type BoardMove } from "./board.types.
 import { boardMoveFor, applyBoardMove } from "./board.logic.js";
 import { type BoardSkin } from "./board.styles.js";
 import { SeamLimitProvider, splitSeam, type SeamLimit } from "../../style/touch-seam.js";
+import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 
 // Shared Board shell. A data-driven kanban board: a horizontal ScrollView of column lanes,
 // each lane a DropZone listing its cards in array order, each card a Draggable kit Card with
@@ -154,6 +155,10 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
   // The lanes live in their own component INSIDE the provider so useDragActive can subscribe:
   // while a pointer drag is in flight the horizontal scroll freezes (the zone rects were
   // measured at grab time, so scrolling mid-drag would divorce hit-testing from the screen).
+  // `scrollport` decides the rest: on Android the lanes take a drag only while they overflow
+  // the board (its horizontal scroller claims a sideways drag it cannot scroll, dropping a
+  // card's press and the page's scroll), and always elsewhere, where a disabled scroller
+  // sets `touch-action: none` on the web.
   function BoardLanes({ columns, list, onDrop, onPressItem, onSelectItemMenu, columnWidth, compact, emptyLabel }: LanesProps) {
     const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
@@ -162,6 +167,7 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
     // lane (a phone), a lane fills most of the width with a 32pt peek of the
     // next lane (240 floor); containers that fit keep `columnWidth` untouched.
     const { width: boardWidth, measured, onLayout: onBoardLayout } = useMeasuredWidth();
+    const scrollport = useHorizontalScrollFocus();
     const laneWidth = measured ? Math.min(columnWidth, Math.max(boardWidth - 32, 240)) : columnWidth;
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
     const pressFeedback = (pressed: boolean) =>
@@ -238,7 +244,17 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
     };
 
     return (
-      <ScrollView horizontal onLayout={onBoardLayout} scrollEnabled={!dragging} showsHorizontalScrollIndicator={false} contentContainerStyle={skin.lanes(compact)}>
+      <ScrollView
+        horizontal
+        onLayout={(event) => {
+          onBoardLayout(event);
+          scrollport.onLayout(event);
+        }}
+        onContentSizeChange={scrollport.onContentSizeChange}
+        scrollEnabled={!dragging && scrollport.scrollEnabled}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={skin.lanes(compact)}
+      >
         {columns.map((col) => {
           const colItems = list.filter((it) => it.columnId === col.id);
           return (

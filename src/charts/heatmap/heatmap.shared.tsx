@@ -3,6 +3,7 @@ import { ScrollView } from "react-native";
 import { View, Text, Pressable, useTheme, alpha, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { announceSelection, ChartInspectionSurface } from "../shared/chart-inspect.js";
 import { estimateTextWidth } from "../shared/chart-math.js";
+import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 
 // Heatmap is a "Shared" platform treatment (data visualization is
 // platform-neutral): one implementation serves iOS, Android, and the web.
@@ -137,9 +138,12 @@ function HeatmapLevelLegend({ tokens }: { tokens: ColorTokens }) {
 
 // The GitHub contribution graph: week columns of seven day cells, weekday + month
 // labels, and press/hover-to-inspect. The grid scrolls horizontally so a full
-// year stays legible on a phone. Cells are pointer-only (accessible={false}); the
-// grid's image role + summarizing name carry the data for assistive tech, so a
-// year of days is not 365 tab stops.
+// year stays legible on a phone; on Android the scroller takes a drag only while
+// the grid overflows it (a fitting one would claim a sideways drag it cannot
+// scroll, dropping a cell's press and the page's scroll), and always elsewhere,
+// where a disabled scroller sets `touch-action: none` on the web. Cells are
+// pointer-only (accessible={false}); the grid's image role + summarizing name
+// carry the data for assistive tech, so a year of days is not 365 tab stops.
 const CAL_CELL = 11;
 const CAL_GAP = 3;
 const CAL_PITCH = CAL_CELL + CAL_GAP;
@@ -150,6 +154,7 @@ const CAL_MONTH_H = 15; // month-label row
 function CalendarHeatmap({ cells, label, caption, hideLegend, testID, style }: HeatmapProps & { cells: HeatmapCell[] }) {
   const { tokens } = useTheme();
   const [active, setActive] = useState<number | null>(null);
+  const { scrollEnabled, onLayout, onContentSizeChange } = useHorizontalScrollFocus();
 
   const cols = Math.ceil(cells.length / CAL_ROWS);
   const gridW = cols * CAL_PITCH - CAL_GAP;
@@ -201,7 +206,7 @@ function CalendarHeatmap({ cells, label, caption, hideLegend, testID, style }: H
       {caption ? (
         <Text style={{ marginBottom: 10, fontSize: 13, lineHeight: 18, fontWeight: "500", color: tokens["card-foreground"] }}>{caption}</Text>
       ) : null}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} scrollEnabled={scrollEnabled} onLayout={onLayout} onContentSizeChange={onContentSizeChange}>
         <View {...img}>
           {hasDates ? (
             // Month labels are absolutely placed at their column so each abbreviation

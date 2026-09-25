@@ -1,17 +1,26 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Platform, type LayoutChangeEvent } from "react-native";
 
-/** Give a scrollport a keyboard stop only while its content overflows. */
+/**
+ * Give a scrollport a keyboard stop only while its content overflows. The sizes
+ * live in a ref and only the overflow is state, so a scrollport re-renders when
+ * its content starts or stops overflowing, never on every resize.
+ */
 export function useScrollFocus(axis: "horizontal" | "vertical") {
-  const [viewportSize, setViewportSize] = useState(0);
-  const [contentSize, setContentSize] = useState(0);
+  const sizes = useRef({ viewport: 0, content: 0 });
+  const [focusable, setFocusable] = useState(false);
+  const measure = useCallback(() => {
+    const { viewport, content } = sizes.current;
+    setFocusable(viewport > 0 && content > viewport);
+  }, []);
   const onLayout = useCallback((event: LayoutChangeEvent) => {
-    setViewportSize(event.nativeEvent.layout[axis === "horizontal" ? "width" : "height"]);
-  }, [axis]);
+    sizes.current.viewport = event.nativeEvent.layout[axis === "horizontal" ? "width" : "height"];
+    measure();
+  }, [axis, measure]);
   const onContentSizeChange = useCallback((width: number, height: number) => {
-    setContentSize(axis === "horizontal" ? width : height);
-  }, [axis]);
-  const focusable = viewportSize > 0 && contentSize > viewportSize;
+    sizes.current.content = axis === "horizontal" ? width : height;
+    measure();
+  }, [axis, measure]);
   return { focusable, tabIndex: focusable ? 0 as const : -1 as const, onLayout, onContentSizeChange };
 }
 

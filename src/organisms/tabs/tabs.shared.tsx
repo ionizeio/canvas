@@ -2,6 +2,7 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { useEffect, useRef, type ReactNode } from "react";
 import { StyleSheet } from "react-native";
 import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useControllableState, useRovingFocus, useContainerBreakpoint, containerProbe, useReducedMotion, isRTL, type RovingItemProps, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutChangeEvent, type NativeSyntheticEvent, type NativeScrollEvent, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 import * as s from "./tabs.styles.js";
 import { type Variant } from "./tabs.styles.js";
 
@@ -485,8 +486,15 @@ export function createTabs(skin: TabsSkin) {
     // container, so a long row pans instead of clipping. Geometry lives in refs
     // (viewport/content from the scroller's own events, per-trigger frames from
     // the RippleClip wrappers): none of it should re-render, only position the
-    // scroller imperatively when the active trigger would sit out of view.
+    // scroller imperatively when the active trigger would sit out of view. The one
+    // render value is whether the row overflows: `scrollport` decides from it whether
+    // the scroller takes a drag (on Android only while the row overflows, since its
+    // horizontal scroller claims a sideways drag it cannot scroll and would drop a
+    // trigger's press and the page's scroll; always elsewhere, where a disabled
+    // scroller sets `touch-action: none` on the web). An imperative `scrollTo` moves
+    // a disabled scroller all the same, so scroll-into-view is unaffected.
     const scroller = useRef<ScrollView>(null);
+    const scrollport = useHorizontalScrollFocus();
     const scrollGeom = useRef({ viewport: 0, content: 0, offset: 0 });
     const triggerRects = useRef<Array<{ x: number; width: number } | undefined>>([]);
     // First positioning (a defaultActive/active starting off-screen) is a jump;
@@ -520,10 +528,12 @@ export function createTabs(skin: TabsSkin) {
       if (i === active) ensureActiveVisible(false);
     };
     const onScrollerLayout = (event: LayoutChangeEvent) => {
+      scrollport.onLayout(event);
       scrollGeom.current.viewport = event.nativeEvent.layout.width;
       ensureActiveVisible(false);
     };
-    const onScrollerContent = (width: number) => {
+    const onScrollerContent = (width: number, height: number) => {
+      scrollport.onContentSizeChange(width, height);
       scrollGeom.current.content = width;
       ensureActiveVisible(false);
     };
@@ -539,6 +549,7 @@ export function createTabs(skin: TabsSkin) {
         horizontal
         showsHorizontalScrollIndicator={false}
         alwaysBounceHorizontal={false}
+        scrollEnabled={scrollport.scrollEnabled}
         scrollEventThrottle={16}
         onScroll={onScrollerScroll}
         onContentSizeChange={onScrollerContent}

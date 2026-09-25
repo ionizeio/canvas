@@ -1,4 +1,5 @@
 import { afterEach, expect, it } from "bun:test";
+import { useEffect } from "react";
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { Platform, type LayoutChangeEvent } from "react-native";
 import { useHorizontalScrollFocus, useScrollFocus } from "../src/style/use-scroll-focus.ts";
@@ -51,6 +52,34 @@ it("tracks changed snippet or table content independently of viewport layout", (
   expect(result.current.tabIndex).toBe(0);
   act(() => result.current.onLayout(layout(0)));
   expect(result.current.focusable).toBe(false);
+});
+
+// Tabs keeps its scroll geometry out of render on purpose; the hook it shares with the
+// other scrollports re-renders only when the content starts or stops overflowing.
+// Commits are counted, not calls: React may call a component once before bailing out
+// of an update that set the same state, and that call never commits.
+it("re-renders only when the overflow flips, not on every resize", () => {
+  let renders = 0;
+  const { result } = renderHook(() => {
+    useEffect(() => {
+      renders += 1;
+    });
+    return useHorizontalScrollFocus();
+  });
+  const handlers = [result.current.onLayout, result.current.onContentSizeChange] as const;
+  act(() => result.current.onLayout(layout(500)));
+  act(() => result.current.onContentSizeChange(450, 80));
+  act(() => result.current.onLayout(layout(480)));
+  act(() => result.current.onContentSizeChange(460, 80));
+  expect(renders).toBe(1);
+  act(() => result.current.onLayout(layout(300)));
+  expect(result.current.focusable).toBe(true);
+  expect(renders).toBe(2);
+  act(() => result.current.onLayout(layout(310)));
+  act(() => result.current.onContentSizeChange(700, 80));
+  expect(renders).toBe(2);
+  expect(result.current.onLayout).toBe(handlers[0]);
+  expect(result.current.onContentSizeChange).toBe(handlers[1]);
 });
 
 // Android's HorizontalScrollView claims any sideways drag past touch slop even when it
