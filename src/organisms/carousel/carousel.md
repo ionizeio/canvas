@@ -18,6 +18,13 @@ The prev and next arrows sit beside the slides, never over them, so nothing
 near a slide's edge is hidden behind an arrow; the slides narrow by the two
 arrow gutters instead.
 
+Every slide is mounted from the first frame and stays mounted, so a slide's own
+state (a field's text, a playing video) survives the carousel measuring its
+viewport, on the first layout and whenever a hidden carousel is shown again.
+Until it has measured, the current slide fills the viewport on its own. A
+carousel does not window its slides, so a long gallery loads every slide's
+content up front.
+
 On web, Tab visits the carousel in the order it reads: the previous arrow, the
 slide viewport, the next arrow, then the slide picker (an arrow disabled at the
 end of a non-looping carousel is skipped). Tab reaches the viewport while its

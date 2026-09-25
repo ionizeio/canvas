@@ -1,0 +1,5 @@
+---
+"@ionizeio/canvas": patch
+---
+
+`Carousel` now keeps every slide mounted from the first frame. Until its viewport had measured, it rendered a stand-in copy of the current slide and then swapped it for the paged list, so the current slide's content mounted twice on every mount (its effects ran twice). A carousel whose viewport was hidden and shown again (inside a collapsed panel, say) also dropped every slide's state, including a field's typed text. The slides now sit in one paged ScrollView for their whole life, and measuring changes only their styles: before a width is known, the current slide fills the viewport and the others wait hidden, which looks the same as before. The list is a ScrollView rather than a FlatList, so a carousel no longer windows its slides; FlatList's default window already mounted up to about 21 slides, so only very long carousels mount more than before. On leaving that unmeasured layout, the list takes a 1px step within the current slide's page before landing on it, so a browser that re-snaps to the previously snapped slide after a layout change (Safari/WebKit does, as the CSS Scroll Snap spec asks) cannot jump to another slide.

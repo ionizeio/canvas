@@ -28,7 +28,7 @@ function mount() {
   const measured = [...track.children].find((node) => (node as LayoutHost).__reactLayoutHandler) as HTMLElement;
   layout(measured, 300);
   const viewport = measured.firstElementChild as HTMLElement | null;
-  if (!viewport) throw new Error("Expected the actual FlatList scrollport after measurement");
+  if (!viewport) throw new Error("Expected the paged scrollport inside the viewport");
   layout(viewport, 300);
   layout(viewport.firstElementChild as HTMLElement, 900);
   return { ...view, viewport, changes };

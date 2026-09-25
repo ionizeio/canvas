@@ -1,8 +1,8 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import {
-  FlatList,
   Platform,
+  ScrollView,
   type Insets,
   type LayoutChangeEvent,
   type NativeScrollEvent,
@@ -25,8 +25,9 @@ import {
 } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
+import { useIsomorphicLayoutEffect } from "../../style/use-isomorphic-layout-effect.js";
 
-// Shared Carousel shell. The structure (a horizontally paged FlatList of slides
+// Shared Carousel shell. The structure (a horizontally paged ScrollView of slides
 // with snap paging, optional prev/next arrows beside the slides, and a dot indicator
 // strip), the controlled-or-uncontrolled current-index state, the viewport
 // measurement, the paging/scroll math, the loop/clamp navigation, and the
@@ -51,15 +52,22 @@ import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 //   - Uncontrolled: omit `index`; the component tracks the current slide in
 //     internal state, seeded once from `defaultIndex` (default 0).
 //   - Controlled: pass `index` plus `onIndexChange`; the parent owns the slide,
-//     and an effect scrolls the FlatList whenever the controlled index changes.
+//     and an effect scrolls the list whenever the controlled index changes.
 //
-// Paging: the FlatList is `horizontal pagingEnabled`; each slide sits in a
-// wrapper View sized to the measured viewport width, so a swipe snaps exactly
-// one slide. The current index is read off `onMomentumScrollEnd`
-// (Math.round(contentOffset.x / width)). Arrows step +/-1 (clamped, or wrapped
-// when `loop`); each dot jumps straight to its slide. All width math is guarded
-// against the initial width === 0 frame (the FlatList renders only once the
-// viewport has measured a positive width).
+// Paging: the slides sit in a `horizontal pagingEnabled` ScrollView, each sized to
+// the measured viewport width, so a swipe snaps exactly one slide. The current
+// index is read off `onMomentumScrollEnd` (Math.round(contentOffset.x / width)).
+// Arrows step +/-1 (clamped, or wrapped when `loop`); each dot jumps straight to
+// its slide. All width math is guarded against a width of 0.
+//
+// Every slide is mounted from the first frame, and measuring changes styles only.
+// Until the viewport has a width (the first frame, a server render, a hidden
+// viewport) the current slide fills it and the others wait hidden; once it has one,
+// every slide takes that width. Swapping a stand-in slide for the list, or the list
+// for a stand-in, would remount the slide's content and drop its state (a field's
+// text, a playing video) after the first layout and on every hide. The list is a
+// ScrollView rather than a FlatList for the same reason: a carousel holds a handful
+// of slides, and windowing would unmount the ones outside its window.
 
 // The platform-varying surface. Everything shape/color/feedback-bearing the
 // slides, arrows, and dots need lives here, built from the active tokens (so
@@ -255,10 +263,12 @@ export function createCarousel(skin: CarouselSkin) {
       if (!controlled && internal !== current) setInternal(current);
     }, [controlled, internal, current]);
 
-    // The measured viewport width. Width math is guarded against this 0 frame:
-    // the FlatList renders only once a positive width has been measured.
+    // The measured viewport width. Width math is guarded against 0: the first
+    // frame, a server render, and a hidden viewport, where only the current slide
+    // shows, filling the viewport.
     const [width, setWidth] = useState(0);
-    const listRef = useRef<FlatList<CarouselItem>>(null);
+    const measured = width > 0;
+    const listRef = useRef<ScrollView>(null);
     const { onContentSizeChange: reportContentSize, ...scrollFocus } = useHorizontalScrollFocus();
     const [contentWidth, setContentWidth] = useState(0);
     const commanded = useRef<{ index: number; width: number; count: number } | null>(null);
@@ -280,10 +290,38 @@ export function createCarousel(skin: CarouselSkin) {
       (i: number, animated: boolean) => {
         if (width <= 0 || count === 0 || Math.abs(contentWidth - count * width) > 1) return;
         commanded.current = { index: i, width, count };
-        listRef.current?.scrollToOffset({ offset: i * width, animated: animated && !reduced });
+        listRef.current?.scrollTo({ x: i * width, y: 0, animated: animated && !reduced });
       },
       [width, contentWidth, count, reduced],
     );
+
+    // A new slide width (the first measurement, a resize, a hidden viewport shown
+    // again) moves every slide, so put the current one back in view before the frame
+    // paints. The list has just been laid out at this width, so the offset is valid
+    // without waiting for the content size to report.
+    //
+    // Leaving the unmeasured layout takes a real move. Unmeasured, every slide's snap
+    // cell sits at offset 0, so each counts as snapped there, and a browser that
+    // re-snaps to the previously snapped box after a layout change (the CSS Scroll
+    // Snap rule; WebKit picks among equals in hash order) can then jump to any slide.
+    // A scroll that lands where the list already is does not move, and so snaps
+    // nothing: when the current slide sits at 0, a 1px step first makes landing on
+    // it a move. The step stays inside the current slide's page because iOS reports
+    // every non-animated scroll as a momentum end, which reads the page back.
+    const measuredBefore = useRef(false);
+    useIsomorphicLayoutEffect(() => {
+      if (width <= 0 || count === 0) {
+        measuredBefore.current = false;
+        return;
+      }
+      const x = currentRef.current * width;
+      commanded.current = { index: currentRef.current, width, count };
+      if (!measuredBefore.current && x === 0 && count > 1) {
+        listRef.current?.scrollTo({ x: 1, y: 0, animated: false });
+      }
+      listRef.current?.scrollTo({ x, y: 0, animated: false });
+      measuredBefore.current = true;
+    }, [width, count]);
 
     // Commit a new current index: update the uncontrolled store, notify the
     // parent, and (when uncontrolled) scroll the list to the slide.
@@ -365,41 +403,36 @@ export function createCarousel(skin: CarouselSkin) {
         <View style={arrowsShown ? trackWithArrows : TRACK}>
           {arrowsShown ? <Arrow side="prev" disabled={prevDisabled} onPress={() => goTo(currentRef.current - 1)} /> : null}
           <View style={VIEWPORT} onLayout={onLayout}>
-            {width > 0 ? (
-              <FlatList
-                {...scrollFocus}
-                {...keyboardProps}
-                onContentSizeChange={onContentSizeChange}
-                ref={listRef}
-                data={items}
-                // Pin the scroll container to the measured viewport width. Without a
-                // DEFINITE width the horizontal list reports its intrinsic size (the
-                // sum of the slides, each itself sized to the measured width) up to the
-                // viewport, so in a shrink-to-content parent the viewport width feeds
-                // back into the slide width and diverges (the browser clamps the runaway
-                // at its ~2^24 layout cap, pushing every slide off-screen). A definite
-                // width caps that contribution and keeps slide N at N * width.
-                style={{ width }}
-                keyExtractor={(item) => item.key}
-                horizontal
-                pagingEnabled
-                showsHorizontalScrollIndicator={false}
-                getItemLayout={(_, i) => ({ length: width, offset: width * i, index: i })}
-                initialScrollIndex={current}
-                onMomentumScrollEnd={onMomentumScrollEnd}
-                renderItem={({ item }) => (
-                  <GlassSurface layer="content" style={[{ width }, skin.slide(tokens)]}>{slideBody(item)}</GlassSurface>
-                )}
-              />
-            ) : items[current] ? (
-              // Pre-measurement fallback: the current slide, full-bleed, so the carousel
-              // is NEVER blank even if onLayout is delayed or does not fire (some web
-              // layout contexts). The paged, swipeable FlatList replaces this the moment
-              // a positive width lands; the arrows/dots already page by swapping `current`.
-              // Guarded on a present item so an empty `items=[]` renders an empty
-              // viewport instead of dereferencing `undefined.content`.
-              <GlassSurface layer="content" style={skin.slide(tokens)}>{slideBody(items[current])}</GlassSurface>
-            ) : null}
+            <ScrollView
+              {...scrollFocus}
+              {...keyboardProps}
+              onContentSizeChange={onContentSizeChange}
+              ref={listRef}
+              // Pin the scroll container to the measured viewport width. Without a
+              // DEFINITE width the horizontal list reports its intrinsic size (the
+              // sum of the slides, each itself sized to the measured width) up to the
+              // viewport, so in a shrink-to-content parent the viewport width feeds
+              // back into the slide width and diverges (the browser clamps the runaway
+              // at its ~2^24 layout cap, pushing every slide off-screen). A definite
+              // width caps that contribution and keeps slide N at N * width. Before
+              // the viewport measures, its column stretches the list to its width.
+              style={measured ? { width } : null}
+              contentContainerStyle={measured ? null : UNMEASURED_CONTENT}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onMomentumScrollEnd={onMomentumScrollEnd}
+            >
+              {items.map((item, i) => (
+                <GlassSurface
+                  key={item.key}
+                  layer="content"
+                  style={[measured ? { width } : i === current ? null : HIDDEN_SLIDE, skin.slide(tokens)]}
+                >
+                  {slideBody(item)}
+                </GlassSurface>
+              ))}
+            </ScrollView>
           </View>
           {arrowsShown ? <Arrow side="next" disabled={nextDisabled} onPress={() => goTo(currentRef.current + 1)} /> : null}
         </View>
@@ -448,6 +481,16 @@ const TRACK: ViewStyle = { flexDirection: "row", alignItems: "stretch" };
 // minWidth on native (the same trap splitSurfaceStyle's clip box documents), while
 // the list pinned to the measured width keeps an auto basis from feeding back.
 const VIEWPORT: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "auto", minWidth: 0, overflow: "hidden" };
+
+// Before the viewport measures, the slides stack in a column exactly the scrollport's
+// width, so the current one stretches to fill it without a px width. A percentage
+// width would not do: on the web a paged ScrollView wraps each slide in its own
+// snap cell, and the slide would resolve the percentage against that content-sized
+// cell instead of the scrollport.
+const UNMEASURED_CONTENT: ViewStyle = { flexDirection: "column", width: "100%" };
+
+// A slide waiting, unmeasured, behind the current one: mounted but not laid out.
+const HIDDEN_SLIDE: ViewStyle = { display: "none" };
 
 // An arrow's cell: hugs the arrow and centers it on the slides beside it.
 const ARROW_CELL: ViewStyle = { justifyContent: "center" };

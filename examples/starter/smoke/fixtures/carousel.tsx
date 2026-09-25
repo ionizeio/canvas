@@ -21,7 +21,7 @@ export function CarouselBody() {
   const items = useMemo(() => Array.from({ length: 6 }, (_, index) => ({
     key: `page-${index + 1}`,
     content: (
-      // Measure the actual card, never the larger VirtualizedList cell wrapper.
+      // Measure the actual card, never the larger slide or paging cell around it.
       <View collapsable={false} ref={refs[index]}>
         <Card testID={`carousel-slide-${index + 1}`}>
           <Column loose>
@@ -45,7 +45,7 @@ export function CarouselBody() {
     const card = cards.current[index];
     setMeasurement({ generation: request, status: "pending" });
     // An explicit press requests fresh window coordinates after native paging.
-    // onLayout alone can retain the position from before initialScrollIndex.
+    // onLayout alone can retain the position from before the scroll to the starting card.
     card?.measureInWindow((x, y, width, height) => {
       if (request !== generation.current || index !== currentRef.current || card !== cards.current[index]) return;
       const screen = Dimensions.get("screen");

@@ -58,6 +58,9 @@ const measurement = () => JSON.parse(screen.getByTestId("carousel-measurement").
 test("fresh native card measurements keep slide identity, refs and uncontrolled page intact", () => {
   const fixture = mountFixture();
   const original = fixture.renders[0]!;
+  // Every card mounts on the first frame, before the viewport measures, and none is
+  // re-attached afterwards: the measured card is the one the page first rendered.
+  expect(fixture.attachments()).toBe(6);
   expect(fixture.requests).toHaveLength(0);
   expect(measurement()).toEqual({ generation: 0, status: "idle" });
   fireEvent.click(screen.getByRole("button", { name: "Measure current slide" }));
@@ -69,7 +72,7 @@ test("fresh native card measurements keep slide identity, refs and uncontrolled 
   expect(measurement()).toEqual({ generation: 2, status: "pending" });
   act(() => fixture.requests[1]!(24, 210, 354, 198));
   expect(measurement()).toMatchObject({ generation: 2, y: 210 });
-  expect(fixture.attachments()).toBe(1);
+  expect(fixture.attachments()).toBe(6);
   for (const props of fixture.renders) {
     expect(props.items).toBe(original.items);
     expect(props.onIndexChange).toBe(original.onIndexChange);
