@@ -1,6 +1,6 @@
 import { Fragment, type ComponentType } from "react";
-import { FlatList, StyleSheet, type DimensionValue } from "react-native";
-import { View, Pressable, Text, useTheme, useContainerBreakpoint, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, GlassSurface, alpha } from "../../style/index.js";
+import { FlatList, StyleSheet, type DimensionValue, type LayoutChangeEvent } from "react-native";
+import { View, Pressable, Text, useTheme, useContainerBreakpoint, devWarn, FOCUS_RESET, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, GlassSurface, alpha } from "../../style/index.js";
 import { Card as WebCard } from "../card/card.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
@@ -9,6 +9,8 @@ import { type CardProps } from "../card/card.shared.js";
 import { type AvatarProps } from "../../atoms/avatar/avatar.shared.js";
 import { type BadgeProps } from "../../atoms/badge/badge.shared.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
+import { useScrollFocus } from "../../style/use-scroll-focus.js";
+import { useFocusFrame } from "../../style/focus-frame.js";
 import * as s from "./grid-lists.styles.js";
 import { type Columns } from "./grid-lists.styles.js";
 
@@ -136,7 +138,9 @@ export interface GridListProps {
    * Render the tiles through a windowed `FlatList` instead of mounting every tile up
    * front, for large grids. Give the grid a bounded height (via `style`, e.g.
    * `{ maxHeight: 480 }`) so it can scroll; without one it warns and renders eagerly
-   * anyway. Default (omitted) mounts all tiles, unchanged.
+   * anyway. Default (omitted) mounts all tiles, unchanged. On the web, while the tiles
+   * overflow, the windowed grid is a keyboard tab stop the keyboard can scroll, and it
+   * draws the focus ring around itself while it has keyboard focus.
    */
   virtualized?: boolean;
   /** E2E hook forwarded to the root element. */
@@ -257,6 +261,15 @@ export function createGridList(
       { base: false, sm: true },
       { seedViewport: true },
     );
+    // A windowed grid scrolls its tiles on its own, so it is a keyboard stop while they
+    // overflow, whatever the tiles hold (DataTable's windowed body is the precedent).
+    // Left alone, Chromium and Firefox made a read-only grid's scroller a stop anyway
+    // (a scroller with nothing focusable inside) and drew their own ring on it, while
+    // WebKit left it out of the tab order. The scroller is the grid's root, with no
+    // card around it to clip a ring, so it is its own frame (src/style/focus-frame.tsx)
+    // and draws the theme's ring around itself as the other lists' cards do.
+    const gridFocus = useScrollFocus("vertical");
+    const gridFrame = useFocusFrame();
     const tileWidth: DimensionValue = phone ? "100%" : s.TILE_WIDTH[columns];
     // FlatList lays out `numColumns` tiles per row itself (mirrors the flex-wrap
     // grid's column count): one at phone widths, else cols3 -> 3, cols2 (the
@@ -300,8 +313,17 @@ export function createGridList(
           // responsive column count crosses the breakpoint.
           key={numColumns}
           testID={testID}
-          onLayout={onGridLayout}
-          style={style}
+          {...gridFocus}
+          {...gridFrame.target}
+          onLayout={(event: LayoutChangeEvent) => {
+            onGridLayout(event);
+            gridFocus.onLayout(event);
+          }}
+          // A group, not a generic node: focused, a generic scroller took its name from
+          // every tile it rendered in Chromium, so a screen reader would read them all
+          // out as the stop's name. A group takes no name from its tiles.
+          role="group"
+          style={[style, FOCUS_RESET, gridFrame.ring()]}
           data={items}
           renderItem={({ item, index }) => renderTile(item, index)}
           keyExtractor={keyOf}

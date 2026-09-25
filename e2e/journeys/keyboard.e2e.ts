@@ -4,6 +4,8 @@ import type { Locator, Page, TestInfo } from "@playwright/test";
 import { scanStructure } from "../support/axe";
 import { expect, test } from "../support/fixtures";
 import { gotoDocs, platformRow } from "../support/docs";
+import { ALL_SIDES, rgb, ringShows } from "../support/focus-ring";
+import { colorsFor } from "../../src/style/tokens.ts";
 
 async function withDrawerFocusDiagnostics(page: Page, testInfo: TestInfo, run: () => Promise<void>) {
   await page.addInitScript(() => {
@@ -246,3 +248,43 @@ for (const scheme of ["light", "dark"] as const) {
     expect((await outline()).width).not.toBe("0px");
   });
 }
+
+test("a windowed list's overflowing rows are one keyboard stop, in every engine", async ({ page }) => {
+  // A virtualized StackedList, Feed or GridList scrolls its rows in a list of its own.
+  // Left to the browser, Chromium and Firefox made that list a stop when nothing inside
+  // it could take focus (read-only rows) and drew their own ring on it, while WebKit
+  // skipped it, so its keyboard could not reach the rows below the fold. Each list makes
+  // the scroller a stop while its rows overflow, and the list's card draws the theme's
+  // ring for it (a GridList's scroller is its root and rings itself). PageDown scrolls a
+  // focused scroller in every engine; Playwright's WebKit on a Mac scrolls none with the
+  // arrow keys.
+  await gotoDocs(page, "/testing/scroll-focus", { scheme: "light", viewport: { width: 1280, height: 900 } });
+  // A scroller switches its own ring off with a zero width (FOCUS_RESET), its style
+  // `solid`, so whether a node draws an outline is its width as well as its style; the
+  // browser's own `auto` ring ignores the width, so it always draws.
+  const draws = (locator: Locator) => locator.evaluate((node) => {
+    const style = getComputedStyle(node);
+    return style.outlineStyle === "auto" || (style.outlineStyle !== "none" && parseFloat(style.outlineWidth) > 0);
+  });
+  const ring = rgb(colorsFor("blush", "light").ring);
+  for (const name of ["stacked", "stacked-plain", "feed", "feed-avatar", "grid"]) {
+    const list = page.getByTestId(`scroll-${name}`);
+    const scroller = name === "grid" ? list : list.getByRole("group");
+    // The stop exists once the list has measured its rows overflowing.
+    await expect(scroller).toHaveAttribute("tabindex", "0");
+    await page.getByTestId(`before-${name}`).focus();
+    await page.keyboard.press("Tab");
+    await expect(scroller).toBeFocused();
+    await expect.poll(() => draws(list)).toBe(true);
+    if (name !== "grid") expect(await draws(scroller)).toBe(false);
+    // On screen along every side in this engine too, not only computed: Tab scrolls the
+    // focused box into view rather than the ring outside it, so center the list first.
+    await list.evaluate((node) => node.scrollIntoView({ block: "center" }));
+    await expect.poll(() => ringShows(page, list, ring)).toEqual(ALL_SIDES);
+    await page.keyboard.press("PageDown");
+    await expect.poll(() => scroller.evaluate((node) => node.scrollTop)).toBeGreaterThan(0);
+    await page.keyboard.press("Tab");
+    await expect(page.getByTestId(`after-${name}`)).toBeFocused();
+    await expect.poll(() => draws(list)).toBe(false);
+  }
+});

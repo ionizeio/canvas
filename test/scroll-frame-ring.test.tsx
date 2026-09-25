@@ -15,6 +15,15 @@ import { DataTable as AndroidDataTable } from "../src/organisms/data-table/data-
 import { Carousel } from "../src/organisms/carousel/carousel.tsx";
 import { Carousel as IOSCarousel } from "../src/organisms/carousel/carousel.ios.tsx";
 import { Carousel as AndroidCarousel } from "../src/organisms/carousel/carousel.android.tsx";
+import { StackedList } from "../src/molecules/stacked-lists/stacked-lists.tsx";
+import { StackedList as IOSStackedList } from "../src/molecules/stacked-lists/stacked-lists.ios.tsx";
+import { StackedList as AndroidStackedList } from "../src/molecules/stacked-lists/stacked-lists.android.tsx";
+import { Feed } from "../src/molecules/feeds/feeds.tsx";
+import { Feed as IOSFeed } from "../src/molecules/feeds/feeds.ios.tsx";
+import { Feed as AndroidFeed } from "../src/molecules/feeds/feeds.android.tsx";
+import { GridList } from "../src/molecules/grid-lists/grid-lists.tsx";
+import { GridList as IOSGridList } from "../src/molecules/grid-lists/grid-lists.ios.tsx";
+import { GridList as AndroidGridList } from "../src/molecules/grid-lists/grid-lists.android.tsx";
 import { LOOKS, lookProps, type Look } from "./fixtures/looks.ts";
 
 // A CodeBlock, DataTable or Carousel scroller that overflows is a keyboard stop sitting
@@ -27,8 +36,11 @@ import { LOOKS, lookProps, type Look } from "./fixtures/looks.ts";
 // that would clip that ring, so it draws the ring just inside its edge, on a layer
 // above the scroller. A windowed DataTable's body scrolls its rows on its own, inside the
 // same card, so it is a stop of its own while its rows overflow and the card rings it
-// the same way. The calendar Heatmap's scroller has room around it and keeps its own
-// ring (test/heatmap-scroll-focus.test.tsx).
+// the same way. A windowed StackedList or Feed scrolls its rows in a list of its own
+// inside its card (or a plain StackedList's root), so it is a stop of its own too, and
+// the card rings it. A windowed GridList's scroller is the grid's root, with no card
+// around it, so it rings itself. The calendar Heatmap's scroller has room around it and
+// keeps its own ring (test/heatmap-scroll-focus.test.tsx).
 
 let warnSpy: ReturnType<typeof spyOn>;
 beforeEach(() => {
@@ -65,17 +77,20 @@ function overflow(scroller: HTMLElement, viewport = 284, contentWidth = 900) {
 }
 
 // Lay a windowed body out `viewport` tall around rows `contentHeight` tall (its content
-// container is its first child).
-function layOutRows(body: HTMLElement, viewport: number, contentHeight: number) {
-  layOut(body, 600, viewport);
-  layOut(body.firstElementChild as HTMLElement, 600, contentHeight);
+// container is its first child), `width` wide. A GridList's scroller is the grid, whose
+// columns follow its own width, so a grid is laid out at a desktop width: below 640 it
+// drops to one column and remounts its scroller.
+function layOutRows(body: HTMLElement, viewport: number, contentHeight: number, width = 600) {
+  layOut(body, width, viewport);
+  layOut(body.firstElementChild as HTMLElement, width, contentHeight);
 }
 
 // ...so that its rows overflow and it becomes a keyboard stop.
-function overflowDown(body: HTMLElement, viewport = 196, contentHeight = 2000) {
-  layOutRows(body, viewport, contentHeight);
+function overflowDown(body: HTMLElement, viewport = 196, contentHeight = 2000, width = 600) {
+  layOutRows(body, viewport, contentHeight, width);
   expect(body.tabIndex).toBe(0);
 }
+const GRID_WIDTH = 1024;
 
 const LONG = 'const destinations = ["Montréal", "Toronto", "Vancouver", "Halifax", "Victoria", "Québec"];';
 const COLUMNS = ["Name", "Location", "Status", "Joined", "Team"];
@@ -83,6 +98,11 @@ const ROWS = [["Ada", "Montréal", "Active", "2026-01-02", "Design"], ["Sam", "T
 // More rows than a 240 px table shows.
 const MANY_ROWS = Array.from({ length: 40 }, (_, i) => [`Name ${i + 1}`, "Montréal", "Active", "2026-01-02", "Design"]);
 const SLIDES = [{ key: "a", content: "One" }, { key: "b", content: "Two" }, { key: "c", content: "Three" }];
+// More rows, events and tiles than a 240 px list shows, none of them focusable.
+const PEOPLE = Array.from({ length: 40 }, (_, i) => ({ id: i, name: `Name ${i + 1}`, detail: "Montréal", meta: "Active" }));
+const EVENTS = Array.from({ length: 40 }, (_, i) => ({ id: i, actor: `Name ${i + 1}`, action: "joined the team", time: `${i + 1} hours ago` }));
+const TILES = Array.from({ length: 40 }, (_, i) => ({ title: `IMG_${1000 + i}.jpg`, subtitle: "2.4 MB", color: "primary" }));
+const BOUNDED = { maxHeight: 240 };
 
 interface Case {
   name: string;
@@ -133,6 +153,21 @@ function windowedTable(name: string, node: ReactNode): Case {
   };
 }
 
+// A windowed StackedList or Feed: the one group under the root scrolls the rows, and the
+// root (the card, or a plain list's frame) draws its ring.
+function windowedList(name: string, node: ReactNode): Case {
+  return {
+    name,
+    node,
+    stop() {
+      const frame = screen.getByTestId("subject");
+      const scroller = screen.getByRole("group");
+      overflowDown(scroller);
+      return { scroller, frame };
+    },
+  };
+}
+
 function carousel(name: string, node: ReactNode): Case {
   return {
     name,
@@ -163,6 +198,18 @@ const CASES: Case[] = [
   windowedTable("windowed DataTable body (web)", <DataTable testID="subject" virtualized style={{ maxHeight: 240 }} columns={COLUMNS} rows={MANY_ROWS} />),
   windowedTable("windowed DataTable body (ios)", <IOSDataTable testID="subject" virtualized style={{ maxHeight: 240 }} columns={COLUMNS} rows={MANY_ROWS} />),
   windowedTable("windowed DataTable body (android)", <AndroidDataTable testID="subject" virtualized style={{ maxHeight: 240 }} columns={COLUMNS} rows={MANY_ROWS} />),
+  windowedList("windowed StackedList card (web)", <StackedList testID="subject" card title="Team" virtualized style={BOUNDED} items={PEOPLE} />),
+  windowedList("windowed StackedList card (ios)", <IOSStackedList testID="subject" card title="Team" virtualized style={BOUNDED} items={PEOPLE} />),
+  windowedList("windowed StackedList card (android)", <AndroidStackedList testID="subject" card title="Team" virtualized style={BOUNDED} items={PEOPLE} />),
+  windowedList("windowed plain StackedList (web)", <StackedList testID="subject" virtualized style={BOUNDED} items={PEOPLE} />),
+  windowedList("windowed plain StackedList (ios)", <IOSStackedList testID="subject" virtualized style={BOUNDED} items={PEOPLE} />),
+  windowedList("windowed plain StackedList (android)", <AndroidStackedList testID="subject" virtualized style={BOUNDED} items={PEOPLE} />),
+  windowedList("windowed Feed (web)", <Feed testID="subject" virtualized style={BOUNDED} items={EVENTS} />),
+  windowedList("windowed Feed (ios)", <IOSFeed testID="subject" virtualized style={BOUNDED} items={EVENTS} />),
+  windowedList("windowed Feed (android)", <AndroidFeed testID="subject" virtualized style={BOUNDED} items={EVENTS} />),
+  windowedList("windowed avatar Feed (web)", <Feed testID="subject" avatar virtualized style={BOUNDED} items={EVENTS} />),
+  windowedList("windowed avatar Feed (ios)", <IOSFeed testID="subject" avatar virtualized style={BOUNDED} items={EVENTS} />),
+  windowedList("windowed avatar Feed (android)", <AndroidFeed testID="subject" avatar virtualized style={BOUNDED} items={EVENTS} />),
   carousel("Carousel (web)", <Carousel testID="subject" items={SLIDES} />),
   carousel("Carousel (ios)", <IOSCarousel testID="subject" items={SLIDES} />),
   carousel("Carousel (android)", <AndroidCarousel testID="subject" items={SLIDES} />),
@@ -185,6 +232,12 @@ function expectRing(frame: HTMLElement, look: Look) {
   expect(outline(frame, "offset")).toBe(`${FOCUS_RING_OFFSET}px`);
 }
 const expectNoRing = (frame: HTMLElement) => expect(outline(frame, "style")).toBe("");
+// A node that is its own frame rests on FOCUS_RESET (a solid outline of zero width, the
+// style React Native's parser accepts): neither the browser's ring nor the theme's.
+function expectNoRingDrawn(node: HTMLElement) {
+  expect(outline(node, "style")).toBe("solid");
+  expect(outline(node, "width")).toBe("0px");
+}
 
 const ui = (node: ReactNode, props: { scheme?: "light" | "dark"; mint?: boolean; glass?: boolean } = {}) => {
   const { glass, ...look } = props;
@@ -352,6 +405,143 @@ describe("a windowed DataTable body", () => {
       expect(frame.lastElementChild === layer).toBe(false);
     });
   }
+});
+
+describe("a windowed StackedList, Feed or GridList", () => {
+  const blush = LOOKS[0]!;
+  const LISTS: Array<{ name: string; width: number; node: (props?: object) => ReactNode }> = [
+    { name: "StackedList", width: 600, node: (props = {}) => <StackedList testID="subject" virtualized style={BOUNDED} items={PEOPLE} {...props} /> },
+    { name: "Feed", width: 600, node: (props = {}) => <Feed testID="subject" virtualized style={BOUNDED} items={EVENTS} {...props} /> },
+    { name: "GridList", width: GRID_WIDTH, node: (props = {}) => <GridList testID="subject" gallery virtualized style={BOUNDED} items={TILES} {...props} /> },
+  ];
+
+  // The attribute, not the property: a div with no tabindex also reports -1, and it is
+  // exactly the unmanaged scroller Chromium and Firefox made a stop of their own accord.
+  for (const list of LISTS) {
+    it(`${list.name}: is a keyboard stop only while its rows overflow`, () => {
+      ui(list.node());
+      const scroller = screen.getByRole("group");
+      expect(scroller.getAttribute("tabindex")).toBe("-1");
+      layOutRows(scroller, 196, 150, list.width);
+      expect(scroller.getAttribute("tabindex")).toBe("-1");
+      layOutRows(scroller, 196, 2000, list.width);
+      expect(scroller.getAttribute("tabindex")).toBe("0");
+      layOutRows(scroller, 2400, 2000, list.width);
+      expect(scroller.getAttribute("tabindex")).toBe("-1");
+    });
+
+    // Focused, a generic scroller took its name from every row it rendered in Chromium;
+    // a group takes none from its rows, so the stop carries no name of its own.
+    it(`${list.name}: the stop is an unnamed group that holds the rendered rows`, () => {
+      ui(list.node());
+      const scroller = screen.getByRole("group");
+      expect(scroller.hasAttribute("aria-label")).toBe(false);
+      expect(scroller.hasAttribute("aria-labelledby")).toBe(false);
+      expect(scroller.textContent).toContain(list.name === "GridList" ? "IMG_1000.jpg" : "Name 1");
+    });
+
+    it(`${list.name}: adds no stop, role or ring handling when it renders eagerly`, () => {
+      ui(list.node({ virtualized: false }));
+      expect(screen.queryByRole("group")).toBeNull();
+      expect(screen.getByTestId("subject").querySelector("[tabindex]")).toBeNull();
+    });
+  }
+
+  it("StackedList: is a stop whatever its rows hold, after the header's action and before the rows' buttons", () => {
+    ui(<StackedList testID="subject" clickable title="Team" addAction="Add" virtualized style={BOUNDED} items={PEOPLE} onPressItem={() => {}} />);
+    const scroller = screen.getByRole("group");
+    overflowDown(scroller);
+    const buttons = screen.getAllByRole("button");
+    // The header's Add button comes before the list, every row's button inside it.
+    expect(scroller.contains(buttons[0]!)).toBe(false);
+    expect(buttons[0]!.compareDocumentPosition(scroller) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(buttons.slice(1).length).toBeGreaterThan(0);
+    for (const button of buttons.slice(1)) expect(scroller.contains(button)).toBe(true);
+  });
+
+  it("Feed: is a stop whatever its rows hold, around every pressable row", () => {
+    ui(<Feed testID="subject" virtualized style={BOUNDED} items={EVENTS} onItemPress={() => {}} />);
+    const scroller = screen.getByRole("group");
+    overflowDown(scroller);
+    const rows = screen.getAllByRole("button");
+    expect(rows.length).toBeGreaterThan(0);
+    for (const row of rows) expect(scroller.contains(row)).toBe(true);
+  });
+
+  it("GridList: is a stop whatever its tiles hold, around every pressable tile", () => {
+    ui(<GridList testID="subject" gallery virtualized style={BOUNDED} items={TILES} onPressItem={() => {}} />);
+    const scroller = screen.getByRole("group");
+    overflowDown(scroller, 196, 2000, GRID_WIDTH);
+    const tiles = screen.getAllByRole("button");
+    expect(tiles.length).toBeGreaterThan(0);
+    for (const tile of tiles) expect(scroller.contains(tile)).toBe(true);
+  });
+
+  it("StackedList: rings the card's own root, which carries the card's corners the outline follows", () => {
+    ui(<StackedList testID="subject" card title="Team" virtualized style={BOUNDED} items={PEOPLE} />);
+    const { scroller, frame } = windowedList("", null).stop();
+    const radius = frame.style.getPropertyValue("border-top-left-radius");
+    expect(radius).not.toBe("");
+    fireEvent.keyUp(scroller, { key: "Tab" });
+    expectRing(frame, blush);
+    expect(frame.style.getPropertyValue("border-top-left-radius")).toBe(radius);
+  });
+});
+
+// A windowed GridList's scroller is the grid's root: no card surrounds it to clip a ring
+// drawn around it, so it is its own frame and draws the theme's ring around itself.
+describe("a windowed GridList", () => {
+  const grids = [
+    { name: "web", Grid: GridList },
+    { name: "ios", Grid: IOSGridList },
+    { name: "android", Grid: AndroidGridList },
+  ];
+  for (const { name, Grid } of grids) {
+    for (const look of LOOKS) {
+      it(`(${name}) draws the ${look.name} palette's ring around its own scroller while a key lands on it`, () => {
+        ui(<Grid testID="subject" gallery virtualized style={BOUNDED} items={TILES} />, lookProps(look));
+        const scroller = screen.getByTestId("subject");
+        expect(screen.getByRole("group")).toBe(scroller);
+        overflowDown(scroller, 196, 2000, GRID_WIDTH);
+        // Neither the browser's ring nor the theme's before a key lands on it.
+        expectNoRingDrawn(scroller);
+        fireEvent.focus(scroller);
+        expectNoRingDrawn(scroller);
+        fireEvent.keyUp(scroller, { key: "Tab" });
+        expectRing(scroller, look);
+        fireEvent.blur(scroller);
+        expectNoRingDrawn(scroller);
+      });
+    }
+  }
+
+  it("rings itself through the material under glass", () => {
+    ui(<GridList testID="subject" gallery virtualized style={BOUNDED} items={TILES} />, { glass: true });
+    const scroller = screen.getByTestId("subject");
+    overflowDown(scroller, 196, 2000, GRID_WIDTH);
+    fireEvent.keyUp(scroller, { key: "Tab" });
+    expectRing(scroller, LOOKS[0]!);
+  });
+
+  // The scroller's layout feeds both the grid's own width (its columns) and the stop.
+  it("drops to one column at a phone width, and the remounted scroller measures its own stop", () => {
+    ui(<GridList testID="subject" gallery cols3 virtualized style={BOUNDED} items={TILES} />);
+    const wide = screen.getByTestId("subject");
+    layOutRows(wide, 196, 2000, GRID_WIDTH);
+    expect(wide.getAttribute("tabindex")).toBe("0");
+    layOut(wide, 375, 196);
+    // FlatList cannot change its column count live, so the grid remounts its scroller.
+    const narrow = screen.getByTestId("subject");
+    expect(narrow).not.toBe(wide);
+    const tile = screen.getByText("IMG_1000.jpg").parentElement!.parentElement as HTMLElement;
+    expect(tile.style.width).toBe("100%");
+    // The new scroller's own measurements decide the stop: rows that fit take it away,
+    // rows that overflow give it back.
+    layOutRows(narrow, 196, 150, 375);
+    expect(narrow.getAttribute("tabindex")).toBe("-1");
+    layOutRows(narrow, 196, 6000, 375);
+    expect(narrow.getAttribute("tabindex")).toBe("0");
+  });
 });
 
 describe("frame ring follows keyboard focus only", () => {

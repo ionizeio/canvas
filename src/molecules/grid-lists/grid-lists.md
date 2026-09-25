@@ -2,6 +2,14 @@
 
 Tiled card grids for people directories, item collections, and image galleries.
 
+A `virtualized` grid with a bounded height scrolls its tiles on its own. On the
+web, while those tiles overflow, the grid is a keyboard tab stop (before the
+tiles themselves when `onPressItem` or tile actions make them buttons), the
+keyboard can scroll it, and while it has keyboard focus the grid, which has no
+card around it, draws the theme's focus ring around itself. The stop is an
+unnamed group, so a screen reader does not read every tile it renders out as
+its name.
+
 ## Usage
 
 Each tile action carries its own `onPress`, so every button on a card fires your handler.

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Card, Carousel, CodeBlock, Column, DataTable, Heatmap, Select, Typography } from "@ionizeio/canvas";
+import { Button, Card, Carousel, CodeBlock, Column, DataTable, Feed, GridList, Heatmap, Select, StackedList, Typography } from "@ionizeio/canvas";
 import { Page } from "../../../ui/page";
 
 const LONG = 'const destinations = ["Montréal", "Toronto", "Vancouver", "Halifax", "Victoria", "Québec", "Winnipeg", "Calgary", "Ottawa", "Edmonton"];';
@@ -19,6 +19,27 @@ const manyRows = Array.from({ length: 40 }, (_, i) => [
   `2026-${String((i % 12) + 1).padStart(2, "0")}-${String((i % 28) + 1).padStart(2, "0")}`,
   i % 2 === 0 ? "Design" : "Engineering",
 ]);
+// Forty read-only rows, events and tiles for the windowed lists: more than their bounded
+// heights show, none of them focusable, so each list scrolls with nothing inside it to
+// take a Tab.
+const listPeople = Array.from({ length: 40 }, (_, i) => ({
+  id: i,
+  name: `${people[i % people.length]} ${i + 1}`,
+  detail: cities[i % cities.length]!,
+  meta: i % 5 === 0 ? "Invited" : "Active",
+}));
+const events = Array.from({ length: 40 }, (_, i) => ({
+  id: i,
+  actor: `${people[i % people.length]} ${i + 1}`,
+  action: i % 2 === 0 ? "updated the roster" : "joined the team",
+  time: `${i + 1} hours ago`,
+}));
+const tileColors = ["primary", "blue-500", "green-500", "amber-500"];
+const tiles = Array.from({ length: 40 }, (_, i) => ({
+  title: `IMG_${String(1000 + i)}.jpg`,
+  subtitle: `${(i % 9) + 1}.2 MB`,
+  color: tileColors[i % tileColors.length],
+}));
 // A year of days (53 whole weeks) with a count on every third one, so the grid is 773 px
 // wide: wider than a phone's page, narrower than a desktop's.
 const days = Array.from({ length: 371 }, (_, i) => ({
@@ -78,6 +99,36 @@ export default function ScrollFocusFixture() {
           <Button outline testID="before-windowed">Before windowed data table</Button>
           <DataTable testID="scroll-windowed" virtualized columns={columns} rows={manyRows} style={{ maxHeight: 240 }} />
           <Button outline testID="after-windowed">After windowed data table</Button>
+        </Column>
+        <Column snug>
+          <Typography h2>Windowed stacked list</Typography>
+          <Button outline testID="before-stacked">Before windowed stacked list</Button>
+          <StackedList testID="scroll-stacked" card title="Team" virtualized items={listPeople} style={{ maxHeight: 240 }} />
+          <Button outline testID="after-stacked">After windowed stacked list</Button>
+        </Column>
+        <Column snug>
+          <Typography h2>Windowed plain stacked list</Typography>
+          <Button outline testID="before-stacked-plain">Before windowed plain stacked list</Button>
+          <StackedList testID="scroll-stacked-plain" virtualized items={listPeople} style={{ maxHeight: 240 }} />
+          <Button outline testID="after-stacked-plain">After windowed plain stacked list</Button>
+        </Column>
+        <Column snug>
+          <Typography h2>Windowed feed</Typography>
+          <Button outline testID="before-feed">Before windowed feed</Button>
+          <Feed testID="scroll-feed" virtualized items={events} style={{ maxHeight: 240 }} />
+          <Button outline testID="after-feed">After windowed feed</Button>
+        </Column>
+        <Column snug>
+          <Typography h2>Windowed avatar feed</Typography>
+          <Button outline testID="before-feed-avatar">Before windowed avatar feed</Button>
+          <Feed testID="scroll-feed-avatar" avatar virtualized items={events} style={{ maxHeight: 240 }} />
+          <Button outline testID="after-feed-avatar">After windowed avatar feed</Button>
+        </Column>
+        <Column snug>
+          <Typography h2>Windowed grid list</Typography>
+          <Button outline testID="before-grid">Before windowed grid list</Button>
+          <GridList testID="scroll-grid" gallery cols3 virtualized items={tiles} style={{ maxHeight: 240 }} />
+          <Button outline testID="after-grid">After windowed grid list</Button>
         </Column>
         <Column snug>
           <Typography h2>Calendar heatmap</Typography>

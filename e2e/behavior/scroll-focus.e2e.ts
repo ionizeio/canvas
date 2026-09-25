@@ -2,15 +2,25 @@ import type { Locator, Page } from "@playwright/test";
 import { colorsFor } from "../../src/style/tokens.ts";
 import { BLOCKING_IMPACTS, scan, scanStructure } from "../support/axe";
 import { gotoDocs } from "../support/docs";
+import { ALL_SIDES, rgb, ringShows } from "../support/focus-ring";
 import { expect, test } from "../support/fixtures";
 
+// The windowed lists: a StackedList card, a plain StackedList, a connector Feed, an
+// avatar Feed and a GridList gallery, each bounded and read-only.
+const WINDOWED_LISTS = ["stacked", "stacked-plain", "feed", "feed-avatar", "grid"];
+
 // The scrollport under a fixture section: the one tab stop, except in the Carousel,
-// whose arrows and dots are buttons beside it, and in the windowed table, whose body
-// row group scrolls its rows inside the scroller its columns pan in on a phone.
+// whose arrows and dots are buttons beside it, in the windowed table, whose body row
+// group scrolls its rows inside the scroller its columns pan in on a phone, and in the
+// windowed lists, whose rows scroll in a group (the GridList's group is its root).
 const scrollportOf = (page: Page, name: string) =>
   name === "windowed"
     ? page.getByTestId("scroll-windowed").getByRole("rowgroup")
-    : page.getByTestId(`scroll-${name}`).locator(name === "carousel" ? '[tabindex="0"]:not([role="button"])' : '[tabindex="0"]');
+    : name === "grid"
+      ? page.getByTestId("scroll-grid")
+      : WINDOWED_LISTS.includes(name)
+        ? page.getByTestId(`scroll-${name}`).getByRole("group")
+        : page.getByTestId(`scroll-${name}`).locator(name === "carousel" ? '[tabindex="0"]:not([role="button"])' : '[tabindex="0"]');
 
 // The frame around a focused scrollport, and the node that draws its ring. A scroller
 // flush inside a clipping card cannot show its own (the card clips one outside it, and
@@ -24,57 +34,6 @@ const frameOf = (page: Page, name: string, scrollport: Locator) =>
 const ringOf = (page: Page, name: string, scrollport: Locator) =>
   name === "attached" ? page.getByTestId("scroll-attached").locator('[aria-hidden="true"]').last() : frameOf(page, name, scrollport);
 
-const rgb = (hex: string) => {
-  const n = parseInt(hex.slice(1), 16);
-  return `rgb(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255})`;
-};
-// Whether the ring shows along each side of `frame`, read from the pixels: a computed
-// outline proves nothing when a parent clips it or the scrolled content paints over it.
-// The page decodes a screenshot of the frame's edges and looks for ring-coloured pixels
-// along the middle of every side, within 6 px of the frame's edge on either side.
-async function ringShows(page: Page, frame: Locator, color: string) {
-  const box = await frame.boundingBox();
-  if (!box) throw new Error("the frame has no box");
-  const pad = 6;
-  const clip = { x: box.x - pad, y: box.y - pad, width: box.width + pad * 2, height: box.height + pad * 2 };
-  const png = (await page.screenshot({ clip })).toString("base64");
-  return page.evaluate(async ({ png, pad, color, clip }) => {
-    const image = new Image();
-    image.src = `data:image/png;base64,${png}`;
-    await image.decode();
-    const canvas = document.createElement("canvas");
-    canvas.width = image.naturalWidth;
-    canvas.height = image.naturalHeight;
-    const context = canvas.getContext("2d")!;
-    context.drawImage(image, 0, 0);
-    const { data, width, height } = context.getImageData(0, 0, canvas.width, canvas.height);
-    const [r, g, b] = (color.match(/\d+/g) ?? []).map(Number) as [number, number, number];
-    const near = (x: number, y: number) => {
-      const i = (y * width + x) * 4;
-      return Math.abs(data[i]! - r) + Math.abs(data[i + 1]! - g) + Math.abs(data[i + 2]! - b) < 60;
-    };
-    const band = Math.round(pad * 2 * (width / clip.width));
-    // Nine in ten points along the middle three fifths of a side hold a ring pixel.
-    const side = (horizontal: boolean, far: boolean) => {
-      const length = horizontal ? width : height;
-      const depthLimit = horizontal ? height : width;
-      let points = 0;
-      let hits = 0;
-      for (let t = Math.round(length * 0.2); t < Math.round(length * 0.8); t++, points++) {
-        for (let d = 0; d < band; d++) {
-          const depth = far ? depthLimit - 1 - d : d;
-          if (horizontal ? near(t, depth) : near(depth, t)) {
-            hits++;
-            break;
-          }
-        }
-      }
-      return hits >= points * 0.9;
-    };
-    return { top: side(true, false), right: side(false, true), bottom: side(true, true), left: side(false, false) };
-  }, { png, pad, color, clip });
-}
-const ALL_SIDES = { top: true, right: true, bottom: true, left: true };
 
 const outlineOf = (locator: Locator) =>
   locator.evaluate((node) => {
@@ -170,18 +129,67 @@ for (const width of [1280, 390]) {
   }
 }
 
+// A windowed StackedList, Feed or GridList scrolls its rows in a list of its own, so it
+// is a stop while they overflow. Left alone, Chromium and Firefox made a read-only list's
+// scroller an unmanaged stop that drew the browser's ring (inside a card that clipped
+// it) and WebKit skipped it. The card draws the theme's ring for a StackedList or Feed;
+// the GridList's scroller is its root, with no card around it, and draws its own.
+for (const width of [1280, 390]) {
+  for (const scheme of ["light", "dark"] as const) {
+    test(`a windowed list's overflowing rows are one stop its frame rings (${width}, ${scheme})`, async ({ page }, testInfo) => {
+      await gotoDocs(page, "/testing/scroll-focus", { scheme, viewport: { width, height: 900 } });
+      const ring = rgb(colorsFor("blush", scheme).ring);
+      const session = await page.context().newCDPSession(page);
+      for (const name of WINDOWED_LISTS) {
+        const list = page.getByTestId(`scroll-${name}`);
+        const scroller = scrollportOf(page, name);
+        await expect(scroller).toHaveCount(1);
+        await expect(scroller).toHaveAttribute("tabindex", "0");
+        await page.getByTestId(`before-${name}`).focus();
+        await page.keyboard.press("Tab");
+        await expect(scroller).toBeFocused();
+        // Chromium's own node for the stop: a group with no name taken from its rows, so
+        // focusing it does not read every rendered row's text out as its name (a generic
+        // scroller took them all).
+        const { result } = await session.send("Runtime.evaluate", { expression: "document.activeElement" });
+        const { node } = await session.send("DOM.describeNode", { objectId: result.objectId });
+        const { nodes } = await session.send("Accessibility.getPartialAXTree", { backendNodeId: node.backendNodeId, fetchRelatives: false });
+        expect(nodes.map((ax) => ({ role: ax.role?.value, name: ax.name?.value }))).toEqual([{ role: "group", name: "" }]);
+        // The theme's ring, drawn once, on the list's root, and on screen along every side.
+        await expect.poll(() => outlineOf(list)).toEqual({ style: "solid", color: ring });
+        if (name !== "grid") expect(await drawsOutline(scroller)).toBe(false);
+        // Tab scrolls the focused box into view, not the ring outside it, so a list that
+        // lands on the viewport's edge has its ring just past it: center it first.
+        await list.evaluate((node) => node.scrollIntoView({ block: "center" }));
+        await expect.poll(() => ringShows(page, list, ring)).toEqual(ALL_SIDES);
+        await page.keyboard.press("ArrowDown");
+        await expect.poll(() => scroller.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+        const screenshot = testInfo.outputPath(`scroll-${name}-focused.png`);
+        await page.screenshot({ path: screenshot });
+        await testInfo.attach(`scroll-${name}-focused`, { path: screenshot, contentType: "image/png" });
+        await page.keyboard.press("Tab");
+        await expect(page.getByTestId(`after-${name}`)).toBeFocused();
+        await expect.poll(() => drawsOutline(list)).toBe(false);
+      }
+    });
+  }
+}
+
 // A pointer press focuses a scrollport the way :focus-visible leaves unmarked, so no
 // ring appears until a key is pressed on it.
 test("a click into a scrollport draws no ring until a key is pressed", async ({ page }) => {
   await gotoDocs(page, "/testing/scroll-focus", { viewport: { width: 390, height: 900 } });
-  for (const name of ["plain", "table", "windowed", "carousel"]) {
+  for (const name of ["plain", "table", "windowed", ...WINDOWED_LISTS, "carousel"]) {
     const scrollport = scrollportOf(page, name);
     await scrollport.click();
     await expect(scrollport).toBeFocused();
     expect(await drawsOutline(ringOf(page, name, scrollport))).toBe(false);
     expect(await drawsOutline(scrollport)).toBe(false);
     await page.keyboard.press("Shift");
-    await expect.poll(async () => (await outlineOf(ringOf(page, name, scrollport))).style).toBe("solid");
+    // A frame that is its own scroller (the GridList) rests on the reset's zero-width solid
+    // outline, so the ring appearing is its width, not its style.
+    await expect.poll(() => drawsOutline(ringOf(page, name, scrollport))).toBe(true);
+    expect((await outlineOf(ringOf(page, name, scrollport))).style).toBe("solid");
   }
 });
 

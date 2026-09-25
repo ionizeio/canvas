@@ -2,6 +2,14 @@
 
 Vertical lists with avatar, two-line items, and trailing metadata. Used for contacts, activity feeds, and data previews. Rows can carry a per-item `trailing` slot for an inline control, and `reorderable` adds a leading drag grip per row (keyboard- and screen-reader-operable) that reports each drop through `onReorder` while the order stays controlled by your `items` array.
 
+A `virtualized` list with a bounded height scrolls its rows in a list of its
+own. On the web, while those rows overflow, that list is a keyboard tab stop
+(after the header's action, and before the rows' own buttons when they have
+any), the keyboard can scroll it, and while it has keyboard focus the list's
+card, or a plain list's frame, draws the theme's focus ring. The stop is an
+unnamed group, so a screen reader does not read every row it renders out as
+its name.
+
 ## Usage
 
 ```tsx

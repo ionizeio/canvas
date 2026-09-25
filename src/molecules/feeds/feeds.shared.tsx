@@ -7,6 +7,7 @@ import {
   useTheme,
   useFillStyle,
   devWarn,
+  FOCUS_RESET,
   type ColorTokens,
   type LayoutStyle,
   type StyleProp,
@@ -14,6 +15,8 @@ import {
   type TextStyle,
   GlassSurface,
 } from "../../style/index.js";
+import { useScrollFocus } from "../../style/use-scroll-focus.js";
+import { useFocusFrame } from "../../style/focus-frame.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { type AvatarProps } from "../../atoms/avatar/avatar.shared.js";
 import { Icon, type IconName } from "../../atoms/icon/icon.js";
@@ -100,7 +103,9 @@ export interface FeedProps {
    * Render the rows through a windowed `FlatList` instead of mounting every row up
    * front, for large lists. Give the list a bounded height (via `style`, e.g.
    * `{ maxHeight: 400 }`) so it can scroll; without one it warns and renders eagerly
-   * anyway. Default (omitted) mounts all rows, unchanged.
+   * anyway. Default (omitted) mounts all rows, unchanged. On the web, while the rows
+   * overflow, the windowed list is a keyboard tab stop the keyboard can scroll, and
+   * the feed's card draws the focus ring while it has keyboard focus.
    */
   virtualized?: boolean;
   /** E2E hook forwarded to the root element. */
@@ -185,6 +190,20 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
     const lead = leadOf(props);
     const compact = !!props.compact;
     const lastIndex = items.length - 1;
+    // A windowed feed scrolls its rows on its own, so it is a keyboard stop while they
+    // overflow, whatever the rows hold (DataTable's windowed body is the precedent).
+    // Left alone, Chromium and Firefox made a read-only feed's scroller a stop anyway
+    // (a scroller with nothing focusable inside) and drew their own ring on it, while
+    // WebKit left it out of the tab order. The card draws the ring for it
+    // (src/style/focus-frame.tsx): it clips one drawn around the flush scroller of the
+    // avatar lead, and the rows would paint over one drawn inside either scroller.
+    const bodyFocus = useScrollFocus("vertical");
+    const bodyFrame = useFocusFrame();
+    // The windowed scroller's own props. A group, not a generic node: focused, a
+    // generic scroller took its name from every row it rendered in Chromium, so a
+    // screen reader would read them all out as the stop's name. A group takes no name
+    // from its rows.
+    const bodyProps = { ...bodyFocus, ...bodyFrame.target, role: "group" as const, style: FOCUS_RESET };
 
     // Stable identity when the caller supplies one; the array index is the fallback
     // for static lists only (see FeedItem.id).
@@ -257,6 +276,7 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
       const body =
         virtualized && bounded ? (
           <FlatList
+            {...bodyProps}
             data={items}
             renderItem={({ item, index }) => renderRow(item, index)}
             keyExtractor={keyOf}
@@ -265,7 +285,7 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
         ) : (
           items.map((item, index) => <Fragment key={keyOf(item, index)}>{renderRow(item, index)}</Fragment>)
         );
-      return <GlassSurface layer="content" testID={testID} style={[skin.cardSurface(tokens), fill, style]}>{body}</GlassSurface>;
+      return <GlassSurface layer="content" testID={testID} style={[skin.cardSurface(tokens), fill, style, bodyFrame.ring()]}>{body}</GlassSurface>;
     }
 
     // Connector lead: a bordered node per row with a vertical line linking each
@@ -323,6 +343,7 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
     const body =
       virtualized && bounded ? (
         <FlatList
+          {...bodyProps}
           data={items}
           renderItem={({ item, index }) => renderRow(item, index)}
           keyExtractor={keyOf}
@@ -333,6 +354,6 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
       );
 
     // The feed card is a CONTENT-layer pane under glass (GlassSurface is the plain View in solid mode).
-    return <GlassSurface layer="content" testID={testID} style={[skin.cardSurface(tokens), skin.connectorPad(compact), fill, style]}>{body}</GlassSurface>;
+    return <GlassSurface layer="content" testID={testID} style={[skin.cardSurface(tokens), skin.connectorPad(compact), fill, style, bodyFrame.ring()]}>{body}</GlassSurface>;
   };
 }

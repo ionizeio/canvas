@@ -2,6 +2,13 @@
 
 Vertical activity streams with icons and timestamps. Used for audit logs, change history, and notification lists.
 
+A `virtualized` feed with a bounded height scrolls its events in a list of its
+own. On the web, while those events overflow, that list is a keyboard tab stop
+(before the rows themselves when `onItemPress` makes them buttons), the
+keyboard can scroll it, and while it has keyboard focus the feed's card draws
+the theme's focus ring. The stop is an unnamed group, so a screen reader does
+not read every event it renders out as its name.
+
 ## Usage
 
 ```tsx

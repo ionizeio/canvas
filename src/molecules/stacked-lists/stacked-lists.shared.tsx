@@ -1,7 +1,9 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { Fragment, type ComponentType, type ReactNode } from "react";
 import { FlatList, StyleSheet, type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, RippleClip, cornerRadii, devWarn, type StyleProp, type ViewStyle, type LayoutStyle, GlassSurface, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, devWarn, FOCUS_RESET, type StyleProp, type ViewStyle, type LayoutStyle, GlassSurface, withInnerFill } from "../../style/index.js";
+import { useScrollFocus } from "../../style/use-scroll-focus.js";
+import { useFocusFrame } from "../../style/focus-frame.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
@@ -138,7 +140,9 @@ export interface StackedListProps {
    * `{ maxHeight: 400 }`) so it can scroll; without one it warns and renders eagerly
    * anyway. Default (omitted) mounts all rows, unchanged. Ignored (with a dev
    * warning) when `reorderable` is set: windowing unmounts off-screen rows, which
-   * would leave them undraggable and unmeasurable mid-drag.
+   * would leave them undraggable and unmeasurable mid-drag. On the web, while the
+   * rows overflow, the windowed list is a keyboard tab stop the keyboard can scroll,
+   * and the list's frame draws the focus ring while it has keyboard focus.
    */
   virtualized?: boolean;
   /**
@@ -210,6 +214,15 @@ export function createStackedList(
     const variant = variantOf(props);
     const theme = useMaterialTheme({ static: true });
     const { tokens } = theme;
+    // A windowed list scrolls its rows on its own, so it is a keyboard stop while they
+    // overflow, whatever the rows hold (DataTable's windowed body is the precedent).
+    // Left alone, Chromium and Firefox made a read-only list's scroller a stop anyway
+    // (a scroller with nothing focusable inside) and drew their own ring on it, while
+    // WebKit left it out of the tab order. The list's root draws the ring for it
+    // (src/style/focus-frame.tsx): the card clips one drawn around the scroller, and
+    // the rows would paint over one drawn inside it.
+    const bodyFocus = useScrollFocus("vertical");
+    const bodyFrame = useFocusFrame();
 
     // The Android ripple over the component's own pressable rows / overflow menu;
     // null on iOS/web where pressed opacity carries the feedback instead.
@@ -458,6 +471,13 @@ export function createStackedList(
       </DragDropProvider>
     ) : virtualized && bounded ? (
       <FlatList
+        {...bodyFocus}
+        {...bodyFrame.target}
+        // A group, not a generic node: focused, a generic scroller took its name from
+        // every row it rendered in Chromium, so a screen reader would read them all
+        // out as the stop's name. A group takes no name from its rows.
+        role="group"
+        style={FOCUS_RESET}
         data={items}
         renderItem={({ item, index }) => renderRow(item, index)}
         keyExtractor={keyOf}
@@ -471,12 +491,12 @@ export function createStackedList(
       // A framed list is a CONTENT-layer pane under glass (GlassSurface is the plain
       // View in solid mode); a bare list paints no surface of its own in either mode.
       framed ? (
-        <GlassSurface layer="content" testID={testID} style={[s.outer, skin.cardSurface(tokens), style]}>
+        <GlassSurface layer="content" testID={testID} style={[s.outer, skin.cardSurface(tokens), style, bodyFrame.ring()]}>
           {header}
           {body}
         </GlassSurface>
       ) : (
-        <View testID={testID} style={[s.outer, style]}>
+        <View testID={testID} style={[s.outer, style, bodyFrame.ring()]}>
           {header}
           {body}
         </View>
