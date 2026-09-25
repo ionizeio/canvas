@@ -16,7 +16,10 @@ name: E2E soak (canvas)
 #
 # `ref` replays another commit of this repository with this workflow, to learn whether
 # a failure seen there still happens (a commit older than the probe runs without it;
-# Playwright's own trace and error context still land in the report).
+# Playwright's own trace and error context still land in the report). `trace`, `channel`
+# and `chromium_args` test a hypothesis about the browser: they reach the run through
+# playwright.soak.config.ts, never the configuration every other run uses. Soaks run
+# side by side, so two hypotheses about one commit can be compared at once.
 #
 # Every input reaches the shell through `env`, never through `${{ }}` inside a script,
 # and the spec path is checked before use.
@@ -65,11 +68,17 @@ on:
         options:
           - retain-on-failure
           - 'off'
-
-# Soaks of different commits run side by side; a second soak of the same commit waits.
-concurrency:
-  group: e2e-soak-${{ inputs.ref || github.sha }}
-  cancel-in-progress: false
+      channel:
+        description: 'Chromium build: the headless shell Playwright launches by default, or full Chromium in new headless mode'
+        default: headless-shell
+        type: choice
+        options:
+          - headless-shell
+          - chromium
+      chromium_args:
+        description: 'Extra Chromium switches for the Chromium projects, space separated (playwright.soak.config.ts)'
+        default: ''
+        type: string
 
 permissions:
   contents: read
@@ -188,12 +197,14 @@ jobs:
           PASSES: ${{ inputs.passes }}
           PROJECT: ${{ inputs.project }}
           TRACE: ${{ inputs.trace }}
+          E2E_SOAK_CHANNEL: ${{ inputs.channel == 'chromium' && 'chromium' || '' }}
+          E2E_SOAK_CHROMIUM_ARGS: ${{ inputs.chromium_args }}
           # Every material test finishes in under 25 s on this runner; one still
           # running at 40 s is stuck.
           E2E_HANG_PROBE_MS: '40000'
           DEBUG: pw:browser
         run: |
-          set -- "$SPEC" --project="$PROJECT" --repeat-each="$PASSES" --trace="$TRACE" --reporter=list,html
+          set -- "$SPEC" -c playwright.soak.config.ts --project="$PROJECT" --repeat-each="$PASSES" --trace="$TRACE" --reporter=list,html
           if [ -n "$GREP" ]; then set -- "$@" --grep "$GREP"; fi
           bunx playwright test "$@"
 
