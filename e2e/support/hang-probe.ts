@@ -19,10 +19,11 @@
  *     that fires with or without a frame. An isolated world keeps the real one;
  *   - a Chromium trace of the compositor (cc, viz, gpu, the main-thread scheduler).
  *
- * Why it exists: the glass material captures hang in Chromium's Page.captureScreenshot
- * on the CI runner only, a few runs in thirty, with the page's renderer no longer
- * answering the DevTools protocol, and a Playwright trace shows the call that never
- * returned but not the renderer behind it.
+ * Why it exists: the glass material captures hung in Chromium's Page.captureScreenshot
+ * on the CI runner only, a few runs in thirty, and a Playwright trace shows the call
+ * that never returned but not the renderer behind it. This probe showed every process
+ * asleep with no frames, which led to the cause and the fix (CHROMIUM_ARGS in
+ * playwright.config.ts).
  *
  * Chromium only. Every step is bounded and records its own outcome, the passive
  * samples come first, and nothing waits on the stuck renderer to let go of a session,

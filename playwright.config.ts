@@ -25,7 +25,7 @@
  * the test or the app, and hiding it behind a retry is the shortcut this repo does
  * not take. Every wait in the suite is a wait on observable state, never a sleep.
  */
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices, type PlaywrightTestOptions, type PlaywrightWorkerOptions, type Project } from "@playwright/test";
 
 const CI = !!process.env.CI;
 
@@ -43,6 +43,38 @@ const basePath = process.env.E2E_BASE_PATH ?? "";
 // nothing. E2E_FORCE_VISUAL is the escape hatch for a run inside the Playwright
 // container image.
 const compareSnapshots = process.platform === "linux" || !!process.env.E2E_FORCE_VISUAL;
+
+// Chromium draws unthrottled in every Chromium project. By default a renderer holds its
+// next draw until the display compositor acknowledges the frame before it, and on the
+// CI runner, where the software compositor takes about a second per frame of the glass
+// pages' backdrop blurs, that acknowledgement sometimes never came: the renderer, its
+// compositor and the GPU process's compositor all went to sleep, no frame was drawn
+// again, and whatever step needed one next (a screenshot, a wait on real frames) hung
+// until the test timed out, in 3 of about 26 Deploy runs. The E2E soak
+// (.github/workflows/e2e-soak.yml, with e2e/support/hang-probe.ts) caught it in the
+// act and measured it: 8 hangs in 128 passes of the material spec with Chromium's
+// default pacing, 0 in 128 with this switch (0 in 64 with it alone), the Linux
+// screenshot baselines unchanged. The switch lifts that wait in the renderer's
+// scheduler and the display's (IsDrawThrottled and the display scheduler in Chromium
+// 148, which also drops vsync); nothing here depends on frame pacing, since the
+// screenshots disable animations and the page clock drives the page's own timers.
+// It stays until a Chromium release is soaked clean without it.
+const CHROMIUM_ARGS = ["--disable-frame-rate-limit"];
+
+type SuiteProject = Project<PlaywrightTestOptions, PlaywrightWorkerOptions>;
+
+/** Add CHROMIUM_ARGS to every project that runs Chromium (the default browser here). */
+function withChromiumArgs(projects: SuiteProject[]): SuiteProject[] {
+  return projects.map((project) => (project.use?.browserName ?? "chromium") === "chromium"
+    ? {
+        ...project,
+        use: {
+          ...project.use,
+          launchOptions: { ...project.use?.launchOptions, args: [...(project.use?.launchOptions?.args ?? []), ...CHROMIUM_ARGS] },
+        },
+      }
+    : project);
+}
 
 export default defineConfig({
   testDir: "./e2e",
@@ -90,7 +122,7 @@ export default defineConfig({
     video: "off",
   },
 
-  projects: [
+  projects: withChromiumArgs([
     { name: "smoke", testDir: "./e2e/smoke" },
     { name: "responsive", testDir: "./e2e/responsive" },
     { name: "behavior", testDir: "./e2e/behavior" },
@@ -119,7 +151,7 @@ export default defineConfig({
       ignoreSnapshots: !compareSnapshots,
       snapshotPathTemplate: "{testDir}/__screenshots__/{arg}{ext}",
     },
-  ],
+  ]),
 
   webServer: process.env.E2E_BASE_URL
     ? undefined

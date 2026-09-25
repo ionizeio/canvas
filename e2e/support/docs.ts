@@ -232,31 +232,6 @@ export async function animationFrames(page: Page, count: number, timeoutMs = 15_
 }
 
 /**
- * Let the frames already started go through Chromium's frame pipeline before a capture
- * starts one of its own.
- *
- * A capture that starts while a resize, a scroll or an opened overlay is still in that
- * pipeline can wedge it for good. On the CI runner, where the software compositor takes
- * about a second per frame of the glass pages' backdrop blurs, the material captures hung
- * in Page.captureScreenshot in 3 of about 26 Deploy runs and about 1 soak pass in 26, 8
- * times in 9 right after fitElementForScreenshot resized the viewport, with the renderer,
- * its compositor and the GPU process's compositor all asleep (e2e/support/hang-probe.ts,
- * the E2E soak workflow).
- *
- * Four real frames is what the renderer's scheduler needs to pass the change along:
- * main-frame-before-activation is off for renderers, so a main frame cannot start while
- * the previous commit waits to activate, and a commit activates only once the tree before
- * it was drawn, a draw that itself waits for the display compositor to accept the frame
- * before it. By the fourth frame the change committed in the first has been activated and
- * the frames before it handed to the display compositor. It is not proof that the display
- * has drawn the change (frames with nothing to commit move faster), so the E2E soak, not
- * this reasoning, is what judges it.
- */
-export async function drainFramePipeline(page: Page): Promise<void> {
-  await animationFrames(page, 4);
-}
-
-/**
  * The box of a locator, once it has stopped moving. Two animation frames pass
  * before the first sample: react-native-web reports a layout through a resize
  * observer on the frame after the commit, and a measured component re-renders from
@@ -279,9 +254,6 @@ export async function settledBox(locator: Locator): Promise<{ width: number; hei
  * responsive layout change. Grow only the viewport height from the measured element,
  * leaving enough room above and below for the docs' floating navigation bar.
  * Document-root Modal screenshots keep their configured viewport instead.
- *
- * It returns once the resize and the scroll have gone through the frame pipeline
- * (drainFramePipeline): a capture started earlier could wedge it on the CI runner.
  */
 export async function fitElementForScreenshot(page: Page, frame: Locator): Promise<void> {
   const box = await settledBox(frame);
@@ -315,5 +287,4 @@ export async function fitElementForScreenshot(page: Page, frame: Locator): Promi
   const fitted = await settledBox(frame);
   expect(fitted.width, "the element exceeds the screenshot viewport width").toBeLessThanOrEqual(viewport.width);
   expect(fitted.height, "the element exceeds the screenshot viewport height").toBeLessThanOrEqual(height);
-  await drainFramePipeline(page);
 }

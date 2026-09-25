@@ -7,7 +7,8 @@ name: E2E soak (canvas)
 # in ten is a defect to find, not to rerun. Some of those appear only on this runner,
 # in a browser that has lived through a whole shard: the glass material captures that
 # hung in Chromium's Page.captureScreenshot a few Deploy runs in thirty (2026-09)
-# passed a hundred times in a row when replayed alone. So this replays a spec in
+# passed a hundred times in a row when replayed alone, and this soak is what found and
+# proved their fix (CHROMIUM_ARGS in playwright.config.ts). So this replays a spec in
 # order, several passes per lane (each pass is the whole selection in the order a
 # shard runs it, in fresh workers), on parallel lanes, against a fresh export, with
 # the hang probe armed (e2e/support/hang-probe.ts): a test still running after

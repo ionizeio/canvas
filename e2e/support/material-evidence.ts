@@ -1,5 +1,5 @@
 import { expect, type Locator, type Page, type TestInfo } from "@playwright/test";
-import { drainFramePipeline, fitElementForScreenshot, type Surface } from "./docs";
+import { fitElementForScreenshot, type Surface } from "./docs";
 
 /**
  * Actual painted browser effects, not React wrapper names or an iOS skin label.
@@ -85,10 +85,7 @@ export async function attachMaterialEvidence(
   metadata: Record<string, unknown>,
   atDocumentRoot = false,
 ) {
-  // Either way the capture starts only once the page's own frames have gone through:
-  // fitting drains the pipeline itself, and a page capture follows an overlay just opened.
-  if (atDocumentRoot) await drainFramePipeline(page);
-  else await fitElementForScreenshot(page, frame);
+  if (!atDocumentRoot) await fitElementForScreenshot(page, frame);
   const png = atDocumentRoot ? await page.screenshot() : await frame.screenshot();
   await testInfo.attach(`${name}.png`, { body: png, contentType: "image/png" });
   await testInfo.attach(`${name}.json`, {
