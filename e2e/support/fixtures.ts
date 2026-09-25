@@ -14,8 +14,9 @@
  *             the published version EVERY time a screen gains focus, so leaving it
  *             live would make every test depend on the network and on npm's latency.
  *   hangProbe Off unless E2E_HANG_PROBE_MS is set (the soak workflow sets it). A
- *             Chromium test still running that long after it started gets the
- *             renderer's state and a compositor trace attached; see hang-probe.ts.
+ *             test still running that long after it started gets the browser's
+ *             state attached (in Chromium the renderer's, with a compositor trace);
+ *             see hang-probe.ts.
  *
  * All are `auto`, so a spec gets them without naming them.
  */
@@ -136,10 +137,10 @@ export const test = base.extend<{ problems: PageProblems; registry: void; hangPr
   hangProbe: [
     async ({ page, browserName }, use, testInfo) => {
       const delay = hangProbeDelay();
-      if (delay === null || browserName !== "chromium") return use();
+      if (delay === null) return use();
       let probe: Promise<void> | undefined;
       const timer = setTimeout(() => {
-        probe = probeHang(page, testInfo, delay);
+        probe = probeHang(page, testInfo, delay, browserName);
       }, delay);
       // `use` settles when the test does, passed, failed or timed out alike.
       await use();

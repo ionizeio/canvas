@@ -25,9 +25,16 @@
  * asleep with no frames, which led to the cause and the fix (CHROMIUM_ARGS in
  * playwright.config.ts).
  *
- * Chromium only. Every step is bounded and records its own outcome, the passive
- * samples come first, and nothing waits on the stuck renderer to let go of a session,
- * so a probe of a wedged browser still finishes and attaches what it got.
+ * Firefox and WebKit have no DevTools protocol here, so they get what Playwright itself
+ * can ask: on Linux what each of their processes' threads did across the same window,
+ * whether a NEW evaluation in the page's own world answers and whether one in
+ * Playwright's utility world does, the document's loading and font state, and whether a
+ * screenshot comes back. A stuck call beside a page that still answers a new one was
+ * lost on its way, not held up by the page.
+ *
+ * Every step is bounded and records its own outcome, the passive samples come first,
+ * and nothing waits on the stuck renderer to let go of a session, so a probe of a
+ * wedged browser still finishes and attaches what it got.
  */
 import fs from "node:fs";
 import type { CDPSession, Page, TestInfo } from "@playwright/test";
@@ -127,6 +134,63 @@ function threadActivity(before: Map<number, ThreadSample[]>, after: Map<number, 
   });
 }
 
+/**
+ * The Firefox and WebKit processes on this machine, by the kernel's (15 character)
+ * command names. A soak lane runs a browser per worker, so these are all of them, not
+ * just the stuck test's: a content process spinning or blocked still stands out.
+ */
+const ENGINE_PROCESS = /^(firefox|GeckoMain|Isolated Web Co|Web Content|WebKitWebProces|WebKitNetworkPr)/;
+
+function engineProcesses(): { pid: number; name: string }[] {
+  return fs.readdirSync("/proc").filter((entry) => /^\d+$/.test(entry)).flatMap((entry) => {
+    try {
+      const name = fs.readFileSync(`/proc/${entry}/comm`, "utf8").trim();
+      return ENGINE_PROCESS.test(name) ? [{ pid: Number(entry), name }] : [];
+    } catch {
+      return [];
+    }
+  });
+}
+
+/** What Playwright can ask a stuck Firefox or WebKit page without a DevTools protocol. */
+async function probeOtherEngine(page: Page): Promise<Record<string, unknown>> {
+  const findings: Record<string, unknown> = {};
+  // Passive first, as for Chromium.
+  if (process.platform === "linux") {
+    const processes = engineProcesses();
+    const before = new Map(processes.map(({ pid }) => [pid, readThreads(pid)]));
+    await sleep(WINDOW_MS);
+    const after = new Map(processes.map(({ pid }) => [pid, readThreads(pid)]));
+    const names = new Map(processes.map(({ pid, name }) => [pid, name]));
+    findings.threads = threadActivity(before, after).map(({ pid, threads }) => ({
+      pid,
+      process: names.get(pid),
+      busiest: threads.slice(0, 8),
+    }));
+  }
+  findings.utilityWorld = await bounded(async () => {
+    const hydrated = await page.locator("html").getAttribute("data-hydrated", { timeout: STEP_MS });
+    return `answered: data-hydrated ${hydrated === null ? "absent" : "present"}`;
+  }, STEP_MS * 2, "utility-world query");
+  findings.mainWorld = await bounded(() => page.evaluate(() => ({
+    readyState: document.readyState,
+    visibilityState: document.visibilityState,
+    hasFocus: document.hasFocus(),
+    fontsStatus: document.fonts.status,
+    fontFaces: document.fonts.size,
+    fontFaceRules: Array.from(document.styleSheets).reduce((count, sheet) => {
+      try {
+        return count + Array.from(sheet.cssRules).filter((rule) => rule instanceof CSSFontFaceRule).length;
+      } catch {
+        return count;
+      }
+    }, 0),
+    msSinceNavigation: Math.round(performance.now()),
+  })), STEP_MS, "main-world evaluation");
+  findings.screenshot = await bounded(async () => `${(await page.screenshot({ timeout: STEP_MS })).length} bytes`, STEP_MS * 2, "screenshot");
+  return findings;
+}
+
 /** The JavaScript stack of the page's main thread, if it is running script. */
 async function scriptStack(session: CDPSession) {
   const enabled = await bounded(() => session.send("Debugger.enable"), STEP_MS, "Debugger.enable");
@@ -202,7 +266,12 @@ async function traceCompositor(browserSession: CDPSession): Promise<string> {
  * or does not answer is recorded as such, since a renderer too wedged to answer is a
  * finding too.
  */
-export async function probeHang(page: Page, testInfo: TestInfo, afterMs: number): Promise<void> {
+export async function probeHang(page: Page, testInfo: TestInfo, afterMs: number, browserName: string): Promise<void> {
+  if (browserName !== "chromium") {
+    const findings = { probedAfterMs: afterMs, browserName, ...(await probeOtherEngine(page)) };
+    await testInfo.attach("hang-probe.json", { body: JSON.stringify(findings, null, 2), contentType: "application/json" });
+    return;
+  }
   const findings: Record<string, unknown> = { probedAfterMs: afterMs };
   let trace = "";
 

@@ -12,8 +12,14 @@ name: E2E soak (canvas)
 # order, several passes per lane (each pass is the whole selection in the order a
 # shard runs it, in fresh workers), on parallel lanes, against a fresh export, with
 # the hang probe armed (e2e/support/hang-probe.ts): a test still running after
-# E2E_HANG_PROBE_MS gets the renderer's state and a compositor trace attached to its
-# report, and DEBUG=pw:browser puts each browser's own log beside the running test.
+# `hang_probe_ms` gets the browser's state attached to its report (a Chromium renderer's
+# with a compositor trace; for Firefox and WebKit whether the page still answers a new
+# evaluation), and DEBUG=pw:browser puts each browser's own log beside the running test.
+# Every material test finishes in under 25 s on this runner, so the default 40 s probes
+# only a stuck one; a spec whose stuck step gives up sooner (gotoDocs waits 20 s for the
+# page to paint) needs a lower value, or the test fails before the probe runs. `project`
+# takes any project in playwright.config.ts, the cross-engine journeys included, and the
+# lane installs only the browser that project runs.
 #
 # `ref` replays another commit of this repository with this workflow, to learn whether
 # a failure seen there still happens (a commit older than the probe runs without it;
@@ -64,6 +70,15 @@ on:
           - responsive
           - behavior
           - a11y
+          - journeys-chromium
+          - journeys-firefox
+          - journeys-webkit
+          - touch-chromium
+          - touch-webkit
+      hang_probe_ms:
+        description: 'Probe a test still running this many milliseconds after it started (e2e/support/hang-probe.ts); set it below the step that hangs times out'
+        default: 40000
+        type: number
       trace:
         description: 'Playwright tracing (the suite keeps traces of failures; off also stops the screencast a trace records)'
         default: retain-on-failure
@@ -207,8 +222,19 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
 
-      - name: Install Chromium
-        run: bunx playwright install --with-deps chromium
+      # Only the engine the project runs: the journeys and the touch projects run on
+      # Firefox and WebKit too (playwright.config.ts), everything else on Chromium.
+      - name: Install the project's browser
+        env:
+          PROJECT: ${{ inputs.project }}
+        run: |
+          case "$PROJECT" in
+            visual | smoke | responsive | behavior | a11y | journeys-chromium | touch-chromium) browser=chromium ;;
+            journeys-firefox) browser=firefox ;;
+            journeys-webkit | touch-webkit) browser=webkit ;;
+            *) printf '::error::no browser is known for project %q\n' "$PROJECT"; exit 1 ;;
+          esac
+          bunx playwright install --with-deps "$browser"
 
       - name: Take the export
         uses: actions/download-artifact@v8
@@ -226,11 +252,12 @@ jobs:
           E2E_SOAK_CHANNEL: ${{ inputs.channel == 'chromium' && 'chromium' || '' }}
           E2E_SOAK_CHROMIUM_ARGS: ${{ inputs.chromium_args }}
           E2E_SOAK_DEFAULT_PACING: ${{ inputs.pacing == 'chromium-default' && '1' || '' }}
-          # Every material test finishes in under 25 s on this runner; one still
-          # running at 40 s is stuck.
-          E2E_HANG_PROBE_MS: '40000'
+          E2E_HANG_PROBE_MS: ${{ inputs.hang_probe_ms }}
           DEBUG: pw:browser
         run: |
+          if ! [[ "$E2E_HANG_PROBE_MS" =~ ^[1-9][0-9]*$ ]]; then
+            printf '::error::hang_probe_ms must be a whole number of milliseconds, not %q\n' "$E2E_HANG_PROBE_MS"; exit 1
+          fi
           set -- "$SPEC" -c playwright.soak.config.ts --project="$PROJECT" --repeat-each="$PASSES" --trace="$TRACE" --reporter=list,html
           if [ -n "$GREP" ]; then set -- "$@" --grep "$GREP"; fi
           bunx playwright test "$@"
