@@ -1,5 +1,11 @@
 # @nannier/canvas
 
+## 3.2.2
+
+### Patch Changes
+
+- 5da4825: The e2e suite's captures now start only once the page's own frames have gone through Chromium's frame pipeline. `fitElementForScreenshot` resized and scrolled the page and handed it straight to `Page.captureScreenshot`; on the CI runner, where the software compositor takes about a second per frame of the glass pages' backdrop blurs, the capture sometimes began while that frame was in flight and wedged the pipeline, so a material test hung until its timeout (3 of about 26 Deploy runs; about 1 pass in 26 of the material spec in the E2E soak). The new `drainFramePipeline` waits four real animation frames (from an isolated world, because `page.clock` fakes the page's own), runs at the end of every fit and before every page-level material capture, and fails by name when no frames come; `settledBox` and the overlay-state resize audit wait real frames too. Window-layer overlay panels are counted outside the page's scroller, so a Do/Don't card pinned open on the page, which appears once its placement is measured, can no longer change the specs' before and after counts. Repository tests only; nothing in the package changes.
+
 ## 3.2.1
 
 ### Patch Changes
