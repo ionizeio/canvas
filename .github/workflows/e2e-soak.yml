@@ -291,8 +291,9 @@ jobs:
       # A crashed browser leaves nothing but the kernel's core dump (Playwright's Firefox
       # has no crash reporter of its own), and only where kernel.core_pattern names a
       # writable place and the core size limit allows it, which Replay lifts for its own
-      # processes. The self-test crashes a browser of the project's engine first, so a lane
-      # whose capture cannot work fails here instead of after an hour of replay.
+      # processes. The self-test crashes a browser of the project's engine first and puts
+      # its core through everything "Keep the crashes" does, so a lane whose capture
+      # cannot work fails here instead of after an hour of replay.
       - name: Arm core dumps
         if: inputs.crash_dumps == 'on'
         run: |
@@ -302,7 +303,7 @@ jobs:
           sudo apt-get update -qq
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends gdb
           ulimit -c unlimited
-          node scripts/soak-crash-dumps.mjs self-test "$SOAK_BROWSER" "$RUNNER_TEMP/cores" crash-reports/self-test.txt
+          node scripts/soak-crash-dumps.mjs self-test "$SOAK_BROWSER" "$RUNNER_TEMP/cores" crash-reports
 
       - name: Replay
         env:
@@ -355,10 +356,8 @@ jobs:
       # module and offset of the instruction (a content process, say; Firefox's parent
       # catches the fault and re-raises it, which the kernel does not log). Reading the
       # log changes nothing, so every lane keeps those lines. With crash_dumps on, each
-      # core the replay left gets its gdb report and is kept, compressed, beside it, with
-      # the Playwright browser build that wrote it: a core reads only against its exact
-      # binaries, and Playwright's are stripped, so naming a frame later takes these
-      # files and the report's module offsets.
+      # core the replay left is kept, compressed, with its gdb report and the Playwright
+      # browser build that wrote it (scripts/soak-crash-dumps.mjs `keep`).
       - name: Keep the crashes
         if: always()
         env:
@@ -372,23 +371,7 @@ jobs:
             echo "The kernel logged no fault on this lane."
           fi
           [ "$CRASH_DUMPS" = on ] || exit 0
-          shopt -s nullglob
-          cores=("$RUNNER_TEMP"/cores/core.*)
-          echo "${#cores[@]} core dumps from the replay"
-          # The core first, so a report that fails loses nothing, and every core is kept
-          # before the step fails for one.
-          status=0
-          for core in "${cores[@]}"; do
-            # A thread name may carry spaces or other characters an artifact path refuses.
-            name=$(basename "$core" | tr -c 'A-Za-z0-9._\n-' '_')
-            zstd -q -T0 "$core" -o "crash-reports/$name.zst"
-            node scripts/soak-crash-dumps.mjs report "$core" "crash-reports/$name.txt" || status=1
-          done
-          builds="$HOME/.cache/ms-playwright"
-          for core in "${cores[@]}"; do file -b "$core"; done \
-            | sed -n "s|.*execfn: '$builds/\([^/']*\)/.*|\1|p" | sort -u \
-            | while read -r build; do tar --zstd -cf "crash-reports/$build.tar.zst" -C "$builds" "$build"; done
-          exit "$status"
+          node scripts/soak-crash-dumps.mjs keep "$RUNNER_TEMP/cores" crash-reports
 
       - name: Upload the lane's report
         if: always()

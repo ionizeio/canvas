@@ -7,22 +7,33 @@
 // points kernel.core_pattern at a directory of the lane's and lifts the core size limit
 // for the replay, and this script does the rest.
 //
-//   self-test <browser> <cores> <report>
+//   self-test <browser> <cores> <out>
 //                               Launches the soak's build of <browser> (chromium,
-//                               firefox or webkit), crashes it with SIGSEGV and fails
-//                               unless its core lands in <cores> and gdb reads it, so a
-//                               lane never replays for an hour with a capture that cannot
-//                               work. The core's report goes to <report> (it also shows
-//                               whether the build's frames can be named) and the core is
-//                               deleted.
+//                               firefox or webkit), crashes its browser process with
+//                               SIGSEGV, and fails unless that process's core lands in
+//                               <cores> and goes through everything `keep` does below
+//                               (gdb reading the signal back, the compressed core, the
+//                               build archive holding the executable), so a lane never
+//                               replays for an hour with a capture that cannot work. The
+//                               core's report is kept as <out>/self-test.txt (it also
+//                               shows whether the build's frames can be named); the core
+//                               and the rest are deleted.
 //   report <core> <report>      Writes what a core says: the fault (the signal, the
-//                               address and the instruction), Mozilla's crash reason when
-//                               MOZ_CRASH or a release assertion set one, the registers,
-//                               the crashing thread's stack and every other thread's,
-//                               each frame as module+offset (the form a symbol file or
-//                               the kernel's segfault line uses), and the build IDs and
-//                               symbol tables of the modules involved. gdb's whole
-//                               output is kept beside it as <report>.gdb.
+//                               address, the trap and the instruction), Mozilla's crash
+//                               reason when MOZ_CRASH or a release assertion set one, the
+//                               registers, the crashing thread's stack and every other
+//                               thread's, each frame as module+offset from the module's
+//                               load base (the form symbol files use; the kernel's
+//                               segfault line gives the offset in the file instead), and
+//                               the build IDs and symbol tables of the modules involved.
+//                               gdb's whole output is kept beside it as <report>.gdb.
+//   keep <cores> <out>          For every core in <cores>: keeps it compressed in <out>
+//                               with its report, then keeps once each Playwright browser
+//                               build a core came from (a core reads only against its
+//                               exact binaries, and Playwright's are stripped, so naming
+//                               a frame later takes these files and the report's module
+//                               offsets). A failure fails the command only after every
+//                               core has had its turn.
 //
 // Firefox's parent process catches SIGSEGV itself: a handler in libxul takes the fault
 // and re-raises it with raise(), so the signal the core records is that re-raise, sent
@@ -31,20 +42,22 @@
 // called>" in the stack), which the report reads when the crashing thread has one.
 import { spawnSync } from "node:child_process";
 import * as fs from "node:fs";
+import * as os from "node:os";
 import * as path from "node:path";
 import { pathToFileURL } from "node:url";
 
 const SIGNALS = { 4: "SIGILL", 5: "SIGTRAP", 6: "SIGABRT", 7: "SIGBUS", 8: "SIGFPE", 11: "SIGSEGV" };
-// si_code of a fault. A general protection fault reports SI_KERNEL with a zero address:
-// the pointer was non-canonical (mozjemalloc's 0xe5e5... poison, for one), and only the
-// registers hold it.
+// si_code. The kernel reports SI_KERNEL with a zero address for a general protection
+// fault (a non-canonical pointer such as mozjemalloc's 0xe5e5... poison, which only the
+// registers hold) and when it could not push a handler's frame at all (a stack overflow
+// with no alternate stack), in which case the stack has no signal frame.
 const SIGNAL_CODES = {
   [-6]: "SI_TKILL (sent by tgkill or raise)",
   [-1]: "SI_QUEUE (sent by sigqueue)",
   0: "SI_USER (sent by kill)",
   1: "SEGV_MAPERR (address not mapped)",
   2: "SEGV_ACCERR (no permission for the access)",
-  128: "SI_KERNEL (general protection fault; the address is in a register)",
+  128: "SI_KERNEL (a general protection fault, or a signal no handler frame could be pushed for)",
 };
 
 /** gdb commands, each under its own marker so its output can be found again. */
@@ -69,14 +82,16 @@ const SECTIONS = [
  * kernel pushed for it (struct rt_sigframe: the return address, then struct ucontext
  * of 304 bytes, then siginfo_t). In the "<signal handler called>" frame gdb's $sp is
  * the ucontext (the return address already popped); the machine context starts 40
- * bytes in, and its cr2 (the address the CPU faulted on) 176 bytes after that. The
- * frame after it is the code the signal interrupted, with its registers restored.
+ * bytes in, with the trap's error code and number 152 and 160 bytes into it and cr2
+ * (the address of a page fault) at 176. The frame after it is the code the signal
+ * interrupted, with its registers restored.
  */
 const caughtSections = (frame) => [
   ["handlerFrame", `frame ${frame}`],
   ["caughtHead", "x/4dw $sp + 304"],
   ["caughtField", "x/gx $sp + 320"],
-  ["caughtCr2", "x/gx $sp + 216"],
+  // err, trapno, oldmask, cr2
+  ["caughtTrap", "x/4gx $sp + 192"],
   ["interruptedFrame", `frame ${frame + 1}`],
   ["interruptedInstruction", "x/3i $pc"],
   ["interruptedRegisters", "info registers"],
@@ -140,16 +155,30 @@ export function printed(text) {
   return match ? match[1].trim() : null;
 }
 
-/** The values of gdb's `x` answer (`0x7ffc...:\t11\t0\t...`), or [] for an error. */
+/**
+ * The values of gdb's `x` answer, in order across its lines (`0x7ffc...:\t11\t0\t...`;
+ * giant words come two to a line), or [] for an error.
+ */
 export function examined(text) {
-  const match = /^0x[0-9a-f]+(?: <[^>]*>)?:\s+(.*)$/m.exec(text ?? "");
-  return match ? match[1].trim().split(/\s+/) : [];
+  return [...(text ?? "").matchAll(/^0x[0-9a-f]+(?: <[^>]*>)?:\s+(.*)$/gm)].flatMap((match) => match[1].trim().split(/\s+/));
 }
 
 /** The number of the outermost "<signal handler called>" frame in a stack, or null. */
 export function handlerFrame(stack) {
   const frames = [...(stack ?? "").matchAll(/^#(\d+)\s+<signal handler called>/gm)].map((match) => Number(match[1]));
   return frames.length ? Math.max(...frames) : null;
+}
+
+/**
+ * The trap behind a fault, from the saved error code, trap number and cr2. The kernel
+ * updates cr2 only for a page fault (trap 14), whose error code says what the access was.
+ */
+export function describeTrap(err, trapno, cr2) {
+  const TRAPS = { 0: "divide error", 6: "invalid opcode", 13: "general protection fault", 14: "page fault", 17: "alignment check" };
+  const name = `trap ${trapno} (${TRAPS[trapno] ?? "unnamed"}), error code ${err}`;
+  if (trapno !== 14) return name;
+  const access = err & 16 ? "an instruction fetch" : err & 2 ? "a write" : "a read";
+  return `${name}: ${access} ${err & 1 ? "denied on a present page" : "of an unmapped page"} at ${cr2}, in ${err & 4 ? "user" : "kernel"} mode`;
 }
 
 /**
@@ -163,12 +192,27 @@ export function describeSignal(signal, code, field) {
   return code > 0 ? `${what}, fault address ${field}` : `${what}, from pid ${Number(BigInt(field) & 0xffffffffn)}`;
 }
 
-/** The executable a core came from, as file(1) reads it from the core's notes. */
+/** The Playwright browser build directory (under `browsers`) an executable is in, or null. */
+export function playwrightBuild(executable, browsers) {
+  const relative = path.relative(browsers, executable);
+  return relative.startsWith("..") || path.isAbsolute(relative) || !relative.includes(path.sep) ? null : relative.split(path.sep)[0];
+}
+
+/** The executable's path in gdb's `info auxv` (its AT_EXECFN entry), or null. */
+export function execfnOf(auxv) {
+  return /^\d+\s+AT_EXECFN\s.*"([^"]+)"\s*$/m.exec(auxv ?? "")?.[1] ?? null;
+}
+
+/**
+ * The executable a core came from, from the auxiliary vector the core keeps. file(1)
+ * also prints it, but gives up on a core of more than 2048 program headers (one per
+ * memory region), which a browser that lived through a shard can exceed.
+ */
 function executableOf(core) {
-  const described = run("file", ["-b", core]);
-  const match = /execfn: '([^']+)'/.exec(described);
-  if (!match) throw new Error(`file(1) names no executable for ${core}: ${described.trim()}`);
-  return match[1];
+  const auxv = run("gdb", ["-nx", "-batch", "-ex", "set debuginfod enabled off", "-ex", "info auxv", "-c", core]);
+  const executable = execfnOf(auxv);
+  if (!executable) throw new Error(`gdb reads no AT_EXECFN from ${core}: ${auxv.trim().slice(-400)}`);
+  return executable;
 }
 
 /** A module's GNU build ID and whether it still has a symbol table or debug info. */
@@ -206,6 +250,10 @@ export function report(core, destination) {
   const died = { signal: Number(printed(sections.signal)), code: Number(printed(sections.code)), field: printed(sections.field) };
   const [caughtSignal, , caughtCode] = examined(caught.caughtHead).map(Number);
   const fault = handler === null ? died : { signal: caughtSignal, code: caughtCode, field: examined(caught.caughtField)[0] ?? null };
+  // The saved trap describes this signal only when the kernel raised it for a fault; a
+  // sent signal finds whatever the thread's last trap left there.
+  const [err, trapno, , cr2] = examined(caught.caughtTrap);
+  const trap = handler !== null && fault.code > 0 && trapno !== undefined ? describeTrap(Number(err), Number(trapno), cr2) : null;
   const reason = printed(sections.reason);
   const modules = [executable, ...new Set(mappings.map((mapping) => mapping.file).filter((file) => file.endsWith("/libxul.so")))];
   const crashing = annotateFrames(sections.crashing ?? "", mappings);
@@ -217,7 +265,7 @@ export function report(core, destination) {
     `Died of: ${describeSignal(died.signal, died.code, died.field)}`,
     handler === null
       ? "Caught first by: no handler (the crashing thread's stack has no signal frame)"
-      : `Caught first by the handler above frame #${handler}: ${describeSignal(fault.signal, fault.code, fault.field)}; cr2 ${examined(caught.caughtCr2)[0] ?? "(unread)"}`,
+      : `Caught first by the handler above frame #${handler}: ${describeSignal(fault.signal, fault.code, fault.field)}${trap ? `; ${trap}` : ""}`,
     `Mozilla crash reason: ${reason === null ? "(gMozCrashReason not found)" : reason === "0x0" ? "(none set: not a MOZ_CRASH or release assertion)" : reason}`,
     `Mapped files: ${mappings.length}; crashing thread's frames placed in a module: ${frames}`,
     "",
@@ -243,49 +291,129 @@ export function report(core, destination) {
     sections.mappings ?? "",
   ];
   fs.writeFileSync(destination, `${lines.join("\n")}\n`);
-  return { died, fault, handler, frames, mappings: mappings.length };
+  return { executable, died, fault, handler, frames, mappings: mappings.length };
 }
 
-/** A process's core files in a directory where the pattern is core.<pid>.<thread name>. */
-function coresOf(cores, pid) {
-  return fs.readdirSync(cores).filter((name) => name.startsWith(`core.${pid}.`)).map((name) => path.join(cores, name));
+/** Where Playwright keeps its browser builds on this machine. */
+const BROWSERS = process.env.PLAYWRIGHT_BROWSERS_PATH || path.join(os.homedir(), ".cache", "ms-playwright");
+
+/**
+ * Keep every core in `cores` compressed in `out` with its report, then each Playwright
+ * build a core came from; returns each core's findings by kept name.
+ */
+function keep(cores, out) {
+  const names = fs.existsSync(cores) ? fs.readdirSync(cores).filter((name) => name.startsWith("core.")) : [];
+  console.log(`${names.length} core dumps in ${cores}`);
+  fs.mkdirSync(out, { recursive: true });
+  const kept = new Map();
+  const builds = new Set();
+  const failures = [];
+  for (const name of names) {
+    const core = path.join(cores, name);
+    // A thread name may carry spaces or other characters an artifact path refuses.
+    const base = path.join(out, name.replace(/[^A-Za-z0-9._-]/g, "_"));
+    // The core first, so a report that fails loses nothing.
+    if (spawnSync("zstd", ["-q", "-T0", core, "-o", `${base}.zst`], { stdio: "inherit" }).status !== 0) failures.push(`compressing ${name}`);
+    try {
+      const result = report(core, `${base}.txt`);
+      console.log(`${name}: died of ${describeSignal(result.died.signal, result.died.code, result.died.field)}; fault ${describeSignal(result.fault.signal, result.fault.code, result.fault.field)}`);
+      kept.set(path.basename(base), result);
+      const build = playwrightBuild(result.executable, BROWSERS);
+      if (build) builds.add(build);
+    } catch (error) {
+      failures.push(`reporting ${name}: ${error.message}`);
+    }
+  }
+  for (const build of builds) {
+    if (spawnSync("tar", ["--zstd", "-cf", path.join(out, `${build}.tar.zst`), "-C", BROWSERS, build], { stdio: "inherit" }).status !== 0) failures.push(`archiving ${build}`);
+  }
+  if (failures.length) throw new Error(`kept what it could, but: ${failures.join("; ")}`);
+  return kept;
 }
 
-async function selfTest(engine, cores, destination) {
+/** The core files in a directory whose names start core.<prefix> (core.<pid>.<thread>). */
+function coresOf(cores, prefix) {
+  return fs.readdirSync(cores).filter((name) => name.startsWith(`core.${prefix}`)).map((name) => path.join(cores, name));
+}
+
+/**
+ * The browser process Playwright launched: the launched process itself, or the one
+ * child of a shell script that starts the browser without exec (WebKit's pw_run.sh).
+ */
+function browserProcess(pid) {
+  if (!/^(ba|da)?sh$/.test(path.basename(fs.readlinkSync(`/proc/${pid}/exe`)))) return pid;
+  const children = fs.readFileSync(`/proc/${pid}/task/${pid}/children`, "utf8").trim().split(/\s+/).filter(Boolean);
+  if (children.length !== 1) throw new Error(`the launcher script ${pid} has ${children.length} children, not the one browser`);
+  return Number(children[0]);
+}
+
+/** Whether a process has exited: gone, or a zombie its parent has not reaped. */
+function exited(pid) {
+  try {
+    return / Z /.test(fs.readFileSync(`/proc/${pid}/stat`, "utf8").replace(/^.*\)/, ""));
+  } catch {
+    return true;
+  }
+}
+
+async function selfTest(engine, cores, out) {
   if (!["chromium", "firefox", "webkit"].includes(engine)) throw new Error(`no Playwright browser is called ${engine}`);
+  if (coresOf(cores, "").length) throw new Error(`${cores} already holds cores; the self-test runs before the replay`);
   const server = await (await import("playwright"))[engine].launchServer();
-  const browser = server.process();
-  const limit = fs.readFileSync(`/proc/${browser.pid}/limits`, "utf8").split("\n").find((line) => line.startsWith("Max core file size"));
-  console.log(`${engine} ${browser.pid}: ${limit?.replace(/\s+/g, " ").trim()}`);
-  const exited = new Promise((resolve) => browser.once("exit", (exitCode, signal) => resolve(signal)));
-  browser.kill("SIGSEGV");
-  const signal = await exited;
-  await server.close();
-  if (signal !== "SIGSEGV") throw new Error(`${engine} ${browser.pid} ended with ${signal}, not SIGSEGV`);
-  const found = coresOf(cores, browser.pid);
+  const pid = browserProcess(server.process().pid);
+  const limit = fs.readFileSync(`/proc/${pid}/limits`, "utf8").split("\n").find((line) => line.startsWith("Max core file size"));
+  console.log(`${engine} ${pid} (${fs.readlinkSync(`/proc/${pid}/exe`)}): ${limit?.replace(/\s+/g, " ").trim()}`);
+  process.kill(pid, "SIGSEGV");
+  // The kernel writes the core before the process exits; a browser whose handler
+  // swallowed the signal would never exit, so give up rather than wait out the job.
+  const deadline = Date.now() + 30_000;
+  while (!exited(pid)) {
+    if (Date.now() > deadline) {
+      process.kill(pid, "SIGKILL");
+      throw new Error(`${engine} ${pid} was still running 30 s after SIGSEGV`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  await server.kill();
+  const found = coresOf(cores, `${pid}.`);
   if (found.length !== 1) {
     const pattern = fs.readFileSync("/proc/sys/kernel/core_pattern", "utf8").trim();
-    throw new Error(`${engine} ${browser.pid} died of SIGSEGV but left ${found.length} cores in ${cores} (kernel.core_pattern ${pattern})`);
+    throw new Error(`${engine} ${pid} exited after SIGSEGV but left ${found.length} cores in ${cores} (kernel.core_pattern ${pattern})`);
   }
-  const result = report(found[0], destination);
-  fs.rmSync(found[0]);
-  console.log(fs.readFileSync(destination, "utf8").split("\nRegisters at the fault:")[0]);
+
+  // The whole path a replay's crash takes, into a scratch directory: compressed core,
+  // report and build archive. Only the report is kept.
+  const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "soak-self-test-"));
+  const [[name, result]] = keep(cores, scratch);
+  const text = fs.readFileSync(path.join(scratch, `${name}.txt`), "utf8");
+  console.log(text.split("\nRegisters at the fault:")[0]);
+  fs.copyFileSync(path.join(scratch, `${name}.txt`), path.join(out, "self-test.txt"));
+  fs.copyFileSync(path.join(scratch, `${name}.txt.gdb`), path.join(out, "self-test.txt.gdb"));
   // The SIGSEGV this process sent, whether it reads it from a handler's frame (Firefox's
   // parent) or from the core's own record (a process with no handler).
   const expected = describeSignal(11, 0, `0x${process.pid.toString(16)}`);
   const read = describeSignal(result.fault.signal, result.fault.code, result.fault.field);
-  if (read !== expected) throw new Error(`the self-test core reads "${read}", not "${expected}"`);
+  if (result.died.signal !== 11 || read !== expected) throw new Error(`the self-test core died of signal ${result.died.signal} and reads "${read}", not "${expected}"`);
   if (result.mappings === 0 || result.frames === 0) throw new Error("gdb read no mappings or placed no frame in a module: every report would be blind");
+  if (!(fs.statSync(path.join(scratch, `${name}.zst`)).size > 0)) throw new Error("the compressed core is empty");
+  const build = playwrightBuild(result.executable, BROWSERS);
+  const archived = spawnSync("tar", ["--zstd", "-tf", path.join(scratch, `${build}.tar.zst`)], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+  if (!archived.stdout?.split("\n").includes(path.relative(BROWSERS, result.executable))) throw new Error(`the build archive for ${build} does not hold ${result.executable}`);
+  console.log(`kept the core (${fs.statSync(path.join(scratch, `${name}.zst`)).size} bytes compressed) and ${build} (${fs.statSync(path.join(scratch, `${build}.tar.zst`)).size} bytes)`);
+  fs.rmSync(found[0]);
+  fs.rmSync(scratch, { recursive: true });
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
   const [command, ...rest] = process.argv.slice(2);
   if (command === "self-test" && rest.length === 3) {
     await selfTest(rest[0], rest[1], rest[2]);
+  } else if (command === "keep" && rest.length === 2) {
+    keep(rest[0], rest[1]);
   } else if (command === "report" && rest.length === 2) {
     const result = report(rest[0], rest[1]);
     console.log(`${rest[1]}: ${describeSignal(result.fault.signal, result.fault.code, result.fault.field)}, ${result.frames} frames placed in modules`);
   } else {
-    throw new Error("usage: soak-crash-dumps.mjs self-test <browser> <cores> <report> | report <core> <report>");
+    throw new Error("usage: soak-crash-dumps.mjs self-test <browser> <cores> <report> | report <core> <report> | keep <cores> <out>");
   }
 }

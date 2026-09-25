@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { annotateFrames, describeSignal, examined, handlerFrame, moduleOffset, parseMappings, printed, splitSections } from "../scripts/soak-crash-dumps.mjs";
+import { annotateFrames, describeSignal, describeTrap, examined, execfnOf, handlerFrame, moduleOffset, parseMappings, playwrightBuild, printed, splitSections } from "../scripts/soak-crash-dumps.mjs";
 
 // The shape gdb 15 prints for a Firefox core (addresses shortened to one module's worth).
 const GDB = `[New LWP 4201]
@@ -91,6 +91,9 @@ test("examined reads the words of gdb's x command and is empty for an error", ()
   expect(examined("0x7ffc2e6e7e60:\t11\t0\t0\t0")).toEqual(["11", "0", "0", "0"]);
   expect(examined("0x7ffc2e6e7e70:\t0x000003e90000108e")).toEqual(["0x000003e90000108e"]);
   expect(examined("0x55d0 <gMozCrashReason>:\t0x0000000000000000")).toEqual(["0x0000000000000000"]);
+  expect(examined("0x7ffc2e6e7db0:\t0x0000000000000006\t0x000000000000000e\n0x7ffc2e6e7dc0:\t0x0000000000000000\t0x0000000000000008")).toEqual([
+    "0x0000000000000006", "0x000000000000000e", "0x0000000000000000", "0x0000000000000008",
+  ]);
   expect(examined("Cannot access memory at address 0x7ffc2e6e7e60")).toEqual([]);
   expect(examined(undefined)).toEqual([]);
 });
@@ -99,6 +102,32 @@ test("describeSignal gives a fault its address and a sent signal its sender", ()
   expect(describeSignal(11, 1, "0x8")).toBe("11 SIGSEGV, si_code 1 SEGV_MAPERR (address not mapped), fault address 0x8");
   expect(describeSignal(11, -6, "0x3e90000108e")).toBe("11 SIGSEGV, si_code -6 SI_TKILL (sent by tgkill or raise), from pid 4238");
   expect(describeSignal(11, 0, "0x108e")).toBe("11 SIGSEGV, si_code 0 SI_USER (sent by kill), from pid 4238");
-  expect(describeSignal(11, 128, "0x0")).toContain("general protection fault");
+  expect(describeSignal(11, 128, "0x0")).toContain("a general protection fault, or a signal no handler frame could be pushed for");
   expect(describeSignal(NaN, NaN, null)).toBe("NaN (unnamed), si_code NaN (unnamed)");
+});
+
+test("describeTrap spells out a page fault's access and gives any other trap its name only", () => {
+  expect(describeTrap(6, 14, "0x0000000000000008")).toBe("trap 14 (page fault), error code 6: a write of an unmapped page at 0x0000000000000008, in user mode");
+  expect(describeTrap(4, 14, "0x8")).toBe("trap 14 (page fault), error code 4: a read of an unmapped page at 0x8, in user mode");
+  expect(describeTrap(7, 14, "0x7f00")).toBe("trap 14 (page fault), error code 7: a write denied on a present page at 0x7f00, in user mode");
+  expect(describeTrap(21, 14, "0x7f00")).toBe("trap 14 (page fault), error code 21: an instruction fetch denied on a present page at 0x7f00, in user mode");
+  expect(describeTrap(0, 13, "0xdead")).toBe("trap 13 (general protection fault), error code 0");
+});
+
+test("execfnOf reads the executable from gdb's auxiliary vector", () => {
+  const auxv = `33   AT_SYSINFO_EHDR      System-supplied DSO's ELF header 0x7ffc4d1fe000
+31   AT_EXECFN            File name of executable        0x7ffc4d1a1fe0 "/home/runner/.cache/ms-playwright/firefox-1551/firefox/firefox"
+15   AT_PLATFORM          String identifying platform    0x7ffc4d1a1ff9 "x86_64"`;
+  expect(execfnOf(auxv)).toBe("/home/runner/.cache/ms-playwright/firefox-1551/firefox/firefox");
+  expect(execfnOf("warning: core file may not match specified executable file.")).toBeNull();
+  expect(execfnOf(undefined)).toBeNull();
+});
+
+test("playwrightBuild names the build directory an executable is in, and nothing outside the browsers", () => {
+  const browsers = "/home/runner/.cache/ms-playwright";
+  expect(playwrightBuild(`${browsers}/firefox-1551/firefox/firefox`, browsers)).toBe("firefox-1551");
+  expect(playwrightBuild(`${browsers}/webkit-2367/minibrowser-wpe/bin/MiniBrowser`, browsers)).toBe("webkit-2367");
+  expect(playwrightBuild("/usr/bin/node", browsers)).toBeNull();
+  expect(playwrightBuild(`${browsers}-old/firefox-1551/firefox/firefox`, browsers)).toBeNull();
+  expect(playwrightBuild(`${browsers}/stray-file`, browsers)).toBeNull();
 });
