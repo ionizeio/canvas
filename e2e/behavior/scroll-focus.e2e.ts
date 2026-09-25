@@ -130,6 +130,42 @@ test("a click into a scrollport draws no ring until a key is pressed", async ({ 
   }
 });
 
+// An option list's port is a stop while its rows overflow the capped card, and it sits
+// flush inside the card's clip, so the card draws its ring. Shift+Tab from the first
+// row lands on the port.
+for (const width of [1280, 390]) {
+  for (const scheme of ["light", "dark"] as const) {
+    test(`an overflowing option list's card draws the ring for its port (${width}, ${scheme})`, async ({ page }, testInfo) => {
+      await gotoDocs(page, "/testing/scroll-focus", { scheme, viewport: { width, height: 900 } });
+      await page.getByTestId("scroll-options").click();
+      const port = page.locator('[tabindex="0"]:has([role="listbox"])');
+      await expect(port).toHaveCount(1);
+      await port.getByRole("option").first().focus();
+      await page.keyboard.press("Shift+Tab");
+      await expect(port).toBeFocused();
+      const frame = () => port.evaluate((node) => {
+        for (let at = node.parentElement; at; at = at.parentElement) {
+          const style = getComputedStyle(at);
+          if (style.outlineStyle !== "none") return { style: style.outlineStyle, color: style.outlineColor, clips: style.overflow === "hidden" };
+        }
+        return null;
+      });
+      const ring = rgb(colorsFor("blush", scheme).ring);
+      await expect.poll(frame).toEqual({ style: "solid", color: ring, clips: true });
+      expect((await outlineOf(port)).style).toBe("none");
+      // The card is the port's parent, and its ring is on screen on every side.
+      expect(await outlineOf(port.locator(".."))).toEqual({ style: "solid", color: ring });
+      expect(await ringShows(page, port.locator(".."), ring)).toEqual(ALL_SIDES);
+      const screenshot = testInfo.outputPath("option-list-focused.png");
+      await page.screenshot({ path: screenshot });
+      await testInfo.attach("option-list-focused", { path: screenshot, contentType: "image/png" });
+      // Back onto a row: the port lost focus, so the card's ring goes.
+      await page.keyboard.press("Tab");
+      await expect.poll(frame).toBeNull();
+    });
+  }
+}
+
 // The heatmap's stop wraps its image-role grid and takes no role or name of its own,
 // so Chromium names it from that one image: the stop announces the grid's summary,
 // and a role or name on the scroller would only repeat it (a region would also add a

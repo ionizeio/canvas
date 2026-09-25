@@ -1,6 +1,10 @@
 import { createContext, forwardRef, useContext } from "react";
 import { ScrollView, type ScrollViewProps, type ViewStyle } from "react-native";
 import { useScrollFocus } from "./use-scroll-focus.js";
+import { FocusFrameContext } from "./focus-frame.js";
+import { FOCUS_RESET } from "./focus-reset.js";
+import { useFocusRingStyle } from "./pressable.js";
+import { useComposedRefs } from "./use-composed-refs.js";
 
 export const OverlayScrollContext = createContext<{
   contentHeight(height: number): void;
@@ -23,17 +27,42 @@ export const OverlayScrollContext = createContext<{
 // declares that it does not.
 const SCROLLPORT: ViewStyle = { flexGrow: 0, flexShrink: 1 };
 
+// The port is a keyboard stop while its rows overflow, and it sits flush inside its
+// card's clip, which would cut a ring drawn around it while the rows would cover one
+// drawn inside it. So the card that frames it draws the ring (src/style/focus-frame.tsx)
+// and the port wears none; a port with nothing framing it wears the kit's own ring.
+// The frame's handlers run beside any the owner passes, and its ref beside the port's.
+type FrameHandler = "onKeyUp" | "onPointerDown" | "onFocus" | "onBlur";
+const FRAME_HANDLERS: readonly FrameHandler[] = ["onKeyUp", "onPointerDown", "onFocus", "onBlur"];
+type Handlers = Partial<Record<FrameHandler, (event: unknown) => void>>;
+
 /** One measured scrollport, shared by anchored cards and option-list owners. */
 export const OverlayScrollView = forwardRef<ScrollView, ScrollViewProps>(function OverlayScrollView({
   style, onLayout, onContentSizeChange, tabIndex, ...props
 }, ref) {
   const report = useContext(OverlayScrollContext);
+  const frame = useContext(FocusFrameContext);
+  const ownRing = useFocusRingStyle();
   const focus = useScrollFocus("vertical");
+  const portRef = useComposedRefs<ScrollView>(ref, frame?.ref);
+  let framed: Handlers | null = null;
+  if (frame) {
+    const fromFrame = frame as unknown as Handlers;
+    const fromOwner = props as unknown as Handlers;
+    framed = {};
+    for (const name of FRAME_HANDLERS) {
+      framed[name] = (event) => {
+        fromFrame[name]?.(event);
+        fromOwner[name]?.(event);
+      };
+    }
+  }
   return (
     <ScrollView
       {...props}
-      ref={ref}
-      style={[SCROLLPORT, style]}
+      {...(framed as object | null)}
+      ref={portRef}
+      style={[SCROLLPORT, frame ? FOCUS_RESET : ownRing, style]}
       keyboardShouldPersistTaps={props.keyboardShouldPersistTaps ?? "handled"}
       tabIndex={tabIndex ?? focus.tabIndex}
       onLayout={(event) => {

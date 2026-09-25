@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { Button, Card, Carousel, CodeBlock, Column, DataTable, Heatmap, Typography } from "@ionizeio/canvas";
+import { Button, Card, Carousel, CodeBlock, Column, DataTable, Heatmap, Select, Typography } from "@ionizeio/canvas";
 import { Page } from "../../../ui/page";
 
 const LONG = 'const destinations = ["Montréal", "Toronto", "Vancouver", "Halifax", "Victoria", "Québec", "Winnipeg", "Calgary", "Ottawa", "Edmonton"];';
 const SHORT = "const ready = true;";
 const columns = ["Name", "Location", "Status", "Joined", "Team"];
+// More cities than the option card's cap holds, so its list scrolls.
+const cities = ["Calgary", "Charlottetown", "Edmonton", "Fredericton", "Halifax", "Iqaluit", "Montréal", "Ottawa", "Québec", "Regina", "Saskatoon", "St. John's", "Toronto", "Vancouver", "Victoria", "Whitehorse", "Winnipeg", "Yellowknife"];
 const slides = [{ key: "one", content: "Slide 1" }, { key: "two", content: "Slide 2" }, { key: "three", content: "Slide 3" }];
 const rows = [["Ada", "Montréal", "Active", "2026-01-02", "Design"], ["Sam", "Toronto", "Active", "2026-03-04", "Engineering"]];
 // A year of days (53 whole weeks) with a count on every third one, so the grid is 773 px
@@ -70,6 +72,10 @@ export default function ScrollFocusFixture() {
           <Typography h2>Carousel</Typography>
           <Button outline testID="before-carousel">Before carousel</Button>
           <Carousel testID="scroll-carousel" items={slides} />
+        </Column>
+        <Column snug>
+          <Typography h2>Option list</Typography>
+          <Select testID="scroll-options" label="City" defaultValue="Toronto" options={cities} />
         </Column>
       </Column>
     </Page>

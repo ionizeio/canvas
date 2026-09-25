@@ -26,7 +26,7 @@
 // ring. One difference from the browser remains: a node focused from script after the
 // user moved to the pointer elsewhere still shows its ring if a key last marked it.
 
-import { useCallback, useMemo, useRef, useState, type ReactElement } from "react";
+import { createContext, useCallback, useMemo, useRef, useState, type ReactElement } from "react";
 import { View, type StyleProp, type ViewProps, type ViewStyle } from "react-native";
 import { useTheme } from "./theme.js";
 import { FOCUS_RING_OFFSET, FOCUS_RING_WIDTH } from "./pressable.js";
@@ -124,3 +124,10 @@ export function useFocusFrame(): FocusFrame {
   );
   return { focused, target, ring, innerRing };
 }
+
+/**
+ * The frame's `target`, for a framed node that another component renders: an option
+ * list's scrollport inside the overlay card that frames it. Null where nothing frames
+ * the node, which then wears its own ring.
+ */
+export const FocusFrameContext = createContext<FocusFrameTarget | null>(null);

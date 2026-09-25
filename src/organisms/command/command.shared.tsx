@@ -3,6 +3,7 @@ import { useId, useRef, useState } from "react";
 import { type Role, type TextInput as RNTextInput, type TextStyle } from "react-native";
 import { View, Text, TextInput, Pressable, useTheme, useControllableState, AnchoredOverlay, useOverlayHost, GlassSurface, FOCUS_RESET, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
+import { FocusFrameContext, useFocusFrame } from "../../style/focus-frame.js";
 import { useActiveOptionScroll } from "../../style/use-active-option-scroll.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the command
@@ -158,6 +159,9 @@ export function createCommand(skin: CommandSkin) {
     // The trigger view AnchoredOverlay measures to anchor (and portal) the card.
     const triggerRef = useRef<View>(null);
     const host = useOverlayHost();
+    // The bare card frames its result list's keyboard focus, as an anchored card does in
+    // trigger mode: the list sits flush inside the card's clip (src/style/focus-frame.tsx).
+    const focusFrame = useFocusFrame();
 
     // Escape dismisses the open TRIGGER-mode palette via browser Escape or native accessibility escape. The
     // bare inline card is left alone: it has no trigger to reopen it, so escape
@@ -361,8 +365,8 @@ export function createCommand(skin: CommandSkin) {
     // per-OS `cardShape` layers the iOS continuous corner over the shared card.
     if (!trigger) {
       return (
-        <GlassSurface testID={testID} style={[s.card(tokens), skin.cardShape]}>
-          {cardContent}
+        <GlassSurface testID={testID} style={[s.card(tokens), skin.cardShape, focusFrame.ring()]}>
+          <FocusFrameContext.Provider value={focusFrame.target}>{cardContent}</FocusFrameContext.Provider>
         </GlassSurface>
       );
     }

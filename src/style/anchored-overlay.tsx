@@ -64,6 +64,7 @@ import { fitOverlayHeight, type OverlaySide } from "./overlay-layout.js";
 import { OverlayScrollContext, OverlayScrollView } from "./overlay-scroll.js";
 import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect.js";
 import { useHardwareBack } from "./use-hardware-back.js";
+import { FocusFrameContext, useFocusFrame } from "./focus-frame.js";
 
 const OverlaySideContext = createContext<{ side: OverlaySide; centerX?: number; cardWidth?: number }>({ side: "below" });
 /** The actual collision-resolved edge for a card's directional decoration. */
@@ -289,9 +290,19 @@ function OverlayCard({
   // style untouched, which is byte for byte what GlassSurface itself renders in
   // solid mode, so an option list looks and lays out the same under either
   // theming surface, and no glass is hand-painted anywhere.
-  const content = ownsScroll ? children : <OverlayScrollView>{children}</OverlayScrollView>;
-  if (opaque) return <PlainSurface style={cardStyle} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape}>{decoration}{content}</PlainSurface>;
-  return <GlassSurface layer={dense ? "dense" : "functional"} style={cardStyle} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape}>{decoration}{content}</GlassSurface>;
+  //
+  // The card frames the scrollport's keyboard focus: the port sits flush inside the
+  // card's clip, so the card draws the ring for it (src/style/focus-frame.tsx), for the
+  // one it wraps here and for an owner's own (Select, Autocomplete, PhoneInput, Command).
+  const focusFrame = useFocusFrame();
+  const content = (
+    <FocusFrameContext.Provider value={focusFrame.target}>
+      {ownsScroll ? children : <OverlayScrollView>{children}</OverlayScrollView>}
+    </FocusFrameContext.Provider>
+  );
+  const style = [cardStyle, focusFrame.ring()];
+  if (opaque) return <PlainSurface style={style} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape}>{decoration}{content}</PlainSurface>;
+  return <GlassSurface layer={dense ? "dense" : "functional"} style={style} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape}>{decoration}{content}</GlassSurface>;
 }
 
 interface HostedProps {
