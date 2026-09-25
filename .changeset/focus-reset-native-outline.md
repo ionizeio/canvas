@@ -1,0 +1,5 @@
+---
+"@ionizeio/canvas": patch
+---
+
+`FOCUS_RESET` now switches the focus outline off with a zero width and a `solid` style, in place of `outlineStyle: "none"`. React Native parses the outline keys natively on View and TextInput, and its parser accepts only `solid`, `dotted` and `dashed`, so on iOS and Android every node carrying the reset logged "Could not parse OutlineStyle:none" and a `react_native_expect` failure: the Input (every skin), Textarea, Autocomplete, PhoneInput and InputOTP fields, the Slider, Command's search field, the DescriptionList edit field, and the scrollports inside CodeBlock, DataTable, Carousel and the option lists. Nothing changes on screen: a zero-width outline draws nothing natively, and on the web the inline style still beats the browser's own `:focus-visible` ring and the CSS hand-off's layered rule. `FOCUS_RESET` is now typed against React Native's own style types rather than cast, so a style native cannot parse no longer type-checks. A reset node's computed `outline-style` is now `solid` rather than `none`: code that reads it to decide whether a node's ring is off should read a zero `outline-width` instead.

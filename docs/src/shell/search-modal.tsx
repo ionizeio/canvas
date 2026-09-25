@@ -8,7 +8,7 @@ import {
   type TextInput as RNTextInput,
   type TextInputKeyPressEventData,
 } from "react-native";
-import { View, Text, Pressable, Column, TextInput, Icon, useTheme, useFormFactor, GlassSurface, alpha } from "@ionizeio/canvas";
+import { View, Text, Pressable, Column, TextInput, Icon, useTheme, useFormFactor, GlassSurface, alpha, FOCUS_RESET } from "@ionizeio/canvas";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { search } from "../core/data/search";
@@ -134,7 +134,7 @@ export function SearchModal({ visible, onClose }: { visible: boolean; onClose: (
           fontSize: 14.5,
           color: tokens.foreground,
           // Strip the RN-Web default input outline; the panel border frames it.
-          ...(Platform.OS === "web" ? ({ outlineStyle: "none" } as object) : null),
+          ...FOCUS_RESET,
         }}
       />
     </View>

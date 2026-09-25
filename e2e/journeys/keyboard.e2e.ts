@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import type { Locator, Page, TestInfo } from "@playwright/test";
 import { scanStructure } from "../support/axe";
 import { expect, test } from "../support/fixtures";
@@ -189,14 +191,57 @@ test("a windowed table's overflowing body is one keyboard stop, in every engine"
   const table = page.getByTestId("scroll-windowed");
   const body = table.getByRole("rowgroup");
   const outline = (locator: Locator) => locator.evaluate((node) => getComputedStyle(node).outlineStyle);
+  // The body switches its own ring off with a zero width (FOCUS_RESET), its style `solid`.
+  const bodyDrawsOutline = () => body.evaluate((node) => {
+    const style = getComputedStyle(node);
+    return style.outlineStyle !== "none" && parseFloat(style.outlineWidth) > 0;
+  });
   await page.getByTestId("before-windowed").focus();
   await page.keyboard.press("Tab");
   await expect(body).toBeFocused();
   await expect.poll(() => outline(table)).toBe("solid");
-  expect(await outline(body)).toBe("none");
+  expect(await bodyDrawsOutline()).toBe(false);
   await page.keyboard.press("PageDown");
   await expect.poll(() => body.evaluate((node) => node.scrollTop)).toBeGreaterThan(0);
   await page.keyboard.press("Tab");
   await expect(page.getByTestId("after-windowed")).toBeFocused();
   await expect.poll(() => outline(table)).toBe("none");
 });
+
+// The CSS hand-off exactly as a web consumer links it: styles/canvas.css with its
+// @imports inlined in order, so its layered :focus-visible ring can be put on the page.
+const HANDOFF_CSS = (() => {
+  const styles = resolve(__dirname, "../../styles");
+  const entry = readFileSync(resolve(styles, "canvas.css"), "utf8");
+  return [...entry.matchAll(/@import "\.\/([^"]+)";/g)].map((match) => readFileSync(resolve(styles, match[1]!), "utf8")).join("\n");
+})();
+
+// A field that paints its own focus state spreads FOCUS_RESET (src/style/focus-reset.ts):
+// a solid outline of width 0, since React Native's native parser rejects `none`. On the
+// web the inline reset must beat the browser's own :focus-visible ring and the CSS
+// hand-off's layered one in every engine, or the field shows two focus rings. The web
+// Stepper's field is the stop between its two buttons.
+for (const scheme of ["light", "dark"] as const) {
+  test(`a field that paints its own focus state draws no browser ring on keyboard focus in ${scheme}`, async ({ page }) => {
+    await gotoDocs(page, "/components/stepper", { scheme });
+    const web = platformRow(page, "web").first();
+    const field = web.getByRole("spinbutton");
+    const outline = () => field.evaluate((node) => {
+      const style = getComputedStyle(node);
+      return { focusVisible: node.matches(":focus-visible"), style: style.outlineStyle, width: style.outlineWidth };
+    });
+    const tabIn = async () => {
+      await web.getByRole("button", { name: "Decrease" }).focus();
+      await page.keyboard.press("Tab");
+      await expect(field).toBeFocused();
+    };
+    await tabIn();
+    expect(await outline(), "the browser's own rule").toEqual({ focusVisible: true, style: "solid", width: "0px" });
+    await page.addStyleTag({ content: HANDOFF_CSS });
+    await tabIn();
+    expect(await outline(), "with the CSS hand-off").toEqual({ focusVisible: true, style: "solid", width: "0px" });
+    // Without the reset the same focus draws the hand-off's ring, so the rule it beats is live.
+    await field.evaluate((node) => node.style.removeProperty("outline-width"));
+    expect((await outline()).width).not.toBe("0px");
+  });
+}

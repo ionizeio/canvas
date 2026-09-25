@@ -64,7 +64,10 @@ for (const width of [1280, 390]) {
       await viewport.focus();
       await page.keyboard.press("Tab");
       await root.getByRole("button", { name: "Slide 1 of 6, current slide" }).focus();
-      await expect.poll(() => root.getByRole("button", { name: "Slide 1 of 6, current slide" }).evaluate((element) => getComputedStyle(element).outlineStyle)).not.toBe("none");
+      await expect.poll(() => root.getByRole("button", { name: "Slide 1 of 6, current slide" }).evaluate((element) => {
+        const style = getComputedStyle(element);
+        return style.outlineStyle !== "none" && parseFloat(style.outlineWidth) > 0;
+      })).toBe(true);
       // Focus can scroll the slide title beneath the fixed docs banner. Center
       // the capture target so the screenshot includes the complete component.
       await root.evaluate((element) => element.scrollIntoView({ block: "center" }));

@@ -201,12 +201,13 @@ const ui = (n: ReactNode) => render(<ThemeProvider>{n}</ThemeProvider>);
 afterEach(cleanup);
 
 // RNW writes the reset as an inline style on the element; assert the outline is
-// explicitly zeroed rather than left at the UA default.
+// explicitly zeroed rather than left at the UA default. The width does the work; the
+// style is `solid` because React Native's native prop parser rejects `none`.
 function assertOutlineSuppressed(el: HTMLElement | null) {
   expect(el).not.toBeNull();
   const inline = el!.style;
-  const zeroed = inline.outlineStyle === "none" || inline.outlineWidth === "0px" || inline.outline === "none";
-  expect(zeroed).toBe(true);
+  expect(inline.outlineWidth).toBe("0px");
+  expect(inline.outlineStyle).toBe("solid");
 }
 
 describe("field focus outline is suppressed on web", () => {

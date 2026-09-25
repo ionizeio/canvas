@@ -29,7 +29,7 @@ const channels = (color: string) => {
   return (/rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(color) ?? []).slice(1, 4).join(",");
 };
 const border = (node: HTMLElement, side = "") => channels(node.style.getPropertyValue(`border${side}-color`) || node.style.borderColor);
-const outline = (node: HTMLElement, property: "offset" | "style" | "color") => node.style.getPropertyValue(`outline-${property}`);
+const outline = (node: HTMLElement, property: "offset" | "style" | "color" | "width") => node.style.getPropertyValue(`outline-${property}`);
 
 describe("fields paint their own focus state", () => {
   it("the web Autocomplete field turns its border `ring` while focused, even after Escape closes the list", async () => {
@@ -52,7 +52,8 @@ describe("fields paint their own focus state", () => {
     const field = screen.getByRole("spinbutton");
     const group = field.parentElement as HTMLElement;
     expect(border(group)).toBe(channels(fieldBorder(t)));
-    expect(outline(field, "style")).toBe("none");
+    expect(outline(field, "style")).toBe("solid");
+    expect(outline(field, "width")).toBe("0px");
     fireEvent.focus(field);
     await waitFor(() => expect(border(group)).toBe(channels(t.ring)));
     fireEvent.blur(field);
@@ -102,7 +103,8 @@ describe("fields paint their own focus state", () => {
     const flush = screen.getByTestId("flush");
     expect(outline(flush, "style")).toBe("");
     expect(outline(flush, "offset")).toBe(`-${FOCUS_RING_OFFSET}px`);
-    expect(outline(screen.getByTestId("framed"), "style")).toBe("none");
+    expect(outline(screen.getByTestId("framed"), "style")).toBe("solid");
+    expect(outline(screen.getByTestId("framed"), "width")).toBe("0px");
   });
 });
 

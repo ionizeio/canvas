@@ -1,10 +1,13 @@
 import { afterEach, describe, expect, it } from "bun:test";
 import { createRef } from "react";
 import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { Glob } from "bun";
 import { cleanup, render, screen } from "@testing-library/react";
 import type { View } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Pressable, FOCUS_RING_OFFSET, FOCUS_RING_WIDTH } from "../src/style/pressable.tsx";
+import { FOCUS_RESET } from "../src/style/focus-reset.ts";
 import { Button } from "../src/atoms/button/button.tsx";
 import { Input } from "../src/atoms/input/input.tsx";
 import { Pagination as IOSPagination } from "../src/atoms/pagination/pagination.ios.tsx";
@@ -23,7 +26,9 @@ import { LOOKS, lookProps } from "./fixtures/looks.ts";
 
 afterEach(cleanup);
 
-const outline = (node: HTMLElement, property: "color" | "offset" | "style") => node.style.getPropertyValue(`outline-${property}`);
+const outline = (node: HTMLElement, property: "color" | "offset" | "style" | "width") => node.style.getPropertyValue(`outline-${property}`);
+// Whether a node's inline style switches its outline off, either way a browser reads it.
+const suppressed = (node: HTMLElement) => outline(node, "style") === "none" || outline(node, "width") === "0px";
 const channels = (color: string) => {
   if (color.startsWith("#")) {
     const n = parseInt(color.slice(1), 16);
@@ -48,7 +53,9 @@ describe("the themed focus ring", () => {
 
   it("leaves a field, which paints its own focus border, on its reset", () => {
     render(<ThemeProvider light solid><Input label="Name" testID="name" /></ThemeProvider>);
-    expect(outline(screen.getByTestId("name"), "style")).toBe("none");
+    // A zero width paints no outline whatever the style; the style is one native parses.
+    expect(outline(screen.getByTestId("name"), "width")).toBe("0px");
+    expect(outline(screen.getByTestId("name"), "style")).toBe("solid");
   });
 
   it("draws the ring inside full-bleed rows a clipping container would cut", () => {
@@ -85,7 +92,7 @@ describe("the themed focus ring", () => {
     );
     const focusable = [...screen.getAllByRole("button"), ...screen.getAllByRole("tab")];
     expect(focusable.length).toBeGreaterThan(3);
-    for (const node of focusable) expect(outline(node, "style"), node.textContent ?? "").not.toBe("none");
+    for (const node of focusable) expect(suppressed(node), node.textContent ?? "").toBe(false);
   });
 
   it("rings the drag handle, a focusable View rather than a Pressable", () => {
@@ -126,5 +133,40 @@ describe("the themed focus ring", () => {
     expect(shadows).toContain(`--ring-offset:${FOCUS_RING_OFFSET}px`);
     // A frame's ring (src/style/focus-frame.tsx) is drawn by the kit itself, at the same width.
     expect(shadows).toContain(`--ring-width:${FOCUS_RING_WIDTH}px`);
+  });
+});
+
+// React Native parses the outline keys natively too (View and TextInput), and its parser
+// accepts only the styles it names: anything else, `none` included, logs "Could not parse
+// OutlineStyle" on every node that carries it. The accepted set is read from the parser
+// itself, so the scan follows React Native if it ever widens it.
+describe("outline styles native can parse", () => {
+  const ROOT = join(import.meta.dir, "..");
+  const parser = readFileSync(join(ROOT, "node_modules/react-native/ReactCommon/react/renderer/components/view/conversions.h"), "utf8");
+  const body = /fromRawValue\([^)]*OutlineStyle &result\)\s*\{([\s\S]*?)\n\}/.exec(parser)?.[1] ?? "";
+  const accepted = new Set([...body.matchAll(/stringValue == "(\w+)"/g)].map((match) => match[1]));
+
+  it("reads the accepted styles from React Native's prop parser", () => {
+    expect(accepted.has("solid")).toBe(true);
+  });
+
+  it("gives FOCUS_RESET a style native accepts and a zero width", () => {
+    expect(accepted.has(FOCUS_RESET.outlineStyle as string)).toBe(true);
+    expect(FOCUS_RESET.outlineWidth).toBe(0);
+  });
+
+  it("writes no other outline style anywhere a React Native tree renders", () => {
+    const files = ["src", "docs/src", "examples", "packages"]
+      .flatMap((dir) => [...new Glob(`${dir}/**/*.{ts,tsx}`).scanSync(ROOT)])
+      .filter((file) => !file.endsWith(".d.ts") && !file.includes("node_modules/"));
+    expect(files.length).toBeGreaterThan(200);
+    // The key quoted or not, and every string literal in its value, so a conditional
+    // (`focused ? "solid" : "none"`) is read whole.
+    const rejected = files.flatMap((file) =>
+      [...readFileSync(join(ROOT, file), "utf8").matchAll(/["']?outlineStyle["']?\s*:\s*([^,}\n]+)/g)]
+        .flatMap((match) => [...match[1]!.matchAll(/["'`](\w+)["'`]/g)].map((literal) => literal[1]!))
+        .filter((value) => !accepted.has(value))
+        .map((value) => `${file}: ${value}`));
+    expect(rejected).toEqual([]);
   });
 });

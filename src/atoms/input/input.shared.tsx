@@ -74,7 +74,7 @@ export function actionOverhang(iconSize: number, boxHeight: number): Insets | un
 // react-native-web paints a default focus outline on the field; in the grouped
 // (addon) layout that ring is clipped by the rounded, overflow-hidden container
 // and reads as half-baked, so the shared FOCUS_RESET suppresses it there and the
-// group shows focus on its shared border instead. No-op on native (no CSS outline).
+// group shows focus on its shared border instead. Natively its zero width draws nothing.
 
 /**
  * The curated slice of React Native's TextInput behavior forwarded by Input and

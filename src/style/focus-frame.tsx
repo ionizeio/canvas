@@ -106,14 +106,13 @@ export function useFocusFrame(): FocusFrame {
       },
     } as unknown as FocusFrameTarget;
   }, []);
-  // `outline*` are react-native-web keys, absent from React Native's style types.
-  const ringStyle = useMemo(() => ({
+  const ringStyle = useMemo((): ViewStyle => ({
     outlineColor: tokens.ring,
     outlineStyle: "solid",
     outlineWidth: FOCUS_RING_WIDTH,
     outlineOffset: FOCUS_RING_OFFSET,
-  }) as unknown as ViewStyle, [tokens.ring]);
-  const innerRingStyle = useMemo(() => ({ ...ringStyle, outlineOffset: -FOCUS_RING_WIDTH }) as unknown as ViewStyle, [ringStyle]);
+  }), [tokens.ring]);
+  const innerRingStyle = useMemo((): ViewStyle => ({ ...ringStyle, outlineOffset: -FOCUS_RING_WIDTH }), [ringStyle]);
   const ring = useCallback(
     (shape?: StyleProp<ViewStyle>) => (focused ? (shape ? { ...cornerRadii(shape), ...ringStyle } : ringStyle) : null),
     [focused, ringStyle],

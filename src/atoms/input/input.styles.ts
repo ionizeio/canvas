@@ -187,11 +187,10 @@ export const webSkin: InputSkin = {
 // the brand replaces on every platform.
 
 // react-native-web paints a default focus outline (a bright-blue rectangle) and a
-// browser-default caret on the field. These web-only style props suppress that outline
-// (the skin draws its own border) and pin the caret to the brand `primary`, matching
-// `selectionColor`. They are no-ops on real iOS, which has no CSS outline.
-// `caretColor`/`cursorColor`/`outlineStyle`/`outlineWidth` are not in RN's TextStyle,
-// hence the cast (as in the shell's FIELD_OUTLINE_RESET).
+// browser-default caret on the field. FOCUS_RESET suppresses that outline (the skin draws
+// its own border; natively its zero width draws nothing), and the caret keys pin the
+// caret to the brand `primary`, matching `selectionColor`. `caretColor` and `cursorColor`
+// are not in RN's TextStyle, hence the cast.
 function iosWebFieldReset(t: ColorTokens): TextStyle {
   return {
     ...FOCUS_RESET, // shared outline-ring suppression (outlineStyle/outlineWidth)

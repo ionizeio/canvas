@@ -81,6 +81,15 @@ const outlineOf = (locator: Locator) =>
     const style = getComputedStyle(node);
     return { style: style.outlineStyle, color: style.outlineColor };
   });
+// Whether a node paints an outline at all. A node that paints its own focus state (or
+// whose frame does) switches its outline off with a zero width (FOCUS_RESET), leaving its
+// style `solid`, the value React Native's native parser accepts, so the style alone
+// does not say.
+const drawsOutline = (locator: Locator) =>
+  locator.evaluate((node) => {
+    const style = getComputedStyle(node);
+    return style.outlineStyle !== "none" && parseFloat(style.outlineWidth) > 0;
+  });
 
 for (const width of [1280, 390]) {
   for (const scheme of ["light", "dark"] as const) {
@@ -96,7 +105,7 @@ for (const width of [1280, 390]) {
         // The theme's ring, drawn once: by the frame, with the scroller's own off.
         await expect.poll(() => outlineOf(ringOf(page, name, scrollport))).toEqual({ style: name === "heatmap" ? "auto" : "solid", color: ring });
         if (name !== "heatmap") {
-          expect((await outlineOf(scrollport)).style).toBe("none");
+          expect(await drawsOutline(scrollport)).toBe(false);
           // And it is on screen: neither clipped by a parent nor painted over.
           expect(await ringShows(page, frameOf(page, name, scrollport), ring)).toEqual(ALL_SIDES);
         }
@@ -147,7 +156,7 @@ for (const width of [1280, 390]) {
       const { nodes } = await session.send("Accessibility.getPartialAXTree", { backendNodeId: node.backendNodeId, fetchRelatives: false });
       expect(nodes.map((ax) => ({ role: ax.role?.value, name: ax.name?.value }))).toEqual([{ role: "rowgroup", name: "" }]);
       await expect.poll(() => outlineOf(table)).toEqual({ style: "solid", color: ring });
-      expect((await outlineOf(body)).style).toBe("none");
+      expect(await drawsOutline(body)).toBe(false);
       expect(await ringShows(page, table, ring)).toEqual(ALL_SIDES);
       await page.keyboard.press("ArrowDown");
       await expect.poll(() => body.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
@@ -169,8 +178,8 @@ test("a click into a scrollport draws no ring until a key is pressed", async ({ 
     const scrollport = scrollportOf(page, name);
     await scrollport.click();
     await expect(scrollport).toBeFocused();
-    expect((await outlineOf(ringOf(page, name, scrollport))).style).toBe("none");
-    expect((await outlineOf(scrollport)).style).toBe("none");
+    expect(await drawsOutline(ringOf(page, name, scrollport))).toBe(false);
+    expect(await drawsOutline(scrollport)).toBe(false);
     await page.keyboard.press("Shift");
     await expect.poll(async () => (await outlineOf(ringOf(page, name, scrollport))).style).toBe("solid");
   }
@@ -192,13 +201,13 @@ for (const width of [1280, 390]) {
       const frame = () => port.evaluate((node) => {
         for (let at = node.parentElement; at; at = at.parentElement) {
           const style = getComputedStyle(at);
-          if (style.outlineStyle !== "none") return { style: style.outlineStyle, color: style.outlineColor, clips: style.overflow === "hidden" };
+          if (style.outlineStyle !== "none" && parseFloat(style.outlineWidth) > 0) return { style: style.outlineStyle, color: style.outlineColor, clips: style.overflow === "hidden" };
         }
         return null;
       });
       const ring = rgb(colorsFor("blush", scheme).ring);
       await expect.poll(frame).toEqual({ style: "solid", color: ring, clips: true });
-      expect((await outlineOf(port)).style).toBe("none");
+      expect(await drawsOutline(port)).toBe(false);
       // The card is the port's parent, and its ring is on screen on every side.
       expect(await outlineOf(port.locator(".."))).toEqual({ style: "solid", color: ring });
       expect(await ringShows(page, port.locator(".."), ring)).toEqual(ALL_SIDES);

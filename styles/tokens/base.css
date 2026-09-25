@@ -22,7 +22,7 @@
      element, only when the browser decides focus should show. Firefox and Safari ignore an
      author colour on their automatic ring, so the style is named too. The kit's Pressable
      colours the same ring inline where this sheet is not loaded, and a control that paints
-     its own focus state sets outline-style none inline, which wins over any layer. */
+     its own focus state sets outline-width 0 inline, which wins over any layer. */
   :focus-visible{outline:var(--ring-width) solid var(--ring);outline-offset:var(--ring-offset)}
 }
 

@@ -41,9 +41,10 @@ const asNum = (v: unknown, fallback: number): number => (typeof v === "number" ?
 const ANDROID_TEXTAREA_INSET = 12;
 
 // react-native-web paints the browser's blue focus outline on a focused multiline
-// <textarea>; real iOS/Android have no such outline. The shared FOCUS_RESET suppresses
-// it so the skin's own focus cue (the bottom hairline thickening to the brand ring) is
-// the only treatment, matching the sibling Input. It is web-only and a no-op natively.
+// <textarea>; iOS and Android draw no focus outline on their own. The shared FOCUS_RESET
+// suppresses it so the skin's own focus cue (the bottom hairline thickening to the brand
+// ring) is the only treatment, matching the sibling Input. Natively its zero width draws
+// nothing.
 
 // Shared Textarea shell. The structure (a multiline TextInput), the public
 // boolean-prop API, the size precedence, the error/focus state resolution, the

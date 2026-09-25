@@ -35,17 +35,16 @@ export const FOCUS_RING_WIDTH = 2;
  * (an accordion header, a sidebar row) whose clipping container would cut an outside
  * ring. A skin spreads it after the control's own style.
  */
-export const INSET_FOCUS_RING = { outlineOffset: -FOCUS_RING_OFFSET } as unknown as ViewStyle;
+export const INSET_FOCUS_RING: ViewStyle = { outlineOffset: -FOCUS_RING_OFFSET };
 
 /**
  * The themed ring for a focusable node that is not a Pressable (a drag handle, a
- * focusable View): the same colour and offset the kit's Pressable carries. `outline*`
- * are react-native-web keys, absent from React Native's style types (the FOCUS_RESET
- * cast), and draw nothing natively without a width.
+ * focusable View): the same colour and offset the kit's Pressable carries. React Native
+ * parses the outline keys natively too, where they draw nothing without a width.
  */
 export function useFocusRingStyle(): ViewStyle {
   const { tokens } = useTheme();
-  return useMemo(() => ({ outlineColor: tokens.ring, outlineOffset: FOCUS_RING_OFFSET }) as unknown as ViewStyle, [tokens.ring]);
+  return useMemo((): ViewStyle => ({ outlineColor: tokens.ring, outlineOffset: FOCUS_RING_OFFSET }), [tokens.ring]);
 }
 
 type PressableStyle = PressableProps["style"];

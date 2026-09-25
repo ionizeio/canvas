@@ -203,7 +203,7 @@ for (const subject of CASES) {
         fireEvent.keyUp(scroller, { key: "Tab" });
         expectRing(frame, look);
         // The scroller's own ring (the browser's, or the kit's) is off, so the two never stack.
-        expect(outline(scroller, "style")).toBe("none");
+        expect(outline(scroller, "style")).toBe("solid");
         expect(outline(scroller, "width")).toBe("0px");
         fireEvent.blur(scroller);
         expectNoRing(frame);
@@ -220,7 +220,8 @@ describe("frame ring under glass", () => {
       const { scroller, frame } = subject.stop();
       fireEvent.keyUp(scroller, { key: "Tab" });
       expectRing(frame, blush);
-      expect(outline(scroller, "style")).toBe("none");
+      expect(outline(scroller, "style")).toBe("solid");
+      expect(outline(scroller, "width")).toBe("0px");
     });
   }
 });
@@ -310,7 +311,8 @@ describe("a windowed DataTable body", () => {
     fireEvent.focus(body);
     fireEvent.keyUp(body, { key: "Tab" });
     expectRing(frame, blush);
-    expect(outline(body, "style")).toBe("none");
+    expect(outline(body, "style")).toBe("solid");
+    expect(outline(body, "width")).toBe("0px");
     fireEvent.blur(body);
     expectNoRing(frame);
   });

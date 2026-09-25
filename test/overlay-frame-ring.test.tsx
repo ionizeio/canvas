@@ -107,7 +107,7 @@ for (const subject of CASES) {
         // Shift+Tab from the first row releases on the port it moved to.
         fireEvent.keyUp(port, { key: "Tab", shiftKey: true });
         expectRing(frame, look);
-        expect(outline(port, "style")).toBe("none");
+        expect(outline(port, "style")).toBe("solid");
         expect(outline(port, "width")).toBe("0px");
         // A key released on a row inside the port belongs to the row, not the port.
         fireEvent.blur(port);
