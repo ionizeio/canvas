@@ -64,20 +64,32 @@ jobs:
           fi
           echo "authenticated as: $who"
 
+      # The inputs reach every script through env, never through `${{ }}` inside it,
+      # where any text in them would run as shell. Echoing them is fenced with
+      # stop-commands, so a line in a message cannot act as a workflow command.
       - name: Show what will change
+        env:
+          RANGE: ${{ inputs.range }}
+          MESSAGE: ${{ inputs.message }}
         run: |
-          echo "range  : ${{ inputs.range }}"
-          if [ -z "${{ inputs.message }}" ]; then
+          fence=$(openssl rand -hex 16)
+          echo "::stop-commands::$fence"
+          echo "range  : $RANGE"
+          if [ -z "$MESSAGE" ]; then
             echo "action : UN-DEPRECATE (empty message clears the flag)"
           else
             echo "action : DEPRECATE"
-            echo "message: ${{ inputs.message }}"
+            echo "message: $MESSAGE"
           fi
+          echo "::$fence::"
           echo "--- current state ---"
           npm view "@nannier/canvas" versions --json
 
       - name: Apply
-        run: npm deprecate "@nannier/canvas@${{ inputs.range }}" "${{ inputs.message }}"
+        env:
+          RANGE: ${{ inputs.range }}
+          MESSAGE: ${{ inputs.message }}
+        run: npm deprecate "@nannier/canvas@$RANGE" "$MESSAGE"
 
       # Read the registry back rather than trusting the command's exit code, and write the
       # result into the run summary so the outcome is visible without opening the log.
@@ -98,4 +110,8 @@ jobs:
               print(f"| `{v}` | {when} | {('**' + dep + '**') if dep else '—'} |")
           print(f"\n`latest` → **{d['dist-tags']['latest']}**")
           PY
+          # The summary holds the registry's copy of the message: fence it like the inputs.
+          fence=$(openssl rand -hex 16)
+          echo "::stop-commands::$fence"
           cat "$GITHUB_STEP_SUMMARY"
+          echo "::$fence::"

@@ -169,11 +169,10 @@ jobs:
         env:
           SPEC: ${{ inputs.spec }}
         run: |
-          case "$SPEC" in
-            e2e/*.e2e.ts) ;;
-            *) echo "::error::spec must be an e2e/**/*.e2e.ts path, not '$SPEC'"; exit 1 ;;
-          esac
-          test -f "$SPEC" || { echo "::error::$SPEC does not exist"; exit 1; }
+          if ! [[ "$SPEC" =~ ^e2e/[A-Za-z0-9/_.-]+\.e2e\.ts$ ]]; then
+            printf '::error::spec must be an e2e/**/*.e2e.ts path, not %q\n' "$SPEC"; exit 1
+          fi
+          test -f "$SPEC" || { printf '::error::%q does not exist\n' "$SPEC"; exit 1; }
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -196,10 +195,9 @@ jobs:
         env:
           PLAYWRIGHT_VERSION: ${{ inputs.playwright }}
         run: |
-          case "$PLAYWRIGHT_VERSION" in
-            1.[0-9]*.[0-9]*) ;;
-            *) echo "::error::playwright must be a release like 1.63.0, not '$PLAYWRIGHT_VERSION'"; exit 1 ;;
-          esac
+          if ! [[ "$PLAYWRIGHT_VERSION" =~ ^1\.[0-9]+\.[0-9]+$ ]]; then
+            printf '::error::playwright must be a release like 1.63.0, not %q\n' "$PLAYWRIGHT_VERSION"; exit 1
+          fi
           bun add --dev --exact "@playwright/test@$PLAYWRIGHT_VERSION"
           bunx playwright --version
 
