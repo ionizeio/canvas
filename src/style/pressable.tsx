@@ -27,6 +27,9 @@ import { useTheme } from "./theme.js";
 /** The ring's distance from the control, the CSS hand-off's `--ring-offset`. */
 export const FOCUS_RING_OFFSET = 2;
 
+/** The ring's thickness where the kit draws it itself (a frame's ring), the CSS hand-off's `--ring-width`. */
+export const FOCUS_RING_WIDTH = 2;
+
 /**
  * The ring drawn just inside the control instead of around it, for a full-bleed row
  * (an accordion header, a sidebar row) whose clipping container would cut an outside

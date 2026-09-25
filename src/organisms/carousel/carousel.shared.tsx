@@ -22,9 +22,12 @@ import {
   GlassSurface,
   GlassPane,
   paneStyle,
+  FOCUS_RESET,
 } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
+import { useFocusFrame } from "../../style/focus-frame.js";
+import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { useIsomorphicLayoutEffect } from "../../style/use-isomorphic-layout-effect.js";
 
 // Shared Carousel shell. The structure (a horizontally paged ScrollView of slides
@@ -270,6 +273,11 @@ export function createCarousel(skin: CarouselSkin) {
     const measured = width > 0;
     const listRef = useRef<ScrollView>(null);
     const { onContentSizeChange: reportContentSize, ...scrollFocus } = useHorizontalScrollFocus();
+    // The paged scroller is a keyboard stop flush inside the clipping viewport, and the
+    // current slide covers the whole of it, so the viewport draws the focus ring, with
+    // the slide's corners (src/style/focus-frame.tsx).
+    const focusFrame = useFocusFrame();
+    const scrollRef = useComposedRefs<ScrollView>(listRef, focusFrame.target.ref);
     const [contentWidth, setContentWidth] = useState(0);
     const commanded = useRef<{ index: number; width: number; count: number } | null>(null);
     const onContentSizeChange = useCallback((content: number, height: number) => {
@@ -402,12 +410,13 @@ export function createCarousel(skin: CarouselSkin) {
       <View testID={testID} style={[ROOT, style]}>
         <View style={arrowsShown ? trackWithArrows : TRACK}>
           {arrowsShown ? <Arrow side="prev" disabled={prevDisabled} onPress={() => goTo(currentRef.current - 1)} /> : null}
-          <View style={VIEWPORT} onLayout={onLayout}>
+          <View style={[VIEWPORT, focusFrame.ring(skin.slide(tokens))]} onLayout={onLayout}>
             <ScrollView
               {...scrollFocus}
               {...keyboardProps}
+              {...focusFrame.target}
               onContentSizeChange={onContentSizeChange}
-              ref={listRef}
+              ref={scrollRef}
               // Pin the scroll container to the measured viewport width. Without a
               // DEFINITE width the horizontal list reports its intrinsic size (the
               // sum of the slides, each itself sized to the measured width) up to the
@@ -416,7 +425,7 @@ export function createCarousel(skin: CarouselSkin) {
               // at its ~2^24 layout cap, pushing every slide off-screen). A definite
               // width caps that contribution and keeps slide N at N * width. Before
               // the viewport measures, its column stretches the list to its width.
-              style={measured ? { width } : null}
+              style={[measured ? { width } : null, FOCUS_RESET]}
               contentContainerStyle={measured ? null : UNMEASURED_CONTENT}
               horizontal
               pagingEnabled

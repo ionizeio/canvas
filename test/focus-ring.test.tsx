@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { cleanup, render, screen } from "@testing-library/react";
 import type { View } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
-import { Pressable, FOCUS_RING_OFFSET } from "../src/style/pressable.tsx";
+import { Pressable, FOCUS_RING_OFFSET, FOCUS_RING_WIDTH } from "../src/style/pressable.tsx";
 import { Button } from "../src/atoms/button/button.tsx";
 import { Input } from "../src/atoms/input/input.tsx";
 import { Pagination as IOSPagination } from "../src/atoms/pagination/pagination.ios.tsx";
@@ -124,5 +124,7 @@ describe("the themed focus ring", () => {
     expect(layer).toMatch(/:focus-visible\{outline:var\(--ring-width\) solid var\(--ring\);outline-offset:var\(--ring-offset\)\}/);
     const shadows = readFileSync(new URL("../styles/tokens/shadows.css", import.meta.url), "utf8");
     expect(shadows).toContain(`--ring-offset:${FOCUS_RING_OFFSET}px`);
+    // A frame's ring (src/style/focus-frame.tsx) is drawn by the kit itself, at the same width.
+    expect(shadows).toContain(`--ring-width:${FOCUS_RING_WIDTH}px`);
   });
 });

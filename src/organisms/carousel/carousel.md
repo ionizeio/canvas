@@ -28,7 +28,8 @@ content up front.
 On web, Tab visits the carousel in the order it reads: the previous arrow, the
 slide viewport, the next arrow, then the slide picker (an arrow disabled at the
 end of a non-looping carousel is skipped). Tab reaches the viewport while its
-slides overflow it. Left and Right move between
+slides overflow it, and the focused viewport draws the theme's focus ring around
+the slide. Left and Right move between
 slides, while Home and End reach the first and last. Controls inside a slide
 keep their own keyboard behavior. The named slide-picker buttons report the
 current slide and its position in the set; activating the current slide does

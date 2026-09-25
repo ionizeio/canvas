@@ -2,7 +2,8 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { useEffect, useMemo, useRef, useState } from "react";
 import { type GestureResponderEvent, StyleSheet } from "react-native";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
-import { View, Pressable, Text, ScrollView, useTheme, useControllableState, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type TouchTargetSkin, type LayoutStyle, GlassSurface, isGlass, withInnerFill } from "../../style/index.js";
+import { useFocusFrame } from "../../style/focus-frame.js";
+import { View, Pressable, Text, ScrollView, useTheme, useControllableState, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, devWarn, FOCUS_RESET, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type TouchTargetSkin, type LayoutStyle, GlassSurface, isGlass, withInnerFill } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
 import { MONO, type Variant } from "./code-block.styles.js";
@@ -487,6 +488,9 @@ export function createCodeBlock(skin: CodeBlockSkin) {
     } = props;
     const variant = variantOf(props);
     const scrollFocus = useHorizontalScrollFocus();
+    // The overflowing scroller is a keyboard stop that sits flush inside the block's
+    // clipping card, so the card draws its focus ring (src/style/focus-frame.tsx).
+    const focusFrame = useFocusFrame();
     const theme = useMaterialTheme({ static: true });
     const { tokens, dark } = theme;
 
@@ -629,7 +633,7 @@ export function createCodeBlock(skin: CodeBlockSkin) {
         </View>
       );
       return (
-        <View testID={testID} style={[skin.terminalOuter(tokens), attached ? skin.attachedTop : null, style]}>
+        <View testID={testID} style={[skin.terminalOuter(tokens), attached ? skin.attachedTop : null, style, focusFrame.ring()]}>
           {/* Chrome bar: three traffic-light dots, the label or tab strip, the copy chip. */}
           <View style={[skin.terminalChrome, tabList ? skin.terminalChromeWithTabs : null]}>
             <View style={skin.trafficDot("red")} />
@@ -651,7 +655,7 @@ export function createCodeBlock(skin: CodeBlockSkin) {
           {wrap ? (
             rows
           ) : (
-            <ScrollView {...scrollFocus} horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={GROW}>
+            <ScrollView {...scrollFocus} {...focusFrame.target} horizontal showsHorizontalScrollIndicator={false} style={FOCUS_RESET} contentContainerStyle={GROW}>
               {rows}
             </ScrollView>
           )}
@@ -708,7 +712,19 @@ export function createCodeBlock(skin: CodeBlockSkin) {
 
     const glass = isGlass(theme);
     return (
-      <GlassSurface layer="content" testID={testID} style={[RELATIVE, glass ? skin.surface(tokens) : null, glass ? GLASS_ROOT : null, style]}>
+      <GlassSurface
+        layer="content"
+        testID={testID}
+        style={[
+          RELATIVE,
+          glass ? skin.surface(tokens) : null,
+          glass ? GLASS_ROOT : null,
+          style,
+          // Under glass the root carries the card's corners; in solid mode the header
+          // and the surface round their own, so the ring takes the card's shape.
+          focusFrame.ring(glass ? undefined : [skin.surface(tokens), attached ? skin.attachedTop : null]),
+        ]}
+      >
         {hasHeader ? (
           <View
             style={[
@@ -756,9 +772,10 @@ export function createCodeBlock(skin: CodeBlockSkin) {
             ) : (
               <ScrollView
                 {...scrollFocus}
+                {...focusFrame.target}
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                style={FLEX_FILL}
+                style={[FLEX_FILL, FOCUS_RESET]}
                 contentContainerStyle={GROW}
               >
                 {rowsCol}

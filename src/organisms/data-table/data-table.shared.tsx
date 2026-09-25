@@ -3,8 +3,9 @@ import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { Fragment, type ComponentType, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { consumeEscapeKey } from "../../style/escape-layer.js";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
+import { useFocusFrame } from "../../style/focus-frame.js";
 import { FlatList, StyleSheet, ScrollView, type TextInputProps, type ViewProps, type ViewStyle as RNViewStyle } from "react-native";
-import { View, Pressable, Text, TextInput, useControllableState, controlRipple, devWarn, breakpoints, useContainerWidth, tabularNums, type BreakpointKey, type StyleProp, type TextStyle, type ViewStyle, type LayoutStyle, useFillStyle, GlassSurface, GlassPane, paneStyle, PANE_SIBLING_INPUT, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useControllableState, controlRipple, devWarn, breakpoints, useContainerWidth, tabularNums, type BreakpointKey, type StyleProp, type TextStyle, type ViewStyle, type LayoutStyle, useFillStyle, GlassSurface, GlassPane, paneStyle, PANE_SIBLING_INPUT, withInnerFill, FOCUS_RESET } from "../../style/index.js";
 import { type CheckboxProps } from "../../atoms/checkbox/checkbox.shared.js";
 import { type PaginationProps } from "../../atoms/pagination/pagination.shared.js";
 import { type SkeletonProps } from "../../atoms/skeleton/skeleton.shared.js";
@@ -462,6 +463,11 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       "[canvas] <DataTable stackBreakpoint>: `stackBreakpoint` refines `stacks` and does nothing without it.",
     );
     const scrollFocus = useHorizontalScrollFocus();
+    // The overflowing scroller is a keyboard stop flush inside the table's clipping
+    // surface, so the surface draws its focus ring (src/style/focus-frame.tsx): around
+    // itself, or just inside its edge when `attached` puts it flush inside a parent
+    // frame that would clip a ring drawn around it.
+    const focusFrame = useFocusFrame();
     // SwiftUI Table collapses to its PRIMARY (first) column in compact width on
     // iPhone; the iOS skin opts in. Every other platform renders all columns,
     // and a stacked table shows every column on iOS too.
@@ -790,7 +796,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       <GlassSurface
         layer="content"
         testID={testID}
-        style={wrap}
+        style={[wrap, attached ? null : focusFrame.ring()]}
         role={canPan ? undefined : "table"}
         onLayout={onMeasureLayout}
       >
@@ -808,10 +814,11 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
           // first tap dismissing the keyboard.
           <ScrollView
             {...scrollFocus}
+            {...focusFrame.target}
             horizontal
             showsHorizontalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
-            style={windowed || pans ? null : s.rigidScroller}
+            style={[windowed || pans ? null : s.rigidScroller, FOCUS_RESET]}
             contentContainerStyle={pans ? [s.content, { minWidth: panMinWidth }] : s.content}
           >
             {/* A focusable scrollport surrounds the table. Putting it inside the
@@ -846,6 +853,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
             />
           </View>
         ) : null}
+        {attached ? focusFrame.innerRing(wrap) : null}
       </GlassSurface>
     );
 
