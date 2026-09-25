@@ -84,11 +84,11 @@ const outlineOf = (locator: Locator) =>
 // Whether a node paints an outline at all. A node that paints its own focus state (or
 // whose frame does) switches its outline off with a zero width (FOCUS_RESET), leaving its
 // style `solid`, the value React Native's native parser accepts, so the style alone
-// does not say.
+// does not say. The browser's own `auto` ring ignores the width, so it always paints.
 const drawsOutline = (locator: Locator) =>
   locator.evaluate((node) => {
     const style = getComputedStyle(node);
-    return style.outlineStyle !== "none" && parseFloat(style.outlineWidth) > 0;
+    return style.outlineStyle === "auto" || (style.outlineStyle !== "none" && parseFloat(style.outlineWidth) > 0);
   });
 
 for (const width of [1280, 390]) {
@@ -201,7 +201,7 @@ for (const width of [1280, 390]) {
       const frame = () => port.evaluate((node) => {
         for (let at = node.parentElement; at; at = at.parentElement) {
           const style = getComputedStyle(at);
-          if (style.outlineStyle !== "none" && parseFloat(style.outlineWidth) > 0) return { style: style.outlineStyle, color: style.outlineColor, clips: style.overflow === "hidden" };
+          if (style.outlineStyle === "auto" || (style.outlineStyle !== "none" && parseFloat(style.outlineWidth) > 0)) return { style: style.outlineStyle, color: style.outlineColor, clips: style.overflow === "hidden" };
         }
         return null;
       });

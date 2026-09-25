@@ -191,10 +191,11 @@ test("a windowed table's overflowing body is one keyboard stop, in every engine"
   const table = page.getByTestId("scroll-windowed");
   const body = table.getByRole("rowgroup");
   const outline = (locator: Locator) => locator.evaluate((node) => getComputedStyle(node).outlineStyle);
-  // The body switches its own ring off with a zero width (FOCUS_RESET), its style `solid`.
+  // The body switches its own ring off with a zero width (FOCUS_RESET), its style `solid`;
+  // the browser's own `auto` ring ignores the width, so it always paints.
   const bodyDrawsOutline = () => body.evaluate((node) => {
     const style = getComputedStyle(node);
-    return style.outlineStyle !== "none" && parseFloat(style.outlineWidth) > 0;
+    return style.outlineStyle === "auto" || (style.outlineStyle !== "none" && parseFloat(style.outlineWidth) > 0);
   });
   await page.getByTestId("before-windowed").focus();
   await page.keyboard.press("Tab");

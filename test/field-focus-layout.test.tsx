@@ -201,8 +201,9 @@ const ui = (n: ReactNode) => render(<ThemeProvider>{n}</ThemeProvider>);
 afterEach(cleanup);
 
 // RNW writes the reset as an inline style on the element; assert the outline is
-// explicitly zeroed rather than left at the UA default. The width does the work; the
-// style is `solid` because React Native's native prop parser rejects `none`.
+// explicitly zeroed rather than left at the UA default. The zero width does the work under
+// a named style (the browser's own `auto` ring ignores the width), and that style is
+// `solid` because React Native's native prop parser rejects `none`.
 function assertOutlineSuppressed(el: HTMLElement | null) {
   expect(el).not.toBeNull();
   const inline = el!.style;

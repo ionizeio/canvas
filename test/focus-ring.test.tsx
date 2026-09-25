@@ -27,8 +27,10 @@ import { LOOKS, lookProps } from "./fixtures/looks.ts";
 afterEach(cleanup);
 
 const outline = (node: HTMLElement, property: "color" | "offset" | "style" | "width") => node.style.getPropertyValue(`outline-${property}`);
-// Whether a node's inline style switches its outline off, either way a browser reads it.
-const suppressed = (node: HTMLElement) => outline(node, "style") === "none" || outline(node, "width") === "0px";
+// Whether a node's inline style switches its outline off, either way a browser reads it: no
+// style, or a zero width under a named style (the browser's `auto` ring ignores the width).
+const suppressed = (node: HTMLElement) =>
+  outline(node, "style") === "none" || (outline(node, "width") === "0px" && !["", "auto"].includes(outline(node, "style")));
 const channels = (color: string) => {
   if (color.startsWith("#")) {
     const n = parseInt(color.slice(1), 16);
@@ -53,7 +55,8 @@ describe("the themed focus ring", () => {
 
   it("leaves a field, which paints its own focus border, on its reset", () => {
     render(<ThemeProvider light solid><Input label="Name" testID="name" /></ThemeProvider>);
-    // A zero width paints no outline whatever the style; the style is one native parses.
+    // A solid outline of zero width paints nothing (a zero width alone would leave the
+    // browser's `auto` ring, which ignores it); `solid` is a style native parses.
     expect(outline(screen.getByTestId("name"), "width")).toBe("0px");
     expect(outline(screen.getByTestId("name"), "style")).toBe("solid");
   });
