@@ -1,5 +1,12 @@
 # @nannier/canvas
 
+## 3.2.3
+
+### Patch Changes
+
+- 64dc6b2: The manual `E2E soak` workflow can now run full Chromium in its new headless mode (`channel`) or add Chromium switches (`chromium_args`) through its own `playwright.soak.config.ts`, which layers them over the suite's configuration for the Chromium projects only, and soaks no longer queue behind each other, so two hypotheses about one commit run side by side. Repository tooling only; nothing in the package changes.
+- 6c777c9: The manual `E2E soak` workflow gains a `trace` input (`retain-on-failure`, the suite's own setting, or `off`), so a soak can tell whether the screencast a Playwright trace records takes part in a failure. Repository tooling only; nothing in the package changes.
+
 ## 3.2.2
 
 ### Patch Changes
