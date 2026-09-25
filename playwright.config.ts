@@ -24,6 +24,18 @@
  * There are no retries on purpose. A test that only passes sometimes is a defect in
  * the test or the app, and hiding it behind a retry is the shortcut this repo does
  * not take. Every wait in the suite is a wait on observable state, never a sleep.
+ *
+ * Playwright is pinned to a prerelease, 1.64.0-alpha-2026-09-25 (package.json, with an
+ * override that puts @axe-core/playwright's playwright-core peer on the same build),
+ * for the Firefox it ships. Before build r1551, Juggler named each content-side channel
+ * after its process alone, so when a navigation to a `Cross-Origin-Opener-Policy:
+ * same-origin` document (every docs page sends one) replaced the page's browsing
+ * context in the same process, the new channel inherited the old one's cache of
+ * answered messages and its first events were dropped as repeats
+ * (microsoft/playwright#42731). The dropped event was sometimes the page world's
+ * "execution context created": the page painted, Playwright never learned the world
+ * existed, and every page.evaluate waited forever, about one Firefox test in 8,000 on
+ * the E2E soak. Move to 1.64.0 when it is released and drop the override then.
  */
 import { defineConfig, devices, type PlaywrightTestOptions, type PlaywrightWorkerOptions, type Project } from "@playwright/test";
 
@@ -59,7 +71,9 @@ const compareSnapshots = process.platform === "linux" || !!process.env.E2E_FORCE
 // nothing here depends on frame pacing, since the screenshots disable animations and
 // the page clock drives the page's own timers. It mitigates a Chromium defect rather
 // than curing it (the one hang left had the same profile), and it stays until a
-// Chromium release is soaked clean without it.
+// Chromium release is soaked clean without it. On Chromium 155 (Playwright
+// 1.64.0-alpha-2026-09-25) the same soak with the switch hung once in 144 passes; with
+// Chromium 153's default pacing it had hung 8 times in 32.
 export const CHROMIUM_ARGS = ["--disable-frame-rate-limit"];
 
 type SuiteProject = Project<PlaywrightTestOptions, PlaywrightWorkerOptions>;

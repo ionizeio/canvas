@@ -147,7 +147,7 @@
     "@changesets/cli": "^2.31.0",
     "@eslint/js": "^9",
     "@happy-dom/global-registrator": "^20.10.6",
-    "@playwright/test": "^1.60.0",
+    "@playwright/test": "1.64.0-alpha-2026-09-25",
     "@react-native/babel-preset": "0.86.0",
     "@react-native/metro-config": "0.86.0",
     "@testing-library/dom": "^10.4.1",
@@ -167,7 +167,7 @@
     "husky": "^9.1.7",
     "lucide-static": "^1.24.0",
     "metro": "0.84.5",
-    "playwright": "^1.60.0",
+    "playwright": "1.64.0-alpha-2026-09-25",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-native": "^0.86.0",
@@ -181,6 +181,9 @@
     "typescript-eslint": "^8.64.0",
     "world-atlas": "^2.0.2",
     "yaml": "^2.9.0"
+  },
+  "overrides": {
+    "playwright-core": "1.64.0-alpha-2026-09-25"
   },
   "react-native": "./dist/native/index.js",
   "workspaces": [
