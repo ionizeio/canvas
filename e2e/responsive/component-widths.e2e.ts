@@ -21,6 +21,23 @@ import { expect, test } from "../support/fixtures";
 
 type Overflow = { document: number; page: number };
 
+/**
+ * How far past its scrollport the widest Props table's content runs (0 without one).
+ * A DataTable clips inside its own horizontal scroller, so a table that will not
+ * narrow never reaches the page overflow above: the Props tables once grew to their
+ * longest description on one line (9,468 px on the Input page at 390), every
+ * description off screen, while the page itself fit.
+ */
+async function readPropTableOverflow(page: import("@playwright/test").Page): Promise<number> {
+  return page.evaluate(() => {
+    const past = [...document.querySelectorAll('[data-testid="prop-table"]')].map((table) => {
+      const scroller = [...table.querySelectorAll("div")].find((node) => getComputedStyle(node).overflowX === "auto");
+      return scroller ? scroller.scrollWidth - scroller.clientWidth : 0;
+    });
+    return Math.max(0, ...past);
+  });
+}
+
 /** How far past its own box a node's content runs right now, in CSS pixels. */
 async function readOverflow(page: import("@playwright/test").Page): Promise<Overflow> {
   return page.evaluate(() => {
@@ -94,6 +111,8 @@ test.describe("phone width", () => {
   for (const route of contentRoutes()) {
     test(`${route.kind} ${route.name} fits at 390`, async ({ page }) => {
       await expectFits(page, route.path, { width: 390, height: 844 }, KNOWN_PHONE_OVERFLOW[route.path]);
+      // A component page's Props tables stack on a phone, so none scrolls sideways.
+      expect(await settled(() => readPropTableOverflow(page)), "a Props table scrolls sideways").toBeLessThanOrEqual(0);
     });
   }
 });

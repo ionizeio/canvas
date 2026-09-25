@@ -17,10 +17,13 @@ scrolls the page (while TalkBack explores by touch the scroller stays enabled, s
 the exploring finger reaches every cell). On an iPhone-width table iOS shows only
 the first column instead, as SwiftUI Table does. A table that passes `stacks`
 does neither: at that width each row stacks its cells (see Stacked below).
-Crossing that width changes the layout only: rows, custom cells, an open
-editor with its text and focus, and a windowed body's scroll position stay as
-they are when a window is resized across it or a phone measures the table on
-its first frame.
+On the web and Android, and for a table that stacks on any platform, crossing
+that width changes the layout only: rows, custom cells, an open editor with its
+text and focus, and a windowed body's scroll position stay as they are when a
+window is resized across it or a phone measures the table on its first frame.
+The iOS first-column layout is the exception: below that width the columns
+after the first leave the table, with any editor or custom cell in them, and
+mount again when it widens.
 
 ## Usage
 

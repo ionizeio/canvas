@@ -366,8 +366,9 @@ export const androidSkin: DataTableSkin = {
   dataCell: DATA_CELL,
   // M3 body-large: 16/24/400 with +0.5 tracking.
   cellText: (t) => ({ fontSize: 16, lineHeight: 24, letterSpacing: 0.5, color: t.foreground }),
-  // M3 label-small: 11/16/500 with +0.5 tracking.
-  stackedLabel: (t) => ({ fontSize: 11, lineHeight: 16, fontWeight: "500", letterSpacing: 0.5, color: t["muted-foreground"] }),
+  // Material 3 has no data table (PLATFORM-REFERENCES.md), so this part takes
+  // Dark Factory's look, the web's caption label, rather than an M3 role.
+  stackedLabel: webSkin.stackedLabel,
   separator: null,
   // Row actions: 48dp M3 touch targets on a circular state layer (the shell
   // ripples them with controlRipple); two plus the gap and px-12 padding.

@@ -722,6 +722,14 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       props.stacks ? <View style={stacked ? STACKED_CELLS : ROW_PRESS_AREA}>{cells}</View> : cells;
     // Stacked, the header row is drawn only while it holds a control.
     const header = !stacked || selectable || cols.some(sortableAt);
+    // Stacked, the selection box and the row actions center on the row's first
+    // line of cell text (the indicator-to-first-line rule of the kit's labelled
+    // controls): each fills a band at the top of the row one line of the skin's
+    // cell text tall inside the cell's own vertical padding, and centers in it.
+    // A control taller than the band overflows it evenly, so it stays centered.
+    const firstLineBand: ViewStyle | null = stacked
+      ? { height: 2 * Number(skin.cellPad[density].paddingVertical ?? 0) + Number(skin.cellText(tokens).lineHeight ?? 0) }
+      : null;
 
     // The data rows: skeleton placeholders while loading; a windowed FlatList
     // when asked (and bounded); else every row of the page mounted (the
@@ -950,7 +958,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       // a stray row press under the field would fight the editor.
       const editingHere = rowEditing || (cellEdit != null && cellEdit.row === r);
       const selectCell = selectable ? (
-        <View style={[skin.selectCell, skin.cellPad[density]]} role="cell">
+        <View style={[skin.selectCell, skin.cellPad[density], firstLineBand]} role="cell">
           {/* The row selector: its own Pressable, so a tap on the box toggles
               selection while a tap elsewhere on the row still reaches the
               row's press behavior (the responder system grants the innermost
@@ -1221,7 +1229,8 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       // value in the skin's small muted label (the header band is gone, or
       // holds only the controls). The label is a sibling BEFORE the content, so
       // the content keeps its place, and its state, across the breakpoint.
-      const stackedLabel = stacked && index > 0 ? <Text style={skin.stackedLabel(tokens)}>{col.label}</Text> : null;
+      const stackedLabel =
+        stacked && index > 0 && col.label ? <Text style={skin.stackedLabel(tokens)}>{col.label}</Text> : null;
       return (
         <View
           key={`c-${rowId}-${c}`}
@@ -1244,7 +1253,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       const armed = armedRow === r;
       const iconSize = skin.actionIconSize;
       return (
-        <View style={[ACTIONS_CELL, { width: skin.actionsColWidth }]} role="cell">
+        <View style={[ACTIONS_CELL, { width: skin.actionsColWidth }, firstLineBand]} role="cell">
           {editingRow === r ? (
             <>
               {actionButton(`Save ${name}`, () => commitRow(row, r), <Icon check success size={iconSize} decorative />)}

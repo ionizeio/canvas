@@ -117,6 +117,30 @@ for (const [platform, Table] of ENTRIES) {
       expect(within(dataRows()[0]!).getAllByRole("checkbox")).toHaveLength(1);
     });
 
+    it("labels no stacked cell whose column has no label", () => {
+      // A trailing menu column is often unlabelled (the Profile and API keys
+      // templates): stacked, its cell carries the menu alone.
+      ui(<Table testID="table" stacks columns={["Name", "Status", ""]} rows={[["Ada", "Active", "Menu"]]} />);
+      measure(375);
+      const [, status, menu] = within(dataRows()[0]!).getAllByRole("cell");
+      expect(status!.childElementCount).toBe(2);
+      expect(menu!.childElementCount).toBe(1);
+    });
+
+    it("centers a stacked row's selection box and actions on its first line of cell text", () => {
+      ui(
+        <Table testID="table" stacks selectable onRowEdit={() => {}} onRowCommit={() => {}} columns={COLUMNS} rows={[["Ada", "Active", "Eng"]]} />,
+      );
+      const cells = () => within(dataRows()[0]!).getAllByRole("cell");
+      const bands = () => [cells()[0]!, cells().at(-1)!].map((cell) => getComputedStyle(cell).height);
+      // Side by side the row centers them; stacked each fills one padded line.
+      expect(bands()).toEqual(["", ""]);
+      measure(375);
+      const [first] = bands();
+      expect(first).toMatch(/^\d+px$/);
+      expect(bands()).toEqual([first, first]);
+    });
+
     it("stacks its loading placeholders", () => {
       ui(<Table testID="table" stacks loading columns={COLUMNS} rows={[]} />);
       measure(375);

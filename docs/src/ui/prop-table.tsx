@@ -46,6 +46,7 @@ function GroupTable({ group }: { group: PropGroup }) {
         striped
         compact
         stacks
+        testID="prop-table"
         columns={["Prop", "Description"]}
         rows={group.props.map((p) => [
           <PropRowName name={p.name} type={p.type} required={p.required} />,
