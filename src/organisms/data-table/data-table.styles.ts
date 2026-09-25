@@ -1,5 +1,6 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, alpha, surfaceRipple, shape } from "../../style/index.js";
+import { typeScale } from "../../style/type-scale.js";
 
 // Co-located DataTable skins, one per platform. The table is laid out as flex
 // rows of equal-width flex-1 cells (there is no CSS table primitive). Layout-only
@@ -90,6 +91,12 @@ export interface DataTableSkin {
   dataCell: ViewStyle;
   /** A data cell's text (the platform's body type on the foreground color). */
   cellText: (t: ColorTokens) => TextStyle;
+  /**
+   * A `stacks` table's column label above a stacked cell's value: the platform's
+   * smallest label role in the muted color, so it stays below any cell text,
+   * the kit's small Typography included (the docs' prop descriptions).
+   */
+  stackedLabel: (t: ColorTokens) => TextStyle;
   /**
    * An inset row separator hairline (iOS lists inset the separator to the content
    * leading edge). When set, the shell renders it as an absolutely-positioned
@@ -203,6 +210,8 @@ export const webSkin: DataTableSkin = {
   },
   dataCell: DATA_CELL,
   cellText: (t) => ({ fontSize: 14, lineHeight: 20, color: t.foreground }),
+  // Dark Factory's caption role.
+  stackedLabel: (t) => ({ ...typeScale.caption, color: t["muted-foreground"] }),
   separator: null,
   // Row actions: 36px icon buttons (the pointer web needs no touch minimum);
   // two of them plus the gap and px-12 cell padding set the 108px column.
@@ -276,6 +285,8 @@ export const iosSkin: DataTableSkin = {
   },
   dataCell: DATA_CELL,
   cellText: (t) => ({ fontSize: 17, lineHeight: 22, letterSpacing: -0.43, color: t.foreground }),
+  // HIG Caption 2: 11/13 regular at +0.06 tracking, the secondary label color.
+  stackedLabel: (t) => ({ fontSize: 11, lineHeight: 13, fontWeight: "400", letterSpacing: 0.06, color: t["muted-foreground"] }),
   // Thin (~0.5pt) separator inset 16pt from the leading edge to align with the
   // content (iOS list/table separators do not run full-bleed).
   separator: (t) => ({ position: "absolute", left: 16, right: 0, bottom: 0, height: 0.5, backgroundColor: t.border }),
@@ -355,6 +366,8 @@ export const androidSkin: DataTableSkin = {
   dataCell: DATA_CELL,
   // M3 body-large: 16/24/400 with +0.5 tracking.
   cellText: (t) => ({ fontSize: 16, lineHeight: 24, letterSpacing: 0.5, color: t.foreground }),
+  // M3 label-small: 11/16/500 with +0.5 tracking.
+  stackedLabel: (t) => ({ fontSize: 11, lineHeight: 16, fontWeight: "500", letterSpacing: 0.5, color: t["muted-foreground"] }),
   separator: null,
   // Row actions: 48dp M3 touch targets on a circular state layer (the shell
   // ripples them with controlRipple); two plus the gap and px-12 padding.

@@ -13,8 +13,9 @@ platform's arrow keys can reveal the remaining columns. A table that fits adds
 no scrolling tab stop, and on Android it takes no sideways drag either, so a tap
 that drifts sideways still presses its row and a swipe that starts across it
 scrolls the page (while TalkBack explores by touch the scroller stays enabled, so
-the exploring finger reaches every cell). The iOS compact primary-column layout
-is unchanged.
+the exploring finger reaches every cell). On an iPhone-width table iOS shows only
+the first column instead, as SwiftUI Table does. A table that passes `stacks`
+does neither: at that width each row stacks its cells (see Stacked below).
 Crossing that width changes the layout only: rows, custom cells, an open
 editor with its text and focus, and a windowed body's scroll position stay as
 they are when a window is resized across it or a phone measures the table on
@@ -256,6 +257,23 @@ A table that sits flush inside a frame its parent draws (a `flush` Card, a borde
     />
   )}
 </Stateful>
+```
+
+### Stacked
+
+Pass `stacks` when the cells carry long text. When the table's own container is at or below `stackBreakpoint` (default `sm`, 640), each row lays its cells out top to bottom at the full width: the first cell leads as the row's title and every later cell sits under its column label, so a paragraph reads at the table's width instead of a column's share of it. The header row stays only while it holds a control (a sortable column, as here, or the box that selects every row), the selection box and row actions keep their places, and on iOS the table stacks instead of collapsing to its first column. Above the breakpoint it is the ordinary table.
+
+```tsx
+<DataTable
+  stacks
+  sortable
+  columns={["Setting", "Default", "Description"]}
+  rows={[
+    ["Session timeout", "30 minutes", "Signs a member out after this long without activity. Shorter timeouts suit shared devices; longer ones suit a personal laptop."],
+    ["Password length", "12 characters", "The shortest password a member can choose. Longer minimums resist guessing, and a passphrase meets them easily."],
+    ["Recovery codes", "10 codes", "One-time codes a member can use when their authenticator is unavailable. Each code works once."]
+  ]}
+/>
 ```
 
 ## Do & Don't

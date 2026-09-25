@@ -4,7 +4,7 @@ import { Fragment, type ComponentType, type ReactNode, useEffect, useMemo, useRe
 import { consumeEscapeKey } from "../../style/escape-layer.js";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 import { FlatList, StyleSheet, ScrollView, type TextInputProps, type ViewProps, type ViewStyle as RNViewStyle } from "react-native";
-import { View, Pressable, Text, TextInput, useControllableState, controlRipple, devWarn, breakpoints, useMeasuredWidth, tabularNums, type StyleProp, type TextStyle, type ViewStyle, type LayoutStyle, useFillStyle, GlassSurface, GlassPane, paneStyle, PANE_SIBLING_INPUT, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useControllableState, controlRipple, devWarn, breakpoints, useContainerWidth, tabularNums, type BreakpointKey, type StyleProp, type TextStyle, type ViewStyle, type LayoutStyle, useFillStyle, GlassSurface, GlassPane, paneStyle, PANE_SIBLING_INPUT, withInnerFill } from "../../style/index.js";
 import { type CheckboxProps } from "../../atoms/checkbox/checkbox.shared.js";
 import { type PaginationProps } from "../../atoms/pagination/pagination.shared.js";
 import { type SkeletonProps } from "../../atoms/skeleton/skeleton.shared.js";
@@ -129,6 +129,24 @@ export interface DataTableProps {
    * its rounded corners, which is the standalone look.
    */
   attached?: boolean;
+  /**
+   * Responsive: when the table's own CONTAINER is at or below `stackBreakpoint`
+   * (default `sm` = 640), each row lays its cells out top to bottom at the full
+   * width instead of side by side, so long text reads at the width of the
+   * table rather than a column's share of it. The first cell leads the row as
+   * its title; every later cell carries its column label above its value. The
+   * header row is drawn only while it holds a control (a sortable column, or
+   * the box that selects every row), as a band of its labels that wraps; the
+   * selection box and the row actions stay at the row's leading and trailing
+   * edges. A stacked table never pans, and on iOS it stacks instead of
+   * collapsing to its first column. Container-measured with a viewport seed for
+   * the first frame, like Row `stacks`; crossing the breakpoint changes the
+   * layout only.
+   */
+  stacks?: boolean;
+  /** The breakpoint at and below which `stacks` stacks the rows (default
+   *  `"sm"`). Only meaningful with `stacks` (DEV warns without it). */
+  stackBreakpoint?: BreakpointKey;
   // Density (pick one; default is the regular row height).
   /** Tighter vertical padding on header and data cells. */
   compact?: boolean;
@@ -335,6 +353,32 @@ const ROW_PRESS_AREA: ViewStyle = {
   alignItems: "center",
 };
 
+// A `stacks` table groups each row's data cells in one box, in both states, so
+// crossing the breakpoint restyles the box instead of remounting the cells.
+// Side by side it is the row's own cell layout (`ROW_PRESS_AREA`); stacked it
+// is a column whose cells span its width.
+const STACKED_CELLS: ViewStyle = {
+  flexGrow: 1,
+  flexShrink: 1,
+  flexBasis: "0%",
+  flexDirection: "column",
+};
+
+// A stacked row holds its selection box and actions level with its first cell.
+const STACKED_ROW: ViewStyle = { alignItems: "flex-start" };
+
+// A stacked cell takes its content's height at the full width (the equal flex
+// share is a width, meaningless in a column), with its column label above its
+// value. Every cell after the first drops its top padding, so the gap between
+// two stacked cells is one cell's padding rather than two.
+const STACKED_CELL: ViewStyle = { flexGrow: 0, flexShrink: 0, flexBasis: "auto", gap: 2 };
+const STACKED_CELL_FOLLOWS: ViewStyle = { paddingTop: 0 };
+
+// A stacked table's header, drawn only while it holds a control: a band of the
+// column labels, each hugging its label and sort indicator, that wraps.
+const STACKED_HEADER: ViewStyle = { flexWrap: "wrap", rowGap: 4 };
+const STACKED_HEADER_CELL: ViewStyle = { flexGrow: 0, flexBasis: "auto" };
+
 // The row activator that carries `onRowPress` for the keyboard and for screen
 // readers, inside the first data cell. It takes the cell's box so the focus
 // ring outlines the whole leading column rather than hugging a word; it draws
@@ -405,12 +449,24 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     // container, not the window: the docs 3-up and a real iPhone both render the
     // table narrower than a desktop window would report, so useWindowDimensions
     // cannot see the narrow column.
-    const { width: measuredWidth, onLayout: onMeasureLayout } = useMeasuredWidth();
+    // Panning and the iOS collapse read the MEASURED width only (the base layout
+    // on the unmeasured first frame); `stacks` reads it with the window as the
+    // first frame's seed, like Row `stacks`, so a phone's first frame already
+    // stacks instead of flashing the side-by-side rows.
+    const { width: containerWidth, measured, onLayout: onMeasureLayout } = useContainerWidth();
+    const measuredWidth = measured ? containerWidth : 0;
+    const stacked =
+      !!props.stacks && containerWidth > 0 && containerWidth <= breakpoints[props.stackBreakpoint ?? "sm"];
+    devWarn(
+      !!props.stackBreakpoint && !props.stacks,
+      "[canvas] <DataTable stackBreakpoint>: `stackBreakpoint` refines `stacks` and does nothing without it.",
+    );
     const scrollFocus = useHorizontalScrollFocus();
     // SwiftUI Table collapses to its PRIMARY (first) column in compact width on
-    // iPhone; the iOS skin opts in. Every other platform renders all columns.
+    // iPhone; the iOS skin opts in. Every other platform renders all columns,
+    // and a stacked table shows every column on iOS too.
     const collapsed =
-      !!skin.collapsesToPrimaryColumn && measuredWidth > 0 && measuredWidth < breakpoints.sm;
+      !stacked && !!skin.collapsesToPrimaryColumn && measuredWidth > 0 && measuredWidth < breakpoints.sm;
     const visibleColumns = collapsed ? cols.slice(0, 1) : cols;
     // Where the table does NOT collapse (web, Android), a compact container must
     // not crush the flex-1 cells into letter-wrapped slivers: below the sm width
@@ -426,7 +482,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     // the sm width, and once on every phone mount, whose first frame is
     // unmeasured.
     const canPan = !skin.collapsesToPrimaryColumn;
-    const pans = canPan && cols.length > 1 && measuredWidth > 0 && measuredWidth < breakpoints.sm;
+    const pans = canPan && !stacked && cols.length > 1 && measuredWidth > 0 && measuredWidth < breakpoints.sm;
     const hasActions = !!(onRowEdit || onRowDelete);
     const panMinWidth =
       cols.reduce((w, col) => w + (col.width ?? MIN_COLUMN_WIDTH), 0) +
@@ -628,10 +684,11 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       // The skin's 320 floor keeps columns readable in content-sized contexts,
       // but once the table has MEASURED a narrower container (a real phone, a
       // narrow docs column) the collapse/pan machinery above guarantees
-      // readability, and keeping the floor would clip: drop it. Converges: the
+      // readability, and keeping the floor would clip: drop it, and drop it for
+      // a stacked table, whose cells span the width. Converges: the
       // floored table measures its (narrow) container, the floor drops, and the
       // remeasure at true container width stays below sm.
-      measuredWidth > 0 && measuredWidth < breakpoints.sm ? { minWidth: 0 } : null,
+      stacked || (measuredWidth > 0 && measuredWidth < breakpoints.sm) ? { minWidth: 0 } : null,
       // RN has no ring; a rounded 1px border is the bordered outline.
       bordered ? skin.borderedOutline(tokens) : null,
       style,
@@ -649,18 +706,29 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     );
     const windowed = !!virtualized && bounded && !loading;
 
+    // A data or placeholder cell's layout over the skin's cell box: the column's
+    // fixed width side by side; stacked, the full width at the content's height.
+    const cellLayout = (col: NormalColumn, index: number): StyleProp<ViewStyle> =>
+      stacked ? [STACKED_CELL, index > 0 ? STACKED_CELL_FOLLOWS : null] : widthStyle(col);
+    // A `stacks` table's data cells, grouped in both states (see STACKED_CELLS).
+    // Without `stacks` the cells stay the row's own children, as they always were.
+    const cellGroup = (cells: ReactNode) =>
+      props.stacks ? <View style={stacked ? STACKED_CELLS : ROW_PRESS_AREA}>{cells}</View> : cells;
+    // Stacked, the header row is drawn only while it holds a control.
+    const header = !stacked || selectable || cols.some(sortableAt);
+
     // The data rows: skeleton placeholders while loading; a windowed FlatList
     // when asked (and bounded); else every row of the page mounted (the
     // default). The header row above stays fixed either way.
     const body = loading ? (
       Array.from({ length: paginated ? Math.min(pageSize, 10) : 5 }, (_, r) => (
-        <View key={`sk-${r}`} style={skin.dataRow(tokens)} role="row">
+        <View key={`sk-${r}`} style={[skin.dataRow(tokens), stacked ? STACKED_ROW : null]} role="row">
           {selectable ? <View style={[skin.selectCell, skin.cellPad[density]]} role="cell" /> : null}
-          {visibleColumns.map((col, c) => (
-            <View key={`skc-${c}`} style={[skin.dataCell, skin.cellPad[density], widthStyle(col)]} role="cell">
+          {cellGroup(visibleColumns.map((col, c) => (
+            <View key={`skc-${c}`} style={[skin.dataCell, skin.cellPad[density], cellLayout(col, c)]} role="cell">
               <Skeleton text small animate {...SKELETON_LENGTHS[(r + c) % SKELETON_LENGTHS.length]} />
             </View>
-          ))}
+          )))}
           {hasActions ? <View style={[ACTIONS_CELL, { width: skin.actionsColWidth }]} role="cell" /> : null}
           {skin.separator ? <View style={[skin.separator(tokens), { pointerEvents: "none" }]} /> : null}
         </View>
@@ -670,7 +738,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
         data={pageIndices}
         renderItem={({ item }) => renderDataRow(rows[item]!, item)}
         keyExtractor={(item) => keyOf(rows[item]!, item)}
-        extraData={[selected, sortState, density, striped, editingRow, draft, cellEdit, armedRow]}
+        extraData={[selected, sortState, density, striped, editingRow, draft, cellEdit, armedRow, stacked]}
         showsVerticalScrollIndicator={false}
       />
     ) : (
@@ -681,27 +749,30 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       <>
         {/* A framed table (its own outline, or an `attached` parent frame) squares the
             band's corners: the frame's clipped corners are the rounded ones. */}
-        <View style={[withInnerFill(theme, skin.headerRow(tokens), "soft"), bordered || attached ? skin.headerRowAttached : null, skin.headerPad[density]]} role="row">
-          {selectable ? (
-            <View style={skin.selectCol} role="columnheader">
-              <Checkbox
-                small
-                selection
-                checked={allSelected}
-                indeterminate={someSelected && !allSelected}
-                onChange={toggleAll}
-                disabled={rows.length === 0 || loading}
-                accessibilityLabel="Select all rows"
-              />
-            </View>
-          ) : null}
-          {visibleColumns.map((col) => renderHeaderCell(col))}
-          {hasActions ? (
-            // The unlabeled spacer over the trailing actions column keeps the
-            // header labels aligned with their data columns.
-            <View style={[ACTIONS_CELL, { width: skin.actionsColWidth }]} role="columnheader" />
-          ) : null}
-        </View>
+        {header ? (
+          <View style={[withInnerFill(theme, skin.headerRow(tokens), "soft"), bordered || attached ? skin.headerRowAttached : null, skin.headerPad[density], stacked ? STACKED_HEADER : null]} role="row">
+            {selectable ? (
+              <View style={skin.selectCol} role="columnheader">
+                <Checkbox
+                  small
+                  selection
+                  checked={allSelected}
+                  indeterminate={someSelected && !allSelected}
+                  onChange={toggleAll}
+                  disabled={rows.length === 0 || loading}
+                  accessibilityLabel="Select all rows"
+                />
+              </View>
+            ) : null}
+            {visibleColumns.map((col) => renderHeaderCell(col))}
+            {hasActions && !stacked ? (
+              // The unlabeled spacer over the trailing actions column keeps the
+              // header labels aligned with their data columns (a stacked header's
+              // labels align with nothing, so it has none).
+              <View style={[ACTIONS_CELL, { width: skin.actionsColWidth }]} role="columnheader" />
+            ) : null}
+          </View>
+        ) : null}
         {body}
         {!loading && rows.length === 0 && emptyMessage != null ? (
           <View style={EMPTY_WRAP}>
@@ -781,17 +852,20 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     // A header cell: a plain labeled box, or (sortable) a pressable label +
     // direction indicator cycling ascending -> descending -> off.
     function renderHeaderCell(col: NormalColumn) {
-      const align: ViewStyle | null = col.numeric
-        ? { justifyContent: "flex-end" }
-        : col.centered
-          ? { justifyContent: "center" }
-          : null;
+      // Stacked, a header cell hugs its label in the wrapping band; side by side
+      // it takes its column's share (or fixed width) and alignment.
+      const layout: StyleProp<ViewStyle> = stacked
+        ? STACKED_HEADER_CELL
+        : [
+            col.numeric ? { justifyContent: "flex-end" } : col.centered ? { justifyContent: "center" } : null,
+            widthStyle(col),
+          ];
       const label = (
         <Text
           style={[
             skin.headerCell(tokens),
             { flexShrink: 1 },
-            col.numeric ? { textAlign: "right" } : col.centered ? { textAlign: "center" } : null,
+            stacked ? null : col.numeric ? { textAlign: "right" } : col.centered ? { textAlign: "center" } : null,
           ]}
         >
           {col.label}
@@ -799,7 +873,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       );
       if (!sortableAt(col)) {
         return (
-          <View key={`h-${col.key}`} style={[HEADER_CELL_BOX, align, widthStyle(col)]} role="columnheader">
+          <View key={`h-${col.key}`} style={[HEADER_CELL_BOX, layout]} role="columnheader">
             {label}
           </View>
         );
@@ -823,8 +897,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
           {...sortA11y}
           style={({ pressed }) => [
             HEADER_CELL_BOX,
-            align,
-            widthStyle(col),
+            layout,
             // Android ripples; iOS/web dim the pressed header label.
             skin.ripple == null && pressed ? { opacity: 0.6 } : null,
           ]}
@@ -893,9 +966,11 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
               onRowPress(row, r);
             }
           : undefined;
-      const dataCells = visibleColumns.map((col, i) =>
-        renderBodyCell(row, r, rowId, col, i === 0 ? activate : undefined),
-      );
+      const dataCells = cellGroup(visibleColumns.map((col, i) =>
+        renderBodyCell(row, r, rowId, col, i, i === 0 ? activate : undefined),
+      ));
+      // Stacked, the selection box and the actions sit level with the first cell.
+      const stackedRow = stacked ? STACKED_ROW : null;
       // An inset row separator (iOS), absolutely positioned so it does not
       // affect the flex layout; web/Android use the dataRow's full-bleed
       // borderBottom instead (skin.separator is null there).
@@ -933,6 +1008,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
             focusable={false}
             style={({ pressed }) => [
               ROW_PRESS_AREA,
+              stackedRow,
               // Android ripples; iOS/web tint the pressed area fill.
               skin.ripple == null && pressed ? withInnerFill(theme, skin.pressTint(tokens), "firm") : null,
             ]}
@@ -941,7 +1017,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
             {dataCells}
           </Pressable>
         ) : (
-          <View style={ROW_PRESS_AREA}>
+          <View style={[ROW_PRESS_AREA, stackedRow]}>
             {selectCell}
             {dataCells}
           </View>
@@ -951,6 +1027,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
             role="row"
             style={[
               skin.dataRow(tokens),
+              stackedRow,
               // Hold the platform minimum tap target (iOS 44pt / M3 48dp).
               skin.pressableMinHeight != null && pressRow ? { minHeight: skin.pressableMinHeight } : null,
               stripe,
@@ -986,6 +1063,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
           focusable={false}
           style={({ pressed }) => [
             skin.dataRow(tokens),
+            stackedRow,
             // Hold the platform minimum tap target (iOS 44pt / M3 48dp) so a
             // compact pressable row is not sub-minimum; web omits it.
             skin.pressableMinHeight != null ? { minHeight: skin.pressableMinHeight } : null,
@@ -998,7 +1076,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
           {cells}
         </Pressable>
       ) : (
-        <View style={[skin.dataRow(tokens), stripe, selectedTint, editWash]} role="row">
+        <View style={[skin.dataRow(tokens), stackedRow, stripe, selectedTint, editWash]} role="row">
           {cells}
         </View>
       );
@@ -1012,6 +1090,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       r: number,
       rowId: string,
       col: NormalColumn,
+      index: number,
       activate?: () => void,
     ) {
       const c = cols.indexOf(col);
@@ -1020,11 +1099,15 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       const cellOpen =
         typeof cell === "string" &&
         (rowEditing || (cellEdit != null && cellEdit.row === r && cellEdit.col === c));
-      const alignCell: ViewStyle | null = col.numeric
-        ? { alignItems: "flex-end" }
-        : col.centered
-          ? { alignItems: "center" }
-          : null;
+      // A stacked cell reads from the start edge under its label, whatever its
+      // column's alignment side by side.
+      const alignCell: ViewStyle | null = stacked
+        ? null
+        : col.numeric
+          ? { alignItems: "flex-end" }
+          : col.centered
+            ? { alignItems: "center" }
+            : null;
       // A numeric column reads DOWN, not across, and proportional digits are
       // different widths: 1 is narrow, 0 and 4 are wide. So the same column of
       // figures fails to line up on the decimal, and a value that updates in
@@ -1032,8 +1115,8 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       // digit the same advance. The editor gets them too, so opening a cell for
       // editing does not reflow the number under the caret.
       const alignText: TextStyle | null = col.numeric
-        ? { textAlign: "right", ...tabularNums() }
-        : col.centered
+        ? { ...(stacked ? null : { textAlign: "right" as const }), ...tabularNums() }
+        : col.centered && !stacked
           ? { textAlign: "center" }
           : null;
 
@@ -1126,12 +1209,18 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
         );
       }
 
+      // Stacked, every cell after the row's first names its column above its
+      // value in the skin's small muted label (the header band is gone, or
+      // holds only the controls). The label is a sibling BEFORE the content, so
+      // the content keeps its place, and its state, across the breakpoint.
+      const stackedLabel = stacked && index > 0 ? <Text style={skin.stackedLabel(tokens)}>{col.label}</Text> : null;
       return (
         <View
           key={`c-${rowId}-${c}`}
-          style={[skin.dataCell, skin.cellPad[density], widthStyle(col), alignCell]}
+          style={[skin.dataCell, skin.cellPad[density], cellLayout(col, index), alignCell]}
           role="cell"
         >
+          {stackedLabel}
           {content}
         </View>
       );

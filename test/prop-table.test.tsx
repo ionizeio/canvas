@@ -47,6 +47,7 @@ function GroupTable({ group }: { group: PropGroup }) {
       bordered
       striped
       compact
+      stacks
       columns={["Prop", "Description"]}
       rows={group.props.map((p) => [
         <Column tight>

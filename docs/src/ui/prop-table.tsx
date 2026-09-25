@@ -12,7 +12,10 @@ import { sans } from "./fonts";
 // first cell (name in monospace, the required ones flagged; type on the line
 // below), and the description fills the second. That reads far better on a phone
 // than four thin columns of wrapped text, and keeps long union types from
-// squeezing the description to nothing.
+// squeezing the description to nothing. On a phone-width page the table
+// `stacks`: each prop's name and type lead its row and the description runs
+// under them at the table's full width, instead of beside them in half of it
+// (and instead of iOS's first-column-only table, which would drop it).
 
 function PropRowName({ name, type, required }: { name: string; type: string; required: boolean }) {
   return (
@@ -42,6 +45,7 @@ function GroupTable({ group }: { group: PropGroup }) {
         attached
         striped
         compact
+        stacks
         columns={["Prop", "Description"]}
         rows={group.props.map((p) => [
           <PropRowName name={p.name} type={p.type} required={p.required} />,
