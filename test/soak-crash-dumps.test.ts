@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { annotateFrames, moduleOffset, parseMappings, printed, splitSections } from "../scripts/soak-crash-dumps.mjs";
+import { annotateFrames, describeSignal, examined, handlerFrame, moduleOffset, parseMappings, printed, splitSections } from "../scripts/soak-crash-dumps.mjs";
 
 // The shape gdb 15 prints for a Firefox core (addresses shortened to one module's worth).
 const GDB = `[New LWP 4201]
@@ -69,4 +69,36 @@ test("annotateFrames places each frame it can and leaves the rest as gdb wrote t
   expect(lines[1]).toEndWith("libc_start_call_main.h:58  [libc.so.6+0x11f00]");
   expect(lines[2]).toBe("#2  0x0000000000001234 in ?? ()");
   expect(lines[3]).toStartWith("Backtrace stopped");
+});
+
+// The crashing thread of a Playwright Firefox 156 parent killed with SIGSEGV on the CI
+// runner (soak run 36183731977): its own handler caught the signal and re-raised it.
+const RERAISED = `#0  0x00007ff4e9e9ec0c in pthread_kill () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ff4e9e4527e in raise () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007ff4dad5152b in ?? () from /home/runner/.cache/ms-playwright/firefox-1551/firefox/libxul.so
+#3  0x00007ff4db8cc41d in ?? () from /home/runner/.cache/ms-playwright/firefox-1551/firefox/libxul.so
+#4  <signal handler called>
+#5  0x00007ff4e9f2752d in syscall () from /lib/x86_64-linux-gnu/libc.so.6`;
+
+test("handlerFrame finds the signal frame, the outermost when a handler was itself interrupted", () => {
+  expect(handlerFrame(RERAISED)).toBe(4);
+  expect(handlerFrame(`${RERAISED}\n#6  0x1 in ?? ()\n#7  <signal handler called>\n#8  0x2 in ?? ()`)).toBe(7);
+  expect(handlerFrame(splitSections(GDB).crashing)).toBeNull();
+  expect(handlerFrame(undefined)).toBeNull();
+});
+
+test("examined reads the words of gdb's x command and is empty for an error", () => {
+  expect(examined("0x7ffc2e6e7e60:\t11\t0\t0\t0")).toEqual(["11", "0", "0", "0"]);
+  expect(examined("0x7ffc2e6e7e70:\t0x000003e90000108e")).toEqual(["0x000003e90000108e"]);
+  expect(examined("0x55d0 <gMozCrashReason>:\t0x0000000000000000")).toEqual(["0x0000000000000000"]);
+  expect(examined("Cannot access memory at address 0x7ffc2e6e7e60")).toEqual([]);
+  expect(examined(undefined)).toEqual([]);
+});
+
+test("describeSignal gives a fault its address and a sent signal its sender", () => {
+  expect(describeSignal(11, 1, "0x8")).toBe("11 SIGSEGV, si_code 1 SEGV_MAPERR (address not mapped), fault address 0x8");
+  expect(describeSignal(11, -6, "0x3e90000108e")).toBe("11 SIGSEGV, si_code -6 SI_TKILL (sent by tgkill or raise), from pid 4238");
+  expect(describeSignal(11, 0, "0x108e")).toBe("11 SIGSEGV, si_code 0 SI_USER (sent by kill), from pid 4238");
+  expect(describeSignal(11, 128, "0x0")).toContain("general protection fault");
+  expect(describeSignal(NaN, NaN, null)).toBe("NaN (unnamed), si_code NaN (unnamed)");
 });

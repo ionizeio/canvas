@@ -30,10 +30,11 @@ name: E2E soak (canvas)
 #
 # A browser that crashes outright (Firefox's parent process died of SIGSEGV about once
 # in 90,000 journey tests, 2026-09) leaves only "Target page, context or browser has been
-# closed" in the report. Every lane keeps the kernel's line for any process a fault
-# killed (which thread, the address, the module and offset of the instruction), and
-# `crash_dumps: on` keeps the whole core dump with a gdb report of every thread's stack
-# (scripts/soak-crash-dumps.mjs; Playwright's Firefox has no crash reporter of its own).
+# closed" in the report. `crash_dumps: on` keeps the whole core dump with a gdb report of
+# the fault and every thread's stack (scripts/soak-crash-dumps.mjs; Playwright's Firefox
+# has no crash reporter of its own), and every lane keeps the kernel's line for a
+# process a fault killed outright, which Firefox's parent never is: it catches SIGSEGV
+# itself and re-raises it, so its crashes are only in the core.
 #
 # `ref` replays another commit of this repository with this workflow, to learn whether
 # a failure seen there still happens (a commit older than the probe runs without it;
@@ -348,12 +349,13 @@ jobs:
           echo "$failed of $PASSES fresh-browser passes failed"
           [ "$failed" -eq 0 ]
 
-      # The kernel logs each process a fault killed, as "firefox[4201]: segfault at 0 ip
-      # ... error 6 in libxul.so[2a3c10d,7f3c50000000+6000000]" and a line of the code
-      # around it: the thread, the address it touched, and the module and offset of the
-      # instruction. Reading the log changes nothing, so every lane keeps those lines.
-      # With crash_dumps on, each core the replay left gets its gdb report and is kept,
-      # compressed, beside it.
+      # The kernel logs a process a fault killed with no handler of its own in the way,
+      # as "firefox[4201]: segfault at 0 ip ... error 6 in libxul.so[2a3c10d,7f3c...]"
+      # and a line of the code around it: the thread, the address it touched, and the
+      # module and offset of the instruction (a content process, say; Firefox's parent
+      # catches the fault and re-raises it, which the kernel does not log). Reading the
+      # log changes nothing, so every lane keeps those lines. With crash_dumps on, each
+      # core the replay left gets its gdb report and is kept, compressed, beside it.
       - name: Keep the crashes
         if: always()
         env:
