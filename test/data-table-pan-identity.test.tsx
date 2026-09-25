@@ -50,9 +50,10 @@ function layOutScroller(width: number, contentWidth = width) {
 // react-native-web renders `scrollEnabled={false}` as touch-action: none.
 const takesDrags = () => getComputedStyle(scroller()).touchAction !== "none";
 
-// Three 110px pan minimums: the table only carries this floor while it pans.
+// Three 110px pan minimums: the scroller's content only carries this floor while
+// the table pans.
 const PAN_MIN = "330px";
-const pansNow = () => screen.getByRole("table").style.minWidth === PAN_MIN;
+const pansNow = () => content().style.minWidth === PAN_MIN;
 
 // A cell that counts its mounts, standing in for any stateful custom cell.
 let mounts = 0;
@@ -109,10 +110,11 @@ for (const [platform, Table] of [["web", DataTable], ["android", AndroidDataTabl
       expect(screen.getByText("No users yet")).toBe(message);
     });
 
-    it("clips a fitting table and lets a panning, height-bounded table shrink its rows", () => {
-      // Fitting, the table clips what overflows it (as its wrap did before the scroller
-      // was always there) and the rows stay rigid; panning, the scroller keeps its own
-      // flex, so a bounded table clips its rows inside it and keeps its footer.
+    it("clips the table and lets a panning, height-bounded table shrink its rows", () => {
+      // The table clips what overflows it in both states (as its wrap did before the
+      // scroller was always there); fitting, the rows stay rigid; panning, the scroller
+      // keeps its own flex, so a bounded table clips its rows inside it and keeps its
+      // footer.
       const rows = Array.from({ length: 12 }, (_, i) => [`Name ${i}`, "Active", "Eng"]);
       ui(<Table testID="table" paginated style={{ height: 220 }} columns={COLUMNS} rows={rows} />);
       for (const [width, panning] of [[1280, false], [375, true], [1280, false]] as const) {
@@ -120,7 +122,28 @@ for (const [platform, Table] of [["web", DataTable], ["android", AndroidDataTabl
         expect(pansNow()).toBe(panning);
         expect(getComputedStyle(scroller()).overflowX).toBe("auto");
         expect(getComputedStyle(scroller()).flexShrink).toBe(panning ? "1" : "0");
-        expect(getComputedStyle(screen.getByRole("table")).overflowX === "hidden").toBe(!panning);
+        expect(getComputedStyle(screen.getByRole("table")).overflowX).toBe("hidden");
+      }
+    });
+
+    it("bounds the panned width by the scrollport and the column minimums, never by the cells", () => {
+      // A horizontal scroller lays its content out with no width bound, so content
+      // that is free to grow sets each cell's text on one line and the longest cell
+      // sets the table's width (a 1,507-character description made the docs' prop
+      // table about 9,500 px wide on a phone, with every other row's description off
+      // screen). The content is the scrollport's width, floored by the minimums while
+      // panning, and the table fills it: the cells share that width and wrap.
+      const long = "A description long enough to run far past any phone's width. ".repeat(20);
+      ui(<Table testID="table" columns={COLUMNS} rows={[["Ada", long, "Eng"]]} />);
+      for (const [width, panning] of [[1280, false], [375, true], [1280, false]] as const) {
+        measure(width);
+        expect(pansNow()).toBe(panning);
+        for (const node of [content(), screen.getByRole("table")]) {
+          const style = getComputedStyle(node);
+          expect(style.width).toBe("100%");
+          expect(style.flexGrow).not.toBe("1");
+        }
+        expect(getComputedStyle(content()).minWidth).toBe(panning ? PAN_MIN : "0px");
       }
     });
 

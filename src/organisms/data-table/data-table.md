@@ -4,8 +4,11 @@ A data table rendered from column and row data, with sorting, row selection, pag
 
 Treat `rows` and `columns` as immutable inputs. When editing data, replace the outer `rows` array and each changed row, as the examples below do. When changing a column, replace its descriptor and the `columns` array. Keep unchanged arrays and callbacks stable for large tables: Canvas caches sorting, paging, and selection summaries so typing a draft or opening a row action does not process the whole data set again. `sortValue` and `rowKey` must be pure functions of their inputs. If either closes over changing external data, supply a new callback identity; for `sortValue`, also replace its column descriptor and the `columns` array. A saved edit appears in sorted order when the updated `rows` arrive.
 
-On narrow web and Android layouts, columns pan horizontally when they exceed
-the table width. The overflowing scrollport is a keyboard tab stop, so the
+On narrow web and Android layouts, the columns still share the table width and
+wrap their text, each keeping a 110 px minimum (a column with a fixed `width`
+keeps that width), and they pan horizontally only when those minimums exceed
+the table width. A long cell wraps inside its column rather than widening the
+table. The overflowing scrollport is a keyboard tab stop, so the
 platform's arrow keys can reveal the remaining columns. A table that fits adds
 no scrolling tab stop, and on Android it takes no sideways drag either, so a tap
 that drifts sideways still presses its row and a swipe that starts across it

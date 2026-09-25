@@ -15,22 +15,24 @@ import {
 } from "./data-table.styles.js";
 
 // Compact-width pan sizing: each column keeps a readable minimum and the
-// selection column its checkbox share, so the scroller's content width is
-// columns * minimum (+ selector) rather than a crushed fit.
+// selection column its checkbox share, so the scroller's content width is at
+// least columns * minimum (+ selector) rather than a crushed fit.
 const MIN_COLUMN_WIDTH = 110;
 const SELECT_COLUMN_WIDTH = 48;
 const s = StyleSheet.create({
-  // Panning: the content spans at least the scrollport and the table holds its
-  // pan minimum, so a narrow container scrolls instead of crushing the columns.
-  panContent: { flexGrow: 1 },
-  panInner: { flexGrow: 1 },
-  // Not panning: the content and the table are exactly the scrollport's width,
-  // so the cells share it and wrap as if there were no scroller. The table clips
-  // whatever still overflows it (fixed columns wider than the container), as the
+  // The scroller's content is the scrollport's width; while panning it also holds
+  // the columns' minimums (a style added at render), so it is whichever is wider.
+  // It is never sized by its cells: a horizontal scroller lays its content out
+  // with no width bound, so content-sized columns would set every cell's text on
+  // one line and the longest cell would set the table's width. Bounded, the cells
+  // share the width and wrap, and the table pans only when the minimums exceed
+  // the scrollport.
+  content: { width: "100%" },
+  // The table fills that content and clips whatever still overflows it (fixed
+  // columns wider than a fitting container, a cell that cannot wrap), as the
   // table's own wrap did before the scroller was always there: overflow here must
   // not become a scrollable region with no tab stop to reach it.
-  fitContent: { width: "100%" },
-  fitInner: { width: "100%", overflow: "hidden" },
+  inner: { width: "100%", overflow: "hidden" },
   // Not panning, the scroller takes the flex of what it holds, as the rows had
   // without it: eager rows never grow or shrink with the table's height, only a
   // windowed body does (see `windowed`). Panning keeps the scroller's own flex, so
@@ -413,7 +415,9 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     // Where the table does NOT collapse (web, Android), a compact container must
     // not crush the flex-1 cells into letter-wrapped slivers: below the sm width
     // the header+body pan together inside a horizontal scroller, each column
-    // keeping a readable minimum (the Material phone data-table treatment).
+    // keeping a readable minimum (the Material phone data-table treatment). The
+    // columns still share the scrollport's width and wrap their text; the table
+    // only scrolls when those minimums add up to more than the scrollport.
     // `canPan` is fixed by the skin, so such a table renders its scroller in
     // every state and panning switches only the scroller's styles. Adding or
     // removing the scroller would change the element above every row, and React
@@ -737,11 +741,11 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
             showsHorizontalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
             style={windowed || pans ? null : s.rigidScroller}
-            contentContainerStyle={pans ? s.panContent : s.fitContent}
+            contentContainerStyle={pans ? [s.content, { minWidth: panMinWidth }] : s.content}
           >
             {/* A focusable scrollport surrounds the table. Putting it inside the
                 table would expose a generic interactive child where rows belong. */}
-            <View role="table" style={pans ? [s.panInner, { minWidth: panMinWidth }] : s.fitInner}>{table}</View>
+            <View role="table" style={s.inner}>{table}</View>
           </ScrollView>
         ) : (
           table
