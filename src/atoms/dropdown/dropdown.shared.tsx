@@ -1,6 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useHover } from "../../style/hover.js";
+import { menuRowPressStrength } from "../../style/menu-look.js";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { View, Pressable, Text, useHugStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, useRovingFocus, isRTL, RippleClip, cornerRadii, type StyleProp, type ViewStyle, withInnerFill } from "../../style/index.js";
 import { Button as WebButton } from "../button/button.js";
@@ -168,8 +169,9 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
         style={({ pressed }) => [
           skin.itemRow,
           hovered && skin.itemHover ? skin.itemHover(tokens) : null,
-          // iOS/web tint the row on press here; Android uses the ripple instead.
-          skin.itemPressed != null && pressed ? withInnerFill(theme, skin.itemPressed(tokens), "firm") : null,
+          // iOS/web tint the row on press here; Android uses the ripple instead. Under glass
+          // the menu recipe sets the tint's strength, softer where a shortcut must stay legible.
+          skin.itemPressed != null && pressed ? withInnerFill(theme, skin.itemPressed(tokens), menuRowPressStrength(!!item.shortcut)) : null,
           skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
           disabled && skin.disabledRow.opacity !== 1 ? { opacity: skin.disabledRow.opacity } : null,
         ]}

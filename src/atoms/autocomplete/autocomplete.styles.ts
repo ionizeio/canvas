@@ -1,4 +1,4 @@
-import { type ViewStyle, type TextStyle } from "react-native";
+import { Platform, type ViewStyle, type TextStyle } from "react-native";
 import { activeIndicator, platformMinTarget, TOUCH_TARGET, type ColorTokens, type FloatingLabelStyles, type TouchTargetSkin } from "../../style/index.js";
 import { webHover } from "../../style/hover.js";
 import {
@@ -42,9 +42,11 @@ import {
 //     hover wash (on the web only: native pointer hover waits on the owner), the
 //     keyboard's active row on the pressed fill, and the chosen row in the selection
 //     violet (its label and a checkmark in the gutter every row keeps) with no fill.
-//     Touch: on iOS the rows grow to the 44pt minimum and the chevron's touch area
-//     reaches it through slop that stops at the text (platformMinTarget, null on the
-//     web, where the chevron's 24px box is the target).
+//     Touch: the text input fills the field's height, so a press anywhere in the well
+//     is on the text. On iOS the field and the rows grow to the 44pt minimum, the
+//     chevron's touch area reaches it through slop that stops at the text, and a press
+//     dims the chevron (platformMinTarget, null on the web, where the chevron's 24px
+//     box is the target and the list opening is the press's feedback).
 //   Android (Material 3 exposed dropdown): a subtle `muted` fill, TOP corners ~4 radius
 //     and a flat bottom, a bottom active-indicator underline (1dp `muted-foreground` at
 //     rest, 2dp `ring` while active); the menu is a flat-cornered (~4) elevated
@@ -132,7 +134,7 @@ export interface AutocompleteSkin extends FloatingLabelStyles<Size>, TouchTarget
    * takes `frame`, its value `ink`, and it paints no material. Android omits it and dims.
    */
   disabledLook?: (t: ColorTokens, focused: boolean) => FieldDisabledLook;
-  /** iOS/web dim the field on press; Android uses a ripple instead (null). */
+  /** The disclosure's dim while pressed (iOS's); null where the ripple (Android) or nothing (the web) is the feedback. */
   pressedOpacity: number | null;
   /** Android ripple over the pressable surfaces; null on iOS/web. */
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
@@ -165,55 +167,81 @@ const FIELD_SIZE: Record<Size, FieldSize> = { small: "small", default: "base", l
 const CHEVRON_ICON = 14;
 const CHEVRON_BOX = 24;
 const CHEVRON_PULL = (CHEVRON_BOX - CHEVRON_ICON) / 2;
-// The platform minimum on the platforms that share this skin: iOS 44, none on the web.
-const MIN_TARGET = platformMinTarget();
-export const webSkin: AutocompleteSkin = {
-  liquid: true,
-  text: (size) => fieldValue(FIELD_SIZE[size]),
-  label: (t) => ({ ...fieldLabel(t), marginBottom: FIELD_LABEL_GAP }),
-  // Dark Factory's field frame, active while focused or open (the field's own focus
-  // indicator), and the 10px glyph gap between the text and the disclosure.
-  field: (t, size, active) => ({
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: FIELD_ICON_GAP,
-    ...fieldFrame(t, { focused: active, error: false }),
-    paddingStart: FIELD_INSET,
-    paddingEnd: FIELD_INSET - CHEVRON_PULL,
-    height: FIELD_HEIGHT[FIELD_SIZE[size]],
-  }),
-  fieldText: (t, size, muted) => ({ ...fieldValue(FIELD_SIZE[size]), color: muted ? t["muted-foreground"] : t.foreground }),
-  chevron: (t) => ({ color: t["muted-foreground"] }),
-  chevronIcon: CHEVRON_ICON,
-  chevronTarget: () => ({
-    alignSelf: "stretch", alignItems: "center", justifyContent: "center", flexShrink: 0,
-    width: CHEVRON_BOX, minHeight: CHEVRON_BOX,
-  }),
-  popover: menuListPanel,
-  // "No results" sits where a row would, in the muted ink a disabled row takes.
-  emptyRow: { paddingHorizontal: menuRow.paddingHorizontal, paddingVertical: menuRow.paddingVertical },
-  emptyText: (t) => ({ ...menuRowLabel, color: t["muted-foreground"] }),
-  // On iOS a row grows to the 44pt minimum; the web keeps Dark Factory's 33px row.
-  row: MIN_TARGET == null ? menuRow : { ...menuRow, minHeight: MIN_TARGET },
-  // Being chosen fills nothing: the label and the checkmark carry it.
-  rowSelected: () => null,
-  rowPressed: menuRowPressed,
-  rowHover: webHover(menuRowHover),
-  chosenText: menuChosenLabel,
-  rowGap: MENU_ROW_GAP,
-  menuGap: MENU_OFFSET,
-  check: menuCheck,
-  optionText: (t) => ({ ...menuRowLabel, color: t["popover-foreground"] }),
-  helper: (t) => ({ ...fieldNote(t, false), marginTop: FIELD_LABEL_GAP }),
-  minTarget: MIN_TARGET,
-  disabledOpacity: 1,
-  disabledLook: fieldDisabled,
-  pressedOpacity: null, // the pressed and active rows' fill is the feedback
-  ripple: null,
-  // The label sits ABOVE the field: Dark Factory's eyebrow.
-  floatingLabel: false,
-};
+// iOS's highlighted state on the disclosure, the dim its own skin took before it shared the web's.
+const IOS_PRESSED_OPACITY = 0.8;
+
+/**
+ * What the platforms that share this skin differ by (the web, and iOS, which ships no
+ * autocomplete control), each read for the running platform when the module loads, as
+ * platformMinTarget and platformDisabledDim are. A parameter so the tests can build the
+ * skin an iPhone runs in the web harness.
+ */
+export interface SharedSkinPlatform {
+  /** The touch minimum: iOS's 44, none on the web. The field and the rows grow to it. */
+  minTarget: number | null;
+  /** The disclosure's press dim: iOS's highlighted state, none on the web. */
+  pressedOpacity: number | null;
+}
+
+/** The web's skin, which iOS takes too, for a platform's touch minimum and press dim. */
+export function sharedSkin({ minTarget, pressedOpacity }: SharedSkinPlatform): AutocompleteSkin {
+  // The field's height: the recipe's, or the platform minimum where that is taller. The
+  // shell stretches the text input to it, so the whole well is the text's target.
+  const fieldHeight = (size: Size) => Math.max(FIELD_HEIGHT[FIELD_SIZE[size]], minTarget ?? 0);
+  return {
+    liquid: true,
+    text: (size) => fieldValue(FIELD_SIZE[size]),
+    label: (t) => ({ ...fieldLabel(t), marginBottom: FIELD_LABEL_GAP }),
+    // Dark Factory's field frame, active while focused or open (the field's own focus
+    // indicator), and the 10px glyph gap between the text and the disclosure.
+    field: (t, size, active) => ({
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: FIELD_ICON_GAP,
+      ...fieldFrame(t, { focused: active, error: false }),
+      paddingStart: FIELD_INSET,
+      paddingEnd: FIELD_INSET - CHEVRON_PULL,
+      height: fieldHeight(size),
+    }),
+    fieldText: (t, size, muted) => ({ ...fieldValue(FIELD_SIZE[size]), color: muted ? t["muted-foreground"] : t.foreground }),
+    chevron: (t) => ({ color: t["muted-foreground"] }),
+    chevronIcon: CHEVRON_ICON,
+    chevronTarget: () => ({
+      alignSelf: "stretch", alignItems: "center", justifyContent: "center", flexShrink: 0,
+      width: CHEVRON_BOX, minHeight: CHEVRON_BOX,
+    }),
+    popover: menuListPanel,
+    // "No results" sits where a row would, in the muted ink a disabled row takes.
+    emptyRow: { paddingHorizontal: menuRow.paddingHorizontal, paddingVertical: menuRow.paddingVertical },
+    emptyText: (t) => ({ ...menuRowLabel, color: t["muted-foreground"] }),
+    // On iOS a row grows to the 44pt minimum; the web keeps Dark Factory's 33px row.
+    row: minTarget == null ? menuRow : { ...menuRow, minHeight: minTarget },
+    // Being chosen fills nothing: the label and the checkmark carry it.
+    rowSelected: () => null,
+    rowPressed: menuRowPressed,
+    rowHover: webHover(menuRowHover),
+    chosenText: menuChosenLabel,
+    rowGap: MENU_ROW_GAP,
+    menuGap: MENU_OFFSET,
+    check: menuCheck,
+    optionText: (t) => ({ ...menuRowLabel, color: t["popover-foreground"] }),
+    helper: (t) => ({ ...fieldNote(t, false), marginTop: FIELD_LABEL_GAP }),
+    minTarget,
+    disabledOpacity: 1,
+    disabledLook: fieldDisabled,
+    // The rows' pressed and active fills are their feedback; the disclosure dims on iOS.
+    pressedOpacity,
+    ripple: null,
+    // The label sits ABOVE the field: Dark Factory's eyebrow.
+    floatingLabel: false,
+  };
+}
+
+export const webSkin: AutocompleteSkin = sharedSkin({
+  minTarget: platformMinTarget(),
+  pressedOpacity: Platform.OS === "ios" ? IOS_PRESSED_OPACITY : null,
+});
 
 // iOS ships no autocomplete control, so the iOS Autocomplete is the web's (the design
 // language's item 3).

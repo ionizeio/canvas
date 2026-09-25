@@ -2,6 +2,7 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useHover } from "../../style/hover.js";
+import { menuRowPressStrength } from "../../style/menu-look.js";
 import { forwardRef, useId, useRef } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { type Role } from "react-native";
@@ -173,10 +174,10 @@ export function OptionRow({ skin, size, selected, separated, disabled, onPress, 
         // skin that omits rowSeparator keeps every row borderless.
         separated && skin.rowSeparator ? skin.rowSeparator(tokens) : null,
         hovered && skin.optionHover ? skin.optionHover(tokens) : null,
-        // Web/iOS tint the row on press here; Android uses the ripple instead. Under glass a
-        // row that carries a muted detail (PhoneInput's dial code) presses to the soft ink
-        // tint, where the detail keeps 4.5:1; the firm one drops it to about 4.3.
-        skin.ripple == null && pressed ? withInnerFill(theme, skin.optionPressed(tokens), trailing != null ? "soft" : "firm") : null,
+        // Web/iOS tint the row on press here; Android uses the ripple instead. Under glass the
+        // menu recipe sets the tint's strength: softer on a row with a muted detail (PhoneInput's
+        // dial code), so the detail stays legible.
+        skin.ripple == null && pressed ? withInnerFill(theme, skin.optionPressed(tokens), menuRowPressStrength(trailing != null)) : null,
       ]}
       onPress={onPress}
       disabled={disabled}

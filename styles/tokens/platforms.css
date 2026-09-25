@@ -221,7 +221,8 @@
   --p-idpill-name:12px;--p-idpill-name-lh:14px;--p-idpill-name-weight:700;--p-idpill-tracking:0px;
   --p-idpill-disc:28px;--p-idpill-glow:0px 0px 0px 2px var(--card), 0px 0px 0px 3.5px var(--primary);
   /* Autocomplete (autocomplete.styles.ts webSkin, iOS too: Dark Factory's field and menu, the
-     Select's, with the 14px chevron-down Icon at the field's inset 10px from the text) */
+     Select's, with the 14px chevron-down Icon at the field's inset 10px from the text; the text
+     fills the field's height. On an iPhone the field and the rows grow to the 44pt minimum) */
   --p-ac-h:40px;--p-ac-radius:10px;--p-ac-radius-bottom:10px;--p-ac-border:1px;--p-ac-underline:0px;
   --p-ac-border-color:var(--field-border);--p-ac-underline-rest:var(--input);--p-ac-fill:var(--field-fill);--p-ac-pad-x:12px;
   --p-ac-font:13px;--p-ac-lh:18px;--p-ac-weight:600;

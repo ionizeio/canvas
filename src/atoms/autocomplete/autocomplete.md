@@ -22,7 +22,7 @@ Arrow Down and Arrow Up open the list and highlight an option while focus stays 
 
 Use `value` with `onValueChange` to control the selection, and use `""` for a controlled empty value. The callback reports selections and clearing the field. `onSelect` remains a selection-only notification. The independent `query`/`onQueryChange` pair controls filtering; choosing an option resets the query to `""`.
 
-The disclosure button is a 24px target on the web. On iOS, which takes the web's field, its touch area reaches 44pt through slop that takes the field's gap toward the text and no more, so a tap near the end of what you typed still lands in the text, and each suggestion row grows to 44pt. On Android the disclosure and the rows are 48dp.
+The text fills the field's height, so a press anywhere in the field, not only on the line of text, focuses it and opens the suggestions. The disclosure button is a 24px target on the web. On iOS, which takes the web's field, the field and each suggestion row grow to 44pt, and the disclosure dims while pressed; its touch area reaches 44pt through slop that takes the field's gap toward the text and no more, so a tap near the end of what you typed still lands in the text. On Android the disclosure and the rows are 48dp.
 
 ## Usage
 

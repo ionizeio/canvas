@@ -14,7 +14,7 @@ import { androidSkin as alertAndroid, iosSkin as alertIos } from "../src/molecul
 import { androidSkin as buttonAndroid, iosSkin as buttonIos } from "../src/atoms/button/button.styles.ts";
 import * as stepsStyles from "../src/organisms/steps/steps.styles.ts";
 import { androidSkin as boardAndroid, iosSkin as boardIos } from "../src/organisms/board/board.styles.ts";
-import { iosSkin as autocompleteIos, webSkin as autocompleteWeb } from "../src/atoms/autocomplete/autocomplete.styles.ts";
+import { iosSkin as autocompleteIos, sharedSkin as autocompleteShared, webSkin as autocompleteWeb } from "../src/atoms/autocomplete/autocomplete.styles.ts";
 import { FIELD_HEIGHT } from "../src/style/field-look.ts";
 import { TOUCH_TARGET } from "../src/style/touch-target.ts";
 import { installTouchStubs, records, renderAndLayout, restoreTouchStubs, type NodeRecord } from "./fixtures/touch-records.tsx";
@@ -185,11 +185,15 @@ describe("inside a kit component, two controls split the gap between them", () =
     // the slop grows the box to it, taking the whole gap toward the text (which asks for no
     // slop) and the rest past the box's other sides.
     expect(autocompleteIos).toBe(autocompleteWeb);
+    const iphone = autocompleteShared({ minTarget: TOUCH_TARGET.ios, pressedOpacity: 0.8 });
     const Autocomplete = await load("../src/atoms/autocomplete/autocomplete.ios.tsx", "Autocomplete");
     for (const [size, props] of [["small", { small: true }], ["base", {}], ["large", { large: true }]] as const) {
       const gap = gapOf(autocompleteWeb.field(t, size === "base" ? "default" : size, false));
-      // The disclosure stretches to the field's content box: its height less the 1px borders.
-      const frame = { width: 24, height: FIELD_HEIGHT[size] - 2 };
+      // The disclosure stretches to the field's content box: an iPhone's field height (the
+      // recipe's, grown to 44pt) less the 1px borders.
+      const fieldHeight = iphone.field(t, size === "base" ? "default" : size, false).height as number;
+      expect(fieldHeight).toBe(Math.max(FIELD_HEIGHT[size], TOUCH_TARGET.ios));
+      const frame = { width: 24, height: fieldHeight - 2 };
       for (const layout of [null, frame]) {
         rendered(<Autocomplete {...props} label="Person" options={["Ada", "Grace"]} />, TOUCH_TARGET.ios,
           layout == null ? null : (record) => (record.props.accessibilityLabel === "Toggle options" ? layout : null));

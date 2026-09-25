@@ -6,6 +6,7 @@ import { Platform, StyleSheet, type Role, type TextInput as RNTextInput } from "
 import { View, Pressable, Text, TextInput, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, isGlass, PANE_SIBLING_INPUT, withInnerFill } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useHover } from "../../style/hover.js";
+import { menuRowPressStrength } from "../../style/menu-look.js";
 import { styleBox, useSeededMinTargetSlop } from "../../style/touch-target-seed.js";
 import { rowSeam } from "../../style/touch-seam.js";
 import { Icon } from "../icon/icon.js";
@@ -112,10 +113,12 @@ function sizeOf(p: AutocompleteProps): Size {
   return "default";
 }
 
-// The editable slice of the field row: fill the space before the chevron and
-// drop the platform's default inner padding, so the skin's field box (height,
-// gutter) governs the footprint exactly as it did around the old static text.
-const fieldInput: TextStyle = { flex: 1, minWidth: 0, paddingVertical: 0, paddingHorizontal: 0 };
+// The editable slice of the field row: fill the space before the chevron and the
+// field's whole height (the row centers its other children), with the platform's default
+// inner padding dropped, so the skin's field box (height, gutter) governs the footprint and
+// a press anywhere in the well lands on the text, as it does in an Input. A single line
+// centers itself in the stretched input (textAlignVertical on Android).
+const fieldInput: TextStyle = { flex: 1, minWidth: 0, alignSelf: "stretch", paddingVertical: 0, paddingHorizontal: 0 };
 
 // Read a numeric style value (the Android field height), falling back when absent.
 const asNum = (v: unknown, fallback: number): number => (typeof v === "number" ? v : fallback);
@@ -168,7 +171,8 @@ function OptionRow({ skin, size, option, id, selected, active, separated, rowRef
         separated && skin.rowSeparator ? skin.rowSeparator(tokens) : null,
         selected ? withInnerFill(theme, skin.rowSelected(tokens) ?? {}, "firm") : null,
         hovered && skin.rowHover ? skin.rowHover(tokens) : null,
-        pressed || active ? withInnerFill(theme, skin.rowPressed(tokens) ?? {}, "firm") : null,
+        // A suggestion carries no detail, so under glass the menu recipe gives it the firm tint.
+        pressed || active ? withInnerFill(theme, skin.rowPressed(tokens) ?? {}, menuRowPressStrength(false)) : null,
       ]}
       onPress={onPress}
       {...selectionProps}
@@ -361,11 +365,11 @@ export function createAutocomplete(skin: AutocompleteSkin) {
               glass ? PANE_SIBLING_INPUT : null,
               // Android floating label: the reserve (top padding that lets the value
               // clear the floated label, mirroring the M3 Input) belongs to the VALUE
-              // field only, not the whole row. Stretched to full height, the field
-              // centers its text below the reserve, while the trailing chevron toggle
+              // field only, not the whole row. Stretched to full height (fieldInput), the
+              // field centers its text below the reserve, while the trailing chevron toggle
               // stays vertically centered in the full field (M3 centers a trailing
               // dropdown icon in the container, unaffected by the label).
-              floating ? [{ alignSelf: "stretch" as const }, skin.labelReserve!(size)] : null,
+              floating ? skin.labelReserve!(size) : null,
               FOCUS_RESET,
             ]}
             value={fieldValue}

@@ -10,8 +10,9 @@ menus (the iOS pull-down menu, the Material 3 menu) in the theme's colours.
 In glass mode the menu is a dense-layer glass card under its trigger (or above it
 when it fits there); the trigger keeps its place, its press and its accessible
 name and state, and a selection commits and closes the menu the moment a row is
-pressed. AvatarMenu and the collapsed Navbar menu are built on Dropdown. Solid
-mode paints the skin's own menu.
+pressed. A pressed row with a shortcut takes a lighter tint than the others, so its
+muted shortcut stays readable. AvatarMenu and the collapsed Navbar menu are built on
+Dropdown. Solid mode paints the skin's own menu.
 
 ## Usage
 

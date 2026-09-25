@@ -1,4 +1,5 @@
 import type { TextStyle, ViewStyle } from "react-native";
+import type { InnerFillStrength } from "./glass-fill.js";
 import { hoverFill } from "./hover.js";
 import { primaryText } from "./primary-text.js";
 import { shadow } from "./shadow.js";
@@ -83,6 +84,18 @@ export function menuRowHover(t: ColorTokens): ViewStyle {
 /** A row while pressed. */
 export function menuRowPressed(t: ColorTokens): ViewStyle {
   return { backgroundColor: t.accent };
+}
+
+/**
+ * How firm a pressed row's fill is inside a glass menu (the ink tint `withInnerFill` paints
+ * for it), on every menu that tints a pressed row: the firm tint, or the soft one on a row
+ * that carries a muted detail (a shortcut, a dial code). Over the dense list the firm tint
+ * drops that detail to 4.1 to 4.3:1 and the soft one keeps it at 4.5:1 or more in every
+ * palette; the row's own label keeps its contrast on either. Solid mode paints
+ * `menuRowPressed` as it is.
+ */
+export function menuRowPressStrength(detail: boolean): InnerFillStrength {
+  return detail ? "soft" : "firm";
 }
 
 /** The width of the checkmark gutter an option list reserves on every row. */

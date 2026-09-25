@@ -6,7 +6,11 @@ for (const scheme of ["light", "dark"] as const) {
   for (const width of [1280, 390]) {
     test(`all skins contain usable disclosure targets (${scheme}, ${width}px)`, async ({ page }) => {
       await gotoDocs(page, "/testing/form-autocomplete?scenario=targets", { scheme, viewport: { width, height: 900 } });
-      for (const [platform, minimum] of [["Web", 24], ["iOS", 44], ["Android", 48]] as const) {
+      // iOS ships no autocomplete control, so the iOS row is the web skin: in the browser its
+      // disclosure is the web's 24px box. Its 44pt reach on an iPhone is native slop, which a
+      // browser does not hit-test (test/touch-target-seams.test.tsx holds it); Android's 48dp
+      // is its own box.
+      for (const [platform, minimum] of [["Web", 24], ["iOS", 24], ["Android", 48]] as const) {
         for (const size of ["small", "default", "large"] as const) {
           const field = page.getByRole("combobox", { name: `${platform} ${size}`, exact: true });
           const container = field.locator("..");
@@ -21,6 +25,9 @@ for (const scheme of ["light", "dark"] as const) {
           expect(targetBox!.x + targetBox!.width).toBeLessThanOrEqual(fieldBox!.x + fieldBox!.width + 0.1);
           expect(inputBox!.width).toBeGreaterThan(150);
           expect(inputBox!.x + inputBox!.width).toBeLessThanOrEqual(targetBox!.x + 0.1);
+          // The text fills the field's height (all but its 1px frame, or on Android the
+          // indicator's 2px band), so a press anywhere in the well lands on the text.
+          expect(inputBox!.height, `${platform} ${size}: the text's height`).toBeGreaterThanOrEqual(fieldBox!.height - 2 - 0.1);
           for (const expanded of [false, true]) {
             if (expanded) await toggle.click();
             await expect(field).toHaveAttribute("aria-expanded", String(expanded));
@@ -52,6 +59,30 @@ for (const scheme of ["light", "dark"] as const) {
       }
       const axe = await new AxeBuilder({ page }).withRules(["target-size"]).analyze();
       expect(axe.violations).toEqual([]);
+    });
+
+    test(`a press anywhere in the field's well focuses the text (${scheme}, ${width}px)`, async ({ page }) => {
+      await gotoDocs(page, "/testing/form-autocomplete?scenario=targets", { scheme, viewport: { width, height: 900 } });
+      for (const platform of ["Web", "iOS", "Android"] as const) {
+        for (const size of ["small", "default", "large"] as const) {
+          const field = page.getByRole("combobox", { name: `${platform} ${size}`, exact: true });
+          const well = field.locator("..");
+          await well.scrollIntoViewIfNeeded();
+          const box = (await well.boundingBox())!;
+          const input = (await field.boundingBox())!;
+          // Just inside the frame at the top and the bottom, and at the text's own start: the
+          // bands a text line centered in the field would leave dead.
+          for (const y of [box.y + 3, box.y + box.height - 4]) {
+            await page.mouse.click(input.x + 8, y);
+            await expect(field, `${platform} ${size} at ${Math.round(y - box.y)}px`).toBeFocused();
+            await expect(field).toHaveAttribute("aria-expanded", "true");
+            await page.keyboard.press("Escape");
+            await expect(field).toHaveAttribute("aria-expanded", "false");
+            await field.blur();
+            await expect(field).not.toBeFocused();
+          }
+        }
+      }
     });
 
     test(`Autocomplete selects before Form submits (${scheme}, ${width}px)`, async ({ page }, testInfo) => {

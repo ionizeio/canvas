@@ -1,6 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useHover } from "../../style/hover.js";
+import { menuRowPressStrength } from "../../style/menu-look.js";
 import { useRef, useState } from "react";
 import { View, Pressable, Text, AnchoredOverlay, useOverlayHost, useMeasuredWidth, useHugStyle, RippleClip, StyleSheet, cornerRadii, type ViewStyle, type LayoutStyle, withInnerFill } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
@@ -81,8 +82,9 @@ export function createRowMenu(skin: RowMenuSkin) {
           skin.itemRow,
           hovered && skin.itemHover ? skin.itemHover(tokens) : null,
           // Web/iOS tint the row on press here; Android uses the ripple instead. A
-          // disabled row never enters the pressed state, so no tint applies.
-          skin.ripple == null && pressed ? withInnerFill(theme, skin.itemPressed(tokens), "firm") : null,
+          // disabled row never enters the pressed state, so no tint applies. A row carries no
+          // detail, so under glass the menu recipe gives it the firm tint.
+          skin.ripple == null && pressed ? withInnerFill(theme, skin.itemPressed(tokens), menuRowPressStrength(false)) : null,
           disabled && skin.disabledRow.opacity !== 1 ? { opacity: skin.disabledRow.opacity } : null,
         ]}
         onPress={onPress}

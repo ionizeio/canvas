@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from "bun:test";
 import { readFileSync } from "node:fs";
 import { blockDeclarations } from "../tools/tokens/css-tokens.ts";
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { darkColors, lightColors, mintColors } from "../src/style/tokens.ts";
 import { alpha } from "../src/style/color.ts";
@@ -29,6 +29,7 @@ import * as selectSkins from "../src/atoms/select/select.styles.ts";
 import * as autocompleteSkins from "../src/atoms/autocomplete/autocomplete.styles.ts";
 import { Select } from "../src/atoms/select/select.tsx";
 import { Autocomplete } from "../src/atoms/autocomplete/autocomplete.tsx";
+import { createAutocomplete } from "../src/atoms/autocomplete/autocomplete.shared.tsx";
 import { clearSurfaceTint } from "../src/style/glass-surface/glass-surface.shared.tsx";
 import { Input } from "../src/atoms/input/input.tsx";
 import { Textarea } from "../src/atoms/textarea/textarea.tsx";
@@ -284,6 +285,66 @@ describe("the web Select and Autocomplete read the recipe", () => {
     expect(ring.parentElement).toBe(trigger);
     expect(flat(ring.style.borderColor)).toBe(rgbaOf(lightColors.ring));
     expect(trigger.style.borderColor).toContain("0.00");
+  });
+});
+
+// The Autocomplete's text is the whole well, as an Input's is: the input stretches to the
+// field's height, so no band above or below the text line is dead to a press. iOS ships no
+// autocomplete control and takes the web skin, which reads the platform when it loads: on an
+// iPhone the field and the rows grow to the 44pt minimum and the disclosure dims while
+// pressed (iOS's highlighted state); the web keeps Dark Factory's 40px field and no dim.
+describe("the Autocomplete's field is its text's target", () => {
+  const IPHONE = { minTarget: 44, pressedOpacity: 0.8 };
+  const WEB = { minTarget: null, pressedOpacity: null };
+  const SIZES_AC = ["small", "default", "large"] as const;
+
+  it("grows the field and the rows to the platform minimum, and dims the disclosure on iOS only", () => {
+    const iphone = autocompleteSkins.sharedSkin(IPHONE);
+    const web = autocompleteSkins.sharedSkin(WEB);
+    expect(SIZES_AC.map((size) => iphone.field(t, size, false).height)).toEqual([44, 44, 46]);
+    expect(SIZES_AC.map((size) => web.field(t, size, false).height)).toEqual([34, 40, 46]);
+    expect([iphone.row.minHeight, web.row.minHeight]).toEqual([44, undefined]);
+    expect([iphone.minTarget, iphone.pressedOpacity, web.minTarget, web.pressedOpacity]).toEqual([44, 0.8, null, null]);
+    // The skin the web bundle evaluates for itself is the web's.
+    for (const size of SIZES_AC) expect(autocompleteSkins.webSkin.field(t, size, true)).toEqual(web.field(t, size, true));
+    expect([autocompleteSkins.webSkin.minTarget, autocompleteSkins.webSkin.pressedOpacity, autocompleteSkins.webSkin.row]).toEqual([null, null, web.row]);
+  });
+
+  it("stretches the text input to the field on the web and on an iPhone", () => {
+    const IPhoneAutocomplete = createAutocomplete(autocompleteSkins.sharedSkin(IPHONE));
+    render(
+      <ThemeProvider light solid>
+        <Autocomplete label="Web" options={["Ada", "Grace"]} testID="web" />
+        <Autocomplete small label="Web small" options={["Ada", "Grace"]} testID="web-small" />
+        <IPhoneAutocomplete label="iPhone" options={["Ada", "Grace"]} testID="iphone" />
+        <IPhoneAutocomplete small label="iPhone small" options={["Ada", "Grace"]} testID="iphone-small" />
+      </ThemeProvider>,
+    );
+    for (const [id, height] of [["web", 40], ["web-small", 34], ["iphone", 44], ["iphone-small", 44]] as const) {
+      const input = screen.getByTestId(id);
+      expect(input.style.alignSelf, `${id}: the input fills the field's height`).toBe("stretch");
+      expect(input.style.flexGrow, `${id}: and the width before the disclosure`).toBe("1");
+      expect(input.parentElement!.style.height, `${id}: the field`).toBe(`${height}px`);
+    }
+  });
+
+  it("dims the iPhone's disclosure while it is pressed, and never the web's", async () => {
+    const IPhoneAutocomplete = createAutocomplete(autocompleteSkins.sharedSkin(IPHONE));
+    const press = (node: HTMLElement) => fireEvent.mouseDown(node, { button: 0, buttons: 1, clientX: 1, clientY: 1 });
+    const release = (node: HTMLElement) => fireEvent.mouseUp(node, { button: 0, buttons: 0, clientX: 1, clientY: 1 });
+    for (const [Component, dim] of [[IPhoneAutocomplete, "0.8"], [Autocomplete, ""]] as const) {
+      render(<ThemeProvider light solid><Component label="Person" options={["Ada", "Grace"]} /></ThemeProvider>);
+      const toggle = screen.getByRole("button", { name: "Toggle options" });
+      expect(toggle.style.opacity).toBe("");
+      press(toggle);
+      if (dim) await waitFor(() => expect(toggle.style.opacity).toBe(dim));
+      else {
+        await act(async () => { await new Promise((resolve) => setTimeout(resolve, 50)); });
+        expect(toggle.style.opacity).toBe("");
+      }
+      release(toggle);
+      cleanup();
+    }
   });
 });
 

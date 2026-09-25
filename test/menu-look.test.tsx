@@ -8,7 +8,7 @@ import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
 import { RowMenu } from "../src/organisms/row-menu/row-menu.tsx";
 import * as dropdownSkins from "../src/atoms/dropdown/dropdown.styles.ts";
 import * as rowMenuSkins from "../src/organisms/row-menu/row-menu.styles.ts";
-import { menuCheck, menuChosenLabel, menuDetail, menuListPanel, menuPanel, menuRow, menuRowHover, menuRowLabel, menuRowPressed, menuSection, menuSeparator, MENU_OFFSET, MENU_ROW_GAP } from "../src/style/menu-look.ts";
+import { menuCheck, menuChosenLabel, menuDetail, menuListPanel, menuPanel, menuRow, menuRowHover, menuRowLabel, menuRowPressed, menuRowPressStrength, menuSection, menuSeparator, MENU_OFFSET, MENU_ROW_GAP } from "../src/style/menu-look.ts";
 import * as selectSkins from "../src/atoms/select/select.styles.ts";
 import * as autocompleteSkins from "../src/atoms/autocomplete/autocomplete.styles.ts";
 import * as phoneSkins from "../src/molecules/phone-input/phone-input.styles.ts";
@@ -219,6 +219,42 @@ describe("Dark Factory's menu in the option lists", () => {
     expect(expected).not.toBe(t.accent);
     await waitFor(() => expect(quantized(row.style.backgroundColor)).toEqual(quantized(expected)));
     fireEvent.mouseUp(row, { button: 0, buttons: 0, clientX: 1, clientY: 1 });
+  });
+
+  it("presses a glass menu row to the recipe's strength: soft beside a muted detail, firm on every other row", async () => {
+    // One rule for every menu that tints a pressed row (menuRowPressStrength): a Dropdown
+    // row with a shortcut and a PhoneInput country row with its dial code take the soft tint,
+    // where the muted detail keeps 4.5:1; a plain Dropdown, RowMenu, Select or Autocomplete
+    // row the firm one.
+    expect([menuRowPressStrength(true), menuRowPressStrength(false)]).toEqual(["soft", "firm"]);
+    const glassFill = (strength: "soft" | "firm") =>
+      withInnerFill({ tokens: t, surface: "glass", dark: false }, menuRowPressed(t), strength).backgroundColor as string;
+    const pressAndRead = async (row: HTMLElement, strength: "soft" | "firm", where: string) => {
+      fireEvent.mouseDown(row, { button: 0, buttons: 1, clientX: 1, clientY: 1 });
+      await waitFor(() => expect(quantized(row.style.backgroundColor), where).toEqual(quantized(glassFill(strength))));
+      fireEvent.mouseUp(row, { button: 0, buttons: 0, clientX: 1, clientY: 1 });
+    };
+    expect(glassFill("soft")).not.toBe(glassFill("firm"));
+    render(<ThemeProvider light glass><Dropdown trigger="Actions" items={[{ label: "Copy", shortcut: "⌘C" }, { label: "Rename" }]} /></ThemeProvider>);
+    fireEvent.click(screen.getByRole("button", { name: "Actions" }));
+    const [copy, rename] = screen.getAllByRole("menuitem");
+    await pressAndRead(copy!, "soft", "a Dropdown row with a shortcut");
+    await pressAndRead(rename!, "firm", "a plain Dropdown row");
+    cleanup();
+    render(<ThemeProvider light glass><RowMenu items={[{ label: "Rename" }]} /></ThemeProvider>);
+    fireEvent.click(screen.getByRole("button", { name: "More options" }));
+    await pressAndRead(screen.getByRole("menuitem"), "firm", "a RowMenu row");
+    cleanup();
+    for (const list of ["select", "autocomplete"] as const) {
+      render(
+        <ThemeProvider light glass>
+          {list === "select" ? <Select open label="Region" options={["Americas", "Europe"]} />
+            : <Autocomplete open label="Region" options={["Americas", "Europe"]} />}
+        </ThemeProvider>,
+      );
+      await pressAndRead(screen.getAllByRole("option")[0]!, "firm", `a ${list} row`);
+      cleanup();
+    }
   });
 
   it("keeps the platform option lists: the UIMenu's leading check on iOS, Material 3's tint on Android, no wash", () => {
