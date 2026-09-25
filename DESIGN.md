@@ -386,7 +386,7 @@ components:
     badge-radius: "9999px"
   inputotp:
     otp-radius: "10px"
-    otp-inner-radius: "0px"
+    otp-inner-radius: "10px"
   popover:
     popover-radius: "12px"
     popover-shadow: "var(--shadow-lg)"
@@ -495,9 +495,6 @@ platformSkins:
       side-row-radius: "9999px"
     steps:
       steps-connector-radius: "9999px"
-    inputotp:
-      otp-radius: "8px"
-      otp-inner-radius: "8px"
     popover:
       popover-radius: "26px"
     command:
@@ -609,9 +606,6 @@ platformSkins:
       steps-connector-radius: "0px"
     toast:
       toast-radius: "4px"
-    inputotp:
-      otp-radius: "12px"
-      otp-inner-radius: "12px"
     tooltip:
       tip-radius: "4px"
       tip-shadow: none

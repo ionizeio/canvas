@@ -1,8 +1,6 @@
 import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { Fragment, forwardRef, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import {
-  Animated,
-  StyleSheet,
   type NativeSyntheticEvent,
   type TextInput as RNTextInput,
   type TextInputSelectionChangeEventData,
@@ -11,25 +9,26 @@ import {
   View,
   Text,
   TextInput,
+  LoopView,
+  createLoopChannel,
   useHugStyle,
   useControllableState,
   useReducedMotion,
-  supportsNativeDriver,
-  keyframes,
   FOCUS_RESET,
   type ColorTokens,
-  type StyleProp,
+  type LoopTrack,
   type ViewStyle,
   type TextStyle,
   type LayoutStyle,
   GlassPane, paneStyle,
   isGlass,
 } from "../../style/index.js";
+import type { FieldDisabledLook } from "../../style/field-look.js";
 
 // Shared InputOTP shell. The whole structure, state, and accessibility live here
-// ONCE; a platform file supplies only its skin (the cell shape/fill/border, the
-// active-cell highlight, the digit type scale, the gap and group treatment) and
-// calls createInputOTP.
+// ONCE; the skin (input-otp.styles.ts, one for every platform) supplies the cell
+// shape, fill and border, the active-cell highlight, the digit type scale, the gap,
+// the caret bar and the disabled look, and each entry file calls createInputOTP.
 //
 // Architecture (the crux): the field is driven by ONE real <TextInput> so native
 // SMS autofill, the one-time-code keyboard suggestion, and paste all flow into a
@@ -69,7 +68,8 @@ export interface InputOTPProps {
   alphanumeric?: boolean;
   /** Focus the field on mount. */
   autoFocus?: boolean;
-  /** Disable input and dim the cells. */
+  /** Disable input. The cells take the field's disabled look (a hairline frame with no
+   *  fill and muted digits) rather than dimming. */
   disabled?: boolean;
   /** Render a bullet (●) instead of the character, for passcode entry. */
   masked?: boolean;
@@ -82,35 +82,25 @@ export interface InputOTPProps {
   style?: LayoutStyle;
 }
 
-// The contract a platform skin fulfills. The size and per-cell state (active while
-// focused, whether the cell is filled) are passed in; the skin maps them to RN
-// style objects built from the active brand tokens (so light/dark/glass follow).
+// The contract the skin fulfills (one skin serves every platform: input-otp.styles.ts). The
+// size and per-cell state (active on the cell the next character lands in while the field
+// is focused, whether the cell is filled) are passed in; the skin maps them to RN style
+// objects built from the active brand tokens (so light/dark/glass follow).
 export interface InputOTPSkin {
   /** Clear Liquid Glass text entry on the web appearance. */
   liquid?: boolean;
-  /** Gap between cells. shadcn connects cells (gap 0, shared borders); iOS/M3 separate them. */
+  /** Gap between two cells (each cell is a field of its own). */
   gap: (size: Size) => number;
-  /** Whether cells share borders as one connected group (web shadcn) — rounds only the outer corners. */
-  connected: boolean;
-  /** A single cell box: shape, fill, border, size. `groupStart`/`groupEnd` mark the ends of
-   *  each connected run (the whole row, or one `groups` chunk) so the web skin rounds and
-   *  closes a run's outer edges while its interior cells keep sharing borders. */
-  cell: (
-    t: ColorTokens,
-    size: Size,
-    state: { active: boolean; filled: boolean; groupStart: boolean; groupEnd: boolean },
-  ) => ViewStyle;
+  /** A single cell box: shape, fill, border, size. */
+  cell: (t: ColorTokens, size: Size, state: { active: boolean; filled: boolean }) => ViewStyle;
   /** The digit (or bullet) text inside a cell. */
   digit: (t: ColorTokens, size: Size) => TextStyle;
   /** The dash drawn between two `groups`. */
   separator: (t: ColorTokens, size: Size) => TextStyle;
-  /** The caret bar drawn in the active empty cell. */
+  /** The caret bar drawn in the active empty cell (the shell blinks it). */
   caret: (t: ColorTokens, size: Size) => ViewStyle;
-  /** Whether the caret blinks (~1s cycle), the native insertion-point idiom on iOS/Android.
-   *  The web skin keeps its established static bar. */
-  caretBlink: boolean;
-  /** Opacity applied to the whole control when disabled. */
-  disabledOpacity: number;
+  /** A disabled field's look, in place of a dim: each cell's frame and the ink of its digits. */
+  disabledLook: (t: ColorTokens, focused: boolean) => FieldDisabledLook;
 }
 
 // Size precedence within the axis: large > small > default (first match wins),
@@ -126,8 +116,7 @@ const DIGITS_ONLY = /\D/g;
 // em dash, which is what reads as a pause between two halves of a code.
 const SEPARATOR = "–";
 
-// One run of cells: a row of the skin's cells (the connected web run shares its
-// borders and sets no gap; the separated skins pass the row gap in).
+// One run of cells: a row of the skin's cells, the skin's gap between them.
 const RUN: ViewStyle = { flexDirection: "row", alignItems: "center" };
 
 // Digits only unless `alphanumeric`, and never longer than the cell count.
@@ -135,38 +124,32 @@ function cleanCode(raw: string, length: number, alphanumeric?: boolean): string 
   return (alphanumeric ? raw : raw.replace(DIGITS_ONLY, "")).slice(0, length);
 }
 
-// The active-cell caret. Native insertion points blink — the iOS caret and the M3
-// text-field cursor both pulse on a ~1s cycle — so the iOS/Android skins opt in via
-// `caretBlink` and the bar loops its opacity: visible ~380ms, a quick 120ms fade out,
-// hidden ~380ms, a 120ms fade back in (a 1000ms cycle). The cycle is ONE looping timing
-// whose easing is that schedule (keyframes), on the native driver where there is one and
-// on the JS driver on web (supportsNativeDriver, src/style/motion.ts): a native loop cannot
-// hold an Animated.sequence or an Animated.delay, and under the New Architecture a
-// JS-driven loop is a shadow-tree commit per frame, so even a 1Hz blink is not free there.
-// Reduce Motion holds the caret solid: the bar alone still marks the insertion point.
-const BLINK = keyframes([
-  [0, 0],
-  [0.38, 0],
-  [0.5, 1],
-  [0.88, 1],
-  [1, 0],
-]);
+// The active-cell caret blinks, the insertion point's idiom on every platform (the iOS
+// caret, the Material 3 cursor and a browser's text caret all pulse on a one-second
+// cycle): visible for 380ms, a 120ms fade out, hidden for 380ms, a 120ms fade back in.
+// The cycle is one table on a loop channel (src/style/loop.tsx), so no frame of it goes
+// through React: the native driver advances it on iOS and Android, and on the web it is
+// a compositor CSS animation. Each caret owns its channel and plays it from the top when
+// it appears, so a caret that moves to the next cell after a keystroke shows at once and
+// only then blinks. Reduce Motion holds the caret solid: the bar alone still marks the
+// insertion point.
+export const CARET_BLINK_PERIOD = 1000;
+export const CARET_BLINK: Pick<LoopTrack, "inputRange" | "outputRange"> = {
+  inputRange: [0, 0.38, 0.5, 0.88, 1],
+  outputRange: [1, 1, 0, 0, 1],
+};
 
-function Caret({ blink, style }: { blink: boolean; style: ViewStyle }) {
-  const opacity = useRef(new Animated.Value(1)).current;
+function Caret({ style }: { style: ViewStyle }) {
   const reduced = useReducedMotion();
-  const active = blink && !reduced;
+  const [channel] = useState(() => createLoopChannel({ period: CARET_BLINK_PERIOD }));
+  const blink = useMemo<LoopTrack>(() => ({ channel, ...CARET_BLINK }), [channel]);
   useEffect(() => {
-    if (!active) {
-      opacity.setValue(1);
-      return;
-    }
-    // From 1 toward 0 along BLINK: 1 while the schedule sits at 0, 0 while it sits at 1.
-    const loop = Animated.loop(Animated.timing(opacity, { toValue: 0, duration: 1000, easing: BLINK, useNativeDriver: supportsNativeDriver }));
-    loop.start();
-    return () => loop.stop();
-  }, [active, opacity]);
-  return <Animated.View style={active ? [style, { opacity }] : style} />;
+    if (reduced) return;
+    // Played from an effect, never during render: the web's phase is wall-clock derived.
+    channel.play(0);
+    return () => channel.stop();
+  }, [reduced, channel]);
+  return reduced ? <View style={style} /> : <LoopView style={style} opacity={blink} />;
 }
 
 /** Build an InputOTP component from a platform skin. */
@@ -189,11 +172,11 @@ export function createInputOTP(skin: InputOTPSkin) {
     const entryMaterial = useTextEntryMaterial(!!skin.liquid);
     const { theme } = entryMaterial;
     const { tokens } = theme;
-    // Under glass the code field uses the skin's text-entry material: each separated iOS /
-    // M3 cell takes its own GlassPane, while a connected web run (cells sharing their
-    // borders) takes ONE pane across the run, so it still reads as a single field box.
-    // A cell drops its fill and resting border under glass (the pane's material and
-    // rim carry them) and keeps only its ACTIVE border and ring as state.
+    // Under glass the code field uses the skin's text-entry material: each cell takes its
+    // own GlassPane (the clear well on the web, the static material natively). A cell
+    // drops its fill and resting border under glass (the pane's material and rim carry
+    // them) and keeps only its ACTIVE border as state. A disabled field paints no
+    // material, as a disabled Input paints none.
     const glass = isGlass(theme);
     // HUG: the cell row keeps its content width inside a stretching Column.
     const hug = useHugStyle();
@@ -267,8 +250,7 @@ export function createInputOTP(skin: InputOTPSkin) {
     // last cell so a full code keeps the last cell highlighted while focused.
     const activeIndex = Math.min(value.length, length - 1);
     // The cells, grouped into runs: one unbroken run, or `groups`-sized runs with a
-    // separator between them. A run is one connected field box on the web skin and a
-    // set of separated cells on iOS/M3; either way it is the unit the glass pane spans.
+    // separator between them.
     const runs: number[][] = [];
     for (let index = 0; index < length; index++) {
       if (index === 0 || (groupSize ? index % groupSize === 0 : false)) runs.push([]);
@@ -276,84 +258,65 @@ export function createInputOTP(skin: InputOTPSkin) {
     }
 
     return (
-      <View
-        testID={testID}
-        style={[hug, disabled ? { opacity: skin.disabledOpacity } : null, style]}
-      >
+      <View testID={testID} style={[hug, style]}>
         {/* The visible segmented row. Relatively positioned so the real input can
-            overlay it absolutely. The connected web group shares borders (gap 0);
-            iOS/M3 separate the cells with `gap`. */}
-        <View
-          style={{
-            position: "relative",
-            flexDirection: "row",
-            alignItems: "center",
-            ...(skin.connected ? null : { gap }),
-          }}
-        >
-          {runs.map((run, r) => {
-            // A connected run's pane takes the run's outer corners: its first cell's
-            // start radii and its last cell's end radii (the inner seams are square).
-            const first = StyleSheet.flatten(skin.cell(tokens, size, { active: false, filled: false, groupStart: true, groupEnd: run.length === 1 })) as ViewStyle;
-            const last = StyleSheet.flatten(skin.cell(tokens, size, { active: false, filled: false, groupStart: run.length === 1, groupEnd: true })) as ViewStyle;
-            const runShape: ViewStyle = {
-              borderTopStartRadius: first.borderTopStartRadius,
-              borderBottomStartRadius: first.borderBottomStartRadius,
-              borderTopEndRadius: last.borderTopEndRadius,
-              borderBottomEndRadius: last.borderBottomEndRadius,
-            };
-            return (
-              <Fragment key={r}>
-                {r > 0 ? (
-                  // The dash between two runs: a separator starts a NEW connected run, so
-                  // the cell after it draws its own left edge and rounds it; without that
-                  // the web skin's shared-border seam would leave the run open on its left.
-                  <Text
-                    style={[skin.separator(tokens, size), { pointerEvents: "none" }]}
-                    accessibilityElementsHidden
-                    importantForAccessibility="no-hide-descendants"
-                  >
-                    {SEPARATOR}
-                  </Text>
-                ) : null}
-                <View style={[RUN, skin.connected ? null : { gap }]}>
-                  {skin.connected ? <GlassPane {...entryMaterial.paneProps} shape={runShape} /> : null}
-                  {run.map((index) => {
-                    const char = value[index];
-                    const filled = char != null;
-                    const active = focused && !disabled && index === activeIndex;
-                    const showCaret = active && !filled;
-                    const groupStart = index === run[0];
-                    const groupEnd = index === run[run.length - 1];
-                    const cellShape = skin.cell(tokens, size, { active, filled, groupStart, groupEnd });
-                    return (
-                      <View
-                        key={index}
-                        style={[
-                          paneStyle(theme, cellShape, active),
-                          glass ? { backgroundColor: "transparent", borderColor: active ? cellShape.borderColor : "transparent" } : null,
-                          { pointerEvents: "none" },
-                        ]}
-                        // The cells are decorative; the TextInput carries the a11y role/label.
-                        accessibilityElementsHidden
-                        importantForAccessibility="no-hide-descendants"
-                      >
-                        {skin.connected ? null : <GlassPane {...entryMaterial.paneProps} shape={cellShape} />}
-                        {filled ? (
-                          // U+25CF BLACK CIRCLE, not the U+2022 text bullet: at the digit font
-                          // size the text bullet paints as a tiny dot, while BLACK CIRCLE reads
-                          // at secure-entry weight (the iOS/Android password-dot idiom).
-                          <Text style={skin.digit(tokens, size)}>{masked ? "●" : char}</Text>
-                        ) : showCaret ? (
-                          <Caret blink={skin.caretBlink} style={skin.caret(tokens, size)} />
-                        ) : null}
-                      </View>
-                    );
-                  })}
-                </View>
-              </Fragment>
-            );
-          })}
+            overlay it absolutely. */}
+        <View style={{ position: "relative", flexDirection: "row", alignItems: "center", gap }}>
+          {runs.map((run, r) => (
+            <Fragment key={r}>
+              {r > 0 ? (
+                // The dash between two runs.
+                <Text
+                  style={[skin.separator(tokens, size), { pointerEvents: "none" }]}
+                  accessibilityElementsHidden
+                  importantForAccessibility="no-hide-descendants"
+                >
+                  {SEPARATOR}
+                </Text>
+              ) : null}
+              <View style={[RUN, { gap }]}>
+                {run.map((index) => {
+                  const char = value[index];
+                  const filled = char != null;
+                  // The cell the next character lands in carries the focus ring and, while
+                  // empty, the caret. A disabled field's input takes no focus (the web
+                  // disables it, native fields are not editable), so it shows neither.
+                  const active = focused && !disabled && index === activeIndex;
+                  const showCaret = active && !filled;
+                  const cellShape = skin.cell(tokens, size, { active, filled });
+                  const disabledLook = disabled ? skin.disabledLook(tokens, active) : null;
+                  const digit = skin.digit(tokens, size);
+                  return (
+                    <View
+                      key={index}
+                      style={[
+                        ...(disabledLook
+                          ? [cellShape, disabledLook.frame]
+                          : [
+                              paneStyle(theme, cellShape, active),
+                              glass ? { backgroundColor: "transparent", borderColor: active ? cellShape.borderColor : "transparent" } : null,
+                            ]),
+                        { pointerEvents: "none" },
+                      ]}
+                      // The cells are decorative; the TextInput carries the a11y role/label.
+                      accessibilityElementsHidden
+                      importantForAccessibility="no-hide-descendants"
+                    >
+                      {disabledLook ? null : <GlassPane {...entryMaterial.paneProps} shape={cellShape} />}
+                      {filled ? (
+                        // U+25CF BLACK CIRCLE, not the U+2022 text bullet: at the digit font
+                        // size the text bullet paints as a tiny dot, while BLACK CIRCLE reads
+                        // at secure-entry weight (the iOS/Android password-dot idiom).
+                        <Text style={disabledLook ? [digit, { color: disabledLook.ink }] : digit}>{masked ? "●" : char}</Text>
+                      ) : showCaret ? (
+                        <Caret style={skin.caret(tokens, size)} />
+                      ) : null}
+                    </View>
+                  );
+                })}
+              </View>
+            </Fragment>
+          ))}
 
           {/* The real input: one transparent, caret-hidden field stretched over the
               whole row. It captures typing, paste, and one-time-code autofill, then

@@ -152,7 +152,8 @@ describe("clear web text-entry material", () => {
     it(`${name} shares the clear material and returns to its solid skin`, () => {
       const result = render(mode(<View testID="field">{field}</View>));
       const painted = materials(screen.getByTestId("field"));
-      expect(painted).toHaveLength(name === "InputOTP" ? 2 : 1);
+      // Each InputOTP cell is a field of its own (SKN-6c), so each paints its own well.
+      expect(painted).toHaveLength(name === "InputOTP" ? 6 : 1);
       for (const material of painted) {
         // A clear field frosts nothing: its under-fill (the light neutral veil), then the
         // control layer's hairline rim in the palette's border colour, and no backdrop filter.

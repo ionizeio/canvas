@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { Autocomplete, Button, ButtonGroup, Card, Column, Dialog, Drawer, Dropdown, Input, PhoneInput, Row, Select, Slider, Switch, ThemeProvider, Typography } from "@nannier-com/canvas";
+import { useEffect, useRef, useState, type ComponentRef } from "react";
+import { Autocomplete, Button, ButtonGroup, Card, Column, Dialog, Drawer, Dropdown, Input, InputOTP, PhoneInput, Row, Select, Slider, Switch, ThemeProvider, Typography, useReducedMotion } from "@nannier-com/canvas";
 
 type Stats = { hosts: number; activeHosts: number; recordings: number; frostViews: number; frameListeners: number };
 declare const require: (name: string) => unknown;
@@ -20,6 +20,25 @@ function LiveEditor({ onFocus }: { onFocus: () => void }) {
       <Switch defaultChecked testID="material-switch">Live updates</Switch>
       <Slider defaultValue={40} accessibilityLabel="Material intensity" testID="material-slider" />
       <ButtonGroup items={["Overview", "Activity", "Settings"]} defaultActive={1} testID="material-segments" />
+    </Column>
+  </Card>;
+}
+
+// The code field's cells and caret: a driver focuses the field (a tap cannot reach its
+// capture input on iOS), and the readout names the Reduce Motion preference, which holds
+// the caret's blink.
+function CodeField() {
+  const field = useRef<ComponentRef<typeof InputOTP>>(null);
+  const reduced = useReducedMotion();
+  const [code, setCode] = useState("");
+  return <Card>
+    <Column snug>
+      <Typography testID="material-otp-state">Reduce Motion: {reduced ? "on, the caret holds" : "off"}; code: {code || "empty"}</Typography>
+      <InputOTP ref={field} value={code} onChangeText={setCode} testID="material-otp" />
+      <Row snug wrap>
+        <Button onPress={() => field.current?.focus()} testID="material-otp-focus">Focus the code field</Button>
+        <Button onPress={() => setCode("")} testID="material-otp-clear">Clear the code</Button>
+      </Row>
     </Column>
   </Card>;
 }
@@ -89,6 +108,7 @@ export function MaterialsBody() {
           <PhoneInput label="Material phone" defaultCountry="GB" testID="material-phone" />
         </Column>
       </Card>
+      <CodeField />
     </Column>
   </ThemeProvider>;
 }

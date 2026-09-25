@@ -62,6 +62,15 @@
         "tools/native/reference/df-avatar/avatars-ui.png"
       ],
       "card": "tools/native/liquid-motion.md#df-avatar"
+    },
+    {
+      "name": "otp-caret-blink",
+      "what": "the InputOTP caret's blink before SKN-6c (an Animated.loop on the native driver): a 1000 ms cycle, visible 380 ms, a 120 ms linear fade out, hidden 380 ms, a 120 ms linear fade in, solid on appearance; the shipped docs page components/input-otp on the Android emulator, dark glass",
+      "run": "recorded 2026-09-24 with record-motion.mjs --platform android --device emulator-5554 --fps 20 on the focused Default example; the per-frame visibility trace is kept beside the strip",
+      "strips": [
+        "tools/native/reference/otp-caret-blink/android-before-005-026.png"
+      ],
+      "card": "tools/native/liquid-motion.md#otp-caret-blink"
     }
   ],
   "harness": {

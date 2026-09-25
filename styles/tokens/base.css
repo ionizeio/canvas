@@ -26,8 +26,9 @@
   :focus-visible{outline:var(--ring-width) solid var(--ring);outline-offset:var(--ring-offset)}
 }
 
-/* Keyframes the components reference (spinner ring, skeleton shimmer). Left unlayered: cascade
-   layers order @keyframes name resolution too, and these names are the kit's own. */
+/* Keyframes the components reference (spinner ring, skeleton shimmer, the InputOTP caret: visible
+   380ms, a 120ms fade out, hidden 380ms, a 120ms fade in, run linear over 1s). Left unlayered:
+   cascade layers order @keyframes name resolution too, and these names are the kit's own. */
 @keyframes canvas-spin{to{transform:rotate(360deg)}}
 @keyframes canvas-shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
-@keyframes canvas-caret{0%,49%{opacity:1}50%,100%{opacity:0}}
+@keyframes canvas-caret{0%,38%{opacity:1}50%,88%{opacity:0}100%{opacity:1}}

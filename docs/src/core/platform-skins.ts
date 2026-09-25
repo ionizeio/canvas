@@ -98,8 +98,6 @@ import { FilterPanel as FilterPanelIOS } from "../../../src/organisms/filter-pan
 import { FilterPanel as FilterPanelAndroid } from "../../../src/organisms/filter-panel/filter-panel.android.js";
 import { Stepper as StepperIOS } from "../../../src/atoms/stepper/stepper.ios.js";
 import { Stepper as StepperAndroid } from "../../../src/atoms/stepper/stepper.android.js";
-import { InputOTP as InputOTPIOS } from "../../../src/atoms/input-otp/input-otp.ios.js";
-import { InputOTP as InputOTPAndroid } from "../../../src/atoms/input-otp/input-otp.android.js";
 import { Collapsible as CollapsibleIOS } from "../../../src/molecules/collapsible/collapsible.ios.js";
 import { Collapsible as CollapsibleAndroid } from "../../../src/molecules/collapsible/collapsible.android.js";
 import { Carousel as CarouselIOS } from "../../../src/organisms/carousel/carousel.ios.js";
@@ -132,7 +130,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     EmptyState: EmptyStateIOS, Field: FieldIOS, Feed: FeedIOS, Form: FormIOS, FormSection: FormSectionIOS,
     GridList: GridListIOS, MediaObject: MediaObjectIOS, PhoneInput: PhoneInputIOS, StackedList: StackedListIOS, Stats: StatsIOS,
     Command: CommandIOS, DataTable: DataTableIOS, Drawer: DrawerIOS, FilterPanel: FilterPanelIOS,
-    Stepper: StepperIOS, InputOTP: InputOTPIOS, Collapsible: CollapsibleIOS,
+    Stepper: StepperIOS, Collapsible: CollapsibleIOS,
     Carousel: CarouselIOS,
     Board: BoardIOS, BreadcrumbItem: BreadcrumbItemIOS,
     DragDropProvider: DragDropProviderIOS, DropZone: DropZoneIOS, Draggable: DraggableIOS, DragHandle: DragHandleIOS,
@@ -152,7 +150,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     EmptyState: EmptyStateAndroid, Field: FieldAndroid, Feed: FeedAndroid, Form: FormAndroid, FormSection: FormSectionAndroid,
     GridList: GridListAndroid, MediaObject: MediaObjectAndroid, PhoneInput: PhoneInputAndroid, StackedList: StackedListAndroid, Stats: StatsAndroid,
     Command: CommandAndroid, DataTable: DataTableAndroid, Drawer: DrawerAndroid, FilterPanel: FilterPanelAndroid,
-    Stepper: StepperAndroid, InputOTP: InputOTPAndroid, Collapsible: CollapsibleAndroid,
+    Stepper: StepperAndroid, Collapsible: CollapsibleAndroid,
     Carousel: CarouselAndroid, Toast: ToastAndroid, ToastProvider: ToastProviderAndroid, useToast: useToastAndroid,
     Chip: ChipAndroid,
     Board: BoardAndroid, BreadcrumbItem: BreadcrumbItemAndroid,

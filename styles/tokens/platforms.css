@@ -319,15 +319,23 @@
   --p-stepper-field-left-display:none /* @kind other */;--p-stepper-field-inline-display:inline-flex /* @kind other */;
   --p-stepper-divider-display:inline-flex /* @kind other */;--p-stepper-divider-w:1px;--p-stepper-divider-inset:0px;--p-stepper-divider-color:var(--border);
   --p-stepper-group-radius:6px;--p-stepper-group-border:1px;--p-stepper-group-fill:var(--background);--p-stepper-group-gap:0px;--p-stepper-outer-gap:0px;
-  /* InputOTP (input-otp.styles.ts webSkin — shadcn input-otp) */
-  --p-otp-seam:0px;--p-otp-seam-active:0px;--p-otp-shared-edge:0 /* @kind other */;--p-otp-gap-small:0px;--p-otp-gap-base:0px;--p-otp-gap-large:0px;
-  --p-otp-w-small:40px;--p-otp-w-base:48px;--p-otp-w-large:56px;
-  --p-otp-h-small:40px;--p-otp-h-base:48px;--p-otp-h-large:56px;
-  --p-otp-radius:10px;--p-otp-inner-radius:0px;--p-otp-fill:var(--card);
-  --p-otp-rest-border:1px;--p-otp-active-border:1px;--p-otp-rest-border-color:var(--input);--p-otp-active-border-color:var(--ring);
-  --p-otp-active-ring:0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent) /* @kind other */;
-  --p-otp-digit-small:15px;--p-otp-digit-base:18px;--p-otp-digit-large:22px;--p-otp-digit-weight:500;--p-otp-digit-tracking:0px;
-  --p-otp-caret:var(--foreground);--p-otp-caret-blink:none /* @kind other */;
+  /* InputOTP (input-otp.styles.ts webSkin, iOS and Android too: no platform ships a one-time-code
+     control. Each cell is Dark Factory's field frame, a separate square as tall as the field (34 / 40 /
+     46), 6 / 8 / 10 apart, the field-fill well at the 10px corner with the field-border line turning ring on the
+     active cell; the digit 600 in the foreground ink; the primary caret blinks on a one-second cycle
+     (Reduce Motion holds it). A disabled field takes the web field's disabled look on every platform
+     (each cell on the border hairline with no fill, the digits muted, no dim). On an iPhone and on
+     Android a cell grows taller to the 44pt / 48dp minimum where the square is shorter) */
+  --p-otp-seam:1px;--p-otp-seam-active:1px;--p-otp-shared-edge:1 /* @kind other */;--p-otp-gap-small:6px;--p-otp-gap-base:8px;--p-otp-gap-large:10px;
+  --p-otp-w-small:34px;--p-otp-w-base:40px;--p-otp-w-large:46px;
+  --p-otp-h-small:34px;--p-otp-h-base:40px;--p-otp-h-large:46px;
+  --p-otp-radius:10px;--p-otp-inner-radius:10px;--p-otp-fill:var(--field-fill);
+  --p-otp-rest-border:1px;--p-otp-active-border:1px;--p-otp-rest-border-color:var(--field-border);--p-otp-active-border-color:var(--ring);
+  --p-otp-active-ring:none /* @kind other */;
+  --p-otp-digit-small:15px;--p-otp-digit-base:18px;--p-otp-digit-large:22px;--p-otp-digit-weight:600;--p-otp-digit-tracking:0px;
+  --p-otp-caret:var(--primary);--p-otp-caret-blink:canvas-caret 1s linear infinite /* @kind other */;
+  --p-otp-disabled-border:var(--border);--p-otp-disabled-fill:transparent;
+  --p-otp-disabled-ink:var(--muted-foreground);--p-otp-disabled-opacity:1 /* @kind other */;
   /* DescriptionList (description-lists.styles.ts webSkin) */
   --p-dl-radius:14px;--p-dl-shadow:var(--shadow-sm);--p-dl-pad:24px;--p-dl-row-gap:12px;
   --p-dl-row-align:baseline /* @kind other */;--p-dl-row-min-h:0px;--p-dl-divided-pad:12px;
@@ -492,14 +500,6 @@
   --p-stepper-field-left-display:inline-flex /* @kind other */;--p-stepper-field-inline-display:none /* @kind other */;
   --p-stepper-divider-inset:4px;--p-stepper-divider-color:color-mix(in oklab, var(--foreground) 30%, transparent);
   --p-stepper-group-radius:9999px;--p-stepper-group-border:0px;--p-stepper-group-fill:var(--secondary);
-  /* InputOTP — iOS: separated 44x52pt filled cells, 2pt primary ring when active */
-  --p-otp-seam:1px;--p-otp-seam-active:2px;--p-otp-shared-edge:1 /* @kind other */;--p-otp-gap-small:6px;--p-otp-gap-base:8px;--p-otp-gap-large:10px;
-  --p-otp-w-small:38px;--p-otp-w-base:44px;--p-otp-w-large:52px;
-  --p-otp-h-small:44px;--p-otp-h-base:52px;--p-otp-h-large:60px;
-  --p-otp-radius:8px;--p-otp-inner-radius:8px;--p-otp-fill:var(--secondary);
-  --p-otp-rest-border:0px;--p-otp-active-border:2px;--p-otp-rest-border-color:transparent;--p-otp-active-border-color:var(--primary);
-  --p-otp-active-ring:none /* @kind other */;--p-otp-digit-weight:600;
-  --p-otp-caret:var(--primary);--p-otp-caret-blink:canvas-caret 1s steps(2,start) infinite /* @kind other */;
   /* Accordion — iOS: the default IS a 12pt continuous inset-grouped card */
   --p-acc-container-radius:12px;--p-acc-container-border:1px;--p-acc-container-fill:var(--card);
   --p-acc-card-radius:12px;--p-acc-card-inset:16px;--p-acc-sep-inset:16px;
@@ -726,14 +726,6 @@
   --p-stepper-field-font:16px;--p-stepper-field-lh:24px;
   --p-stepper-divider-display:none /* @kind other */;
   --p-stepper-group-radius:0px;--p-stepper-group-border:0px;--p-stepper-group-fill:transparent;--p-stepper-group-gap:8px;
-  /* InputOTP — M3: separated 52x56dp outlined cells, 2dp primary outline when active */
-  --p-otp-seam:1px;--p-otp-seam-active:2px;--p-otp-shared-edge:1 /* @kind other */;--p-otp-gap-small:6px;--p-otp-gap-base:8px;--p-otp-gap-large:12px;
-  --p-otp-w-small:44px;--p-otp-w-base:52px;--p-otp-w-large:60px;
-  --p-otp-h-small:48px;--p-otp-h-base:56px;--p-otp-h-large:64px;
-  --p-otp-radius:12px;--p-otp-inner-radius:12px;--p-otp-fill:transparent;
-  --p-otp-rest-border:1px;--p-otp-active-border:2px;--p-otp-rest-border-color:var(--border);--p-otp-active-border-color:var(--primary);
-  --p-otp-active-ring:none /* @kind other */;--p-otp-digit-base:16px;--p-otp-digit-weight:500;--p-otp-digit-tracking:0.15px;
-  --p-otp-caret:var(--primary);--p-otp-caret-blink:canvas-caret 1s steps(2,start) infinite /* @kind other */;
   /* Accordion — M3 expandable list rows: flush 56dp rows, full-bleed dividers */
   --p-acc-header-pad-x:16px;--p-acc-header-pad-y:16px;
   --p-acc-title:16px;--p-acc-title-lh:24px;--p-acc-title-weight:500;--p-acc-title-tracking:0.15px;

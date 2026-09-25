@@ -505,7 +505,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "input-otp",
     name: "InputOTP",
-    description: "A segmented one-time-code field driven by one input, with SMS autofill and paste.",
+    description: "A segmented one-time-code field driven by one input, with SMS autofill and paste. No platform ships one, so every platform draws Dark Factory's field in each cell: a translucent well whose hairline turns violet where the next character lands, and a blinking caret.",
     category: "Atoms",
   },
 

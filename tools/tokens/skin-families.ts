@@ -376,8 +376,9 @@ export const SKIN_FAMILIES: SkinFamily[] = [
     name: "InputOTP",
     module: "atoms/input-otp/input-otp",
     checks: [
-      { token: "p-otp-radius", read: (s, t) => { const c = styleOf(s.cell, t, "base", { active: false, filled: false, groupStart: true, groupEnd: true }); return num(c?.borderTopStartRadius ?? c?.borderRadius); } },
-      { token: "p-otp-inner-radius", read: (s, t) => { const c = styleOf(s.cell, t, "base", { active: false, filled: false, groupStart: false, groupEnd: false }); return num(c?.borderTopStartRadius ?? c?.borderRadius) ?? 0; } },
+      // The cells are separate fields, so the outer and inner corners are the cell's own.
+      { token: "p-otp-radius", read: (s, t) => num(styleOf(s.cell, t, "base", { active: false, filled: false })?.borderRadius) },
+      { token: "p-otp-inner-radius", read: (s, t) => num(styleOf(s.cell, t, "base", { active: false, filled: false })?.borderRadius) },
     ],
   },
   {
