@@ -2,6 +2,7 @@ import type * as ExpoVideoTypes from "expo-video";
 import { useEffect, useRef, useState, type ComponentType } from "react";
 import { type ImageSourcePropType, type StyleProp, type ViewStyle } from "react-native";
 import { devWarn } from "../../style/dev-warn.js";
+import { inertProps } from "../../style/inert.js";
 import { Pressable, View, radius as radiusScale, useFillStyle, useReducedMotion, useTheme, type LayoutStyle } from "../../style/index.js";
 import { Emblem as WebEmblem } from "../emblem/emblem.js";
 import { Icon as WebIcon } from "../icon/icon.js";
@@ -262,23 +263,35 @@ function Player({ api, props, skin, kit, nativeControls, frame, picture, label }
         accessibilityLabel: overlayName,
         "aria-label": overlayName,
       };
+  // Wherever the kit draws the clip's controls, the clip surface and its poster are a
+  // picture and nothing more, so they sit in an inert layer: out of the tab order and
+  // the accessibility tree, never the target of a press (the control above takes it).
+  // The web needs this said: the surface is expo-video's <video>, which takes no tab
+  // index or ARIA prop, and Firefox makes a <video> without the browser's controls a tab
+  // stop of its own, with no role or name, in front of the kit's controls.
+  // react-native-web renders `inert` as the HTML attribute (see style/inert.ts); React
+  // Native has no such prop and drops it. Full screen is a request on the <video> itself
+  // and still works from inside the layer.
+  const surfaceLayer = platformControls ? null : inertProps();
 
   return (
     <View style={frame} testID={testID}>
       <View style={picture}>
-        <api.VideoView
-          ref={view}
-          player={player}
-          style={skin.layer}
-          contentFit={fit}
-          nativeControls={platformControls}
-          fullscreenOptions={{ enable: true }}
-          playsInline
-          onFirstFrameRender={() => setFirstFrame(true)}
-        />
-        {poster && !firstFrame ? (
-          <Image source={poster} style={skin.layer} {...fitFlags(fit)} accessible={false} importantForAccessibility="no-hide-descendants" />
-        ) : null}
+        <View style={skin.layer} {...surfaceLayer}>
+          <api.VideoView
+            ref={view}
+            player={player}
+            style={skin.layer}
+            contentFit={fit}
+            nativeControls={platformControls}
+            fullscreenOptions={{ enable: true }}
+            playsInline
+            onFirstFrameRender={() => setFirstFrame(true)}
+          />
+          {poster && !firstFrame ? (
+            <Image source={poster} style={skin.layer} {...fitFlags(fit)} accessible={false} importantForAccessibility="no-hide-descendants" />
+          ) : null}
+        </View>
         {platformControls ? null : (
           <Pressable
             style={skin.overlay}

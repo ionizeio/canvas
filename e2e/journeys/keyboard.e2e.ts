@@ -1,6 +1,7 @@
-import type { Page, TestInfo } from "@playwright/test";
+import type { Locator, Page, TestInfo } from "@playwright/test";
+import { scanStructure } from "../support/axe";
 import { expect, test } from "../support/fixtures";
-import { gotoDocs } from "../support/docs";
+import { gotoDocs, platformRow } from "../support/docs";
 
 async function withDrawerFocusDiagnostics(page: Page, testInfo: TestInfo, run: () => Promise<void>) {
   await page.addInitScript(() => {
@@ -115,3 +116,63 @@ for (const scheme of ["light", "dark"] as const) {
     await withDrawerFocusDiagnostics(page, testInfo, () => checkDrawerMenuClose(page, scheme, false));
   });
 }
+
+// Where keyboard focus sits relative to `scope`, in words a failure can print: its bare
+// <video>, one of its nodes hidden from assistive technology, another of its nodes by role
+// and name, or outside it.
+function focusIn(scope: Locator): Promise<string> {
+  return scope.evaluate((root) => {
+    const node = document.activeElement;
+    if (!node || !root.contains(node)) return "outside";
+    if (node.tagName === "VIDEO") return "the bare <video>";
+    if (node.closest('[aria-hidden="true"], [inert]')) return `a hidden ${node.tagName.toLowerCase()}`;
+    return `${node.getAttribute("role") ?? node.tagName.toLowerCase()} ${node.getAttribute("aria-label") ?? ""}`.trim();
+  });
+}
+
+test("a video's picture is never a keyboard stop, in every engine", async ({ page }) => {
+  // On the web the picture is expo-video's <video>, which carries no controls of its own:
+  // the kit draws them (the picture's play control inline, the bar under it with
+  // `controls`). Firefox makes a controls-less <video> a tab stop, one with no role or
+  // name, in front of the player's first named control; Chromium and WebKit do not. And
+  // beside the bar the picture's tap target is hidden from assistive technology, so a
+  // stop there would be announced as nothing (axe's aria-hidden-focus). The web row holds
+  // the player alone, so Shift+Tab from its first named control must leave the row, for
+  // the Android preview above it (its <video> with the browser's own controls on the
+  // controls page, its picture's play control inline), and Tab must come straight back.
+  for (const [route, name] of [
+    ["/components/video/controls", "Play Sample clip with controls"],
+    ["/components/video", "Play Sample clip"],
+  ] as const) {
+    await gotoDocs(page, route, { scheme: "dark" });
+    const web = platformRow(page, "web");
+    const play = web.getByRole("button", { name, exact: true });
+    await expect(play).toBeVisible();
+    await play.focus();
+    await page.keyboard.press("Shift+Tab");
+    expect(await focusIn(web), `Shift+Tab from "${name}"`).toBe("outside");
+    await page.keyboard.press("Tab");
+    await expect(play, `Tab back to "${name}"`).toBeFocused();
+    expect(await scanStructure(page, '[data-platform-row="web"]', ["aria-hidden-focus"])).toEqual([]);
+  }
+});
+
+test("a video still goes full screen from the keyboard", async ({ page }) => {
+  // The picture's <video> sits in an inert layer so it is never a stop, and full screen
+  // is a request made on that <video>: the bar's button must still put it in full screen.
+  await gotoDocs(page, "/components/video/controls", { scheme: "dark" });
+  test.skip(!(await page.evaluate(() => document.fullscreenEnabled)), "This browser build has no Fullscreen API.");
+  const web = platformRow(page, "web");
+  const fullScreen = web.getByRole("button", { name: "Show Sample clip with controls full screen" });
+  // What is full screen: the web row's own <video>, another node, or nothing.
+  const inFullScreen = () => web.evaluate((root) => {
+    const node = document.fullscreenElement;
+    if (!node) return "nothing";
+    return node.tagName === "VIDEO" && root.contains(node) ? "the player's <video>" : `a ${node.tagName.toLowerCase()} outside the player`;
+  });
+  await fullScreen.focus();
+  await page.keyboard.press("Enter");
+  await expect.poll(inFullScreen).toBe("the player's <video>");
+  await page.evaluate(() => document.exitFullscreen());
+  await expect.poll(inFullScreen).toBe("nothing");
+});

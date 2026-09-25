@@ -9,7 +9,6 @@
  * worked, and in a browser the keydown never left the text field.
  */
 import type { Locator, Page } from "@playwright/test";
-import { scanStructure } from "../support/axe";
 import { gotoDocs, platformRow, stage } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 
@@ -158,24 +157,4 @@ test("a selectable table's rows stay pointer-only: Tab crosses the checkboxes, n
   await expect(rachel).toHaveAttribute("aria-checked", "false");
   await web.getByText("rachel@example.com").click();
   await expect(rachel).toHaveAttribute("aria-checked", "true");
-});
-
-test("a video's picture under the web control bar never takes keyboard focus", async ({ page }) => {
-  // Beside the kit's control bar the picture's tap target is a pointer convenience
-  // hidden from assistive technology, and the bar's play button is the named control. A
-  // hidden node that takes focus is announced as nothing (axe's aria-hidden-focus), so
-  // Shift+Tab from the bar must not land inside it. (Firefox also makes the <video>
-  // element itself a stop, which is not the hidden node.)
-  await gotoDocs(page, "/components/video/controls", { scheme: "dark" });
-  const web = platformRow(page, "web");
-  const play = web.getByRole("button", { name: "Play Sample clip with controls" });
-  await expect(play).toBeVisible();
-  await play.focus();
-  await page.keyboard.press("Shift+Tab");
-  const landed = await page.evaluate(() => {
-    const node = document.activeElement;
-    return node?.closest('[aria-hidden="true"]') ? `a hidden ${node.tagName.toLowerCase()}` : "a node assistive technology can see";
-  });
-  expect(landed).toBe("a node assistive technology can see");
-  expect(await scanStructure(page, '[data-platform-row="web"]', ["aria-hidden-focus"])).toEqual([]);
 });

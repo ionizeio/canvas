@@ -1,0 +1,5 @@
+---
+"@ionizeio/canvas": patch
+---
+
+On the web, a Video's picture is no longer a keyboard stop in Firefox. The picture is expo-video's `<video>`, which takes no tab index or ARIA prop, and Firefox makes a `<video>` without the browser's controls a tab stop with no role or name, so Shift+Tab from the control bar's Play button, or from the inline player's picture control, landed on an unnamed element in front of the player's named controls. Wherever the kit draws the controls, the clip surface and its poster now sit in an `inert` layer, which react-native-web renders as the HTML attribute (spelled `true` for React 19 and as an empty string for React 18, the only value each writes): out of the tab order and the accessibility tree and never the target of a press, while full screen still works from inside it. Chromium and WebKit never stopped there. iOS and Android are unchanged: React Native has no `inert` prop and drops it, and with `controls` the platform's own player controls keep their surface.

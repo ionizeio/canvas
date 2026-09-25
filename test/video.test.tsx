@@ -28,6 +28,10 @@ const current = () => {
   return player;
 };
 
+// The node expo-video's VideoView renders (a <video> on the web; the stub's View here).
+const surface = () => screen.getByTestId("expo-video-view");
+const inert = (node: Element) => node.closest("[inert]") !== null;
+
 function emit(event: string, payload?: unknown, player = current()) {
   act(() => player.emit(event, payload));
 }
@@ -97,6 +101,20 @@ describe("Video inline", () => {
     expect(posterCount()).toBe(0);
   });
 
+  it("keeps the clip surface and poster out of the tab order, and the picture's control in it", () => {
+    render(<ThemeProvider><Video source={clip} poster={still} accessibilityLabel="Harbour" testID="clip" /></ThemeProvider>);
+    ready();
+    // On the web the surface is a <video> that takes no tab index of its own, and Firefox
+    // makes a controls-less <video> an unnamed tab stop in front of the picture's control.
+    // An inert layer takes it and the poster out of the tab order and the accessibility tree.
+    expect(inert(surface())).toBe(true);
+    expect(inert(screen.getByTestId("clip").querySelector("img") as Element)).toBe(true);
+    const play = screen.getByRole("button", { name: "Play Harbour" });
+    expect(inert(play)).toBe(false);
+    fireEvent.click(play);
+    expect(current().playing).toBe(true);
+  });
+
   it("autoplays once the clip is ready", () => {
     render(<ThemeProvider><Video source={clip} autoplay muted /></ThemeProvider>);
     expect(current().playing).toBe(false);
@@ -161,6 +179,18 @@ describe("Video controls on the web", () => {
     expect(named(stops)).toEqual(["button Play Harbour", "slider Seek Harbour", "button Mute Harbour", "button Show Harbour full screen"]);
   });
 
+  it("keeps the clip surface out of the tab order beside the bar, and none of the bar's controls", () => {
+    const { container } = render(<ThemeProvider><Video source={clip} controls accessibilityLabel="Harbour" /></ThemeProvider>);
+    ready();
+    // The surface is the <video> Firefox would stop on in front of the bar's Play button.
+    expect(inert(surface())).toBe(true);
+    const inertStops = (Array.from(container.querySelectorAll("*")) as HTMLElement[]).filter((node) => node.tabIndex >= 0 && inert(node));
+    expect(inertStops.map((node) => node.getAttribute("aria-label"))).toEqual([]);
+    for (const name of ["Play Harbour", "Seek Harbour", "Mute Harbour", "Show Harbour full screen"]) {
+      expect(screen.getAllByLabelText(name).some(inert)).toBe(false);
+    }
+  });
+
   it("plays, pauses, mutes and goes full screen from the bar", () => {
     render(<ThemeProvider><Video source={clip} controls accessibilityLabel="Harbour" /></ThemeProvider>);
     ready();
@@ -206,6 +236,8 @@ describe("Video controls on iOS and Android", () => {
       expect(current().viewProps.nativeControls).toBe(true);
       expect(screen.queryByLabelText("Seek Harbour")).toBeNull();
       expect(screen.queryByRole("button", { name: "Play Harbour" })).toBeNull();
+      // The platform's own controls live on the surface, so it is never made inert.
+      expect(inert(surface())).toBe(false);
     });
 
     it(`keeps the inline play control on ${platform} without controls`, () => {
