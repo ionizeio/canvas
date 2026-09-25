@@ -52,13 +52,14 @@ const compareSnapshots = process.platform === "linux" || !!process.env.E2E_FORCE
 // again, and whatever step needed one next (a screenshot, a wait on real frames) hung
 // until the test timed out, in 3 of about 26 Deploy runs. The E2E soak
 // (.github/workflows/e2e-soak.yml, with e2e/support/hang-probe.ts) caught it in the
-// act and measured it: 8 hangs in 128 passes of the material spec with Chromium's
-// default pacing, 0 in 128 with this switch (0 in 64 with it alone), the Linux
-// screenshot baselines unchanged. The switch lifts that wait in the renderer's
-// scheduler and the display's (IsDrawThrottled and the display scheduler in Chromium
-// 148, which also drops vsync); nothing here depends on frame pacing, since the
-// screenshots disable animations and the page clock drives the page's own timers.
-// It stays until a Chromium release is soaked clean without it.
+// act and measured it on the material spec: 8 hangs in 128 passes with Chromium's
+// default pacing, 1 in 320 with this switch, the Linux screenshot baselines unchanged.
+// The switch lifts that wait in the renderer's scheduler and the display's
+// (IsDrawThrottled and the display scheduler in Chromium 148, which also drops vsync);
+// nothing here depends on frame pacing, since the screenshots disable animations and
+// the page clock drives the page's own timers. It mitigates a Chromium defect rather
+// than curing it (the one hang left had the same profile), and it stays until a
+// Chromium release is soaked clean without it.
 const CHROMIUM_ARGS = ["--disable-frame-rate-limit"];
 
 type SuiteProject = Project<PlaywrightTestOptions, PlaywrightWorkerOptions>;
