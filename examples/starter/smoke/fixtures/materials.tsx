@@ -24,9 +24,9 @@ function LiveEditor({ onFocus }: { onFocus: () => void }) {
   </Card>;
 }
 
-// The code field's cells and caret: a driver focuses the field (a tap cannot reach its
-// capture input on iOS), and the readout names the Reduce Motion preference, which holds
-// the caret's blink.
+// The code field's cells and caret: a driver focuses the field through its ref (so a
+// scripted run needs no tap on a cell), and the readout names the Reduce Motion
+// preference, which holds the caret's blink.
 function CodeField() {
   const field = useRef<ComponentRef<typeof InputOTP>>(null);
   const reduced = useReducedMotion();

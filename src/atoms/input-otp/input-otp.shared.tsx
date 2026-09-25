@@ -33,8 +33,9 @@ import { CARET_BLINK } from "../../style/motion.js";
 //
 // Architecture (the crux): the field is driven by ONE real <TextInput> so native
 // SMS autofill, the one-time-code keyboard suggestion, and paste all flow into a
-// single value. That input is positioned ABSOLUTELY to fill the whole row and is
-// made visually invisible (opacity 0, caret hidden), so tapping anywhere
+// single value. That input is positioned ABSOLUTELY to fill the whole row and paints
+// nothing (caret hidden; see-through on the web, inkless at full opacity on iOS and
+// Android, per InputOTPParts), so tapping anywhere
 // on the segmented row focuses it and autofill/paste land in it. The visible
 // segment cells (a View + a Text per character) are laid out underneath and read
 // from the resolved `value`; the "active" cell (index === value.length, clamped
@@ -104,6 +105,23 @@ export interface InputOTPSkin {
   disabledLook: (t: ColorTokens, focused: boolean) => FieldDisabledLook;
 }
 
+// The per-platform piece an entry threads in beside its skin: how the capture input paints
+// nothing. The look is the same everywhere; what differs is what each platform still sees
+// of a view it cannot see through.
+export interface InputOTPParts {
+  /**
+   * Hide the capture input by its ink (a text and selection colour that paints nothing) at
+   * full opacity, instead of by opacity. iOS and Android pass it, because both treat a view
+   * drawn at zero alpha as absent: UIKit's hit test (and React Native's own) skips any view
+   * below 0.01 alpha, so a tap on a cell never reached the field on iOS, and both
+   * accessibility trees drop it, so neither VoiceOver nor TalkBack could find the field. The
+   * web leaves it off: a browser hit-tests and exposes a see-through input, and opacity is
+   * the only way to hide what it paints over an autofilled one (its autofill fill and ink,
+   * applied with `!important`, which no inline style overrides).
+   */
+  opaqueCapture?: boolean;
+}
+
 // Size precedence within the axis: large > small > default (first match wins),
 // matching the other atoms.
 function sizeOf(p: InputOTPProps): Size {
@@ -119,6 +137,17 @@ const SEPARATOR = "–";
 
 // One run of cells: a row of the skin's cells, the skin's gap between them.
 const RUN: ViewStyle = { flexDirection: "row", alignItems: "center" };
+
+// A colour that paints nothing, the capture input's ink under `opaqueCapture`. Not the
+// `transparent` keyword: that is rgba(0, 0, 0, 0), the integer 0, which React Native's
+// Android renderer also reads as "no colour set", so a TextInput given it falls back to the
+// default black ink and paints the raw code across the row. Zero alpha over white channels
+// is just as clear and is a colour Android keeps.
+const NO_INK = "rgba(255, 255, 255, 0)";
+
+// The two ways the capture input paints nothing (InputOTPParts.opaqueCapture).
+const SEE_THROUGH: TextStyle = { opacity: 0 };
+const INKLESS: TextStyle = { color: NO_INK };
 
 // Digits only unless `alphanumeric`, and never longer than the cell count.
 function cleanCode(raw: string, length: number, alphanumeric?: boolean): string {
@@ -148,8 +177,9 @@ function Caret({ style }: { style: ViewStyle }) {
   return reduced ? <View style={style} /> : <LoopView style={style} opacity={blink} />;
 }
 
-/** Build an InputOTP component from a platform skin. */
-export function createInputOTP(skin: InputOTPSkin) {
+/** Build an InputOTP component from a platform skin (plus the platform's capture part). */
+export function createInputOTP(skin: InputOTPSkin, parts: InputOTPParts = {}) {
+  const { opaqueCapture } = parts;
   const InputOTP = forwardRef<RNTextInput, InputOTPProps>(function InputOTP(props, ref) {
     const {
       length = 6,
@@ -314,10 +344,11 @@ export function createInputOTP(skin: InputOTPSkin) {
             </Fragment>
           ))}
 
-          {/* The real input: one transparent, caret-hidden field stretched over the
-              whole row. It captures typing, paste, and one-time-code autofill, then
-              the cells paint the value. A Pressable wrapper is NOT needed — the input
-              itself fills the row, so a tap anywhere focuses it. */}
+          {/* The real input: one caret-hidden field that paints nothing, stretched over
+              the whole row. It captures typing, paste, and one-time-code autofill, then
+              the cells paint the value. No Pressable wrapper: the input itself fills the
+              row, so a tap anywhere focuses it and a long press reaches the input's own
+              handling (iOS opens its edit menu, with Paste, there). */}
           <TextInput
             ref={ref}
             value={value}
@@ -333,8 +364,12 @@ export function createInputOTP(skin: InputOTPSkin) {
             caretHidden
             inputMode={alphanumeric ? "text" : "numeric"}
             keyboardType={alphanumeric ? "default" : "number-pad"}
-            // Codes are entered exactly as shown; nothing is re-cased behind the caller.
+            // Codes are entered exactly as shown: nothing is re-cased, corrected or flagged
+            // behind the caller (autocorrect would rewrite an alphanumeric code into a word
+            // at the next boundary, and its prompt and marks would paint over the cells).
             autoCapitalize="none"
+            autoCorrect={false}
+            spellCheck={false}
             // When masked, obscure the value at the input layer so the platform
             // masks it for real: RN hides it natively and RNW emits a password
             // input, so a screen reader / the DOM value / password-manager UI no
@@ -346,8 +381,10 @@ export function createInputOTP(skin: InputOTPSkin) {
             textContentType="oneTimeCode"
             autoComplete="one-time-code"
             maxLength={length}
-            // Brand the (hidden) selection in case the OS still shows a selection band.
-            selectionColor={tokens.primary}
+            // The selection is ink too, and paints none: a band (and, on Android, the
+            // handles, which take this colour) over glyphs nobody sees would sit off the
+            // cells. react-native-web drops the prop; its see-through input shows none.
+            selectionColor={NO_INK}
             accessibilityLabel="One-time code"
             aria-label="One-time code"
             accessibilityState={{ disabled: !!disabled }}
@@ -361,16 +398,13 @@ export function createInputOTP(skin: InputOTPSkin) {
                 bottom: 0,
                 width: "100%",
                 height: "100%",
-                // Visually invisible: the cells render the value, this only captures input.
-                // It is hidden with OPACITY rather than a transparent text color, because
-                // Android does not honor `color: "transparent"` here and painted the raw
-                // code straight across the middle of the row, over the cells. Opacity is
-                // honored everywhere and changes nothing else: an opacity-0 view still
-                // takes touches, still focuses, and is still read by assistive tech.
-                opacity: 0,
                 backgroundColor: "transparent",
                 textAlign: "center",
               },
+              // Paints nothing: the cells render the value, this only captures input.
+              // See-through on the web, inkless at full opacity where the platform drops
+              // a zero-alpha view from touch and assistive tech (InputOTPParts).
+              opaqueCapture ? INKLESS : SEE_THROUGH,
               FOCUS_RESET,
             ]}
           />
