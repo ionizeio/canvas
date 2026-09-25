@@ -61,7 +61,8 @@ export interface InputOTPProps {
   value?: string;
   /** Starting code for the uncontrolled field. Defaults to empty. */
   defaultValue?: string;
-  /** Called with the new code (cleaned, sliced to `length`) on each change (both modes). */
+  /** Called with the new code on each change (both modes): its code characters only, never
+   *  more than `length`. A paste or autofill that carries a whole code replaces the code. */
   onChangeText?: (code: string) => void;
   /** Fired once when the code reaches `length` digits. */
   onComplete?: (code: string) => void;
@@ -69,7 +70,8 @@ export interface InputOTPProps {
    *  with `groups={3}` reads 123-456. Omit for one unbroken run. */
   groups?: number;
   /** Accept letters as well as digits, and ask for the text keyboard instead of the
-   *  number pad. Off by default: a one-time code is digits only. */
+   *  number pad. Off by default: a one-time code is digits only. Either way spaces, dashes
+   *  and other separators are dropped: an alphanumeric code keeps ASCII letters and digits. */
   alphanumeric?: boolean;
   /** Focus the field on mount. */
   autoFocus?: boolean;
@@ -148,6 +150,17 @@ export interface InputOTPParts {
   visibleSelection?: boolean;
 }
 
+// A stretch of the capture input's text: a caret when start and end are equal.
+interface Span {
+  start: number;
+  end: number;
+}
+
+// A change as React Native reports it: the input's new text and, on iOS and Android, the
+// selection after the edit (React Native's own Flow types declare it optional; the web sends
+// none, and its TypeScript types leave it out).
+type ChangeEvent = NativeSyntheticEvent<{ text: string; selection?: Span }>;
+
 // Size precedence within the axis: large > small > default (first match wins),
 // matching the other atoms.
 function sizeOf(p: InputOTPProps): Size {
@@ -156,7 +169,11 @@ function sizeOf(p: InputOTPProps): Size {
   return "base";
 }
 
+// What a code drops: everything but a digit, or, for an `alphanumeric` code, everything but an
+// ASCII letter or digit. Spaces, dashes and other separators never take a cell either way, so
+// "482 913", "482-913" and "AB-12 CD" keep every character of the code they carry.
 const DIGITS_ONLY = /\D/g;
+const LETTERS_AND_DIGITS_ONLY = /[^0-9A-Za-z]/g;
 // U+2013 EN DASH: the group separator, wider than a hyphen and narrower than the
 // em dash, which is what reads as a pause between two halves of a code.
 const SEPARATOR = "–";
@@ -175,9 +192,138 @@ const NO_INK = "rgba(255, 255, 255, 0)";
 const SEE_THROUGH: TextStyle = { opacity: 0 };
 const INKLESS: TextStyle = { color: NO_INK };
 
-// Digits only unless `alphanumeric`, and never longer than the cell count.
+// The code characters of a text, in order: digits, or letters and digits when `alphanumeric`.
+function codeCharacters(raw: string, alphanumeric?: boolean): string {
+  return raw.replace(alphanumeric ? LETTERS_AND_DIGITS_ONLY : DIGITS_ONLY, "");
+}
+
+// A code: its code characters, never more than the cell count.
 function cleanCode(raw: string, length: number, alphanumeric?: boolean): string {
-  return (alphanumeric ? raw : raw.replace(DIGITS_ONLY, "")).slice(0, length);
+  return codeCharacters(raw, alphanumeric).slice(0, length);
+}
+
+// What an edit did to the capture input's text: what it took out, what it put in, and whether
+// it lands in place (it replaced the selection handed over, or replaced the text wholesale).
+interface Edit {
+  removed: string;
+  added: string;
+  inPlace: boolean;
+}
+
+// The platform's own text and caret after the last edit it reported (iOS and Android only).
+interface PlatformText {
+  text: string;
+  caret: number;
+}
+
+// Where an edit leaves the code. Every edit reaches the shell the same way, as the capture
+// input's whole new text after the platform applied it: a keystroke, a delete, Paste, one-time-
+// code autofill and a keyboard's clipboard suggestion alike (React Native raises no paste event
+// on Android or the web, and autofill and a keyboard's suggestion raise none anywhere).
+//
+// An edit that adds a whole code (at least `length` code characters) IS the code: its first
+// `length` code characters replace whatever was there, so a code pasted or filled into a field
+// already holding part of one, or all of one, lands whole instead of being appended and cut
+// ("12" and a pasted "482913" made 124829, and a paste on a full code changed nothing, which on
+// iOS, where the field keeps no selection to paste over, left no way to paste a new code over
+// an old one). Anything shorter lands where a keystroke does, in the first unfilled cell,
+// whichever cell the platform's caret was in: the code characters it deleted come off the end
+// of the code, what it added goes on after it, and the result is cut at the cell count (a
+// keystroke, a delete, or part of a code: Gboard offers "482 913" on the clipboard as two
+// suggestions, "482" and "913", which fill the code in turn). An edit over a range the field
+// holds lands in place, since that range is what the person chose to replace, and so does one
+// that replaced the text wholesale (Android's autofill and a browser's password manager set the
+// whole text): the new text is then the code, cleaned and cut. In a one-cell field every
+// character is a whole code, so a keystroke there replaces the character.
+function landCode(code: string, raw: string, length: number, alphanumeric: boolean | undefined, edit: Edit): string {
+  const added = codeCharacters(edit.added, alphanumeric);
+  if (added.length >= length) return added.slice(0, length);
+  if (edit.inPlace) return cleanCode(raw, length, alphanumeric);
+  const kept = code.length - Math.min(code.length, codeCharacters(edit.removed, alphanumeric).length);
+  return (code.slice(0, kept) + added).slice(0, length);
+}
+
+// What an edit did. The new text alone cannot say, because an insertion that begins or ends
+// with the characters beside it reads the same wherever it went ("4" with "482913" pasted after
+// it, or before it, can both be "4482913"...), so it is read at the place the edit happened, in
+// order of certainty:
+// - `handed`, the selection the field handed the input (the caret pinned to the end of the
+//   code, or a range the platform selected and the field holds), when the new text is that
+//   selection replaced and the platform's caret, where it reports one, sits right after it.
+//   This is almost every edit. Android's Paste collapses a held range to its end just before
+//   it pastes over it, but both reports reach React in one batch, before the field renders
+//   again, so the paste is still read at the range (measured on Android 15).
+// - `caret`, where the platform put its caret after the edit (iOS and Android report it with
+//   the change; the web does not), when the edit was a keystroke made at a caret and nowhere
+//   else (something typed or pasted there, or one character deleted beside it): a press on the
+//   code put the caret there, and the keystroke came before the pin moved it. Nothing before
+//   that caret changed, so the edit is read exactly.
+// - `last`, the platform's own text after the edit before, when the edit was a keystroke made
+//   to it at its caret (something typed there, or one character deleted before it). React Native hands the input the code only while the platform has made no newer
+//   edit, so an edit that follows another within a frame or two (a paste and the next
+//   keystroke) is made to the platform's text of the first: "12" and a pasted "482913" left
+//   "12482913" in the input while the field showed 482913, and a space typed right after it,
+//   read against 482913, added all of "12482913 " and made 124829 (every time, on Android 15).
+// - Otherwise, on iOS and Android, where the caret after every edit is known, the edit replaced
+//   the text wholesale: Android's autofill sets the whole text, and its change reports the
+//   caret at 0, and iOS clears a secure field for the first keystroke after it regains focus.
+// - On the web, which reports no caret, what the new text shares with the code at its start and
+//   then at its end was kept, and what lies between was put in. An edit there that did more
+//   than put text in or take one character out replaced a stretch the field did not hold, a
+//   password manager's fill among them, and lands in place.
+function readEdit(code: string, raw: string, handed: Span, caret: number | undefined, last: PlatformText | null): Edit {
+  if (fitsAt(code, raw, handed, caret)) {
+    return { removed: code.slice(handed.start, handed.end), added: raw.slice(handed.start, raw.length - (code.length - handed.end)), inPlace: true };
+  }
+  if (caret != null) {
+    const atCaret = editAtCaret(code, raw, caret);
+    if (atCaret !== null && isKeystroke(atCaret)) return { ...atCaret, inPlace: false };
+    if (last !== null && last.text !== code) {
+      const late = editAtCaret(last.text, raw, caret);
+      if (late !== null && isKeystroke(late) && late.at + late.removed.length === last.caret) return { ...late, inPlace: false };
+    }
+    return { removed: code, added: raw, inPlace: true };
+  }
+  let start = 0;
+  const shared = Math.min(code.length, raw.length);
+  while (start < shared && code[start] === raw[start]) start++;
+  let end = 0;
+  while (end < shared - start && code[code.length - 1 - end] === raw[raw.length - 1 - end]) end++;
+  const removed = code.slice(start, code.length - end);
+  const added = raw.slice(start, raw.length - end);
+  return { removed, added, inPlace: !isKeystroke({ removed, added }) };
+}
+
+// Whether an edit is one a keystroke makes: text put in (typed, pasted or suggested), or one
+// character taken out. Deleting more at once, or replacing text, takes a selection or a fill.
+function isKeystroke(edit: { removed: string; added: string }): boolean {
+  return edit.removed === "" || (edit.added === "" && edit.removed.length === 1);
+}
+
+// Whether `raw` is `code` with the stretch `at` replaced, and the platform's caret, where it
+// reports one, right after what replaced it.
+function fitsAt(code: string, raw: string, at: Span, caret: number | undefined): boolean {
+  const kept = code.length - at.end;
+  return (
+    raw.length >= at.start + kept &&
+    raw.startsWith(code.slice(0, at.start)) &&
+    raw.endsWith(code.slice(at.end)) &&
+    (caret == null || caret === raw.length - kept)
+  );
+}
+
+// The edit that turned `before` into `raw` when it was made at a caret and nowhere else, read
+// from the platform's caret after it: `added` typed or pasted in at `at` (the caret then sits
+// after it), or `removed` deleted from `at` (the caret then sits at `at`). Null for any other
+// edit, such as a range replaced.
+function editAtCaret(before: string, raw: string, caret: number): { at: number; removed: string; added: string } | null {
+  const tail = raw.length - caret;
+  if (caret < 0 || tail < 0 || tail > before.length || !before.endsWith(raw.slice(caret))) return null;
+  const end = before.length - tail;
+  if (caret >= end) {
+    return raw.startsWith(before.slice(0, end)) ? { at: end, removed: "", added: raw.slice(end, caret) } : null;
+  }
+  return raw.slice(0, caret) === before.slice(0, caret) ? { at: caret, removed: before.slice(caret, end), added: "" } : null;
 }
 
 // The active-cell caret blinks, the insertion point's idiom on every platform (the iOS
@@ -269,8 +415,29 @@ export function createInputOTP(skin: InputOTPSkin, parts: InputOTPParts = {}) {
     if (range !== null && range.code !== value) setRange(null);
     const held = range !== null && range.code === value ? range : null;
 
-    const handleChange = (raw: string) => {
-      setValue(cleanCode(raw, length, alphanumeric));
+    // The platform's own text and caret after the last edit it reported (see readEdit). A burst
+    // of edits never spans a change of focus, so focus and blur forget it: iOS clears a secure
+    // field for the first keystroke after it regains focus, which read against the text before
+    // the blur was a delete of all of it.
+    const platformText = useRef<PlatformText | null>(null);
+    // The code the last change landed, and the render whose handler landed it. Changes React
+    // delivers in one batch all reach the handlers of one render, so a second one there builds
+    // on the code the first landed, handed the pin at its end, rather than on this render's
+    // `value`: read against "12", a paste and a delete in one batch on Android kept the paste's
+    // digits after the 12 and made 124829. `thisRender` is a new object on every render.
+    const thisRender = {};
+    const landed = useRef<{ render: object; code: string } | null>(null);
+    // `handed` repeats the selection handed to the input below (a held range, or the pin).
+    const handleChange = (e: ChangeEvent) => {
+      const { text, selection: after } = e.nativeEvent;
+      const pending = landed.current !== null && landed.current.render === thisRender ? landed.current.code : null;
+      const code = pending ?? value;
+      const handed = (pending === null ? held : null) ?? { start: code.length, end: code.length };
+      const last = platformText.current;
+      platformText.current = after ? { text, caret: after.end } : null;
+      const next = landCode(code, text, length, alphanumeric, readEdit(code, text, handed, after?.end, last));
+      landed.current = { render: thisRender, code: next };
+      setValue(next);
     };
 
     // Caret pinning. `selection` is handed to the input: the end of the code, so a keystroke
@@ -283,8 +450,7 @@ export function createInputOTP(skin: InputOTPSkin, parts: InputOTPParts = {}) {
     // is mirrored, never corrected: pushed back to the end, a long press on the digits
     // opened no toolbar on Android, and widened to the whole code, a long press on one word
     // of an alphanumeric code lost its toolbar the same way. Held, the platform's toolbar or
-    // edit menu stays up, and its Cut, Copy and Paste act on the range, so a paste over a
-    // selected code replaces it instead of being refused by maxLength. A platform whose
+    // edit menu stays up, and its Cut, Copy and Paste act on the range. A platform whose
     // selection shows whatever its colour (InputOTPParts.visibleSelection) keeps no range:
     // there a range is a stray caret, since a band off the cells would misstate what is
     // selected.
@@ -410,11 +576,17 @@ export function createInputOTP(skin: InputOTPSkin, parts: InputOTPParts = {}) {
           <TextInput
             ref={ref}
             value={value}
-            onChangeText={handleChange}
+            onChange={handleChange}
             editable={!disabled}
             autoFocus={autoFocus}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
+            onFocus={() => {
+              platformText.current = null;
+              setFocused(true);
+            }}
+            onBlur={() => {
+              platformText.current = null;
+              setFocused(false);
+            }}
             // Pinned to the end of the code so a tap on any cell still appends at the
             // first unfilled one, or holding the whole code (see handleSelectionChange).
             selection={selection}
@@ -444,9 +616,10 @@ export function createInputOTP(skin: InputOTPSkin, parts: InputOTPParts = {}) {
             textContentType="oneTimeCode"
             autoComplete="one-time-code"
             // No maxLength: the platform would cut a pasted or autofilled code at the cell count
-            // BEFORE cleanCode strips its separators ("65-43 21" arrived as "65-43 ", six
-            // characters, four digits). cleanCode slices to the cell count itself, and the input
-            // is controlled, so a longer entry never shows.
+            // BEFORE landCode drops its separators ("65-43 21" arrived as "65-43 ", six
+            // characters, four digits), and would refuse a whole code pasted into a full field.
+            // landCode cuts the code to the cell count itself, and the input is controlled, so a
+            // longer entry never shows.
             // The selection is ink too, and paints none: a band (and, on Android, the
             // handles, which take this colour) over glyphs nobody sees would sit off the
             // cells. react-native-web drops the prop; its see-through input shows none.

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, createEvent, fireEvent, render, screen } from "@testing-library/react";
 import { useState, type ComponentType } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { createInputOTP, type InputOTPProps } from "../src/atoms/input-otp/input-otp.shared.tsx";
@@ -160,6 +160,293 @@ describe("the capture input", () => {
       expect(props.autoComplete).toBe("one-time-code");
       cleanup();
     }
+  });
+});
+
+// Every edit reaches the field as the capture input's new text, after the platform applied it:
+// a keystroke, a delete, Paste, one-time-code autofill and a keyboard's clipboard suggestion
+// alike. The platform puts inserted text at the caret, which the field pins to the end of the
+// code, so a code pasted into a field that already held part of one used to be appended and
+// cut ("12" and "482913" made 124829), and a paste on a full code changed nothing. An insertion
+// that carries a whole code now IS the code; anything shorter lands where typing would.
+//
+// Where an insertion went is read from the selection the field handed the input, or, where the
+// edit did not happen there, from the caret iOS and Android report with the change (the web
+// reports none): the text alone reads "4" and "482913" pasted before it the same as "4" and
+// "829134" pasted after it.
+describe("how an edit lands", () => {
+  type Platform = "web" | "iOS" | "Android";
+  // AndroidInputOTP reads Platform.Version, which the harness leaves unset, so it builds the
+  // Android 9 configuration; Android 10 and later (the range held) is its own row.
+  const ENTRIES: Array<[string, ComponentType<InputOTPProps>, Platform]> = [
+    ["web", WebInputOTP, "web"],
+    ["iOS", IosInputOTP, "iOS"],
+    ["Android 9", AndroidInputOTP, "Android"],
+    ["Android 10", Android10, "Android"],
+  ];
+
+  /** The change the platform reports after inserting `text` at `at` (the end of the code,
+   *  where the caret is pinned, unless given), or over the range `at`..`to`: the new text and,
+   *  on iOS and Android, the caret after the insertion. */
+  function insert(platform: Platform, input: HTMLInputElement, text: string, at = input.value.length, to = at) {
+    report(platform, input, input.value.slice(0, at) + text + input.value.slice(to), at + text.length);
+  }
+
+  /** A change the platform reports: its whole new text and, on iOS and Android, its caret. */
+  function report(platform: Platform, input: HTMLInputElement, value: string, caret: number) {
+    const change = createEvent.change(input, { target: { value } });
+    if (platform !== "web") Object.defineProperty(change, "selection", { value: { start: caret, end: caret } });
+    fireEvent(input, change);
+  }
+
+  function landing(InputOTP: ComponentType<InputOTPProps>, props: InputOTPProps = {}) {
+    const changes: string[] = [];
+    const completes: string[] = [];
+    const field = renderField(InputOTP, {
+      onChangeText: (code) => changes.push(code),
+      onComplete: (code) => completes.push(code),
+      ...props,
+    });
+    return { ...field, changes, completes };
+  }
+
+  for (const [name, InputOTP, platform] of ENTRIES) {
+    it(`${name}: a whole code pasted into a partly entered code replaces it`, () => {
+      const { root, input, changes, completes } = landing(InputOTP, { defaultValue: "12" });
+      insert(platform, input, "482913");
+      expect(input.value).toBe("482913");
+      expect(root.textContent).toContain("482913");
+      expect(changes).toEqual(["482913"]);
+      expect(completes).toEqual(["482913"]);
+    });
+
+    it(`${name}: a whole code pasted over a full code replaces it`, () => {
+      const { input, changes, completes } = landing(InputOTP, { defaultValue: "123456" });
+      insert(platform, input, "482913");
+      expect(input.value).toBe("482913");
+      expect(changes).toEqual(["482913"]);
+      // The seed completed the field first; the new code completes it again.
+      expect(completes).toEqual(["123456", "482913"]);
+    });
+
+    it(`${name}: a whole code keeps every character through its separators, or out of a message`, () => {
+      for (const [seed, pasted, code] of [
+        ["12", "482 913", "482913"],
+        ["123456", "482-913", "482913"],
+        ["", "65-43 21", "654321"],
+        ["1", "Your code is 482913. It expires in 10 minutes.", "482913"],
+      ] as const) {
+        const { input } = landing(InputOTP, { defaultValue: seed });
+        insert(platform, input, pasted);
+        expect(input.value, pasted).toBe(code);
+        cleanup();
+      }
+    });
+
+    it(`${name}: a pasted code that begins with the code's own characters is read at the caret`, () => {
+      // At the pinned caret the new text starts with the whole old code, so the insertion is
+      // what follows it, not a shorter tail that happens to differ.
+      for (const [seed, pasted, code] of [["12", "123456", "123456"], ["4", "482913", "482913"], ["123456", "123456", "123456"]] as const) {
+        const { input, changes } = landing(InputOTP, { defaultValue: seed });
+        insert(platform, input, pasted);
+        expect(input.value, `${seed} + ${pasted}`).toBe(code);
+        expect(changes, `${seed} + ${pasted}`).toEqual([code]);
+        cleanup();
+      }
+    });
+
+    it(`${name}: part of a code lands where typing would and is cut at the last cell`, () => {
+      const { input, changes } = landing(InputOTP, { defaultValue: "12" });
+      insert(platform, input, "34");
+      expect(input.value).toBe("1234");
+      insert(platform, input, "5678");
+      expect(input.value).toBe("123456");
+      insert(platform, input, "78");
+      expect(input.value).toBe("123456");
+      // onChangeText reports every edit, one that changes nothing included (as it always has).
+      expect(changes).toEqual(["1234", "123456", "123456"]);
+      cleanup();
+      // Gboard offers "482 913" on the clipboard as two suggestions, tapped in turn.
+      const chips = landing(InputOTP);
+      insert(platform, chips.input, "482");
+      insert(platform, chips.input, "913");
+      expect(chips.input.value).toBe("482913");
+    });
+
+    it(`${name}: typing, deleting and a refused character are unchanged`, () => {
+      const { input, changes } = landing(InputOTP);
+      for (const key of ["4", "8", "a", "-", " ", "2"]) insert(platform, input, key);
+      expect(input.value).toBe("482");
+      insert(platform, input, "", 2, 3);
+      expect(input.value).toBe("48");
+      expect(changes).toEqual(["4", "48", "48", "48", "48", "482", "48"]);
+    });
+
+    it(`${name}: an alphanumeric code keeps only ASCII letters and digits`, () => {
+      const { input } = landing(InputOTP, { alphanumeric: true });
+      insert(platform, input, "AB-12 CD");
+      expect(input.value).toBe("AB12CD");
+      cleanup();
+      const typed = landing(InputOTP, { alphanumeric: true, defaultValue: "Gab" });
+      for (const key of [" ", "-", "c", "_", "d"]) insert(platform, typed.input, key);
+      expect(typed.input.value).toBe("Gabcd");
+      insert(platform, typed.input, "x9-Q7 ZK");
+      expect(typed.input.value).toBe("x9Q7ZK");
+    });
+  }
+
+  // The web reports no caret with a change, and a press on the same spot of the code twice can
+  // leave its caret there: part of a code pasted from the context menu still lands at the end.
+  it("the web: part of a code pasted at a caret left in the code lands at the end", () => {
+    const { input } = landing(WebInputOTP, { defaultValue: "1234" });
+    insert("web", input, "56", 1);
+    expect(input.value).toBe("123456");
+  });
+
+  // A fill sets the whole text: Android's autofill calls setText, whose change reports the caret
+  // at 0, and a browser's password manager swaps the value. The new text is the code, even when
+  // it happens to share its first or last characters with the code it replaced.
+  for (const [name, InputOTP, platform] of [["iOS", IosInputOTP, "iOS"], ["Android", AndroidInputOTP, "Android"], ["the web", WebInputOTP, "web"]] as const) {
+    it(`${name}: a fill that replaces the whole text is the code`, () => {
+      for (const [seed, filled] of [["123456", "999996"], ["12", "829132"], ...(platform === "web" ? [] : ([["4", "829134"]] as const))] as const) {
+        const { input, completes } = landing(InputOTP, { defaultValue: seed });
+        report(platform, input, filled, 0);
+        expect(input.value, `${seed} filled with ${filled}`).toBe(filled);
+        expect(completes.at(-1)).toBe(filled);
+        cleanup();
+      }
+    });
+  }
+
+  // iOS clears a secure field for the first keystroke after it regains focus, so that change is
+  // the typed character alone. Read against the platform's text before the blur (a paste that
+  // had not been cleaned yet), it looked like a delete of all of it.
+  it("iOS: a masked field retyped after it regains focus keeps the keystroke", () => {
+    const { input } = landing(IosInputOTP, { masked: true, defaultValue: "12" });
+    act(() => input.focus());
+    report("iOS", input, "12482913", 8);
+    expect(input.value).toBe("482913");
+    act(() => input.blur());
+    act(() => input.focus());
+    report("iOS", input, "1", 1);
+    expect(input.value).toBe("1");
+  });
+
+  // In a one-cell field every character is a whole code, so a keystroke replaces the character.
+  it("a one-cell field takes each keystroke as the code", () => {
+    const { input, completes } = landing(IosInputOTP, { length: 1, defaultValue: "4" });
+    insert("iOS", input, "7");
+    expect(input.value).toBe("7");
+    expect(completes).toEqual(["4", "7"]);
+  });
+
+  // A range the field holds (the web and Android 10 keep the one the platform selects) is where
+  // the edit went: a whole code pasted over part of the code replaces the whole code, even when
+  // the pasted code ends with the characters that followed the range (the text alone reads
+  // "1482913456" as "48291" put in place of "2").
+  for (const [name, InputOTP, platform] of [["the web", WebInputOTP, "web"], ["Android 10", Android10, "Android"]] as const) {
+    it(`${name}: a whole code over a held range replaces the whole code`, () => {
+      for (const [from, to, pasted] of [[0, 6, "482913"], [1, 3, "482913"], [1, 5, "482915"], [4, 6, "123456"]] as const) {
+        const { input } = landing(InputOTP, { defaultValue: "123456" });
+        selectRange(input, from, to);
+        insert(platform, input, pasted, from, to);
+        expect(input.value, `${from}..${to} + ${pasted}`).toBe(pasted);
+        cleanup();
+      }
+    });
+  }
+
+  // Android's Paste collapses a held range to its end just before it pastes over it. Both
+  // reports reach React in one batch, before the field renders again (measured on Android 15),
+  // so the paste is still read at the range, even when the pasted code begins with the
+  // characters it replaced (read at the end of the code, "1234567890" would be 7890 typed).
+  it("Android 10: a paste read after Android let go of the range still replaces the code", () => {
+    for (const [from, to, pasted] of [[4, 6, "567890"], [1, 3, "234567"], [0, 6, "482913"]] as const) {
+      const { input } = landing(Android10, { defaultValue: "123456" });
+      selectRange(input, from, to);
+      act(() => {
+        input.setSelectionRange(to, to);
+        fireEvent.select(input);
+        insert("Android", input, pasted, from, to);
+      });
+      expect(input.value, `${from}..${to} + ${pasted}`).toBe(pasted);
+      cleanup();
+    }
+  });
+
+  // iOS and Android also report where their caret went, which reads an edit made at a caret the
+  // pin had not yet moved: a press put the caret before the code, and a paste came before the
+  // next frame.
+  for (const [name, InputOTP] of NATIVE) {
+    it(`${name}: a whole code pasted before the code is read at the platform's caret`, () => {
+      for (const [seed, pasted, code] of [["4", "482913", "482913"], ["12", "123456", "123456"], ["12", "482913", "482913"]] as const) {
+        const { input } = landing(InputOTP, { defaultValue: seed });
+        insert(name as Platform, input, pasted, 0);
+        expect(input.value, `${pasted} before ${seed}`).toBe(code);
+        cleanup();
+      }
+    });
+
+    // Anything shorter than a whole code lands where a keystroke does, whichever cell the
+    // caret was in: a paste of part of a code, or a delete, at a caret the pin had not moved.
+    it(`${name}: part of a code or a delete at a caret the pin had not moved lands at the end`, () => {
+      const { input } = landing(InputOTP, { defaultValue: "1234" });
+      insert(name as Platform, input, "56", 1);
+      expect(input.value).toBe("123456");
+      cleanup();
+      const deleted = landing(InputOTP, { defaultValue: "1234" });
+      report(name as Platform, deleted.input, "134", 1);
+      expect(deleted.input.value).toBe("123");
+    });
+
+    // React Native hands the input the code only while the platform has made no newer edit, so
+    // an edit a frame after a paste is made to the platform's own text: "12" and a pasted
+    // "482913" stay "12482913" in the input while the field shows 482913 (a paste, then a space
+    // and a 7, made 124829 on Android 15, every time).
+    it(`${name}: an edit made to text the input never showed lands on the code`, () => {
+      for (const [edits, code] of [
+        [[["12482913", 8], ["12482913 ", 9], ["12482913 7", 10]], "482913"],
+        [[["12482913", 8], ["1248291", 7]], "48291"],
+        [[["12482913", 8], ["12482913 ", 9], ["12482913", 8], ["1248291", 7]], "48291"],
+      ] as const) {
+        // Each edit in its own batch, and all of them in one: React Native delivers a burst to
+        // the handlers of one render, which the DOM never does for a controlled input (React
+        // renders again after each change event), so the batch calls the handler directly.
+        for (const batched of [false, true]) {
+          const { input, completes } = landing(InputOTP, { defaultValue: "12" });
+          if (batched) {
+            const onChange = textInputProps(input).onChange as (e: unknown) => void;
+            act(() => {
+              for (const [text, caret] of edits) onChange({ nativeEvent: { text, selection: { start: caret, end: caret } } });
+            });
+          } else {
+            for (const [text, caret] of edits) report(name as Platform, input, text, caret);
+          }
+          expect(input.value, `${batched ? "one batch: " : ""}${edits.map(([text]) => text).join(" > ")}`).toBe(code);
+          // In one batch the pasted code is never shown, so only a complete final code completes.
+          expect(completes).toEqual(batched && code.length < 6 ? [] : ["482913"]);
+          cleanup();
+        }
+      }
+    });
+  }
+
+  it("hands a controlling parent the whole pasted code", () => {
+    let code = "";
+    function Controlled() {
+      const [value, setValue] = useState("12");
+      code = value;
+      return <IosInputOTP length={6} testID="otp" value={value} onChangeText={setValue} />;
+    }
+    render(
+      <ThemeProvider solid>
+        <Controlled />
+      </ThemeProvider>,
+    );
+    const input = screen.getByTestId("otp").querySelector("input") as HTMLInputElement;
+    insert("iOS", input, "482 913");
+    expect(code).toBe("482913");
+    expect(input.value).toBe("482913");
   });
 });
 
