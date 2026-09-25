@@ -1,7 +1,0 @@
----
-"@ionizeio/canvas": patch
----
-
-The Carousel's prev and next arrows now sit beside the slides instead of over them. They were laid 8px inside the slides, where they covered the start of any slide text (a slide titled "Start" read "art") on the web, and on iOS and Android wherever `showArrows` turned them on. The track is now a row of the prev arrow, the slides and the next arrow inside the carousel's own bounds, the way shadcn's carousel hangs its arrows outside the track, so the slides narrow by the two arrow gutters. On iOS and Android each arrow's touch area stays inside the carousel and off the slides; on the web the arrows sit 4px in from the carousel's edge, so their focus ring stays inside it. The DOM now follows the screen, so Tab and screen readers meet the previous arrow, the slides, the next arrow, then the slide picker (the slides used to come first).
-
-A slide is the card surface. In solid mode it now carries the card's resting hairline, so it no longer disappears on a surface of its own color (under glass the hairline keeps its 1px width in a transparent color and the material's rim is the edge, as on a Card), and a plain-string slide is inset from its edge (20px on the web, 16 on iOS and Android) instead of sitting flush against it. The docs examples pass strings rather than nesting a Card, which framed every slide twice and, on Android, lost the Card's edge near the Material 3 item's 28dp corners.
