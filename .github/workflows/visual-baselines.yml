@@ -68,7 +68,24 @@ jobs:
       - name: Mint the baselines
         # Always capture current pixels for review. The bare flag updates only
         # screenshots that exceed the comparison tolerance in Playwright 1.60.
-        run: bunx playwright test --project=${{ inputs.project || 'visual' }} --update-snapshots=all
+        # The input reaches the script through env, never through `${{ }}` inside it,
+        # where any text would run as shell, and it must name a project defined in
+        # playwright.config.ts (read from the config itself, so the check cannot drift).
+        env:
+          PROJECT: ${{ inputs.project || 'visual' }}
+        run: |
+          projects=$(bun -e 'const { default: config } = await import("./playwright.config.ts"); for (const project of config.projects ?? []) console.log(project.name)')
+          # An exact comparison per name: a pattern match would accept a value that
+          # only contains a project name on one of its lines.
+          known=false
+          while IFS= read -r project; do
+            if [ "$project" = "$PROJECT" ]; then known=true; fi
+          done <<< "$projects"
+          if [ "$known" != true ]; then
+            printf '::error::project must be one of the Playwright projects in playwright.config.ts (%s), not %q\n' "$(printf '%s' "$projects" | tr '\n' ',' | sed 's/,/, /g')" "$PROJECT"
+            exit 1
+          fi
+          bunx playwright test --project="$PROJECT" --update-snapshots=all
 
       - name: Upload them
         uses: actions/upload-artifact@v7
