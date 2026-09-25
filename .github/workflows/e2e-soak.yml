@@ -58,6 +58,13 @@ on:
           - responsive
           - behavior
           - a11y
+      trace:
+        description: 'Playwright tracing (the suite keeps traces of failures; off also stops the screencast a trace records)'
+        default: retain-on-failure
+        type: choice
+        options:
+          - retain-on-failure
+          - 'off'
 
 # Soaks of different commits run side by side; a second soak of the same commit waits.
 concurrency:
@@ -180,12 +187,13 @@ jobs:
           GREP: ${{ inputs.grep }}
           PASSES: ${{ inputs.passes }}
           PROJECT: ${{ inputs.project }}
+          TRACE: ${{ inputs.trace }}
           # Every material test finishes in under 25 s on this runner; one still
           # running at 40 s is stuck.
           E2E_HANG_PROBE_MS: '40000'
           DEBUG: pw:browser
         run: |
-          set -- "$SPEC" --project="$PROJECT" --repeat-each="$PASSES" --reporter=list,html
+          set -- "$SPEC" --project="$PROJECT" --repeat-each="$PASSES" --trace="$TRACE" --reporter=list,html
           if [ -n "$GREP" ]; then set -- "$@" --grep "$GREP"; fi
           bunx playwright test "$@"
 
