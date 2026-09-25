@@ -92,6 +92,22 @@ for (const [platform, Table] of [["web", DataTable], ["android", AndroidDataTabl
       expect(screen.getByText("No users yet")).toBe(message);
     });
 
+    it("clips a fitting table and lets a panning, height-bounded table shrink its rows", () => {
+      // Fitting, the table clips what overflows it (as its wrap did before the scroller
+      // was always there) and the rows stay rigid; panning, the scroller keeps its own
+      // flex, so a bounded table clips its rows inside it and keeps its footer.
+      const rows = Array.from({ length: 12 }, (_, i) => [`Name ${i}`, "Active", "Eng"]);
+      ui(<Table testID="table" paginated style={{ height: 220 }} columns={COLUMNS} rows={rows} />);
+      const scroller = () => screen.getByRole("table").parentElement?.parentElement as HTMLElement;
+      for (const [width, panning] of [[1280, false], [375, true], [1280, false]] as const) {
+        measure(width);
+        expect(pansNow()).toBe(panning);
+        expect(getComputedStyle(scroller()).overflowX).toBe("auto");
+        expect(getComputedStyle(scroller()).flexShrink).toBe(panning ? "1" : "0");
+        expect(getComputedStyle(screen.getByRole("table")).overflowX === "hidden").toBe(!panning);
+      }
+    });
+
     it("keeps a windowed body's scroller, and with it the scroll position", () => {
       const rows = Array.from({ length: 40 }, (_, i) => [`Name ${i}`, "Active", "Eng"]);
       ui(<Table testID="table" virtualized style={{ maxHeight: 300 }} columns={COLUMNS} rows={rows} />);

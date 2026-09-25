@@ -25,12 +25,16 @@ const s = StyleSheet.create({
   panContent: { flexGrow: 1 },
   panInner: { flexGrow: 1 },
   // Not panning: the content and the table are exactly the scrollport's width,
-  // so the cells share it and wrap as if there were no scroller, and nothing
-  // overflows to scroll or to take a tab stop.
+  // so the cells share it and wrap as if there were no scroller. The table clips
+  // whatever still overflows it (fixed columns wider than the container), as the
+  // table's own wrap did before the scroller was always there: overflow here must
+  // not become a scrollable region with no tab stop to reach it.
   fitContent: { width: "100%" },
-  fitInner: { width: "100%" },
-  // The rows never grow or shrink with the table's height; only a windowed body
-  // does (see `windowed`), so the scroller takes the flex of what it holds.
+  fitInner: { width: "100%", overflow: "hidden" },
+  // Not panning, the scroller takes the flex of what it holds, as the rows had
+  // without it: eager rows never grow or shrink with the table's height, only a
+  // windowed body does (see `windowed`). Panning keeps the scroller's own flex, so
+  // a height-bounded table still clips its rows inside it and keeps its footer.
   rigidScroller: { flexGrow: 0, flexShrink: 0 },
 });
 
@@ -720,11 +724,15 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
           // exactly the scrollport's width, so there is nothing to scroll and no
           // tab stop, whereas `scrollEnabled={false}` sets `touch-action: none`
           // on the web and a finger on the table could no longer scroll the page.
+          // Taps reach the table's own controls while a soft keyboard is up (an
+          // open editor's Save, a row's checkbox); the default would spend the
+          // first tap dismissing the keyboard.
           <ScrollView
             {...scrollFocus}
             horizontal
             showsHorizontalScrollIndicator={false}
-            style={windowed ? null : s.rigidScroller}
+            keyboardShouldPersistTaps="handled"
+            style={windowed || pans ? null : s.rigidScroller}
             contentContainerStyle={pans ? s.panContent : s.fitContent}
           >
             {/* A focusable scrollport surrounds the table. Putting it inside the
