@@ -110,12 +110,22 @@ function resolveDeep(value: unknown, depth: number): unknown {
   return next ?? value;
 }
 
+// One wrapper per component, made the first time it is asked for. The Playground and the
+// Don't previews rebuild their scopes on every render, and a wrapper made per call is a
+// new component type each time, so React remounted every photo-bearing example whenever
+// the stage re-rendered: a playing Video started over, and a full-screen <video> left the
+// document, so the browser left full screen (entering it resizes the viewport, which
+// re-measures the stage).
+const wrappers = new WeakMap<object, unknown>();
+
 // Wrap an image-bearing component (Image, Avatar, MediaObject, GridList, Feed, DescriptionList) so
 // any sample photo path in its props resolves to the bundled asset before the real
 // component renders. Keeps the example code clean and copy-pasteable (`src="/rachel-chen.jpg"`)
 // while making the photos load on iOS, Android, and a subpath-hosted web export.
 export function withResolvedPhotos<P>(Component: ComponentType<P>): ComponentType<P> {
   const Loose = Component as ComponentType<Record<string, unknown>>;
+  const made = wrappers.get(Component) as ComponentType<P> | undefined;
+  if (made) return made;
   const Wrapped = (p: P) => {
     const rec = p as Record<string, unknown>;
     let next: Record<string, unknown> | null = null;
@@ -127,6 +137,7 @@ export function withResolvedPhotos<P>(Component: ComponentType<P>): ComponentTyp
     return createElement(Loose, next ?? rec);
   };
   Wrapped.displayName = `WithPhotos(${Component.displayName ?? Component.name ?? "Component"})`;
+  wrappers.set(Component, Wrapped);
   return Wrapped as ComponentType<P>;
 }
 
