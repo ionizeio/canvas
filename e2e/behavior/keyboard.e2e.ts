@@ -8,6 +8,8 @@
  * does. The Autocomplete's Escape is the case in point: two suites asserted it
  * worked, and in a browser the keydown never left the text field.
  */
+import type { Locator, Page } from "@playwright/test";
+import { scanStructure } from "../support/axe";
 import { gotoDocs, platformRow, stage } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 
@@ -112,4 +114,68 @@ test("the code block's copy button is reachable by Tab, not just by a mouse", as
     reached = await copy.evaluate((node) => node === document.activeElement);
   }
   expect(reached, "Tab never reached the copy button").toBe(true);
+});
+
+// Where keyboard focus is, by role and name, or "outside" once it has left `scope`.
+function focusIn(scope: Locator): Promise<string> {
+  return scope.evaluate((root) => {
+    const node = document.activeElement as HTMLElement | null;
+    if (!node || !root.contains(node)) return "outside";
+    return `${node.getAttribute("role") ?? node.tagName.toLowerCase()} ${node.getAttribute("aria-label") ?? node.textContent ?? ""}`;
+  });
+}
+
+// Press Tab `count` times from wherever focus is, and record where each press lands: the
+// tab order the browser itself builds, which locator.focus() would skip.
+async function tabWalk(page: Page, scope: Locator, count: number): Promise<string[]> {
+  const stops: string[] = [];
+  for (let press = 0; press < count; press++) {
+    await page.keyboard.press("Tab");
+    stops.push(await focusIn(scope));
+  }
+  return stops;
+}
+
+test("a selectable table's rows stay pointer-only: Tab crosses the checkboxes, never a row", async ({ page }) => {
+  // A press on a row toggles it as a pointer convenience; the row's checkbox is the
+  // keyboard path. The row asks to stay out of the tab order with focusable={false},
+  // which react-native-web's Pressable overrides with a tab index of its own unless the
+  // kit's Pressable spells the request as tab index -1. Each row used to cost an extra
+  // press of Tab that landed on the unnamed row before its checkbox.
+  await gotoDocs(page, "/components/data-table/selectable", { scheme: "dark" });
+  const web = platformRow(page, "web");
+  const boxes = web.getByRole("checkbox");
+  await expect(boxes).toHaveCount(4);
+  await boxes.first().focus();
+  expect(await tabWalk(page, web, 4)).toEqual([
+    "checkbox Alice Johnson, alice@example.com, Admin",
+    "checkbox Bob Smith, bob@example.com, Editor",
+    "checkbox Rachel Chen, rachel@example.com, Admin",
+    "outside",
+  ]);
+  // Out of the tab order, the row still answers a pointer: a press on its text selects it.
+  const rachel = web.getByRole("checkbox", { name: "Rachel Chen, rachel@example.com, Admin" });
+  await expect(rachel).toHaveAttribute("aria-checked", "false");
+  await web.getByText("rachel@example.com").click();
+  await expect(rachel).toHaveAttribute("aria-checked", "true");
+});
+
+test("a video's picture under the web control bar never takes keyboard focus", async ({ page }) => {
+  // Beside the kit's control bar the picture's tap target is a pointer convenience
+  // hidden from assistive technology, and the bar's play button is the named control. A
+  // hidden node that takes focus is announced as nothing (axe's aria-hidden-focus), so
+  // Shift+Tab from the bar must not land inside it. (Firefox also makes the <video>
+  // element itself a stop, which is not the hidden node.)
+  await gotoDocs(page, "/components/video/controls", { scheme: "dark" });
+  const web = platformRow(page, "web");
+  const play = web.getByRole("button", { name: "Play Sample clip with controls" });
+  await expect(play).toBeVisible();
+  await play.focus();
+  await page.keyboard.press("Shift+Tab");
+  const landed = await page.evaluate(() => {
+    const node = document.activeElement;
+    return node?.closest('[aria-hidden="true"]') ? `a hidden ${node.tagName.toLowerCase()}` : "a node assistive technology can see";
+  });
+  expect(landed).toBe("a node assistive technology can see");
+  expect(await scanStructure(page, '[data-platform-row="web"]', ["aria-hidden-focus"])).toEqual([]);
 });

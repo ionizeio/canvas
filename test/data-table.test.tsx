@@ -3,7 +3,9 @@ import { render, cleanup, fireEvent, screen } from "@testing-library/react";
 import { type ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { resetDevWarnings } from "../src/style/dev-warn.ts";
-import { DataTable, type DataTableSort } from "../src/organisms/data-table/data-table.tsx";
+import { DataTable, type DataTableProps, type DataTableSort } from "../src/organisms/data-table/data-table.tsx";
+import { DataTable as IOSDataTable } from "../src/organisms/data-table/data-table.ios.tsx";
+import { DataTable as AndroidDataTable } from "../src/organisms/data-table/data-table.android.tsx";
 import { Badge } from "../src/atoms/badge/badge.tsx";
 import { Pressable, Text } from "../src/style/index.js";
 
@@ -527,6 +529,44 @@ describe("DataTable inline editing", () => {
     fireEvent.click(screen.getByText("PM")); // the Badge text, not an editable string cell
     expect(container.querySelector("input")).toBeNull();
   });
+});
+
+// A pressable row, its press area beside the actions column, and a cell that opens its
+// editor all say `focusable={false}`: they are the pointer convenience, and the keyboard
+// path is the named control the row already carries (the activator, a checkbox, the
+// actions). react-native-web's Pressable renders its own tab index over `focusable`, so
+// before the kit's Pressable spelled it as tab index -1 each row cost an extra Tab press
+// that landed on an unnamed row. Every entry the docs' three-up renders on the web tabs
+// the same way.
+describe("DataTable keyboard stops", () => {
+  // Every node Tab would stop on, by role and name, so a failure prints readably (a
+  // failed match over DOM nodes would try to print their React internals).
+  const tabStops = (container: HTMLElement) =>
+    (Array.from(container.querySelectorAll("*")) as HTMLElement[])
+      .filter((node) => node.tabIndex >= 0)
+      .map((node) => `${node.getAttribute("role") ?? node.tagName.toLowerCase()} ${node.getAttribute("aria-label") ?? node.textContent}`);
+  const rows = [["Ada", "Eng"], ["Cat", "Ops"]];
+  const noop = () => {};
+  const CASES: Array<[string, Partial<DataTableProps>, string[]]> = [
+    ["a pressable row", { onRowPress: noop }, ["button Ada, Eng", "button Cat, Ops"]],
+    [
+      "a pressable row beside its actions",
+      { onRowPress: noop, onRowEdit: noop, onRowCommit: noop, onRowDelete: noop },
+      ["button Ada, Eng", "button Edit Ada", "button Delete Ada", "button Cat, Ops", "button Edit Cat", "button Delete Cat"],
+    ],
+    ["a row a press selects", { selectable: true }, ["checkbox Select all rows", "checkbox Ada, Eng", "checkbox Cat, Ops"]],
+    ["a pressable row of inline-editable cells", { onRowPress: noop, inlineEdit: true, onCellCommit: noop }, ["button Ada, Eng", "button Cat, Ops"]],
+  ];
+  const ENTRIES: Array<[string, typeof DataTable]> = [["web", DataTable], ["ios", IOSDataTable], ["android", AndroidDataTable]];
+
+  for (const [entry, Table] of ENTRIES) {
+    for (const [shape, props, stops] of CASES) {
+      it(`stops only on the named controls of ${shape} (${entry} entry)`, () => {
+        const { container } = ui(<Table columns={COLUMNS} rows={rows} {...props} />);
+        expect(tabStops(container)).toEqual(stops);
+      });
+    }
+  }
 });
 
 describe("DataTable row-interaction per-OS skins", () => {

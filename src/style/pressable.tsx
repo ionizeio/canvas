@@ -1,6 +1,8 @@
-// The kit's Pressable primitive: React Native's own, with the focus ring themed. Every
-// kit control presses through it (components import Pressable from src/style/primitives,
-// which re-exports this), so one palette colours every focus ring.
+// The kit's Pressable primitive: React Native's own, with the focus ring themed and
+// `focusable={false}` honoured on the web. Every kit control presses through it
+// (components import Pressable from src/style/primitives, which re-exports this), so one
+// palette colours every focus ring and one rule keeps a pointer-only surface out of the
+// tab order.
 //
 // The browser draws the ring itself, on keyboard focus only (its :focus-visible rule);
 // this gives it the palette's `ring` colour and sets it 2 px off the control. Chromium
@@ -54,5 +56,12 @@ function useRingStyle(style: PressableStyle): PressableStyle {
 }
 
 export const Pressable = forwardRef<View, PressableProps>(function Pressable({ style, ...rest }, ref) {
-  return <RNPressable ref={ref} {...rest} style={useRingStyle(style)} />;
+  // `focusable={false}` marks a pointer-only surface (a row's press area, a picture
+  // under its own control bar). react-native-web 0.21's Pressable always passes a tab
+  // index of its own (0 unless disabled), and an explicit tab index wins over
+  // `focusable` in its DOM props, so the node stayed a tab stop. Spelling it as tab
+  // index -1, unless the caller chose one, takes it out of the web's tab order and asks
+  // for nothing new natively: React Native's View reads tab index -1 as focusable false.
+  const tabIndex = rest.tabIndex ?? (rest.focusable === false ? -1 : undefined);
+  return <RNPressable ref={ref} {...rest} tabIndex={tabIndex} style={useRingStyle(style)} />;
 });

@@ -148,6 +148,19 @@ describe("Video controls on the web", () => {
     expect(screen.getAllByRole("button", { name: "Play Harbour" })).toHaveLength(1);
   });
 
+  it("keeps the picture's hidden tap target out of the tab order", () => {
+    const { container } = render(<ThemeProvider><Video source={clip} controls accessibilityLabel="Harbour" /></ThemeProvider>);
+    ready();
+    // Every node Tab would stop on, by role and name, so a failure prints readably.
+    const stops = (Array.from(container.querySelectorAll("*")) as HTMLElement[]).filter((node) => node.tabIndex >= 0);
+    const named = (nodes: HTMLElement[]) => nodes.map((node) => `${node.getAttribute("role") ?? node.tagName.toLowerCase()} ${node.getAttribute("aria-label")}`);
+    // Beside the bar the picture is hidden from assistive technology, so a tab stop there
+    // would focus something a screen reader cannot name (axe's aria-hidden-focus). Tab
+    // crosses the bar's controls and nothing else.
+    expect(named(stops.filter((node) => node.closest('[aria-hidden="true"]')))).toEqual([]);
+    expect(named(stops)).toEqual(["button Play Harbour", "slider Seek Harbour", "button Mute Harbour", "button Show Harbour full screen"]);
+  });
+
   it("plays, pauses, mutes and goes full screen from the bar", () => {
     render(<ThemeProvider><Video source={clip} controls accessibilityLabel="Harbour" /></ThemeProvider>);
     ready();

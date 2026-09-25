@@ -19,7 +19,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "pressable",
     name: "Pressable",
-    description: "The touchable primitive: wraps content, fires onPress, and exposes the press state to its style for feedback. The kit's interactive components (Button, plus the tappable Card, Stats, GridList, MediaObject, and StackedList rows) cover the common cases and keep branding consistent, so prefer them. Pressable stays here for full flexibility when you need a custom interaction the kit doesn't provide; style it with tokens to stay on-brand.",
+    description: "The touchable primitive: wraps content, fires onPress, and exposes the press state to its style for feedback. The kit's interactive components (Button, plus the tappable Card, Stats, GridList, MediaObject, and StackedList rows) cover the common cases and keep branding consistent, so prefer them. Pressable stays here for full flexibility when you need a custom interaction the kit doesn't provide; style it with tokens to stay on-brand. Pass <code>focusable={false}</code> for a surface only a pointer should reach, such as a row whose keyboard path is a button inside it: it still presses, and it leaves the tab order on the web too, where react-native-web's own Pressable would keep it a tab stop.",
     category: "Atoms",
   },
   {
