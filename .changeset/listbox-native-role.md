@@ -1,5 +1,0 @@
----
-"@ionizeio/canvas": patch
----
-
-On iOS and Android, an option list no longer logs a native prop-parser error. The container of a single-select `Listbox`, of the `Select`, `Autocomplete` and `Command` option lists and of the `PhoneInput` country list carried `role="listbox"`, which React Native's native role parser does not accept: every mounted list logged "Unsupported Role value: listbox" and a "react_native_expect failure" to the app's stderr, and then carried no role. Natively the container is now a `list`, which the parser accepts. VoiceOver reads the options exactly as before, since iOS gives a list and a listbox the same empty trait set. On Android, TalkBack now reads the container as a list (`android.widget.AbsListView`) where it read a plain view group, wherever the container is a native view: an open `Select`, `Autocomplete`, `PhoneInput` or `Command` list, and a `Listbox` that is bordered, disabled or given a `testID`. On the web the container is still a `listbox`, in every build the documentation previews.
