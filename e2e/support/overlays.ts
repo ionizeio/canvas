@@ -34,11 +34,16 @@ function bind(recipe: OverlayRecipe): BoundOverlay {
     // outlet. Scope to that host so portaled panels are included but permanently
     // open Do/Don't panels cannot satisfy the Playground's readiness assertion. A
     // card in the window's layer paints outside the stage, in the app root's outlet,
-    // so it is found page-wide; the specs count before and after opening, and that
+    // so it is found outside the page's scroller: the page's own outlet, where a
+    // Do/Don't card pinned open paints, sits inside it, and such a card appears only
+    // once its placement is measured (about a second after load), so a page-wide
+    // count could gain it between the specs' before and after counts. The window's
     // outlet comes last in the document, so `.last()` is the card just opened.
-    panel: (page) => recipe.atDocumentRoot || recipe.inWindowLayer
+    panel: (page) => recipe.atDocumentRoot
       ? page.getByRole(recipe.role)
-      : stage(page).locator("..").getByRole(recipe.role),
+      : recipe.inWindowLayer
+        ? page.getByRole(recipe.role).and(page.locator(":not([data-page-scroll] *)"))
+        : stage(page).locator("..").getByRole(recipe.role),
     adds: recipe.adds,
     trigger: (page) => recipe.trigger(page as never, stage(page) as never) as unknown as Locator,
     expands: recipe.expands,

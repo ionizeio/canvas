@@ -1,4 +1,4 @@
-import { fitElementForScreenshot, gotoDocs, previewCard, settledBox, stage } from "../support/docs";
+import { animationFrames, fitElementForScreenshot, gotoDocs, previewCard, settledBox, stage } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 import { OVERLAYS } from "../support/overlays";
 
@@ -63,7 +63,9 @@ for (const slug of ["dialog", "calendar", "grid-lists"] as const) {
     try {
       const screenshot = await frame.screenshot({ animations: "disabled" });
       await testInfo.attach(`${slug} crop`, { body: screenshot, contentType: "image/png" });
-      await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+      // Real frames: a resize event is delivered in a rendering update, and page.clock
+      // fakes the page's own requestAnimationFrame.
+      await animationFrames(page, 2);
       expect(await viewportChanges.evaluate((audit) => audit.sizes), "capturing the element changed the responsive viewport").toEqual([]);
       if (slug === "dialog") await expect(dialog.panel(page)).toBeVisible();
     } finally {

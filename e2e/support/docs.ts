@@ -186,6 +186,77 @@ export async function settled<T>(read: () => Promise<T>, timeoutMs = 5_000, hold
 }
 
 /**
+ * Wait for `count` animation frames the browser really runs.
+ *
+ * The page's own requestAnimationFrame cannot promise that in the visual specs:
+ * `page.clock` (they pin the date with it) replaces it with a timer that fires
+ * whether or not a frame is drawn. An isolated world keeps the browser's own, so the
+ * wait runs there, through the DevTools protocol, which makes it Chromium only (every
+ * spec that waits on frames here runs in a Chromium project).
+ *
+ * Bounded: a browser that runs no frame for `timeoutMs` has a stalled frame pipeline,
+ * and that fails here, by name, rather than as an anonymous test timeout further on.
+ */
+export async function animationFrames(page: Page, count: number, timeoutMs = 15_000): Promise<void> {
+  const browser = page.context().browser()?.browserType().name();
+  if (browser !== "chromium") throw new Error(`animationFrames needs Chromium's DevTools protocol, not ${browser}`);
+  const session = await page.context().newCDPSession(page);
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const stalled = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(
+      `the browser ran fewer than ${count} animation frames in ${timeoutMs} ms: its frame pipeline has stalled`,
+    )), timeoutMs);
+  });
+  try {
+    await Promise.race([stalled, (async () => {
+      const { frameTree } = await session.send("Page.getFrameTree");
+      const { executionContextId } = await session.send("Page.createIsolatedWorld", {
+        frameId: frameTree.frame.id,
+        worldName: "e2e-animation-frames",
+      });
+      await session.send("Runtime.evaluate", {
+        contextId: executionContextId,
+        expression: `new Promise((resolve) => {
+          let left = ${count};
+          const tick = () => (--left > 0 ? requestAnimationFrame(tick) : resolve(true));
+          requestAnimationFrame(tick);
+        })`,
+        awaitPromise: true,
+      });
+    })()]);
+  } finally {
+    clearTimeout(timer);
+    // Not awaited: a stalled renderer may never acknowledge the detach.
+    void session.detach().catch(() => {});
+  }
+}
+
+/**
+ * Let the frames already started go through Chromium's frame pipeline before a capture
+ * starts one of its own.
+ *
+ * A capture that starts while a resize, a scroll or an opened overlay is still in that
+ * pipeline can wedge it for good. On the CI runner, where the software compositor takes
+ * about a second per frame of the glass pages' backdrop blurs, the material captures hung
+ * in Page.captureScreenshot in 3 of about 26 Deploy runs and about 1 soak pass in 26, 8
+ * times in 9 right after fitElementForScreenshot resized the viewport, with the renderer,
+ * its compositor and the GPU process's compositor all asleep (e2e/support/hang-probe.ts,
+ * the E2E soak workflow).
+ *
+ * Four real frames is what the renderer's scheduler needs to pass the change along:
+ * main-frame-before-activation is off for renderers, so a main frame cannot start while
+ * the previous commit waits to activate, and a commit activates only once the tree before
+ * it was drawn, a draw that itself waits for the display compositor to accept the frame
+ * before it. By the fourth frame the change committed in the first has been activated and
+ * the frames before it handed to the display compositor. It is not proof that the display
+ * has drawn the change (frames with nothing to commit move faster), so the E2E soak, not
+ * this reasoning, is what judges it.
+ */
+export async function drainFramePipeline(page: Page): Promise<void> {
+  await animationFrames(page, 4);
+}
+
+/**
  * The box of a locator, once it has stopped moving. Two animation frames pass
  * before the first sample: react-native-web reports a layout through a resize
  * observer on the frame after the commit, and a measured component re-renders from
@@ -193,9 +264,7 @@ export async function settled<T>(read: () => Promise<T>, timeoutMs = 5_000, hold
  * markup, not the laid-out component.
  */
 export async function settledBox(locator: Locator): Promise<{ width: number; height: number }> {
-  await locator.page().evaluate(() => new Promise<void>((resolve) => {
-    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
-  }));
+  await animationFrames(locator.page(), 2);
   return settled(async () => {
     const box = await locator.boundingBox();
     return { width: Math.round(box?.width ?? -1), height: Math.round(box?.height ?? -1) };
@@ -210,6 +279,9 @@ export async function settledBox(locator: Locator): Promise<{ width: number; hei
  * responsive layout change. Grow only the viewport height from the measured element,
  * leaving enough room above and below for the docs' floating navigation bar.
  * Document-root Modal screenshots keep their configured viewport instead.
+ *
+ * It returns once the resize and the scroll have gone through the frame pipeline
+ * (drainFramePipeline): a capture started earlier could wedge it on the CI runner.
  */
 export async function fitElementForScreenshot(page: Page, frame: Locator): Promise<void> {
   const box = await settledBox(frame);
@@ -243,4 +315,5 @@ export async function fitElementForScreenshot(page: Page, frame: Locator): Promi
   const fitted = await settledBox(frame);
   expect(fitted.width, "the element exceeds the screenshot viewport width").toBeLessThanOrEqual(viewport.width);
   expect(fitted.height, "the element exceeds the screenshot viewport height").toBeLessThanOrEqual(height);
+  await drainFramePipeline(page);
 }

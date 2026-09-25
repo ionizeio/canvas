@@ -30,6 +30,7 @@
  */
 import fs from "node:fs";
 import type { CDPSession, Page, TestInfo } from "@playwright/test";
+import { animationFrames } from "./docs";
 
 /** How long a single protocol call may take before the probe records it as stuck. */
 const STEP_MS = 3_000;
@@ -151,20 +152,10 @@ async function scriptStack(session: CDPSession) {
   }
 }
 
-/** Whether two real animation frames run, from a world whose rAF `page.clock` never replaced. */
-async function realFrames(session: CDPSession): Promise<string> {
-  const { frameTree } = await session.send("Page.getFrameTree");
-  const { executionContextId } = await session.send("Page.createIsolatedWorld", {
-    frameId: frameTree.frame.id,
-    worldName: "e2e-hang-probe",
-  });
+/** Whether two real animation frames run (animationFrames uses a world `page.clock` never touched). */
+async function realFrames(page: Page): Promise<string> {
   const started = Date.now();
-  await session.send("Runtime.evaluate", {
-    contextId: executionContextId,
-    expression: "new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve(true))))",
-    awaitPromise: true,
-    returnByValue: true,
-  });
+  await animationFrames(page, 2, STEP_MS);
   return `two real animation frames ran in ${Date.now() - started} ms`;
 }
 
@@ -247,7 +238,7 @@ export async function probeHang(page: Page, testInfo: TestInfo, afterMs: number)
   if (typeof session !== "string") {
     findings.scriptStack = await bounded(() => scriptStack(session), STEP_MS * 3, "script stack");
     findings.document = await bounded(() => documentState(session), STEP_MS, "document state");
-    findings.animationFrames = await bounded(() => realFrames(session), STEP_MS, "animation frames");
+    findings.animationFrames = await bounded(() => realFrames(page), STEP_MS * 2, "animation frames");
   } else {
     findings.pageSession = session;
   }
