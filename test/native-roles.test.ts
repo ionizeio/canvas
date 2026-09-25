@@ -102,3 +102,27 @@ describe("roles native can parse", () => {
   });
 });
 
+// The docs' native tab bar gives its Search tab expo-router's `role="search"`, the tab bar
+// item's role (iOS 26 draws it as the separate search tab). expo-router 57 spread every tab
+// option onto react-native-screens' native tab screen, whose view props parse `role` as an
+// accessibility role, so it logged "Unsupported Role value: search" on iOS and Android. The
+// docs patch expo-router to keep it off (docs/patches, held in force by check:patches).
+describe("the docs' tab bar item roles", () => {
+  const nav = JSON.parse(readFileSync(join(ROOT, "docs/src/data/nav.config.json"), "utf8")) as { mobile: { tabs: { id: string; role?: string }[] } };
+  const docsPackage = JSON.parse(readFileSync(join(ROOT, "docs/package.json"), "utf8")) as { patchedDependencies?: Record<string, string> };
+
+  it("stay off the native tab view while a tab has one", () => {
+    const tabRoles = nav.mobile.tabs.filter((tab) => tab.role !== undefined);
+    expect(tabRoles.map((tab) => tab.id)).toEqual(["search"]);
+    const [key, patch] = Object.entries(docsPackage.patchedDependencies ?? {}).find(([name]) => name.startsWith("expo-router@")) ?? [];
+    expect(patch).toBeDefined();
+    // bun applies a patch only while its key names the resolved version, and skips it
+    // silently once a bump moves past it (check:patches holds that after an install too).
+    const resolved = /"expo-router": \["expo-router@([^"]+)"/.exec(readFileSync(join(ROOT, "docs/bun.lock"), "utf8"))?.[1];
+    expect(key).toBe(`expo-router@${resolved}`);
+    const text = readFileSync(join(ROOT, "docs", patch!), "utf8");
+    expect(text).toContain("+++ b/build/native-tabs/NativeTabsView.shared.js");
+    expect(text).toContain("+    const { role: _tabBarItemRole, ...screenOptions } = options;");
+    expect(text).toContain("+        options: screenOptions,");
+  });
+});

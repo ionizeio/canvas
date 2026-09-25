@@ -1,0 +1,21 @@
+diff --git a/build/native-tabs/NativeTabsView.shared.js b/build/native-tabs/NativeTabsView.shared.js
+index f6c64bef9ecfa028a233566af9b12be79421d8d9..0ab194429116e6d4b9a44bd8b62c2346b44bb82d 100644
+--- a/build/native-tabs/NativeTabsView.shared.js
++++ b/build/native-tabs/NativeTabsView.shared.js
+@@ -52,8 +52,15 @@ function useSharedScreenProps(props) {
+     // We need to await the icon, as VectorIcon will load asynchronously
+     const icon = (0, icon_1.useAwaitedScreensIcon)(options.icon);
+     const selectedIcon = (0, icon_1.useAwaitedScreensIcon)(options.selectedIcon);
++    // PATCH (@ionizeio/canvas-docs): a tab's `role` is its tab bar item role (iOS reads it
++    // from props.options as the tab's systemItem, and "search" draws the separate search
++    // tab), not an accessibility role. Both platforms' Screen spread these options onto
++    // react-native-screens' Tabs.Screen, which hands them to its native tab screen, whose
++    // view props parse `role` as an ARIA role: role="search" logged "Unsupported Role
++    // value: search" and a react_native_expect failure on iOS and Android.
++    const { role: _tabBarItemRole, ...screenOptions } = options;
+     return {
+-        options,
++        options: screenOptions,
+         // TODO(@ubax): https://linear.app/expo/issue/ENG-20736/remove-pointerevents-from-nativetabsview
+         pointerEvents: (isFocused ? 'box-none' : 'none'),
+         title,
