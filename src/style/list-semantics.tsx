@@ -9,7 +9,37 @@ import { View, type LayoutChangeEvent, type StyleProp, type ViewProps, type View
 //
 // Natively React Native's role parser accepts both roles. iOS gives each an empty
 // trait set, and Android reads a `list` as android.widget.AbsListView and maps a
-// `listitem` to no role, wherever the node is a native view.
+// `listitem` to no role.
+
+/**
+ * A list's container: its role, its name, and, once it has a name to speak, a native view
+ * that holds its rows. `label` is the name everywhere; `labelledBy` names the list on the
+ * web from a rendered node that has no text of its own to copy (a StackedList title that
+ * is not a string), and `label` then names it natively.
+ *
+ * - The name as a string in both spellings: React Native's View turns `aria-label` into
+ *   its native label but its ScrollView does not, so a windowed list reached Android
+ *   unnamed. react-native-web prefers the aria spelling and warns about neither. Natively
+ *   the name is never a labelled-by relation: React Native's Android delegate gives a View
+ *   with a role and no label of its own the text of every row inside it as its
+ *   description, and TalkBack read that ("RC, Rachel Chen, Engineering Lead. List for
+ *   Team members", then "In list RC, Rachel Chen, Engineering Lead" on each row).
+ * - `collapsable={false}` once the list has a native name: Fabric removes a View whose
+ *   props neither paint nor mark it (a role or a label does not count) and hoists the
+ *   children out of one that is no stacking context, so an eager list's container reached
+ *   no native screen reader. The Listbox's fix (3bc31490); react-native-web drops the prop,
+ *   so the DOM is unchanged. A list with no native name stays collapsable, for the same
+ *   delegate: TalkBack would read its whole content as one stop before its rows. A
+ *   windowed list's scroller is a native view either way.
+ */
+export function listProps(name: { label?: string; labelledBy?: string }): ViewProps {
+  const label = name.label || undefined;
+  return {
+    role: "list",
+    ...(name.labelledBy != null ? { "aria-labelledby": name.labelledBy } : null),
+    ...(label != null ? { "aria-label": label, accessibilityLabel: label, collapsable: false } : null),
+  };
+}
 
 /** An eager row: every row is mounted, so the browser counts them itself. */
 export const LIST_ITEM = { role: "listitem" } as const satisfies ViewProps;

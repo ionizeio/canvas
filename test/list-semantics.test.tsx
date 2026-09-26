@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, spyOn } from "bun:test";
 import { render, cleanup, screen, within, fireEvent, act } from "@testing-library/react";
-import { type ComponentType, type ReactNode } from "react";
+import React, { type ComponentType, type ForwardedRef, type ReactNode } from "react";
+import { Text, View, type ViewProps } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Button } from "../src/atoms/button/button.tsx";
 import { resetDevWarnings } from "../src/style/dev-warn.ts";
@@ -109,7 +110,15 @@ describe("StackedList is a list of its rows", () => {
     it(`(${platform}) the title wins over a label`, () => {
       ui(<List title="Team" label="Everyone" items={PEOPLE} />);
       const list = screen.getByRole("list", { name: "Team" });
-      expect(list.hasAttribute("aria-label")).toBe(false);
+      expect(list.getAttribute("aria-label")).toBe("Team");
+    });
+
+    // A title that is not a string has no text to copy: on the web it names the list by
+    // reference, and natively `label` does (a labelled-by relation reads every row on Android).
+    it(`(${platform}) a title that is a node names the list by reference on the web`, () => {
+      ui(<List title={<>Team <Text>members</Text></>} label="Everyone" items={PEOPLE} />);
+      const list = screen.getByRole("list", { name: "Team members" });
+      expect(document.getElementById(list.getAttribute("aria-labelledby")!)!.textContent).toBe("Team members");
     });
 
     // `title={cond && "Team"}` passes false when the condition fails: nothing to read,
@@ -246,4 +255,123 @@ describe("a windowed StackedList", () => {
       expect(within(list).getAllByRole("listitem")[0]!.getAttribute("aria-setsize")).toBe("40");
     });
   }
+});
+
+// Natively, Fabric removes a View whose props neither paint nor mark it (a role or a label
+// does not count), and hoists the children out of a View that is no stacking context
+// (sliceChildShadowNodeViewPairs), so an eager list's container reached no screen reader:
+// Android showed no AbsListView for any of the three lists. `collapsable={false}` keeps a
+// named list a native view that holds its rows, the Listbox's fix (3bc31490). An unnamed
+// list stays collapsable: React Native's Android delegate would name its container with the
+// text of every row, one stop reading the whole list. React Native Web drops the prop before
+// the DOM, so it is read at React Native's View render boundary. A windowed list's scroller
+// is a native scroll view already.
+describe("an eager list's native container", () => {
+  const component = View as unknown as { render: (props: ViewProps, ref: ForwardedRef<unknown>) => ReactNode };
+  const isList = (props: ViewProps) => props.role === "list";
+
+  function listProps(node: ReactNode) {
+    const original = component.render;
+    const lists: ViewProps[] = [];
+    const observer = spyOn(component, "render").mockImplementation((props, ref) => {
+      if (isList(props)) lists.push(props);
+      return original(props, ref);
+    });
+    try {
+      ui(node);
+      return lists;
+    } finally {
+      observer.mockRestore();
+    }
+  }
+
+  // [name, list, whether the list is named]
+  const CASES: Array<[string, ReactNode, boolean]> = [
+    ...STACKED.flatMap(([platform, List]): Array<[string, ReactNode, boolean]> => [
+      [`StackedList (${platform})`, <List items={PEOPLE} />, false],
+      [`StackedList card with a title (${platform})`, <List card title="Team" items={PEOPLE} />, true],
+      [`clickable StackedList with a label and testID (${platform})`, <List clickable label="Team" testID="team" items={PEOPLE} onPressItem={() => {}} />, true],
+      [`reorderable StackedList with a title (${platform})`, <List reorderable title="Team" items={PEOPLE} onReorder={() => {}} />, true],
+      [`reorderable StackedList (${platform})`, <List reorderable items={PEOPLE} onReorder={() => {}} />, false],
+      [`StackedList with a node title (${platform})`, <List title={<Text>Team</Text>} items={PEOPLE} />, false],
+      [`StackedList with a node title and a label (${platform})`, <List title={<Text>Team</Text>} label="Everyone" items={PEOPLE} />, true],
+    ]),
+    ...FEEDS.flatMap(([platform, List]): Array<[string, ReactNode, boolean]> => [
+      [`Feed (${platform})`, <List items={EVENTS} />, false],
+      [`avatar Feed with a label (${platform})`, <List avatar label="Activity" items={EVENTS} onItemPress={() => {}} />, true],
+    ]),
+    ...GRIDS.flatMap(([platform, List]): Array<[string, ReactNode, boolean]> => [
+      [`GridList (${platform})`, <List items={TILES} />, false],
+      [`gallery GridList with a label and testID (${platform})`, <List gallery label="Photos" testID="photos" items={TILES} onPressItem={() => {}} />, true],
+    ]),
+  ];
+
+  for (const [name, node, named] of CASES) {
+    it(`${name}: ${named ? "keeps its named list a native view (collapsable false)" : "leaves its unnamed list collapsable"}`, () => {
+      const lists = listProps(node);
+      expect(lists.length).toBeGreaterThan(0);
+      for (const props of lists) expect(props.collapsable).toBe(named ? false : undefined);
+    });
+  }
+
+  // React Native's ScrollView does not turn aria-label or aria-labelledby into its native
+  // props (its View does), so a windowed list also carries the native spelling of its name.
+  const WINDOWED: Array<[string, ReactNode, Partial<ViewProps>]> = [
+    ...STACKED.flatMap(([platform, List]): Array<[string, ReactNode, Partial<ViewProps>]> => [
+      [`windowed StackedList with a title (${platform})`, <List card title="Team" virtualized style={{ maxHeight: 240 }} items={PEOPLE} />, { accessibilityLabel: "Team" }],
+      [`windowed StackedList with a node title and a label (${platform})`, <List card title={<Text>Team</Text>} label="Everyone" virtualized style={{ maxHeight: 240 }} items={PEOPLE} />, { accessibilityLabel: "Everyone" }],
+      [`windowed StackedList with a label (${platform})`, <List label="People" virtualized style={{ maxHeight: 240 }} items={PEOPLE} />, { accessibilityLabel: "People" }],
+    ]),
+    ...FEEDS.map(([platform, List]): [string, ReactNode, Partial<ViewProps>] => [`windowed Feed (${platform})`, <List label="Activity" virtualized style={{ maxHeight: 240 }} items={EVENTS} />, { accessibilityLabel: "Activity" }]),
+    ...GRIDS.map(([platform, List]): [string, ReactNode, Partial<ViewProps>] => [`windowed GridList (${platform})`, <List label="Photos" virtualized style={{ maxHeight: 240 }} items={TILES} />, { accessibilityLabel: "Photos" }]),
+  ];
+  for (const [name, node, native] of WINDOWED) {
+    it(`${name}: names its scroller in React Native's native spelling too`, () => {
+      const lists = listProps(node);
+      expect(lists).toHaveLength(1);
+      const props = lists[0]!;
+      expect(props.accessibilityLabel).toBe(native.accessibilityLabel);
+      expect(props["aria-label"]).toBe(native.accessibilityLabel);
+      // Never a labelled-by relation natively: Android's delegate would read every row.
+      expect(props.accessibilityLabelledBy).toBeUndefined();
+    });
+  }
+
+  it("leaves the web's DOM exactly as a list without the prop renders it", () => {
+    // React drops a false value on an unknown attribute (and warns once per process), so a
+    // forwarded `collapsable` would not show in the DOM: watch the props react-native-web
+    // hands React for each DOM element, and compare with a render that never had the prop.
+    const hostProps: string[][] = [];
+    const createElement = React.createElement;
+    const host = spyOn(React, "createElement").mockImplementation(((type: unknown, props: Record<string, unknown> | null, ...children: unknown[]) => {
+      if (typeof type === "string" && props) hostProps.push(Object.keys(props));
+      return (createElement as (...args: unknown[]) => unknown)(type, props, ...children);
+    }) as typeof React.createElement);
+    try {
+      for (const [name, node] of CASES) {
+        const kept = ui(node).container.innerHTML;
+        cleanup();
+        const original = component.render;
+        const strip = spyOn(component, "render").mockImplementation((props, ref) => {
+          if (!isList(props)) return original(props, ref);
+          const { collapsable: _collapsable, ...rest } = props;
+          return original(rest, ref);
+        });
+        let bare: string;
+        try {
+          bare = ui(node).container.innerHTML;
+        } finally {
+          strip.mockRestore();
+        }
+        cleanup();
+        // Each render takes fresh useId values (the title's id), so compare them by position.
+        const ids = (html: string) => html.replace(/_r_[0-9a-z]+_/g, "_id_");
+        expect(ids(kept), name).toBe(ids(bare));
+      }
+    } finally {
+      host.mockRestore();
+    }
+    expect(hostProps.some((keys) => keys.includes("role"))).toBe(true);
+    expect(hostProps.filter((keys) => keys.includes("collapsable"))).toEqual([]);
+  });
 });

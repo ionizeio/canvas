@@ -17,7 +17,7 @@ import {
 } from "../../style/index.js";
 import { useScrollFocus } from "../../style/use-scroll-focus.js";
 import { useFocusFrame } from "../../style/focus-frame.js";
-import { LIST_ITEM, LIST_WRAPPER, WindowedListCell, windowedListItem } from "../../style/list-semantics.js";
+import { LIST_ITEM, LIST_WRAPPER, WindowedListCell, listProps, windowedListItem } from "../../style/list-semantics.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { type AvatarProps } from "../../atoms/avatar/avatar.shared.js";
 import { Icon, type IconName } from "../../atoms/icon/icon.js";
@@ -211,7 +211,7 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
     // the list itself is the stop: focused, an unnamed scroller took its name from
     // every row it rendered in Chromium, a list included, so the dev warning below
     // asks for a `label`.
-    const list = { role: "list" as const, "aria-label": label || undefined };
+    const list = listProps({ label });
     const bodyProps = {
       ...bodyFocus,
       ...bodyFrame.target,

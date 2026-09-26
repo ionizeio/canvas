@@ -11,7 +11,7 @@ import { type BadgeProps } from "../../atoms/badge/badge.shared.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
 import { useScrollFocus } from "../../style/use-scroll-focus.js";
 import { useFocusFrame } from "../../style/focus-frame.js";
-import { LIST_ITEM, LIST_WRAPPER, WindowedListCell, windowedListItem } from "../../style/list-semantics.js";
+import { LIST_ITEM, LIST_WRAPPER, WindowedListCell, listProps, windowedListItem } from "../../style/list-semantics.js";
 import * as s from "./grid-lists.styles.js";
 import { type Columns } from "./grid-lists.styles.js";
 
@@ -298,7 +298,7 @@ export function createGridList(
     };
     // The tiles are a list named by `label`: the grid's root in both paths, as Tailwind
     // UI's grid lists are one `<ul role="list">` of `<li>` tiles.
-    const list = { role: "list" as const, "aria-label": label || undefined };
+    const list = listProps({ label });
 
     // Stable identity per tile; matches the eager path's key so switching to the
     // windowed path keeps a tile mapped to the same item.

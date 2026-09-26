@@ -4,7 +4,7 @@ import { FlatList, StyleSheet, type GestureResponderEvent, type ViewProps } from
 import { View, Pressable, Text, RippleClip, cornerRadii, devWarn, FOCUS_RESET, type StyleProp, type ViewStyle, type LayoutStyle, GlassSurface, withInnerFill } from "../../style/index.js";
 import { useScrollFocus } from "../../style/use-scroll-focus.js";
 import { useFocusFrame } from "../../style/focus-frame.js";
-import { LIST_ITEM, LIST_WRAPPER, WindowedListCell, windowedListItem } from "../../style/list-semantics.js";
+import { LIST_ITEM, LIST_WRAPPER, WindowedListCell, listProps, windowedListItem } from "../../style/list-semantics.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
@@ -119,10 +119,11 @@ export interface StackedListProps {
   title?: ReactNode;
   /**
    * The list's accessible name when it has no `title` (a `title` names the list, and
-   * wins when both are set). A screen reader announces it with the list. A
-   * `virtualized` list needs a name: on the web its scroller is a keyboard stop while
-   * the rows overflow, and Chromium names an unnamed stop from the text of every row
-   * it has rendered.
+   * wins when both are set). A screen reader announces it with the list. A `title` that
+   * is not a string names the list on the web only, and `label` then names it on iOS
+   * and Android. A `virtualized` list needs a name: on the web its scroller is a
+   * keyboard stop while the rows overflow, and Chromium names an unnamed stop from the
+   * text of every row it has rendered.
    */
   label?: string;
   /** Trailing header content (e.g. an action button); only shown with a title.
@@ -233,7 +234,8 @@ export function createStackedList(
     // the rows would paint over one drawn inside it.
     const bodyFocus = useScrollFocus("vertical");
     const bodyFrame = useFocusFrame();
-    // The header title names the list (aria-labelledby); useId gives one base per instance.
+    // A header title that is not a string names the list by reference (aria-labelledby);
+    // useId gives one base per instance.
     const titleId = `${useId()}-title`;
 
     // The Android ripple over the component's own pressable rows / overflow menu;
@@ -475,8 +477,11 @@ export function createStackedList(
     };
 
     // The rows are a list (src/style/list-semantics.tsx), named by the title when there
-    // is one, else by `label`.
-    const list = { role: "list" as const, ...(titled ? { "aria-labelledby": titleId } : { "aria-label": label || undefined }) };
+    // is one, else by `label`. A string title is the name itself; a title that is some
+    // other node names the list on the web by reference, and `label` names it natively.
+    const list = listProps(
+      typeof title === "string" && titled ? { label: title } : { label, labelledBy: titled ? titleId : undefined },
+    );
 
     // Construct eager rows only in the branches that use them. Building this
     // array before choosing FlatList would still allocate every offscreen row. A
