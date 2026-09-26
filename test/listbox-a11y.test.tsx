@@ -1,6 +1,7 @@
-import { afterEach, describe, expect, it } from "bun:test";
+import { afterEach, describe, expect, it, spyOn } from "bun:test";
 import { act, cleanup, fireEvent, render } from "@testing-library/react";
-import type { ReactNode } from "react";
+import React, { type ForwardedRef, type ReactNode } from "react";
+import { View, type ViewProps } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Listbox } from "../src/atoms/listbox/listbox.tsx";
 
@@ -86,6 +87,90 @@ describe("Listbox accessible structure", () => {
     expect(changes).toEqual([]);
     expect(picks).toEqual([]);
     expect(rows.every((row) => row.getAttribute("aria-checked") === "false")).toBe(true);
+  });
+});
+
+// Fabric removes a View whose props neither paint nor mark it (ViewShadowNode::initialize in
+// React Native's ReactCommon), and a role or a label does not count. A View that only paints
+// (a border, a fill) or carries a testID stays a node, but its children are hoisted out of it
+// unless it also forms a stacking context (sliceChildShadowNodeViewPairs.cpp). So the list's
+// name and role reached no screen reader when unbordered, and sat on an empty node beside the
+// rows when bordered or given a testID; only a disabled list (its opacity) held its rows.
+// `collapsable={false}` forms the stacking context in every configuration (the rows staying
+// inside it was checked on devices). React Native Web drops the prop before the DOM, so it is
+// read at React Native's View render boundary.
+describe("Listbox native container", () => {
+  const component = View as unknown as { render: (props: ViewProps, ref: ForwardedRef<unknown>) => ReactNode };
+  const isContainer = (props: ViewProps) => props["aria-label"] === "Teams";
+
+  function containerProps(node: ReactNode) {
+    const original = component.render;
+    const named: ViewProps[] = [];
+    const observer = spyOn(component, "render").mockImplementation((props, ref) => {
+      if (isContainer(props)) named.push(props);
+      return original(props, ref);
+    });
+    try {
+      ui(node);
+      return named.at(-1);
+    } finally {
+      observer.mockRestore();
+    }
+  }
+
+  const configurations = [false, true].flatMap((multi) => [false, true].flatMap((bordered) =>
+    [false, true].flatMap((disabled) => [undefined, "teams"].map((testID) => ({ multi, bordered, disabled, testID })))));
+  const nameOf = ({ multi, bordered, disabled, testID }: (typeof configurations)[number]) =>
+    [multi ? "multi" : "single", bordered && "bordered", disabled && "disabled", testID && "testID"].filter(Boolean).join(" ");
+  const listbox = (config: (typeof configurations)[number]) => (
+    <Listbox items={items} accessibilityLabel="Teams" {...config} />
+  );
+
+  for (const config of configurations) {
+    it(`keeps the ${nameOf(config)} list's named container from being flattened (collapsable false)`, () => {
+      const props = containerProps(listbox(config));
+      expect(props).toBeDefined();
+      expect(props!.collapsable).toBe(false);
+      expect(props!.accessibilityLabel).toBe("Teams");
+      expect(props!.testID).toBe(config.testID);
+    });
+  }
+
+  it("leaves the web's DOM exactly as a container without the prop renders it", () => {
+    // React drops a false value on an unknown attribute (and warns only once per process), so a
+    // forwarded `collapsable` would not show in the DOM: watch the props react-native-web hands
+    // React for each DOM element, and compare the whole DOM with a render that never had the prop.
+    const hostProps: string[][] = [];
+    const createElement = React.createElement;
+    const host = spyOn(React, "createElement").mockImplementation(((type: unknown, props: Record<string, unknown> | null, ...children: unknown[]) => {
+      if (typeof type === "string" && props) hostProps.push(Object.keys(props));
+      return (createElement as (...args: unknown[]) => unknown)(type, props, ...children);
+    }) as typeof React.createElement);
+    try {
+      for (const config of configurations) {
+        const kept = ui(listbox(config)).container.innerHTML;
+        cleanup();
+        const original = component.render;
+        const strip = spyOn(component, "render").mockImplementation((props, ref) => {
+          if (!isContainer(props)) return original(props, ref);
+          const { collapsable: _collapsable, ...rest } = props;
+          return original(rest, ref);
+        });
+        let bare: string;
+        try {
+          bare = ui(listbox(config)).container.innerHTML;
+        } finally {
+          strip.mockRestore();
+        }
+        cleanup();
+        expect(kept, nameOf(config)).toBe(bare);
+      }
+    } finally {
+      host.mockRestore();
+    }
+    // The watch saw react-native-web's DOM elements, and none of them was handed the prop.
+    expect(hostProps.some((keys) => keys.includes("aria-label"))).toBe(true);
+    expect(hostProps.filter((keys) => keys.includes("collapsable"))).toEqual([]);
   });
 });
 

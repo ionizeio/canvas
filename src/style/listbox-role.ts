@@ -12,13 +12,14 @@ import { Platform, type Role } from "react-native";
 // every mounted list logged "Unsupported Role value: listbox" and a react_native_expect
 // failure, and then carried no role at all (Android's view manager drops the value too).
 // Natively the container is a "list", which the parser accepts. iOS derives the same empty
-// trait set from it as from listbox, so VoiceOver reads the rows exactly as before. On
+// trait set from it as from listbox, so the role itself changes nothing for VoiceOver. On
 // Android a container that is a native view becomes android.widget.AbsListView where it was
-// a plain view group, so TalkBack reads it as a list. The Select, Autocomplete, PhoneInput
-// and Command lists always are (they carry a nativeID); a Listbox is only when bordered,
-// disabled or given a testID, since Fabric flattens away a View whose props neither paint
-// nor mark it, and a role or a label does not count. test/native-roles.test.ts reads the
-// accepted roles from the parser.
+// a plain view group, so TalkBack reads it as a list ("Teams. List", then "In list Teams" on
+// the first row). That needs the container to be a native view that holds its rows: Fabric
+// removes a View whose props neither paint nor mark it (a role or a label does not count) and
+// hoists the children out of one that is not a stacking context. The Select, Autocomplete,
+// PhoneInput and Command lists carry a nativeID and the Listbox sets collapsable={false}, each
+// of which forms one. test/native-roles.test.ts reads the accepted roles from the parser.
 export const LISTBOX_ROLES = { web: "listbox", native: "list" satisfies Role } as const;
 
 // React Native's Role type omits "listbox" because its native parser does; this is the one

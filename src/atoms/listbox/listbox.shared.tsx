@@ -331,8 +331,13 @@ export function createListbox(skin: ListboxSkin, parts: ListboxParts = {}) {
     // A selectable list of options is a `listbox` of `option`s (single-select)
     // or a group of `checkbox` rows (multi-select). LISTBOX spells the list's role
     // for the runtime: the web's listbox, and a list natively (src/style/listbox-role.ts).
+    // `collapsable={false}` keeps the container a native view that holds its rows. Fabric
+    // removes a View whose props neither paint nor mark it (a role or a label does not count),
+    // and hoists the children out of one that only paints or carries a testID, so the list's
+    // name and role reached no screen reader, or sat on an empty node beside the rows; only a
+    // disabled list (its opacity) held them. React Native Web drops the prop: the DOM is unchanged.
     return (
-      <View style={container} role={mode === "multi" ? "group" : LISTBOX} testID={props.testID}
+      <View style={container} collapsable={false} role={mode === "multi" ? "group" : LISTBOX} testID={props.testID}
         accessibilityLabel={accessibleName} aria-label={accessibleName}>
         {/* A bordered list is a CONTENT-layer pane under glass (nothing in solid mode). */}
         {bordered ? <GlassPane layer="content" shape={skin.containerBordered(tokens)} /> : null}
