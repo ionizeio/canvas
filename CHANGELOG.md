@@ -1,5 +1,23 @@
 # @nannier/canvas
 
+## 3.4.0
+
+### Minor Changes
+
+- 9117fdc: `StackedList`, `Feed` and `GridList` are lists to a screen reader, as the Tailwind UI lists they port are, and take a new `label` option that names the list. Minor, for that new option: `label?: string` on all three names the list for assistive technology ("Recent activity, list, 12 items").
+
+  On the web the rows had no list semantics at all: they were plain elements (a clickable row was a button), so a screen reader announced no list, no item count and offered no list navigation. Now the rows sit in a `list` and each row is a `listitem`, which react-native-web renders as a `<ul>` of `<li>` elements. A clickable row, a pressable event and a tappable tile stay buttons, each inside its item. A `StackedList`'s header `title` names its list; `label` names one without a title (the title wins when both are set). In a `reorderable` list each item wraps its draggable row, so the preview a pointer drag lifts carries no list item, and a list with no string title gives its drop zone the `label` for a name.
+
+  A `virtualized` list with a bounded height is itself the list and the keyboard stop, where the stop was an unnamed group. It mounts only the rows near its viewport, so each rendered row carries `aria-setsize` and `aria-posinset` and a screen reader counts the whole list, not the rows it has rendered. Focused, a list with no name is named in Chromium from the text of every row it has rendered, so a windowed list needs a `title` or a `label`, and the kit warns in development when it has neither.
+
+  Natively, React Native's role parser accepts both roles. iOS gives a list and a list item no trait, so VoiceOver reads the rows as before. On Android, TalkBack reads a windowed list's scroller and a `GridList`'s root as a list (`android.widget.AbsListView`), with `label` as its description, where they were plain view groups; a list item maps to no Android role.
+
+### Patch Changes
+
+- 3bc3149: On Android, TalkBack now reads a `Listbox`'s name in every configuration, and a single-select `Listbox` as a list. React Native's Fabric renderer removes a view whose props neither paint nor mark it (a role or an accessibility label does not count), and moves the children out of a view that only paints or carries a `testID`. So an unbordered, enabled `Listbox` had no native container at all, and a bordered one, or one given a `testID`, was an empty node named by its `accessibilityLabel` with its rows beside it; only a disabled list held its rows. The container is now always a native view that holds its rows. A single-select list is an `android.widget.AbsListView` named by its label, so TalkBack reads "Teams. List", then "In list Teams" on the first row and "Out of list Teams" on leaving. A multi-select list is a group, which Android gives no role, so TalkBack reads "Teams" before its checkboxes. Before and after screenshots match: the plain list in glass and the bordered lists in glass and solid on iOS and Android, and bordered multi-select lists on iOS.
+
+  On iOS the container is now a native view carrying the label too, but it is not an accessibility element and declares no accessibility container type (React Native sets none), and the Simulator's accessibility tree still lists only the rows. Whether VoiceOver speaks the list's name was not tested, since VoiceOver does not run in the Simulator. Read from React Native's iOS source, not observed: the new view groups the list's rows for VoiceOver's navigation, and an `accessible` ancestor without a label of its own now takes the list's label instead of joining the rows' labels. The web's DOM is unchanged (`role="listbox"` or `role="group"` with its `aria-label`).
+
 ## 3.3.0
 
 ### Minor Changes
