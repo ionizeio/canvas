@@ -28,13 +28,22 @@ name: E2E soak (canvas)
 # failed test the execution contexts created, destroyed and cleared, the navigations,
 # and every evaluation with whether it was answered, from Playwright's own protocol log.
 #
-# A browser that crashes outright (Firefox's parent process died of SIGSEGV about once
-# in 90,000 journey tests, 2026-09) leaves only "Target page, context or browser has been
+# A browser that crashes outright leaves only "Target page, context or browser has been
 # closed" in the report. `crash_dumps: on` keeps the whole core dump with a gdb report of
 # the fault and every thread's stack (scripts/soak-crash-dumps.mjs; Playwright's Firefox
 # has no crash reporter of its own), and every lane keeps the kernel's line for a
 # process a fault killed outright, which Firefox's parent never is: it catches SIGSEGV
-# itself and re-raises it, so its crashes are only in the core.
+# itself and re-raises it, so its crashes are only in the core. It was built for the
+# Firefox parent's rare SIGSEGV in the Firefox journeys (3 in 731,080 tests, 2026-09).
+# The one it caught (soak 36205920903, lane 9) is a use-after-free in Playwright's own
+# Firefox patch, which stock Firefox does not have: the headless compositor widget swaps
+# and releases its draw target on the compositor thread when Playwright resizes a window,
+# while WebRender's render thread reads and AddRefs the same pointer with no lock. The
+# other two left no core and are consistent with it, not proven the same. The docs pages
+# do not cause it; how busy a page keeps the compositor only changes the odds.
+# The soak job holds no secrets (contents: read, none referenced), which is what lets a
+# core, holding the process environment and memory, sit in this public repository's
+# artifacts; keep it that way.
 #
 # `ref` replays another commit of this repository with this workflow, to learn whether
 # a failure seen there still happens (a commit older than the probe runs without it;
