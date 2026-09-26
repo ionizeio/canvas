@@ -1,5 +1,13 @@
 # @nannier/canvas
 
+## 3.4.2
+
+### Patch Changes
+
+- ba73413: On iOS and Android, a named `StackedList`, `Feed` or `GridList` now reaches the screen reader as a list, and this corrects the Android note in 9117fdc's entry, which said a windowed list and a `GridList`'s root already read as named lists there. They did not: an eager list's container carried only a role and a name, so React Native's renderer removed it or moved its rows out of it and Android showed no list at all, and a windowed list's scroller was a list with no name, since React Native's ScrollView does not pass `aria-label` on to the platform.
+
+  A list with a name (a `StackedList` title that is a string, or `label` on any of the three) now keeps a native container that holds its rows, named in the platform's own label, so TalkBack says "Team members. List" and then "In list Team members" on the first row, as it does for a `Listbox`. On iOS the container holds its rows and VoiceOver reads the rows as before. A list without a name keeps its old native behaviour, each row read on its own: React Native's Android delegate would otherwise read the text of every row as the container's own description before the rows. A `StackedList` title that is not a string names the list on the web by reference, and `label` names it natively. On the web a string title now names its list directly rather than by reference, with the same name, and nothing else in the page changes.
+
 ## 3.4.1
 
 ### Patch Changes
