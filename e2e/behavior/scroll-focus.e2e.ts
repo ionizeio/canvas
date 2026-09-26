@@ -6,20 +6,39 @@ import { ALL_SIDES, rgb, ringShows } from "../support/focus-ring";
 import { expect, test } from "../support/fixtures";
 
 // The windowed lists: a StackedList card, a plain StackedList, a connector Feed, an
-// avatar Feed and a GridList gallery, each bounded and read-only.
+// avatar Feed and a GridList gallery, each bounded, read-only and named: the card by its
+// title, the rest by their `label`.
 const WINDOWED_LISTS = ["stacked", "stacked-plain", "feed", "feed-avatar", "grid"];
+// The text the fixture gives the row at each place in the list (1-based), so a row's
+// announced place can be checked against the item it shows.
+const PEOPLE = ["Ada", "Sam", "Lee", "Kim", "Noor", "Ravi", "Iris", "Theo"];
+const person = (place: number) => `${PEOPLE[(place - 1) % PEOPLE.length]} ${place}`;
+const ROW_TEXT: Record<string, (place: number) => string> = {
+  stacked: person,
+  "stacked-plain": person,
+  feed: person,
+  "feed-avatar": person,
+  grid: (place) => `IMG_${1000 + place - 1}.jpg`,
+};
+const LIST_NAMES: Record<string, string> = {
+  stacked: "Team",
+  "stacked-plain": "People",
+  feed: "Roster activity",
+  "feed-avatar": "Roster activity by person",
+  grid: "Photos",
+};
 
 // The scrollport under a fixture section: the one tab stop, except in the Carousel,
 // whose arrows and dots are buttons beside it, in the windowed table, whose body row
 // group scrolls its rows inside the scroller its columns pan in on a phone, and in the
-// windowed lists, whose rows scroll in a group (the GridList's group is its root).
+// windowed lists, whose list scrolls its rows (the GridList's list is its root).
 const scrollportOf = (page: Page, name: string) =>
   name === "windowed"
     ? page.getByTestId("scroll-windowed").getByRole("rowgroup")
     : name === "grid"
       ? page.getByTestId("scroll-grid")
       : WINDOWED_LISTS.includes(name)
-        ? page.getByTestId(`scroll-${name}`).getByRole("group")
+        ? page.getByTestId(`scroll-${name}`).getByRole("list")
         : page.getByTestId(`scroll-${name}`).locator(name === "carousel" ? '[tabindex="0"]:not([role="button"])' : '[tabindex="0"]');
 
 // The frame around a focused scrollport, and the node that draws its ring. A scroller
@@ -34,6 +53,16 @@ const frameOf = (page: Page, name: string, scrollport: Locator) =>
 const ringOf = (page: Page, name: string, scrollport: Locator) =>
   name === "attached" ? page.getByTestId("scroll-attached").locator('[aria-hidden="true"]').last() : frameOf(page, name, scrollport);
 
+
+// A windowed list's rendered rows, read in one pass (the list keeps mounting rows in
+// batches after it paints): each row's place and the list's size it announces, and the
+// computed position of every wrapper between the list and the row.
+const renderedRows = (list: Locator) =>
+  list.evaluate((node) => [...node.querySelectorAll('[role="listitem"]')].map((row) => {
+    const wrappers: string[] = [];
+    for (let at = row.parentElement; at && at !== node; at = at.parentElement) wrappers.push(getComputedStyle(at).position);
+    return { posinset: row.getAttribute("aria-posinset"), setsize: row.getAttribute("aria-setsize"), text: row.textContent ?? "", wrappers };
+  }));
 
 const outlineOf = (locator: Locator) =>
   locator.evaluate((node) => {
@@ -129,8 +158,8 @@ for (const width of [1280, 390]) {
   }
 }
 
-// A windowed StackedList, Feed or GridList scrolls its rows in a list of its own, so it
-// is a stop while they overflow. Left alone, Chromium and Firefox made a read-only list's
+// A windowed StackedList, Feed or GridList scrolls its rows in a list of its own, so the
+// list is a stop while they overflow. Left alone, Chromium and Firefox made a read-only list's
 // scroller an unmanaged stop that drew the browser's ring (inside a card that clipped
 // it) and WebKit skipped it. The card draws the theme's ring for a StackedList or Feed;
 // the GridList's scroller is its root, with no card around it, and draws its own.
@@ -148,13 +177,22 @@ for (const width of [1280, 390]) {
         await page.getByTestId(`before-${name}`).focus();
         await page.keyboard.press("Tab");
         await expect(scroller).toBeFocused();
-        // Chromium's own node for the stop: a group with no name taken from its rows, so
-        // focusing it does not read every rendered row's text out as its name (a generic
-        // scroller took them all).
+        // Chromium's own node for the stop: the list, named by its title or label, so
+        // focusing it does not read every rendered row's text out as its name (an unnamed
+        // scroller, a list included, took them all).
         const { result } = await session.send("Runtime.evaluate", { expression: "document.activeElement" });
         const { node } = await session.send("DOM.describeNode", { objectId: result.objectId });
         const { nodes } = await session.send("Accessibility.getPartialAXTree", { backendNodeId: node.backendNodeId, fetchRelatives: false });
-        expect(nodes.map((ax) => ({ role: ax.role?.value, name: ax.name?.value }))).toEqual([{ role: "group", name: "" }]);
+        expect(nodes.map((ax) => ({ role: ax.role?.value, name: ax.name?.value }))).toEqual([{ role: "list", name: LIST_NAMES[name] }]);
+        // A windowed list mounts only the rows near its viewport, and each says where it
+        // sits in the whole list, so the list's count is every row, not the rendered ones.
+        // FlatList's own wrappers between the list and a row stay static: Chromium does
+        // not count a list's items through a positioned wrapper.
+        const atTop = await renderedRows(scroller);
+        expect(atTop.length).toBeGreaterThan(0);
+        expect(atTop.length).toBeLessThan(200);
+        expect(atTop.map((row) => [row.posinset, row.setsize])).toEqual(atTop.map((_, index) => [String(index + 1), "200"]));
+        expect(atTop.flatMap((row) => row.wrappers).filter((position) => position !== "static")).toEqual([]);
         // The theme's ring, drawn once, on the list's root, and on screen along every side.
         await expect.poll(() => outlineOf(list)).toEqual({ style: "solid", color: ring });
         if (name !== "grid") expect(await drawsOutline(scroller)).toBe(false);
@@ -164,6 +202,21 @@ for (const width of [1280, 390]) {
         await expect.poll(() => ringShows(page, list, ring)).toEqual(ALL_SIDES);
         await page.keyboard.press("ArrowDown");
         await expect.poll(() => scroller.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+        // Scrolled on down, the list unmounts rows between its first few (FlatList keeps
+        // `initialNumToRender` mounted for a jump back to the top) and its window, and
+        // every row it mounts still says where it sits, which its own text confirms. The
+        // list learns its rows' heights as it renders them, so it grows as it scrolls:
+        // each poll scrolls to its current end.
+        await expect.poll(async () => {
+          await scroller.evaluate((element) => { element.scrollTop = element.scrollHeight; });
+          const rows = await renderedRows(scroller);
+          return Number(rows.at(-1)?.posinset) - rows.length;
+        }).toBeGreaterThan(0);
+        const midway = await renderedRows(scroller);
+        const places = midway.map((row) => Number(row.posinset));
+        expect(places.every((place, index) => index === 0 || place > places[index - 1]!)).toBe(true);
+        expect(midway.filter((row) => row.setsize !== "200")).toEqual([]);
+        expect(midway.filter((row) => !row.text.includes(ROW_TEXT[name]!(Number(row.posinset))))).toEqual([]);
         const screenshot = testInfo.outputPath(`scroll-${name}-focused.png`);
         await page.screenshot({ path: screenshot });
         await testInfo.attach(`scroll-${name}-focused`, { path: screenshot, contentType: "image/png" });

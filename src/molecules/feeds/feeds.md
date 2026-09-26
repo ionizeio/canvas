@@ -2,12 +2,20 @@
 
 Vertical activity streams with icons and timestamps. Used for audit logs, change history, and notification lists.
 
+The events are a list, as in Tailwind UI, and each event is one of its items: a
+screen reader announces the list with its number of events and moves through it
+event by event. A pressable event is a button inside its item. The `label` prop
+names the list (for example "Recent activity").
+
 A `virtualized` feed with a bounded height scrolls its events in a list of its
 own. On the web, while those events overflow, that list is a keyboard tab stop
 (before the rows themselves when `onItemPress` makes them buttons), the
 keyboard can scroll it, and while it has keyboard focus the feed's card draws
-the theme's focus ring. The stop is an unnamed group, so a screen reader does
-not read every event it renders out as its name.
+the theme's focus ring. Only the events near its viewport are mounted, and each
+says where it sits in the whole feed, so a screen reader still counts every
+event. Give a windowed feed a `label`: focused, a list with no name is named in
+Chromium from the text of every event it has rendered, so the kit warns in
+development when it has none.
 
 ## Usage
 

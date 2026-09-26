@@ -31,9 +31,21 @@ describe("StackedList virtualization", () => {
   });
 
   it("renders through a windowed list when virtualized with a bounded height", () => {
-    const { getByText } = ui(<StackedList virtualized items={PEOPLE} style={{ maxHeight: 300 }} />);
+    const { getByText } = ui(<StackedList virtualized label="People" items={PEOPLE} style={{ maxHeight: 300 }} />);
     // A short list fits within the initial window, so the rows still render.
     expect(getByText("Person 0")).toBeTruthy();
+    expect(canvasWarnings()).toEqual([]);
+  });
+
+  // Windowed, the list is a keyboard stop while its rows overflow, and Chromium names an
+  // unnamed stop from every row it rendered: a title or a label names it instead.
+  it("warns when windowed with neither a title nor a label", () => {
+    ui(<StackedList virtualized items={PEOPLE} style={{ maxHeight: 300 }} />);
+    expect(canvasWarnings().filter((m) => m.includes("`label`"))).toHaveLength(1);
+  });
+
+  it("takes its title as the windowed list's name, with no warning", () => {
+    ui(<StackedList virtualized title="People" items={PEOPLE} style={{ maxHeight: 300 }} />);
     expect(canvasWarnings()).toEqual([]);
   });
 
@@ -137,9 +149,14 @@ describe("Feed virtualization", () => {
   });
 
   it("windows the events when virtualized with a bounded height", () => {
-    const { getByText } = ui(<Feed virtualized items={EVENTS} style={{ maxHeight: 300 }} />);
+    const { getByText } = ui(<Feed virtualized label="Activity" items={EVENTS} style={{ maxHeight: 300 }} />);
     expect(getByText("Actor 0")).toBeTruthy();
     expect(canvasWarnings()).toEqual([]);
+  });
+
+  it("warns when windowed without a label", () => {
+    ui(<Feed virtualized items={EVENTS} style={{ maxHeight: 300 }} />);
+    expect(canvasWarnings().filter((m) => m.includes("`label`"))).toHaveLength(1);
   });
 
   it("warns when virtualized without a bounded height", () => {
@@ -159,9 +176,14 @@ describe("GridList virtualization", () => {
   });
 
   it("windows the tiles when virtualized with a bounded height", () => {
-    const { getByText } = ui(<GridList virtualized items={TILES} style={{ maxHeight: 400 }} />);
+    const { getByText } = ui(<GridList virtualized label="Tiles" items={TILES} style={{ maxHeight: 400 }} />);
     expect(getByText("Tile 0")).toBeTruthy();
     expect(canvasWarnings()).toEqual([]);
+  });
+
+  it("warns when windowed without a label", () => {
+    ui(<GridList virtualized items={TILES} style={{ maxHeight: 400 }} />);
+    expect(canvasWarnings().filter((m) => m.includes("`label`"))).toHaveLength(1);
   });
 
   it("warns when virtualized without a bounded height", () => {

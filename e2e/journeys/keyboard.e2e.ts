@@ -269,7 +269,7 @@ test("a windowed list's overflowing rows are one keyboard stop, in every engine"
   const ring = rgb(colorsFor("blush", "light").ring);
   for (const name of ["stacked", "stacked-plain", "feed", "feed-avatar", "grid"]) {
     const list = page.getByTestId(`scroll-${name}`);
-    const scroller = name === "grid" ? list : list.getByRole("group");
+    const scroller = name === "grid" ? list : list.getByRole("list");
     // The stop exists once the list has measured its rows overflowing.
     await expect(scroller).toHaveAttribute("tabindex", "0");
     await page.getByTestId(`before-${name}`).focus();

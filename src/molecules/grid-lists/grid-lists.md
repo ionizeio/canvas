@@ -2,13 +2,20 @@
 
 Tiled card grids for people directories, item collections, and image galleries.
 
+The tiles are a list, as in Tailwind UI, and each tile is one of its items: a
+screen reader announces the list with its number of tiles and moves through it
+tile by tile. A tappable tile is a button inside its item.
+The `label` prop names the list (for example "Team members").
+
 A `virtualized` grid with a bounded height scrolls its tiles on its own. On the
 web, while those tiles overflow, the grid is a keyboard tab stop (before the
 tiles themselves when `onPressItem` or tile actions make them buttons), the
 keyboard can scroll it, and while it has keyboard focus the grid, which has no
-card around it, draws the theme's focus ring around itself. The stop is an
-unnamed group, so a screen reader does not read every tile it renders out as
-its name.
+card around it, draws the theme's focus ring around itself. Only the tiles near
+its viewport are mounted, and each says where it sits in the whole grid, so a
+screen reader still counts every tile. Give a windowed grid a `label`: focused,
+a list with no name is named in Chromium from the text of every tile it has
+rendered, so the kit warns in development when it has none.
 
 ## Usage
 

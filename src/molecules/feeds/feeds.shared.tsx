@@ -1,5 +1,5 @@
 import { Fragment, type ComponentType, type ReactNode } from "react";
-import { FlatList, StyleSheet } from "react-native";
+import { FlatList, StyleSheet, type ViewProps } from "react-native";
 import {
   View,
   Pressable,
@@ -17,6 +17,7 @@ import {
 } from "../../style/index.js";
 import { useScrollFocus } from "../../style/use-scroll-focus.js";
 import { useFocusFrame } from "../../style/focus-frame.js";
+import { LIST_ITEM, LIST_WRAPPER, WindowedListCell, windowedListItem } from "../../style/list-semantics.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { type AvatarProps } from "../../atoms/avatar/avatar.shared.js";
 import { Icon, type IconName } from "../../atoms/icon/icon.js";
@@ -99,6 +100,13 @@ export interface FeedProps {
   compact?: boolean;
   /** When set, each event row is pressable, reporting the row index. */
   onItemPress?: (index: number) => void;
+  /**
+   * The feed's accessible name (e.g. "Recent activity"): a screen reader announces it
+   * with the list of events. A `virtualized` feed needs one: on the web its scroller
+   * is a keyboard stop while the events overflow, and Chromium names an unnamed stop
+   * from the text of every event it has rendered.
+   */
+  label?: string;
   /**
    * Render the rows through a windowed `FlatList` instead of mounting every row up
    * front, for large lists. Give the list a bounded height (via `style`, e.g.
@@ -183,7 +191,7 @@ function initialsFrom(name: string): string {
 
 export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) {
   return function Feed(props: FeedProps) {
-    const { items = [], onItemPress, virtualized, testID, style } = props;
+    const { items = [], onItemPress, label, virtualized, testID, style } = props;
     const { tokens } = useTheme();
     // FILL: the feed spans the parent it is given; the parent picks the measure.
     const fill = useFillStyle("Feed");
@@ -199,11 +207,20 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
     // avatar lead, and the rows would paint over one drawn inside either scroller.
     const bodyFocus = useScrollFocus("vertical");
     const bodyFrame = useFocusFrame();
-    // The windowed scroller's own props. A group, not a generic node: focused, a
-    // generic scroller took its name from every row it rendered in Chromium, so a
-    // screen reader would read them all out as the stop's name. A group takes no name
-    // from its rows.
-    const bodyProps = { ...bodyFocus, ...bodyFrame.target, role: "group" as const, style: FOCUS_RESET };
+    // The events are a list (src/style/list-semantics.tsx) named by `label`. Windowed,
+    // the list itself is the stop: focused, an unnamed scroller took its name from
+    // every row it rendered in Chromium, a list included, so the dev warning below
+    // asks for a `label`.
+    const list = { role: "list" as const, "aria-label": label || undefined };
+    const bodyProps = {
+      ...bodyFocus,
+      ...bodyFrame.target,
+      ...list,
+      style: FOCUS_RESET,
+      // FlatList's own wrappers stay static, so Chromium counts the rows for the list.
+      contentContainerStyle: LIST_WRAPPER,
+      CellRendererComponent: WindowedListCell,
+    };
 
     // Stable identity when the caller supplies one; the array index is the fallback
     // for static lists only (see FeedItem.id).
@@ -217,6 +234,11 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
     devWarn(
       !!virtualized && !bounded,
       "[canvas] <Feed virtualized>: give the list a bounded height (e.g. style={{ maxHeight: 400 }}) so it can window and scroll; rendering eagerly for now.",
+    );
+    const windowed = !!virtualized && bounded;
+    devWarn(
+      windowed && !label,
+      "[canvas] <Feed virtualized>: give the feed a `label`. While its events overflow it is a keyboard stop, and Chromium names an unnamed stop from the text of every event it has rendered.",
     );
 
     // Press feedback differs per OS: Android shows a native ripple (state layer)
@@ -244,7 +266,7 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
       // hairline between items (the last row keeps no rule). Keyless so it can be
       // used both by the eager `.map` (which supplies the key via Fragment) and by
       // FlatList's renderItem (which keys via keyExtractor).
-      const renderRow = (item: FeedItem, index: number) => {
+      const renderRow = (item: FeedItem, index: number, listItem: ViewProps) => {
         const divider = index < lastIndex ? skin.avatarDivider(tokens) : null;
         const rowStyle: StyleProp<ViewStyle> = [s.avatarRow, skin.avatarRowPad(compact), divider];
         const inner: ReactNode = (
@@ -256,35 +278,40 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
           </>
         );
         if (onItemPress) {
+          // A pressable event is a button in its list item: a `listitem` is not a
+          // control, so the item wraps the button rather than replacing its role.
           return (
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => onItemPress(index)}
-              android_ripple={ripple}
-              style={({ pressed }) => [
-                rowStyle,
-                skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
-              ]}
-            >
-              {inner}
-            </Pressable>
+            <View {...listItem}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => onItemPress(index)}
+                android_ripple={ripple}
+                style={({ pressed }) => [
+                  rowStyle,
+                  skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+                ]}
+              >
+                {inner}
+              </Pressable>
+            </View>
           );
         }
-        return <View style={rowStyle}>{inner}</View>;
+        return <View {...listItem} style={rowStyle}>{inner}</View>;
       };
 
-      const body =
-        virtualized && bounded ? (
-          <FlatList
-            {...bodyProps}
-            data={items}
-            renderItem={({ item, index }) => renderRow(item, index)}
-            keyExtractor={keyOf}
-            showsVerticalScrollIndicator={false}
-          />
-        ) : (
-          items.map((item, index) => <Fragment key={keyOf(item, index)}>{renderRow(item, index)}</Fragment>)
-        );
+      const body = windowed ? (
+        <FlatList
+          {...bodyProps}
+          data={items}
+          renderItem={({ item, index }) => renderRow(item, index, windowedListItem(index, items.length))}
+          keyExtractor={keyOf}
+          showsVerticalScrollIndicator={false}
+        />
+      ) : (
+        <View {...list}>
+          {items.map((item, index) => <Fragment key={keyOf(item, index)}>{renderRow(item, index, LIST_ITEM)}</Fragment>)}
+        </View>
+      );
       return <GlassSurface layer="content" testID={testID} style={[skin.cardSurface(tokens), fill, style, bodyFrame.ring()]}>{body}</GlassSurface>;
     }
 
@@ -294,7 +321,7 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
     // FlatList's renderItem (which keys via keyExtractor). The connector line is
     // drawn per-row off the index, so it keeps terminating on the last item under a
     // windowed FlatList (each row still knows whether it is last).
-    const renderRow = (item: FeedItem, index: number) => {
+    const renderRow = (item: FeedItem, index: number, listItem: ViewProps) => {
       const isLast = index === lastIndex;
       const rowStyle: StyleProp<ViewStyle> = [s.connectorRow, isLast ? null : skin.connectorRowGap(compact)];
       const inner: ReactNode = (
@@ -323,35 +350,38 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
       );
       if (onItemPress) {
         return (
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => onItemPress(index)}
-            android_ripple={ripple}
-            style={({ pressed }) => [
-              rowStyle,
-              targetFloor,
-              skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
-            ]}
-          >
-            {inner}
-          </Pressable>
+          <View {...listItem}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => onItemPress(index)}
+              android_ripple={ripple}
+              style={({ pressed }) => [
+                rowStyle,
+                targetFloor,
+                skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+              ]}
+            >
+              {inner}
+            </Pressable>
+          </View>
         );
       }
-      return <View style={rowStyle}>{inner}</View>;
+      return <View {...listItem} style={rowStyle}>{inner}</View>;
     };
 
-    const body =
-      virtualized && bounded ? (
-        <FlatList
-          {...bodyProps}
-          data={items}
-          renderItem={({ item, index }) => renderRow(item, index)}
-          keyExtractor={keyOf}
-          showsVerticalScrollIndicator={false}
-        />
-      ) : (
-        items.map((item, index) => <Fragment key={keyOf(item, index)}>{renderRow(item, index)}</Fragment>)
-      );
+    const body = windowed ? (
+      <FlatList
+        {...bodyProps}
+        data={items}
+        renderItem={({ item, index }) => renderRow(item, index, windowedListItem(index, items.length))}
+        keyExtractor={keyOf}
+        showsVerticalScrollIndicator={false}
+      />
+    ) : (
+      <View {...list}>
+        {items.map((item, index) => <Fragment key={keyOf(item, index)}>{renderRow(item, index, LIST_ITEM)}</Fragment>)}
+      </View>
+    );
 
     // The feed card is a CONTENT-layer pane under glass (GlassSurface is the plain View in solid mode).
     return <GlassSurface layer="content" testID={testID} style={[skin.cardSurface(tokens), skin.connectorPad(compact), fill, style, bodyFrame.ring()]}>{body}</GlassSurface>;

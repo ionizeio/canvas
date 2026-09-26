@@ -153,7 +153,7 @@ function windowedTable(name: string, node: ReactNode): Case {
   };
 }
 
-// A windowed StackedList or Feed: the one group under the root scrolls the rows, and the
+// A windowed StackedList or Feed: the one list under the root scrolls the rows, and the
 // root (the card, or a plain list's frame) draws its ring.
 function windowedList(name: string, node: ReactNode): Case {
   return {
@@ -161,7 +161,7 @@ function windowedList(name: string, node: ReactNode): Case {
     node,
     stop() {
       const frame = screen.getByTestId("subject");
-      const scroller = screen.getByRole("group");
+      const scroller = screen.getByRole("list");
       overflowDown(scroller);
       return { scroller, frame };
     },
@@ -420,7 +420,7 @@ describe("a windowed StackedList, Feed or GridList", () => {
   for (const list of LISTS) {
     it(`${list.name}: is a keyboard stop only while its rows overflow`, () => {
       ui(list.node());
-      const scroller = screen.getByRole("group");
+      const scroller = screen.getByRole("list");
       expect(scroller.getAttribute("tabindex")).toBe("-1");
       layOutRows(scroller, 196, 150, list.width);
       expect(scroller.getAttribute("tabindex")).toBe("-1");
@@ -430,26 +430,46 @@ describe("a windowed StackedList, Feed or GridList", () => {
       expect(scroller.getAttribute("tabindex")).toBe("-1");
     });
 
-    // Focused, a generic scroller took its name from every row it rendered in Chromium;
-    // a group takes none from its rows, so the stop carries no name of its own.
-    it(`${list.name}: the stop is an unnamed group that holds the rendered rows`, () => {
-      ui(list.node());
-      const scroller = screen.getByRole("group");
-      expect(scroller.hasAttribute("aria-label")).toBe(false);
-      expect(scroller.hasAttribute("aria-labelledby")).toBe(false);
+    // Focused, an unnamed scroller took its name from every row it rendered in Chromium,
+    // a list included, so the stop is the list, named by its label. Its rendered rows
+    // say where they sit in the whole list, which the browser cannot count from them.
+    it(`${list.name}: the stop is the list, named by its label, and its rows count the whole list`, () => {
+      ui(list.node({ label: "Everyone" }));
+      const scroller = screen.getByRole("list");
+      expect(scroller.tagName).toBe("UL");
+      expect(scroller.getAttribute("aria-label")).toBe("Everyone");
+      const rows = screen.getAllByRole("listitem");
+      expect(rows.length).toBeGreaterThan(0);
+      expect(rows.length).toBeLessThan(40);
+      rows.forEach((row, index) => {
+        expect(row.tagName).toBe("LI");
+        expect(scroller.contains(row)).toBe(true);
+        expect(row.getAttribute("aria-setsize")).toBe("40");
+        expect(row.getAttribute("aria-posinset")).toBe(String(index + 1));
+        // FlatList's own wrappers between the list and the row (its content container,
+        // the row's cell, a multi-column row of cells) are static: Chromium does not
+        // count a list's items through a positioned wrapper.
+        const wrappers: HTMLElement[] = [];
+        for (let node = row.parentElement; node && node !== scroller; node = node.parentElement) wrappers.push(node);
+        expect(wrappers.length).toBeGreaterThan(0);
+        for (const wrapper of wrappers) expect(getComputedStyle(wrapper).position).toBe("static");
+      });
       expect(scroller.textContent).toContain(list.name === "GridList" ? "IMG_1000.jpg" : "Name 1");
     });
 
-    it(`${list.name}: adds no stop, role or ring handling when it renders eagerly`, () => {
+    it(`${list.name}: adds no stop or ring handling when it renders eagerly, and its rows need no count`, () => {
       ui(list.node({ virtualized: false }));
-      expect(screen.queryByRole("group")).toBeNull();
+      expect(screen.getByRole("list").hasAttribute("tabindex")).toBe(false);
       expect(screen.getByTestId("subject").querySelector("[tabindex]")).toBeNull();
+      const rows = screen.getAllByRole("listitem");
+      expect(rows).toHaveLength(40);
+      for (const row of rows) expect(row.hasAttribute("aria-setsize")).toBe(false);
     });
   }
 
   it("StackedList: is a stop whatever its rows hold, after the header's action and before the rows' buttons", () => {
     ui(<StackedList testID="subject" clickable title="Team" addAction="Add" virtualized style={BOUNDED} items={PEOPLE} onPressItem={() => {}} />);
-    const scroller = screen.getByRole("group");
+    const scroller = screen.getByRole("list");
     overflowDown(scroller);
     const buttons = screen.getAllByRole("button");
     // The header's Add button comes before the list, every row's button inside it.
@@ -461,7 +481,7 @@ describe("a windowed StackedList, Feed or GridList", () => {
 
   it("Feed: is a stop whatever its rows hold, around every pressable row", () => {
     ui(<Feed testID="subject" virtualized style={BOUNDED} items={EVENTS} onItemPress={() => {}} />);
-    const scroller = screen.getByRole("group");
+    const scroller = screen.getByRole("list");
     overflowDown(scroller);
     const rows = screen.getAllByRole("button");
     expect(rows.length).toBeGreaterThan(0);
@@ -470,7 +490,7 @@ describe("a windowed StackedList, Feed or GridList", () => {
 
   it("GridList: is a stop whatever its tiles hold, around every pressable tile", () => {
     ui(<GridList testID="subject" gallery virtualized style={BOUNDED} items={TILES} onPressItem={() => {}} />);
-    const scroller = screen.getByRole("group");
+    const scroller = screen.getByRole("list");
     overflowDown(scroller, 196, 2000, GRID_WIDTH);
     const tiles = screen.getAllByRole("button");
     expect(tiles.length).toBeGreaterThan(0);
@@ -501,7 +521,7 @@ describe("a windowed GridList", () => {
       it(`(${name}) draws the ${look.name} palette's ring around its own scroller while a key lands on it`, () => {
         ui(<Grid testID="subject" gallery virtualized style={BOUNDED} items={TILES} />, lookProps(look));
         const scroller = screen.getByTestId("subject");
-        expect(screen.getByRole("group")).toBe(scroller);
+        expect(screen.getByRole("list")).toBe(scroller);
         overflowDown(scroller, 196, 2000, GRID_WIDTH);
         // Neither the browser's ring nor the theme's before a key lands on it.
         expectNoRingDrawn(scroller);

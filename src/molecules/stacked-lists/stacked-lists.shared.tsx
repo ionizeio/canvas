@@ -1,9 +1,10 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { Fragment, type ComponentType, type ReactNode } from "react";
-import { FlatList, StyleSheet, type GestureResponderEvent } from "react-native";
+import { Fragment, useId, type ComponentType, type ReactNode } from "react";
+import { FlatList, StyleSheet, type GestureResponderEvent, type ViewProps } from "react-native";
 import { View, Pressable, Text, RippleClip, cornerRadii, devWarn, FOCUS_RESET, type StyleProp, type ViewStyle, type LayoutStyle, GlassSurface, withInnerFill } from "../../style/index.js";
 import { useScrollFocus } from "../../style/use-scroll-focus.js";
 import { useFocusFrame } from "../../style/focus-frame.js";
+import { LIST_ITEM, LIST_WRAPPER, WindowedListCell, windowedListItem } from "../../style/list-semantics.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
@@ -113,8 +114,17 @@ export interface StackedListItem {
 export interface StackedListProps {
   /** Rows to render. */
   items?: StackedListItem[];
-  /** Optional header title; shown above the rows, separated by a rule. */
+  /** Optional header title; shown above the rows, separated by a rule. It also names
+   *  the list for assistive tech ("Team, list, 12 items"). */
   title?: ReactNode;
+  /**
+   * The list's accessible name when it has no `title` (a `title` names the list, and
+   * wins when both are set). A screen reader announces it with the list. A
+   * `virtualized` list needs a name: on the web its scroller is a keyboard stop while
+   * the rows overflow, and Chromium names an unnamed stop from the text of every row
+   * it has rendered.
+   */
+  label?: string;
   /** Trailing header content (e.g. an action button); only shown with a title.
    *  Takes precedence over `addAction` when both are supplied. */
   action?: ReactNode;
@@ -210,7 +220,7 @@ export function createStackedList(
 ) {
   const { DragDropProvider, DropZone, Draggable, DragHandle } = dnd;
   return function StackedList(props: StackedListProps) {
-    const { items = [], title, action, addAction, rowMenu, onPressItem, onPressItemMenu, flush, virtualized, reorderable, onReorder, testID, style } = props;
+    const { items = [], title, label, action, addAction, rowMenu, onPressItem, onPressItemMenu, flush, virtualized, reorderable, onReorder, testID, style } = props;
     const variant = variantOf(props);
     const theme = useMaterialTheme({ static: true });
     const { tokens } = theme;
@@ -223,6 +233,8 @@ export function createStackedList(
     // the rows would paint over one drawn inside it.
     const bodyFocus = useScrollFocus("vertical");
     const bodyFrame = useFocusFrame();
+    // The header title names the list (aria-labelledby); useId gives one base per instance.
+    const titleId = `${useId()}-title`;
 
     // The Android ripple over the component's own pressable rows / overflow menu;
     // null on iOS/web where pressed opacity carries the feedback instead.
@@ -344,8 +356,10 @@ export function createStackedList(
     };
 
     // One row, keyless so it can be used both by the eager `.map` (which supplies
-    // the key) and by FlatList's renderItem (which keys via keyExtractor).
-    const renderRow = (item: StackedListItem, index: number) => {
+    // the key) and by FlatList's renderItem (which keys via keyExtractor). `listItem`
+    // is the row's place in the list (src/style/list-semantics.tsx), or null when the
+    // caller wraps the row in its item itself (a reorderable row's Draggable).
+    const renderRow = (item: StackedListItem, index: number, listItem: ViewProps | null) => {
       // The divider is an absolute bottom hairline CHILD, never a border+margin
       // merged into the row's own style: the iOS skin insets the rule past the
       // avatar (marginStart-style), and on the row itself that margin would
@@ -363,7 +377,7 @@ export function createStackedList(
         // props) keeps the original whole-row pressable, byte-identical.
         if (reorderable || trailingSlot != null) {
           return (
-            <View style={skin.rowBase}>
+            <View {...listItem} style={skin.rowBase}>
               {grip}
               <Pressable
                 style={({ pressed }) => [rowFill, pressed ? withInnerFill(theme, skin.pressedSurface(tokens), "firm") : null, pressFeedback(pressed)]}
@@ -383,7 +397,9 @@ export function createStackedList(
             </View>
           );
         }
-        return (
+        // The whole-row button sits in its list item: a `listitem` is not a control,
+        // so the item wraps the button rather than replacing its role.
+        const button = (
           <Pressable
             style={({ pressed }) => [skin.rowBase, pressed ? withInnerFill(theme, skin.pressedSurface(tokens), "firm") : null, pressFeedback(pressed)]}
             android_ripple={ripple}
@@ -398,9 +414,10 @@ export function createStackedList(
             {divider}
           </Pressable>
         );
+        return listItem != null ? <View {...listItem}>{button}</View> : button;
       }
       return (
-        <View style={skin.rowBase}>
+        <View {...listItem} style={skin.rowBase}>
           {grip}
           {renderAvatar(item)}
           {renderColumn(item)}
@@ -419,7 +436,7 @@ export function createStackedList(
     const header =
       title != null ? (
         <View style={skin.header(tokens)}>
-          <Text style={skin.headerTitle(tokens)}>{title}</Text>
+          <Text nativeID={titleId} style={skin.headerTitle(tokens)}>{title}</Text>
           {headerAction != null ? <View>{headerAction}</View> : null}
         </View>
       ) : null;
@@ -439,6 +456,14 @@ export function createStackedList(
       !!virtualized && !reorderable && !bounded,
       "[canvas] <StackedList virtualized>: give the list a bounded height (e.g. style={{ maxHeight: 400 }}) so it can window and scroll; rendering eagerly for now.",
     );
+    // The title names the list when it holds something to read: `title={cond && "Team"}`
+    // passes `false` when the condition fails, and an empty title or label names nothing.
+    const titled = title != null && title !== false && title !== "";
+    const windowed = !!virtualized && !reorderable && bounded;
+    devWarn(
+      windowed && !titled && !label,
+      "[canvas] <StackedList virtualized>: give the list a `title` or a `label`. While its rows overflow it is a keyboard stop, and Chromium names an unnamed stop from the text of every row it has rendered.",
+    );
 
     // A drop reports the move; the order stays controlled by the consumer's `items`
     // array (listMoveFor is pure and unit-tested; the drop index excludes the dragged
@@ -449,42 +474,54 @@ export function createStackedList(
       if (move) onReorder?.(move);
     };
 
+    // The rows are a list (src/style/list-semantics.tsx), named by the title when there
+    // is one, else by `label`.
+    const list = { role: "list" as const, ...(titled ? { "aria-labelledby": titleId } : { "aria-label": label || undefined }) };
+
     // Construct eager rows only in the branches that use them. Building this
-    // array before choosing FlatList would still allocate every offscreen row.
+    // array before choosing FlatList would still allocate every offscreen row. A
+    // reorderable row's item wraps its Draggable, so the preview a pointer drag lifts
+    // out of the list carries no list item of its own.
     const renderEagerRows = () => items.map((item, index) => (
       <Fragment key={keyOf(item, index)}>
         {reorderable ? (
-          <Draggable id={keyOf(item, index)} data={{ index }} label={item.name}>
-            {renderRow(item, index)}
-          </Draggable>
+          <View {...LIST_ITEM}>
+            <Draggable id={keyOf(item, index)} data={{ index }} label={item.name}>
+              {renderRow(item, index, null)}
+            </Draggable>
+          </View>
         ) : (
-          renderRow(item, index)
+          renderRow(item, index, LIST_ITEM)
         )}
       </Fragment>
     ));
 
     const body = reorderable ? (
       <DragDropProvider>
-        <DropZone id="rows" label={typeof title === "string" ? title : "List"} onDrop={handleReorder}>
-          {renderEagerRows()}
+        <DropZone id="rows" label={typeof title === "string" && title !== "" ? title : label || "List"} onDrop={handleReorder}>
+          {/* The list sits inside the zone, so the zone's drop indicator is no row of it. */}
+          <View {...list}>{renderEagerRows()}</View>
         </DropZone>
       </DragDropProvider>
-    ) : virtualized && bounded ? (
+    ) : windowed ? (
       <FlatList
         {...bodyFocus}
         {...bodyFrame.target}
-        // A group, not a generic node: focused, a generic scroller took its name from
-        // every row it rendered in Chromium, so a screen reader would read them all
-        // out as the stop's name. A group takes no name from its rows.
-        role="group"
+        // The list itself is the stop. Focused, an unnamed scroller took its name from
+        // every row it rendered in Chromium, a list included, so the title or `label`
+        // names it (the dev warning above asks for one).
+        {...list}
         style={FOCUS_RESET}
+        // FlatList's own wrappers stay static, so Chromium counts the rows for the list.
+        contentContainerStyle={LIST_WRAPPER}
+        CellRendererComponent={WindowedListCell}
         data={items}
-        renderItem={({ item, index }) => renderRow(item, index)}
+        renderItem={({ item, index }) => renderRow(item, index, windowedListItem(index, items.length))}
         keyExtractor={keyOf}
         showsVerticalScrollIndicator={false}
       />
     ) : (
-      renderEagerRows()
+      <View {...list}>{renderEagerRows()}</View>
     );
 
     return (

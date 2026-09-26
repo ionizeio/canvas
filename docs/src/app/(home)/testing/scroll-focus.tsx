@@ -19,23 +19,26 @@ const manyRows = Array.from({ length: 40 }, (_, i) => [
   `2026-${String((i % 12) + 1).padStart(2, "0")}-${String((i % 28) + 1).padStart(2, "0")}`,
   i % 2 === 0 ? "Design" : "Engineering",
 ]);
-// Forty read-only rows, events and tiles for the windowed lists: more than their bounded
-// heights show, none of them focusable, so each list scrolls with nothing inside it to
-// take a Tab.
-const listPeople = Array.from({ length: 40 }, (_, i) => ({
+// Two hundred read-only rows, events and tiles for the windowed lists: more than their
+// bounded heights show, none of them focusable, so each list scrolls with nothing inside
+// it to take a Tab, and more than a list's window mounts, so some rows are always
+// unmounted and each list's count comes from its rows' aria-setsize. Each list is named
+// (the card by its title, the rest by `label`), since the windowed list is the stop.
+const WINDOWED_ROWS = 200;
+const listPeople = Array.from({ length: WINDOWED_ROWS }, (_, i) => ({
   id: i,
   name: `${people[i % people.length]} ${i + 1}`,
   detail: cities[i % cities.length]!,
   meta: i % 5 === 0 ? "Invited" : "Active",
 }));
-const events = Array.from({ length: 40 }, (_, i) => ({
+const events = Array.from({ length: WINDOWED_ROWS }, (_, i) => ({
   id: i,
   actor: `${people[i % people.length]} ${i + 1}`,
   action: i % 2 === 0 ? "updated the roster" : "joined the team",
   time: `${i + 1} hours ago`,
 }));
 const tileColors = ["primary", "blue-500", "green-500", "amber-500"];
-const tiles = Array.from({ length: 40 }, (_, i) => ({
+const tiles = Array.from({ length: WINDOWED_ROWS }, (_, i) => ({
   title: `IMG_${String(1000 + i)}.jpg`,
   subtitle: `${(i % 9) + 1}.2 MB`,
   color: tileColors[i % tileColors.length],
@@ -109,25 +112,25 @@ export default function ScrollFocusFixture() {
         <Column snug>
           <Typography h2>Windowed plain stacked list</Typography>
           <Button outline testID="before-stacked-plain">Before windowed plain stacked list</Button>
-          <StackedList testID="scroll-stacked-plain" virtualized items={listPeople} style={{ maxHeight: 240 }} />
+          <StackedList testID="scroll-stacked-plain" label="People" virtualized items={listPeople} style={{ maxHeight: 240 }} />
           <Button outline testID="after-stacked-plain">After windowed plain stacked list</Button>
         </Column>
         <Column snug>
           <Typography h2>Windowed feed</Typography>
           <Button outline testID="before-feed">Before windowed feed</Button>
-          <Feed testID="scroll-feed" virtualized items={events} style={{ maxHeight: 240 }} />
+          <Feed testID="scroll-feed" label="Roster activity" virtualized items={events} style={{ maxHeight: 240 }} />
           <Button outline testID="after-feed">After windowed feed</Button>
         </Column>
         <Column snug>
           <Typography h2>Windowed avatar feed</Typography>
           <Button outline testID="before-feed-avatar">Before windowed avatar feed</Button>
-          <Feed testID="scroll-feed-avatar" avatar virtualized items={events} style={{ maxHeight: 240 }} />
+          <Feed testID="scroll-feed-avatar" label="Roster activity by person" avatar virtualized items={events} style={{ maxHeight: 240 }} />
           <Button outline testID="after-feed-avatar">After windowed avatar feed</Button>
         </Column>
         <Column snug>
           <Typography h2>Windowed grid list</Typography>
           <Button outline testID="before-grid">Before windowed grid list</Button>
-          <GridList testID="scroll-grid" gallery cols3 virtualized items={tiles} style={{ maxHeight: 240 }} />
+          <GridList testID="scroll-grid" label="Photos" gallery cols3 virtualized items={tiles} style={{ maxHeight: 240 }} />
           <Button outline testID="after-grid">After windowed grid list</Button>
         </Column>
         <Column snug>

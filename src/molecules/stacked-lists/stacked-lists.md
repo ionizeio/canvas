@@ -2,13 +2,20 @@
 
 Vertical lists with avatar, two-line items, and trailing metadata. Used for contacts, activity feeds, and data previews. Rows can carry a per-item `trailing` slot for an inline control, and `reorderable` adds a leading drag grip per row (keyboard- and screen-reader-operable) that reports each drop through `onReorder` while the order stays controlled by your `items` array.
 
+The rows are a list, as in Tailwind UI, and each row is one of its items: a
+screen reader announces the list with its number of rows and moves through it
+row by row. A clickable row's button sits inside its item. The header `title`
+names the list; a list without a title takes its name from `label`.
+
 A `virtualized` list with a bounded height scrolls its rows in a list of its
 own. On the web, while those rows overflow, that list is a keyboard tab stop
 (after the header's action, and before the rows' own buttons when they have
 any), the keyboard can scroll it, and while it has keyboard focus the list's
-card, or a plain list's frame, draws the theme's focus ring. The stop is an
-unnamed group, so a screen reader does not read every row it renders out as
-its name.
+card, or a plain list's frame, draws the theme's focus ring. Only the rows near
+its viewport are mounted, and each says where it sits in the whole list, so a
+screen reader still counts every row. Give a windowed list a `title` or a
+`label`: focused, a list with no name is named in Chromium from the text of
+every row it has rendered, so the kit warns in development when it has neither.
 
 ## Usage
 

@@ -1,5 +1,5 @@
 import { Fragment, type ComponentType } from "react";
-import { FlatList, StyleSheet, type DimensionValue, type LayoutChangeEvent } from "react-native";
+import { FlatList, StyleSheet, type DimensionValue, type LayoutChangeEvent, type ViewProps } from "react-native";
 import { View, Pressable, Text, useTheme, useContainerBreakpoint, devWarn, FOCUS_RESET, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, GlassSurface, alpha } from "../../style/index.js";
 import { Card as WebCard } from "../card/card.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
@@ -11,6 +11,7 @@ import { type BadgeProps } from "../../atoms/badge/badge.shared.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
 import { useScrollFocus } from "../../style/use-scroll-focus.js";
 import { useFocusFrame } from "../../style/focus-frame.js";
+import { LIST_ITEM, LIST_WRAPPER, WindowedListCell, windowedListItem } from "../../style/list-semantics.js";
 import * as s from "./grid-lists.styles.js";
 import { type Columns } from "./grid-lists.styles.js";
 
@@ -135,6 +136,13 @@ export interface GridListProps {
    *  affordance, so a tappable grid needs no hand-rolled Pressable. */
   onPressItem?: (index: number) => void;
   /**
+   * The grid's accessible name (e.g. "Team members"): a screen reader announces it
+   * with the list of tiles. A `virtualized` grid needs one: on the web its scroller is
+   * a keyboard stop while the tiles overflow, and Chromium names an unnamed stop from
+   * the text of every tile it has rendered.
+   */
+  label?: string;
+  /**
    * Render the tiles through a windowed `FlatList` instead of mounting every tile up
    * front, for large grids. Give the grid a bounded height (via `style`, e.g.
    * `{ maxHeight: 480 }`) so it can scroll; without one it warns and renders eagerly
@@ -166,7 +174,7 @@ export function createGridList(
   // A borderless gallery thumbnail: a square color block with a filename and size
   // below. The parent GridList resolves the responsive width ONCE and passes it
   // down, so an N-tile grid carries one viewport subscription, not N.
-  function GalleryTile({ item, width, onPress }: { item: GridListItem; width: DimensionValue; onPress?: () => void }) {
+  function GalleryTile({ item, width, listItem, onPress }: { item: GridListItem; width: DimensionValue; listItem: ViewProps; onPress?: () => void }) {
     const { tokens } = useTheme();
     const inner = (
       <>
@@ -190,24 +198,24 @@ export function createGridList(
     );
     if (onPress) {
       // The gallery tile is the molecule's OWN pressable: the skin supplies the
-      // press feedback (Android ripple vs iOS/web opacity dim).
+      // press feedback (Android ripple vs iOS/web opacity dim). It is a button in its
+      // list item, which is the grid cell: a `listitem` is not a control, so the item
+      // wraps the button, and the button fills the cell as it did when it was one.
       const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
       return (
-        <Pressable
-          accessibilityRole="button"
-          onPress={onPress}
-          android_ripple={ripple}
-          style={({ pressed }) => [
-            s.tileGrow,
-            { width },
-            skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
-          ]}
-        >
-          {inner}
-        </Pressable>
+        <View {...listItem} style={[s.tileGrow, { width }]}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={onPress}
+            android_ripple={ripple}
+            style={({ pressed }) => [s.tileGrow, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
+          >
+            {inner}
+          </Pressable>
+        </View>
       );
     }
-    return <View style={[s.tileGrow, { width }]}>{inner}</View>;
+    return <View {...listItem} style={[s.tileGrow, { width }]}>{inner}</View>;
   }
 
   // A bordered people card tile: a leading avatar, a title, supporting text, an
@@ -215,12 +223,13 @@ export function createGridList(
   // responsive width once and passes it down. Its surface and press feedback come
   // from the Card atom (already platform-correct per build), so the skin only sets
   // the tile padding density and the title type.
-  function PeopleTile({ item, width, compact, onPress }: { item: GridListItem; width: DimensionValue; compact: boolean; onPress?: () => void }) {
+  function PeopleTile({ item, width, compact, listItem, onPress }: { item: GridListItem; width: DimensionValue; compact: boolean; listItem: ViewProps; onPress?: () => void }) {
     const { tokens } = useTheme();
     const pad = compact ? skin.tilePad.compact : skin.tilePad.default;
-    // The tile cell owns the measured width (a layout cell); the Card fills it.
+    // The tile cell owns the measured width (a layout cell) and is the list item; the
+    // Card fills it.
     return (
-      <View style={{ width, flexGrow: 1 }}>
+      <View {...listItem} style={{ width, flexGrow: 1 }}>
         <Card onPress={onPress} style={{ alignItems: "center", padding: pad }}>
         <View style={s.cardInner}>
           <Avatar large src={isPhoto(item.avatar) ? item.avatar : undefined} name={item.title}>
@@ -249,7 +258,7 @@ export function createGridList(
   }
 
   return function GridList(props: GridListProps) {
-    const { items, gallery, compact, virtualized, testID, style, onPressItem } = props;
+    const { items, gallery, compact, label, virtualized, testID, style, onPressItem } = props;
     const columns = columnsOf(props);
     const gap = compact ? skin.gap.compact : skin.gap.default;
     // ONE responsive resolution for the whole grid, measured against the grid's
@@ -278,14 +287,18 @@ export function createGridList(
 
     // One tile, keyless so it can be used both by the eager `.map` (which supplies
     // the key via a Fragment) and by FlatList's renderItem (which keys via keyExtractor).
-    const renderTile = (item: GridListItem, index: number) => {
+    // `listItem` is the tile's place in the list (src/style/list-semantics.tsx).
+    const renderTile = (item: GridListItem, index: number, listItem: ViewProps) => {
       const onPress = onPressItem ? () => onPressItem(index) : undefined;
       return gallery ? (
-        <GalleryTile item={item} width={tileWidth} onPress={onPress} />
+        <GalleryTile item={item} width={tileWidth} listItem={listItem} onPress={onPress} />
       ) : (
-        <PeopleTile item={item} width={tileWidth} compact={!!compact} onPress={onPress} />
+        <PeopleTile item={item} width={tileWidth} compact={!!compact} listItem={listItem} onPress={onPress} />
       );
     };
+    // The tiles are a list named by `label`: the grid's root in both paths, as Tailwind
+    // UI's grid lists are one `<ul role="list">` of `<li>` tiles.
+    const list = { role: "list" as const, "aria-label": label || undefined };
 
     // Stable identity per tile; matches the eager path's key so switching to the
     // windowed path keeps a tile mapped to the same item.
@@ -300,12 +313,16 @@ export function createGridList(
       !!virtualized && !bounded,
       "[canvas] <GridList virtualized>: give the grid a bounded height (e.g. style={{ maxHeight: 480 }}) so it can window and scroll; rendering eagerly for now.",
     );
+    devWarn(
+      !!virtualized && bounded && !label,
+      "[canvas] <GridList virtualized>: give the grid a `label`. While its tiles overflow it is a keyboard stop, and Chromium names an unnamed stop from the text of every tile it has rendered.",
+    );
 
     // The windowed path: FlatList tiles the items into `numColumns` per row. The
     // eager grid's single flex `gap` is split back into its two axes: the
     // inter-column gap onto each row wrapper, the inter-row gap onto the content
     // container, so the spacing matches the eager grid. The eager path below keeps
-    // the flex-wrap container's DOM byte-for-byte identical.
+    // its one flex-wrap container, which is the list.
     if (virtualized && bounded) {
       return (
         <FlatList
@@ -319,26 +336,29 @@ export function createGridList(
             onGridLayout(event);
             gridFocus.onLayout(event);
           }}
-          // A group, not a generic node: focused, a generic scroller took its name from
-          // every tile it rendered in Chromium, so a screen reader would read them all
-          // out as the stop's name. A group takes no name from its tiles.
-          role="group"
+          // The list itself is the stop. Focused, an unnamed scroller took its name from
+          // every tile it rendered in Chromium, a list included, so `label` names it
+          // (the dev warning above asks for one).
+          {...list}
           style={[style, FOCUS_RESET, gridFrame.ring()]}
           data={items}
-          renderItem={({ item, index }) => renderTile(item, index)}
+          renderItem={({ item, index }) => renderTile(item, index, windowedListItem(index, items.length))}
           keyExtractor={keyOf}
           numColumns={numColumns}
-          columnWrapperStyle={numColumns > 1 ? { gap } : undefined}
-          contentContainerStyle={{ gap }}
+          // FlatList's own wrappers (the content container, each cell, each row of
+          // cells) stay static, so Chromium counts the tiles for the list.
+          columnWrapperStyle={numColumns > 1 ? [{ gap }, LIST_WRAPPER] : undefined}
+          contentContainerStyle={[{ gap }, LIST_WRAPPER]}
+          CellRendererComponent={WindowedListCell}
           showsVerticalScrollIndicator={false}
         />
       );
     }
 
     return (
-      <View testID={testID} onLayout={onGridLayout} style={[s.container, { gap }, style]}>
+      <View testID={testID} onLayout={onGridLayout} {...list} style={[s.container, { gap }, style]}>
         {items.map((item, index) => (
-          <Fragment key={keyOf(item, index)}>{renderTile(item, index)}</Fragment>
+          <Fragment key={keyOf(item, index)}>{renderTile(item, index, LIST_ITEM)}</Fragment>
         ))}
       </View>
     );
